@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -8,14 +9,15 @@ namespace OpenVIII
     {
         #region Fields
 
-        public EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
-
-        //public EventHandler<Mode> ModeChangeHandler;
         protected Dictionary<Mode, Func<bool>> InputDict;
 
         #endregion Fields
 
-        //private Mode _mode = 0;
+        #region Events
+
+        public event EventHandler<KeyValuePair<Items, FF8String>> ChoiceChangeHandler;
+
+        #endregion Events
 
         #region Enums
 
@@ -37,6 +39,7 @@ namespace OpenVIII
             NextLEVEL,
         }
 
+        //private Mode _mode = 0;
         public enum Mode
         {
             ChooseItem,
@@ -47,46 +50,52 @@ namespace OpenVIII
         {
             Header,
             Footer,
-            SideMenu,
             Clock,
             PartyGroup,
+            SideMenu,
         }
 
         #endregion Enums
 
         #region Methods
 
+        public static IGM Create() => Create<IGM>();
+
         public override bool Inputs() => InputDict[(Mode)GetMode()]();
 
         protected override void Init()
         {
             Size = new Vector2 { X = 843, Y = 630 };
+            base.Init();
             //TextScale = new Vector2(2.545455f, 3.0375f);
-            Data.Add(SectionName.Header, new IGMData_Header());
-            Data.Add(SectionName.Footer, new IGMData_Footer());
-            Data.Add(SectionName.Clock, new IGMData_Clock());
-            Data.Add(SectionName.PartyGroup, new IGMData_PartyGroup(new IGMData_Party(), new IGMData_NonParty()));
-            Data.Add(SectionName.SideMenu, new IGMData_SideMenu(new Dictionary<FF8String, FF8String>() {
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 0), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 1)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 3)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 4), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 5)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 8), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 9)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 6), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 7)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 62), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 63)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 64), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 65)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 10), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 11)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 16), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 17)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 67), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 68)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 0, 14), Memory.Strings.Read(Strings.FileID.MNGRP, 0, 15)},
-                    { "Battle", "Test Battle Menu"}
-                }));
+
+            List<Task> tasks = new List<Task>
+            {
+                Task.Run(() => Data.TryAdd(SectionName.Header, IGMData_Header.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.Footer, IGMData_Footer.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.Clock, IGMData_Clock.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create()))),
+                Task.Run(() => Data.TryAdd(SectionName.SideMenu, IGMData_SideMenu.Create(new Dictionary<FF8String, FF8String>() {
+                    { Strings.Name.SideMenu.Junction, Strings.Description.SideMenu.Junction},
+                    { Strings.Name.SideMenu.Item, Strings.Description.SideMenu.Item},
+                    { Strings.Name.SideMenu.Magic, Strings.Description.SideMenu.Magic},
+                    { Strings.Name.SideMenu.GF, Strings.Description.SideMenu.GF},
+                    { Strings.Name.SideMenu.Status, Strings.Description.SideMenu.Status},
+                    { Strings.Name.SideMenu.Ability, Strings.Description.SideMenu.Ability},
+                    { Strings.Name.SideMenu.Switch, Strings.Description.SideMenu.Switch},
+                    { Strings.Name.SideMenu.Card, Strings.Description.SideMenu.Card},
+                    { Strings.Name.SideMenu.Config, Strings.Description.SideMenu.Config},
+                    { Strings.Name.SideMenu.Tutorial, Strings.Description.SideMenu.Tutorial},
+                    { Strings.Name.SideMenu.Save, Strings.Description.SideMenu.Save},
+                    { Strings.Name.SideMenu.Battle, Strings.Description.SideMenu.Battle}})))
+            };
+            Task.WaitAll(tasks.ToArray());
             InputDict = new Dictionary<Mode, Func<bool>>
                 {
                     { Mode.ChooseItem, Data[SectionName.SideMenu].Inputs },
                     { Mode.ChooseChar, Data[SectionName.PartyGroup].Inputs },
                 };
             SetMode((Mode)0);
-            base.Init();
         }
 
         #endregion Methods

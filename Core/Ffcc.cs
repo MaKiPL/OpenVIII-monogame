@@ -21,8 +21,20 @@
     /// Code bits mostly converted to c# from c++ It uses bits of code from FFmpeg examples, Aforge,
     /// FFmpeg.autogen, stackoverflow
     /// </remarks>
-    public class Ffcc : IDisposable
+    public abstract class Ffcc : IDisposable
     {
+        /// <summary>
+        /// Opens filename and init class.
+        /// </summary>
+        protected static T Create<T>(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1) where T : Ffcc, new()
+        {
+            T r = new T();
+            r.Init(filename, mediatype, mode, loopstart);
+            if (mode == FfccMode.PROCESS_ALL)
+                r.Dispose(false);
+            return r;
+        }
+
         #region Fields
 
         /// <summary>
@@ -46,7 +58,7 @@
         /// on exception this is turned to true and will force fallback to naudio when monogame isn't working.
         /// </summary>
         private static bool useNaudio = false;
-
+        private object DynamicSoundEffectLock = new object();
         private readonly unsafe AVDictionary* _dict;
         private unsafe AVIOContext* _avio_ctx;
         private unsafe byte* _avio_ctx_buffer;
@@ -93,56 +105,18 @@
         private bool stopped = false;
 
         private Task task;
+        private FfccVaribleGroup _decoder = new FfccVaribleGroup();
+        private DynamicSoundEffectInstance _dynamicSound;
+        private int _loopend;
+        private int _looplength;
 
         #endregion Fields
-
-        #region Constructors
-
-        /// <summary>
-        /// Opens filename and init class.
-        /// </summary>
-        public Ffcc(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
-        {
-            Init(filename, mediatype, mode, loopstart);
-            if (mode == FfccMode.PROCESS_ALL)
-                Dispose(false);
-        }
-
-        /// <summary>
-        /// Opens filename and init class.
-        /// </summary>
-        /// <remarks>
-        /// based on
-        /// https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat
-        /// and http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html and
-        /// https://stackoverflow.com/questions/24758386/intptr-to-callback-function probably could
-        /// be wrote better theres alot of hoops to jump threw
-        /// </remarks>
-        public unsafe Ffcc(Buffer_Data buffer_Data, byte[] headerData, string datafilename, int loopstart = -1)
-        {
-            fixed (byte* tmp = &headerData[0])
-            {
-                lock (Decoder)
-                {
-                    buffer_Data.SetHeader(tmp);
-                    DataFileName = datafilename;
-                    LoadFromRAM(&buffer_Data);
-                    Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
-                    ffmpeg.avformat_free_context(Decoder.Format);
-                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
-                    Decoder.Format = null;
-                }
-                Dispose(false);
-            }
-        }
-
-        #endregion Constructors
 
         #region Destructors
 
         ~Ffcc()
         {
-            Dispose();
+            Dispose(false);
         }
 
         #endregion Destructors
@@ -312,7 +286,14 @@
         /// <summary>
         /// Dynamic Sound Effect Interface for class allows control out of class. Mode must be in STATE_MACH
         /// </summary>
-        public DynamicSoundEffectInstance DynamicSound { get; private set; }
+        public DynamicSoundEffectInstance DynamicSound
+        {
+            get => _dynamicSound; private set
+            {
+                lock(DynamicSoundEffectLock)
+                _dynamicSound = value;
+            }
+        }
 
         /// <summary>
         /// True if file is open.
@@ -413,7 +394,7 @@
         /// <summary>
         /// Holder of varibles for Decoder
         /// </summary>
-        private FfccVaribleGroup Decoder { get; set; } = new FfccVaribleGroup();
+        protected FfccVaribleGroup Decoder { get => _decoder; set => _decoder = value; }
 
         /// <summary>
         /// Based on timer and FPS determines what the current frame is.
@@ -537,7 +518,7 @@
         /// </param>
         public void Play(float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f) // there are some videos without sound meh.
         {
-            if (Decoder.StreamIndex > -1)
+            if (Decoder != null && Decoder.StreamIndex > -1)
             {
                 if (!timer.IsRunning && Mode == FfccMode.STATE_MACH && MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
@@ -547,10 +528,14 @@
                 {
                     if (DynamicSound != null && !DynamicSound.IsDisposed && AudioEnabled)
                     {
-                        DynamicSound.Volume = volume;
-                        DynamicSound.Pitch = pitch;
-                        DynamicSound.Pan = pan;
-                        DynamicSound.Play();
+
+                        lock (DynamicSoundEffectLock)
+                        {
+                            DynamicSound.Volume = volume;
+                            DynamicSound.Pitch = pitch;
+                            DynamicSound.Pan = pan;
+                            DynamicSound.Play();
+                        }
                     }
 
                     if (SoundEffect != null && !SoundEffect.IsDisposed && AudioEnabled)
@@ -629,12 +614,24 @@
             {
                 if (DynamicSound != null && !DynamicSound.IsDisposed)
                 {
-                    if (AudioEnabled)
-                    {
-                        DynamicSound?.Stop();
-                    }
 
-                    DynamicSound.Dispose();
+                    lock (DynamicSoundEffectLock)
+                    {
+                        if (AudioEnabled)
+                        {
+                            try
+                            {
+                                    DynamicSound?.Stop();
+                            }
+                            catch (NullReferenceException)
+                            {
+
+                            }
+                        }
+
+                        DynamicSound.Dispose();
+                    }
+                    DynamicSound = null;
                 }
                 if (SoundEffectInstance != null && !SoundEffectInstance.IsDisposed)
                 {
@@ -694,7 +691,7 @@
             }
         }
 
-        protected virtual unsafe void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (Decoder != null)
             {
@@ -711,13 +708,17 @@
                 }
                 if (!isDisposed)
                 {
+                    if (task != null)
+                    {
+                        if (task.IsCompleted)
+
+                            task.Dispose();
+                        else
+                            Memory.LeftOverTask.Add(task);
+                        task = null;
+                    }
                     State = FfccState.DONE;
                     Mode = FfccMode.NOTINIT;
-                    if (disposing)
-                    {
-                        //Stop();
-                        // TODO: dispose managed state (managed objects).
-                    }
                     // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                     // TODO: set large fields to null.
                     if (DecodedMemoryStream != null)
@@ -732,27 +733,48 @@
                     //{
                     //    Marshal.FreeHGlobal(_intPtr);
                     //}
-                    ffmpeg.sws_freeContext(ScalerContext);
-                    if (ResampleContext != null)
+                    unsafe
                     {
-                        ffmpeg.swr_close(ResampleContext);
-                        SwrContext* pResampleContext = ResampleContext;
-                        ffmpeg.swr_free(&pResampleContext);
+                        ffmpeg.sws_freeContext(ScalerContext);
+                        if (ResampleContext != null)
+                        {
+                            ffmpeg.swr_close(ResampleContext);
+                            SwrContext* pResampleContext = ResampleContext;
+                            ffmpeg.swr_free(&pResampleContext);
+                        }
+                        ffmpeg.av_frame_unref(ResampleFrame);
+                        ffmpeg.av_free(ResampleFrame);
+                        if (_avio_ctx != null)
+                        {
+                            //ffmpeg.avio_close(avio_ctx); //CTD
+                            ffmpeg.av_free(_avio_ctx);
+                        }
                     }
-                    ffmpeg.av_frame_unref(ResampleFrame);
-                    ffmpeg.av_free(ResampleFrame);
-                    if (_avio_ctx != null)
-                    {
-                        //ffmpeg.avio_close(avio_ctx); //CTD
-                        ffmpeg.av_free(_avio_ctx);
-                    }
-
                     //if (avio_ctx_buffer != null)
                     //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
 
                     // set to true to prevent multiple disposings
                     isDisposed = true;
                     //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                }
+                else
+                {
+                    if (nAudioOut != null && useNaudio)
+                    {
+                        nAudioOut.Dispose();
+                        nAudioOut = null;
+                        bufferedWaveProvider.ClearBuffer();
+                    }
+                    if (sourceToken != null)
+                    {
+                        sourceToken.Dispose();
+                        sourceToken = null;
+                    }
+                    if (_decoder != null)
+                    {
+                        _decoder.Dispose();
+                        _decoder = null;
+                    }
                 }
             }
         }
@@ -896,8 +918,9 @@
             frame = *Decoder.Frame;
             return true;
 
-//end of file, check for loop and end.
-EOF:
+        //end of file, check for loop and end.
+        //TODO: add LOOPEND and LOOPLENGTH support https://github.com/FFT-Hackers/vgmstream/commit/b332e5cf5cc9e3469cbbab226836083d8377ce61
+        EOF:
             Loop();
             frame = *Decoder.Frame;
             return false;
@@ -924,16 +947,37 @@ EOF:
                     key += (char)tag->key[i];
                 }
 
-                Metadata[key.ToUpper()] = val;
-                if (key == "LOOPSTART" && int.TryParse(val, out _loopstart))
-                { }
+                Metadata[key.Trim().ToUpper()] = val;
+                Debug.WriteLine($"{key} = {val}");
+                if (key.Trim().IndexOf("LOOPSTART", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    if (!int.TryParse(val, out _loopstart))
+                    {
+                        _loopstart = 0;
+                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                    }
+                }
+                else if (key.Trim().IndexOf("LOOPEND", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    if (int.TryParse(val, out _loopend))
+                        _looplength = _loopend - _loopstart;
+                    else
+                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                }   
+                else if (key.Trim().IndexOf("LOOPLENGTH", StringComparison.OrdinalIgnoreCase) >=0)
+                {
+                    if (int.TryParse(val, out _looplength))
+                        _loopend = _loopend + _loopstart;
+                    else
+                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                }
             }
         }
 
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        private void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
+        protected void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
         {
             ffmpeg.av_log_set_level(ffmpeg.AV_LOG_PANIC);
             LOOPSTART = loopstart;
@@ -975,7 +1019,7 @@ EOF:
         /// <summary>
         /// Sets up AVFormatContext to be able from the memory buffer.
         /// </summary>
-        private unsafe void LoadFromRAM(Buffer_Data* bd)
+        protected unsafe void LoadFromRAM(Buffer_Data* bd)
         {
             _avio_ctx = null;
 
@@ -1058,7 +1102,9 @@ EOF:
                     }
                     try
                     {
-                        DynamicSound.SubmitBuffer(buffer, start, length);
+
+                        lock (DynamicSoundEffectLock)
+                            DynamicSound.SubmitBuffer(buffer, start, length);
                     }
                     catch (ArgumentException)
                     {
@@ -1068,6 +1114,7 @@ EOF:
                     {
                         if (e.GetType().Name == "SharpDXException")
                         {
+                            //DynamicSound.Dispose();
                             DynamicSound = null;
                             if (!initNaudio())
                             {
@@ -1107,7 +1154,7 @@ EOF:
                 }
 
                 long max = Decoder.Stream->duration;
-                if (max < 0)
+                if (max <= LOOPSTART)
                 {
                     max = LOOPSTART + 1000;
                 }
@@ -1153,21 +1200,21 @@ EOF:
 #if _WINDOWS
             if (useNaudio)
             {
-                while (nAudioOut.PlaybackState != PlaybackState.Stopped && !cancellationToken.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested && nAudioOut != null && nAudioOut.PlaybackState != PlaybackState.Stopped)
                     Thread.Sleep(NextAsyncSleep);
-                try
-                {
-                    if (nAudioOut != null)
-                        nAudioOut.Dispose();
-                    bufferedWaveProvider.ClearBuffer();
-                }
-                catch (InvalidOperationException)
-                {
-                    if (nAudioOut != null)
-                        Memory.MainThreadOnlyActions.Enqueue(nAudioOut.Dispose);
-                    Memory.MainThreadOnlyActions.Enqueue(bufferedWaveProvider.ClearBuffer);
-                    //doesn't like threads...
-                }
+                //try
+                //{
+                //    if (nAudioOut != null)
+                //        nAudioOut.Dispose();
+                //    bufferedWaveProvider.ClearBuffer();
+                //}
+                //catch (InvalidOperationException)
+                ////{
+                //    if (nAudioOut != null)
+                //        Memory.MainThreadOnlyActions.Enqueue(nAudioOut.Dispose);
+                //    Memory.MainThreadOnlyActions.Enqueue(bufferedWaveProvider.ClearBuffer);
+                //    //doesn't like threads...
+                //}
             }
 #endif
             return 0;
@@ -1318,6 +1365,8 @@ EOF:
 
             //ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
             ConvertedData = new byte[convertedFrameBufferSize];
+
+            if (useNaudio) initNaudio();
         }
 
         /// <summary>
@@ -1580,7 +1629,7 @@ EOF:
 
             public UInt32 DataSeekLoc;
             public UInt32 DataSize;
-            public IntPtr Header;
+            private IntPtr Header;
             public UInt32 HeaderSize;
 
             #endregion Fields
@@ -1608,20 +1657,21 @@ EOF:
                 {
                     return ffmpeg.AVERROR_EOF;
                 }
-                using (FileStream fs = File.OpenRead(DataFileName))
+                FileStream fs = null;
+
+                // binaryReader disposes of fs
+                using (BinaryReader br = new BinaryReader(fs = File.Open(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
                     fs.Seek(DataSeekLoc, SeekOrigin.Begin);
-                    using (BinaryReader br = new BinaryReader(fs))
+                    using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
                     {
-                        using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
-                        {
-                            // copy public buffer data to buf
-                            ums.Write(br.ReadBytes(buf_size), 0, buf_size);
-                            DataSeekLoc += (uint)buf_size;
-                            DataSize -= (uint)buf_size;
+                        // copy public buffer data to buf
+                        ums.Write(br.ReadBytes(buf_size), 0, buf_size);
+                        DataSeekLoc += (uint)buf_size;
+                        DataSize -= (uint)buf_size;
 
-                            return buf_size;
-                        }
+                        fs = null;
+                        return buf_size;
                     }
                 }
             }

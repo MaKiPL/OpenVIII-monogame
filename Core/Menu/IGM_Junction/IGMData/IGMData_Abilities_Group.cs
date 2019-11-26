@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
 namespace OpenVIII
 {
@@ -9,15 +8,21 @@ namespace OpenVIII
 
         private class IGMData_Abilities_Group : IGMData.Group.Base
         {
-            #region Constructors
+            #region Properties
 
-            public IGMData_Abilities_Group(params IGMData.Base[] d) : base(d)
-            {
-            }
+            private IGMData.Slots.Abilities Ability => ((IGMData.Slots.Abilities)ITEM[1, 0]);
 
-            #endregion Constructors
+            private IGMData_Abilities_AbilityPool AbilityPool => ((IGMData_Abilities_AbilityPool)ITEM[3, 0]);
+
+            private IGMData.Slots.Command Commands => ((IGMData.Slots.Command)ITEM[0, 0]);
+
+            private IGMData_Abilities_CommandPool CommandsPool => ((IGMData_Abilities_CommandPool)ITEM[2, 0]);
+
+            #endregion Properties
 
             #region Methods
+
+            public static new IGMData_Abilities_Group Create(params Menu_Base[] d) => Create<IGMData_Abilities_Group>(d);
 
             public override bool Inputs()
             {
@@ -50,27 +55,13 @@ namespace OpenVIII
                 return true;
             }
 
-            public override bool Inputs_OKAY()
-            {
-                base.Inputs_OKAY();
-                if (Commands != null)
-                {
-                    if (CURSOR_SELECT >= Commands.Count)
-                        IGM_Junction.SetMode(Mode.Abilities_Abilities);
-                    else
-                        IGM_Junction.SetMode(Mode.Abilities_Commands);
-                    return true;
-                }
-                return false;
-            }
-
             public override void Inputs_Menu()
             {
                 skipdata = true;
                 base.Inputs_Menu();
                 skipdata = false;
 
-                if (Commands!=null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Commands != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     if (CURSOR_SELECT < Commands.Count)
                     {
@@ -85,13 +76,20 @@ namespace OpenVIII
                     }
                 }
             }
-            private IGMData_Abilities_CommandSlots Commands => ((IGMData_Abilities_CommandSlots)ITEM[0, 0]);
 
-            private IGMData_Abilities_AbilitySlots Ability => ((IGMData_Abilities_AbilitySlots)ITEM[1, 0]);
-
-            private IGMData_Abilities_CommandPool CommandsPool => ((IGMData_Abilities_CommandPool)ITEM[2, 0]);
-
-            private IGMData_Abilities_AbilityPool AbilityPool => ((IGMData_Abilities_AbilityPool)ITEM[3, 0]);
+            public override bool Inputs_OKAY()
+            {
+                base.Inputs_OKAY();
+                if (Commands != null)
+                {
+                    if (CURSOR_SELECT >= Commands.Count)
+                        IGM_Junction.SetMode(Mode.Abilities_Abilities);
+                    else
+                        IGM_Junction.SetMode(Mode.Abilities_Commands);
+                    return true;
+                }
+                return false;
+            }
 
             public override void Refresh()
             {
@@ -111,7 +109,7 @@ namespace OpenVIII
                 void test(IGMData.Base t, ref int i)
                 {
                     int pos = 0;
-                    for (; pos < t.Count && i < total_Count; i++)
+                    for (; t != null && pos < t.Count && i < total_Count; i++)
                     {
                         SIZE[i] = t.SIZE[pos];
                         CURSOR[i] = t.CURSOR[pos];
@@ -122,7 +120,6 @@ namespace OpenVIII
                 if (CURSOR_SELECT == 0)
                     CURSOR_SELECT = 1;
             }
-            
 
             public override bool Update()
             {
@@ -132,7 +129,7 @@ namespace OpenVIII
                 {
                     Cursor_Status &= ~Cursor_Status.Blinking;
 
-                    if (Commands!= null && Ability != null)
+                    if (Commands != null && Ability != null)
                     {
                         if (CURSOR_SELECT >= Commands.Count)
                         {

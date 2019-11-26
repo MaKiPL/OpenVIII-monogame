@@ -1,55 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
     public partial class IGM_Junction : Menu
     {
-        //private Mode _mode;
-
         #region Enums
-
-        public enum Items : byte
-        {
-            Junction,
-            Off,
-            Auto,
-            Ability,
-            HP,
-            Str,
-            Vit,
-            Mag,
-            Spr,
-            Spd,
-            Luck,
-            Hit,
-            ST_A,
-            ST_D,
-            EL_A,
-            EL_D,
-            ST_A_D,
-            EL_A_D,
-            Stats,
-            ST_A2,
-            GF,
-            Magic,
-            AutoAtk,
-            AutoMag,
-            AutoDef,
-            RemAll,
-            RemMag,
-            ChooseGFtojunction,
-            Chooseslottojunction,
-            Choosemagictojunction,
-            RemovealljunctionedGFandmagic,
-            Removealljunctionedmagic,
-            CurrentEXP,
-            NextLEVEL,
-            _,
-            LV,
-            ForwardSlash,
-            Percent
-        }
 
         public enum Mode
         {
@@ -152,18 +109,15 @@ namespace OpenVIII
 
         #endregion Enums
 
-        #region Properties
-
-        public static Dictionary<Items, FF8String> Descriptions { get; private set; }
-        public static Dictionary<Items, FF8String> Misc { get; private set; }
-        public static Dictionary<Items, FF8String> Titles { get; private set; }
-
-        #endregion Properties
-
         #region Methods
+
+        public static IGM_Junction Create() => Create<IGM_Junction>();
 
         public void ChangeHelp(FF8String str) => ((IGMDataItem.HelpBox)Data[SectionName.Help]).Data = str;
 
+        //public static Dictionary<Items, FF8String> Descriptions { get; private set; }
+        //public static Dictionary<Items, FF8String> Misc { get; private set; }
+        //public static Dictionary<Items, FF8String> Titles { get; private set; }
         public override bool Inputs()
         {
             if (GetMode().Equals(Mode.None)) SetMode(Mode.TopMenu);
@@ -181,11 +135,11 @@ namespace OpenVIII
                         break;
 
                     case Mode.TopMenu_Off:
-                        ret = ((IGMData_TopMenu_Off_Group)Data[SectionName.TopMenu_Off]).Inputs();
+                        ret = ((IGMData.Group.TopMenu)Data[SectionName.TopMenu_Off]).Inputs();
                         break;
 
                     case Mode.TopMenu_Auto:
-                        ret = ((IGMData_TopMenu_Auto_Group)Data[SectionName.TopMenu_Auto]).Inputs();
+                        ret = ((IGMData.Group.TopMenu)Data[SectionName.TopMenu_Auto]).Inputs();
                         break;
 
                     case Mode.Abilities:
@@ -236,98 +190,53 @@ namespace OpenVIII
             return ret;
         }
 
-
         protected override void Init()
         {
             SetMode((Mode)0);
             Size = new Vector2 { X = 840, Y = 630 };
 
-            Titles = new Dictionary<Items, FF8String> {
-                    {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,217) },
-                    {Items.Off, Memory.Strings.Read(Strings.FileID.MNGRP,2,219) },
-                    {Items.Auto, Memory.Strings.Read(Strings.FileID.MNGRP,2,221) },
-                    {Items.Ability, Memory.Strings.Read(Strings.FileID.MNGRP,2,223) },
-                    {Items.HP, Memory.Strings.Read(Strings.FileID.MNGRP,2,225) },
-                    {Items.Str, Memory.Strings.Read(Strings.FileID.MNGRP,2,227) },
-                    {Items.Vit, Memory.Strings.Read(Strings.FileID.MNGRP,2,229) },
-                    {Items.Mag, Memory.Strings.Read(Strings.FileID.MNGRP,2,231) },
-                    {Items.Spr, Memory.Strings.Read(Strings.FileID.MNGRP,2,233) },
-                    {Items.Spd, Memory.Strings.Read(Strings.FileID.MNGRP,2,235) },
-                    {Items.Luck, Memory.Strings.Read(Strings.FileID.MNGRP,2,237) },
-                    {Items.Hit, Memory.Strings.Read(Strings.FileID.MNGRP,2,239) },
-                    {Items.ST_A,Memory.Strings.Read(Strings.FileID.MNGRP,2,243)},
-                    {Items.ST_D,Memory.Strings.Read(Strings.FileID.MNGRP,2,245)},
-                    {Items.EL_A,Memory.Strings.Read(Strings.FileID.MNGRP,2,247)},
-                    {Items.EL_D,Memory.Strings.Read(Strings.FileID.MNGRP,2,249)},
-                    {Items.ST_A_D,Memory.Strings.Read(Strings.FileID.MNGRP,2,251)},
-                    {Items.EL_A_D,Memory.Strings.Read(Strings.FileID.MNGRP,2,253)},
-                    {Items.Stats,Memory.Strings.Read(Strings.FileID.MNGRP,2,255)},
-                    { Items.ST_A2,Memory.Strings.Read(Strings.FileID.MNGRP, 2, 257)},
-                    {Items.GF,Memory.Strings.Read(Strings.FileID.MNGRP,2,262)},
-                    { Items.Magic,Memory.Strings.Read(Strings.FileID.MNGRP, 2, 264)},
-                    {Items.AutoAtk,Memory.Strings.Read(Strings.FileID.MNGRP,2,269)},
-                    {Items.AutoMag,Memory.Strings.Read(Strings.FileID.MNGRP,2,271)},
-                    {Items.AutoDef,Memory.Strings.Read(Strings.FileID.MNGRP,2,273)},
-                    {Items.RemAll,Memory.Strings.Read(Strings.FileID.MNGRP,2,275)},
-                    {Items.RemMag,Memory.Strings.Read(Strings.FileID.MNGRP,2,277)},
-                };
+            Menu_Base[] tmp = new Menu_Base[9];
+            List<Task> tasks = new List<Task>
+            {
+                Task.Run(() =>tmp[0] = IGMData_Mag_Stat_Slots.Create()),
+                Task.Run(() =>tmp[1] = IGMData_Mag_PageTitle.Create()),
+                Task.Run(() =>tmp[3] = IGMData_Mag_EL_A_D_Slots.Create()),
+                Task.Run(() =>tmp[2] = IGMData.Pool.Magic.Create()),
+                Task.Run(() =>tmp[4] = IGMData_Mag_EL_A_Values.Create()),
+                Task.Run(() =>tmp[5] = IGMData_Mag_EL_D_Values.Create()),
+                Task.Run(() =>tmp[6] = IGMData_Mag_ST_A_D_Slots.Create()),
+                Task.Run(() =>tmp[7] = IGMData_Mag_ST_A_Values.Create()),
+                Task.Run(() =>tmp[8] = IGMData_Mag_ST_D_Values.Create()),
+                Task.Run(() => Data.TryAdd(SectionName.CharacterInfo, IGMData_CharacterInfo.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(615, 150, 210, 192)))),
+                Task.Run(() => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Data = Strings.Description.Junction, Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP })),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Strings.Name.Junction, Pos = new Rectangle(615, 0, 225, 66) })),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Junction, IGMData_TopMenu_Junction.Create())),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Off, IGMData.Group.TopMenu.Create(
+                    new IGMDataItem.Box { Data = Strings.Name.Off, Pos = new Rectangle(0, 12, 169, 54), Options = Box_Options.Center | Box_Options.Middle },
+                    IGMData_TopMenu_Off.Create()
+                    ))),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Auto, IGMData.Group.TopMenu.Create(
+                    new IGMDataItem.Box { Data = Strings.Name.Auto, Pos = new Rectangle(0, 12, 169, 54), Options = Box_Options.Center | Box_Options.Middle },
+                    IGMData_TopMenu_Auto.Create()))),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_Abilities, IGMData_Abilities_Group.Create(
+                IGMData.Slots.Command.Create(),
+                IGMData.Slots.Abilities.Create(),
+                IGMData_Abilities_CommandPool.Create(),
+                IGMData_Abilities_AbilityPool.Create()))),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu_GF_Group, IGMData_GF_Group.Create(
+                    IGMData_GF_Junctioned.Create(),
+                    IGMData.Pool.GF.Create(),
+                    new IGMDataItem.Box { Pos = new Rectangle(440, 345, 385, 66) }
+                    ))),
+                Task.Run(() => Data.TryAdd(SectionName.RemMag, IGMData_ConfirmRemMag.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(180, 174, 477, 216)))),
+                Task.Run(() => Data.TryAdd(SectionName.RemAll, IGMData_ConfirmRemAll.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(170, 174, 583, 216)))),
+                Task.Run(() => Data.TryAdd(SectionName.ConfirmChanges, IGMData_ConfirmChanges.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216)))),
+            };
+            Task.WaitAll(tasks.ToArray());
 
-            Misc = new Dictionary<Items, FF8String> {
-                { Items.CurrentEXP, Memory.Strings.Read(Strings.FileID.MNGRP, 0, 23)  },
-                { Items.NextLEVEL, Memory.Strings.Read(Strings.FileID.MNGRP, 0, 24)  },
-                { Items._,Memory.Strings.Read(Strings.FileID.MNGRP,2,266)},
-                { Items.HP,Memory.Strings.Read(Strings.FileID.MNGRP,0,26)},
-                { Items.LV,Memory.Strings.Read(Strings.FileID.MNGRP,0,27)},
-                { Items.ForwardSlash,Memory.Strings.Read(Strings.FileID.MNGRP,0,25)},
-                { Items.Percent,Memory.Strings.Read(Strings.FileID.MNGRP,0,29)},
-                };
-
-            Descriptions = new Dictionary<Items, FF8String> {
-                    {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) }
-                };
-            Data.Add(SectionName.CharacterInfo, new IGMData_CharacterInfo());
-            Data.Add(SectionName.Commands, new IGMData.Commands(new Rectangle(615, 150, 210, 192)));
-            Data.Add(SectionName.Help, new IGMDataItem.HelpBox(Descriptions[Items.Junction], pos: new Rectangle(15, 69, 810, 78), title: Icons.ID.HELP));
-            Data.Add(SectionName.TopMenu, new IGMData_TopMenu());
-            Data.Add(SectionName.Title, 
-                new IGMDataItem.Box(Titles[Items.Junction], pos: new Rectangle(615, 0, 225, 66)));
-            Data.Add(SectionName.Mag_Group, new IGMData_Mag_Group(
-                new IGMData_Mag_Stat_Slots(),
-                new IGMData_Mag_PageTitle(),
-                new IGMData.Pool.Magic(),
-                new IGMData_Mag_EL_A_D_Slots(),
-                new IGMData_Mag_EL_A_Values(),
-                new IGMData_Mag_EL_D_Values(),
-                new IGMData_Mag_ST_A_D_Slots(),
-                new IGMData_Mag_ST_A_Values(),
-                new IGMData_Mag_ST_D_Values()
-                ));
-            Data.Add(SectionName.TopMenu_Junction, new IGMData_TopMenu_Junction());
-            Data.Add(SectionName.TopMenu_Off, new IGMData_TopMenu_Off_Group(
-                    new IGMDataItem.Box(Titles[Items.Off], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
-                new IGMData_TopMenu_Off()
-                ));
-            Data.Add(SectionName.TopMenu_Auto, new IGMData_TopMenu_Auto_Group(
-                    new IGMDataItem.Box(Titles[Items.Auto], pos: new Rectangle(0, 12, 169, 54), options: Box_Options.Center | Box_Options.Middle),
-                new IGMData_TopMenu_Auto()));
-            Data.Add(SectionName.TopMenu_Abilities, new IGMData_Abilities_Group(
-                new IGMData_Abilities_CommandSlots(),
-                new IGMData_Abilities_AbilitySlots(),
-                new IGMData_Abilities_CommandPool(),
-                new IGMData_Abilities_AbilityPool()
-                ));
-            FF8String Yes = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
-            FF8String No = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 58);
-            Data.Add(SectionName.TopMenu_GF_Group, new IGMData_GF_Group(
-                new IGMData_GF_Junctioned(),
-                new IGMData_GF_Pool(),
-                new IGMDataItem.Box(pos: new Rectangle(440, 345, 385, 66))
-                ));
-
-            Data.Add(SectionName.RemMag, new IGMData_ConfirmRemMag(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(180, 174, 477, 216)));
-            Data.Add(SectionName.RemAll, new IGMData_ConfirmRemAll(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Yes, opt2: No, pos: new Rectangle(170, 174, 583, 216)));
-            Data.Add(SectionName.ConfirmChanges, new IGMData_ConfirmChanges(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216)));
-
+            Data.TryAdd(SectionName.Mag_Group, IGMData_Mag_Group.Create(tmp));
             base.Init();
         }
 

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OpenVIII.Core.World
 {
-    class wmset
+    class wmset : IDisposable
     {
         private const int WMSET_SECTION_COUNT = 48;
         private byte[] buffer;
@@ -25,8 +25,7 @@ namespace OpenVIII.Core.World
         {
             buffer = wmsetBuffer;
             sectionPointers = new int[WMSET_SECTION_COUNT];
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
                 for (int i = 0; i < sectionPointers.Length; i++)
                     sectionPointers[i] = br.ReadInt32();
@@ -109,8 +108,8 @@ namespace OpenVIII.Core.World
         private EncounterHelper[] encounterHelpEntries;
         private void Section1()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[1- 1], SeekOrigin.Begin);
                 ms.Seek(4, SeekOrigin.Current); //skip first DWORD- it's EOF of global file
@@ -141,8 +140,8 @@ namespace OpenVIII.Core.World
 
         private void Section2()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[2 - 1], SeekOrigin.Begin);
                 regionsBuffer = br.ReadBytes(768);
@@ -164,8 +163,8 @@ namespace OpenVIII.Core.World
         private ushort[][] encounters;
         private void Section4()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[4 - 1], SeekOrigin.Begin);
                 List<ushort[]> encounterList = new List<ushort[]>();
@@ -191,8 +190,8 @@ namespace OpenVIII.Core.World
         private ushort[][] encountersLunar;
         private void Section6()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[6 - 1], SeekOrigin.Begin);
                 List<ushort[]> encounterList = new List<ushort[]>();
@@ -232,8 +231,8 @@ namespace OpenVIII.Core.World
              * Stand before the entrance to Balamb and it would be the [848]/ so-> 12th entry in section8!
              * It passes first check of 0xFF06 for segment id = 273 and moves further
              */
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
@@ -467,8 +466,8 @@ namespace OpenVIII.Core.World
 
         private void Section14()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[14 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
@@ -527,8 +526,8 @@ namespace OpenVIII.Core.World
 
         private void Section16()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[16 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
@@ -748,8 +747,8 @@ namespace OpenVIII.Core.World
         public void Section17()
         {
             int[] innerPointers;
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
@@ -765,8 +764,8 @@ namespace OpenVIII.Core.World
         public void Section41()
         {
             int[] innerPointers;
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[41 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
@@ -898,8 +897,8 @@ namespace OpenVIII.Core.World
         FF8String[] locationsNames;
         private void Section32()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[32 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
@@ -971,8 +970,8 @@ namespace OpenVIII.Core.World
         private void Section38()
         {
             sec38_pals = new List<Color[][]>();
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[38 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
@@ -1125,8 +1124,8 @@ namespace OpenVIII.Core.World
         /// </summary>
         private void Section39()
         {
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
@@ -1219,8 +1218,8 @@ namespace OpenVIII.Core.World
         {
             List<TextureHandler[]> vehTextures = new List<TextureHandler[]>();
             List<Vector2> timOriginHolderList = new List<Vector2>(); //VRAM atlas, holds X and Y origins for atlasing- here for calculating new UV
-            using (MemoryStream ms = new MemoryStream(buffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[42 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
@@ -1256,6 +1255,42 @@ namespace OpenVIII.Core.World
         /// <param name="clut"></param>
         /// <returns></returns>
         public Vector2 GetVehicleTextureOriginVector(int index, int clut) => timOrigHolder[index];
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                waterAtlas.Dispose();
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~wmset() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
 
         #endregion
     }

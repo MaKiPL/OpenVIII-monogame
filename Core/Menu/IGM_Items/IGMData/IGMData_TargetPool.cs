@@ -23,24 +23,26 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
-
-            public IGMData_TargetPool() : base(9, 3, new IGMDataItem.Box(pos: new Rectangle(420, 150, 420, 360), title: Icons.ID.TARGET), 9, 1) => Cursor_Status &= ~Cursor_Status.Enabled;
-
-            #endregion Constructors
-
             #region Properties
 
-            public Item_In_Menu Item { get; private set; }
-            public byte TopMenuChoice { get; private set; }
-
             private bool All => (Item.Target & (Item_In_Menu._Target.All | Item_In_Menu._Target.All2)) != 0;
+
+            public Item_In_Menu Item { get; private set; }
+
+            public byte TopMenuChoice { get; private set; }
 
             private bool IsMe => IGM_Items.GetMode().Equals(Mode.UseItemOnTarget);
 
             #endregion Properties
 
             #region Methods
+
+            public static IGMData_TargetPool Create()
+            {
+                IGMData_TargetPool r = Create<IGMData_TargetPool>(9, 3, new IGMDataItem.Box { Pos = new Rectangle(420, 150, 420, 360), Title = Icons.ID.TARGET }, 9, 1);
+                r.Cursor_Status &= ~Cursor_Status.Enabled;
+                return r;
+            }
 
             public override void Draw()
             {
@@ -92,13 +94,21 @@ namespace OpenVIII
                 return false;
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!IsMe)
+                    Cursor_Status &= ~Cursor_Status.Enabled;
+                else
+                    IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
+            }
+
             public override void Refresh()
             {
                 if (!eventSet && IGM_Items != null)
                 {
                     IGM_Items.ModeChangeHandler += ModeChangeEvent;
                     IGM_Items.ChoiceChangeHandler += ChoiceChangeEvent;
-                    IGM_Items.ItemChangeHandler += ItemTypeChangeEvent;
+                    IGM_Items.ItemPool.ItemChangeHandler += ItemTypeChangeEvent;
                     eventSet = true;
                 }
                 ////List won't populate unless theres a valid item set.
@@ -114,6 +124,20 @@ namespace OpenVIII
             {
             }
 
+            protected override void Init()
+            {
+                base.Init();
+                for (int i = 0; i < Rows; i++)
+                {
+                    ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
+                    ITEM[i, 0].Hide();
+                    ITEM[i, 1] = new IGMDataItem.Icon { Data = Icons.ID.HP2, Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), Palette = 13 };
+                    ITEM[i, 1].Hide();
+                    ITEM[i, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), Spaces = 4 };
+                    ITEM[i, 2].Hide();
+                }
+            }
+
             protected override void InitShift(int i, int col, int row)
             {
                 base.InitShift(i, col, row);
@@ -121,14 +145,6 @@ namespace OpenVIII
                 SIZE[i].Y -= 3 * row;
                 //SIZE[i].X += 2;
                 SIZE[i].Height = (int)(12 * TextScale.Y);
-            }
-
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!IsMe)
-                    Cursor_Status &= ~Cursor_Status.Enabled;
-                else
-                    IGM_Items.TargetChangeHandler?.Invoke(this, Contents[CURSOR_SELECT]);
             }
 
             protected override void PAGE_NEXT()
@@ -179,33 +195,35 @@ namespace OpenVIII
                         {
                             for (; i < Rows; i++)
                             {
-                                ITEM[i, 0] = null;
-                                ITEM[i, 1] = null;
-                                ITEM[i, 2] = null;
+                                ITEM[i, 0].Hide();
+                                ITEM[i, 1].Hide();
+                                ITEM[i, 2].Hide();
                                 BLANKS[i] = true;
                                 Contents[i] = Faces.ID.Blank;
                             }
-                            Pages = Page + 1;
+                            //Pages = Page + 1;
                             return;
                         }
-                    ITEM[i, 0] = new IGMDataItem.Text(Memory.Strings.GetName(id), pos: SIZE[i]);
+                    ((IGMDataItem.Text)ITEM[i, 0]).Data = Memory.Strings.GetName(id);
+                    ITEM[i, 0].Show();
                     int hp = (ctest || gftest) ? Memory.State[id]?.CurrentHP() ?? -1 : -1;
                     BLANKS[i] = false;
                     Contents[i] = id;
                     if (hp > -1)
                     {
-                        ITEM[i, 1] = new IGMDataItem.Icon(Icons.ID.HP2, new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 7), SIZE[i].Y, 0, 0), 13);
-                        ITEM[i, 2] = new IGMDataItem.Integer(hp, pos: new Rectangle(SIZE[i].X + SIZE[i].Width - (20 * 4), SIZE[i].Y, 0, 0), spaces: 4);
+                        ((IGMDataItem.Integer)ITEM[i, 2]).Data = hp;
+                        ITEM[i, 1].Show();
+                        ITEM[i, 2].Show();
                     }
                     else
                     {
-                        ITEM[i, 1] = null;
-                        ITEM[i, 2] = null;
+                        ITEM[i, 1].Hide();
+                        ITEM[i, 2].Hide();
                     }
 
                     id++;
                 }
-                Pages = Page + 2;
+                //Pages = Page + 2;
             }
 
             private void ItemTypeChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e)

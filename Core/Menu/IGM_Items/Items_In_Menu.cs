@@ -97,22 +97,30 @@ namespace OpenVIII
 
         #region Properties
 
+        private bool All => (Target & (_Target.All | _Target.All2)) != 0;
+
+        private Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
+
+        public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
+
         /// <summary>
         /// Which persistant statuses are removed.
         /// </summary>
-        public Kernel_bin.Persistant_Statuses Cleansed_Statuses
+        public Kernel_bin.Persistent_Statuses Cleansed_Statuses
         {
             get
             {
-                Kernel_bin.Persistant_Statuses ret = Kernel_bin.Persistant_Statuses.None;
+                Kernel_bin.Persistent_Statuses ret = Kernel_bin.Persistent_Statuses.None;
                 if (Type == _Type.HealGF || Type == _Type.Heal || Type == _Type.Revive || Type == _Type.ReviveGF ||
                     Type == _Type.Cure_Abnormal_Status || Type == _Type.SavePointHeal)
-                    ret = (Kernel_bin.Persistant_Statuses)b3;
+                    ret = (Kernel_bin.Persistent_Statuses)b3;
                 return ret;
             }
         }
 
+        public FF8String Description => Battle?.Description ?? Non_Battle?.Description;
         public byte Faded_Palette => 7;
+
         /// <summary>
         /// How much healing is done
         /// </summary>
@@ -134,6 +142,7 @@ namespace OpenVIII
         }
 
         public Icons.ID Icon { get; private set; }
+
         /// <summary>
         /// Item ID
         /// </summary>
@@ -145,9 +154,12 @@ namespace OpenVIII
         public Kernel_bin.Abilities Learn => Type == _Type.GF_Learn ? (Kernel_bin.Abilities)b2 : Kernel_bin.Abilities.None;
 
         public Kernel_bin.Blue_Magic Learned_Blue_Magic => Type == _Type.Blue_Magic ? (Kernel_bin.Blue_Magic)b2 : Kernel_bin.Blue_Magic.None;
+        public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
         public Kernel_bin.Non_battle_Items_Data Non_Battle => Battle == null ? Kernel_bin.NonbattleItemsData[ID - (Kernel_bin.BattleItemsData?.Count ?? 0)] : null;
         public byte Palette => 9;
+        public Kernel_bin.Stat Stat => Type == _Type.Stat ? (Kernel_bin.Stat)b3 : Kernel_bin.Stat.None;
         public byte Stat_Increase => (byte)(Type == _Type.Stat ? b2 : 0);
+
         /// <summary>
         /// Who is targeted and 0x01 seems to be a useable item in menu item. Magazine values don't
         /// seem to corrispond.
@@ -167,12 +179,6 @@ namespace OpenVIII
             private set => _type = value;
         }
 
-        private bool All => (Target & (_Target.All | _Target.All2)) != 0;
-        private Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
-        public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
-        public FF8String Description => Battle?.Description ?? Non_Battle?.Description;
-        public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
-        public Kernel_bin.Stat Stat => Type == _Type.Stat ? (Kernel_bin.Stat)b3 : Kernel_bin.Stat.None;
         /// <summary>
         /// Target in byte form
         /// </summary>
@@ -492,7 +498,7 @@ namespace OpenVIII
 
             if (c != null && !ZombieCheck(c.Statuses0, battle))
             {
-                if (!c.StatusImmune && Cleansed_Statuses != Kernel_bin.Persistant_Statuses.None)
+                if (!c.StatusImmune && Cleansed_Statuses != Kernel_bin.Persistent_Statuses.None)
                     ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags);
                 ret = c.DealDamage(Heals, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags) || ret;
             }
@@ -516,7 +522,7 @@ namespace OpenVIII
             bool ret = false;
             if (c != null && !ZombieCheck(c.Statuses0, battle))
             {
-                if (!c.StatusImmune && Cleansed_Statuses != Kernel_bin.Persistant_Statuses.None)
+                if (!c.StatusImmune && Cleansed_Statuses != Kernel_bin.Persistent_Statuses.None)
                     ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Curative_Item, Battle?.Attack_Flags);
                 ret = c.DealDamage(0, Battle?.Attack_Type ?? Kernel_bin.Attack_Type.Revive, Battle?.Attack_Flags) || ret;
             }
@@ -531,9 +537,9 @@ namespace OpenVIII
 
         private bool StatAction(Faces.ID obj, bool battle = false) => false;
 
-        private bool ZombieCheck(Kernel_bin.Persistant_Statuses statuses0, bool battle = false) =>
-                                                                                                    (statuses0 & Kernel_bin.Persistant_Statuses.Zombie) != 0 &&
-            (Cleansed_Statuses & Kernel_bin.Persistant_Statuses.Zombie) == 0 &&
+        private bool ZombieCheck(Kernel_bin.Persistent_Statuses statuses0, bool battle = false) =>
+                                                                                                    (statuses0 & Kernel_bin.Persistent_Statuses.Zombie) != 0 &&
+            (Cleansed_Statuses & Kernel_bin.Persistent_Statuses.Zombie) == 0 &&
             !battle;
 
         #endregion Methods

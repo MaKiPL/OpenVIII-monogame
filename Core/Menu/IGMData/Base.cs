@@ -6,185 +6,18 @@ using System.Diagnostics;
 
 namespace OpenVIII.IGMData
 {
-    public class Base : Menu_Base
+    public abstract class Base : Menu_Base
     {
         #region Fields
 
-        protected bool DepthFirst = false;
-
-        protected bool skipdata = false;
-
-        protected bool skipsnd = false;
-
-        #endregion Fields
-
-        #region Methods
-
-        protected void AutoAdjustContainerWidth(Rectangle DataSize)
-        {
-            if (DataSize.Right > Pos.Right)
-            {
-                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);
-            }
-        }
-
-        protected void CheckBounds(ref Rectangle DataSize, Rectangle input)
-        {
-            if (input.Right > Pos.Right && input.Right > DataSize.Right)
-            {
-                DataSize = input;
-            }
-        }
-
-        protected void CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
-
-        protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
-
-        protected virtual bool DrawPointer()
-        {
-            if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0 &&
-                (Cursor_Status & Cursor_Status.Hidden) == 0)
-            {
-                if ((Cursor_Status & Cursor_Status.All) != 0)
-                {
-                    for (int i = 0; i < CURSOR.Length; i++)
-                        if (!BLANKS[i])
-                            DrawPointer(CURSOR[i], blink: true);
-                }
-                else
-                    DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
-                return true;
-            }
-            return false;
-        }
-
-
-        protected void Init(Damageable damageable, sbyte? partypos)
-        {
-            if (partypos != null)
-            {
-                _damageable = damageable;
-                PartyPos = partypos.Value;
-                _damageable = Memory.State[Memory.State.PartyData[PartyPos]];
-            }
-            else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
-            {
-                _damageable = damageable;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(c.ID)) ?? -1);
-            }
-        }
-
-        protected void Init(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null)
-        {
-            CONTAINER = container ?? new IGMDataItem.Empty();
-            if (count <= 0 || depth <= 0)
-            {
-                if (CONTAINER.Pos == Rectangle.Empty)
-                {
-                    Debug.WriteLine($"{this}:: count {count} or depth {depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
-                    return;
-                }
-            }
-            else
-            {
-                SIZE = new Rectangle[count];
-                ITEM = new Menu_Base[count, depth];
-                CURSOR = new Point[count];
-
-                Count = (byte)count;
-                Depth = (byte)depth;
-                BLANKS = new bool[count];
-                Descriptions = new Dictionary<int, FF8String>(count);
-                this.Cols = cols ?? 1;
-                this.Rows = rows ?? 1;
-            }
-            Init();
-            Refresh();
-            Update();
-        }
-
-        /// <summary>
-        /// Things that are fixed values at startup.
-        /// </summary>
-        protected override void Init()
-        {
-            if (SIZE != null && SIZE.Length > 0 && Rows * Cols > 0)
-            {
-                for (int i = 0; i < SIZE.Length; i++)
-                {
-                    int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
-                    int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
-                    if (col < Cols && row < Rows)
-                    {
-                        if (SIZE[i].IsEmpty) //allows for override a size value before the loop.
-                        {
-                            SIZE[i] = new Rectangle
-                            {
-                                X = X + (Width * col) / Cols,
-                                Y = Y + (Height * row) / Rows,
-                                Width = Width / Cols,
-                                Height = Height / Rows,
-                            };
-                        }
-                        CURSOR[i] = Point.Zero;
-                        InitShift(i, col, row);
-                        CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
-                        CURSOR[i].X += SIZE[i].X;
-                    }
-                }
-            }
-            if (SIZE == null || SIZE.Length == 0 || SIZE[0].IsEmpty)
-            {
-                if (CURSOR == null || CURSOR.Length == 0 || SIZE.Length == 0)
-                {
-                    CURSOR = new Point[1];
-                    SIZE = new Rectangle[1];
-                }
-                CURSOR[0].Y = (int)(Y + Height / 2 - 6 * TextScale.Y);
-                CURSOR[0].X = X;
-                SIZE[0] = new Rectangle(X, Y, Width, Height);
-            }
-        }
-
-        protected virtual void InitShift(int i, int col, int row)
-        {
-        }
-
-        protected bool InputITEM(int i, int d, ref bool ret)
-        {
-            if (ITEM[i, d] != null && ITEM[i, d].Enabled)
-            {
-                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                ret = ITEM[i, d].Inputs();
-                return true;
-            }
-            return false;
-        }
-
-        protected override void RefreshChild()
-        {
-            base.RefreshChild();
-            if (!skipdata)
-            {
-                if (CONTAINER != null)
-                    CONTAINER.Refresh(Damageable);
-                if (ITEM != null)
-                    for (int i = 0; i < Count; i++)
-                        for (int d = 0; d < Depth; d++)
-                        {
-                            ITEM[i, d]?.Refresh(Damageable);
-                        }
-            }
-        }
-
-
-        #endregion Methods
-
         public bool[] BLANKS;
 
+        /// <summary>
+        /// location of where pointer finger will point.
+        /// </summary>
+        public Point[] CURSOR;
 
         public Menu_Base[,] ITEM;
-
         public int PointerZIndex = byte.MaxValue;
 
         /// <summary>
@@ -192,28 +25,46 @@ namespace OpenVIII.IGMData
         /// </summary>
         public Rectangle[] SIZE;
 
-        public Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
-        {
-            Init(damageable, partypos);
-            Init(count, depth, container, cols, rows);
-        }
+        protected bool DepthFirst = false;
 
-        public int Cols { get; private set; }
+        protected bool skipdata = false;
 
+        protected bool skipsnd = false;
+
+        private byte _count = 0;
+
+        private int _cursor_select;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public Base() => CONTAINER = new IGMDataItem.Empty();
+
+        #endregion Constructors
+
+        #region Properties
+
+        public static Vector2 TextScale => Menu.TextScale;
+        public byte Cols { get; protected set; } = 1;
 
         /// <summary>
         /// Total number of items
         /// </summary>
-        public byte Count { get; private set; }
+        public byte Count { get => _count; protected set => _count = checked((byte)(value + ExtraCount)); }
 
-
+        public int CURSOR_SELECT
+        {
+            get => GetCursor_select(); set => SetCursor_select(value);
+        }
 
         /// <summary>
         /// How many Peices per Item. Example 1 box could have 9 things to draw in it.
         /// </summary>
-        public byte Depth { get; private set; }
+        public byte Depth { get; protected set; } = 0;
 
         public Dictionary<int, FF8String> Descriptions { get; protected set; }
+        public byte ExtraCount { get; protected set; } = 0;
 
         /// <summary>
         /// Container's Height
@@ -221,13 +72,13 @@ namespace OpenVIII.IGMData
         public override int Height => CONTAINER != null ? Pos.Height : 0;
 
         public override Rectangle Pos { get => CONTAINER?.Pos ?? Rectangle.Empty; set => CONTAINER.Pos = value; }
-        public int Rows { get; private set; }
+
+        public byte Rows { get; protected set; } = 1;
+
+        public bool SkipSIZE { get; set; } = false;
 
         public Table_Options Table_Options { get; set; } = Table_Options.Default;
 
-        public static Point MouseLocation => Menu.MouseLocation;
-
-        public static Vector2 TextScale => Menu.TextScale;
         /// <summary>
         /// Container's Width
         /// </summary>
@@ -243,7 +94,22 @@ namespace OpenVIII.IGMData
         /// </summary>
         public override int Y => CONTAINER != null ? Pos.Y : 0;
 
+        #endregion Properties
+
+        #region Indexers
+
         public Menu_Base this[int pos, int i] { get => ITEM[pos, i]; set => ITEM[pos, i] = value; }
+
+        #endregion Indexers
+
+        #region Methods
+
+        public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
+        {
+            T r = Create<T>(damageable, partypos);
+            r.Init(count, depth, container, cols, rows);
+            return r;
+        }
 
         /// <summary>
         /// Convert to rectangle based on container.
@@ -346,6 +212,27 @@ namespace OpenVIII.IGMData
                             i.Hide();
                         }
                     }
+                }
+            }
+        }
+
+        public void InitSize(bool force = false)
+        {
+            int cellcount = Rows * Cols;
+            //SetSize(cellcount);
+            if (((SIZE != null && SIZE.Length > 0) || force))
+            {
+                if (cellcount > 1)
+                {
+                    InitRowsSize(force);
+                }
+                else
+                {
+                    SIZE[0] = new Rectangle(X, Y, Width, Height);
+                    CURSOR[0] = Point.Zero;
+                    BLANKS[0] = false;
+                    InitShift(0, 0, 0);
+                    InitCursor(0, 0, 0);
                 }
             }
         }
@@ -479,6 +366,13 @@ namespace OpenVIII.IGMData
                 init_debugger_Audio.PlaySound(0);
         }
 
+        public override void Refresh()
+        {
+            if (Memory.State?.PartyData != null && Damageable == null && PartyPos != -1 && Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
+                Damageable = c;
+            base.Refresh();
+        }
+
         public override void Reset()
         {
             foreach (Menu_Base i in ITEM)
@@ -487,7 +381,6 @@ namespace OpenVIII.IGMData
             }
             base.Reset();
         }
-
 
         /// <summary>
         /// Things that change on every update.
@@ -504,5 +397,217 @@ namespace OpenVIII.IGMData
                 }
             return ret;
         }
+
+        protected void AutoAdjustContainerWidth(Rectangle DataSize)
+        {
+            if (DataSize.Right > Pos.Right)
+            {
+                CONTAINER.Width += DataSize.Right - Pos.Right + Math.Abs(DataSize.Left - Pos.Left);
+            }
+        }
+
+        protected bool CheckBounds(ref Rectangle DataSize, Rectangle input)
+        {
+            if (input.Right > Pos.Right && input.Right > DataSize.Right)
+            {
+                DataSize = input;
+                return true;
+            }
+            return false;
+        }
+
+        protected bool CheckBounds(ref Rectangle DataSize, int pos) => CheckBounds(ref DataSize, ((IGMDataItem.Text)ITEM[pos, 0]).DataSize);
+
+        protected virtual void DrawITEM(int i, int d) => ITEM[i, d]?.Draw();
+
+        protected virtual bool DrawPointer()
+        {
+            if ((Cursor_Status & (Cursor_Status.Enabled | Cursor_Status.Draw)) != 0 &&
+                (Cursor_Status & Cursor_Status.Hidden) == 0)
+            {
+                if ((Cursor_Status & Cursor_Status.All) != 0)
+                {
+                    for (int i = 0; i < CURSOR.Length; i++)
+                        if (!BLANKS[i])
+                            DrawPointer(CURSOR[i], blink: true);
+                }
+                else
+                    DrawPointer(CURSOR[CURSOR_SELECT], blink: ((Cursor_Status & Cursor_Status.Blinking) != 0));
+                return true;
+            }
+            return false;
+        }
+
+        protected int GetCursor_select() => _cursor_select;
+
+        protected void Init(Damageable damageable, sbyte? partypos)
+        {
+            if (partypos != null)
+            {
+                Damageable = damageable;
+                PartyPos = partypos.Value;
+                if (Memory.State?.PartyData != null)
+                    Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+            }
+            else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
+            {
+                Damageable = damageable;
+                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(c.ID)) ?? -1);
+            }
+        }
+
+        /// <summary>
+        /// Most objects set all these values. also Init Refresh and Update
+        /// </summary>
+        /// <param name="count"></param>
+        /// <param name="depth"></param>
+        /// <param name="container"></param>
+        /// <param name="cols"></param>
+        /// <param name="rows"></param>
+        protected void Init(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null)
+        {
+            if (count >= 0)
+                Count = checked((byte)count);
+            if (depth >= 0)
+                Depth = checked((byte)depth);
+            if (container != null)
+                CONTAINER = container;
+            if (cols.HasValue && cols.Value > 0)
+                Cols = checked((byte)cols.Value);
+            if (rows.HasValue && rows.Value > 0)
+                Rows = checked((byte)rows.Value);
+            Init();
+            Refresh();
+            Update();
+        }
+
+        /// <summary>
+        /// Things that are fixed values at startup.
+        /// </summary>
+        protected override void Init()
+        {
+            if (Count <= 0 || Depth <= 0)
+            {
+                if (CONTAINER.Pos == Rectangle.Empty)
+                {
+                    Debug.WriteLine($"{this}:: count {Count} or depth {Depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
+                    return;
+                }
+            }
+            else
+            {
+                //if (SIZE == null)
+                //    SIZE = new Rectangle[Count];
+                if (ITEM == null)
+                    ITEM = new Menu_Base[Count, Depth];
+                //if (CURSOR == null)
+                //    CURSOR = new Point[Count];
+                //if (BLANKS == null)
+                //    BLANKS = new bool[Count];
+                if (Descriptions == null)
+                    Descriptions = new Dictionary<int, FF8String>(Count);
+
+                SetSize(Math.Max(Rows * Cols, Count));
+            }
+            if (!SkipSIZE)
+                InitSize();
+            SkipSIZE = false;
+        }
+
+        protected virtual void InitCursor(int i, int col, int row, bool zero = false)
+        {
+            if (zero) CURSOR[i] = Point.Zero;
+            CURSOR[i].Y += (int)(SIZE[i].Y + 6 * TextScale.Y);
+            CURSOR[i].X += SIZE[i].X;
+        }
+
+        protected virtual void InitShift(int i, int col, int row)
+        {
+        }
+
+        protected bool InputITEM(int i, int d, ref bool ret)
+        {
+            if (ITEM[i, d] != null && ITEM[i, d].Enabled)
+            {
+                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
+                ret = ITEM[i, d].Inputs();
+                return true;
+            }
+            return false;
+        }
+
+        protected override void RefreshChild()
+        {
+            base.RefreshChild();
+            if (!skipdata)
+            {
+                if (CONTAINER != null)
+                    CONTAINER.Refresh(Damageable);
+                if (ITEM != null)
+                    for (int i = 0; i < Count; i++)
+                        for (int d = 0; d < Depth; d++)
+                        {
+                            ITEM[i, d]?.Refresh(Damageable);
+                        }
+            }
+        }
+
+        protected virtual void SetCursor_select(int value)
+        {
+            if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && CURSOR != null && value < CURSOR.Length && CURSOR[value] != Point.Zero)
+                _cursor_select = value;
+        }
+
+        //protected Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        //{
+        //    Init(damageable, partypos);
+        //    Init(count, depth, container, cols, rows);
+        //}
+        private static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
+        {
+            T r = new T();
+            r.Init(damageable, partypos);
+            return r;
+        }
+
+        private void InitRowsSize(bool force)
+        {
+            for (int i = 0; i < SIZE.Length; i++)
+            {
+                int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
+                int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
+                if (col < Cols && row < Rows)
+                {
+                    if (SIZE[i].IsEmpty || force) //allows for override a size value before the loop.
+                    {
+                        SIZE[i] = new Rectangle
+                        {
+                            X = X + (Width * col) / Cols,
+                            Y = Y + (Height * row) / Rows,
+                            Width = Width / Cols,
+                            Height = Height / Rows,
+                        };
+                    }
+                    CURSOR[i] = Point.Zero;
+                    InitShift(i, col, row);
+                    InitCursor(i, col, row);
+                }
+            }
+        }
+
+        private void SetSize(int cellcount)
+        {
+            cellcount = cellcount > 1 ? cellcount : 1;
+            if (CURSOR == null || CURSOR.Length == 0 ||
+                SIZE == null || SIZE.Length == 0 ||
+                BLANKS == null || BLANKS.Length == 0)
+            {
+                CURSOR = new Point[cellcount];
+                SIZE = new Rectangle[cellcount];
+                BLANKS = new bool[cellcount];
+            }
+        }
+
+        #endregion Methods
     }
 }

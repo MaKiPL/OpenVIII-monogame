@@ -18,19 +18,23 @@ namespace OpenVIII
 
             #endregion Fields
 
-            #region Constructors
+            #region Properties
 
-            public IGMData_PartyGroup(params IGMData.Base[] d) : base(d)
-            {
-                Cursor_Status &= ~Cursor_Status.Enabled;
-                Cursor_Status |= Cursor_Status.Vertical;
-                Cursor_Status &= ~Cursor_Status.Horizontal;
-                Cursor_Status &= ~Cursor_Status.Blinking;
-            }
+            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData.Base)ITEM[1, 0])));
 
-            #endregion Constructors
+            private IGMData_Party Party => ((IGMData_Party)(((IGMData.Base)ITEM[0, 0])));
+
+            #endregion Properties
 
             #region Methods
+
+            public static new IGMData_PartyGroup Create(params Menu_Base[] d)
+            {
+                IGMData_PartyGroup r = Create<IGMData_PartyGroup>(d);
+                r.Cursor_Status &= ~(Cursor_Status.Enabled | Cursor_Status.Horizontal | Cursor_Status.Blinking);
+                r.Cursor_Status |= Cursor_Status.Vertical;
+                return r;
+            }
 
             public override bool Inputs()
             {
@@ -53,15 +57,19 @@ namespace OpenVIII
                 {
                     case Items.Junction:
                         Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
-                        IGM_Junction.Refresh(Contents[CURSOR_SELECT],true);
+                        IGM_Junction.Refresh(Contents[CURSOR_SELECT], true);
                         return true;
                 }
                 return ret;
             }
 
-            private IGMData_Party Party => ((IGMData_Party)(((IGMData.Base)ITEM[0, 0])));
-
-            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData.Base)ITEM[1, 0])));
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.ChooseChar))
+                {
+                    Cursor_Status &= ~Cursor_Status.Enabled;
+                }
+            }
 
             public override void Refresh()
             {
@@ -74,7 +82,7 @@ namespace OpenVIII
                 base.Refresh();
 
                 int total_Count = (Party?.Count ?? 0) + (Non_Party?.Count ?? 0);
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters != null && Memory.State.Characters.Count > 0 && Party != null && Non_Party != null)
                 {
                     SIZE = new Rectangle[total_Count];
                     CURSOR = new Point[total_Count];
@@ -96,14 +104,6 @@ namespace OpenVIII
                         Contents[i] = contents[pos];
                         pos++;
                     }
-                }
-            }
-
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.ChooseChar))
-                {
-                    Cursor_Status &= ~Cursor_Status.Enabled;
                 }
             }
 

@@ -8,34 +8,54 @@ namespace OpenVIII.IGMDataItem.Gradient
     {
         #region Fields
 
+        protected bool _trigger;
         protected Color Color_default;
         protected Slide<int> HitSlide;
         protected Rectangle HotSpot;
-        protected bool _trigger;
 
         #endregion Fields
 
         #region Constructors
-        public override void Reset()
+
+        private Renzokeken()
         {
-            Restart();
-            base.Reset();
         }
 
-        public Renzokeken(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d, double delay = 0d, Color? darkcolor = null, bool rev = false, bool vanish = true) : base(pos)
+        #endregion Constructors
+
+        #region Properties
+
+        public bool Done => HitSlide.Done || !Enabled;
+
+        public bool Trigger { get => (_trigger && !Done); private set => _trigger = value; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public static Renzokeken Create(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d, double delay = 0d, Color? darkcolor = null, bool rev = false, bool vanish = true)
         {
-            HotSpot = hotspot ?? Rectangle.Empty;
-            Restriction = restriction ?? Rectangle.Empty;
-            float dark = 0.067f;
-            float fade = 0.933f;
             int total = 12 + 180;
             if (pos.HasValue && pos.Value.Width > 0)
             {
                 total = pos.Value.Width;
             }
+            Color[] cfade = new Color[total];
+            Renzokeken r = new Renzokeken
+            {
+                Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1),
+                _pos = pos ?? Rectangle.Empty,
+                HotSpot = hotspot ?? Rectangle.Empty,
+                Restriction = restriction ?? Rectangle.Empty,
+                Color = color ?? Color.White,
+                Color_default = color ?? Color.White,
+                Faded_Color = faded_color ?? color ?? Color.White,
+                Blink_Adjustment = blink_adjustment
+            };
+            float dark = 0.067f;
+            float fade = 0.933f;
             Color lightline = new Color(118, 118, 118, 255);
             Color darkline = new Color(58, 58, 58, 255);
-            Color[] cfade = new Color[total];
             int i;
             if (!rev)
             {
@@ -52,32 +72,22 @@ namespace OpenVIII.IGMDataItem.Gradient
                 for (; i < cfade.Length; i++)
                     cfade[i] = darkline;
             }
-            Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1);
-            Width = Data.Width;
-            Data.SetData(cfade);
-            Color = color ?? Color.White;
-            Color_default = Color;
-            Faded_Color = faded_color ?? Color;
-            Blink_Adjustment = blink_adjustment;
+            r.Width = r.Data.Width;
+            r.Data.SetData(cfade);
 
-            if (vanish) HitSlide = new Slide<int>(Restriction.X + Restriction.Width, Restriction.X - Width, time, Lerp) { DelayMS = delay };
-            else HitSlide = new Slide<int>(Restriction.X, Restriction.X - Width, time, Lerp) { DelayMS = delay };
-            if (rev) HitSlide.Reverse();
+            if (vanish) r.HitSlide = new Slide<int>(r.Restriction.X + r.Restriction.Width, r.Restriction.X - r.Width, time, Lerp) { DelayMS = delay };
+            else r.HitSlide = new Slide<int>(r.Restriction.X, r.Restriction.X - r.Width, time, Lerp) { DelayMS = delay };
+            if (rev) r.HitSlide.Reverse();
 
             int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));
+            return r;
         }
 
-        #endregion Constructors
-
-        #region Properties
-
-        public bool Trigger { get => (_trigger && !Done); private set => _trigger = value; }
-        public bool Done => HitSlide.Done || !Enabled;
-
-        
-        #endregion Properties
-
-        #region Methods
+        public override void Reset()
+        {
+            Restart();
+            base.Reset();
+        }
 
         public void Restart()
         {

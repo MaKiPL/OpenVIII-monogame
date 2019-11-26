@@ -13,52 +13,12 @@ namespace OpenVIII
             #region Fields
 
             private FF8String[] _helpStr;
+            private IReadOnlyDictionary<FF8String, FF8String> _pairs;
             private bool eventSet = false;
             private List<Action> Inputs_Okay_Actions;
             private int[] widths;
 
             #endregion Fields
-
-            #region Constructors
-
-            public IGMData_TopMenu(IReadOnlyDictionary<FF8String, FF8String> pairs) : base()
-            {
-                Pairs = pairs;
-                _helpStr = new FF8String[Pairs.Count];
-                widths = new int[Pairs.Count];
-                byte pos = 0;
-                foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
-                {
-                    _helpStr[pos] = pair.Value;
-                    Rectangle rectangle = Memory.font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
-                    widths[pos] = rectangle.Width;
-                    if (rectangle.Width > largestwidth) largestwidth = rectangle.Width;
-                    if (rectangle.Height > largestheight) largestheight = rectangle.Height;
-                    totalwidth += rectangle.Width;
-
-                    avgwidth = totalwidth / ++pos;
-                }
-                Init(Pairs.Count, 1, new IGMDataItem.Box(pos: new Rectangle(0, 12, 610, 54)), Pairs.Count, 1);
-                pos = 0;
-                foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
-                {
-                    ITEM[pos, 0] = new IGMDataItem.Text(pair.Key, SIZE[pos]);
-                    pos++;
-                }
-                Cursor_Status |= Cursor_Status.Enabled;
-                Cursor_Status |= Cursor_Status.Horizontal;
-                Cursor_Status |= Cursor_Status.Vertical;
-                Cursor_Status |= Cursor_Status.Blinking;
-                Inputs_Okay_Actions = new List<Action>(Count)
-                    {
-                        Inputs_Okay_UseItem,
-                        Inputs_Okay_Sort,
-                        Inputs_Okay_Rearrange,
-                        Inputs_Okay_BattleRearrange,
-                    };
-            }
-
-            #endregion Constructors
 
             #region Properties
 
@@ -67,11 +27,19 @@ namespace OpenVIII
             protected int largestheight { get; private set; }
             protected int largestwidth { get; private set; }
             protected int totalwidth { get; private set; }
-            private IReadOnlyDictionary<FF8String, FF8String> Pairs { get; }
+            private IReadOnlyDictionary<FF8String, FF8String> Pairs => _pairs;
 
             #endregion Properties
 
             #region Methods
+
+            public static IGMData_TopMenu Create(IReadOnlyDictionary<FF8String, FF8String> pairs)
+            {
+                IGMData_TopMenu r = Create<IGMData_TopMenu>();
+                r._pairs = pairs;
+                r.CreateData();
+                return r;
+            }
 
             public override bool Inputs_CANCEL()
             {
@@ -93,6 +61,14 @@ namespace OpenVIII
                 return false;
             }
 
+            public override void ModeChangeEvent(object sender, Enum e)
+            {
+                if (!e.Equals(Mode.TopMenu))
+                    Cursor_Status |= Cursor_Status.Blinking;
+                else
+                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)CURSOR_SELECT, HelpStr[CURSOR_SELECT]));
+            }
+
             public override void Refresh()
             {
                 if (!eventSet && IGM_Items != null)
@@ -111,14 +87,6 @@ namespace OpenVIII
                 SIZE[i].Height = largestheight;
             }
 
-            protected override void ModeChangeEvent(object sender, Enum e)
-            {
-                if (!e.Equals(Mode.TopMenu))
-                    Cursor_Status |= Cursor_Status.Blinking;
-                else
-                    IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)CURSOR_SELECT, HelpStr[CURSOR_SELECT]));
-            }
-
             protected override void SetCursor_select(int value)
             {
                 if (value != GetCursor_select())
@@ -126,6 +94,42 @@ namespace OpenVIII
                     base.SetCursor_select(value);
                     IGM_Items.ChoiceChangeHandler?.Invoke(this, new KeyValuePair<byte, FF8String>((byte)value, HelpStr[value]));
                 }
+            }
+
+            private void CreateData()
+            {
+                _helpStr = new FF8String[Pairs.Count];
+                widths = new int[Pairs.Count];
+                byte pos = 0;
+                foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
+                {
+                    _helpStr[pos] = pair.Value;
+                    Rectangle rectangle = Memory.font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
+                    widths[pos] = rectangle.Width;
+                    if (rectangle.Width > largestwidth) largestwidth = rectangle.Width;
+                    if (rectangle.Height > largestheight) largestheight = rectangle.Height;
+                    totalwidth += rectangle.Width;
+
+                    avgwidth = totalwidth / ++pos;
+                }
+                Init(Pairs.Count, 1, new IGMDataItem.Box { Pos = new Rectangle(0, 12, 610, 54) }, Pairs.Count, 1);
+                pos = 0;
+                foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
+                {
+                    ITEM[pos, 0] = new IGMDataItem.Text { Data = pair.Key, Pos = SIZE[pos] };
+                    pos++;
+                }
+                Cursor_Status |= Cursor_Status.Enabled;
+                Cursor_Status |= Cursor_Status.Horizontal;
+                Cursor_Status |= Cursor_Status.Vertical;
+                Cursor_Status |= Cursor_Status.Blinking;
+                Inputs_Okay_Actions = new List<Action>(Count)
+                    {
+                        Inputs_Okay_UseItem,
+                        Inputs_Okay_Sort,
+                        Inputs_Okay_Rearrange,
+                        Inputs_Okay_BattleRearrange,
+                    };
             }
 
             private void Inputs_Okay_BattleRearrange()

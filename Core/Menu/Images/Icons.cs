@@ -9,10 +9,11 @@ namespace OpenVIII
     /// <summary>
     /// Images of parts of most of the menus and ui.
     /// </summary>
-    public partial class Icons : SP2
+    public sealed partial class Icons : SP2
     {
         #region Fields
 
+        private Rectangle _dataSize;
         private new Dictionary<ID, EntryGroup> Entries = null;
 
         #endregion Fields
@@ -21,24 +22,6 @@ namespace OpenVIII
 
         public Icons()
         {
-            Color[] red = new Color[256];
-            red[15] = new Color(255, 30, 30, 255); //red
-            red[14] = new Color(140, 30, 30, 255); //dark red
-            red[13] = new Color(37, 37, 37, 255); //gray
-            Color[] yellow = new Color[256];
-            yellow[15] = new Color(222, 222, 8, 255); //yellow
-            yellow[14] = new Color(131, 131, 24, 255); //dark yellow
-            yellow[13] = new Color(41, 41, 41, 255); //gray
-
-            //FORCE_ORIGINAL = true;
-            Props = new List<TexProps>()
-            {
-                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 palette
-                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 palette
-                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
-            };
-            IndexFilename = "icon.sp1";
-            Init();
         }
 
         #endregion Constructors
@@ -62,9 +45,13 @@ namespace OpenVIII
 
         #region Properties
 
-        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
-        public new uint PaletteCount => (uint)Textures.Count();
         public new uint Count => (uint)Entries.Count();
+
+        public Rectangle DataSize { get => _dataSize; private set => _dataSize = value; }
+        public new uint EntriesPerTexture => (uint)Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
+
+        public new uint PaletteCount => (uint)Textures.Count();
+
         private new uint TextureStartOffset => 0;
 
         #endregion Properties
@@ -77,22 +64,29 @@ namespace OpenVIII
 
         #region Methods
 
-        public void Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f, Font.ColorID color = Font.ColorID.White, bool blink = false)
+        public static Icons Load()
+        {
+            Icons r = Load<Icons>();
+            Memory.MainThreadOnlyActions.Enqueue(r.Trim);
+            return r;
+        }
+
+        public Rectangle Draw(int number, NumType type, int palette, string format, Vector2 location, Vector2 scale, float fade = 1f, Font.ColorID color = Font.ColorID.White, bool blink = false, bool skipdraw = false)
         {
             if (type == NumType.sysfnt)
             {
-                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink);
-                return;
+                DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink, skipdraw: skipdraw);
+                return DataSize;
             }
             else if (type == NumType.sysFntBig)
             {
-                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink);
-                return;
+                DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink, skipdraw: skipdraw);
+                return DataSize;
             }
             else if (type == NumType.menuFont)
             {
-                Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink);
-                return;
+                DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink, skipdraw: skipdraw);
+                return DataSize;
             }
             ID[] numberstarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0, ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
             List<ID>[] nums = new List<ID>[numberstarts.Length];
@@ -108,17 +102,25 @@ namespace OpenVIII
             }
             IEnumerable<int> intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
             Rectangle dst = new Rectangle { Location = location.ToPoint() };
+            DataSize = dst;
             foreach (int i in intList)
             {
-                Draw(nums[(int)type][i], palette, dst, scale, fade, blink ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount) : Font.ColorID2Color[color]);
-                dst.Offset(Entries[nums[(int)type][i]].GetRectangle.Width * scale.X, 0);
+                if (!skipdraw)
+                    Draw(nums[(int)type][i], palette, dst, scale, fade, blink ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount) : Font.ColorID2Color[color]);
+                float width = Entries[nums[(int)type][i]].GetRectangle.Width * scale.X;
+                float height = Entries[nums[(int)type][i]].GetRectangle.Height * scale.Y;
+                dst.Offset(width, 0);
+                _dataSize.Width += (int)width;
+                if (_dataSize.Height < (int)height)
+                    _dataSize.Height = (int)height;
             }
+            return DataSize;
         }
 
         public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f, Color? color = null)
         {
             if ((ID)id != ID.None)
-                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade,color);
+                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade, color);
         }
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One, fade);
@@ -134,15 +136,38 @@ namespace OpenVIII
             return null;
         }
 
+        public Color MostSaturated(Enum ic, byte pal)
+        {
+            EntryGroup eg = this[(ID)ic];
+            return eg.MostSaturated(Textures[pal], pal);
+        }
+
         public new void Trim(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];
             eg.Trim(Textures[pal]);
         }
-        public Color MostSaturated(Enum ic, byte pal)
+
+        protected override void DefaultValues()
         {
-            EntryGroup eg = this[(ID)ic];
-            return eg.MostSaturated(Textures[pal],pal);
+            base.DefaultValues();
+            Color[] red = new Color[256];
+            red[15] = new Color(255, 30, 30, 255); //red
+            red[14] = new Color(140, 30, 30, 255); //dark red
+            red[13] = new Color(37, 37, 37, 255); //gray
+            Color[] yellow = new Color[256];
+            yellow[15] = new Color(222, 222, 8, 255); //yellow
+            yellow[14] = new Color(131, 131, 24, 255); //dark yellow
+            yellow[13] = new Color(41, 41, 41, 255); //gray
+
+            //FORCE_ORIGINAL = true;
+            Props = new List<TexProps>()
+            {
+                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 palette
+                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 palette
+                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
+            };
+            IndexFilename = "icon.sp1";
         }
 
         protected override void InitEntries(ArchiveWorker aw = null)
@@ -150,33 +175,34 @@ namespace OpenVIII
             if (Entries == null)
             {
                 //read from icon.sp1
-                using (MemoryStream ms = new MemoryStream(ArchiveWorker.GetBinaryFile(ArchiveString,
-                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0))))
+                MemoryStream ms = null;
+
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(
+                    ArchiveWorker.GetBinaryFile(ArchiveString,
+                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0)))))
                 {
-                    using (BinaryReader br = new BinaryReader(ms))
+                    Loc[] locs = new Loc[br.ReadUInt32()];
+                    for (int i = 0; i < locs.Length; i++)
                     {
-                        Loc[] locs = new Loc[br.ReadUInt32()];
-                        for (int i = 0; i < locs.Length; i++)
+                        locs[i].seek = br.ReadUInt16();
+                        locs[i].length = br.ReadUInt16();
+                    }
+                    Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
+                    for (int i = 0; i < locs.Length; i++)
+                    {
+                        ms.Seek(locs[i].seek, SeekOrigin.Begin);
+                        byte c = (byte)locs[i].length;
+                        Entries[(ID)i] = new EntryGroup(c);
+                        for (int e = 0; e < c; e++)
                         {
-                            locs[i].seek = br.ReadUInt16();
-                            locs[i].length = br.ReadUInt16();
-                        }
-                        Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
-                        for (int i = 0; i < locs.Length; i++)
-                        {
-                            ms.Seek(locs[i].seek, SeekOrigin.Begin);
-                            byte c = (byte)locs[i].length;
-                            Entries[(ID)i] = new EntryGroup(c);
-                            for (int e = 0; e < c; e++)
-                            {
-                                Entry tmp = new Entry();
-                                tmp.LoadfromStreamSP1(br);
-                                tmp.Part = (byte)e;
-                                tmp.SetLoc(locs[i]);
-                                Entries[(ID)i].Add(tmp);
-                            }
+                            Entry tmp = new Entry();
+                            tmp.LoadfromStreamSP1(br);
+                            tmp.Part = (byte)e;
+                            tmp.SetLoc(locs[i]);
+                            Entries[(ID)i].Add(tmp);
                         }
                     }
+                    ms = null;
                 }
             }
         }
@@ -207,6 +233,20 @@ namespace OpenVIII
                         Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, (ushort)Textures.Count, colors: Props[t].Colors));
                 }
             }
+        }
+
+        private void Trim()
+        {
+            Trim(ID.Bar_Fill, 5);
+
+            //trim checks to see if it's ran once before.
+            //so no need to check if it's already ran.
+            //will throw exception if not in main thread.
+            for (byte i = 0; i <= 7; i++)
+                Trim(ID._0_Hit_ + i, 2);
+            Trim(ID.Trigger_, 2);
+            Trim(ID.Perfect__, 2);
+            Trim(ID.Renzokeken_Seperator, 6);
         }
 
         #endregion Methods

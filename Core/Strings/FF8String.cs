@@ -24,8 +24,8 @@ namespace OpenVIII
         {
         }
 
-        public FF8String(byte[] @value) => Value = @value;
-        public FF8String(string @value) => Value = @value != null ? encoding.GetBytes(@value) : null;
+        public FF8String(byte[] @value) => this.value = @value;
+        public FF8String(string @value) => this.value = @value != null ? encoding.GetBytes(@value) : null;
 
         #endregion Constructors
 

@@ -49,16 +49,18 @@ namespace OpenVIII
         #region Properties
 
         public static float vpSpace { get; private set; }
+
         private static float Fade
         {
             get => Menu.Fade; set
             {
-                if(value == 0)
+                if (value == 0)
                     Menu.FadeIn();
             }
         }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
+
         public static MainMenuStates State
         {
             get => state; set
@@ -85,11 +87,12 @@ namespace OpenVIII
                 //case MainMenuStates.Init:
                 case MainMenuStates.MainLobby:
                     //DrawMainLobby();
-                    Menu.IGM_Lobby.Draw();
+                    Menu.IGM_Lobby?.Draw();
                     break;
 
                 case MainMenuStates.DebugScreen:
-                    DrawDebugLobby();
+                    //DrawDebugLobby();
+                    Menu.Debug_Menu.Draw();
                     break;
 
                 //case MainMenuStates.NewGameChoosed:
@@ -104,7 +107,8 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameCheckingSlot:
                 case MainMenuStates.SaveGameChooseGame:
                 case MainMenuStates.SaveGameSaving:
-                    DrawLGSG();
+                    //DrawLGSG();
+                    Menu.IGM_LGSG.Draw();
                     break;
 
                 case MainMenuStates.IGM:
@@ -123,6 +127,11 @@ namespace OpenVIII
                     //    break;
             }
         }
+
+        private static Point ml;
+        private static Vector2 scale;
+        private static Vector2 lastscale;
+        private static Matrix IGM_focus;
 
         public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, 1000, Vector2.SmoothStep);
         //public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
@@ -173,7 +182,7 @@ namespace OpenVIII
             vp = new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
 
             vpSpace = vp_per.Y * 0.09f;
-            DFontPos = new Vector2(vp_per.X * .10f, vp_per.Y * .05f) + Offset;
+            //DFontPos = new Vector2(vp_per.X * .10f, vp_per.Y * .05f) + Offset;
 
             IGM_focus = Matrix.CreateTranslation((vp_per.X / -2), (vp_per.Y / -2), 0) *
                 Matrix.CreateScale(new Vector3(scale.X, scale.Y, 1)) *
@@ -196,20 +205,22 @@ namespace OpenVIII
                     //    forceupdate = true;
                     //}
 
-                    Menu.IGM_Lobby.Update();
+                    forceupdate = Menu.IGM_Lobby.Update();
                     break;
 
                 case MainMenuStates.DebugScreen:
                     //Menu.UpdateFade();
                     Memory.IsMouseVisible = true;
-                    if (UpdateDebugLobby() || /*(lastfade != fade) ||*/ Offset != Vector2.Zero)
-                    {
-                        forceupdate = true;
-                    }
-                    if (!OffsetSlide.Done)
-                    {
-                        Offset = OffsetSlide.Update();
-                    }
+                    //if (UpdateDebugLobby() || /*(lastfade != fade) ||*/ Offset != Vector2.Zero)
+                    //{
+                    //    forceupdate = true;
+                    //}
+
+                    forceupdate = Menu.Debug_Menu.Update();
+                    //if (!OffsetSlide.Done)
+                    //{
+                    //    Offset = OffsetSlide.Update();
+                    //}
 
                     break;
 
@@ -227,7 +238,8 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameChooseGame:
                 case MainMenuStates.SaveGameSaving:
                     //Menu.UpdateFade();
-                    UpdateLGSG();
+                    //UpdateLGSG();
+                    Menu.IGM_LGSG.Update();
                     break;
 
                 case MainMenuStates.IGM:
@@ -256,20 +268,14 @@ namespace OpenVIII
             //if(forceupdate)
         }
 
-        /// <summary>
-        /// Init
-        /// </summary>
-        public static void Init()
-        {
-            //InitMain();
-            //Menu.IGM_Lobby = new IGM_Lobby();
-            InitLoad();
-            InitDebug();
-
-            //IGM = new IGM();
-            //IGM_Junction = new IGM_Junction();
-            //IGM_Items = new IGM_Items();
-        }
+        ///// <summary>
+        ///// Init
+        ///// </summary>
+        //public static void Init() =>
+        //    //InitMain();
+        //    //Menu.IGM_Lobby = new IGM_Lobby();
+        //    //InitLoad();
+        //    InitDebug();//IGM = new IGM();//IGM_Junction = new IGM_Junction();//IGM_Items = new IGM_Items();
 
         #endregion Methods
     }

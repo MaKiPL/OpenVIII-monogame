@@ -5,9 +5,10 @@ using System.Diagnostics;
 
 namespace OpenVIII.IGMData.Pool
 {
-
     public partial class Draw
     {
+        #region Classes
+
         /// <summary>
         /// (Draw) or (Cast and display target window)
         /// </summary>
@@ -15,25 +16,27 @@ namespace OpenVIII.IGMData.Pool
         {
             #region Fields
 
+            public Dictionary<int, Func<bool>> OKAY_Actions;
             private Debug_battleDat.Magic Magic;
 
             #endregion Fields
 
+            #region Properties
+
+            public int _Draw => 0;
+
+            public int Cast => 1;
+
+            public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
+
+            public int Targets_Window => Count - 1;
+
+            #endregion Properties
+
             #region Methods
 
-            private bool Inputs_OKAY_Cast()
-            {
-                Debug.WriteLine($"{Damageable.Name} Casting {Magic.Name}({Magic.ID}) from enemy.");
-                Target_Group.ShowTargetWindows();
-                return true;
-            }
+            public static Commands Create(Rectangle pos, Damageable damageable, bool battle = false) => Create<Commands>(3, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.CHOICE }, 1, 2, damageable);
 
-            private bool Inputs_OKAY_Draw()
-            {
-                Debug.WriteLine($"{Damageable.Name} Drawing {Magic.Name}({Magic.ID}) from enemy.");
-                Damageable.EndTurn();
-                return true;
-            }
             public override void HideChildren()
             {
                 if (Enabled)
@@ -55,44 +58,6 @@ namespace OpenVIII.IGMData.Pool
                     }
                 }
             }
-
-            protected override void Init()
-            {
-                base.Init();
-                ITEM[_Draw, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), SIZE[_Draw]);
-                ITEM[Cast, 0] = new IGMDataItem.Text(Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), SIZE[Cast]);
-                ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable, false);
-                Cursor_Status = Cursor_Status.Enabled;
-                OKAY_Actions = new Dictionary<int, Func<bool>>
-            {
-                {_Draw, Inputs_OKAY_Draw },
-                {Cast, Inputs_OKAY_Cast },
-            };
-                PointerZIndex = 0;
-            }
-
-            protected override void InitShift(int i, int col, int row)
-            {
-                base.InitShift(i, col, row);
-                //SIZE[i].Inflate(-18, -20);
-                //SIZE[i].Y -= 5 * row;
-                SIZE[i].Inflate(-22, -8);
-                SIZE[i].Offset(0, 12 + (-8 * row));
-                SIZE[i].Height = (int)(12 * TextScale.Y);
-            }
-
-            #endregion Methods
-
-            public Dictionary<int, Func<bool>> OKAY_Actions;
-
-            public Commands(Rectangle pos, Damageable damageable, bool battle = false) : base(3, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.CHOICE), 1, 2, damageable)
-            {
-            }
-
-            public int _Draw => 0;
-            public int Cast => 1;
-            public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
-            public int Targets_Window => Count - 1;
 
             public override bool Inputs()
             {
@@ -135,7 +100,7 @@ namespace OpenVIII.IGMData.Pool
                     bool candraw = gf || !full;
                     if (!candraw)
                     {
-                        ((IGMDataItem.Text)ITEM[_Draw, 0]).FontColor = Font.ColorID.Dark_Gray;
+                        ((IGMDataItem.Text)ITEM[_Draw, 0]).FontColor = Font.ColorID.Dark_Grey;
                         BLANKS[_Draw] = true;
                     }
                     else
@@ -145,7 +110,7 @@ namespace OpenVIII.IGMData.Pool
                     }
                     if (gf)
                     {
-                        ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.Dark_Gray;
+                        ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.Dark_Grey;
                         BLANKS[_Draw] = true;
                     }
                     else
@@ -166,6 +131,49 @@ namespace OpenVIII.IGMData.Pool
                     Refresh();
                 }
             }
+
+            protected override void Init()
+            {
+                base.Init();
+                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
+                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
+                ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable, false);
+                Cursor_Status = Cursor_Status.Enabled;
+                OKAY_Actions = new Dictionary<int, Func<bool>>
+            {
+                {_Draw, Inputs_OKAY_Draw },
+                {Cast, Inputs_OKAY_Cast },
+            };
+                PointerZIndex = 0;
+            }
+
+            protected override void InitShift(int i, int col, int row)
+            {
+                base.InitShift(i, col, row);
+                //SIZE[i].Inflate(-18, -20);
+                //SIZE[i].Y -= 5 * row;
+                SIZE[i].Inflate(-22, -8);
+                SIZE[i].Offset(0, 12 + (-8 * row));
+                SIZE[i].Height = (int)(12 * TextScale.Y);
+            }
+
+            private bool Inputs_OKAY_Cast()
+            {
+                Debug.WriteLine($"{Damageable.Name} Casting {Magic.Name}({Magic.ID}) from enemy.");
+                Target_Group.ShowTargetWindows();
+                return true;
+            }
+
+            private bool Inputs_OKAY_Draw()
+            {
+                Debug.WriteLine($"{Damageable.Name} Drawing {Magic.Name}({Magic.ID}) from enemy.");
+                Damageable.EndTurn();
+                return true;
+            }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

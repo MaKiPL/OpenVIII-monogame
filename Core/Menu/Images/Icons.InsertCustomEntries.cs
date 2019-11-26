@@ -2,8 +2,10 @@
 
 namespace OpenVIII
 {
-    public partial class Icons
+    public sealed partial class Icons
     {
+        #region Methods
+
         /// <summary>
         /// Add Manual hardcoded entries / settings here.
         /// </summary>
@@ -114,7 +116,7 @@ namespace OpenVIII
                 Height = 8,
                 Tile = Vector2.UnitX,
                 Fill = Vector2.UnitY,
-                CustomPalette = 0
+                CustomPalette = 2, // 2 in 2019, was set to 0 for 2013
             });
             Entries[ID.Bar_Fill] = new EntryGroup(new Entry
             {
@@ -124,8 +126,8 @@ namespace OpenVIII
                 Height = 8,
                 Tile = Vector2.UnitX,
                 Fill = Vector2.UnitY,
-                Offset = new Vector2(2, 2),
-                End = new Vector2(-2, 0),
+                //Offset = new Vector2(2, 2),
+                //End = new Vector2(-2, 0),
                 CustomPalette = 5
             });
             Entries[ID.MenuBorder] = new EntryGroup(Border_Top, Border_Left, Border_Right, Border_Bottom, Border_TopLeft, Border_TopRight, Border_BottomLeft, Border_BottomRight);
@@ -168,7 +170,7 @@ namespace OpenVIII
             //revese order of rewind so arrows draw correctly
             Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
             Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
-            
+
             Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
 
             //override this entry to make it tile instead of have set number of elements.
@@ -226,9 +228,11 @@ namespace OpenVIII
             {
                 if (i < 10)
                     Entries[label_pg1 + i - 1] = new EntryGroup(Entries[label][0], P_, _[i]);
-                else if (i >= 10 && __ !=null)
+                else if (i >= 10 && __ != null)
                     Entries[label_pg1 + i - 1] = new EntryGroup(Entries[label][0], P_, _[i / 10], __[i % 10]);
             }
         }
+
+        #endregion Methods
     }
 }

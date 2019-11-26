@@ -12,7 +12,7 @@
             Selphie_Tilmitt,
             Seifer_Almasy,
             Edea_Kramer,
-            Laguna_Loire,// = Squall_Leonhart, //Laguna always replaces squall
+            Laguna_Loire, // = Squall_Leonhart, //Laguna always replaces squall
             Kiros_Seagill, //unsure who kiros and ward replace. I think it's whom ever is with squall.
             Ward_Zabac,
             Blank = 0xFF

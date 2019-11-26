@@ -1,18 +1,18 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace OpenVIII.IGMDataItem
 {
-    
-    public abstract class Base : Menu_Base
+    public abstract class Base : Menu_Base, IDisposable
     {
         #region Fields
 
         protected static Texture2D blank;
 
-
         private bool _blink = false;
+
+        private bool disposedValue = false;
 
         #endregion Fields
 
@@ -20,27 +20,33 @@ namespace OpenVIII.IGMDataItem
 
         public Base(Rectangle? pos = null, Vector2? scale = null)
         {
-            Pos = pos ?? Rectangle.Empty;
+            _pos = pos ?? Rectangle.Empty;
             Scale = scale ?? TextScale;
-            if (blank == null)
-            {
-                blank = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
-                blank.SetData(new Color[] { Color.White });
-            }
         }
 
         #endregion Constructors
 
+        #region Destructors
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        ~Base()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
+        }
+
+        #endregion Destructors
+
         #region Properties
 
-        public virtual bool Blink { get => _blink; set => _blink = value; }
-        public float Blink_Adjustment { get; set; }
-        public Color Color { get; set; } = Color.White;
-        public Color Faded_Color { get; set; } = Color.White;
-        public Vector2 Scale { get; set; }
         public static float Blink_Amount => Menu.Blink_Amount;
         public static float Fade => Menu.Fade;
         public static Vector2 TextScale => Menu.TextScale;
+        public virtual bool Blink { get => _blink; set => _blink = value; }
+        public float Blink_Adjustment { get; set; } = 1f;
+        public Color Color { get; set; } = Color.White;
+        public Color Faded_Color { get; set; } = Color.White;
+        public Vector2 Scale { get; set; }
 
         #endregion Properties
 
@@ -50,6 +56,14 @@ namespace OpenVIII.IGMDataItem
 
         public static implicit operator Color(Base v) => v.Color;
 
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
 
         //public virtual object Data { get; public set; }
         //public virtual FF8String Data { get; public set; }
@@ -57,13 +71,40 @@ namespace OpenVIII.IGMDataItem
         { }
 
         public override bool Inputs() => false;
-        
+
         public override bool Update() => false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+                if (blank != null && !blank.IsDisposed)
+                {
+                    blank.Dispose();
+                    blank = null;
+                }
+                disposedValue = true;
+            }
+        }
 
         protected override void Init()
         {
+            if (blank == null)
+            {
+                blank = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                blank.SetData(new Color[] { Color.White });
+            }
         }
 
         #endregion Methods
+
+        // To detect redundant calls
     }
 }

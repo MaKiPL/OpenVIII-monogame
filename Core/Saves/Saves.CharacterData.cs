@@ -199,7 +199,7 @@ namespace OpenVIII
 
             public byte Unknown3;
 
-            //0x94
+
             public byte Unknown4;
 
             /// <summary>
@@ -207,9 +207,8 @@ namespace OpenVIII
             /// </summary>
             public byte WeaponID;
 
-            //0x96
-            public CharacterData(BinaryReader br, Characters c) => Read(br, c);
-
+            //public CharacterData(BinaryReader br, Characters c) => Read(br, c);
+            public CharacterData() { }
             /// <summary>
             /// 25.4% chance to cast automaticly on gameover, if used once in battle
             /// </summary>
@@ -451,10 +450,12 @@ namespace OpenVIII
 
             public float PercentFullHP(Characters c) => (float)CurrentHP(c) / MaxHP(c);
 
-            public void Read(BinaryReader br, Characters c)
+            public static CharacterData Load(BinaryReader br, Characters @enum) => Load<CharacterData>(br, @enum);
+            protected override void ReadData(BinaryReader br, Enum c)
             {
+                if (!c.GetType().Equals(typeof(Characters))) throw new ArgumentException($"Enum {c} is not Characters");
                 //Name = Memory.Strings.GetName(c, data);
-                id = c;
+                id = (Characters) c;
                 _CurrentHP = br.ReadUInt16();//0x00
                 _HP = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
@@ -500,7 +501,7 @@ namespace OpenVIII
                 NumberofKOs = br.ReadUInt16();//0x92
                 Exists = (Exists)br.ReadByte();//0x94
                 Unknown3 = br.ReadByte();//0x95
-                Statuses0 = (Kernel_bin.Persistant_Statuses)br.ReadByte();//0x96
+                Statuses0 = (Kernel_bin.Persistent_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
 
@@ -524,7 +525,7 @@ namespace OpenVIII
 
             public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) => throw new NotImplementedException();
 
-            public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s) => throw new NotImplementedException();
+            public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s) => throw new NotImplementedException();
 
             public override string ToString() => Name.Length > 0 ? Name.ToString() : base.ToString();
 

@@ -146,8 +146,14 @@ namespace OpenVIII
 
         public void LockMouse()
         {
+
             // override center lock if mouse is visible to screen.
             MouseLockMode mode = Mode != MouseLockMode.Disabled && Memory.IsMouseVisible ? MouseLockMode.Screen : Mode;
+#if DEBUG
+            //disable mouselock for debugging. will be optional when config is done.
+            if(mode.Equals(MouseLockMode.Screen))
+                mode = MouseLockMode.Disabled;
+#endif
             if (Memory.IsActive && mode != MouseLockMode.Disabled) // check for focus to allow for tabbing out with out taking over mouse.
             {
                 if (mode == MouseLockMode.Center) //center mouse in screen after grabbing state, release mouse if alt tabbed out.

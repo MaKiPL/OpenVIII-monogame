@@ -10,22 +10,16 @@ namespace OpenVIII
 
         private class IGMData_Mag_EL_A_Values : IGMData_Values
         {
-            #region Constructors
-
-            public IGMData_Mag_EL_A_Values() : base(8, 5, new IGMDataItem.Box(title: Icons.ID.Elemental_Attack, pos: new Rectangle(280, 423, 545, 201)), 2, 4)
-            {
-            }
-
-            #endregion Constructors
-
             #region Methods
+
+            public static IGMData_Mag_EL_A_Values Create() => Create<IGMData_Mag_EL_A_Values>(8, 5, new IGMDataItem.Box { Title = Icons.ID.Elemental_Attack, Pos = new Rectangle(280, 423, 545, 201) }, 2, 4);
 
             public Dictionary<Kernel_bin.Element, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
                     => getTotal<Kernel_bin.Element>(out availableFlagsarray, 200, Kernel_bin.Stat.EL_Atk, source.Stat_J[Kernel_bin.Stat.EL_Atk]);
 
             public override bool Update()
             {
-                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State.Characters != null && Damageable!=null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     Dictionary<Kernel_bin.Element, byte> oldtotal = (prevSetting != null) ? getTotal(prevSetting, out Enum[] availableFlagsarray) : null;
                     Dictionary<Kernel_bin.Element, byte> total = getTotal(c, out availableFlagsarray);

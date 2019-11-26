@@ -10,17 +10,9 @@ namespace OpenVIII
 
         private class IGMData_Mag_ST_D_Values : IGMData_Values
         {
-            #region Constructors
-
-            // public new Saves.CharacterData PrevSetting { get; private set; } public new
-            // Saves.CharacterData Setting { get; private set; }
-            public IGMData_Mag_ST_D_Values() : base(14, 5, new IGMDataItem.Box(title: Icons.ID.Status_Defense, pos: new Rectangle(280, 342, 545, 288)), 2, 7)
-            {
-            }
-
-            #endregion Constructors
-
             #region Methods
+
+            public static IGMData_Mag_ST_D_Values Create() => Create<IGMData_Mag_ST_D_Values>(14, 5, new IGMDataItem.Box { Title = Icons.ID.Status_Defense, Pos = new Rectangle(280, 342, 545, 288) }, 2, 7);
 
             public Dictionary<Kernel_bin.J_Statuses, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
                     => getTotal<Kernel_bin.J_Statuses>(out availableFlagsarray, 100, Kernel_bin.Stat.ST_Def_1,
@@ -31,7 +23,7 @@ namespace OpenVIII
 
             public override bool Update()
             {
-                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     Dictionary<Kernel_bin.J_Statuses, byte> oldtotal = (prevSetting != null) ? getTotal(prevSetting, out Enum[] availableFlagsarray) : null;
                     Dictionary<Kernel_bin.J_Statuses, byte> total = getTotal(c, out availableFlagsarray);

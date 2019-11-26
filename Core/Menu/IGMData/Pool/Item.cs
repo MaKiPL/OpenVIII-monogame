@@ -15,125 +15,49 @@ namespace OpenVIII.IGMData.Pool
 
         #endregion Fields
 
+        #region Events
+
+        public event EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
+
+        #endregion Events
+
         #region Properties
 
-        private int Targets_Window => Count-3;
+        public IReadOnlyList<FF8String> HelpStr => _helpStr;
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
+        private int Targets_Window => Count - 3;
 
         #endregion Properties
 
         #region Methods
 
-        private void ReInitCompletedEvent(object sender, EventArgs e) => Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
-
-        protected override void DrawITEM(int i, int d)
+        public static Item Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            if (Targets_Window >= i || !(Target_Group != null && Target_Group.Enabled))
-                base.DrawITEM(i, d);
+            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable);
+            r.Battle = battle;
+            if (battle)
+                r.ITEM[r.Targets_Window, 0] = IGMData.Target.Group.Create(r.Damageable);
+            return r;
         }
 
-        protected override void Init()
-        {
-            base.Init();
-            _helpStr = new FF8String[Count];
-            for (byte pos = 0; pos < Rows; pos++)
-            {
-                ITEM[pos, 0] = new IGMDataItem.Text(null, SIZE[pos]);
-                ITEM[pos, 1] = new IGMDataItem.Integer(0, new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), numtype: Icons.NumType.sysFntBig, spaces: 3);
-            }
-            ITEM[Count - 1, 2] = new IGMDataItem.Icon(Icons.ID.NUM_, new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), scale: new Vector2(2.5f));
-            PointerZIndex = Rows - 1;
-        }
-
-        protected override void InitShift(int i, int col, int row)
-        {
-            base.InitShift(i, col, row);
-            //SIZE[i].Inflate(-18, -20);
-            //SIZE[i].Y -= 5 * row;
-            SIZE[i].Inflate(-22, -8);
-            //SIZE[i].Offset(0, 12 + (-8 * row));
-            int v = (int)(12 * TextScale.Y);
-            SIZE[i].Height = v;
-            SIZE[i].Y = Y + 18 + row*((Height-16)/Rows);
-
-        }
-
-        protected override void ModeChangeEvent(object sender, Enum e)
-        {
-            if (e.Equals(IGM_Items.Mode.SelectItem) || Battle)
-            {
-                Cursor_Status |= Cursor_Status.Enabled;
-            }
-            else if (e.Equals(IGM_Items.Mode.UseItemOnTarget))
-            {
-                Cursor_Status |= Cursor_Status.Blinking;
-            }
-            else
-            {
-                Cursor_Status &= ~Cursor_Status.Enabled;
-            }
-        }
-
-        protected override void PAGE_NEXT()
-        {
-            int cnt = Pages;
-            do
-            {
-                base.PAGE_NEXT();
-                Refresh();
-                skipsnd = true;
-            }
-            while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
-            Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
-        }
-
-        protected override void PAGE_PREV()
-        {
-            int cnt = Pages;
-            do
-            {
-                base.PAGE_PREV();
-                Refresh();
-
-                skipsnd = true;
-            }
-            while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
-            Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
-        }
-
-        protected override void SetCursor_select(int value)
-        {
-            if (value != GetCursor_select())
-            {
-                base.SetCursor_select(value);
-                Menu.IGM_Items.ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
-            }
-        }
-
-        #endregion Methods
-
-        #region Constructors
-
-        public Item(Rectangle pos, bool battle, int count = 4) : base(count + 1, 3, new IGMDataItem.Box(pos: pos, title: Icons.ID.ITEM), count, 198 / count + 1)
-        {
-            Battle = battle;
-            if(battle)
-                ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
-        }
-
-        public Item() : this(new Rectangle(5, 150, 415, 480), false, 13)
-        {
-        }
-
-        #endregion Constructors
-
-        public IReadOnlyList<FF8String> HelpStr => _helpStr;
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((IGMData.Base)ITEM[Targets_Window, 0]));
+        public static Item Create(Damageable damageable = null) => Create(new Rectangle(5, 150, 415, 480), damageable: damageable, battle: false, count: 13);
 
         public override void Draw() => base.Draw();
 
+        public override void HideChildren()
+        {
+            if (Enabled)
+            {
+                if (!skipdata)
+                {
+                    Target_Group.HideChildren();
+                    Target_Group.Hide();
+                }
+            }
+        }
+
         public override bool Inputs()
         {
-            
             bool ret = false;
             if (InputITEM(Targets_Window, 0, ref ret))
             {
@@ -175,15 +99,20 @@ namespace OpenVIII.IGMData.Pool
             Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
             return true;
         }
-        public override void HideChildren()
+
+        public override void ModeChangeEvent(object sender, Enum e)
         {
-            if (Enabled)
+            if (e.Equals(IGM_Items.Mode.SelectItem) || Battle)
             {
-                if (!skipdata)
-                {
-                    Target_Group.HideChildren();
-                    Target_Group.Hide();
-                }
+                Cursor_Status |= Cursor_Status.Enabled;
+            }
+            else if (e.Equals(IGM_Items.Mode.UseItemOnTarget))
+            {
+                Cursor_Status |= Cursor_Status.Blinking;
+            }
+            else
+            {
+                Cursor_Status &= ~Cursor_Status.Enabled;
             }
         }
 
@@ -249,5 +178,76 @@ namespace OpenVIII.IGMData.Pool
             Hide();
             base.Reset();
         }
+
+        protected override void DrawITEM(int i, int d)
+        {
+            if (Targets_Window >= i || !(Target_Group != null && Target_Group.Enabled))
+                base.DrawITEM(i, d);
+        }
+
+        protected override void Init()
+        {
+            base.Init();
+            _helpStr = new FF8String[Count];
+            for (byte pos = 0; pos < Rows; pos++)
+            {
+                ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
+                ITEM[pos, 1] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.sysFntBig, Spaces = 3 };
+            }
+            ITEM[Count - 1, 2] = new IGMDataItem.Icon { Data = Icons.ID.NUM_, Pos = new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), Scale = new Vector2(2.5f) };
+            PointerZIndex = Rows - 1;
+        }
+
+        protected override void InitShift(int i, int col, int row)
+        {
+            base.InitShift(i, col, row);
+            //SIZE[i].Inflate(-18, -20);
+            //SIZE[i].Y -= 5 * row;
+            SIZE[i].Inflate(-22, -8);
+            //SIZE[i].Offset(0, 12 + (-8 * row));
+            int v = (int)(12 * TextScale.Y);
+            SIZE[i].Height = v;
+            SIZE[i].Y = Y + 18 + row * ((Height - 16) / Rows);
+        }
+
+        protected override void PAGE_NEXT()
+        {
+            int cnt = Pages;
+            do
+            {
+                base.PAGE_NEXT();
+                Refresh();
+                skipsnd = true;
+            }
+            while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
+            ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+        }
+
+        protected override void PAGE_PREV()
+        {
+            int cnt = Pages;
+            do
+            {
+                base.PAGE_PREV();
+                Refresh();
+
+                skipsnd = true;
+            }
+            while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
+            ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+        }
+
+        protected override void SetCursor_select(int value)
+        {
+            if (value != GetCursor_select())
+            {
+                base.SetCursor_select(value);
+                ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
+            }
+        }
+
+        private void ReInitCompletedEvent(object sender, EventArgs e) => ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+
+        #endregion Methods
     }
 }

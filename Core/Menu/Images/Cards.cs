@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class Cards : SP2
+    public sealed partial class Cards : SP2
     {
         #region Constructors
 
@@ -13,6 +13,17 @@ namespace OpenVIII
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=11084.0"/>
         public Cards()
         {
+        }
+
+        #endregion Constructors
+
+        #region Methods
+
+        public static Cards Load() => Load<Cards>();
+
+        protected override void DefaultValues()
+        {
+            base.DefaultValues();
             Props = new List<TexProps>()
             {
                 new TexProps("mc{0:00}.tex",10),
@@ -20,7 +31,11 @@ namespace OpenVIII
             TextureStartOffset = 0;
             EntriesPerTexture = 11;
             IndexFilename = "cardanm.sp2";
-            Init();
+        }
+
+        protected override void Init()
+        {
+            base.Init();
             Entries[(uint)ID.Card_Back] = new Entry
             {
                 X = 192,
@@ -30,6 +45,6 @@ namespace OpenVIII
             };
         }
 
-        #endregion Constructors
+        #endregion Methods
     }
 }

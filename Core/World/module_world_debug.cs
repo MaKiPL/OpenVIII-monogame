@@ -5,7 +5,6 @@ using OpenVIII.Core.World;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -316,8 +315,10 @@ namespace OpenVIII
 
             segments = new Segment[WM_SEGMENTS_COUNT];
 
-            using (MemoryStream ms = new MemoryStream(wmx))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms = null;
+
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(wmx)))
+            {
                 for (int i = 0; i < segments.Length; i++)
                 {
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
@@ -385,6 +386,8 @@ namespace OpenVIII
                     }
                     segments[i].parsedTriangle = ptd.ToArray();
                 }
+                ms = null;
+            }
         }
 
         /// <summary>
@@ -751,7 +754,7 @@ namespace OpenVIII
             {
                 DetectedSpeed = Vector3.Distance(playerPosition, lastPlayerPosition);
 
-                float yaw=0f, pitch=0f, roll=0f;
+                float yaw = 0f, pitch = 0f, roll = 0f;
                 //https://www.codeproject.com/Questions/324240/Determining-yaw-pitch-and-roll
                 Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
                 yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
@@ -841,8 +844,8 @@ namespace OpenVIII
             for (int i = 0; i < seg.parsedTriangle.Length; i++)
                 if (Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric, false));
-            // There are spots where you can fly under the map by like flying into the ground or a corner.
-            // This would put the ship back above around.
+                // There are spots where you can fly under the map by like flying into the ground or
+                // a corner. This would put the ship back above around.
                 else if (BDebugDisableCollision && Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric2) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric2, false));
                 else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
@@ -917,9 +920,8 @@ namespace OpenVIII
                     between = true;
                 else if (between)
                 { //bassically if there is collision between mark rest to collide.
-
                     //if (bHasMoved)
-                        //Debug.WriteLine(d + "\t");
+                    //Debug.WriteLine(d + "\t");
                     RayCastedTris x = ordered[i];
                     x.data.parentPolygon.vertFlags |= TRIFLAGS_COLLIDE;
                     ordered[i] = x;

@@ -11,56 +11,34 @@ namespace OpenVIII
     {
         #region Fields
 
-        private int _cursor_select;
-        protected Damageable _damageable;
-
         protected Rectangle _pos;
+        private sbyte _partyPos = -1;
 
         #endregion Fields
 
-        #region Methods
-
-        protected int GetCursor_select() => _cursor_select;
-
-        protected abstract void Init();
-
-        protected virtual void ModeChangeEvent(object sender, Enum e)
-        {
-        }
+        #region Properties
 
         /// <summary>
-        /// For child items.
+        /// Focus scales and centers the menu.
         /// </summary>
-        protected virtual void RefreshChild()
-        {
-        }
-
-        protected virtual void SetCursor_select(int value)
-        {
-            if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && CURSOR != null && value < CURSOR.Length && CURSOR[value] != Point.Zero)
-                _cursor_select = value;
-        }
-
-        #endregion Methods
+        public static Matrix Focus { get; protected set; }
 
         /// <summary>
-        /// location of where pointer finger will point.
+        /// Adjusted mouse location used to determine if mouse is highlighting a button.
         /// </summary>
-        public Point[] CURSOR;
+        public static Point MouseLocation => InputMouse.Location.Transform(Focus);
 
+        public static Point ScreenBottomLeft => new Point(0, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenBottomRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenTopLeft => new Point(0, 0).Transform(Focus);
+        public static Point ScreenTopRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
         public Menu_Base CONTAINER { get; set; }
-
-        public int CURSOR_SELECT
-        {
-            get => GetCursor_select(); set => SetCursor_select(value);
-        }
-
         public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 
         /// <summary>
         /// Characters/Enemies/GF
         /// </summary>
-        public Damageable Damageable => _damageable;
+        public virtual Damageable Damageable { get; protected set; }
 
         /// <summary>
         /// If enabled the menu is Visible and all functionality works. Else everything is hidden and
@@ -69,11 +47,15 @@ namespace OpenVIII
         public bool Enabled { get; private set; } = true;
 
         public virtual int Height { get => _pos.Height; set => _pos.Height = value; }
+        public OffsetAnchor OffsetAnchor { get; set; }
 
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
         /// </summary>
-        public sbyte PartyPos { get; protected set; }
+        public sbyte PartyPos
+        {
+            get => _partyPos; protected set => _partyPos = (sbyte)MathHelper.Clamp(value, -1, 2);
+        }
 
         /// <summary>
         /// Where to draw this item.
@@ -86,9 +68,11 @@ namespace OpenVIII
 
         public virtual int Y { get => _pos.Y; set => _pos.Y = value; }
 
-        public static implicit operator Rectangle(Menu_Base v) => v.Pos;
+        #endregion Properties
 
-        public virtual void AddModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler += ModeChangeEvent;
+        #region Methods
+
+        public static implicit operator Rectangle(Menu_Base v) => v.Pos;
 
         public abstract void Draw();
 
@@ -102,6 +86,10 @@ namespace OpenVIII
         }
 
         public abstract bool Inputs();
+
+        public virtual void ModeChangeEvent(object sender, Enum e)
+        {
+        }
 
         /// <summary>
         /// Things that change rarely. Like a party member changes or Laguna dream happens.
@@ -117,7 +105,7 @@ namespace OpenVIII
         {
             if (damageable != null)
             {
-                _damageable = damageable;
+                Damageable = damageable;
 
                 if (Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
@@ -126,8 +114,6 @@ namespace OpenVIII
             }
             Refresh();
         }
-
-        public virtual void RemoveModeChangeEvent(ref EventHandler<Enum> eventHandler) => eventHandler -= ModeChangeEvent;
 
         /// <summary>
         /// Plan is to use this to reset values to a default state if done.
@@ -140,5 +126,73 @@ namespace OpenVIII
         public virtual void Show() => Enabled = true;
 
         public abstract bool Update();
+
+        protected abstract void Init();
+
+        /// <summary>
+        /// For child items.
+        /// </summary>
+        protected virtual void RefreshChild()
+        {
+        }
+
+        #endregion Methods
+    }
+
+    public class OffsetAnchor
+    {
+        #region Fields
+
+        private Vector2 v = Vector2.Zero;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public OffsetAnchor(Vector2 pos) => this.v = pos;
+
+        public OffsetAnchor(Point pos) => this.v = pos.ToVector2();
+
+        public OffsetAnchor()
+        {
+        }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public Point pPos { get => v.ToPoint(); set => v = value.ToVector2(); }
+        public Vector2 vPos { get => v; set => v = value; }
+        public float X { get => v.X; set => v.X = value; }
+        public float Y { get => v.Y; set => v.Y = value; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public static explicit operator Point(OffsetAnchor a) => a.v.ToPoint();
+
+        public static implicit operator OffsetAnchor(Vector2 a) => new OffsetAnchor(a);
+
+        public static implicit operator OffsetAnchor(Point a) => new OffsetAnchor(a);
+
+        public static implicit operator Vector2(OffsetAnchor a) => a.v;
+
+        public OffsetAnchor Offset(float x, float y)
+        {
+            v.X += x;
+            v.Y += y;
+            return this;
+        }
+
+        public OffsetAnchor Offset(Vector2 _v)
+        {
+            v += _v;
+            return this;
+        }
+
+        internal void Set(Vector2 vector2) => v = vector2;
+
+        #endregion Methods
     }
 }

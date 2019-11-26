@@ -27,9 +27,10 @@ namespace OpenVIII
 
         private void GetWidths(byte[] Tdw, uint offset, uint length)
         {
-            using (MemoryStream os = new MemoryStream((int)length * 2))
-            using (BinaryWriter bw = new BinaryWriter(os))
-            using (MemoryStream ms = new MemoryStream(Tdw))
+            MemoryStream ms = new MemoryStream(Tdw);
+            MemoryStream os = new MemoryStream((int)length * 2);
+            //BinaryWriter and BinaryReader dispose of streams
+            using (BinaryWriter bw = new BinaryWriter(os)) 
             using (BinaryReader br = new BinaryReader(ms))
             {
                 //bw.Write((byte)10);//width of space

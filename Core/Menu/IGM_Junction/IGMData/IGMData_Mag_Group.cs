@@ -8,49 +8,7 @@
         {
             #region Methods
 
-            private bool InputsModeTest(int pos)
-            {
-                pos = cnv(pos);
-                switch (IGM_Junction.GetMode())
-                {
-                    case Mode.Mag_Pool_Stat:
-                    case Mode.Mag_Pool_EL_A:
-                    case Mode.Mag_Pool_EL_D:
-                    case Mode.Mag_Pool_ST_A:
-                    case Mode.Mag_Pool_ST_D:
-                        if (pos == 2)
-                            return true;
-                        break;
-
-                    case Mode.Mag_Stat:
-                        if (pos == 0)
-                            return true;
-                        break;
-
-                    case Mode.Mag_EL_A:
-                    case Mode.Mag_EL_D:
-                        if (pos == 3)
-                            return true;
-                        break;
-
-                    case Mode.Mag_ST_A:
-                    case Mode.Mag_ST_D:
-                        if (pos == 6)
-                            return true;
-                        break;
-                }
-                return false;
-            }
-
-            #endregion Methods
-
-            #region Constructors
-
-            public IGMData_Mag_Group(params IGMData.Base[] d) : base(d)
-            {
-            }
-
-            #endregion Constructors
+            public static new IGMData_Mag_Group Create(params Menu_Base[] d) => Create<IGMData_Mag_Group>(d);
 
             public override void Hide() =>
                 //depending on the mode it'll hide what's needed and show rest.
@@ -128,6 +86,42 @@
                 base.Refresh();
                 Show();
             }
+
+            private bool InputsModeTest(int pos)
+            {
+                pos = cnv(pos);
+                switch (IGM_Junction.GetMode())
+                {
+                    case Mode.Mag_Pool_Stat:
+                    case Mode.Mag_Pool_EL_A:
+                    case Mode.Mag_Pool_EL_D:
+                    case Mode.Mag_Pool_ST_A:
+                    case Mode.Mag_Pool_ST_D:
+                        if (pos == 2)
+                            return true;
+                        break;
+
+                    case Mode.Mag_Stat:
+                        if (pos == 0)
+                            return true;
+                        break;
+
+                    case Mode.Mag_EL_A:
+                    case Mode.Mag_EL_D:
+                        if (pos == 3)
+                            return true;
+                        break;
+
+                    case Mode.Mag_ST_A:
+                    case Mode.Mag_ST_D:
+                        if (pos == 6)
+                            return true;
+                        break;
+                }
+                return false;
+            }
+
+            #endregion Methods
         }
 
         #endregion Classes

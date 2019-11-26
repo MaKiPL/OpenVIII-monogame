@@ -8,48 +8,77 @@ namespace OpenVIII.IGMDataItem.Gradient
     {
         #region Fields
 
+        private static Texture2D common;
+
+        private static object locker = new object();
+
         #endregion Fields
-
-        #region Methods
-
-        protected override void Init()
-        {
-            float dark = 0.067f;
-            float fade = 0.933f;
-            Restriction = Pos;
-            int total = Pos.Width;
-            Color lightline = new Color(118, 118, 118, 255);
-            Color darkline = new Color(58, 58, 58, 255);
-            Color[] cfade = new Color[total];
-            int i;
-            for (i = 0; i < cfade.Length - (dark * total); i++)
-                cfade[i] = Color.Lerp(Color.Black, lightline, i / (fade * total));
-
-            for (; i < cfade.Length; i++)
-                cfade[i] = darkline;
-            Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1);
-            Width = Data.Width;
-            Data.SetData(cfade);
-            base.Init();
-        }
-
-        #endregion Methods
 
         #region Constructors
 
-        public ATB(Rectangle? pos = null) : base(null, pos, Color.White, Color.White, 1f) => Init();
+        private ATB()
+        {
+        }
 
         #endregion Constructors
 
         #region Properties
 
+        ///Restriction controls the bounds of the drawing. And Pos is where it will draw.
+        ///So if one is set and the other is not than you see no bar.
+        public override Rectangle Pos { get => base.Pos; set => Restriction = base.Pos = value; }
 
         #endregion Properties
 
+        #region Methods
+
+        public static ATB Create(Rectangle? pos = null)
+        {
+            ATB r = new ATB()
+            {
+                _pos = pos ?? Rectangle.Empty,
+                Restriction = pos ?? Rectangle.Empty,
+            };
+            r.Data = ThreadUnsafeOperations(r.Width);
+            r.Width = r.Data.Width;
+            return r;
+        }
+
+        public static Texture2D ThreadUnsafeOperations(int width)
+        {
+            lock (locker)
+            {
+                if (common == null)
+                {
+                    //if (Memory.IsMainThread)
+                    //{
+                    float dark = 0.067f;
+                    float fade = 0.933f;
+                    int total = width;
+                    Color lightline = new Color(118, 118, 118, 255);
+                    Color darkline = new Color(58, 58, 58, 255);
+                    Color[] cfade = new Color[total];
+                    int i;
+                    for (i = 0; i < cfade.Length - (dark * total); i++)
+                        cfade[i] = Color.Lerp(Color.Black, lightline, i / (fade * total));
+
+                    for (; i < cfade.Length; i++)
+                        cfade[i] = darkline;
+
+                    common = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
+                    common.SetData(cfade);
+                    //}
+                    //else throw new Exception("Must be in main thread!");
+                }
+            }
+            return common;
+        }
+
+        //public override int Width { get => Data.Width; }
         public override void Refresh(Damageable damageable)
         {
             base.Refresh(damageable);
-            damageable.Refresh();
+            damageable?.Refresh();
         }
 
         public override bool Update()
@@ -89,5 +118,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             return false;
             int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));
         }
+
+        #endregion Methods
     }
 }

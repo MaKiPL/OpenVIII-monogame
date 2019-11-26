@@ -8,24 +8,20 @@ namespace OpenVIII.IGMDataItem
     {
         #region Constructors
 
-        protected Texture(Rectangle? pos = null) : base(pos)
-        { }
-
-        public Texture(Texture2D data, Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f) : base(pos)
+        public Texture()
         {
-            Data = data;
-            Color = color ?? Color.White;
-            Faded_Color = faded_color ?? Color;
-            Blink_Adjustment = blink_adjustment;
+            Color = Color.White;
+            Faded_Color = Color;
+            Blink_Adjustment = 1f;
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public Rectangle Restriction { get; set; }
         public override bool Blink { get => base.Blink && (Color != Faded_Color); set => base.Blink = value; }
         public Texture2D Data { get; set; }
+        public Rectangle Restriction { get; set; }
 
         #endregion Properties
 

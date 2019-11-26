@@ -4,23 +4,33 @@ using System.Diagnostics;
 
 namespace OpenVIII.IGMData
 {
-    public class Commands : Base
+    public class Commands : Base, IDisposable
     {
         #region Fields
+
+        private bool disposedValue = false;
+        private bool EventAdded;
 
         private bool _crisisLevel;
         private Kernel_bin.Battle_Commands[] commands;
         private int nonbattleWidth;
         private sbyte page = 0;
-        private bool skipReinit;
+        private bool skipRefresh;
         private static int s_cidoff = 0;
 
         #endregion Fields
 
         #region Properties
 
+        public bool Battle { get; set; } = false;
+        public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
+        public IGMData.Pool.Item GFPool => (IGMData.Pool.Item)(((Base)ITEM[GF_Pool, 0]));
+        public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
+        public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
+        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((Base)ITEM[Targets_Window, 0]));
         private int Item_Pool => Count - 2;
 
+        private int GF_Pool => Count - 6;
         private int Limit_Arrow => Count - 5;
 
         private int Blue_Pool => Count - 4;
@@ -29,81 +39,59 @@ namespace OpenVIII.IGMData
 
         private int Targets_Window => Count - 1;
 
+        //base.Inputs_CANCEL();
+        private static int Cidoff
+        {
+            get => s_cidoff; set
+            {
+                if (value >= Kernel_bin.BattleCommands.Count)
+                    value = 0;
+                else if (value < 0)
+                    value = Kernel_bin.BattleCommands.Count - 1;
+                s_cidoff = value;
+            }
+        }
+
         #endregion Properties
 
         #region Methods
 
-        /// <summary>
-        /// Things fixed at startup.
-        /// </summary>
-        protected override void Init()
+        // To detect redundant calls
+        protected virtual void Dispose(bool disposing)
         {
-            BLANKS[Limit_Arrow] = true;
-            base.Init();
-            ITEM[Blue_Pool, 0] = new Pool.BlueMagic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
-            ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = new IGMData.Pool.Magic(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
-            ITEM[Mag_Pool, 0].Hide();
-            ITEM[Item_Pool, 0] = new IGMData.Pool.Item(new Rectangle(X + 50, Y - 22, 400, 194), true);
-            ITEM[Item_Pool, 0].Hide();
-            ITEM[Targets_Window, 0] = new BattleMenus.IGMData_TargetGroup(Damageable);
-            commands = new Kernel_bin.Battle_Commands[Rows];
-            PointerZIndex = Limit_Arrow;
-            nonbattleWidth = Width;
-        }
-
-        //public override void Reset()
-        //{
-        //    ITEM[Targets_Window, 0].HideChildren();
-        //    ITEM[Mag_Pool, 0].HideChildren();
-        //    ITEM[Item_Pool, 0].HideChildren();
-        //    ITEM[Targets_Window, 0].Hide();
-        //    ITEM[Mag_Pool, 0].Hide();
-        //    ITEM[Item_Pool, 0].Hide();
-        //    base.Reset();
-        //}
-        protected override void InitShift(int i, int col, int row)
-        {
-            base.InitShift(i, col, row);
-            SIZE[i].Inflate(-22, -8);
-            SIZE[i].Offset(0, 12 + (-8 * row));
-        }
-
-        protected override void ModeChangeEvent(object sender, Enum e)
-        {
-            base.ModeChangeEvent(sender, e);
-            if (e.GetType() == typeof(Damageable.BattleMode))
+            if (!disposedValue)
             {
-                if (Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (disposing)
                 {
-                    CrisisLevel = c.GenerateCrisisLevel() >= 0;
-                    Show();
-                    Refresh();
+                    // TODO: dispose managed state (managed objects).
                 }
-                else Hide();
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+                UnsubscribeEvents();
+                GC.SuppressFinalize(this);
             }
         }
 
-        #endregion Methods
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() =>
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
 
-        #region Constructors
-
-        public Commands(Rectangle pos, Damageable damageable = null, bool battle = false) : base(9, 1, new IGMDataItem.Box(pos: pos, title: Icons.ID.COMMAND), 1, 4, damageable)
+        public static Commands Create(Rectangle pos, Damageable damageable = null, bool battle = false)
         {
-            Battle = battle;
-            skipReinit = true;
-            Refresh();
+            Commands r = new Commands
+            {
+                skipRefresh = damageable == null,
+                Battle = battle
+            };
+
+            r.Init(damageable, null);
+            r.Init(10, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
+            return r;
         }
-
-        #endregion Constructors
-
-        public bool Battle { get; }
-
-        public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
-
-        public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
-        public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
-        public BattleMenus.IGMData_TargetGroup Target_Group => (BattleMenus.IGMData_TargetGroup)(((Base)ITEM[Targets_Window, 0]));
 
         public override bool Inputs()
         {
@@ -111,6 +99,8 @@ namespace OpenVIII.IGMData
             if (InputITEM(Mag_Pool, 0, ref ret))
             { }
             else if (InputITEM(Item_Pool, 0, ref ret))
+            { }
+            else if (InputITEM(GF_Pool, 0, ref ret))
             { }
             else if (InputITEM(Targets_Window, 0, ref ret))
             { }
@@ -125,7 +115,7 @@ namespace OpenVIII.IGMData
             return ret;
         }
 
-        public override bool Inputs_CANCEL() => false;//base.Inputs_CANCEL();
+        public override bool Inputs_CANCEL() => false;
 
         public override void Inputs_Left()
         {
@@ -209,8 +199,8 @@ namespace OpenVIII.IGMData
                     return true;
 
                 case 3: //GF
-                    //ITEM[GF_Pool, 0].Show();
-                    //ITEM[GF_Pool, 0].Refresh();
+                    ITEM[GF_Pool, 0].Show();
+                    ITEM[GF_Pool, 0].Refresh();
                     return true;
 
                 case 4: //items
@@ -246,104 +236,189 @@ namespace OpenVIII.IGMData
             }
         }
 
-        private static int Cidoff
-        {
-            get => s_cidoff; set
-            {
-                if (value >= Kernel_bin.BattleCommands.Count)
-                    value = 0;
-                else if (value < 0)
-                    value = Kernel_bin.BattleCommands.Count - 1;
-                s_cidoff = value;
-            }
-        }
-
         /// <summary>
         /// Things that may of changed before screen loads or junction is changed.
         /// </summary>
         public override void Refresh()
         {
-            if (Battle && !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+            if (Damageable != null)
             {
-                Hide();
-                return;
-            }
-            if (Memory.State.Characters != null && !skipReinit && Damageable.GetCharacterData(out Saves.CharacterData c))
-            {
-                Show();
-                Rectangle DataSize = Rectangle.Empty;
-                base.Refresh();
-                page = 0;
-                Cursor_Status &= ~Cursor_Status.Horizontal;
-                commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
-                ITEM[0, 0] = new IGMDataItem.Text(
-                        commands[0].Name,
-                        SIZE[0]);
-
-                for (int pos = 1; pos < Rows; pos++)
+                if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Kernel_bin.Abilities cmd = c.Commands[pos - 1];
-
-                    if (cmd != Kernel_bin.Abilities.None)
+                    if (Battle && (Damageable.IsGameOver || !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
                     {
-                        if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                        Hide();
+                        return;
+                    }
+                    else
+                        Show();
+                    if (Battle)
+                        CrisisLevel = c.GenerateCrisisLevel() >= 0;
+                    Rectangle DataSize = Rectangle.Empty;
+                    base.Refresh();
+                    page = 0;
+                    Cursor_Status &= ~Cursor_Status.Horizontal;
+                    commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
+                    ITEM[0, 0] = new IGMDataItem.Text
+                    {
+                        Data = commands[0].Name,
+                        Pos = SIZE[0]
+                    };
+
+                    for (int pos = 1; pos < Rows; pos++)
+                    {
+                        Kernel_bin.Abilities cmd = c.Commands[pos - 1];
+
+                        if (cmd != Kernel_bin.Abilities.None)
                         {
-                            continue;
-                        }
+                            if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                            {
+                                continue;
+                            }
 #if DEBUG
-                        if(!Battle) commands[pos] = cmdval.BattleCommand;
-                        else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
+                            if (!Battle) commands[pos] = cmdval.BattleCommand;
+                            else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
-                        ITEM[pos, 0] = new IGMDataItem.Text(
-                            commands[pos].Name,
-                            SIZE[pos]);
-                        ITEM[pos, 0].Show();
-                        CheckBounds(ref DataSize, pos);
-                        BLANKS[pos] = false;
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Data = commands[pos].Name;
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
+                            ITEM[pos, 0].Show();
+                            CheckBounds(ref DataSize, pos);
+                            BLANKS[pos] = false;
+                        }
+                        else
+                        {
+                            ITEM[pos, 0]?.Hide();
+                            BLANKS[pos] = true;
+                        }
+                    }
+                    const int crisiswidth = 294;
+                    if (Battle && CrisisLevel)
+                    {
+                        CONTAINER.Width = crisiswidth;
+                        ITEM[Limit_Arrow, 0].Show();
                     }
                     else
                     {
-                        ITEM[pos, 0]?.Hide();
-                        BLANKS[pos] = true;
+                        CONTAINER.Width = nonbattleWidth;
+                        ITEM[Limit_Arrow, 0].Hide();
+                    }
+                    AutoAdjustContainerWidth(DataSize);
+                    if (Damageable != null)
+                    {
+                        Target_Group.Refresh(Damageable);
+                        MagPool.Refresh(Damageable);
+                        ItemPool.Refresh(Damageable);
                     }
                 }
-                const int crisiswidth = 294;
-                if (Battle && CrisisLevel)
-                {
-                    CONTAINER.Width = crisiswidth;
-                    ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right, new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), 2, 7) { Blink = true };
-                }
-                else
-                {
-                    CONTAINER.Width = nonbattleWidth;
-                    ITEM[Limit_Arrow, 0] = null;
-                }
-                AutoAdjustContainerWidth(DataSize);
-                if (Damageable != null)
-                {
-                    Target_Group.Refresh(Damageable);
-                    MagPool.Refresh(Damageable);
-                    ItemPool.Refresh(Damageable);
-                }
+                skipRefresh = false;
             }
-            skipReinit = false;
         }
 
         public override void Refresh(Damageable damageable)
         {
+            if (Damageable != damageable)
+                skipRefresh = false;
             base.Refresh(damageable);
             Target_Group.Refresh(Damageable);
             MagPool.Refresh(Damageable);
             ItemPool.Refresh(Damageable);
         }
 
-        public override void AddModeChangeEvent(ref EventHandler<Enum> eventHandler)
+        /// <summary>
+        /// Things fixed at startup.
+        /// </summary>
+        protected override void Init()
         {
-            base.AddModeChangeEvent(ref eventHandler);
-            (((Base)ITEM[Item_Pool, 0])).AddModeChangeEvent(ref eventHandler);
-            (((Base)ITEM[Mag_Pool, 0])).AddModeChangeEvent(ref eventHandler);
+            base.Init();
+            BLANKS[Limit_Arrow] = true;
+            for (int pos = 0; pos < Rows; pos++)
+                ITEM[pos, 0] = new IGMDataItem.Text
+                {
+                    Pos = SIZE[pos]
+                };
+            ITEM[GF_Pool, 0] = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 320, 192), Damageable, true);
+            ITEM[GF_Pool, 0].Hide();
+            ITEM[Blue_Pool, 0] = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Blue_Pool, 0].Hide();
+            ITEM[Mag_Pool, 0] = Pool.Magic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            ITEM[Mag_Pool, 0].Hide();
+            ITEM[Item_Pool, 0] = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
+            ITEM[Item_Pool, 0].Hide();
+            ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
+            ITEM[Limit_Arrow, 0].Hide();
+            ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable);
+            commands = new Kernel_bin.Battle_Commands[Rows];
+            PointerZIndex = Limit_Arrow;
+            nonbattleWidth = Width;
+        }
+
+        protected override void InitShift(int i, int col, int row)
+        {
+            base.InitShift(i, col, row);
+            SIZE[i].Inflate(-22, -8);
+            SIZE[i].Offset(0, 12 + (-8 * row));
+        }
+
+        private Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
+
+        public override void ModeChangeEvent(object sender, Enum e)
+        {
+            base.ModeChangeEvent(sender, e);
+            if (e.GetType() == typeof(Damageable.BattleMode) && !BattleMode.Equals(e))
+            {
+                BattleMode = (Damageable.BattleMode)e;
+                Refresh();
+            }
+        }
+
+        public override Damageable Damageable
+        {
+            get => base.Damageable;
+            protected set
+            {
+                if (value != base.Damageable)
+                {
+                    if (Battle)
+                    {
+                        UnsubscribeEvents();
+                        base.Damageable = value;
+                        SubscribeEvents();
+                    }
+                    else
+                        base.Damageable = value;
+                }
+            }
+        }
+
+        private void SubscribeEvents()
+        {
+            if (Damageable != null && !EventAdded)
+            {
+                Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler += (((Base)ITEM[Item_Pool, 0])).ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler += (((Base)ITEM[Mag_Pool, 0])).ModeChangeEvent;
+                EventAdded = true;
+            }
+        }
+
+        private void UnsubscribeEvents()
+        {
+            if (Damageable != null && EventAdded)
+            {
+                Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler -= (((Base)ITEM[Item_Pool, 0])).ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler -= (((Base)ITEM[Mag_Pool, 0])).ModeChangeEvent;
+                EventAdded = false;
+            }
+        }
+
+        #endregion Methods
+
+        ~Commands()
+        {
+            Dispose(false);
         }
     }
 }

@@ -29,7 +29,6 @@ namespace OpenVIII
         int CriticalHP(Characters value);
         ushort CurrentHP(Characters c);
         sbyte GenerateCrisisLevel();
-        void Read(BinaryReader br, Characters c);
         ushort MaxHP(Characters c);
         float PercentFullHP(Characters c);
         IOrderedEnumerable<Kernel_bin.Magic_Data> SortedMagic(Kernel_bin.Stat Stat);

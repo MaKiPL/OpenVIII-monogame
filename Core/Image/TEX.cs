@@ -120,8 +120,9 @@ namespace OpenVIII
                 {
                     if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
                         throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColorsPerPalette}");
-                    using (MemoryStream ms = new MemoryStream(buffer))
-                    using (BinaryReader br = new BinaryReader(ms))
+
+                    MemoryStream ms;
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
                         try
                         {
@@ -147,8 +148,8 @@ namespace OpenVIII
                 }
                 else if (texture.bytesPerPixel == 2)
                 {
-                    using (MemoryStream ms = new MemoryStream(buffer))
-                    using (BinaryReader br = new BinaryReader(ms))
+                    MemoryStream ms;
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
                         try
                         {
@@ -175,8 +176,8 @@ namespace OpenVIII
                 else if (texture.bytesPerPixel == 3)
                 {
                     // not tested but vincent tim had support for it so i guess it's possible RGB or BGR
-                    using (MemoryStream ms = new MemoryStream(buffer))
-                    using (BinaryReader br = new BinaryReader(ms))
+                    MemoryStream ms;
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
                         ms.Seek(TextureLocator, SeekOrigin.Begin);
                         Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);

@@ -1,33 +1,46 @@
-﻿using System.Diagnostics;
-
-namespace OpenVIII.IGMData.Group
+﻿namespace OpenVIII.IGMData.Group
 {
     public class Base : IGMData.Base
     {
+        //private Base(params Menu_Base[] d) : base(d.Length, 1, container: new IGMDataItem.Empty()) => Init(d);
+
         #region Constructors
 
-        public Base(params Menu_Base[] d) : base(d.Length, 1, container: new IGMDataItem.Empty()) => Init(d);
-
-        public Base() : base(container: new IGMDataItem.Empty()) => Debug.WriteLine($"{this} :: Not init may need to call it later");
-
-        protected virtual void Init(Menu_Base[] d, bool baseinit = false)
+        public Base()
         {
-            if (baseinit)
-                Init(d.Length, 1);
-            for (int i = 0; i < d.Length; i++)
-            {
-                ITEM[i, 0] = d[i];
-            }
         }
 
         #endregion Constructors
 
         #region Methods
 
+        //:base(container: new IGMDataItem.Empty()) => Debug.WriteLine($"{this} :: Not init may need to call it later");
+        public static T Create<T>(params Menu_Base[] d) where T : Base, new()
+        {
+            T r = Create<T>();
+            r.Count = checked((byte)d.Length);
+            r.Depth = 1;
+            r.Init(r.Count, r.Depth, r.CONTAINER);
+            r.Init(d);
+            return r;
+        }
+
+        public static Base Create(params Menu_Base[] d) => Create<Base>(d);
+
+        public static Base Create() => Create<Base>();
+
+        public static T Create<T>() where T : Base, new()
+        {
+            T r = new T
+            {
+                CONTAINER = new IGMDataItem.Empty()
+            };
+            return r;
+        }
+
         public int cnv(int pos) => pos / Depth;
 
         public int deep(int pos) => pos % Depth;
-
 
         public override bool Inputs()
         {
@@ -56,11 +69,19 @@ namespace OpenVIII.IGMData.Group
 
         public virtual bool ITEMUpdate(Menu_Base i, int pos = 0) => i.Update();
 
-        protected override void RefreshChild()
+        public override void Reset()
         {
-            if (!skipdata)
-                foreach (Menu_Base i in ITEM)
-                    i?.Refresh(Damageable);
+            if (Enabled)
+            {
+                base.Reset();
+                if (!skipdata)
+                {
+                    foreach (Menu_Base i in ITEM)
+                    {
+                        i?.Reset();
+                    }
+                }
+            }
         }
 
         public override void Show()
@@ -96,19 +117,21 @@ namespace OpenVIII.IGMData.Group
             return false;
         }
 
-        public override void Reset()
+        protected virtual void Init(Menu_Base[] d, bool baseinit = false)
         {
-            if (Enabled)
+            if (baseinit)
+                Init(d.Length, 1);
+            for (int i = 0; i < d.Length; i++)
             {
-                base.Reset();
-                if (!skipdata)
-                {
-                    foreach (Menu_Base i in ITEM)
-                    {
-                        i?.Reset();
-                    }
-                }
+                ITEM[i, 0] = d[i];
             }
+        }
+
+        protected override void RefreshChild()
+        {
+            if (!skipdata)
+                foreach (Menu_Base i in ITEM)
+                    i?.Refresh(Damageable);
         }
 
         #endregion Methods

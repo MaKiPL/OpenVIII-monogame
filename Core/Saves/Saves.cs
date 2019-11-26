@@ -17,8 +17,7 @@ namespace OpenVIII
     /// <seealso cref="https://cdn.discordapp.com/attachments/552838120895283210/570733614656913408/ff8_save.zip"/>
     /// <remarks>
     /// antiquechrono was helping. he even wrote a whole class using kaitai. Though I donno if we
-    /// wanna use kaitai.
-    /// LordUrQuan helped get info on CD2000 version.
+    /// wanna use kaitai. LordUrQuan helped get info on CD2000 version.
     /// </remarks>
     public static partial class Saves
     {
@@ -28,10 +27,12 @@ namespace OpenVIII
         /// Documents\Square Enix\FINAL FANTASY VIII Steam\user_#######
         /// </summary>
         public static string Steam2013Folder { get; private set; }
+
         /// <summary>
         /// FF8DIR\Saves
         /// </summary>
         public static string CD2000Folder { get; private set; }
+
         /// <summary>
         /// Documents\My Games\FINAL FANTASY VIII Remastered\Steam\#################\game_data\user\saves
         /// </summary>
@@ -45,7 +46,7 @@ namespace OpenVIII
             CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");
             Steam2013Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
             //C:\Users\pcvii\OneDrive\Documents\My Games\FINAL FANTASY VIII Remastered\Steam\76561198027029474\game_data\user\saves
-            Steam2019Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY VIII Remastered","Steam");
+            Steam2019Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY VIII Remastered", "Steam");
 
             if (Directory.Exists(Steam2013Folder))
             {
@@ -80,12 +81,9 @@ namespace OpenVIII
             }
         }
 
-        private static void GetFiles(string dir,string regex)
-        {
-            ProcessFiles(Directory.EnumerateFiles(dir), regex);
-        }
+        private static void GetFiles(string dir, string regex) => ProcessFiles(Directory.EnumerateFiles(dir), regex);
 
-        private static void ProcessFiles(IEnumerable<string> files,string regex)
+        private static void ProcessFiles(IEnumerable<string> files, string regex)
         {
             List<Task> tasks = new List<Task>();
             foreach (string file in files)
@@ -97,26 +95,29 @@ namespace OpenVIII
             }
             Task.WaitAll(tasks.ToArray());
         }
-
         private static void Read(string file, out Data d)
         {
             Debug.WriteLine("Task={0}, Thread={1}, File={2}",
                 Task.CurrentId, Thread.CurrentThread.ManagedThreadId, file);
             byte[] decmp;
-            using (FileStream fs = File.OpenRead(file))
-            using (BinaryReader br = new BinaryReader(fs))
+            MemoryStream ms = null;
+            FileStream fs = null;
+
+            // fs is disposed by binaryreader.
+            using (BinaryReader br = new BinaryReader(
+                fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 int size = br.ReadInt32();
                 byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
                 decmp = LZSS.DecompressAllNew(tmp);
+                fs = null;
             }
-
-            using (MemoryStream ms = new MemoryStream(decmp))
-            using (BinaryReader br = new BinaryReader(ms))
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(decmp)))
             {
                 ms.Seek(SteamOffset, SeekOrigin.Begin);
                 d = new Data();
                 d.Read(br);
+                ms = null;
             }
         }
     }

@@ -11,15 +11,9 @@ namespace OpenVIII
 
         private class IGMData_GF_Junctioned : IGMData.Base
         {
-            #region Constructors
-
-            public IGMData_GF_Junctioned() : base(16, 1, new IGMDataItem.Box(pos: new Rectangle(0, 141, 440, 282)), 2, 8)
-            {
-            }
-
-            #endregion Constructors
-
             #region Methods
+
+            public static IGMData_GF_Junctioned Create() => Create<IGMData_GF_Junctioned>(16, 1, new IGMDataItem.Box { Pos = new Rectangle(0, 141, 440, 282) }, 2, 8);
 
             public override void Refresh()
             {
@@ -31,12 +25,16 @@ namespace OpenVIII
                     foreach (Enum flag in availableFlags.Where(c.JunctionnedGFs.HasFlag))
                     {
                         if ((Saves.GFflags)flag == Saves.GFflags.None) continue;
-                        ITEM[pos, 0] = new IGMDataItem.Text(
-                        Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name, SIZE[pos]);
-                        pos++;
+                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name;
+
+                        ITEM[pos, 0].Show();
+                        BLANKS[pos++] = false;
                     }
                     for (; pos < Count; pos++)
-                        ITEM[pos, 0] = null;
+                    {
+                        ITEM[pos, 0].Hide();
+                        BLANKS[pos] = true;
+                    }
                 }
             }
 
@@ -44,13 +42,23 @@ namespace OpenVIII
             {
                 Table_Options |= Table_Options.FillRows;
                 base.Init();
+
+                for (int pos = 0; pos < Count; pos++)
+                {
+                    ITEM[pos, 0] = new IGMDataItem.Text
+                    {
+                        Pos = SIZE[pos]
+                    };
+                    ITEM[pos, 0].Hide();
+                    BLANKS[pos] = true;
+                }
             }
 
             protected override void InitShift(int i, int col, int row)
             {
                 base.InitShift(i, col, row);
                 SIZE[i].Inflate(-45, -8);
-                SIZE[i].Offset((-10 * col), -2*row);
+                SIZE[i].Offset((-10 * col), -2 * row);
             }
 
             #endregion Methods

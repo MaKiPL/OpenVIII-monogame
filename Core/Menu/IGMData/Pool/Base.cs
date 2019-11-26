@@ -4,26 +4,50 @@
     {
         #region Constructors
 
-        public Base(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null) : base(count + 2, depth, container, 1, rows, damageable) => DefaultPages = pages ?? 1;
+        protected Base() => ExtraCount = 2;
 
         #endregion Constructors
 
         #region Properties
 
         public T2[] Contents { get; set; }
-        public int DefaultPages { get; private set; }
+
+        public int DefaultPages { get; protected set; }
+
         public int Page { get; protected set; }
-        public int Pages { get; protected set; }
+
+        public int Pages { get; private set; }
+
+        protected Menu_Base LeftArrow
+        {
+            get => ITEM[Count - 2, 0];
+            private set => SIZE[Count - 2] = ITEM[Count - 2, 0] = value;
+        }
+
+        protected Menu_Base RightArrow
+        {
+            get => ITEM[Count - 1, 0];
+            private set => SIZE[Count - 1] = ITEM[Count - 1, 0] = value;
+        }
+
         protected T Source { get; set; }
 
         #endregion Properties
 
         #region Methods
 
+        public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null)
+                                                                    where J : Base<T, T2>, new()
+        {
+            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable);
+            r.DefaultPages = pages ?? 1;
+            return r;
+        }
+
         public override bool Inputs()
         {
             bool ret = false;
-            if (Pages > 1 && CONTAINER.Pos.Contains(InputMouse.Location.Transform(Menu.Focus)))
+            if (Pages > 1 && CONTAINER.Pos.Contains(MouseLocation))
             {
                 if (Input2.DelayedButton(MouseButtons.MouseWheelup))
                 {
@@ -45,7 +69,8 @@
         {
             if (Pages > 1)
             {
-                base.Inputs_Left(); PAGE_PREV();
+                base.Inputs_Left();
+                PAGE_PREV();
             }
         }
 
@@ -53,30 +78,34 @@
         {
             if (Pages > 1)
             {
-                base.Inputs_Right(); PAGE_NEXT();
+                base.Inputs_Right();
+                PAGE_NEXT();
             }
+        }
+
+        public void PagesOne()
+        {
+            Pages = 1;
+            Cursor_Status |= Cursor_Status.Horizontal;
+            RightArrow?.Hide();
+            LeftArrow?.Hide();
         }
 
         public override void Refresh()
         {
             base.Refresh();
             ResetPages();
-            if (Pages > 1)
-            {
-                Cursor_Status &= ~Cursor_Status.Horizontal;
-                ITEM[Count - 1, 0]?.Show();
-                ITEM[Count - 2, 0]?.Show();
-            }
-            else
-            {
-                Cursor_Status |= Cursor_Status.Horizontal;
-                ITEM[Count - 1, 0]?.Hide();
-                ITEM[Count - 2, 0]?.Hide();
-            }
+            if (Pages <= 1)
+                PagesOne();
         }
 
-        public virtual void ResetPages() =>
-                Pages = DefaultPages;
+        public virtual void ResetPages()
+        {
+            Pages = DefaultPages;
+            Cursor_Status &= ~Cursor_Status.Horizontal;
+            RightArrow?.Show();
+            LeftArrow?.Show();
+        }
 
         public virtual void UpdateTitle()
         {
@@ -85,16 +114,11 @@
         protected override void Init()
         {
             base.Init();
-            Cursor_Status |= Cursor_Status.Enabled;
-            Cursor_Status |= Cursor_Status.Vertical;
+            Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Vertical);
             Page = 0;
             Contents = new T2[Rows];
-            SIZE[Count - 2].X = X + 6;
-            SIZE[Count - 2].Y = Y + Height - 28;
-            SIZE[Count - 1].X = X + Width - 24;
-            SIZE[Count - 1].Y = Y + Height - 28;
-            ITEM[Count - 2, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Left, SIZE[Count - 2], 2, 7) { Blink = true };
-            ITEM[Count - 1, 0] = new IGMDataItem.Icon(Icons.ID.Arrow_Right2, SIZE[Count - 1], 2, 7) { Blink = true };
+            LeftArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Left, X = X + 6, Y = Y + Height - 28, Palette = 2, Faded_Palette = 7, Blink = true };
+            RightArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right2, X = X + Width - 24, Y = Y + Height - 28, Palette = 2, Faded_Palette = 7, Blink = true };
         }
 
         protected virtual void PAGE_NEXT()

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -57,6 +58,7 @@ namespace OpenVIII
     public static class Memory
     {
         public static BattleSpeed CurrentBattleSpeed = BattleSpeed.Normal;
+        public static List<Task> LeftOverTask = new List<Task>();
 
         public enum GraphicModes
         {
@@ -260,27 +262,32 @@ namespace OpenVIII
                 //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
                 //TODO allow chosing of which save folder to use.
                 tasks.Add(Task.Run(Saves.Init, token));
+                //tasks.Add(Task.Run(() => InitState = Saves.Data.LoadInitOut(), token));
                 tasks.Add(Task.Run(InitStrings, token));
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
                     //this initializes the fonts and drawing system- holds fonts in-memory
                     tasks.Add(Task.Run(() => { font = new Font(); }, token));
                     // card images in menu.                              
-                    tasks.Add(Task.Run(() => { Cards = new Cards(); }, token));
+                    tasks.Add(Task.Run(() => { Cards = Cards.Load(); }, token));
 
                     tasks.Add(Task.Run(() => { Card_Game = new Card_Game(); }, token));                        
 
-                    tasks.Add(Task.Run(() => { Faces = new Faces(); }, token));                        
+                    tasks.Add(Task.Run(() => { Faces = Faces.Load(); }, token));                        
 
-                    tasks.Add(Task.Run(() => { Icons = new Icons(); }, token));                        
+                    tasks.Add(Task.Run(() => { Icons = Icons.Load(); }, token));
+
+                    tasks.Add(Task.Run(() => { Magazines = Magazine.Load(); }, token));
                 }
                 Task.WaitAll(tasks.ToArray());
+                InitState = Saves.Data.LoadInitOut();
+                State = InitState.Clone();
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
-                    // requires font, faces, and icons. currently cards only used in debug menu. will
-                    // have support for cards when added to menu.
-                    if (!token.IsCancellationRequested)
-                        Module_main_menu_debug.Init();
+                    //// requires font, faces, and icons. currently cards only used in debug menu. will
+                    //// have support for cards when added to menu.
+                    //if (!token.IsCancellationRequested)
+                    //    Module_main_menu_debug.Init();
 
                     // requires font, faces, and icons. currently cards only used in debug menu. will
                     // have support for cards when added to menu.
@@ -295,12 +302,12 @@ namespace OpenVIII
 
         public static bool Inited { get; private set; } = false;
         public static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == mainThreadID;
-        public static Queue<Action> MainThreadOnlyActions;
+        public static ConcurrentQueue<Action> MainThreadOnlyActions;
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
             mainThreadID = Thread.CurrentThread.ManagedThreadId;
-            MainThreadOnlyActions = new Queue<Action>();
+            MainThreadOnlyActions = new ConcurrentQueue<Action>();
 
             FF8DIR = GameLocation.Current.DataPath;
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
@@ -311,6 +318,7 @@ namespace OpenVIII
             Memory.spriteBatch = spriteBatch;
             Memory.content = content;
             Memory.FieldHolder.FieldMemory = new int[1024];
+
 
             FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
@@ -339,6 +347,8 @@ namespace OpenVIII
         public static CancellationTokenSource TokenSource { get; private set; }
         public static CancellationToken Token { get; private set; }
         public static Items_In_Menu MItems { get; private set; }
+        public static Magazine Magazines { get; private set; }
+        public static Saves.Data InitState { get; private set; }
 
         #region battleProvider
 
@@ -834,8 +844,17 @@ namespace OpenVIII
 
         public static void Update()
         {
-            while (IsMainThread && MainThreadOnlyActions.Count > 0)
-            { MainThreadOnlyActions.Dequeue()(); }
+            Action a = null;
+            while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a)?? false))
+            { a.Invoke(); }
+            for (int i = 0; IsMainThread && i< LeftOverTask.Count; i++)
+            {
+                if (LeftOverTask[i].IsCompleted)
+                {
+                    LeftOverTask[i].Dispose();
+                    LeftOverTask.RemoveAt(i--);
+                }
+            }
         }
 
         /// <summary>

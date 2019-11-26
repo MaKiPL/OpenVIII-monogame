@@ -34,7 +34,7 @@ namespace OpenVIII
             public byte Attack_Param { get; private set; }
             public byte Crisis_Level { get; private set; }
             public byte Attack_Power { get; private set; }
-            public Persistant_Statuses Statuses0 { get; private set; }
+            public Persistent_Statuses Statuses0 { get; private set; }
             public Battle_Only_Statuses Statuses1 { get; private set; }
 
             #endregion Properties
@@ -57,7 +57,7 @@ namespace OpenVIII
             {
                 Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
                 //0x0000  4 bytes Status 1
-                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
+                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
                 //0x0004  2 bytes Status 0
                 Attack_Power = br.ReadByte();
                 //0x0006  1 bytes Attack Power

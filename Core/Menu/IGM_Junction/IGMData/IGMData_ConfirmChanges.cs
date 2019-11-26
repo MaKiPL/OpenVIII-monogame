@@ -8,13 +8,14 @@ namespace OpenVIII
 
         private sealed class IGMData_ConfirmChanges : IGMData.Dialog.Confirm
         {
-            #region Constructors
-
-            public IGMData_ConfirmChanges(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos) : base(data, title, opt1, opt2, pos) => startcursor = 1;
-
-            #endregion Constructors
-
             #region Methods
+
+            public static IGMData_ConfirmChanges Create(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle pos)
+            {
+                IGMData_ConfirmChanges r = Create<IGMData_ConfirmChanges>(data, title, opt1, opt2, pos);
+                r.startcursor = 1;
+                return r;
+            }
 
             public override bool Inputs_CANCEL()
             {
@@ -40,7 +41,6 @@ namespace OpenVIII
                     case 1:
                         Memory.State = Memory.PrevState.Clone();
                         break;
-                    
                 }
                 if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
                 {

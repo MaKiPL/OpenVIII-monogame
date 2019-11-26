@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -12,12 +11,10 @@ namespace OpenVIII
     /// </summary>
     public partial class Strings
     {
-
         #region Classes
 
         public abstract class StringsBase
         {
-
             #region Fields
 
             protected Memory.Archive Archive;
@@ -28,8 +25,11 @@ namespace OpenVIII
             #endregion Fields
 
             #region Constructors
+            protected StringsBase()
+            {
 
-            protected StringsBase(Memory.Archive archive, params string[] filenames)
+            }
+            protected void SetValues(Memory.Archive archive, params string[] filenames)
             {
                 Debug.WriteLine("Task={0}, Thread={2}, [Files={1}]",
                 Task.CurrentId, string.Join(", ", filenames),
@@ -37,7 +37,6 @@ namespace OpenVIII
 
                 Archive = archive;
                 Filenames = filenames;
-                Init();
             }
 
             #endregion Constructors
@@ -53,9 +52,14 @@ namespace OpenVIII
             public Memory.Archive GetArchive() => Archive;
 
             public IReadOnlyList<string> GetFilenames() => Filenames;
+
             public StringFile GetFiles() => Files;
+
             /// <summary>
-            /// <para>So you read the pointers at location, you get so many pointers then skip so many bytes before getting more pointers. Do this till start of next section.</para>
+            /// <para>
+            /// So you read the pointers at location, you get so many pointers then skip so many
+            /// bytes before getting more pointers. Do this till start of next section.
+            /// </para>
             /// </summary>
             /// <param name="br">BinaryReader where data is.</param>
             /// <param name="filename">file you are reading from</param>
@@ -102,7 +106,6 @@ namespace OpenVIII
                     }
                 }
             }
-
 
             protected void Get_Strings_ComplexStr(BinaryReader br, string filename, uint key, List<uint> list)
             {
@@ -157,7 +160,7 @@ namespace OpenVIII
                             if (c < br.BaseStream.Length && c != 0)
                             {
                                 c += fpad;
-                                Files.sPositions[key].Add(new FF8StringReference(Archive, filename, (uint)c, settings: Settings));
+                                Files.sPositions[key].Add(new FF8StringReference(Archive, filename, c, settings: Settings));
                             }
                         }
                     }
@@ -166,7 +169,7 @@ namespace OpenVIII
 
             protected abstract void GetFileLocations(BinaryReader br);
 
-            protected abstract void Init();
+            protected abstract void LoadArchiveFiles();
 
             protected uint[] mngrp_read_padding(BinaryReader br, Loc fpos, int type = 0)
             {
@@ -188,24 +191,30 @@ namespace OpenVIII
                 }
                 return fPaddings;
             }
-            protected void simple_init()
+            protected abstract void DefaultValues();
+            static public T Load<T>() where T : StringsBase,new()
+            {
+                T r = new T();
+                r.DefaultValues();
+                r.LoadArchiveFiles();
+                return r;
+            }
+            protected void LoadArchiveFiles_Simple()
             {
                 ArchiveWorker aw = new ArchiveWorker(Archive, true);
-                using (MemoryStream ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true)))
-                using (BinaryReader br = new BinaryReader(ms))
+                MemoryStream ms;
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true))))
                 {
-
                     Files = new StringFile(1);
                     Files.subPositions.Add(new Loc { seek = 0, length = uint.MaxValue });
                     Get_Strings_Offsets(br, Filenames[0], 0);
+                    ms = null;
                 }
             }
-
-            #endregion Methods
-
         }
 
-        #endregion Classes
-
+        #endregion Methods
     }
+
+    #endregion Classes
 }

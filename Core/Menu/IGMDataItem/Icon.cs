@@ -1,26 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
+
 namespace OpenVIII.IGMDataItem
 {
     public class Icon : Base, I_Data<Icons.ID>, I_Palette
     {
         #region Fields
 
-        private byte _faded_palette;
-        private byte _palette;
+        private byte _faded_palette = 2;
+        private byte _palette = 2;
 
         #endregion Fields
-
-        #region Constructors
-
-        public Icon(Icons.ID data, Rectangle? pos = null, byte? palette = null, byte? faded_palette = null, float blink_adjustment = 1f, Vector2? scale = null) : base(pos, scale)
-        {
-            Data = data;
-            Palette = palette ?? 2;
-            Faded_Palette = faded_palette ?? Palette;
-            Blink_Adjustment = blink_adjustment;
-        }
-
-        #endregion Constructors
 
         #region Properties
 
@@ -29,7 +18,8 @@ namespace OpenVIII.IGMDataItem
             get => base.Blink; set => base.Blink = value;
         }
 
-        public Icons.ID Data { get; set; }
+        public Icons.ID Data { get; set; } = Icons.ID.None;
+
         public byte Faded_Palette
         {
             get => _faded_palette; set
@@ -48,7 +38,6 @@ namespace OpenVIII.IGMDataItem
             }
         }
 
-
         #endregion Properties
 
         #region Methods
@@ -57,18 +46,22 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled)
             {
+                Rectangle pos = Pos;
+                if (OffsetAnchor != null)
+                    pos.Offset(OffsetAnchor);
+
                 if (!Blink)
-                    Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade, Color);
+                    Memory.Icons.Draw(Data, Palette, pos, Scale, Fade, Color);
                 else
                 {
                     if (Faded_Palette != Palette)
                     {
-                        Memory.Icons.Draw(Data, Palette, Pos, Scale, Fade, Color);
-                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Amount * Blink_Adjustment, Color);
+                        Memory.Icons.Draw(Data, Palette, pos, Scale, Fade, Color);
+                        Memory.Icons.Draw(Data, Faded_Palette, pos, Scale, Fade * Blink_Amount * Blink_Adjustment, Color);
                     }
                     else
                     {
-                        Memory.Icons.Draw(Data, Faded_Palette, Pos, Scale, Fade * Blink_Adjustment, Color.Lerp(Color,Faded_Color,Blink_Amount));
+                        Memory.Icons.Draw(Data, Faded_Palette, pos, Scale, Fade * Blink_Adjustment, Color.Lerp(Color, Faded_Color, Blink_Amount));
                     }
                 }
             }

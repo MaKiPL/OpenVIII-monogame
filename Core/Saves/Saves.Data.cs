@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +10,8 @@ namespace OpenVIII
 {
     public static partial class Saves
     {
-        #region Classes
+
+#region Classes
 
         /// <summary>
         /// Save Data
@@ -19,51 +21,42 @@ namespace OpenVIII
         {
             #region Fields
 
-            private TimeSpan _gametime;
-            private TimeSpan _timeplayed;
             private Dictionary<Characters, CharacterData> _characters;
+            private TimeSpan _gametime;
             private Dictionary<GFs, GFData> _gfs;
-            private List<Shop> _shops;
             private List<Item> _items;
+            private List<Shop> _shops;
+            private TimeSpan _timeplayed;
 
             #endregion Fields
 
-            #region Methods
+            #region Constructors
 
-            private CharacterData GetDamageable(Characters id)
+            public Data()
             {
-                CharacterData c = null;
-                if (Characters != null && !Characters.TryGetValue(id, out c))
-                {
-                    var ind = Party.FindIndex(x => x.Equals(id));
-
-                    if (ind == -1 || !Characters.TryGetValue(PartyData[ind], out c))
-                        throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
-                    return c;
-                }
-                return c;
+                //Define Containers
+                _gfs = new Dictionary<GFs, GFData>(16);
+                _characters = new Dictionary<Characters, CharacterData>(8);
+                _shops = new List<Shop>(20);
+                _items = new List<Item>(198);
+                Timeplayed = new TimeSpan();
+                CoordX = new short[3];
+                CoordY = new short[3];
+                Triangle_ID = new ushort[3];
+                Fieldvars = new FieldVars(); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+                Worldmap = new Worldmap();//br.ReadBytes(128);//0x1270
+                TripleTriad = new TripleTriad(); //br.ReadBytes(128);//0x12F0
+                ChocoboWorld = new ChocoboWorld(); //br.ReadBytes(64);//0x1370
             }
 
-            private GFData GetDamageable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
-
-            private Damageable GetDamageable(Faces.ID id)
-            {
-                GFs gf = id.ToGFs();
-                Characters c = id.ToCharacters();
-                if (c == OpenVIII.Characters.Blank)
-                    return GetDamageable(gf);
-                else
-                    return GetDamageable(c);
-            }
-
-            #endregion Methods
+            #endregion Constructors
 
             #region Properties
 
             /// <summary>
             /// 0x000C 4 bytes Preview: Amount of Gil
             /// </summary>
-            public uint AmountofGil { get; set; }
+            public uint AmountofGilPreview { get; set; }
 
             /// <summary>
             /// 0x0B20 4 bytes Amount of Gil (Laguna)
@@ -73,7 +66,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0B1C 4 bytes Amount of Gil
             /// </summary>
-            public uint AmountofGil2 { get; set; }
+            public uint AmountofGil { get; set; }
 
             /// <summary>
             /// 0x0040 12 bytes Preview: Angelo's name (0x00 terminated)
@@ -172,7 +165,16 @@ namespace OpenVIII
             /// <summary>
             /// 0x04A0-0x08C7 152 bytes each 8 of them. Characters: Squall-Edea
             /// </summary>
-            public IReadOnlyDictionary<Characters, CharacterData> Characters { get => (IReadOnlyDictionary<Characters, CharacterData>)_characters; }
+            public IReadOnlyDictionary<Characters, CharacterData> Characters
+            {
+                get
+                {
+                    if (_characters.Values.Count > 0)
+                        return _characters;
+                    else
+                        return null;
+                }
+            }
 
             /// <summary>
             /// 0x1370 64 bytes Chocobo World (TODO)
@@ -182,7 +184,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0AF0 20 bytes Configuration
             /// </summary>
-            public byte[] Configuration { get; set; }
+            public Configuration Configuration { get; set; }
 
             /// <summary>
             /// 0x0D56 3*2 bytes (signed) Coord X (party1, party2, party3)
@@ -254,7 +256,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0060 - 0x049F 68 bytes each 16 of them. Guardian Forces: Quetzalcoatl-Eden
             /// </summary>
-            public IReadOnlyDictionary<GFs, GFData> GFs { get => _gfs; }
+            public IReadOnlyDictionary<GFs, GFData> GFs => _gfs;
 
             /// <summary>
             /// 0x0B0C 12 bytes Griever name (FF8 text format)
@@ -267,7 +269,7 @@ namespace OpenVIII
             /// The order of items out of battle and Each item uses 2 bytes 1 for ID and 1 for Quantity
             /// </para>
             /// </summary>
-            public IReadOnlyList<Item> Items { get => _items; }
+            public IReadOnlyList<Item> Items => _items;
 
             /// <summary>
             /// <para>0x0B34 32 bytes Items battle order</para>
@@ -300,6 +302,7 @@ namespace OpenVIII
             public byte[] LimitBreakAngelopoints { get; set; }
 
             public BitArray LimitBreakIrvine_Unlocked_Shot { get; set; }
+
             /// <summary>
             /// <para>0x0B24 2 bytes Limit Break Quistis</para>
             /// <para>Each bit is an unlocked blue magic spell</para>
@@ -398,7 +401,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0960-0x0AEF 400 total bytes 20 bytes each 20 of them. Shops
             /// </summary>
-            public IReadOnlyList<Shop> Shops { get => _shops; }
+            public IReadOnlyList<Shop> Shops => _shops;
 
             public bool SmallTeam
             {
@@ -424,6 +427,7 @@ namespace OpenVIII
             public FF8String Squallsname { get; set; }
 
             public bool TeamLaguna => Party != null && (Party[0] == OpenVIII.Characters.Laguna_Loire || Party[1] == OpenVIII.Characters.Laguna_Loire || Party[2] == OpenVIII.Characters.Laguna_Loire);
+
             /// <summary>
             /// Stored playtime in seconds. Made into timespan for easy parsing.
             /// </summary>
@@ -466,6 +470,7 @@ namespace OpenVIII
             public ushort Unknown4 { get; set; }
 
             public uint Unknown5 { get; set; }
+
             /// <summary>
             /// 0x0D00 4 bytes Unknown
             /// </summary>
@@ -501,9 +506,20 @@ namespace OpenVIII
 
             public Damageable this[Faces.ID id] => GetDamageable(id);
 
-            //public Damageable this[Damageable damageable]
-
             #endregion Indexers
+
+            #region Methods
+
+            public static Data LoadInitOut()
+            {
+                Data r = new Data();
+                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MAIN, true);
+                using (BinaryReader br = new BinaryReader(new MemoryStream(aw.GetBinaryFile("init.out"))))
+                {
+                    r.ReadInitOut(br);
+                }
+                return r;
+            }
 
             /// <summary>
             /// preforms a Shadow Copy. Then does deep copy on any required objects.
@@ -526,6 +542,7 @@ namespace OpenVIII
                 return d;
             }
 
+            //public Damageable this[Damageable damageable]
             /// <summary>
             /// return -1 on error
             /// </summary>
@@ -548,7 +565,7 @@ namespace OpenVIII
             /// How many dead characters there are.
             /// </summary>
             /// <returns>&gt;=0</returns>
-            public int DeadCharacters() => Characters.Where(m => m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistant_Statuses.Death) != 0).Count();
+            public int DeadCharacters() => Characters.Where(m => m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0).Count();
 
             /// <summary>
             /// How many dead party members there are.
@@ -556,23 +573,28 @@ namespace OpenVIII
             /// <returns>&gt;=0</returns>
             public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead).Count();
 
-            public Queue<GFs> EarnAP(uint ap, out Queue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
+            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
             {
-                Queue<GFs> ret = new Queue<GFs>();
-                abilities = new Queue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
-                foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value.Exists))
+                ConcurrentQueue<GFs> ret = new ConcurrentQueue<GFs>();
+                abilities = null;
+                if (GFs != null)
                 {
-                    if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
+                    abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
+                    foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value != null && i.Value.Exists))
                     {
-                        if (ability != Kernel_bin.Abilities.None)
+                        if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
                         {
-                            abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
+                            if (ability != Kernel_bin.Abilities.None)
+                            {
+                                abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
+                            }
+                            ret.Enqueue(g.Key);
                         }
-                        ret.Enqueue(g.Key);
                     }
                 }
                 return ret;
             }
+
             public bool EarnItem(Cards.ID card, byte qty, byte location = 0)
             {
                 TTCardInfo i = new TTCardInfo() { Unlocked = true, Qty = qty, Location = location };
@@ -585,10 +607,8 @@ namespace OpenVIII
                 }
                 return false;
             }
-            public bool EarnItem(KeyValuePair<Cards.ID, byte> keyValuePair, byte location = 0)
-            {
-                return EarnItem(keyValuePair.Key, keyValuePair.Value, location);
-            }
+
+            public bool EarnItem(KeyValuePair<Cards.ID, byte> keyValuePair, byte location = 0) => EarnItem(keyValuePair.Key, keyValuePair.Value, location);
 
             public bool EarnItem(Item item)
             {
@@ -634,77 +654,67 @@ namespace OpenVIII
 
             public bool PartyHasAbility(Kernel_bin.Abilities a)
             {
-                foreach (Characters c in PartyData)
-                {
-                    if (Characters.TryGetValue(c, out CharacterData cd) && cd.Abilities.Contains(a))
-                        return true;
-                }
+                if (PartyData != null)
+                    foreach (Characters c in PartyData)
+                    {
+                        if (Characters.TryGetValue(c, out CharacterData cd) && cd.Abilities.Contains(a))
+                            return true;
+                    }
                 return false;
             }
 
             public void Read(BinaryReader br)
             {
-                //Define Containers
-                Timeplayed = new TimeSpan();
-                _gfs = new Dictionary<GFs, GFData>(16);
-                _characters = new Dictionary<Characters, CharacterData>(8);
-                _shops = new List<Shop>(20); 
-                _items = new List<Item>(198);
-                CoordX = new short[3];
-                CoordY = new short[3];
-                Triangle_ID = new ushort[3];
-
                 //Read Data
                 LocationID = br.ReadUInt16();//0x0004
                 FirstCharactersCurrentHP = br.ReadUInt16();//0x0006
                 FirstCharactersMaxHP = br.ReadUInt16();//0x0008
                 SaveCount = br.ReadUInt16();//0x000A
-                AmountofGil = br.ReadUInt32();//0x000C
+                AmountofGilPreview = br.ReadUInt32();//0x000C
                 Timeplayed = new TimeSpan(0, 0, checked((int)br.ReadUInt32()));//0x0020
                 FirstCharactersLevel = br.ReadByte();//0x0024
                 Party = Array.ConvertAll(br.ReadBytes(3), Item => (Characters)Item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
                 Squallsname = br.ReadBytes(12);//0x0028
-                if (string.IsNullOrWhiteSpace(Squallsname)) Squallsname = Memory.Strings.GetName(Faces.ID.Squall_Leonhart);
                 Rinoasname = br.ReadBytes(12);//0x0034
-                if (string.IsNullOrWhiteSpace(Rinoasname)) Rinoasname = Memory.Strings.GetName(Faces.ID.Rinoa_Heartilly);
                 Angelosname = br.ReadBytes(12);//0x0040
-                if (string.IsNullOrWhiteSpace(Angelosname)) Angelosname = Memory.Strings.GetName(Faces.ID.Angelo);
                 Bokosname = br.ReadBytes(12);//0x004C
-                if (string.IsNullOrWhiteSpace(Bokosname)) Bokosname = Memory.Strings.GetName(Faces.ID.Boko);
+
                 CurrentDisk = br.ReadUInt32();//0x0058
                 Currentsave = br.ReadUInt32();//0x005C
-                for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
-                {
-                    _gfs.Add((GFs)i,new GFData(br, (GFs)i));
-                }
-                for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
-                {
-                    _characters.Add((Characters)i,new CharacterData(br, (Characters)i)
-                    {
-                        Name = Memory.Strings.GetName((Characters)i, this)
-                    }); // 0x04A0 -> 0x08C8 //152 bytes per 8 total
-                }
-                for (int i = 0; i < _shops.Capacity; i++)
-                    _shops.Add(new Shop(br));//0x0960 //400 bytes
-                Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
-                PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
-                KnownWeapons = new BitArray(br.ReadBytes(4)); //0x0B08 // 4 bytes
-                Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
-                if (string.IsNullOrWhiteSpace(Grieversname)) Grieversname = Memory.Strings.GetName(Faces.ID.Griever);
-                Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
-                Unknown2 = br.ReadUInt16();//0x0B1A
-                AmountofGil2 = br.ReadUInt32();//0x0B1C //dupilicate
-                AmountofGil_Laguna = br.ReadUInt32();//0x0B20
-                LimitBreakQuistis_Unlocked_BlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
-                LimitBreakZell_Unlocked_Duel = new BitArray(br.ReadBytes(2));//0x0B26
-                LimitBreakIrvine_Unlocked_Shot = new BitArray(br.ReadBytes(1));//0x0B28
-                LimitBreakSelphie_Used_RareSpells = new BitArray(br.ReadBytes(1));//0x0B29
-                LimitBreakAngelocompleted = new BitArray(br.ReadBytes(1));//0x0B2A
-                LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
-                LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
-                Itemsbattleorder = br.ReadBytes(32);//0x0B34
-                for (int i = 0; i < _items.Capacity; i++)
-                    _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
+                ReadInitOut(br);
+                //GetNames();
+                //for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
+                //{
+                //    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i));
+                //}
+                //for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
+                //{
+                //    var tmp = CharacterData.Load(br, (Characters)i);
+
+                //    tmp.Name = Memory.Strings.GetName((Characters)i, this);
+                //    _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                //}
+                //for (int i = 0; i < _shops.Capacity; i++)
+                //    _shops.Add(new Shop(br));//0x0960 //400 bytes
+                //Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
+                //PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
+                //KnownWeapons = new BitArray(br.ReadBytes(4)); //0x0B08 // 4 bytes
+                //Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
+                //if (string.IsNullOrWhiteSpace(Grieversname)) Grieversname = Memory.Strings.GetName(Faces.ID.Griever);
+                //Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
+                //Unknown2 = br.ReadUInt16();//0x0B1A
+                //AmountofGil2 = br.ReadUInt32();//0x0B1C //dupilicate
+                //AmountofGil_Laguna = br.ReadUInt32();//0x0B20
+                //LimitBreakQuistis_Unlocked_BlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
+                //LimitBreakZell_Unlocked_Duel = new BitArray(br.ReadBytes(2));//0x0B26
+                //LimitBreakIrvine_Unlocked_Shot = new BitArray(br.ReadBytes(1));//0x0B28
+                //LimitBreakSelphie_Used_RareSpells = new BitArray(br.ReadBytes(1));//0x0B29
+                //LimitBreakAngelocompleted = new BitArray(br.ReadBytes(1));//0x0B2A
+                //LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
+                //LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
+                //Itemsbattleorder = br.ReadBytes(32);//0x0B34
+                //for (int i = 0; i < _items.Capacity; i++)
+                //    _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
                 Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
@@ -741,10 +751,59 @@ namespace OpenVIII
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B
                 Unknown9 = br.ReadUInt32();//0x0D6C
-                Fieldvars = new FieldVars(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-                Worldmap = new Worldmap(br);//br.ReadBytes(128);//0x1270
-                TripleTriad = new TripleTriad(br); //br.ReadBytes(128);//0x12F0
-                ChocoboWorld = new ChocoboWorld(br); //br.ReadBytes(64);//0x1370
+                Fieldvars.Read(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+                Worldmap.Read(br);//br.ReadBytes(128);//0x1270
+                TripleTriad.Read(br); //br.ReadBytes(128);//0x12F0
+                ChocoboWorld.Read(br); //br.ReadBytes(64);//0x1370
+            }
+
+            /// <summary>
+            /// Read Init.Out
+            /// </summary>
+            /// <see cref="https://github.com/alexfilth/quezacotl/blob/master/Quezacotl/InitWorker.cs"/>
+            public void ReadInitOut(BinaryReader br)
+            {
+                GetNames();
+                //init offset 0;
+                for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
+                {
+                    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i));
+                }
+                //init offset 1088;
+                for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
+                {
+                    CharacterData tmp = CharacterData.Load(br, (Characters)i);
+
+                    tmp.Name = Memory.Strings.GetName((Characters)i, this);
+                    _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total
+                }
+                //init offset 2304
+                for (int i = 0; i < _shops.Capacity; i++)
+                    _shops.Add(new Shop(br));//0x0960 //400 bytes
+                //init offset 2704
+                //Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
+                Configuration = new Saves.Configuration(br);
+                PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
+                if (Party == null) Party = PartyData.Take(3).ToList();
+                KnownWeapons = new BitArray(br.ReadBytes(4)); //0x0B08 // 4 bytes
+                Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
+                if (string.IsNullOrWhiteSpace(Grieversname)) Grieversname = Memory.Strings.GetName(Faces.ID.Griever);
+                Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
+                Unknown2 = br.ReadUInt16();//0x0B1A
+                AmountofGil = br.ReadUInt32();//0x0B1C //dupilicate
+                if (AmountofGilPreview != AmountofGil) AmountofGilPreview = AmountofGil;
+                AmountofGil_Laguna = br.ReadUInt32();//0x0B20
+                LimitBreakQuistis_Unlocked_BlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
+                LimitBreakZell_Unlocked_Duel = new BitArray(br.ReadBytes(2));//0x0B26
+                LimitBreakIrvine_Unlocked_Shot = new BitArray(br.ReadBytes(1));//0x0B28
+                LimitBreakSelphie_Used_RareSpells = new BitArray(br.ReadBytes(1));//0x0B29
+                LimitBreakAngelocompleted = new BitArray(br.ReadBytes(1));//0x0B2A
+                LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
+                LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
+                Itemsbattleorder = br.ReadBytes(32);//0x0B34
+                //Init offset 2804
+                for (int i = 0; br.BaseStream.Position+2 <= br.BaseStream.Position &&i < _items.Capacity; i++)
+                    _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
             /// <summary>
@@ -765,6 +824,42 @@ namespace OpenVIII
                 }
                 return r;
             }
+
+            private CharacterData GetDamageable(Characters id)
+            {
+                CharacterData c = null;
+                if (Characters != null && !Characters.TryGetValue(id, out c) && Characters.Count > 0 && Party != null)
+                {
+                    int ind = Party.FindIndex(x => x.Equals(id));
+
+                    if (ind == -1 || !Characters.TryGetValue(PartyData[ind], out c))
+                        throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
+                    return c;
+                }
+                return c;
+            }
+
+            private GFData GetDamageable(GFs id) => GFs.ContainsKey(id) ? GFs[id] : null;
+
+            private Damageable GetDamageable(Faces.ID id)
+            {
+                GFs gf = id.ToGFs();
+                Characters c = id.ToCharacters();
+                if (c == OpenVIII.Characters.Blank)
+                    return GetDamageable(gf);
+                else
+                    return GetDamageable(c);
+            }
+
+            private void GetNames()
+            {
+                if (string.IsNullOrWhiteSpace(Squallsname)) Squallsname = Memory.Strings.GetName(Faces.ID.Squall_Leonhart);
+                if (string.IsNullOrWhiteSpace(Rinoasname)) Rinoasname = Memory.Strings.GetName(Faces.ID.Rinoa_Heartilly);
+                if (string.IsNullOrWhiteSpace(Angelosname)) Angelosname = Memory.Strings.GetName(Faces.ID.Angelo);
+                if (string.IsNullOrWhiteSpace(Bokosname)) Bokosname = Memory.Strings.GetName(Faces.ID.Boko);
+            }
+
+            #endregion Methods
         }
 
         #endregion Classes

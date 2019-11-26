@@ -51,10 +51,14 @@ namespace OpenVIII
 
         public static void SaveStringToFile()
         {
-            using (FileStream fs = File.Create("D:\\iconsdatadump.csv"))
-            using (BinaryWriter bw = new BinaryWriter(fs))
+            FileStream fs = null;
+            //fs is disposed by binary writer
+            using (BinaryWriter bw =
+                new BinaryWriter(fs = File.Open("D:\\iconsdatadump.csv",
+                FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
             {
                 bw.Write(System.Text.Encoding.UTF8.GetBytes(ToString()));
+                fs = null;
             }
         }
 

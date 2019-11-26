@@ -8,14 +8,6 @@ namespace OpenVIII
 
         private class IGMData_Mag_EL_A_D_Slots : IGMData_Slots<Saves.CharacterData>
         {
-            #region Constructors
-
-            public IGMData_Mag_EL_A_D_Slots() : base(5, 2, new IGMDataItem.Box(pos: new Rectangle(0, 414, 840, 216)), 1, 5)
-            {
-            }
-
-            #endregion Constructors
-
             #region Properties
 
             public IGMData.Pool.Magic Pool { get; private set; }
@@ -23,6 +15,9 @@ namespace OpenVIII
             #endregion Properties
 
             #region Methods
+
+            public static IGMData_Mag_EL_A_D_Slots Create() =>
+                                                                                                                                        Create<IGMData_Mag_EL_A_D_Slots>(5, 2, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 1, 5);
 
             public override void BackupSetting() => SetPrevSetting((Saves.CharacterData)Damageable.Clone());
 
@@ -45,6 +40,18 @@ namespace OpenVIII
                 PageLeft();
             }
 
+            public override void Inputs_Menu()
+            {
+                skipdata = true;
+                base.Inputs_Menu();
+                skipdata = false;
+                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                {
+                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
+                    IGM_Junction.Refresh();
+                }
+            }
+
             public override bool Inputs_OKAY()
             {
                 if (!BLANKS[CURSOR_SELECT])
@@ -61,18 +68,6 @@ namespace OpenVIII
             {
                 base.Inputs_Right();
                 PageRight();
-            }
-
-            public override void Inputs_Menu()
-            {
-                skipdata = true;
-                base.Inputs_Menu();
-                skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
-                {
-                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
-                    IGM_Junction.Refresh();
-                }
             }
 
             public override void Refresh()
@@ -122,7 +117,7 @@ namespace OpenVIII
                 {
                     base.SetCursor_select(value);
                     CheckMode();
-                    IGMData.Pool.Magic.StatEventListener?.Invoke(this, Contents[CURSOR_SELECT]);
+                    IGMData.Pool.Magic.ChangeStat(Contents[CURSOR_SELECT]);
                 }
             }
 

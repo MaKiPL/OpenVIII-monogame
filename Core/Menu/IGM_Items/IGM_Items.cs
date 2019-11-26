@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -8,17 +9,19 @@ namespace OpenVIII
     {
         #region Fields
 
-        public EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
-
-        public EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
-
-        //public EventHandler<Mode> ModeChangeHandler;
-
-        public EventHandler ReInitCompletedHandler;
-        public EventHandler<Faces.ID> TargetChangeHandler;
         protected Dictionary<Mode, Func<bool>> InputsDict;
 
         #endregion Fields
+
+        #region Events
+
+        public event EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
+
+        public event EventHandler ReInitCompletedHandler;
+
+        public event EventHandler<Faces.ID> TargetChangeHandler;
+
+        #endregion Events
 
         #region Enums
 
@@ -50,7 +53,17 @@ namespace OpenVIII
 
         #endregion Enums
 
+        #region Properties
+
+        public IGMData.Pool.Item ItemPool => ((IGMData.Pool.Item)((IGMData.Group.Base)Data[SectionName.UseItemGroup])[1, 0]);
+
+        private IGMDataItem.HelpBox help => (IGMDataItem.HelpBox)Data[SectionName.Help];
+
+        #endregion Properties
+
         #region Methods
+
+        public static IGM_Items Create() => Create<IGM_Items>();
 
         public override bool Inputs() => InputsDict[(Mode)GetMode()]();
 
@@ -67,33 +80,28 @@ namespace OpenVIII
         protected override void Init()
         {
             Size = new Vector2 { X = 840, Y = 630 };
-            //TextScale = new Vector2(2.545455f, 3.0375f);
-
-            Data.Add(SectionName.Help, new IGMDataItem.HelpBox(null, pos: new Rectangle(15, 69, 810, 78), Icons.ID.HELP, options: Box_Options.Middle));
-            IGMDataItem.HelpBox help = (IGMDataItem.HelpBox)Data[SectionName.Help];
-            help.AddTextChangeEvent(ref ChoiceChangeHandler);
-            help.AddTextChangeEvent(ref ItemChangeHandler);
-            help.AddModeChangeEvent(ref ModeChangeHandler);
-            Data.Add(SectionName.TopMenu, new IGMData_TopMenu(new Dictionary<FF8String, FF8String>() {
-                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
-                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},
-                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
-                            { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)},
-                            }));
-            Data.Add(SectionName.Title, 
-                new IGMDataItem.Box(Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), pos: new Rectangle(615, 0, 225, 66)));
-            Data.Add(SectionName.UseItemGroup, new IGMData.Group.Base(
-                new IGMData_Statuses(),
-                new IGMData.Pool.Item(),
-                new IGMData_TargetPool()
-                ));
+            base.Init();
+            List<Task> tasks = new List<Task>
+            {
+                Task.Run(() => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle})),
+                Task.Run(() => Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create(new Dictionary<FF8String, FF8String>() {
+                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
+                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},
+                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
+                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)}}))),
+                Task.Run(() => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Pos = new Rectangle(615, 0, 225, 66)})),
+                Task.Run(() => Data.TryAdd(SectionName.UseItemGroup, IGMData.Group.Base.Create(IGMData_Statuses.Create(),IGMData.Pool.Item.Create(),IGMData_TargetPool.Create())))
+            };
+            Task.WaitAll(tasks.ToArray());
+            ChoiceChangeHandler = help.TextChangeEvent;
+            ItemPool.ItemChangeHandler += help.TextChangeEvent;
+            ModeChangeHandler += help.ModeChangeEvent;
             InputsDict = new Dictionary<Mode, Func<bool>>() {
                 {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
                 {Mode.SelectItem, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
                 {Mode.UseItemOnTarget, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
                 };
             SetMode(Mode.SelectItem);
-            base.Init();
         }
 
         #endregion Methods

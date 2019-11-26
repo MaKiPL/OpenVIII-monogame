@@ -675,14 +675,14 @@ namespace OpenVIII
                     case EntityType.Monster:
                         if (id == 127) return;
                         ReadSection1(datFile.pSections[0], br, fileName);
-                        ReadSection3(datFile.pSections[2], br, fileName);
+                        ReadSection3(datFile.pSections[2], br, fileName); // animation data
                         ReadSection2(datFile.pSections[1], br, fileName);
                         //ReadSection4(datFile.pSections[3]);
-                        //ReadSection5(datFile.pSections[4]);
+                        ReadSection5(datFile.pSections[4],br, fileName);
                         //ReadSection6(datFile.pSections[5]);
                         ReadSection7(datFile.pSections[6], br, fileName);
                         //ReadSection8(datFile.pSections[7]);
-                        //ReadSection9(datFile.pSections[8]);
+                        //ReadSection9(datFile.pSections[8]); //AKAO sounds
                         //ReadSection10(datFile.pSections[9]);
                         ReadSection11(datFile.pSections[10], br, fileName);
                         break;
@@ -715,6 +715,131 @@ namespace OpenVIII
                         break;
                 }
             }
+        }
+
+
+
+        /// <summary>
+        /// Animation Sequences
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="br"></param>
+        /// <param name="fileName"></param>
+        /// <see cref="http://forums.qhimm.com/index.php?topic=19362.msg270092"/>
+        private void ReadSection5(uint v, BinaryReader br, string fileName)
+        {
+            // nothing final in here just was trying to dump data to see what was there.
+            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            uint endpoint = datFile.pSections[5];
+            uint[] offsets = new uint[br.ReadUInt16()];
+            for (ushort i = 0; i < offsets.Length; i++)
+            {
+
+                ushort v1 = br.ReadUInt16();
+                if (v1 == 0)
+                    continue;
+                offsets[i] = v1 + v;
+            }
+            var t = offsets.Where(x=>x>0).Distinct().OrderBy(x => x).ToList();
+            var tw = new Dictionary<uint, byte[]>(t.Count);
+            for(ushort i=0; i< t.Count; i ++)
+            {
+                var ti = t[i];
+                //uint tie = endpoint;
+                //if (i + 1 < t.Count)
+                //    tie = t[i + 1];
+                uint tie = ti;
+                br.BaseStream.Seek(ti, SeekOrigin.Begin);
+                do
+                    tie++;
+                while (br.ReadByte() != 0xa2 && br.BaseStream.Position<endpoint && (i + 1 < t.Count ? br.BaseStream.Position < t[i + 1] : true));
+                br.BaseStream.Seek(ti, SeekOrigin.Begin);
+                foreach(var offset in offsets.Select((value, index) => new { value, index }).Where(x => x.value == ti))
+                tw.Add((uint)offset.index, br.ReadBytes(checked((int)(tie - ti))));
+            }
+            Debug.WriteLine($"\n {fileName} - {animHeader.animations.Length} animations, { offsets.Length } segments");
+            foreach (var ob in tw)
+            {
+                
+                Debug.Write($"{ob.Key}({string.Format("{0:x}",offsets[ob.Key])}) - ");
+                byte last = 0xff;
+                foreach (byte b in ob.Value)
+                {
+                    switch (b)
+                    {
+                        case 0xa5:
+                            Debug.Write("{Aura}");
+                            break;
+                        case 0xbb:
+                            Debug.Write("{Effect}");
+                            break;
+                        case 0xa2:
+                            Debug.Write("{Return}");
+                            break;
+                        case 0xa0:
+                            Debug.Write("{Loop}");
+                            break;
+                        case 0xc3:
+                            Debug.Write("{Special}");
+                            break;
+                        case 0x91:
+                            Debug.Write("{Text}");
+                            break;
+                        case 0x1e:
+                            Debug.Write("{TextREF}");
+                            break;
+                        case 0xa3:
+                            Debug.Write("{End}");
+                            break;
+                        case 0xa8:
+                            Debug.Write("{Visibility}");
+                            break;
+                    }
+
+                    switch (last)
+                    {
+                        case 0xa8:
+                            switch (b)
+                            {
+                                case 0x02:
+                                    Debug.Write("{Hide}");
+                                    break;
+                                case 0x03:
+                                    Debug.Write("{Show}");
+                                    break;
+                            }
+                            break;
+                        case 0xa5:
+                            switch (b)
+                            {
+                                case 0x00:
+                                    Debug.Write("{Magic}");
+                                    break;
+                                case 0x01:
+                                    Debug.Write("{GF}");
+                                    break;
+                                case 0x02:
+                                    Debug.Write("{Limit}");
+                                    break;
+                                case 0x03:
+                                    Debug.Write("{Finisher}");
+                                    break;
+                                case 0x04:
+                                    Debug.Write("{Enemy Magic}");
+                                    break;
+                            }
+                            break;
+                        case 0xa3:
+                        case 0xa0:
+                            Debug.Write("{Anim}");
+                            break;
+                    }
+                    Debug.Write(string.Format("{0:x2} ", b));
+                    last = b;
+                }
+                Debug.Write($"   ({ob.Value.Length} length)\n");
+            }
+
         }
 
         public int GetId => id;

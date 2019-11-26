@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 using System.IO;
 using System.Linq;
 
@@ -23,7 +22,7 @@ namespace OpenVIII
             public void SetFlags(byte @switch)
             {
                 CantEspace = (@switch & 1) == 1;
-                NoVictorySequence = (@switch>>1 & 1) == 1;
+                NoVictorySequence = (@switch >> 1 & 1) == 1;
                 ShowTimer = (@switch >> 2 & 1) == 1;
                 NoEXP = (@switch >> 3 & 1) == 1;
                 SkipEXPScreen = (@switch >> 4 & 1) == 1;
@@ -49,7 +48,9 @@ namespace OpenVIII
             public byte[] bLevels; //sizeof 8
 
             public byte[] BEnemies { get => Enemies.Select(x => (byte)(x - 0x10)).ToArray(); set => Enemies = value; }
+
             public int ResolveCameraAnimation(byte cameraPointerValue) => cameraPointerValue & 0b1111;
+
             public int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
         }
 
@@ -70,20 +71,28 @@ namespace OpenVIII
                 {
                     case 0:
                         return cEnemy8;
+
                     case 1:
                         return cEnemy7;
+
                     case 2:
                         return cEnemy6;
+
                     case 3:
                         return cEnemy5;
+
                     case 4:
                         return cEnemy4;
+
                     case 5:
                         return cEnemy3;
+
                     case 6:
                         return cEnemy2;
+
                     case 7:
                         return cEnemy1;
+
                     default:
                         return cEnemy1;
                 }
@@ -99,12 +108,8 @@ namespace OpenVIII
             public Vector3 GetVector() => new Vector3(
                 x,
                 y,
-                -z )/100f;
+                -z) / 100f;
         }
-
-
-
-
 
         public static void Init()
         {
@@ -120,8 +125,10 @@ namespace OpenVIII
             int encounterCount = enc.Length / 128;
             Memory.encounters = new Encounter[encounterCount];
 
-            using (MemoryStream ms = new MemoryStream(enc))
-            using (BinaryReader br = new BinaryReader(ms))
+            MemoryStream ms = null;
+
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(enc)))
+            {
                 for (int i = 0; i < encounterCount; i++)
                     Memory.encounters[i] = new Encounter()
                     {
@@ -188,6 +195,8 @@ namespace OpenVIII
                         bUnk2 = br.ReadBytes(16 * 3 + 8),
                         bLevels = br.ReadBytes(8)
                     };
+                ms = null;
+            }
         }
     }
 }

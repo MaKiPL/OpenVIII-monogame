@@ -34,6 +34,11 @@ namespace OpenVIII
             source = (source.ToVector2() + offset.ToVector2()).ToPoint();
             return source;
         }
+        public static Point Offset(this ref Point source, int x,int y)
+        {
+            var offset = new Point(x, y);
+            return source.Offset(offset);
+        }
 
         public static Point Offset(this ref Point source, Vector2 offset)
         {
@@ -154,7 +159,7 @@ namespace OpenVIII
         /// <param name="element">varible you need to number of flags set.</param>
         /// <returns>count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel_bin.Persistant_Statuses element)
+        public static uint Count(this Kernel_bin.Persistent_Statuses element)
         {
             uint v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary

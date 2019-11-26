@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 
 namespace OpenVIII
 {
@@ -9,25 +8,13 @@ namespace OpenVIII
 
         private class IGMData_TopMenu : IGMData.Base
         {
-            #region Constructors
-
-            public IGMData_TopMenu() : base(4, 1, new IGMDataItem.Box(pos: new Rectangle(0, 12, 610, 54)), 4, 1)
-            {
-            }
-
-            #endregion Constructors
-
-            #region Properties
-
-            public new Dictionary<Items, FF8String> Descriptions { get; private set; }
-
-            #endregion Properties
-
             #region Methods
+
+            public static IGMData_TopMenu Create() => Create<IGMData_TopMenu>(4, 1, new IGMDataItem.Box { Pos = new Rectangle(0, 12, 610, 54) }, 4, 1);
 
             public override bool Inputs_CANCEL()
             {
-                if (Memory.PrevState != null && 
+                if (Memory.PrevState != null &&
                     Damageable.GetCharacterData(out Saves.CharacterData c) && (
                     Memory.PrevState.Characters[c.ID].CurrentHP() > Memory.State.Characters[c.ID].CurrentHP() ||
                     Memory.PrevState.Characters[c.ID].MaxHP() > Memory.State.Characters[c.ID].MaxHP()))
@@ -76,6 +63,7 @@ namespace OpenVIII
                         Cursor_Status |= Cursor_Status.Blinking;
                         IGM_Junction.SetMode(Mode.Abilities);
                         break;
+
                     default:
                         return false;
                 }
@@ -85,15 +73,14 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     Font.ColorID color = (c.JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
-
-                    ITEM[1, 0] = new IGMDataItem.Text(Titles[Items.Off], SIZE[1], color);
-                    ITEM[2, 0] = new IGMDataItem.Text(Titles[Items.Auto], SIZE[2], color);
-                    ITEM[3, 0] = new IGMDataItem.Text(Titles[Items.Ability], SIZE[3], color);
                     for (int i = 1; i <= 3; i++)
+                    {
+                        ((IGMDataItem.Text)ITEM[i, 0]).FontColor = color;
                         BLANKS[i] = c.JunctionnedGFs == Saves.GFflags.None;
+                    }
                 }
                 base.Refresh();
             }
@@ -107,19 +94,19 @@ namespace OpenVIII
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            Changed = Descriptions[Items.Junction];
+                            Changed = Strings.Description.Junction;
                             break;
 
                         case 1:
-                            Changed = Descriptions[Items.Off];
+                            Changed = Strings.Description.Off;
                             break;
 
                         case 2:
-                            Changed = Descriptions[Items.Auto];
+                            Changed = Strings.Description.Auto;
                             break;
 
                         case 3:
-                            Changed = Descriptions[Items.Ability];
+                            Changed = Strings.Description.Ability;
                             break;
                     }
                     if (Changed != null)
@@ -131,16 +118,13 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem.Text(Titles[Items.Junction], SIZE[0]);
+                ITEM[0, 0] = new IGMDataItem.Text { Data = Strings.Name.Junction, Pos = SIZE[0] };
+                ITEM[1, 0] = new IGMDataItem.Text { Data = Strings.Name.Off, Pos = SIZE[1] };
+                ITEM[2, 0] = new IGMDataItem.Text { Data = Strings.Name.Auto, Pos = SIZE[2] };
+                ITEM[3, 0] = new IGMDataItem.Text { Data = Strings.Name.Ability, Pos = SIZE[3] };
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Horizontal;
                 Cursor_Status |= Cursor_Status.Vertical;
-                Descriptions = new Dictionary<Items, FF8String> {
-                        {Items.Junction, Memory.Strings.Read(Strings.FileID.MNGRP,2,218) },
-                        {Items.Off, Memory.Strings.Read(Strings.FileID.MNGRP,2,220) },
-                        {Items.Auto, Memory.Strings.Read(Strings.FileID.MNGRP,2,222) },
-                        {Items.Ability, Memory.Strings.Read(Strings.FileID.MNGRP,2,224) },
-                    };
             }
 
             protected override void InitShift(int i, int col, int row)

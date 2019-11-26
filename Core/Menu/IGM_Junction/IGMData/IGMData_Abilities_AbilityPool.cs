@@ -9,13 +9,14 @@ namespace OpenVIII
 
         private class IGMData_Abilities_AbilityPool : IGMData.Pool.Base<IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.Equipable_Ability>, Kernel_bin.Abilities>
         {
-            #region Constructors
-
-            public IGMData_Abilities_AbilityPool() : base(11, 1, new IGMDataItem.Box(pos: new Rectangle(435, 150, 405, 480), title: Icons.ID.ABILITY), 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0)) => Source = Kernel_bin.EquipableAbilities;
-
-            #endregion Constructors
-
             #region Methods
+
+            public static IGMData_Abilities_AbilityPool Create()
+            {
+                IGMData_Abilities_AbilityPool r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.ABILITY }, 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0));
+                r.Source = Kernel_bin.EquipableAbilities;
+                return r;
+            }
 
             public override bool Inputs_CANCEL()
             {
@@ -31,7 +32,7 @@ namespace OpenVIII
                     skipsnd = true;
                     init_debugger_Audio.PlaySound(31);
                     base.Inputs_OKAY();
-                    int target = IGM_Junction.Data[SectionName.TopMenu_Abilities].CURSOR_SELECT - 4;
+                    int target = ((IGMData.Base)IGM_Junction.Data[SectionName.TopMenu_Abilities]).CURSOR_SELECT - 4;
                     c.Abilities[target] = Contents[CURSOR_SELECT];
                     IGM_Junction.SetMode(Mode.Abilities);
                     IGM_Junction.Refresh(); // can be more specific if you want to find what is being changed.
@@ -48,37 +49,47 @@ namespace OpenVIII
                     Cursor_Status |= Cursor_Status.Enabled;
                 int pos = 0;
                 int skip = Page * Rows;
-                if(Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
-                for (int i = 0;
-                    Memory.State.Characters != null &&
-                    i < c.UnlockedGFAbilities.Count &&
-                    pos < Rows; i++)
-                {
-                    if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    for (int i = 0;
+                        Memory.State.Characters != null &&
+                        i < c.UnlockedGFAbilities.Count &&
+                        pos < Rows; i++)
                     {
-                        Kernel_bin.Abilities j = c.UnlockedGFAbilities[i];
-                        if (Source.ContainsKey(j))
+                        if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
                         {
-                            if (skip > 0)
+                            Kernel_bin.Abilities j = c.UnlockedGFAbilities[i];
+                            if (Source.ContainsKey(j))
                             {
-                                skip--;
-                                continue;
-                            }
-                            Font.ColorID cid = c.Abilities.Contains(j) ? Font.ColorID.Grey : Font.ColorID.White;
-                            BLANKS[pos] = cid == Font.ColorID.Grey ? true : false;
+                                if (skip > 0)
+                                {
+                                    skip--;
+                                    continue;
+                                }
 
-                            ITEM[pos, 0] = new IGMDataItem.Text(
-                                Source[j].Icon, 9,
-                            Source[j].Name,
-                            new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), cid);
-                            Contents[pos] = j;
-                            pos++;
+                                Font.ColorID cid;
+                                if (c.Abilities.Contains(j))
+                                {
+                                    cid = Font.ColorID.Grey;
+                                    BLANKS[pos] = true;
+                                }
+                                else
+                                {
+                                    cid = Font.ColorID.White;
+                                    BLANKS[pos] = false;
+                                }
+
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Icon = Source[j].Icon;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = Source[j].Name;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = cid;
+                                ITEM[pos, 0].Show();
+                                Contents[pos] = j;
+                                pos++;
+                            }
                         }
                     }
-                }
                 for (; pos < Rows; pos++)
                 {
-                    ITEM[pos, 0] = null;
+                    ITEM[pos, 0].Hide();
                     BLANKS[pos] = true;
                     Contents[pos] = Kernel_bin.Abilities.None;
                 }
@@ -91,12 +102,12 @@ namespace OpenVIII
                 {
                     if (Contents[0] == Kernel_bin.Abilities.None)
                     {
-                        Pages = Page;
+                        //Pages = Page;
                         PAGE_NEXT();
                         return Update();
                     }
-                    else if (Contents[Rows - 1] == Kernel_bin.Abilities.None)
-                        Pages = Page + 1;
+                    //else if (Contents[Rows - 1] == Kernel_bin.Abilities.None)
+                    //    //Pages = Page + 1;
                 }
                 return base.Update();
             }
@@ -134,6 +145,13 @@ namespace OpenVIII
             {
                 base.Init();
                 Hide();
+                for (int pos = 0; pos < Rows; pos++)
+                    ITEM[pos, 0] = new IGMDataItem.Text
+                    {
+                        Palette = 9,
+                        Pos =
+                        new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0)
+                    };
             }
 
             protected override void InitShift(int i, int col, int row)

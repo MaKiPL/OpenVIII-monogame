@@ -121,12 +121,12 @@ namespace OpenVIII
                 {
                     var tasks = new List<Task<bool>>();
                     Files = new ConcurrentDictionary<FileID, StringsBase>();
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.NAMEDIC, new Namedic()))); // areames and kernel require namedic
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.NAMEDIC, Namedic.Load()))); // areames and kernel require namedic
                     //though there shouldn't be anything reading the strings till this is done processing
                     //Task.WaitAll(tasks.ToArray());
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.MNGRP, new Mngrp())));
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.AREAMES, new Areames())));
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.KERNEL, new Kernel())));
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.MNGRP, Mngrp.Load())));
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.AREAMES, Areames.Load())));
+                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.KERNEL, Kernel.Load())));
                     Task.WaitAll(tasks.ToArray());
                     if (tasks.Any(x => !x.Result))
                         throw new ArgumentException($"{this}::Failed to add to dictionary...");

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using OpenVIII.NetFramework;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using OpenVIII.NetFramework;
-using Microsoft.Xna.Framework;
 
 namespace OpenVIII.MonoGame
 {
@@ -26,7 +26,7 @@ namespace OpenVIII.MonoGame
                 GetDirectoryName: C:\Git
                 Expected: C:\Git\C#\OpenVIII\FF8\bin\x64\Debug
 
-        Exception:       
+        Exception:
             Microsoft.Xna.Framework.Audio.NoAudioHardwareException (0x80004005): OpenAL device could not be initialized. ---> System.NullReferenceException:
                at Microsoft.Xna.Framework.Audio.OpenALSoundController.OpenSoundController()
                at Microsoft.Xna.Framework.Audio.OpenALSoundController.OpenSoundController()
@@ -37,6 +37,7 @@ namespace OpenVIII.MonoGame
                at FF8.Game1..ctor()
                at FF8.Program.Main()
      */
+
     public sealed class OpenALWindowsHook : IMonoGameHook
     {
         public void Initialize()
@@ -66,7 +67,7 @@ namespace OpenVIII.MonoGame
             nativeLibraryField.SetValue(obj: /*static*/ null, value: nativeLibrary);
 
             // Overwrite Function fields
-            foreach (var pair in FieldToFunctionMap)
+            foreach (KeyValuePair<string, string> pair in FieldToFunctionMap)
             {
                 String fieldName = pair.Key;
                 FieldInfo field = openAL.RequireStaticField(fieldName);
@@ -86,7 +87,7 @@ namespace OpenVIII.MonoGame
             if (!File.Exists(libraryPath))
                 throw new DllNotFoundException($"Cannot find OpenAL DLL: {libraryPath}");
 
-            IntPtr library = WinAPI.LoadLibraryW($"{platform}/soft_oal.dll");
+            IntPtr library = NativeMethods.LoadLibraryW($"{platform}/soft_oal.dll");
             if (library == IntPtr.Zero)
                 throw new Win32Exception();
 
@@ -95,20 +96,20 @@ namespace OpenVIII.MonoGame
 
         public static Object RequireFunction(IntPtr library, String function, Type delegateType)
         {
-            IntPtr ptr = WinAPI.GetProcAddress(library, function);
+            IntPtr ptr = NativeMethods.GetProcAddress(library, function);
             if (ptr == IntPtr.Zero)
                 throw new Win32Exception();
 
             return Marshal.GetDelegateForFunctionPointer(ptr, delegateType);
         }
 
-        private static class WinAPI
+        private static class NativeMethods
         {
             [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-            public static extern IntPtr LoadLibraryW(String lpszLib);
+            internal static extern IntPtr LoadLibraryW(String lpszLib);
 
-            [DllImport("kernel32", CharSet = CharSet.Ansi /* GetProcAddress doesn't have an Unicode version. */, SetLastError = true)]
-            public static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
+            [DllImport("kernel32", CharSet = CharSet.Ansi /* GetProcAddress doesn't have an Unicode version. */, SetLastError = true,ThrowOnUnmappableChar = true, BestFitMapping = false)]
+            internal static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
         }
 
         // ReSharper disable StringLiteralTypo
@@ -145,6 +146,7 @@ namespace OpenVIII.MonoGame
             {"alGetProcAddress", "alGetProcAddress"},
             {"alGetString", "alGetString"}
         };
+
         // ReSharper restore StringLiteralTypo
     }
 }

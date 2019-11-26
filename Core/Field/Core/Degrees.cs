@@ -33,7 +33,8 @@ namespace OpenVIII
 
             return false;
         }
-
+        public static bool operator ==(Degrees left, Degrees right) => left.Equals(right);
+        public static bool operator !=(Degrees left, Degrees right) => !left.Equals(right);
         public static Degrees operator -(Degrees angle)
         {
             return Degrees.FromAngle360(-angle.Angle360);

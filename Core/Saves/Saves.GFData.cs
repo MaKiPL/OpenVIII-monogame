@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,7 +46,6 @@ namespace OpenVIII
             /// </summary>
             public BitArray Forgotten;
 
-
             /// <summary>
             /// <para>0x24 Number of kills</para>
             /// </summary>
@@ -69,21 +69,51 @@ namespace OpenVIII
             {
             }
 
-            public GFData(BinaryReader br, GFs g) => Read(br, g);
-
             #endregion Constructors
+
+            //public GFData(BinaryReader br, GFs g) => Read(br, g);
 
             #region Properties
 
             /// <summary>
+            /// GF version is compatibility duration.
+            /// </summary>
+            /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+            public override int ATBBarSize
+            {
+                get
+                {
+                    int Compability = 6000 - 5 * ShownCompability;
+                    return (int)(Compability * (int)Memory.CurrentBattleSpeed * 0.9143 / 32);
+                }
+            }
+
+            public override byte EVA => 0;
+
+            public override int EXP => checked((int)Experience);
+
+            /// <summary>
             /// Total exp to the next level up
             /// </summary>
-            public ushort EXPtoNextLevel => Level >= 100 ? (ushort)0 : (ushort)(Experience - (Level * JunctionableGFsData.EXPperLevel));
+            public ushort EXPtoNextLevel => Level >= 100 ? (ushort)0 :
+                (ushort)Math.Abs((Level * JunctionableGFsData.EXPperLevel) - Experience);
+
+            /// <summary>
+            /// Gf ability data
+            /// </summary>
+            private IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.GF_abilities> GFabilities => Kernel_bin.GFabilities;
+
+            public override byte HIT => 0;
 
             /// <summary>
             /// Enum ID for this GF
             /// </summary>
             public GFs ID { get; private set; }
+
+            /// <summary>
+            /// Kernel bin data on this GF
+            /// </summary>
+            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => Kernel_bin.JunctionableGFsData[ID];
 
             /// <summary>
             /// This is the ability that will gain AP from battles.
@@ -97,11 +127,14 @@ namespace OpenVIII
             {
                 get
                 {
-                    uint ret = (Experience / JunctionableGFsData.EXPperLevel);
+                    uint ret = (Experience / JunctionableGFsData.EXPperLevel) + 1;
                     return ret > 100 ? (byte)100 : (byte)ret;
                 }
             }
 
+            public override byte LUCK => 0;
+
+            public override byte MAG => 0;
 
             /// <summary>
             /// True if at max.
@@ -131,6 +164,25 @@ namespace OpenVIII
                 }
             }
 
+            public int ShownCompability
+            {
+                get
+                {
+                    if (Memory.State.JunctionedGFs().TryGetValue(ID, out Characters c) &&
+                        Memory.State[c].CompatibilitywithGFs.TryGetValue(ID, out ushort value))
+                    {
+                        return value;
+                    }
+                    return 0;
+                }
+            }
+
+            public override byte SPD => 0;
+
+            public override byte SPR => 0;
+
+            public override byte STR => 0;
+
             /// <summary>
             /// Unlocked abilities
             /// </summary>
@@ -149,37 +201,13 @@ namespace OpenVIII
                 }
             }
 
-            public override byte SPD => 0;
-
-            public override byte SPR => 0;
-
-            public override byte STR => 0;
-
             public override byte VIT => 0;
-
-            public override byte MAG => 0;
-
-            public override byte EVA => 0;
-
-            public override int EXP => 0;
-
-            public override byte HIT => 0;
-
-            public override byte LUCK => 0;
-
-            /// <summary>
-            /// Gf ability data
-            /// </summary>
-            private IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.GF_abilities> GFabilities => Kernel_bin.GFabilities;
-
-            /// <summary>
-            /// Kernel bin data on this GF
-            /// </summary>
-            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => Kernel_bin.JunctionableGFsData[ID];
 
             #endregion Properties
 
             #region Methods
+
+            public static GFData Load(BinaryReader br, GFs @enum) => Load<GFData>(br, @enum);
 
             /// <summary>
             /// Create a copy of this gfdata object
@@ -206,7 +234,7 @@ namespace OpenVIII
                     if (EXPtoNextLevel <= ap && Level < 100)
                         ret = true;
                     Experience += ap;
-                    if (Kernel_bin.AllAbilities.ContainsKey(Learning))
+                    if (!Learning.Equals(Kernel_bin.Abilities.None) && Kernel_bin.AllAbilities.ContainsKey(Learning))
                     {
                         byte ap_tolearn = Kernel_bin.AllAbilities[Learning].AP;
                         if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out int ind) && TestGFCanLearn(Learning, false))
@@ -261,29 +289,6 @@ namespace OpenVIII
             }
 
             /// <summary>
-            /// Read in values from safe data.
-            /// </summary>
-            /// <param name="br">Binary Reader to raw save data</param>
-            /// <param name="g">Which GF we are reading in</param>
-            public void Read(BinaryReader br, GFs g)
-            {
-                StatusImmune = true;
-                ID = g;
-                Name = br.ReadBytes(12);//0x00 (0x00 terminated)
-                if (string.IsNullOrWhiteSpace(Name)) Name = Memory.Strings.GetName(g);
-                Experience = br.ReadUInt32();//0x0C
-                Unknown = br.ReadByte();//0x10
-                Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked
-                _CurrentHP = br.ReadUInt16();//0x12
-                Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
-                APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
-                NumberKills = br.ReadUInt16();//0x3C of kills
-                NumberKOs = br.ReadUInt16();//0x3E of KOs
-                Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
-                Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
-            }
-
-            /// <summary>
             /// <para>Set which Ability the GF is learning.</para>
             /// <para>Could actually be a byte to corrispond to APs and Forgotten.</para>
             /// </summary>
@@ -315,7 +320,8 @@ namespace OpenVIII
             }
 
             public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) => sbyte.MaxValue;
-            public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s) => sbyte.MaxValue;
+
+            public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s) => sbyte.MaxValue;
 
             /// <summary>
             /// False if gf knows ability, True if can learn it.
@@ -330,6 +336,7 @@ namespace OpenVIII
             /// If converting to string display GF's Name.
             /// </summary>
             public override string ToString() => Name.ToString();
+
             public override ushort TotalStat(Kernel_bin.Stat s) => 0;
 
             public bool UnlockerTest(Kernel_bin.Abilities a)
@@ -360,6 +367,30 @@ namespace OpenVIII
                     else
                         return false;
                 }
+            }
+
+            /// <summary>
+            /// Read in values from safe data.
+            /// </summary>
+            /// <param name="br">Binary Reader to raw save data</param>
+            /// <param name="g">Which GF we are reading in</param>
+            protected override void ReadData(BinaryReader br, Enum @enum)
+            {
+                if (!@enum.GetType().Equals(typeof(GFs))) throw new ArgumentException($"Enum {@enum} is not GFs");
+                StatusImmune = true;
+                ID = (GFs)@enum;
+                Name = br.ReadBytes(12);//0x00 (0x00 terminated)
+                if (string.IsNullOrWhiteSpace(Name)) Name = Memory.Strings.GetName((GFs)@enum);
+                Experience = br.ReadUInt32();//0x0C
+                Unknown = br.ReadByte();//0x10
+                Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked
+                _CurrentHP = br.ReadUInt16();//0x12
+                Complete = new BitArray(br.ReadBytes(16));//0x14 abilities (1 bit = 1 ability completed, 9 bits unused)
+                APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
+                NumberKills = br.ReadUInt16();//0x3C of kills
+                NumberKOs = br.ReadUInt16();//0x3E of KOs
+                Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
+                Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
             }
 
             #endregion Methods

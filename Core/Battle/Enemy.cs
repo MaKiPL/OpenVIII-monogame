@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII
@@ -11,84 +12,11 @@ namespace OpenVIII
 
         private const int statusdefault = 100;
         private byte _fixedLevel;
+        private bool mugged = false;
 
         #endregion Fields
 
         #region Methods
-
-        public Saves.Item Drop(bool RareITEM = false)
-        {
-            if (mugged) return default;
-            int percent = DropRate;
-            Saves.Item[] list = DropList;
-            int i = Memory.Random.Next(100 + 1);
-            if (i < percent && list.Length > 0)
-            {
-                //Slot              |  0        | 1         | 2        | 3
-                //------------------|  ---------| --------- | ---------| --------
-                //Without Rare Item | 178 / 256 | 51 / 256  | 15 / 256 | 12 / 256
-                //------------------|  ---------| --------- | ---------| --------
-                //With Rare Item    | 128 / 256 | 114 / 256 | 14 / 256 | 0 / 256 <- kinda makes no sence to me
-                int r = Memory.Random.Next(256);
-                if(RareITEM)
-                {
-                    if (r < 128)
-                        return list[0];
-                    else if ((r-=128) < 114)
-                        return list[1];
-                    else if ((r -= 114) < 14)
-                        return list[2];
-                    else
-                        return list[3];
-                }
-                if (r < 178)
-                    return list[0];
-                else if ((r -= 178) < 51)
-                    return list[1];
-                else if ((r -= 51) < 15)
-                    return list[2];
-                else
-                    return list[3];
-            }
-            return default;
-        }
-        bool mugged = false;
-        public Saves.Item Mug(byte spd, bool RareITEM = false)
-        {
-            if (mugged) return default;
-            int percent = (MugRate + spd);
-            Saves.Item[] list = DropList;
-            int i = Memory.Random.Next(100 + 1);
-            try
-            {
-                if (i < percent && list.Length > 0)
-                {
-                    byte r = (byte)Memory.Random.Next(256);
-                    if (RareITEM)
-                    {
-                        if (r < 128)
-                            return list[0];
-                        else if ((r -= 128) < 114)
-                            return list[1];
-                        else if ((r -= 114) < 14)
-                            return list[2];
-                        else
-                            return list[3];
-                    }
-                    if (r < 178)
-                        return list[0];
-                    else if ((r -= 178) < 51)
-                        return list[1];
-                    else if ((r -= 51) < 15)
-                        return list[2];
-                    else
-                        return list[3];
-                }
-            }
-            finally { mugged = true; }
-            mugged = false;
-            return default;
-        }
 
         private byte convert1(byte[] @in)
         {
@@ -113,7 +41,10 @@ namespace OpenVIII
         {
             //from Ifrit's help file
             byte level = Level;
-            return @in * (5 * (level - inLevel) / inLevel + 4);
+            if (inLevel == 0)
+                return 0;
+            else
+                return @in * (5 * (level - inLevel) / inLevel + 4);
         }
 
         private T hml<T>(T h, T m, T l)
@@ -140,31 +71,41 @@ namespace OpenVIII
 
         #region Constructors
 
-        public Enemy(Module_battle_debug.EnemyInstanceInformation eII, byte fixedLevel = 0)
+        private Enemy()
         {
-            EII = eII;
-            FixedLevel = fixedLevel;
-            _CurrentHP = MaxHP();
-            if ((info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
+        }
+
+        protected override void ReadData(BinaryReader br, Enum @enum) => throw new NotImplementedException("This method is not used by Enemy");
+
+        public static Enemy Load(Module_battle_debug.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
+        {
+            Enemy r = new Enemy
             {
-                Statuses0 |= Kernel_bin.Persistant_Statuses.Zombie;
-            }
-            if ((info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
+                EII = eII,
+                FixedLevel = fixedLevel
+            };
+            r._CurrentHP = startinghp ?? r.MaxHP();
+            if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
             {
-                Statuses1 |= Kernel_bin.Battle_Only_Statuses.Protect;
+                r.Statuses0 |= Kernel_bin.Persistent_Statuses.Zombie;
             }
-            if ((info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0)
+            if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
             {
-                Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
+                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Protect;
             }
-            if ((info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0)
+            if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0)
             {
-                Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
+                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
             }
-            if ((info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0)
+            if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0)
             {
-                Statuses1 |= Kernel_bin.Battle_Only_Statuses.Float;
+                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
             }
+            if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0)
+            {
+                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Float;
+            }
+            return r;
         }
 
         #endregion Constructors
@@ -174,6 +115,7 @@ namespace OpenVIII
         public static List<Enemy> Party { get; set; }
 
         public byte AP => info.ap;
+
         public Debug_battleDat.Magic[] DrawList => hml(info.drawhigh, info.drawmed, info.drawlow);
 
         /// <summary>
@@ -252,7 +194,7 @@ namespace OpenVIII
 
         #endregion Properties
 
-        public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => new Enemy(@in);
+        public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => Load(@in);
 
         /// <summary>
         /// Return card if succeed at roll
@@ -264,8 +206,7 @@ namespace OpenVIII
             if (info.card.Skip(1).All(x => x == Cards.ID.Immune)) return Cards.ID.Immune;
             int p = (256 * MaxHP() - 255 * CurrentHP()) / MaxHP();
             int r = Memory.Random.Next(256);
-            // 2 is rare card, 1 is normal card 0
-            // per ifrit.
+            // 2 is rare card, 1 is normal card 0 per ifrit.
             return r < (p + 1) ? (r < 17 ? info.card[2] : info.card[1]) : Cards.ID.Fail;
         }
 
@@ -276,6 +217,45 @@ namespace OpenVIII
 
             int r = Memory.Random.Next(256);
             return r < 9 ? info.card[1] : Cards.ID.Fail;
+        }
+
+        public override Damageable Clone() => throw new NotImplementedException();
+
+        public Saves.Item Drop(bool RareITEM = false)
+        {
+            if (mugged) return default;
+            int percent = DropRate;
+            Saves.Item[] list = DropList;
+            int i = Memory.Random.Next(100 + 1);
+            if (i < percent && list.Length > 0)
+            {
+                //Slot              |  0        | 1         | 2        | 3
+                //------------------|  ---------| --------- | ---------| --------
+                //Without Rare Item | 178 / 256 | 51 / 256  | 15 / 256 | 12 / 256
+                //------------------|  ---------| --------- | ---------| --------
+                //With Rare Item    | 128 / 256 | 114 / 256 | 14 / 256 | 0 / 256 <- kinda makes no sence to me
+                int r = Memory.Random.Next(256);
+                if (RareITEM)
+                {
+                    if (r < 128)
+                        return list[0];
+                    else if ((r -= 128) < 114)
+                        return list[1];
+                    else if ((r -= 114) < 14)
+                        return list[2];
+                    else
+                        return list[3];
+                }
+                if (r < 178)
+                    return list[0];
+                else if ((r -= 178) < 51)
+                    return list[1];
+                else if ((r -= 51) < 15)
+                    return list[2];
+                else
+                    return list[3];
+            }
+            return default;
         }
 
         public override short ElementalResistance(Kernel_bin.Element @in)
@@ -303,6 +283,42 @@ namespace OpenVIII
             return (ushort)MathHelper.Clamp(i, 0, ushort.MaxValue);
         }
 
+        public Saves.Item Mug(byte spd, bool RareITEM = false)
+        {
+            if (mugged) return default;
+            int percent = (MugRate + spd);
+            Saves.Item[] list = DropList;
+            int i = Memory.Random.Next(100 + 1);
+            try
+            {
+                if (i < percent && list.Length > 0)
+                {
+                    byte r = (byte)Memory.Random.Next(256);
+                    if (RareITEM)
+                    {
+                        if (r < 128)
+                            return list[0];
+                        else if ((r -= 128) < 114)
+                            return list[1];
+                        else if ((r -= 114) < 14)
+                            return list[2];
+                        else
+                            return list[3];
+                    }
+                    if (r < 178)
+                        return list[0];
+                    else if ((r -= 178) < 51)
+                        return list[1];
+                    else if ((r -= 51) < 15)
+                        return list[2];
+                    else
+                        return list[3];
+                }
+            }
+            finally { mugged = true; }
+            mugged = false;
+            return default;
+        }
 
         /// <summary>
         /// I notice that the resistance reported on the wiki is 100 less than the number in the data.
@@ -310,36 +326,36 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel_bin.Persistant_Statuses s)
+        public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s)
         {
             byte r = 100;
             switch (s)
             {
-                case Kernel_bin.Persistant_Statuses.Death:
+                case Kernel_bin.Persistent_Statuses.Death:
                     r = info.deathResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Poison:
+                case Kernel_bin.Persistent_Statuses.Poison:
                     r = info.poisonResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Petrify:
+                case Kernel_bin.Persistent_Statuses.Petrify:
                     r = info.petrifyResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Darkness:
+                case Kernel_bin.Persistent_Statuses.Darkness:
                     r = info.darknessResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Silence:
+                case Kernel_bin.Persistent_Statuses.Silence:
                     r = info.silenceResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Berserk:
+                case Kernel_bin.Persistent_Statuses.Berserk:
                     r = info.berserkResistanceMental;
                     break;
 
-                case Kernel_bin.Persistant_Statuses.Zombie:
+                case Kernel_bin.Persistent_Statuses.Zombie:
                     r = info.zombieResistanceMental;
                     break;
             }
@@ -464,8 +480,6 @@ namespace OpenVIII
             }
             return 0;
         }
-
-        public override Damageable Clone() => throw new NotImplementedException();
 
         public static implicit operator Module_battle_debug.EnemyInstanceInformation(Enemy @in) => @in.EII;
     }

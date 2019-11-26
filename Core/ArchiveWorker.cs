@@ -7,7 +7,6 @@ namespace OpenVIII
 {
     public class ArchiveWorker
     {
-
         #region Fields
 
         public Memory.Archive _path;
@@ -26,10 +25,12 @@ namespace OpenVIII
                 { Memory.Archives.A_MENU, new Dictionary<string, byte[]>() },
                 { Memory.Archives.A_WORLD, new Dictionary<string, byte[]>() }
             };
+
         /// <summary>
         /// prevent two threads from writing to cache at the same time.
         /// </summary>
         private static object cachelock = new object();
+
         private bool _compressed;
         private uint _locationInFs;
         private uint _unpackedFileSize;
@@ -155,8 +156,7 @@ namespace OpenVIII
             filename = filename.TrimEnd('\0');
             using (TextReader tr = new StreamReader(stream))
             {
-                string line;
-                for (int i = 0; (line = tr.ReadLine().TrimEnd('\0')) != null; i++)
+                for (int i = 0; GetLine(tr, out string line); i++)
                 {
                     if (string.IsNullOrWhiteSpace(line))
                     {
@@ -172,6 +172,17 @@ namespace OpenVIII
             }
             Debug.WriteLine($"ArchiveWorker:: Filename {filename}, not found. returning -1");
             return -1;
+        }
+
+        private static bool GetLine(TextReader tr, out string line)
+        {
+            line = tr.ReadLine();
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                line.TrimEnd('\0');
+                return true;
+            }
+            return false;
         }
 
         private byte[] GetBinaryFile(string fileName, int loc, bool cache)
@@ -198,6 +209,7 @@ namespace OpenVIII
             if (temp != null && cache) ArchiveCache[_path][fileName] = temp;
             return temp;
         }
+
         /// <summary>
         /// Generate a file list from raw text file.
         /// </summary>
@@ -205,10 +217,10 @@ namespace OpenVIII
         private string[] ProduceFileLists()
         {
             //return File.ReadAllLines(_path.FL, System.Text.Encoding.ASCII);
-            using (var sr = new StreamReader(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.ASCII))
+            using (StreamReader sr = new StreamReader(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.ASCII))
             {
                 List<string> fl = new List<string>();
-                while(!sr.EndOfStream)
+                while (!sr.EndOfStream)
                     fl.Add(sr.ReadLine());
                 return fl.ToArray();
             }

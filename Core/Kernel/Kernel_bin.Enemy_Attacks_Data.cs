@@ -29,7 +29,7 @@ namespace OpenVIII
             public byte Unknown2 { get; private set; }//0x0B	1 byte Unknown
             public byte StatusAttack { get; private set; }//0x0C	1 byte Status attack enabler
             public byte Attack_parameter { get; private set; }//0x0D	1 byte Attack Parameter, HIT?
-            public Persistant_Statuses Statuses0 { get; private set; }//0x0E	2 bytes status_0; //statuses 0-7
+            public Persistent_Statuses Statuses0 { get; private set; }//0x0E	2 bytes status_0; //statuses 0-7
             public Battle_Only_Statuses Statuses1 { get; private set; }//0x10	4 bytes status_1; //statuses 8-31
             public void Read(BinaryReader br, int i)
             {
@@ -52,7 +52,7 @@ namespace OpenVIII
                 StatusAttack = br.ReadByte();//0x0C	1 byte Status attack enabler
                 Attack_parameter = br.ReadByte();//0x0D	1 byte Attack Parameter
                 //Statuses = new BitArray(br.ReadBytes(6));
-                Statuses0 = (Persistant_Statuses)br.ReadUInt16();//0x0E	2 bytes status_0; //statuses 0-7
+                Statuses0 = (Persistent_Statuses)br.ReadUInt16();//0x0E	2 bytes status_0; //statuses 0-7
                 Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();//0x10	4 bytes status_1; //statuses 8-31
             }
             public static List<Enemy_Attacks_Data> Read(BinaryReader br)

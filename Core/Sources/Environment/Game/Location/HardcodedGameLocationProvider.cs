@@ -14,8 +14,8 @@ namespace OpenVIII
 
         public Boolean FindGameLocation(out GameLocation gameLocation)
         {
-            using (var errors = new ExceptionList())
-            {
+            //using (var errors = new ExceptionList())
+            //{
                 foreach (var path in _knownPaths)
                 {
                     try
@@ -24,15 +24,16 @@ namespace OpenVIII
                             continue;
 
                         gameLocation = new GameLocation(path);
-                        errors.Clear();
+                        //errors.Clear();
                         return true;
                     }
                     catch (Exception ex)
                     {
-                        errors.Add(ex);
+                        ex.Rethrow();
+                        //errors.Add(ex);
                     }
                 }
-            }
+            //}
 
             gameLocation = null;
             return false;

@@ -10,20 +10,18 @@ namespace OpenVIII.IGMDataItem
 
         #endregion Fields
 
-        #region Constructors
-
-        public Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
-        {
-            Data = data;
-            Blink = blink;
-            Blink_Adjustment = blink_adjustment;
-        }
-
-        #endregion Constructors
+        //public Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
+        //{
+        //    Data = data;
+        //    Blink = blink;
+        //    Blink_Adjustment = blink_adjustment;
+        //}
 
         #region Properties
 
-        public Faces.ID Data { get; set; }
+        public bool Border { get; set; } = false;
+        public Faces.ID Data { get; set; } = Faces.ID.Blank;
+
         public byte Palette
         {
             get => _palette; set
@@ -39,11 +37,14 @@ namespace OpenVIII.IGMDataItem
 
         public override void Draw()
         {
-            if (Enabled)
+            if (Enabled && Data != Faces.ID.Blank)
             {
-                Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade);
-                if (Blink)
-                    Memory.Faces.Draw(Data, Pos, Vector2.UnitY, Fade * Blink_Amount * Blink_Adjustment);
+                Rectangle pos = Pos;
+                if (OffsetAnchor != null)
+                    pos.Offset(OffsetAnchor);
+                Memory.Faces.Draw(Data, pos, Vector2.UnitY, Fade * (base.Blink ? (Blink_Amount * Blink_Adjustment) : 1f));
+                if (Border)
+                    Memory.Icons.Draw(Icons.ID.MenuBorder, 2, pos, new Vector2(1f), Fade * (base.Blink ? (Blink_Amount * Blink_Adjustment) : 1f));
             }
         }
 

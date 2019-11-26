@@ -6,37 +6,19 @@ namespace OpenVIII.IGMDataItem
     {
         #region Fields
 
-        private int _data;
-        private int _digits;
-        private byte _padding;
-        private int _spaces;
+        private int _data = 0;
+        private byte _padding = 1;
+        private int _spaces = 1;
+        private bool changed = false;
         private Rectangle original_pos;
-        private int SpaceWidth;
+        private int space_width = 20;
 
         #endregion Fields
-
-        #region Constructors
-
-        public Integer(int data, Rectangle? pos = null, byte? palette = null, Icons.NumType? numtype = null, byte? padding = null, int? spaces = null, int? spacewidth = null, Font.ColorID? fontcolor = null, byte? faded_palette = null, Font.ColorID? faded_fontcolor = null, float blink_adjustment = 1f) : base(pos)
-        {
-            original_pos = _pos; //= pos ?? Rectangle.Empty;
-            _padding = padding ?? 1;
-            Palette = palette ?? 2;
-            NumType = numtype ?? 0;
-            _spaces = spaces ?? 1;
-            SpaceWidth = spacewidth ?? 20;
-            FontColor = fontcolor ?? Font.ColorID.White;
-            //Faded_FontColor = faded_fontcolor ?? FontColor;
-            Faded_Palette = faded_palette ?? Palette;
-            Blink_Adjustment = blink_adjustment;
-            Data = data;
-        }
-
-        #endregion Constructors
 
         #region Properties
 
         public override bool Blink { get => base.Blink && (Palette != Faded_Palette || FontColor != Faded_FontColor); set => base.Blink = value; }
+
         public int Data
         {
             get => _data;
@@ -44,34 +26,88 @@ namespace OpenVIII.IGMDataItem
             set
             {
                 _data = value;
-
-                _digits = Data.ToString().Length;
-                if (_digits < _padding) _digits = _padding;
-
-                _pos = original_pos;
-                _pos.Offset(SpaceWidth * (_spaces - _digits), 0);
+                changed = true;
             }
         }
 
+        public Rectangle DataSize { get; private set; }
+        public int Digits => Data.ToString().Length;
         public Font.ColorID Faded_FontColor { get; set; }
-        public byte Faded_Palette { get; set; }
-        public Font.ColorID FontColor { get; set; }
-        public byte Palette { get; set; }
+        public byte Faded_Palette { get; set; } = 2;
+        public Font.ColorID FontColor { get; set; } = Font.ColorID.White;
+        public Icons.NumType NumType { get; set; } = 0;
 
-        public Icons.NumType NumType { get; set; }
+        public byte Padding
+        {
+            get => _padding; set
+            {
+                _padding = value;
+                changed = true;
+            }
+        }
+
+        public byte Palette { get; set; } = 2;
+
+        public override Rectangle Pos
+        {
+            get => base.Pos; set
+            {
+                original_pos = value;
+                base.Pos = original_pos;
+                changed = true;
+            }
+        }
+
+        public int Space_Width
+        {
+            get => space_width; set
+            {
+                space_width = value;
+                changed = true;
+            }
+        }
+
+        public int Spaces
+        {
+            get => _spaces; set
+            {
+                _spaces = value;
+                changed = true;
+            }
+        }
 
         #endregion Properties
 
         #region Methods
 
-        public override void Draw()
+        public override void Draw() => Draw(false);
+
+        public void Draw(bool skipdraw)
         {
             if (Enabled)
             {
-                Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade, FontColor, Blink);
-                //if (Blink)
-                //    Memory.Icons.Draw(Data, NumType, Faded_Palette, $"D{_padding}", Pos.Location.ToVector2(), Scale, Fade * Blink_Amount * Blink_Adjustment, Faded_FontColor);
+                DataSize = Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2() +
+                    (OffsetAnchor ?? Vector2.Zero), Scale, Fade, FontColor, Blink, skipdraw);
             }
+        }
+
+        public override bool Update()
+        {
+            bool r = base.Update();
+            if (changed)
+            {
+                UpdateOffset();
+                changed = false;
+                return true;
+            }
+            return r;
+        }
+
+        public void UpdateOffset()
+        {
+            _pos = original_pos;
+            int digits = Digits;
+            _pos.Offset(space_width * (_spaces - (digits < _padding ? _padding : digits)), 0);
         }
 
         #endregion Methods

@@ -13,19 +13,21 @@ namespace OpenVIII
         {
             #region Fields
 
-            public static EventHandler<C> PrevSettingUpdateEventListener;
             protected bool eventAdded = false;
+
             protected List<Kernel_bin.Abilities> unlocked;
+
             private C _prevSetting;
+
             private Font.ColorID? colorid = null;
 
             #endregion Fields
 
-            #region Constructors
+            #region Events
 
-            public IGMData_Slots(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) : base(count, depth, container, cols, rows) => Contents = new Kernel_bin.Stat[Count];
+            public static event EventHandler<C> PrevSettingUpdateEventListener;
 
-            #endregion Constructors
+            #endregion Events
 
             #region Properties
 
@@ -34,6 +36,13 @@ namespace OpenVIII
             #endregion Properties
 
             #region Methods
+
+            public static T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Slots<C>, new()
+            {
+                T r = IGMData.Base.Create<T>(count, depth, container, cols, rows);
+                r.Contents = new Kernel_bin.Stat[r.Count];
+                return r;
+            }
 
             public abstract void BackupSetting();
 
@@ -68,7 +77,7 @@ namespace OpenVIII
             public override bool Inputs()
             {
                 bool ret = false;
-                if (CONTAINER.Pos.Contains(InputMouse.Location.Transform(Menu.Focus)))
+                if (CONTAINER.Pos.Contains(MouseLocation))
                 {
                     if (Input2.DelayedButton(MouseButtons.MouseWheelup))
                     {
@@ -91,6 +100,14 @@ namespace OpenVIII
                 if (ret) CheckMode();
                 return ret;
             }
+
+            /// <summary>
+            /// please overload with a if statement to check for mode you want or else this will run
+            /// the checkmode method everytime a mode change happens.
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            public override void ModeChangeEvent(object sender, Enum e) => Refresh();
 
             public override void Refresh()
             {
@@ -120,36 +137,43 @@ namespace OpenVIII
 
             protected void FillData(Icons.ID starticon, Kernel_bin.Stat statatk, Kernel_bin.Stat statdef)
             {
-                if (!Damageable.GetCharacterData(out Saves.CharacterData c)) return;
-                byte pos = 0;
-                Contents[0] = statatk;
-                getColor(pos, out byte palette, out Font.ColorID _colorid, out bool unlocked);
-                FF8String name = Kernel_bin.MagicData[c.Stat_J[statatk]].Name;
-                if (name == null || name.Length == 0)
-                    name = Misc[Items._];
-                ITEM[pos, 0] = new IGMDataItem.Icon(starticon, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
-                ITEM[pos, 1] = new IGMDataItem.Text(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), fontcolor: _colorid);
-                BLANKS[pos] = !unlocked;
-                for (pos = 1; pos < Count; pos++)
-                {
-                    Contents[pos] = statdef + pos - 1;
-                    getColor(pos, out palette, out _colorid, out unlocked);
-                    name = Kernel_bin.MagicData[c.Stat_J[statdef + pos - 1]].Name;
-                    if (name == null || name.Length == 0)
-                        name = Misc[Items._];
-                    ITEM[pos, 0] = new IGMDataItem.Icon(starticon + 1, new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0), palette);
-                    ITEM[pos, 1] = new IGMDataItem.Text(name, new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0), fontcolor: _colorid);
-                    BLANKS[pos] = !unlocked;
-                }
+                if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                    for (byte pos = 0; pos < Count; pos++)
+                    {
+                        Kernel_bin.Stat stat = pos != 0 ? statdef + pos - 1 : statatk;
+                        Contents[pos] = stat;
+                        getColor(pos, out byte palette, out Font.ColorID _colorid, out bool unlocked);
+                        FF8String name = GetName(stat);
+                        UpdateItems();
+
+                        FF8String GetName(Kernel_bin.Stat key)
+                        {
+                            FF8String _name = Kernel_bin.MagicData[c.Stat_J[key]].Name;
+                            if (_name == null || _name.Length == 0)
+                                _name = Strings.Name._;
+                            return _name;
+                        }
+                        void UpdateItems()
+                        {
+                            ((IGMDataItem.Icon)ITEM[pos, 0]).Data = starticon + 1;
+                            ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = palette;
+                            ((IGMDataItem.Text)ITEM[pos, 1]).Data = name;
+                            ((IGMDataItem.Text)ITEM[pos, 1]).FontColor = _colorid;
+                            BLANKS[pos] = !unlocked;
+                        }
+                    }
             }
 
-            /// <summary>
-            /// please overload with a if statement to check for mode you want or else this will run
-            /// the checkmode method everytime a mode change happens.
-            /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
-            protected override void ModeChangeEvent(object sender, Enum e) => Refresh();
+            protected override void Init()
+            {
+                base.Init();
+                for (byte pos = 0; pos < Count; pos++)
+                {
+                    ITEM[pos, 0] = new IGMDataItem.Icon { Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
+                    ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 60, SIZE[pos].Y, 0, 0) };
+                    BLANKS[pos] = true;
+                }
+            }
 
             protected abstract void PageLeft();
 

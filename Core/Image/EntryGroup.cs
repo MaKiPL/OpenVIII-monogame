@@ -2,14 +2,15 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace OpenVIII
 {
     public class EntryGroup : IEnumerator, IEnumerable
     {
-        private const int minx = -200;
-        private const int miny = -100;
+        private const int minx = -1000;
+        private const int miny = -360;
 
         #region Fields
 
@@ -100,13 +101,19 @@ namespace OpenVIII
             }
         }
 
-        private Dictionary<int, Color> Average;
+        private object locker = new object();
+        private ConcurrentDictionary<int, Color> Average;
 
         public Color MostSaturated(TextureHandler tex, int palette = 0)
         {
-            if (!(Average?.TryGetValue(palette, out Color ret) ?? false))
+            if (Count >= 1)
             {
-                if (Count >= 1)
+                lock (locker)
+                {
+                    if (Average == null)
+                        Average = new ConcurrentDictionary<int, Color>();
+                }
+                if (!(Average.TryGetValue(palette, out Color ret)))
                 {
                     Rectangle r = this[0].GetRectangle;
                     for (int i = 1; i < Count; i++)
@@ -116,7 +123,7 @@ namespace OpenVIII
                     Color[] tc = new Color[r.Width * r.Height];
                     t.GetData(0, r, tc, 0, tc.Length);
                     HSL test, last;
-                    last.S =0;
+                    last.S = 0;
                     last.L = 0;
                     ret = Color.TransparentBlack;
 
@@ -149,12 +156,12 @@ namespace OpenVIII
                             }
                         }
                     }
+                    if (!Average.TryAdd(palette, ret))
+                        throw new Exception("failed to cache color");
                 }
-                if (Average == null)
-                    Average = new Dictionary<int, Color>();
-                Average.Add(palette, ret);
+                return ret;
             }
-            return ret;
+            throw new Exception("Count is <1");
         }
 
         public void Trim(TextureHandler tex)
@@ -184,7 +191,7 @@ namespace OpenVIII
                         if (offset != Vector2.Zero && Count > 1)
                             this[i].SetTrim_2ndPass(offset);
                         Point size = new Point((int)(this[i].Width + Math.Abs(this[i].Offset.X)), (int)(this[i].Height + Math.Abs(this[i].Offset.Y)));
-                        
+
                         if (Width < size.X) Width = size.X;
                         if (Height < size.Y) Height = size.Y;
                     }
@@ -208,7 +215,8 @@ namespace OpenVIII
             inscale = Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
             inputdst.Height = Math.Abs(inputdst.Height);
-            if (inputdst.Right < minx || inputdst.Bottom < miny) return;
+            if (inputdst.Right < minx || inputdst.Bottom < miny)
+                return;
 
             Vector2 autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
             Vector2 scale;

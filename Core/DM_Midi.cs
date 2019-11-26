@@ -17,7 +17,7 @@ namespace OpenVIII
     /// </summary>
     /// <see cref="http://directmidi.sourceforge.net/"/>
     /// <seealso cref="http://directmidinet.sourceforge.net/"/>
-    public class DM_Midi : IDisposable
+    public sealed class DM_Midi : IDisposable
     {
 #if _WINDOWS && !_X64
         private CDirectMusic cdm;

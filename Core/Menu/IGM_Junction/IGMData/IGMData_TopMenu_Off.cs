@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 
 namespace OpenVIII
 {
@@ -9,21 +8,9 @@ namespace OpenVIII
 
         private class IGMData_TopMenu_Off : IGMData.Base
         {
-            #region Constructors
-
-            public IGMData_TopMenu_Off() : base(2, 1, new IGMDataItem.Box(pos: new Rectangle(165, 12, 445, 54)), 2, 1)
-            {
-            }
-
-            #endregion Constructors
-
-            #region Properties
-
-            public new Dictionary<Items, FF8String> Descriptions { get; private set; }
-
-            #endregion Properties
-
             #region Methods
+
+            public static IGMData_TopMenu_Off Create() => Create<IGMData_TopMenu_Off>(2, 1, new IGMDataItem.Box { Pos = new Rectangle(165, 12, 445, 54) }, 2, 1);
 
             public override bool Inputs_CANCEL()
             {
@@ -47,6 +34,7 @@ namespace OpenVIII
                         IGM_Junction.Data[SectionName.RemAll].Show();
                         IGM_Junction.SetMode(Mode.RemAll);
                         break;
+
                     default:
                         return false;
                 }
@@ -71,15 +59,9 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem.Text(Titles[Items.RemMag], SIZE[0]);
-                ITEM[1, 0] = new IGMDataItem.Text(Titles[Items.RemAll], SIZE[1]);
-                Cursor_Status |= Cursor_Status.Enabled;
-                Cursor_Status |= Cursor_Status.Horizontal;
-                Cursor_Status |= Cursor_Status.Vertical;
-                Descriptions = new Dictionary<Items, FF8String> {
-                        {Items.RemMag,Memory.Strings.Read(Strings.FileID.MNGRP,2,278)},
-                        {Items.RemAll,Memory.Strings.Read(Strings.FileID.MNGRP,2,276)},
-                    };
+                ITEM[0, 0] = new IGMDataItem.Text() { Data = Strings.Name.RemMag, Pos = SIZE[0] };
+                ITEM[1, 0] = new IGMDataItem.Text() { Data = Strings.Name.RemAll, Pos = SIZE[1] };
+                Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Horizontal | Cursor_Status.Vertical);
             }
 
             protected override void InitShift(int i, int col, int row)
@@ -97,11 +79,11 @@ namespace OpenVIII
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            Changed = Descriptions[Items.RemMag];
+                            Changed = Strings.Description.RemMag;
                             break;
 
                         case 1:
-                            Changed = Descriptions[Items.RemAll];
+                            Changed = Strings.Description.RemAll;
                             break;
                     }
                     if (Changed != null && IGM_Junction != null)

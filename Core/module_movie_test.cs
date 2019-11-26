@@ -97,13 +97,19 @@ namespace OpenVIII
             if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.MoviePointer--;
+                if (Module_movie_test.Index > 0)
+                    Module_movie_test.Index--;
+                else
+                    Module_movie_test.Index = Module_movie_test.Movies.Count - 1;
                 Reset();
             }
             if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 init_debugger_Audio.PlaySound(0);
-                Module_main_menu_debug.MoviePointer++;
+                if (Module_movie_test.Index < Module_movie_test.Movies.Count - 1)
+                    Module_movie_test.Index++;
+                else
+                    Module_movie_test.Index = 0;
                 Reset();
             }
 #endif
@@ -221,8 +227,8 @@ namespace OpenVIII
         {
             if (Movies != null && Index < Movies.Count)
             {
-                FfccAudio = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
-                FfccVideo = new Ffcc(Movies[Index], AVMediaType.AVMEDIA_TYPE_VIDEO, Ffcc.FfccMode.STATE_MACH);
+                FfccAudio = FfAudio.Create(Movies[Index]);
+                FfccVideo = FfVideo.Create(Movies[Index]);
 
                 FPS = FfccVideo.FPS;
                 if (Math.Abs(FPS) < double.Epsilon)

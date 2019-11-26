@@ -23,7 +23,7 @@ namespace OpenVIII
             public byte Hit_Count { get; private set; }
             public Element Element { get; private set; }
             public byte Status_Attack { get; private set; }
-            public Persistant_Statuses Statuses0 { get; private set; }
+            public Persistent_Statuses Statuses0 { get; private set; }
             public Battle_Only_Statuses Statuses1 { get; private set; }
             /// <summary>
             /// order is different so convertion is requried.
@@ -75,7 +75,7 @@ namespace OpenVIII
                 //0x0008  1 byte Element
                 Status_Attack = br.ReadByte();
                 //0x0009  1 byte Status attack enabler
-                Statuses0 = (Persistant_Statuses)br.ReadUInt16();
+                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
                 Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
                 //0x000A  6 bytes Statuses
             }

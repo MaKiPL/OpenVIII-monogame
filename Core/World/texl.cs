@@ -19,8 +19,7 @@ namespace OpenVIII
         public texl(byte[] texlBuffer)
         {
             textures = new TextureHandler[20][];
-            using (MemoryStream ms = new MemoryStream(texlBuffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            using (BinaryReader br = new BinaryReader(new MemoryStream(texlBuffer)))
             for (int i = 0; i < TEX_COUNT; i++)
             {
                     int timOffset = i * TEX_SIZE;

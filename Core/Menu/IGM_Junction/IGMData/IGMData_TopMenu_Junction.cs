@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 
 namespace OpenVIII
 {
@@ -9,21 +8,9 @@ namespace OpenVIII
 
         private class IGMData_TopMenu_Junction : IGMData.Base
         {
-            #region Constructors
-
-            public IGMData_TopMenu_Junction() : base(2, 1, new IGMDataItem.Box(pos: new Rectangle(210, 12, 400, 54)), 2, 1)
-            {
-            }
-
-            #endregion Constructors
-
-            #region Properties
-
-            public new Dictionary<Items, FF8String> Descriptions { get; private set; }
-
-            #endregion Properties
-
             #region Methods
+
+            public static IGMData_TopMenu_Junction Create() => Create<IGMData_TopMenu_Junction>(2, 1, new IGMDataItem.Box { Pos = new Rectangle(210, 12, 400, 54) }, 2, 1);
 
             public override bool Inputs_CANCEL()
             {
@@ -65,16 +52,11 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem.Text(Titles[Items.GF], SIZE[0]);
-                ITEM[1, 0] = new IGMDataItem.Text(Titles[Items.Magic], SIZE[1]);
+                ITEM[0, 0] = new IGMDataItem.Text() { Data = Strings.Name.GF, Pos = SIZE[0] };
+                ITEM[1, 0] = new IGMDataItem.Text() { Data = Strings.Name.Magic, Pos = SIZE[1] };
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status |= Cursor_Status.Horizontal;
                 Cursor_Status |= Cursor_Status.Vertical;
-
-                Descriptions = new Dictionary<Items, FF8String> {
-                        {Items.GF,Memory.Strings.Read(Strings.FileID.MNGRP,2,263)},
-                        {Items.Magic,Memory.Strings.Read(Strings.FileID.MNGRP,2,265)},
-                    };
 
                 Hide();
             }
@@ -94,11 +76,11 @@ namespace OpenVIII
                     switch (CURSOR_SELECT)
                     {
                         case 0:
-                            Changed = Descriptions[Items.GF];
+                            Changed = Strings.Description.GF;
                             break;
 
                         case 1:
-                            Changed = Descriptions[Items.Magic];
+                            Changed = Strings.Description.Magic;
                             break;
                     }
                     if (Changed != null && IGM_Junction != null)
