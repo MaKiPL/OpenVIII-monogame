@@ -233,7 +233,7 @@
     <Compile Include="Menu\Images\Box_Options.cs" />
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
-    <Compile Include="OpenVIII\IGMData\DebugChoose.cs" />
+    <Compile Include="Menu\Debug\IGMData\DebugChoose.cs" />
     <Compile Include="Saves\ATBTimer.cs" />
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Saves\ICharacterData.cs" />

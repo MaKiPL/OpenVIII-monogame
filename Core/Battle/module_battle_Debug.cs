@@ -1,5 +1,4 @@
-﻿using FFmpeg.AutoGen;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -22,6 +21,7 @@ namespace OpenVIII
         private static Vector3 camPosition, camTarget;
         private static TIM2 textureInterface;
         private static TextureHandler[] textures;
+
         //private static List<EnemyInstanceInformation> EnemyInstances;
         private static List<CharacterInstanceInformation> CharacterInstances;
 
@@ -47,6 +47,7 @@ namespace OpenVIII
         private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
         private const int BATTLEMODULE_ACTIVE = 3;
         private const double FPS = 1000.0d / 15d; //Natively the game we are rewritting works in 15 FPS per second
+
         /// <summary>
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
         /// </summary>
@@ -96,7 +97,11 @@ namespace OpenVIII
 
             public void SetAnimationID(int id)
             {
-                if (animationSystem.animationId != id)
+                
+                if (animationSystem.animationId != id &&
+                    id < Data.character.animHeader.animations.Length &&
+                    id < Data.weapon.animHeader.animations.Length &&
+                    id >=0)
                 {
                     animationSystem.animationId = id;
                     animationSystem.animationFrame = 0;
@@ -210,21 +215,23 @@ namespace OpenVIII
 
         public static void Update()
         {
-            if(CharacterInstances != null)
-                foreach (var cii in CharacterInstances)
-            {
-                var c = Memory.State?[cii.VisibleCharacter];
-
-                if (c != null && cii.animationSystem.animationId >= 0 && cii.animationSystem.animationId <=2)
+            if (CharacterInstances != null)
+                foreach (CharacterInstanceInformation cii in CharacterInstances)
                 {
-                    // this would probably interfeer with other animations. I am hoping the limits above will keep it good.
-                    if (c.IsDead)
-                        cii.SetAnimationID((int)AnimID.Dead);
-                    else if (c.IsCritical)
-                        cii.SetAnimationID((int)AnimID.Critical);
+                    Saves.CharacterData c = Memory.State?[cii.VisibleCharacter];
+
+                    if (c != null && cii.animationSystem.animationId >= 0 && cii.animationSystem.animationId <= 2)
+                    {
+                        // this would probably interfeer with other animations. I am hoping the limits above will keep it good.
+                        if (c.IsDead)
+                            cii.SetAnimationID((int)AnimID.Dead);
+                        else if (c.IsCritical)
+                            cii.SetAnimationID((int)AnimID.Critical);
+                    }
+                    //if (Menu.BattleMenus.Victory_Menu.Enabled)
+                    //    cii.SetAnimationID(20);
+                    //cii.SetAnimationID(31);
                 }
-            }
-            //CharacterInstances[2].SetAnimationID((int)AnimID.Dead);
             bool ret = false;
             switch (battleModule)
             {
@@ -441,10 +448,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     {
                         EnemyInstanceInformation InstanceInformationProvider = Enemy.Party[n].EII;
                         InstanceInformationProvider.animationSystem.animationFrame = 0;
-                        if (Enemy.Party[n].EII.animationSystem.AnimationQueue.Count > 0)
+                        if (Enemy.Party[n].EII.animationSystem.AnimationQueue.TryDequeue(out int animid) &&
+                           animid < InstanceInformationProvider.Data.animHeader.animations.Length &&
+                           animid >=0
+                            )
                         {
-                            InstanceInformationProvider.animationSystem.animationId = Enemy.Party[n].EII.animationSystem.AnimationQueue.First();
-                            Enemy.Party[n].EII.animationSystem.AnimationQueue.RemoveAt(0);
+                            InstanceInformationProvider.animationSystem.animationId = animid;
                         }
                         Enemy.Party[n].EII = InstanceInformationProvider;
                     }
@@ -457,10 +466,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     {
                         CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[n];
                         InstanceInformationProvider.animationSystem.animationFrame = 0;
-                        if (CharacterInstances[n].animationSystem.AnimationQueue.Count > 0)
+                        if (CharacterInstances[n].animationSystem.AnimationQueue.TryDequeue(out int animid) &&
+                           animid < InstanceInformationProvider.Data.character.animHeader.animations.Length &&
+                           animid < InstanceInformationProvider.Data.weapon.animHeader.animations.Length &&
+                           animid >= 0)
                         {
-                            InstanceInformationProvider.animationSystem.animationId = CharacterInstances[n].animationSystem.AnimationQueue.First();
-                            CharacterInstances[n].animationSystem.AnimationQueue.RemoveAt(0);
+                            InstanceInformationProvider.animationSystem.animationId = animid;
                         }
                         CharacterInstances[n] = InstanceInformationProvider;
                     }
@@ -480,7 +491,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             public int animationId;
             public int animationFrame;
             public bool bStopAnimation; //pertification placeholder?
-            public List<int> AnimationQueue;
+            public ConcurrentQueue<int> AnimationQueue;
         }
 
         public static int DEBUGframe = 0;
@@ -567,8 +578,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             frameperFPS += tick;
             if (frameperFPS > FPS)
             {
-                if(Enemy.Party != null)
-                    foreach (var e in Enemy.Party)
+                if (Enemy.Party != null)
+                    foreach (Enemy e in Enemy.Party)
                     {
                         if (!e.EII.animationSystem.bStopAnimation && !e.IsPetrify)
                             e.EII.animationSystem.animationFrame++;
@@ -580,17 +591,17 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 //    Enemy.Party[x].EII = InstanceInformationProvider;
                 //}
                 if (CharacterInstances != null)
-                    foreach(var cii in CharacterInstances)
+                    foreach (CharacterInstanceInformation cii in CharacterInstances)
                     {
-                        if (!cii.animationSystem.bStopAnimation  && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
-                        cii.animationSystem.animationFrame++;
+                        if (!cii.animationSystem.bStopAnimation && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
+                            cii.animationSystem.animationFrame++;
                     }
-                    //for (int x = 0; x < CharacterInstances.Count; x++)
-                    //{
-                    //    CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[x];
-                    //    InstanceInformationProvider.animationSystem.animationFrame++;
-                    //    CharacterInstances[x] = InstanceInformationProvider;
-                    //}
+                //for (int x = 0; x < CharacterInstances.Count; x++)
+                //{
+                //    CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[x];
+                //    InstanceInformationProvider.animationSystem.animationFrame++;
+                //    CharacterInstances[x] = InstanceInformationProvider;
+                //}
                 frameperFPS = 0.0f;
             }
         }
@@ -634,14 +645,14 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             {
                 case Debug_battleDat.EntityType.Monster:
                     EnemyInstanceInformation MInstanceInformationProvider = Enemy.Party[nIndex].EII;
-                    MInstanceInformationProvider.animationSystem.AnimationQueue.Add(newAnimId);
+                    MInstanceInformationProvider.animationSystem.AnimationQueue.Enqueue(newAnimId);
                     Enemy.Party[nIndex].EII = MInstanceInformationProvider;
                     return;
 
                 case Debug_battleDat.EntityType.Character:
                 case Debug_battleDat.EntityType.Weapon:
                     CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
-                    CInstanceInformationProvider.animationSystem.AnimationQueue.Add(newAnimId);
+                    CInstanceInformationProvider.animationSystem.AnimationQueue.Enqueue(newAnimId);
                     CharacterInstances[nIndex] = CInstanceInformationProvider;
                     return;
 
@@ -747,8 +758,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
-            if(Memory.gameTime.ElapsedGameTime.TotalMilliseconds>0)
-            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
+                Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
@@ -994,19 +1005,51 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// Main Animations IDs
         /// </summary>
         /// <remarks>more beyond this maybe part of attacking and such.</remarks>
-        enum AnimID:int
+        /// <see cref="http://forums.qhimm.com/index.php?topic=19362.msg269777#msg269777"/>
+        private enum AnimID : int
         {
-            Idle=0,
-            Critical=1,
-            Dead=2,
+            Idle = 0,
+            Critical = 1,
+            Dead = 2,
+            //These seem to be referring to something else.
+            //Like he says theres another section with 30 sequences.
+            //where it tells how to chain the animations together.
+
+            //Damage_Taken_low_hp,
+            //Damage_Taken_normal,
+            //Damage_Taken_crit,
+            //Nothing,
+            //Appearance,
+            //Ready_to_Attack,
+            //Fail_Draw,
+            //Magic,
+            //Standing,
+            //Attack_normal,
+            //SummonGF_hide,
+            //Item_Use,
+            //Escape,
+            //Escaped_vanish,
+            //Victory,
+            //Becoming_Ready_to_Attack,
+            //SummonGF_show,
+            //Limit_break_normal,
+            //Draw_Defend_Phase_again,
+            //Becoming_Defend_Draw_Phase,
+            //Kamikaze_Command,
+            //Attack_Darkside,
+            //Escape_2,
+            //Defend_Draw_stock,
+            //Limit_break_Special,
+            //Defend_command_standing_again,
+            //Draw_Stock_Magic
         }
+
         /// <summary>
         /// [WIP] Basic class responsible for creating character model into game. It should be
         /// changed to be parsed from current party
         /// </summary>
         private static void ReadCharacters()
         {
-            
             if (Memory.State?.Characters != null)
             {
                 FillCostumes();
@@ -1020,9 +1063,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         CharacterInstanceInformation cii = new CharacterInstanceInformation
                         {
                             Data = ReadCharacterData((int)c,
-                                Memory.State[c].Alternativemodel == 0? Costumes[c].First(): Costumes[c].Last(),
+                                Memory.State[c].Alternativemodel == 0 ? Costumes[c].First() : Costumes[c].Last(),
                                 Weapons[Memory.State[c].WeaponID]),
-                            animationSystem = new AnimationSystem() { AnimationQueue = new List<int>() },
+                            animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
                             characterId = cid++,
                         };
                         //cii.animationSystem.animationId = 4;
@@ -1037,19 +1080,19 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 new CharacterInstanceInformation()
                 {
                     Data = ReadCharacterData(0,0,0),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new ConcurrentQueue<int>()},
                     characterId = 0,
                 },
                 new CharacterInstanceInformation()
                 {
                     Data = ReadCharacterData(1,3,8),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new ConcurrentQueue<int>()},
                     characterId = 1
                 },
                 new CharacterInstanceInformation()
                 {
                     Data = ReadCharacterData(2,6,13),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new List<int>()},
+                    animationSystem = new AnimationSystem(){ AnimationQueue = new ConcurrentQueue<int>()},
                     characterId = 2
                 }
             };
@@ -1109,7 +1152,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         bIsActive = true,
                         index = (byte)(7 - i),
                         bIsUntargetable = Extended.GetBit(enc.UntargetableEnemy, 7 - i),
-                        animationSystem = new AnimationSystem() { AnimationQueue = new List<int>() }
+                        animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
                     }
                         );
         }
@@ -1123,7 +1166,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             textureInterface = new TIM2(stageBuffer, texturePointer);
             textures = new TextureHandler[textureInterface.GetClutCount];
             for (ushort i = 0; i < textureInterface.GetClutCount; i++)
-                textures[i] = TextureHandler.Create(fileName, textureInterface,i);
+                textures[i] = TextureHandler.Create(fileName, textureInterface, i);
         }
 
         /// <summary>
@@ -1531,7 +1574,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// <returns>Either primary or alternative camera from encounter</returns>
         private static int GetRandomCameraN(Init_debugger_battle.Encounter encounter)
         {
-            int camToss = Memory.Random.Next(3+1) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
+            int camToss = Memory.Random.Next(3 + 1) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
             switch (camToss)
             {
                 case 0:

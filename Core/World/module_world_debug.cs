@@ -448,6 +448,7 @@ namespace OpenVIII
         }
 
         public static bool bHasMoved = false;
+        public static bool bFirstRun = true;
         private static int currentControllableEntity = 0;
 
         public static void Update(GameTime deltaTime)
@@ -483,11 +484,15 @@ namespace OpenVIII
             InputUpdate();
             CollisionUpdate();
             AnimationUpdate();
-            if (bHasMoved)
+            if (bHasMoved || bFirstRun)
             {
                 worldCharacterInstances[currentControllableEntity].worldPosition = playerPosition;
-                UpdatePlayerQuaternion(ref worldCharacterInstances[currentControllableEntity].localquaternion);
                 EncounterUpdate();
+                bFirstRun = false;
+            }
+            if(bHasMoved)
+            {
+                UpdatePlayerQuaternion(ref worldCharacterInstances[currentControllableEntity].localquaternion);
             }
         }
 
@@ -743,6 +748,7 @@ namespace OpenVIII
             }
             if(Input2.Button(Keys.F3))
             {
+                Menu.BattleMenus.CameFrom(); // allows returning to current state after victory menu complete.
                 Extended.postBackBufferDelegate = BattleSwirl.Init;
                 Extended.RequestBackBuffer();
             }
