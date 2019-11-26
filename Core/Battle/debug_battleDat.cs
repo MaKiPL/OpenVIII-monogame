@@ -678,7 +678,7 @@ namespace OpenVIII
                         ReadSection3(datFile.pSections[2], br, fileName); // animation data
                         ReadSection2(datFile.pSections[1], br, fileName);
                         //ReadSection4(datFile.pSections[3]);
-                        ReadSection5(datFile.pSections[4],br, fileName);
+                        ReadSection5(datFile.pSections[4], datFile.pSections[5], br, fileName);
                         //ReadSection6(datFile.pSections[5]);
                         ReadSection7(datFile.pSections[6], br, fileName);
                         //ReadSection8(datFile.pSections[7]);
@@ -691,6 +691,10 @@ namespace OpenVIII
                         ReadSection1(datFile.pSections[0], br, fileName);
                         ReadSection3(datFile.pSections[2], br, fileName);
                         ReadSection2(datFile.pSections[1], br, fileName);
+
+                        //ReadSection5(datFile.pSections[3], datFile.pSections[4], br, fileName);
+                        //ReadSection5(datFile.pSections[4], datFile.pSections[5], br, fileName);
+                        //ReadSection5(datFile.pSections[6], checked((uint)br.BaseStream.Length), br, fileName);
                         if (fileId == 7 && entityType == EntityType.Character)
                             ReadSection11(datFile.pSections[8], br, fileName);
                         else
@@ -703,6 +707,7 @@ namespace OpenVIII
                             ReadSection1(datFile.pSections[0], br, fileName);
                             ReadSection3(datFile.pSections[2], br, fileName);
                             ReadSection2(datFile.pSections[1], br, fileName);
+                            ReadSection5(datFile.pSections[3], datFile.pSections[4], br, fileName);
                             ReadSection11(datFile.pSections[6], br, fileName);
                         }
                         else
@@ -710,6 +715,7 @@ namespace OpenVIII
                             skeleton = skeletonReference.skeleton;
                             animHeader = skeletonReference.animHeader;
                             ReadSection2(datFile.pSections[0], br, fileName);
+                            ReadSection5(datFile.pSections[1], datFile.pSections[2], br, fileName);
                             ReadSection11(datFile.pSections[4], br, fileName);
                         }
                         break;
@@ -726,11 +732,10 @@ namespace OpenVIII
         /// <param name="br"></param>
         /// <param name="fileName"></param>
         /// <see cref="http://forums.qhimm.com/index.php?topic=19362.msg270092"/>
-        private void ReadSection5(uint v, BinaryReader br, string fileName)
+        private void ReadSection5(uint v, uint endpoint, BinaryReader br, string fileName)
         {
             // nothing final in here just was trying to dump data to see what was there.
             br.BaseStream.Seek(v, SeekOrigin.Begin);
-            uint endpoint = datFile.pSections[5];
             uint[] offsets = new uint[br.ReadUInt16()];
             for (ushort i = 0; i < offsets.Length; i++)
             {
