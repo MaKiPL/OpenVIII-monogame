@@ -74,6 +74,18 @@ namespace OpenVIII
             //public GFData(BinaryReader br, GFs g) => Read(br, g);
 
             #region Properties
+            /// <summary>
+            /// GF version is compatibility duration.
+            /// </summary>
+            /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+            public override int ATBBarSize
+            {
+                get
+                {
+                    int Compability = 6000 - 5 * ShownCompability;
+                    return (int)(Compability * (int)Memory.CurrentBattleSpeed * 0.9143 / 32);
+                }
+            }
 
             /// <summary>
             /// GF version is compatibility duration.
@@ -202,6 +214,37 @@ namespace OpenVIII
             }
 
             public override byte VIT => 0;
+
+            public override byte MAG => 0;
+
+            public override byte EVA => 0;
+
+            public override int EXP => checked((int)Experience);
+
+            public override byte HIT => 0;
+
+            public override byte LUCK => 0;
+
+            /// <summary>
+            /// Gf ability data
+            /// </summary>
+            private IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.GF_abilities> GFabilities => Kernel_bin.GFabilities;
+
+            /// <summary>
+            /// Kernel bin data on this GF
+            /// </summary>
+            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => Kernel_bin.JunctionableGFsData[ID];
+
+            public int ShownCompability {
+                get {
+                    if (Memory.State.JunctionedGFs().TryGetValue(ID, out Characters c) &&
+                        Memory.State[c].CompatibilitywithGFs.TryGetValue(ID, out ushort value))
+                    {
+                        return value;
+                    }
+                    return 0;
+                }
+            }
 
             #endregion Properties
 
