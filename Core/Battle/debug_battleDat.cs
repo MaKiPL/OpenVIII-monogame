@@ -639,10 +639,10 @@ namespace OpenVIII
             string searchstring = "";
             if (et != default)
             {
-                searchstring= $"d{fileId.ToString("x")}{et}";
+                searchstring = $"d{fileId.ToString("x")}{et}";
                 IEnumerable<string> test = aw.GetListOfFiles().Where(x => x.IndexOf(searchstring, StringComparison.OrdinalIgnoreCase) >= 0);
                 path = test.FirstOrDefault(x => x.ToLower().Contains(fileName));
-                if (string.IsNullOrWhiteSpace(path)&&test.Count()>0)
+                if (string.IsNullOrWhiteSpace(path) && test.Count() > 0)
                     path = test.First();
             }
             else path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
@@ -654,7 +654,7 @@ namespace OpenVIII
                 return;
             }
 #if _WINDOWS && DEBUG
-                try
+            try
             {
                 string targetdir = @"d:\";
                 if (Directory.Exists(targetdir))
@@ -669,7 +669,7 @@ namespace OpenVIII
             {
             }
 #endif
-            
+
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
                 datFile = new DatFile { cSections = br.ReadUInt32() };
@@ -680,7 +680,13 @@ namespace OpenVIII
                 switch (this.entityType)
                 {
                     case EntityType.Monster:
-                        if (id == 127) return;
+                        if (id == 127)
+                        {
+                            // per wiki 127 only have 7 & 8
+                            //ReadSection7(datFile.pSections[6], br, fileName);
+                            //ReadSection8(datFile.pSections[7]);
+                            return;
+                        }
                         ReadSection1(datFile.pSections[0], br, fileName);
                         ReadSection3(datFile.pSections[2], br, fileName); // animation data
                         ReadSection2(datFile.pSections[1], br, fileName);
@@ -689,8 +695,8 @@ namespace OpenVIII
                         //ReadSection6(datFile.pSections[5]);
                         ReadSection7(datFile.pSections[6], br, fileName);
                         //ReadSection8(datFile.pSections[7]);
-                        //ReadSection9(datFile.pSections[8]); //AKAO sounds
-                        //ReadSection10(datFile.pSections[9]);
+                        ReadSection9(datFile.pSections[8], datFile.pSections[9], br, fileName); //AKAO sounds
+                        //ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
                         ReadSection11(datFile.pSections[10], br, fileName);
                         break;
 
@@ -729,50 +735,83 @@ namespace OpenVIII
             }
         }
 
+        
 
+        private void ReadSection9(uint start, uint end, BinaryReader br, string fileName)
+        {
+            //Contains AKAO sequences(can be empty).
+            //Offset Length  Description
+            //0   2 bytes Number of AKAOs
+            //2   nbAKAOs * 2 bytes AKAOs Positions
+            //2 + nbAKAOs * 2 2 bytes End of section 9
+            //4 + nbAKAOs * 2 Varies* nbAKAOs    AKAOs
+
+            // nothing final in here just was trying to dump data to see what was there.
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
+            uint[] offsets = new uint[br.ReadUInt16()];
+            for (ushort i = 0; i < offsets.Length; i++)
+            {
+                ushort offset = br.ReadUInt16();
+                if (offset == 0)
+                    continue;
+                offsets[i] = offset + start;
+            }
+            uint newend = br.ReadUInt16()+start;
+            if (newend < end) end = newend;
+            List<uint> sortedoffsets = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList();
+            Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
+            for (ushort i = 0; i < sortedoffsets.Count; i++)
+            {
+                uint offset = sortedoffsets[i];
+                uint localend = end;
+                if(i+1 < offsets.Length)
+                    localend = sortedoffsets[i+1];
+                br.BaseStream.Seek(offset, SeekOrigin.Begin);
+                dataatoffsets.Add(offset, br.ReadBytes(checked((int)(localend - offset))));
+            }
+        }
 
         /// <summary>
         /// Animation Sequences
         /// </summary>
-        /// <param name="v"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
         /// <param name="br"></param>
         /// <param name="fileName"></param>
         /// <see cref="http://forums.qhimm.com/index.php?topic=19362.msg270092"/>
-        private void ReadSection5(uint v, uint endpoint, BinaryReader br, string fileName)
+        private void ReadSection5(uint start, uint end, BinaryReader br, string fileName)
         {
             // nothing final in here just was trying to dump data to see what was there.
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             uint[] offsets = new uint[br.ReadUInt16()];
             for (ushort i = 0; i < offsets.Length; i++)
             {
-
-                ushort v1 = br.ReadUInt16();
-                if (v1 == 0)
+                ushort offset = br.ReadUInt16();
+                if (offset == 0)
                     continue;
-                offsets[i] = v1 + v;
+                offsets[i] = offset + start;
             }
-            var t = offsets.Where(x=>x>0).Distinct().OrderBy(x => x).ToList();
-            var tw = new Dictionary<uint, byte[]>(t.Count);
-            for(ushort i=0; i< t.Count; i ++)
+            List<uint> sortedoffsets = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList();
+            Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
+            for (ushort i = 0; i < sortedoffsets.Count; i++)
             {
-                var ti = t[i];
+                uint offset = sortedoffsets[i];
                 //uint tie = endpoint;
                 //if (i + 1 < t.Count)
                 //    tie = t[i + 1];
-                uint tie = ti;
-                br.BaseStream.Seek(ti, SeekOrigin.Begin);
+                uint localend = offset;
+                br.BaseStream.Seek(offset, SeekOrigin.Begin);
                 do
-                    tie++;
-                while (br.ReadByte() != 0xa2 && br.BaseStream.Position<endpoint && (i + 1 < t.Count ? br.BaseStream.Position < t[i + 1] : true));
-                br.BaseStream.Seek(ti, SeekOrigin.Begin);
-                foreach(var offset in offsets.Select((value, index) => new { value, index }).Where(x => x.value == ti))
-                tw.Add((uint)offset.index, br.ReadBytes(checked((int)(tie - ti))));
+                    localend++;
+                while (br.ReadByte() != 0xa2 && br.BaseStream.Position < end && (i + 1 < sortedoffsets.Count ? br.BaseStream.Position < sortedoffsets[i + 1] : true));
+                br.BaseStream.Seek(offset, SeekOrigin.Begin);
+                foreach (var offsetindexed in offsets.Select((value, index) => new { value, index }).Where(x => x.value == offset))
+                    dataatoffsets.Add((uint)offsetindexed.index, br.ReadBytes(checked((int)(localend - offset))));
             }
             Debug.WriteLine($"\n {fileName} - {animHeader.animations.Length} animations, { offsets.Length } segments");
-            foreach (var ob in tw)
+            foreach (KeyValuePair<uint, byte[]> ob in dataatoffsets)
             {
-                
-                Debug.Write($"{ob.Key}({string.Format("{0:x}",offsets[ob.Key])}) - ");
+                Debug.Write($"{ob.Key}({string.Format("{0:x}", offsets[ob.Key])}) - ");
                 byte last = 0xff;
                 foreach (byte b in ob.Value)
                 {
@@ -781,27 +820,35 @@ namespace OpenVIII
                         case 0xa5:
                             Debug.Write("{Aura}");
                             break;
+
                         case 0xbb:
                             Debug.Write("{Effect}");
                             break;
+
                         case 0xa2:
                             Debug.Write("{Return}");
                             break;
+
                         case 0xa0:
                             Debug.Write("{Loop}");
                             break;
+
                         case 0xc3:
                             Debug.Write("{Special}");
                             break;
+
                         case 0x91:
                             Debug.Write("{Text}");
                             break;
+
                         case 0x1e:
                             Debug.Write("{TextREF}");
                             break;
+
                         case 0xa3:
                             Debug.Write("{End}");
                             break;
+
                         case 0xa8:
                             Debug.Write("{Visibility}");
                             break;
@@ -815,31 +862,38 @@ namespace OpenVIII
                                 case 0x02:
                                     Debug.Write("{Hide}");
                                     break;
+
                                 case 0x03:
                                     Debug.Write("{Show}");
                                     break;
                             }
                             break;
+
                         case 0xa5:
                             switch (b)
                             {
                                 case 0x00:
                                     Debug.Write("{Magic}");
                                     break;
+
                                 case 0x01:
                                     Debug.Write("{GF}");
                                     break;
+
                                 case 0x02:
                                     Debug.Write("{Limit}");
                                     break;
+
                                 case 0x03:
                                     Debug.Write("{Finisher}");
                                     break;
+
                                 case 0x04:
                                     Debug.Write("{Enemy Magic}");
                                     break;
                             }
                             break;
+
                         case 0xa3:
                         case 0xa0:
                             Debug.Write("{Anim}");
@@ -850,7 +904,6 @@ namespace OpenVIII
                 }
                 Debug.Write($"   ({ob.Value.Length} length)\n");
             }
-
         }
 
         public int GetId => id;
