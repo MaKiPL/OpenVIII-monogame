@@ -814,95 +814,126 @@ namespace OpenVIII
             foreach (KeyValuePair<uint, byte[]> ob in dataatoffsets)
             {
                 Debug.Write($"{ob.Key}({string.Format("{0:x}", offsets[ob.Key])}) - ");
-                byte last = 0xff;
-                foreach (byte b in ob.Value)
+                for (int i = 0; i< ob.Value.Length; i++)
                 {
-                    switch (b)
+                    byte b;
+                    byte Get(int pos = -1)
+                    { return b = ob.Value[pos<0?i:pos]; }
+                    switch (Get())
                     {
                         case 0xa5:
-                            Debug.Write("{Aura}");
-                            break;
-
-                        case 0xbb:
-                            Debug.Write("{Effect}");
-                            break;
-
-                        case 0xa2:
-                            Debug.Write("{Return}");
-                            break;
-
-                        case 0xa0:
-                            Debug.Write("{Loop}");
-                            break;
-
-                        case 0xc3:
-                            Debug.Write("{Special}");
-                            break;
-
-                        case 0x91:
-                            Debug.Write("{Text}");
-                            break;
-
-                        case 0x1e:
-                            Debug.Write("{TextREF}");
-                            break;
-
-                        case 0xa3:
-                            Debug.Write("{End}");
-                            break;
-
-                        case 0xa8:
-                            Debug.Write("{Visibility}");
-                            break;
-                    }
-
-                    switch (last)
-                    {
-                        case 0xa8:
-                            switch (b)
-                            {
-                                case 0x02:
-                                    Debug.Write("{Hide}");
-                                    break;
-
-                                case 0x03:
-                                    Debug.Write("{Show}");
-                                    break;
-                            }
-                            break;
-
-                        case 0xa5:
-                            switch (b)
+                            Debug.Write("{Aura-A5}");
+                            switch (Get(++i))
                             {
                                 case 0x00:
-                                    Debug.Write("{Magic}");
+                                    Debug.Write("{Magic-00}");
                                     break;
 
                                 case 0x01:
-                                    Debug.Write("{GF}");
+                                    Debug.Write("{GF-01}");
                                     break;
 
                                 case 0x02:
-                                    Debug.Write("{Limit}");
+                                    Debug.Write("{Limit-02}");
                                     break;
 
                                 case 0x03:
-                                    Debug.Write("{Finisher}");
+                                    Debug.Write("{Finisher-03}");
                                     break;
 
                                 case 0x04:
-                                    Debug.Write("{Enemy Magic}");
+                                    Debug.Write("{Enemy Magic-04}");
                                     break;
+                                default:
+                                    Debug.Write(string.Format("{0:x2}", b));
+                                    break;
+
                             }
+                            break;
+                        case 0xb5:
+                            Debug.Write("Sound-B5");
+                            break;
+                        case 0xbb:
+                            Debug.Write("{Effect-BB}");
+                            break;
+
+                        case 0xa2:
+                            Debug.Write("{Return-A2}");
+                            break;
+
+                        case 0xa0:
+                            Debug.Write("{Loop-A0}");
+                            Debug.Write("{Anim}");
+                            Debug.Write(string.Format("{0:x2} ", Get(++i)));
+                            break;
+
+                        case 0xc1:
+                            if (Get(i + 2) == 0xe5 && Get(i + 3) == 0x7f)
+                            {
+                                Debug.Write("{Repeat-C1}");
+                                //loop 0x1E times Animation 28 
+                                //C1 1E E5 7F 28
+                                Debug.Write("{Count}");
+                                Debug.Write($"{Get(++i)} ");
+                                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+                                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+                                Debug.Write("{Anim}");
+                                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+                            }
+                            else if(Get(i + 1) == 0x00 && Get(i + 2) == 0xe5 && Get(i + 3) == 0x0f)
+                            {
+                                //Return to home location.
+                                //C1 00 E5 0F
+                                Debug.Write("{Place model at home location}");
+                            }
+                            else
+                                Debug.Write(string.Format(" {0:x2}", Get()));
+
+                            break;
+                        case 0xc3:
+                            Debug.Write("{Special-C3}");
+                            //C3 7F C5 FF E5 7F E7 F9 //wait till previous sequence is complete.
+                            //C3 0c e1 23 e5 7f ba
+                            //C3 08 d8 00 01 e5 08 {04,05}
+                            break;
+
+                        case 0x91:
+                            Debug.Write("{Text-91}");
+                            break;
+
+                        case 0x1e:
+                            Debug.Write("{TextREF-1E}");
                             break;
 
                         case 0xa3:
-                        case 0xa0:
+                            Debug.Write("{End-A3}");
                             Debug.Write("{Anim}");
+                            Debug.Write(string.Format("{0:x2} ", Get(++i)));
+                            i += 2;
+                            break;
+
+                        case 0xa8:
+                            Debug.Write("{Visibility-A8}");
+                            switch (Get(++i))
+                            {
+                                case 0x02:
+                                    Debug.Write("{Hide-02}");
+                                    break;
+
+                                case 0x03:
+                                    Debug.Write("{Show-03}");
+                                    break;
+                                default:
+                                    Debug.Write(string.Format("{0:x2}", b));
+                                    break;
+                            }
+                            Debug.Write("{Anim}");
+                            Debug.Write(string.Format("{0:x2} ", Get(++i)));
+                            break;
+                        default:
+                            Debug.Write(string.Format(" {0:x2}", b));
                             break;
                     }
-                    Debug.Write(string.Format("{0:x2} ", b));
-                    last = b;
                 }
                 Debug.Write($"   ({ob.Value.Length} length)\n");
             }
