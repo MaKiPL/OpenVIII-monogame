@@ -190,7 +190,7 @@ namespace OpenVIII
         private static MiniMapState MapState = MiniMapState.rectangle;
 
         [Flags]
-        private enum Texflags : byte
+        public enum Texflags : byte
         {
             TEXFLAGS_SHADOW = 0b11,
             TEXFLAGS_UNK = 0b100,
