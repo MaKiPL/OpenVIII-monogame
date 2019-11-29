@@ -340,7 +340,7 @@ namespace OpenVIII
             get => _state; set
             {
                 _state = value;
-                _state.Loadtime = Memory.gameTime.TotalGameTime;
+                _state.Loadtime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
             }
         }
 
