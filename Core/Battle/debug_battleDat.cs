@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,8 +12,6 @@ namespace OpenVIII
 {
     public partial class Debug_battleDat
     {
-        private int id;
-        private readonly EntityType entityType;
         private byte[] buffer;
 
         public const float SCALEHELPER = 2048.0f;
@@ -72,12 +71,10 @@ namespace OpenVIII
         /// <summary>
         /// Skeleton data section
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="ms"></param>
-        /// <param name="br"></param>
-        private void ReadSection1(uint v, BinaryReader br, string fileName)
+        /// <param name="start"></param>
+        private void ReadSection1(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
 #if _WINDOWS //looks like Linux Mono doesn't like marshalling structure with LPArray to Bone[]
             skeleton = Extended.ByteArrayToStructure<Skeleton>(br.ReadBytes(16));
 #else
@@ -204,21 +201,21 @@ namespace OpenVIII
         public Geometry geometry;
 
         /// <summary>
-        /// Geometry section
+        /// Model Geometry section
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="ms"></param>
+        /// <param name="start"></param>
         /// <param name="br"></param>
-        private void ReadSection2(uint v, BinaryReader br, string fileName)
+        /// <param name="fileName"></param>
+        private void ReadSection2(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             geometry = new Geometry { cObjects = br.ReadUInt32() };
             geometry.pObjects = new uint[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
                 geometry.pObjects[i] = br.ReadUInt32();
             geometry.objects = new Object[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
-                geometry.objects[i] = ReadGeometryObject(v + geometry.pObjects[i], br);
+                geometry.objects[i] = ReadGeometryObject(start + geometry.pObjects[i], br);
             geometry.cTotalVert = br.ReadUInt32();
         }
 
@@ -402,14 +399,14 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Animation section
+        /// Model Animation section
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="ms"></param>
+        /// <param name="start"></param>
         /// <param name="br"></param>
-        private void ReadSection3(uint v, BinaryReader br, string fileName)
+        /// <param name="fileName"></param>
+        private void ReadSection3(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             animHeader = new AnimationData() { cAnimations = br.ReadUInt32() };
             animHeader.pAnimations = new uint[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++)
@@ -420,7 +417,7 @@ namespace OpenVIII
             animHeader.animations = new Animation[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++) //animation
             {
-                br.BaseStream.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
+                br.BaseStream.Seek(start + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
                 animHeader.animations[i] = new Animation() { cFrames = br.ReadByte() }; //Create new animation with cFrames frames
                 animHeader.animations[i].animationFrames = new AnimationFrame[animHeader.animations[i].cFrames];
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(br.BaseStream);
@@ -573,16 +570,21 @@ namespace OpenVIII
             /// </summary>
             public TextureHandler[] textures;
         }
-
-        private void ReadSection11(uint v, BinaryReader br, string fileName)
+        /// <summary>
+        /// TIMS - Textures
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="br"></param>
+        /// <param name="fileName"></param>
+        private void ReadSection11(uint start)
         {
 #if DEBUG
             //Dump for debug
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
-            using (BinaryWriter fs = new BinaryWriter(File.Create(Path.Combine(Path.GetTempPath(), $"{v}.dump"), (int)(br.BaseStream.Length - br.BaseStream.Position), FileOptions.None)))
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
+            using (BinaryWriter fs = new BinaryWriter(File.Create(Path.Combine(Path.GetTempPath(), $"{start}.dump"), (int)(br.BaseStream.Length - br.BaseStream.Position), FileOptions.None)))
                 fs.Write(br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position)));
 #endif
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             //Begin create Textures struct
             //populate the tim count;
             textures = new Textures() { cTims = br.ReadUInt32() };
@@ -596,16 +598,17 @@ namespace OpenVIII
             textures.Eof = br.ReadUInt32();
             //Read TIM -> TextureHandler into array
             for (int i = 0; i < textures.cTims; i++)
-                if (buffer[v + textures.pTims[i]] == 0x10)
+                if (buffer[start + textures.pTims[i]] == 0x10)
                 {
-                    TIM2 tm = new TIM2(buffer, v + textures.pTims[i]); //broken
+                    TIM2 tm = new TIM2(buffer, start + textures.pTims[i]); //broken
                     textures.textures[i] = TextureHandler.Create($"{fileName}_{i/*.ToString("D2")*/}", tm, 0);// tm.GetTexture(0);
                 }
                 else
-                    Debug.WriteLine($"DEBUG: {this}.{this.id}.{v + textures.pTims[i]} :: Not a tim file!");
+                    Debug.WriteLine($"DEBUG: {this}.{this.id}.{start + textures.pTims[i]} :: Not a tim file!");
         }
 
         public Textures textures;
+        private BinaryReader br;
 
         #endregion section 11 Textures
 
@@ -615,7 +618,9 @@ namespace OpenVIII
             Character,
             Weapon
         };
-
+        public Debug_battleDat()
+        {
+        }
         /// <summary>
         /// Creates new instance of DAT class that provides every sections parsed into structs and
         /// helper functions for renderer
@@ -623,18 +628,22 @@ namespace OpenVIII
         /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
         /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
         /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
-        public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
+        static public Debug_battleDat Load(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
         {
-            id = fileId;
+            Debug_battleDat r = new Debug_battleDat()
+            {
+                id = fileId,
+                altid = additionalFileId
+            };
             Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             char et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
-            string fileName = entityType == EntityType.Monster ? $"c0m{id.ToString("D03")}" :
+            string fileName = entityType == EntityType.Monster ? $"c0m{r.id.ToString("D03")}" :
                 entityType == EntityType.Character || entityType == EntityType.Weapon ? $"d{fileId.ToString("x")}{et}{additionalFileId.ToString("D03")}"
                 : string.Empty;
-            this.entityType = entityType;
+            r.entityType = entityType;
             if (string.IsNullOrEmpty(fileName))
-                return;
+                return null;
             string path = null;
             string searchstring = "";
             if (et != default)
@@ -642,17 +651,26 @@ namespace OpenVIII
                 searchstring = $"d{fileId.ToString("x")}{et}";
                 IEnumerable<string> test = aw.GetListOfFiles().Where(x => x.IndexOf(searchstring, StringComparison.OrdinalIgnoreCase) >= 0);
                 path = test.FirstOrDefault(x => x.ToLower().Contains(fileName));
-                if (string.IsNullOrWhiteSpace(path) && test.Count() > 0)
+
+                if (string.IsNullOrWhiteSpace(path) && test.Count() > 0 && entityType == EntityType.Character)
                     path = test.First();
             }
             else path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
+
+            r.fileName = fileName;
             if (!string.IsNullOrWhiteSpace(path))
-                buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
-            if (buffer == null || buffer.Length < 0)
+                r.buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+            if (r.buffer == null || r.buffer.Length < 0)
             {
                 Debug.WriteLine($"Search String: {searchstring} Not Found skipping {entityType}; So resulting file buffer is null.");
-                return;
+                return null;
             }
+            r.ExportFile();
+            return r.LoadFile(skeletonReference);
+        }
+
+        private void ExportFile()
+        {
 #if _WINDOWS && DEBUG
             try
             {
@@ -669,75 +687,105 @@ namespace OpenVIII
             {
             }
 #endif
+        }
 
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+        private Debug_battleDat LoadFile(Debug_battleDat skeletonReference)
+        {
+            using (br = new BinaryReader(new MemoryStream(buffer)))
             {
-                datFile = new DatFile { cSections = br.ReadUInt32() };
-                datFile.pSections = new uint[datFile.cSections];
-                for (int i = 0; i < datFile.cSections; i++)
-                    datFile.pSections[i] = br.ReadUInt32();
-                datFile.eof = br.ReadUInt32();
-                switch (this.entityType)
+                if (br.BaseStream.Length - br.BaseStream.Position < 4)
+                    return null;
+                Init();
+                switch (entityType)
                 {
                     case EntityType.Monster:
-                        if (id == 127)
-                        {
-                            // per wiki 127 only have 7 & 8
-                            //ReadSection7(datFile.pSections[6], br, fileName);
-                            //ReadSection8(datFile.pSections[7]);
-                            return;
-                        }
-                        ReadSection1(datFile.pSections[0], br, fileName);
-                        ReadSection3(datFile.pSections[2], br, fileName); // animation data
-                        ReadSection2(datFile.pSections[1], br, fileName);
-                        //ReadSection4(datFile.pSections[3]);
-                        ReadSection5(datFile.pSections[4], datFile.pSections[5], br, fileName);
-                        //ReadSection6(datFile.pSections[5]);
-                        ReadSection7(datFile.pSections[6], br, fileName);
-                        //ReadSection8(datFile.pSections[7]);
-                        ReadSection9(datFile.pSections[8], datFile.pSections[9], br, fileName); //AKAO sounds
-                        //ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
-                        ReadSection11(datFile.pSections[10], br, fileName);
-                        break;
-
+                        return LoadMonster();
                     case EntityType.Character:
-                        ReadSection1(datFile.pSections[0], br, fileName);
-                        ReadSection3(datFile.pSections[2], br, fileName);
-                        ReadSection2(datFile.pSections[1], br, fileName);
-                        if (fileId == 7 && entityType == EntityType.Character)
-                        {
-                            ReadSection11(datFile.pSections[8], br, fileName);
-                            ReadSection5(datFile.pSections[5], datFile.pSections[6], br, fileName);
-                        }
-                        else
-                            ReadSection11(datFile.pSections[5], br, fileName);
-                        break;
-
+                        return LoadCharacter();
                     case EntityType.Weapon:
-                        if (skeletonReference == null)
-                        {
-                            ReadSection1(datFile.pSections[0], br, fileName);
-                            ReadSection3(datFile.pSections[2], br, fileName);
-                            ReadSection2(datFile.pSections[1], br, fileName);
-                            ReadSection5(datFile.pSections[3], datFile.pSections[4], br, fileName);
-                            ReadSection11(datFile.pSections[6], br, fileName);
-                        }
-                        else
-                        {
-                            skeleton = skeletonReference.skeleton;
-                            animHeader = skeletonReference.animHeader;
-                            ReadSection2(datFile.pSections[0], br, fileName);
-                            ReadSection5(datFile.pSections[1], datFile.pSections[2], br, fileName);
-                            ReadSection11(datFile.pSections[4], br, fileName);
-                        }
-                        break;
+                        return LoadWeapon(skeletonReference);
                 }
+                return null;
             }
         }
 
-        
+        private void Init()
+        {            
+            datFile = new DatFile { cSections = br.ReadUInt32() };
+            datFile.pSections = new uint[datFile.cSections];
+            for (int i = 0; i < datFile.cSections; i++)
+                datFile.pSections[i] = br.ReadUInt32();
+            datFile.eof = br.ReadUInt32();
+        }
 
-        private void ReadSection9(uint start, uint end, BinaryReader br, string fileName)
+        private Debug_battleDat LoadMonster()
+        {
+            if (id == 127)
+            {
+                // per wiki 127 only have 7 & 8
+                //ReadSection7(datFile.pSections[6], br, fileName);
+                //ReadSection8(datFile.pSections[7]);
+                return null;
+            }
+            ReadSection1(datFile.pSections[0]);
+            ReadSection3(datFile.pSections[2]); // animation data
+            ReadSection2(datFile.pSections[1]);
+            //ReadSection4(datFile.pSections[3]);
+            ReadSection5(datFile.pSections[4], datFile.pSections[5]);
+            //ReadSection6(datFile.pSections[5]);
+            ReadSection7(datFile.pSections[6]);
+            //ReadSection8(datFile.pSections[7]); // battle scripts/ai
+            ReadSection9(datFile.pSections[8], datFile.pSections[9]); //AKAO sounds
+            //ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
+            ReadSection11(datFile.pSections[10]);
+            return this;
+        }
+
+        private Debug_battleDat LoadCharacter()
+        {
+            ReadSection1(datFile.pSections[0]);
+            ReadSection3(datFile.pSections[2]);
+            ReadSection2(datFile.pSections[1]);
+            if (id == 7 && entityType == EntityType.Character)
+            {
+                ReadSection11(datFile.pSections[8]);
+                ReadSection5(datFile.pSections[5], datFile.pSections[6]);
+            }
+            else
+                ReadSection11(datFile.pSections[5]);
+            return this;
+        }
+
+        private Debug_battleDat LoadWeapon(Debug_battleDat skeletonReference)
+        {
+            if (id != 1 && id != 9)
+            {
+                ReadSection1(datFile.pSections[0]);
+                ReadSection3(datFile.pSections[2]);
+                ReadSection2(datFile.pSections[1]);
+                ReadSection5(datFile.pSections[3], datFile.pSections[4]);
+                ReadSection11(datFile.pSections[6]);
+            }
+            else if (skeletonReference != null)
+            {
+                skeleton = skeletonReference.skeleton;
+                animHeader = skeletonReference.animHeader;
+                ReadSection2(datFile.pSections[0]);
+                ReadSection5(datFile.pSections[1], datFile.pSections[2]);
+                ReadSection11(datFile.pSections[4]);
+            }
+            return this;
+        }
+
+
+        /// <summary>
+        /// Sounds
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="br"></param>
+        /// <param name="fileName"></param>
+        private void ReadSection9(uint start, uint end)
         {
             //Contains AKAO sequences(can be empty).
             //Offset Length  Description
@@ -772,7 +820,31 @@ namespace OpenVIII
                     dataatoffsets.Add(offset, br.ReadBytes(checked((int)(localend - offset))));
             }
         }
+        public List<Section5> Sequences { get; private set; }
+        public struct Section5
+        {
+            public int id;
+            public uint offset;
+            public byte[] data;
+            private List<byte> animationQueue; // to be replaced with action queue.
+            /// <summary>
+            /// Test-Reason for list is so i can go read the data with out removing it.
+            /// </summary>
+            public List<byte> AnimationQueue { get => animationQueue; private set => animationQueue = value; }
 
+            public void GenerateQueue(Debug_battleDat dat)
+            {
+                animationQueue = new List<byte>();
+                if(data!=null)
+                foreach(byte b in data)
+                    {
+                        if(b<(dat.animHeader.animations?.Length ?? 0))
+                        {
+                            animationQueue.Add(b);
+                        }
+                    }
+            }
+        }
         /// <summary>
         /// Animation Sequences
         /// </summary>
@@ -781,7 +853,7 @@ namespace OpenVIII
         /// <param name="br"></param>
         /// <param name="fileName"></param>
         /// <see cref="http://forums.qhimm.com/index.php?topic=19362.msg270092"/>
-        private void ReadSection5(uint start, uint end, BinaryReader br, string fileName)
+        private void ReadSection5(uint start, uint end)
         {
             // nothing final in here just was trying to dump data to see what was there.
             br.BaseStream.Seek(start, SeekOrigin.Begin);
@@ -794,7 +866,8 @@ namespace OpenVIII
                 offsets[i] = offset + start;
             }
             List<uint> sortedoffsets = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList();
-            Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
+            Sequences = new List<Section5>(sortedoffsets.Count);
+            //Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
             for (ushort i = 0; i < sortedoffsets.Count; i++)
             {
                 uint offset = sortedoffsets[i];
@@ -808,137 +881,146 @@ namespace OpenVIII
                 while (br.ReadByte() != 0xa2 && br.BaseStream.Position < end && (i + 1 < sortedoffsets.Count ? br.BaseStream.Position < sortedoffsets[i + 1] : true));
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
                 foreach (var offsetindexed in offsets.Select((value, index) => new { value, index }).Where(x => x.value == offset))
-                    dataatoffsets.Add((uint)offsetindexed.index, br.ReadBytes(checked((int)(localend - offset))));
-            }
-            Debug.WriteLine($"\n {fileName} - {animHeader.animations.Length} animations, { offsets.Length } segments");
-            foreach (KeyValuePair<uint, byte[]> ob in dataatoffsets)
-            {
-                Debug.Write($"{ob.Key}({string.Format("{0:x}", offsets[ob.Key])}) - ");
-                for (int i = 0; i< ob.Value.Length; i++)
                 {
-                    byte b;
-                    byte Get(int pos = -1)
-                    { return b = ob.Value[pos<0?i:pos]; }
-                    switch (Get())
-                    {
-                        case 0xa5:
-                            Debug.Write("{Aura-A5}");
-                            switch (Get(++i))
-                            {
-                                case 0x00:
-                                    Debug.Write("{Magic-00}");
-                                    break;
-
-                                case 0x01:
-                                    Debug.Write("{GF-01}");
-                                    break;
-
-                                case 0x02:
-                                    Debug.Write("{Limit-02}");
-                                    break;
-
-                                case 0x03:
-                                    Debug.Write("{Finisher-03}");
-                                    break;
-
-                                case 0x04:
-                                    Debug.Write("{Enemy Magic-04}");
-                                    break;
-                                default:
-                                    Debug.Write(string.Format("{0:x2}", b));
-                                    break;
-
-                            }
-                            break;
-                        case 0xb5:
-                            Debug.Write("Sound-B5");
-                            break;
-                        case 0xbb:
-                            Debug.Write("{Effect-BB}");
-                            break;
-
-                        case 0xa2:
-                            Debug.Write("{Return-A2}");
-                            break;
-
-                        case 0xa0:
-                            Debug.Write("{Loop-A0}");
-                            Debug.Write("{Anim}");
-                            Debug.Write(string.Format("{0:x2} ", Get(++i)));
-                            break;
-
-                        case 0xc1:
-                            if (Get(i + 2) == 0xe5 && Get(i + 3) == 0x7f)
-                            {
-                                Debug.Write("{Repeat-C1}");
-                                //loop 0x1E times Animation 28 
-                                //C1 1E E5 7F 28
-                                Debug.Write("{Count}");
-                                Debug.Write($"{Get(++i)} ");
-                                Debug.Write(string.Format("{0:x2} ", Get(++i)));
-                                Debug.Write(string.Format("{0:x2} ", Get(++i)));
-                                Debug.Write("{Anim}");
-                                Debug.Write(string.Format("{0:x2} ", Get(++i)));
-                            }
-                            else if(Get(i + 1) == 0x00 && Get(i + 2) == 0xe5 && Get(i + 3) == 0x0f)
-                            {
-                                //Return to home location.
-                                //C1 00 E5 0F
-                                Debug.Write("{Place model at home location}");
-                            }
-                            else
-                                Debug.Write(string.Format(" {0:x2}", Get()));
-
-                            break;
-                        case 0xc3:
-                            Debug.Write("{Special-C3}");
-                            //C3 7F C5 FF E5 7F E7 F9 //wait till previous sequence is complete.
-                            //C3 0c e1 23 e5 7f ba
-                            //C3 08 d8 00 01 e5 08 {04,05}
-                            break;
-
-                        case 0x91:
-                            Debug.Write("{Text-91}");
-                            break;
-
-                        case 0x1e:
-                            Debug.Write("{TextREF-1E}");
-                            break;
-
-                        case 0xa3:
-                            Debug.Write("{End-A3}");
-                            Debug.Write("{Anim}");
-                            Debug.Write(string.Format("{0:x2} ", Get(++i)));
-                            i += 2;
-                            break;
-
-                        case 0xa8:
-                            Debug.Write("{Visibility-A8}");
-                            switch (Get(++i))
-                            {
-                                case 0x02:
-                                    Debug.Write("{Hide-02}");
-                                    break;
-
-                                case 0x03:
-                                    Debug.Write("{Show-03}");
-                                    break;
-                                default:
-                                    Debug.Write(string.Format("{0:x2}", b));
-                                    break;
-                            }
-                            Debug.Write("{Anim}");
-                            Debug.Write(string.Format("{0:x2} ", Get(++i)));
-                            break;
-                        default:
-                            Debug.Write(string.Format(" {0:x2}", b));
-                            break;
-                    }
+                    Section5 sequence = new Section5 { id = offsetindexed.index, offset = offsetindexed.value, data = br.ReadBytes(checked((int)(localend - offset))) };
+                    sequence.GenerateQueue(this);
+                    Sequences.Add(sequence);
                 }
-                Debug.Write($"   ({ob.Value.Length} length)\n");
+                    
             }
+            //foreach (KeyValuePair<uint, byte[]> ob in dataatoffsets)
+            //{
+            //    Debug.Write($"{ob.Key}({string.Format("{0:x}", offsets[ob.Key])}) - ");
+            //    for (int i = 0; i< ob.Value.Length; i++)
+            //    {
+            //        byte b;
+            //        byte Get(int pos = -1)
+            //        { return b = ob.Value[pos<0?i:pos]; }
+            //        switch (Get())
+            //        {
+            //            case 0xa5:
+            //                Debug.Write("{Aura-A5}");
+            //                switch (Get(++i))
+            //                {
+            //                    case 0x00:
+            //                        Debug.Write("{Magic-00}");
+            //                        break;
+
+            //                    case 0x01:
+            //                        Debug.Write("{GF-01}");
+            //                        break;
+
+            //                    case 0x02:
+            //                        Debug.Write("{Limit-02}");
+            //                        break;
+
+            //                    case 0x03:
+            //                        Debug.Write("{Finisher-03}");
+            //                        break;
+
+            //                    case 0x04:
+            //                        Debug.Write("{Enemy Magic-04}");
+            //                        break;
+            //                    default:
+            //                        Debug.Write(string.Format("{0:x2}", b));
+            //                        break;
+
+            //                }
+            //                break;
+            //            case 0xb5:
+            //                Debug.Write("Sound-B5");
+            //                break;
+            //            case 0xbb:
+            //                Debug.Write("{Effect-BB}");
+            //                break;
+
+            //            case 0xa2:
+            //                Debug.Write("{Return-A2}");
+            //                break;
+
+            //            case 0xa0:
+            //                Debug.Write("{Loop-A0}");
+            //                Debug.Write("{Anim}");
+            //                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                break;
+
+            //            case 0xc1:
+            //                if (Get(i + 2) == 0xe5 && Get(i + 3) == 0x7f)
+            //                {
+            //                    Debug.Write("{Repeat-C1}");
+            //                    //loop 0x1E times Animation 28 
+            //                    //C1 1E E5 7F 28
+            //                    Debug.Write("{Count}");
+            //                    Debug.Write($"{Get(++i)} ");
+            //                    Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                    Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                    Debug.Write("{Anim}");
+            //                    Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                }
+            //                else if(Get(i + 1) == 0x00 && Get(i + 2) == 0xe5 && Get(i + 3) == 0x0f)
+            //                {
+            //                    //Return to home location.
+            //                    //C1 00 E5 0F
+            //                    Debug.Write("{Place model at home location}");
+            //                }
+            //                else
+            //                    Debug.Write(string.Format(" {0:x2}", Get()));
+
+            //                break;
+            //            case 0xc3:
+            //                Debug.Write("{Special-C3}");
+            //                //C3 7F C5 FF E5 7F E7 F9 //wait till previous sequence is complete.
+            //                //C3 0c e1 23 e5 7f ba
+            //                //C3 08 d8 00 01 e5 08 {04,05}
+            //                break;
+
+            //            case 0x91:
+            //                Debug.Write("{Text-91}");
+            //                break;
+
+            //            case 0x1e:
+            //                Debug.Write("{TextREF-1E}");
+            //                break;
+
+            //            case 0xa3:
+            //                Debug.Write("{End-A3}");
+            //                Debug.Write("{Anim}");
+            //                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                i += 2;
+            //                break;
+
+            //            case 0xa8:
+            //                Debug.Write("{Visibility-A8}");
+            //                switch (Get(++i))
+            //                {
+            //                    case 0x02:
+            //                        Debug.Write("{Hide-02}");
+            //                        break;
+
+            //                    case 0x03:
+            //                        Debug.Write("{Show-03}");
+            //                        break;
+            //                    default:
+            //                        Debug.Write(string.Format("{0:x2}", b));
+            //                        break;
+            //                }
+            //                Debug.Write("{Anim}");
+            //                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                break;
+            //            default:
+            //                Debug.Write(string.Format(" {0:x2}", b));
+            //                break;
+            //        }
+            //    }
+            //    Debug.Write($"   ({ob.Value.Length} length)\n");
+            //}
         }
 
         public int GetId => id;
+
+        public int altid { get; private set; }
+        public int id { get; private set; }
+        public EntityType entityType { get; private set; }
+        public string fileName { get; private set; }
     }
 }

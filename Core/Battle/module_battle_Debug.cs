@@ -97,11 +97,10 @@ namespace OpenVIII
 
             public void SetAnimationID(int id)
             {
-                
                 if (animationSystem.animationId != id &&
                     id < Data.character.animHeader.animations.Length &&
                     id < Data.weapon.animHeader.animations.Length &&
-                    id >=0)
+                    id >= 0)
                 {
                     animationSystem.animationId = id;
                     animationSystem.animationFrame = 0;
@@ -291,9 +290,50 @@ namespace OpenVIII
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 3);
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 0);
             }
+            if (Input2.Button(Keys.F12))
+            {
+                if (SID < 255)
+                    SID++;
+                else SID = 0;
+            }
 
+            if (Input2.Button(Keys.F11))
+            {
+                if (SID <= 0)
+                    SID = 255;
+                else SID--;
+            }
+            if (Input2.Button(Keys.F10))
+            {
+                for (int i = 0; i < Enemy.Party.Count; i++)
+                {
+                    if (Enemy.Party[i].EII.Data.Sequences.Count > SID)
+                    {
+                        AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, Enemy.Party[i].EII.Data.Sequences[SID]);
+                        //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
+                    }
+                }
+                for (int i = 0; i < CharacterInstances.Count; i++)
+                {
+                    Debug_battleDat weapon = CharacterInstances[i].Data.weapon;
+                    Debug_battleDat character = CharacterInstances[i].Data.character;
+                    List<Debug_battleDat.Section5> sequences;
+                    if (weapon.Sequences.Count == 0)
+                    {
+                        sequences = character.Sequences;
+                    }
+                    else sequences = weapon.Sequences;
+                    if (sequences.Count > SID)
+                    {
+                        AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, sequences[SID]);
+                        //AddAnimationToQueue(Debug_battleDat.EntityType.Character, i, 0);
+                    }
+                }
+            }
 #endif
         }
+
+        private static byte SID = 0;
 
         public static void Draw()
         {
@@ -450,7 +490,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         InstanceInformationProvider.animationSystem.animationFrame = 0;
                         if (Enemy.Party[n].EII.animationSystem.AnimationQueue.TryDequeue(out int animid) &&
                            animid < InstanceInformationProvider.Data.animHeader.animations.Length &&
-                           animid >=0
+                           animid >= 0
                             )
                         {
                             InstanceInformationProvider.animationSystem.animationId = animid;
@@ -644,20 +684,24 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             switch (entityType)
             {
                 case Debug_battleDat.EntityType.Monster:
-                    EnemyInstanceInformation MInstanceInformationProvider = Enemy.Party[nIndex].EII;
-                    MInstanceInformationProvider.animationSystem.AnimationQueue.Enqueue(newAnimId);
-                    Enemy.Party[nIndex].EII = MInstanceInformationProvider;
+                    Enemy.Party[nIndex].EII.animationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 case Debug_battleDat.EntityType.Character:
                 case Debug_battleDat.EntityType.Weapon:
-                    CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
-                    CInstanceInformationProvider.animationSystem.AnimationQueue.Enqueue(newAnimId);
-                    CharacterInstances[nIndex] = CInstanceInformationProvider;
+                    CharacterInstances[nIndex].animationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 default:
                     return;
+            }
+        }
+
+        public static void AddSequenceToQueue(Debug_battleDat.EntityType entityType, int nIndex, Debug_battleDat.Section5 section5)
+        {
+            foreach (byte newAnimId in section5.AnimationQueue)
+            {
+                AddAnimationToQueue(entityType, nIndex, newAnimId);
             }
         }
 
@@ -766,6 +810,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"),20, 30 * 9, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
         }
@@ -976,28 +1021,32 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
-        public static List<byte> Weapons { get; private set; }
+        public static ConcurrentDictionary<Characters,List<byte>> Weapons { get; private set; }
 
         private static void FillWeapons()
         {
             if (Weapons == null)
             {
-                SortedSet<byte> _weapons = new SortedSet<byte>();
-                Regex r = new Regex(@"d([\da-fA-F]+)w(\d+)\.dat", RegexOptions.IgnoreCase);
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-
-                foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
+                Weapons = new ConcurrentDictionary<Characters, List<byte>>();
+                for (int i = 0; i <= (int)Characters.Ward_Zabac; i++)
                 {
-                    Match match = r.Match(s);
-                    if (match != null)
+                    SortedSet<byte> _weapons = new SortedSet<byte>();
+                    Regex r = new Regex(@"d("+i.ToString("X")+@")w(\d+)\.dat", RegexOptions.IgnoreCase);
+                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+
+                    foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
                     {
-                        if (byte.TryParse(match.Groups[2].Value, out byte a))
+                        Match match = r.Match(s);
+                        if (match != null)
                         {
-                            _weapons.Add(a);
+                            if (byte.TryParse(match.Groups[2].Value, out byte a))
+                            {
+                                _weapons.Add(a);
+                            }
                         }
                     }
+                    Weapons.TryAdd((Characters)i,_weapons.ToList());
                 }
-                Weapons = _weapons.ToList();
             }
         }
 
@@ -1064,7 +1113,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         {
                             Data = ReadCharacterData((int)c,
                                 Memory.State[c].Alternativemodel == 0 ? Costumes[c].First() : Costumes[c].Last(),
-                                Weapons[Memory.State[c].WeaponID]),
+                                Weapons[c][Kernel_bin.WeaponsData[Memory.State[c].WeaponID].AltID]),
                             animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
                             characterId = cid++,
                         };
@@ -1100,12 +1149,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
         {
-            Debug_battleDat character = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
+            Debug_battleDat character = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
             Debug_battleDat weapon;
             if (characterId == 1 || characterId == 9)
-                weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
+                weapon = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
 #pragma warning disable IDE0045 // Convert to conditional expression
-            else if (weaponId != -1) weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+            else if (weaponId != -1) weapon = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
 #pragma warning restore IDE0045 // Convert to conditional expression
             else weapon = null;
             return new CharacterData()
@@ -1138,7 +1187,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             IGrouping<byte, byte>[] DistinctMonsterPointers = monstersList.GroupBy(x => x).ToArray();
             monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
             for (int n = 0; n < monstersData.Length; n++)
-                monstersData[n] = new Debug_battleDat(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
+                monstersData[n] = Debug_battleDat.Load(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
             if (monstersData == null)
                 monstersData = new Debug_battleDat[0];
             Enemy.Party = new List<Enemy>(8);
