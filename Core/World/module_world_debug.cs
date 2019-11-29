@@ -81,7 +81,7 @@ namespace OpenVIII
             public ParsedTriangleData[] parsedTriangle;
         }
 
-        private struct ParsedTriangleData
+        public struct ParsedTriangleData
         {
             public Vector3 A;
             public Vector3 B;
@@ -116,7 +116,7 @@ namespace OpenVIII
 
 #pragma warning disable 0649 //Yes, we know- it's expected here
 
-        private struct Polygon
+        public struct Polygon
         {
             public byte F1, F2, F3, N1, N2, N3, U1, V1, U2, V2, U3, V3, TPage_clut, groundtype;
             //private byte texSwitch, flags;
@@ -798,7 +798,7 @@ namespace OpenVIII
 
         public static int GetRealSegmentId(float x, float y) => (int)((y < 0 ? 24 + y : y) * 32 + (x < 0 ? 32 + x : x)); //explicit public for wmset and warping sections
 
-        private struct RayCastedTris
+        public struct RayCastedTris
         {
             public ParsedTriangleData data;
             public Vector3 pos;
