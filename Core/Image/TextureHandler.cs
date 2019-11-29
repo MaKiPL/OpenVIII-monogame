@@ -373,7 +373,7 @@ namespace OpenVIII
             uint r2 = 0;
             for (uint r = 0; r < Rows; r++)
             {
-                for (uint c = 0; c < Cols && Memory.graphics.GraphicsDevice != null; c++)
+                for (uint c = 0; c < Cols && Memory.graphics?.GraphicsDevice != null; c++)
                 {
                     Texture2D pngTex;
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
