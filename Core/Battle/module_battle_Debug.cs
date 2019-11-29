@@ -426,10 +426,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             //CHARACTER
             if (CharacterInstances == null)
                 return;
+            Vector3 getPos(int _n) => new Vector3(-10 + _n * 10, 0, 0);
+
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
-                Vector3 charaPosition = new Vector3(-40 + n * 10, -2.5f, -40);
+                Vector3 charaPosition = getPos(n);
                 for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
                 {
                     Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.character.GetVertexPositions(i, charaPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
@@ -452,7 +454,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                Vector3 weaponPosition = new Vector3(-40 + n * 10, -2.5f, -40 + 1);
+                Vector3 weaponPosition = getPos(n);// new Vector3(-40 + n * 10, -2.5f, -40 + 1);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
                 {
                     Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, weaponPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
@@ -810,7 +812,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"),20, 30 * 9, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
         }
@@ -1021,7 +1023,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
-        public static ConcurrentDictionary<Characters,List<byte>> Weapons { get; private set; }
+        public static ConcurrentDictionary<Characters, List<byte>> Weapons { get; private set; }
 
         private static void FillWeapons()
         {
@@ -1031,7 +1033,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 for (int i = 0; i <= (int)Characters.Ward_Zabac; i++)
                 {
                     SortedSet<byte> _weapons = new SortedSet<byte>();
-                    Regex r = new Regex(@"d("+i.ToString("X")+@")w(\d+)\.dat", RegexOptions.IgnoreCase);
+                    Regex r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase);
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
 
                     foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
@@ -1045,7 +1047,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                             }
                         }
                     }
-                    Weapons.TryAdd((Characters)i,_weapons.ToList());
+                    Weapons.TryAdd((Characters)i, _weapons.ToList());
                 }
             }
         }
