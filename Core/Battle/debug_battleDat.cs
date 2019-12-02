@@ -43,7 +43,7 @@ namespace OpenVIII
             public Vector3 GetScale => new Vector3(scale / SCALEHELPER * 12, scale / SCALEHELPER * 12, scale / SCALEHELPER * 12);
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
         public struct Bone
         {
             public ushort parentId;
@@ -91,7 +91,10 @@ namespace OpenVIII
 #endif
             skeleton.bones = new Bone[skeleton.cBones];
             for (int i = 0; i < skeleton.cBones; i++)
-                skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
+            {
+                skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(44));
+                br.BaseStream.Seek(4, SeekOrigin.Current);
+            }
             //string debugBuffer = string.Empty;
             //for (int i = 0; i< skeleton.cBones; i++)
             //    debugBuffer += $"{i}|{skeleton.bones[i].parentId}|{skeleton.bones[i].boneSize}|{skeleton.bones[i].Size}\n";
