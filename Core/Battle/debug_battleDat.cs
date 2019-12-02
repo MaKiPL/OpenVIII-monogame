@@ -1,7 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -570,6 +569,7 @@ namespace OpenVIII
             /// </summary>
             public TextureHandler[] textures;
         }
+
         /// <summary>
         /// TIMS - Textures
         /// </summary>
@@ -618,9 +618,11 @@ namespace OpenVIII
             Character,
             Weapon
         };
+
         public Debug_battleDat()
         {
         }
+
         /// <summary>
         /// Creates new instance of DAT class that provides every sections parsed into structs and
         /// helper functions for renderer
@@ -628,7 +630,7 @@ namespace OpenVIII
         /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
         /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
         /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
-        static public Debug_battleDat Load(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
+        public static Debug_battleDat Load(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
         {
             Debug_battleDat r = new Debug_battleDat()
             {
@@ -700,8 +702,10 @@ namespace OpenVIII
                 {
                     case EntityType.Monster:
                         return LoadMonster();
+
                     case EntityType.Character:
                         return LoadCharacter();
+
                     case EntityType.Weapon:
                         return LoadWeapon(skeletonReference);
                 }
@@ -710,7 +714,7 @@ namespace OpenVIII
         }
 
         private void Init()
-        {            
+        {
             datFile = new DatFile { cSections = br.ReadUInt32() };
             datFile.pSections = new uint[datFile.cSections];
             for (int i = 0; i < datFile.cSections; i++)
@@ -777,7 +781,6 @@ namespace OpenVIII
             return this;
         }
 
-
         /// <summary>
         /// Sounds
         /// </summary>
@@ -805,7 +808,7 @@ namespace OpenVIII
                     continue;
                 offsets[i] = offset + start;
             }
-            uint newend = br.ReadUInt16()+start;
+            uint newend = br.ReadUInt16() + start;
             if (newend < end) end = newend;
             List<uint> sortedoffsets = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList();
             Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
@@ -813,38 +816,75 @@ namespace OpenVIII
             {
                 uint offset = sortedoffsets[i];
                 uint localend = end;
-                if(i+1 < sortedoffsets.Count)
-                    localend = sortedoffsets[i+1];
+                if (i + 1 < sortedoffsets.Count)
+                    localend = sortedoffsets[i + 1];
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
-                if(offset<localend)
+                if (offset < localend)
                     dataatoffsets.Add(offset, br.ReadBytes(checked((int)(localend - offset))));
             }
         }
+
         public List<Section5> Sequences { get; private set; }
+
         public struct Section5
         {
             public int id;
             public uint offset;
             public byte[] data;
-            private List<byte> animationQueue; // to be replaced with action queue.
+
             /// <summary>
             /// Test-Reason for list is so i can go read the data with out removing it.
             /// </summary>
-            public List<byte> AnimationQueue { get => animationQueue; private set => animationQueue = value; }
+            public List<byte> AnimationQueue { get; set; }
 
             public void GenerateQueue(Debug_battleDat dat)
             {
-                animationQueue = new List<byte>();
-                if(data!=null)
-                foreach(byte b in data)
+                AnimationQueue = new List<byte>();
+                for (int i = 0; data != null && i < data.Length; i++)
+                {
+
+                    byte b;
+                    byte[] data = this.data;
+                    byte get(int _i = -1)
                     {
-                        if(b<(dat.animHeader.animations?.Length ?? 0))
-                        {
-                            animationQueue.Add(b);
-                        }
+                        return b = data[_i < 0 ? i : _i];
                     }
+                    if (get() < (dat.animHeader.animations?.Length ?? 0))
+                    {
+                        AnimationQueue.Add(b);
+                    }
+                    //else switch(b)
+                    //{
+                    //        case 0xA3:
+                    //            // following value is animation.
+                    //            break;
+                    //        case 0xE6:
+                    //            switch (get(++i))
+                    //            {
+                    //                case 0x03:
+                    //                    i += 1;
+                    //                    break;
+                    //            }
+                    //            break;
+                    //        case 0xEA:
+                    //            switch (get(++i))
+                    //            {
+                    //                case 0x05:
+                    //                    i += 1;
+                    //                    break;
+                    //                case 0x06:
+                    //                    i += 2;
+                    //                    break;
+                    //            }
+                    //            break;
+                    //        default:
+                    //            i++;//skip next byte //as might not be a animation.
+                    //            break;
+                    //}
+                }
             }
         }
+
         /// <summary>
         /// Animation Sequences
         /// </summary>
@@ -886,7 +926,6 @@ namespace OpenVIII
                     sequence.GenerateQueue(this);
                     Sequences.Add(sequence);
                 }
-                    
             }
             //foreach (KeyValuePair<uint, byte[]> ob in dataatoffsets)
             //{
@@ -948,7 +987,7 @@ namespace OpenVIII
             //                if (Get(i + 2) == 0xe5 && Get(i + 3) == 0x7f)
             //                {
             //                    Debug.Write("{Repeat-C1}");
-            //                    //loop 0x1E times Animation 28 
+            //                    //loop 0x1E times Animation 28
             //                    //C1 1E E5 7F 28
             //                    Debug.Write("{Count}");
             //                    Debug.Write($"{Get(++i)} ");

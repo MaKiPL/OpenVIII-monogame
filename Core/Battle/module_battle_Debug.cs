@@ -305,32 +305,67 @@ namespace OpenVIII
             }
             if (Input2.Button(Keys.F10))
             {
-                for (int i = 0; i < Enemy.Party.Count; i++)
-                {
-                    if (Enemy.Party[i].EII.Data.Sequences.Count > SID)
-                    {
-                        AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, Enemy.Party[i].EII.Data.Sequences[SID]);
-                        //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
-                    }
-                }
-                for (int i = 0; i < CharacterInstances.Count; i++)
-                {
-                    Debug_battleDat weapon = CharacterInstances[i].Data.weapon;
-                    Debug_battleDat character = CharacterInstances[i].Data.character;
-                    List<Debug_battleDat.Section5> sequences;
-                    if (weapon.Sequences.Count == 0)
-                    {
-                        sequences = character.Sequences;
-                    }
-                    else sequences = weapon.Sequences;
-                    if (sequences.Count > SID)
-                    {
-                        AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, sequences[SID]);
-                        //AddAnimationToQueue(Debug_battleDat.EntityType.Character, i, 0);
-                    }
-                }
+                AddSequenceToAllQueues(SID);
+            }
+            if (Input2.Button(Keys.F9))
+            {
+                AddSequenceToAllQueues(new Debug_battleDat.Section5 { AnimationQueue = new List<byte> {
+                    //0x2,
+                    //0x5,
+                    //0xf,
+                    //0x10,
+                    //0xb,
+                    //0x3,
+                    //0x6,
+                    0xe,
+                    //0x1,
+                    0xf,
+                    0x0
+                } });
             }
 #endif
+        }
+        private static void AddSequenceToAllQueues(Debug_battleDat.Section5 section5)
+        {
+            for (int i = 0; i < Enemy.Party.Count; i++)
+            {
+                AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
+             
+            }
+            for (int i = 0; i < CharacterInstances.Count; i++)
+            {
+                AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
+            }
+        }
+            private static void AddSequenceToAllQueues(byte sid)
+        {
+            Debug_battleDat.Section5 section5;
+            for (int i = 0; i < Enemy.Party.Count; i++)
+            {
+                if (Enemy.Party[i].EII.Data.Sequences.Count > sid)
+                {
+                    section5 = Enemy.Party[i].EII.Data.Sequences[sid];
+                    AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
+                    //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
+                }
+            }
+            for (int i = 0; i < CharacterInstances.Count; i++)
+            {
+                Debug_battleDat weapon = CharacterInstances[i].Data.weapon;
+                Debug_battleDat character = CharacterInstances[i].Data.character;
+                List<Debug_battleDat.Section5> sequences;
+                if (weapon.Sequences.Count == 0)
+                {
+                    sequences = character.Sequences;
+                }
+                else sequences = weapon.Sequences;
+                if (sequences.Count > sid)
+                {
+                    section5 = sequences[sid];
+                    AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
+                    //AddAnimationToQueue(Debug_battleDat.EntityType.Character, i, 0);
+                }
+            }
         }
 
         private static byte SID = 0;
