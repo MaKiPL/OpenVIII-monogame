@@ -308,7 +308,9 @@ namespace OpenVIII
             }
             if (Input2.Button(Keys.F9))
             {
-                AddSequenceToAllQueues(new Debug_battleDat.Section5 { AnimationQueue = new List<byte> {
+                AddSequenceToAllQueues(new Debug_battleDat.Section5
+                {
+                    AnimationQueue = new List<byte> {
                     //0x2,
                     //0x5,
                     //0xf,
@@ -320,23 +322,34 @@ namespace OpenVIII
                     //0x1,
                     0xf,
                     0x0
-                } });
+                }
+                });
+            }
+
+            if (Input2.Button(Keys.F8))
+            {
+                StopAnimations();
+            }
+            if (Input2.Button(Keys.F7))
+            {
+                StartAnimations();
             }
 #endif
         }
+
         private static void AddSequenceToAllQueues(Debug_battleDat.Section5 section5)
         {
             for (int i = 0; i < Enemy.Party.Count; i++)
             {
                 AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
-             
             }
             for (int i = 0; i < CharacterInstances.Count; i++)
             {
                 AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
             }
         }
-            private static void AddSequenceToAllQueues(byte sid)
+
+        private static void AddSequenceToAllQueues(byte sid)
         {
             Debug_battleDat.Section5 section5;
             for (int i = 0; i < Enemy.Party.Count; i++)
@@ -468,7 +481,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 Vector3 charaPosition = getPos(n);
                 for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
                 {
-                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.character.GetVertexPositions(i, charaPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), ref CharacterInstances[n].animationSystem, frameperFPS / FPS); //DEBUG
+                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.character.GetVertexPositions(
+                        i,
+                        charaPosition,
+                        Quaternion.CreateFromYawPitchRoll(3f, 0, 0),
+                        ref CharacterInstances[n].animationSystem,
+                        CharacterInstanceGenerateStep(n)); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -491,7 +509,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 Vector3 weaponPosition = getPos(n);// new Vector3(-40 + n * 10, -2.5f, -40 + 1);
                 for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
                 {
-                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, weaponPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), ref CharacterInstances[n].animationSystem, frameperFPS / FPS); //DEBUG
+                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.weapon.GetVertexPositions(
+                        i,
+                        weaponPosition,
+                        Quaternion.CreateFromYawPitchRoll(3f, 0, 0),
+                        ref CharacterInstances[n].animationSystem,
+                        CharacterInstanceGenerateStep(n)); //DEBUG
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -507,6 +530,13 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 }
             }
         }
+
+        private static double CharacterInstanceGenerateStep(int n) => GenerateStep(CharacterInstanceAnimationStopped(n));
+
+        private static bool CharacterInstanceAnimationStopped(int n) =>
+            CharacterInstances[n].animationSystem.AnimationStopped ||
+            ((Memory.State?[(Characters)CharacterInstances[n].characterId]?.IsPetrify ?? false) &&
+            CharacterInstances[n].animationSystem.StopAnimation());
 
         /// <summary>
         /// This function is responsible for deleting the queue of animation if passed correctly
@@ -571,6 +601,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     AnimationFrame = 0;
                 }
             }
+
             public int AnimationFrame
             {
                 get => _animationFrame; set
@@ -581,11 +612,27 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         _lastAnimationId = _animationId;
                 }
             }
+
             public int NextFrame() => ++AnimationFrame;
+
             public int LastAnimationId { get => _lastAnimationId; private set => _lastAnimationId = value; }
             public int LastAnimationFrame { get => _lastAnimationFrame; private set => _lastAnimationFrame = value; }
 
-            public bool bStopAnimation; //pertification placeholder?
+            public bool AnimationStopped => bAnimationStopped;
+
+            public bool StopAnimation()
+            {
+                LastAnimationFrame = AnimationFrame;
+                AnimationId = AnimationId;
+                return bAnimationStopped = true;
+            }
+
+            public bool StartAnimation()
+            {
+                return bAnimationStopped = false;
+            }
+
+            private bool bAnimationStopped; //pertification placeholder?
             public ConcurrentQueue<int> AnimationQueue;
             private int _lastAnimationFrame;
             private int _animationFrame;
@@ -625,7 +672,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         position: enemyPosition.GetVector(),
                         rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
                         animationSystem: ref Enemy.Party[n].EII.animationSystem,
-                        step: frameperFPS / FPS);
+                        step: GenerateStep(EnemyInstanceAnimationStopped(n)));
                     if (a == null || a.Item1.Length == 0)
                         return;
                     for (int k = 0; k < a.Item1.Length / 3; k++)
@@ -641,6 +688,31 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 }
                 DrawShadow(enemyPosition.GetVector(), ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
             }
+        }
+
+        private static bool EnemyInstanceAnimationStopped(int n) => 
+            Enemy.Party[n].EII.animationSystem.AnimationStopped || 
+            (Enemy.Party[n].IsPetrify && 
+            Enemy.Party[n].EII.animationSystem.StopAnimation());
+        private static void StopAnimations()
+        {
+            foreach(var c in CharacterInstances)
+            c.animationSystem.StopAnimation();
+            foreach(var e in Enemy.Party)
+            e.EII.animationSystem.StopAnimation();
+        }
+        private static void StartAnimations()
+        {
+            foreach (var c in CharacterInstances)
+                c.animationSystem.StartAnimation();
+            foreach (var e in Enemy.Party)
+                e.EII.animationSystem.StartAnimation();
+        }
+        private static double GenerateStep(bool AnimationStopped)
+        {
+            if (AnimationStopped)
+                return 1d;
+            return frameperFPS / FPS;
         }
 
         /// <summary>
@@ -679,7 +751,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 if (Enemy.Party != null)
                     foreach (Enemy e in Enemy.Party)
                     {
-                        if (!e.EII.animationSystem.bStopAnimation && !e.IsPetrify)
+                        if (!e.EII.animationSystem.AnimationStopped && !e.IsPetrify)
                             e.EII.animationSystem.NextFrame();
                     }
                 //for (int x = 0; x < Enemy.Party.Count; x++)
@@ -691,7 +763,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 if (CharacterInstances != null)
                     foreach (CharacterInstanceInformation cii in CharacterInstances)
                     {
-                        if (!cii.animationSystem.bStopAnimation && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
+                        if (!cii.animationSystem.AnimationStopped && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
                             cii.animationSystem.NextFrame();
                     }
                 //for (int x = 0; x < CharacterInstances.Count; x++)
