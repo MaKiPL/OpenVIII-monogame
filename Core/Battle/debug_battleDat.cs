@@ -273,15 +273,15 @@ namespace OpenVIII
         /// constant 15 FPS
         /// </param>
         /// <returns></returns>
-        public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, int animationId, int animationFrame, double step)
+        public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
         {
             Object obj = geometry.objects[objectId];
-            if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame < 0)
-                animationFrame = 0;
-            AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame];
-            AnimationFrame nextFrame = animationFrame + 1 >= animHeader.animations[animationId].animationFrames.Length
-                ? animHeader.animations[animationId].animationFrames[0]
-                : animHeader.animations[animationId].animationFrames[animationFrame + 1];
+            if (animationSystem.AnimationFrame >= animHeader.animations[animationSystem.AnimationId].animationFrames.Length || animationSystem.AnimationFrame < 0)
+                animationSystem.AnimationFrame = 0;
+            int lastAnimationFrame = animationSystem.LastAnimationFrame;
+            AnimationFrame[] lastAnimationFrames = animHeader.animations[animationSystem.LastAnimationId].animationFrames;
+            AnimationFrame frame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrames[lastAnimationFrame] : lastAnimationFrames[lastAnimationFrames.Length - 1];
+            AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
             List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();
 
@@ -842,7 +842,6 @@ namespace OpenVIII
                 AnimationQueue = new List<byte>();
                 for (int i = 0; data != null && i < data.Length; i++)
                 {
-
                     byte b;
                     byte[] data = this.data;
                     byte get(int _i = -1)
