@@ -12,7 +12,6 @@ namespace OpenVIII
         #region Fields
 
         protected Rectangle _pos;
-        private sbyte _partyPos = -1;
 
         #endregion Fields
 
@@ -52,10 +51,7 @@ namespace OpenVIII
         /// <summary>
         /// Position of party member 0,1,2. If -1 at the time of setting the character wasn't in the party.
         /// </summary>
-        public sbyte PartyPos
-        {
-            get => _partyPos; protected set => _partyPos = (sbyte)MathHelper.Clamp(value, -1, 2);
-        }
+        public sbyte PartyPos { get; protected set; } = sbyte.MaxValue;
 
         /// <summary>
         /// Where to draw this item.
@@ -111,6 +107,11 @@ namespace OpenVIII
                 {
                     PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
                 }
+                else if (typeof(Enemy).Equals(Damageable.GetType()))
+                {
+                    PartyPos = checked((sbyte)(0 - Enemy.Party.FindIndex(x => x.Equals(Damageable))));
+                }
+                else PartyPos = sbyte.MaxValue;
             }
             Refresh();
         }

@@ -95,7 +95,7 @@ namespace OpenVIII.IGMData.Pool
             int skip = Page * Rows;
 
             if (Battle || Sort == null)
-                for (int i = 0; pos < Rows && i < Source.Magics.Count; i++)
+                for (int i = 0; pos < Rows && Source?.Magics != null && i < Source.Magics.Count; i++)
                 {
                     // magic id and count
                     KeyValuePair<byte, byte> dat = Source.Magics[i];

@@ -43,7 +43,6 @@ namespace OpenVIII
                 First = false;
             }
             else
-
                 ATBBarPos = 0;
         }
 

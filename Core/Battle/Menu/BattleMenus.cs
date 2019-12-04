@@ -54,10 +54,54 @@ namespace OpenVIII
 
         public enum SectionName
         {
+            /// <summary>
+            /// Party Member Menu
+            /// </summary>
             Party1,
+            /// <summary>
+            /// Party Member Menu
+            /// </summary>
             Party2,
+            /// <summary>
+            /// Party Member Menu
+            /// </summary>
             Party3,
-            Victory
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy1,
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy2,
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy3,
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy4,
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy5,
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy6,
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy7,
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy8,
+            /// <summary>
+            /// Victory Menu
+            /// </summary>
+            Victory,
         }
 
         #endregion Enums
@@ -139,6 +183,18 @@ namespace OpenVIII
                 {
                     ((BattleMenu)Data[SectionName.Party1 + i]).Refresh(null);
                     ((BattleMenu)Data[SectionName.Party1 + i]).Hide();
+                }
+                i = 0;
+                if(Enemy.Party != null)
+                foreach(var e in Enemy.Party)
+                {
+                    ((BattleMenu)Data[SectionName.Enemy1 + i]).Refresh(e);
+                    ((BattleMenu)Data[SectionName.Enemy1 + i]).Show();
+                }
+                for (; i < 8; i++)
+                {
+                    ((BattleMenu)Data[SectionName.Enemy1 + i]).Refresh(null);
+                    ((BattleMenu)Data[SectionName.Enemy1 + i]).Hide();
                 }
                 SetMode(Mode.Battle);
                 if (UpdateFunctions == null)
@@ -225,6 +281,14 @@ namespace OpenVIII
             Data.TryAdd(SectionName.Party1, BattleMenu.Create(null));
             Data.TryAdd(SectionName.Party2, BattleMenu.Create(null));
             Data.TryAdd(SectionName.Party3, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy1, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy2, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy3, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy4, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy5, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy6, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy7, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy8, BattleMenu.Create(null));
             Data.TryAdd(SectionName.Victory, VictoryMenu.Create());
             Data.ForEach(x => x.Value.Hide());
         }
