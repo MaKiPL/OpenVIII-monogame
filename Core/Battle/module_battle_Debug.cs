@@ -1247,11 +1247,20 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 {
                     if (c != Characters.Blank)
                     {
+                        byte weaponId = 0;
+                        if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
+                            characterData.WeaponID < Kernel_bin.WeaponsData.Count)
+                        {
+                            byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
+                            if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
+                                weaponId = weapons[altID];
+                        }
+
                         CharacterInstanceInformation cii = new CharacterInstanceInformation
                         {
                             Data = ReadCharacterData((int)c,
                                 Memory.State[c].Alternativemodel == 0 ? Costumes[c].First() : Costumes[c].Last(),
-                                Weapons[c][Kernel_bin.WeaponsData[Memory.State[c].WeaponID].AltID]),
+                                weaponId),
                             animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
                             characterId = cid++,
                         };
