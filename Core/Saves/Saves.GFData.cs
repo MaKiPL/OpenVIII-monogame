@@ -83,11 +83,16 @@ namespace OpenVIII
             {
                 get
                 {
-                    int Compability = 6000 - 5 * ShownCompability;
+                    int Compability = ShownCompability;
                     return (int)(Compability * (int)Memory.CurrentBattleSpeed * 0.9143 / 32);
                 }
             }
+            public override int BarIncrement()
+            {
+                return (int)GetSpeedMod();
+            }
 
+            public override int ATBBarStart(int spd) => 0;
             public override byte EVA => 0;
 
             public override int EXP => checked((int)Experience);
@@ -164,12 +169,12 @@ namespace OpenVIII
                 }
             }
 
-            public int ShownCompability
+            public CompatibilitywithGF ShownCompability
             {
                 get
                 {
                     if (Memory.State.JunctionedGFs().TryGetValue(ID, out Characters c) &&
-                        Memory.State[c].CompatibilitywithGFs.TryGetValue(ID, out ushort value))
+                        Memory.State[c].CompatibilitywithGFs.TryGetValue(ID, out Saves.CompatibilitywithGF value))
                     {
                         return value;
                     }

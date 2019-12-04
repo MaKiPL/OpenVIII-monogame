@@ -68,7 +68,7 @@ namespace OpenVIII
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
-        public class CharacterData : Damageable, ICharacterData
+        public partial class CharacterData : Damageable, ICharacterData
         {
             #region Fields
 
@@ -143,7 +143,7 @@ namespace OpenVIII
             /// <para>Compatibility With GFs</para>
             /// <para>Effects Summon speed and such.</para>
             /// </summary>
-            public Dictionary<GFs, ushort> CompatibilitywithGFs;
+            public Dictionary<GFs, CompatibilitywithGF> CompatibilitywithGFs;
 
             /// <summary>
             /// Value determines if a character shows in menu and can be added to party.
@@ -494,7 +494,7 @@ namespace OpenVIII
                 }
 
                 Unknown2 = br.ReadByte();//0x6F (padding?)
-                CompatibilitywithGFs = new Dictionary<GFs, ushort>(16);
+                CompatibilitywithGFs = new Dictionary<GFs, CompatibilitywithGF>(16);
                 for (int i = 0; i < 16; i++)
                     CompatibilitywithGFs.Add((GFs)i, br.ReadUInt16());//0x70
                 Numberofkills = br.ReadUInt16();//0x90
@@ -504,7 +504,6 @@ namespace OpenVIII
                 Statuses0 = (Kernel_bin.Persistent_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
-
             public void RemoveAll()
             {
                 Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);

@@ -235,6 +235,7 @@
     <Compile Include="Menu\Menu_Base.cs" />
     <Compile Include="Menu\Debug\IGMData\DebugChoose.cs" />
     <Compile Include="Saves\ATBTimer.cs" />
+    <Compile Include="Saves\CompatibilitywithGF.cs" />
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Saves\ICharacterData.cs" />
     <Compile Include="Saves\IDamageable.cs" />

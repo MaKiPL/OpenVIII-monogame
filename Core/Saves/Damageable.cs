@@ -505,7 +505,7 @@ namespace OpenVIII
         /// <param name="spd"></param>
         /// <returns></returns>
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
-        public int ATBBarStart(int spd)
+        public virtual int ATBBarStart(int spd)
         {
             int i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
             if (i > 0 && i < ATBBarSize)
@@ -531,7 +531,7 @@ namespace OpenVIII
             return false;
         }
 
-        public int BarIncrement() => BarIncrement(SPD, GetSpeedMod());
+        public virtual int BarIncrement() => BarIncrement(SPD, GetSpeedMod());
 
         public bool ChangeHP(int dmg)
         {
