@@ -308,7 +308,7 @@ namespace OpenVIII
             }
             if (Input2.Button(Keys.F9))
             {
-                AddSequenceToAllQueues(new Debug_battleDat.Section5
+                AddSequenceToAllQueues(new Debug_battleDat.AnimationSequence
                 {
                     AnimationQueue = new List<byte> {
                     //0x2,
@@ -337,7 +337,7 @@ namespace OpenVIII
 #endif
         }
 
-        private static void AddSequenceToAllQueues(Debug_battleDat.Section5 section5)
+        private static void AddSequenceToAllQueues(Debug_battleDat.AnimationSequence section5)
         {
             for (int i = 0; i < Enemy.Party.Count; i++)
             {
@@ -351,12 +351,13 @@ namespace OpenVIII
 
         private static void AddSequenceToAllQueues(byte sid)
         {
-            Debug_battleDat.Section5 section5;
+            Debug_battleDat.AnimationSequence section5;
             for (int i = 0; i < Enemy.Party.Count; i++)
             {
                 if (Enemy.Party[i].EII.Data.Sequences.Count > sid)
                 {
-                    section5 = Enemy.Party[i].EII.Data.Sequences[sid];
+                    section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x=>x.id == sid);
+                    if(section5.AnimationQueue != null)
                     AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
                     //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
                 }
@@ -365,7 +366,7 @@ namespace OpenVIII
             {
                 Debug_battleDat weapon = CharacterInstances[i].Data.weapon;
                 Debug_battleDat character = CharacterInstances[i].Data.character;
-                List<Debug_battleDat.Section5> sequences;
+                List<Debug_battleDat.AnimationSequence> sequences;
                 if (weapon.Sequences.Count == 0)
                 {
                     sequences = character.Sequences;
@@ -373,8 +374,9 @@ namespace OpenVIII
                 else sequences = weapon.Sequences;
                 if (sequences.Count > sid)
                 {
-                    section5 = sequences[sid];
-                    AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
+                    section5 = sequences.FirstOrDefault(x => x.id == sid);
+                    if (section5.AnimationQueue != null)
+                        AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
                     //AddAnimationToQueue(Debug_battleDat.EntityType.Character, i, 0);
                 }
             }
@@ -627,10 +629,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 return bAnimationStopped = true;
             }
 
-            public bool StartAnimation()
-            {
-                return bAnimationStopped = false;
-            }
+            public bool StartAnimation() => bAnimationStopped = false;
 
             private bool bAnimationStopped; //pertification placeholder?
             public ConcurrentQueue<int> AnimationQueue;
@@ -690,24 +689,27 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
-        private static bool EnemyInstanceAnimationStopped(int n) => 
-            Enemy.Party[n].EII.animationSystem.AnimationStopped || 
-            (Enemy.Party[n].IsPetrify && 
+        private static bool EnemyInstanceAnimationStopped(int n) =>
+            Enemy.Party[n].EII.animationSystem.AnimationStopped ||
+            (Enemy.Party[n].IsPetrify &&
             Enemy.Party[n].EII.animationSystem.StopAnimation());
+
         private static void StopAnimations()
         {
-            foreach(var c in CharacterInstances)
-            c.animationSystem.StopAnimation();
-            foreach(var e in Enemy.Party)
-            e.EII.animationSystem.StopAnimation();
+            foreach (CharacterInstanceInformation c in CharacterInstances)
+                c.animationSystem.StopAnimation();
+            foreach (Enemy e in Enemy.Party)
+                e.EII.animationSystem.StopAnimation();
         }
+
         private static void StartAnimations()
         {
-            foreach (var c in CharacterInstances)
+            foreach (CharacterInstanceInformation c in CharacterInstances)
                 c.animationSystem.StartAnimation();
-            foreach (var e in Enemy.Party)
+            foreach (Enemy e in Enemy.Party)
                 e.EII.animationSystem.StartAnimation();
         }
+
         private static double GenerateStep(bool AnimationStopped)
         {
             if (AnimationStopped)
@@ -825,7 +827,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
-        public static void AddSequenceToQueue(Debug_battleDat.EntityType entityType, int nIndex, Debug_battleDat.Section5 section5)
+        public static void AddSequenceToQueue(Debug_battleDat.EntityType entityType, int nIndex, Debug_battleDat.AnimationSequence section5)
         {
             foreach (byte newAnimId in section5.AnimationQueue)
             {
@@ -1149,11 +1151,19 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
-        public static ConcurrentDictionary<Characters, List<byte>> Weapons { get; private set; }
+        public static ConcurrentDictionary<Characters, List<byte>> Weapons
+        {
+            get
+            {
+                FillWeapons();
+                return s_weapons;
+            }
+            private set => s_weapons = value;
+        }
 
         private static void FillWeapons()
         {
-            if (Weapons == null)
+            if (s_weapons == null)
             {
                 Weapons = new ConcurrentDictionary<Characters, List<byte>>();
                 for (int i = 0; i <= (int)Characters.Ward_Zabac; i++)
@@ -1669,6 +1679,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         private static BattleCamera battleCamera;
         private static bool bUseFPSCamera = false;
+        private static ConcurrentDictionary<Characters, List<byte>> s_weapons;
 
         /// <summary>
         /// Battle camera settings are about 32 bytes of unknown flags and variables used in whole

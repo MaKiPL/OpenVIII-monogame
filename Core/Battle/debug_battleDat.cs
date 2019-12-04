@@ -660,7 +660,7 @@ namespace OpenVIII
                 if (string.IsNullOrWhiteSpace(path) && test.Count() > 0 && entityType == EntityType.Character)
                     path = test.First();
             }
-            else path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
+            else path = aw.GetListOfFiles().FirstOrDefault(x => x.ToLower().Contains(fileName));
 
             r.fileName = fileName;
             if (!string.IsNullOrWhiteSpace(path))
@@ -827,9 +827,9 @@ namespace OpenVIII
             }
         }
 
-        public List<Section5> Sequences { get; private set; }
+        public List<AnimationSequence> Sequences { get; private set; }
 
-        public struct Section5
+        public struct AnimationSequence
         {
             public int id;
             public uint offset;
@@ -839,7 +839,8 @@ namespace OpenVIII
             /// Test-Reason for list is so i can go read the data with out removing it.
             /// </summary>
             public List<byte> AnimationQueue { get; set; }
-
+            //public static Dictionary<byte, Action<byte[], int>> ParseData = new Dictionary<byte, Action<byte[], int>>{
+            //    { 0xA3, (byte[] data, int i) => { } } };
             public void GenerateQueue(Debug_battleDat dat)
             {
                 AnimationQueue = new List<byte>();
@@ -908,7 +909,7 @@ namespace OpenVIII
                 offsets[i] = offset + start;
             }
             List<uint> sortedoffsets = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList();
-            Sequences = new List<Section5>(sortedoffsets.Count);
+            Sequences = new List<AnimationSequence>(sortedoffsets.Count);
             //Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
             for (ushort i = 0; i < sortedoffsets.Count; i++)
             {
@@ -924,7 +925,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
                 foreach (var offsetindexed in offsets.Select((value, index) => new { value, index }).Where(x => x.value == offset))
                 {
-                    Section5 sequence = new Section5 { id = offsetindexed.index, offset = offsetindexed.value, data = br.ReadBytes(checked((int)(localend - offset))) };
+                    AnimationSequence sequence = new AnimationSequence { id = offsetindexed.index, offset = offsetindexed.value, data = br.ReadBytes(checked((int)(localend - offset))) };
                     sequence.GenerateQueue(this);
                     Sequences.Add(sequence);
                 }
