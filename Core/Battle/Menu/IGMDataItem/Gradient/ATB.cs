@@ -87,7 +87,6 @@ namespace OpenVIII.IGMDataItem.Gradient
             {
                 if (Damageable != null)
                 {
-                    Damageable.Update();
                     X = Lerp(Restriction.X - Width, Restriction.X, Damageable.ATBPercent);
 
                     if (Damageable.IsDead)

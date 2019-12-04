@@ -88,7 +88,6 @@ namespace OpenVIII.IGMDataItem.Gradient
             {
                 if (Damageable != null)
                 {
-                    Damageable.Update();
                     Rectangle r = Restriction;
                     r.Width = Lerp(Width, 0, Damageable.SummonedGF.ATBPercent);
                     Restriction = r;

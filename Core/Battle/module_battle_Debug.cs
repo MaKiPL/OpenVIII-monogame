@@ -210,14 +210,14 @@ namespace OpenVIII
         }
 
         public static void ResetState() => battleModule = BATTLEMODULE_INIT;
-
+        public static bool PauseATB = false;
         public static void Update()
         {
             if (CharacterInstances != null)
                 foreach (CharacterInstanceInformation cii in CharacterInstances)
                 {
                     Saves.CharacterData c = Memory.State?[cii.VisibleCharacter];
-
+                    c.Update(); //updates ATB for Character.
                     if (c != null && cii.animationSystem.AnimationId >= 0 && cii.animationSystem.AnimationId <= 2)
                     {
                         // this would probably interfeer with other animations. I am hoping the limits above will keep it good.
@@ -230,6 +230,9 @@ namespace OpenVIII
                     //    cii.SetAnimationID(20);
                     //cii.SetAnimationID(31);
                 }
+            if(Enemy.Party!=null)
+            foreach (var e in Enemy.Party)
+                e.Update(); //updates ATB for enemy.
             bool ret = false;
             switch (battleModule)
             {
