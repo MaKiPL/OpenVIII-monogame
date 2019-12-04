@@ -367,7 +367,7 @@ namespace OpenVIII
                 Debug_battleDat weapon = CharacterInstances[i].Data.weapon;
                 Debug_battleDat character = CharacterInstances[i].Data.character;
                 List<Debug_battleDat.AnimationSequence> sequences;
-                if (weapon.Sequences.Count == 0)
+                if ((weapon?.Sequences.Count ?? 0) == 0)
                 {
                     sequences = character.Sequences;
                 }
@@ -504,8 +504,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 }
                 DrawShadow(charaPosition, ate, .5f);
             }
+            
             //WEAPON
-            for (int n = 0; n < CharacterInstances.Count; n++)
+            for (int n = 0; n < CharacterInstances.Count && CharacterInstances[n].Data.weapon !=null; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
                 Vector3 weaponPosition = getPos(n);// new Vector3(-40 + n * 10, -2.5f, -40 + 1);
@@ -573,8 +574,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     {
                         CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[n];
                         if (CharacterInstances[n].animationSystem.AnimationQueue.TryDequeue(out int animid) &&
-                           animid < InstanceInformationProvider.Data.character.animHeader.animations.Length &&
-                           animid < InstanceInformationProvider.Data.weapon.animHeader.animations.Length &&
+                           (animid < InstanceInformationProvider.Data.character.animHeader.animations.Length ||
+                           animid < (InstanceInformationProvider.Data.weapon?.animHeader.animations.Length??0)) &&
                            animid >= 0)
                         {
                             InstanceInformationProvider.animationSystem.AnimationId = animid;
