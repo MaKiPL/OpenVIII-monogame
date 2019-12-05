@@ -509,16 +509,19 @@ namespace OpenVIII
         public virtual int ATBBarStart(int spd)
         {
             int i = 0;
-            do
-            {
-                i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
-            }
-            while (i <= 0 || i > ATBBarSize);
-            return i;
-            //if (i > 0 && i < ATBBarSize)
-            //    return i;
-            //else if (i < 0) return 0;
-            //else return ATBBarSize;
+            //this verison loops till it gets a value between 0 and ATBBarSize. Unsure which is best.
+            //do
+            //{
+            //    i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
+            //}
+            //while (i <= 0 || i > ATBBarSize);
+            //return i;
+            //this version will return ATBBarSize if larger and 0 if less than 0.
+            i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
+            if (i > 0 && i < ATBBarSize)
+                return i;
+            else if (i < 0) return 0;
+            else return ATBBarSize;
         }
 
         public int ATBBarStart()
