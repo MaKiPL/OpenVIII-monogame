@@ -802,7 +802,7 @@ namespace OpenVIII
                 LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
-                for (int i = 0; br.BaseStream.Position+2 <= br.BaseStream.Position &&i < _items.Capacity; i++)
+                for (int i = 0; br.BaseStream.Position+2 <= br.BaseStream.Length &&i < _items.Capacity; i++)
                     _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
