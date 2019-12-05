@@ -152,7 +152,7 @@ namespace OpenVIII.IGMData
                 ((IGMDataItem.Icon)ITEM[0, (byte)DepthID.ATBBorder]).Pos = atbbarpos;
                 ((IGMDataItem.Gradient.GF)ITEM[0, (byte)DepthID.GFCharging]).Pos = atbbarpos;
                 ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Data = Damageable.Name;
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(rectangle.X, rectangle.Y, 0, 0);
+                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(rectangle.X-60, rectangle.Y, 0, 0);
                 ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Pos = new Rectangle(rectangle.X + 128, rectangle.Y, 0, 0);
 
                 ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Draw(true);

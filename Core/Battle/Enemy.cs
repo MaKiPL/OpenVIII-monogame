@@ -123,6 +123,7 @@ namespace OpenVIII
         /// Randomly gain 1 or 0 from this list.
         /// </summary>
         public Saves.Item[] DropList => hml(info.drophigh, info.dropmed, info.droplow);
+        public Debug_battleDat.Abilities[] Abilities => hml(info.abilitiesHigh, info.abilitiesMed, info.abilitiesLow);
 
         public byte DropRate => (byte)(MathHelper.Clamp(info.dropRate * 100 / byte.MaxValue, 0, 100));
 

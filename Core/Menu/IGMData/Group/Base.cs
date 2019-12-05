@@ -131,7 +131,11 @@
         {
             if (!skipdata)
                 foreach (Menu_Base i in ITEM)
+                {
+                    if (ForceNullDamageable && i!=null)
+                        i.ForceNullDamageable = ForceNullDamageable;
                     i?.Refresh(Damageable);
+                }
         }
 
         #endregion Methods

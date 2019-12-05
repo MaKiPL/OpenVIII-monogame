@@ -37,7 +37,7 @@ namespace OpenVIII.IGMData.Pool
                 DefaultPages = 4,
                 Battle = battle
             };
-            r.Init(damageable, null);
+            r.SetDamageable(damageable, null);
             r.Init();
             r.Refresh();
             r.Update();

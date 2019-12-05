@@ -532,11 +532,17 @@ namespace OpenVIII.IGMData
             if (!skipdata)
             {
                 if (CONTAINER != null)
+                {
+                    if (ForceNullDamageable)
+                        CONTAINER.ForceNullDamageable = ForceNullDamageable;
                     CONTAINER.Refresh(Damageable);
+                }
                 if (ITEM != null)
                     for (int i = 0; i < Count; i++)
                         for (int d = 0; d < Depth; d++)
                         {
+                            if (ForceNullDamageable && ITEM[i, d]!=null)
+                                ITEM[i, d].ForceNullDamageable = ForceNullDamageable;
                             ITEM[i, d]?.Refresh(Damageable);
                         }
             }
@@ -556,7 +562,7 @@ namespace OpenVIII.IGMData
         private static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
         {
             T r = new T();
-            r.Init(damageable, partypos);
+            r.SetDamageable(damageable, partypos);
             return r;
         }
 

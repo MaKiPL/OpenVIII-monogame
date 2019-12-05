@@ -839,6 +839,7 @@ namespace OpenVIII
             /// Test-Reason for list is so i can go read the data with out removing it.
             /// </summary>
             public List<byte> AnimationQueue { get; set; }
+
             //public static Dictionary<byte, Action<byte[], int>> ParseData = new Dictionary<byte, Action<byte[], int>>{
             //    { 0xA3, (byte[] data, int i) => { } } };
             public void GenerateQueue(Debug_battleDat dat)

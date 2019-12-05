@@ -81,15 +81,6 @@ namespace OpenVIII
                     Reset();
                     Refresh();
                     break;
-
-                case Damageable.BattleMode.ATB_Charged:
-                    Data[SectionName.Commands].Hide();
-                    break;
-
-                case Damageable.BattleMode.YourTurn:
-                    Data[SectionName.Commands].Show();
-                    Data[SectionName.Commands].Refresh();
-                    break;
             }
         }
 

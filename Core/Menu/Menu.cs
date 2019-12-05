@@ -433,7 +433,14 @@ namespace OpenVIII
         {
             if (!skipdata)
                 foreach (KeyValuePair<Enum, Menu_Base> i in Data)
+                // children might have a damageable set.
+                // if parents may not always have one set.
+                {
+                    if (ForceNullDamageable)
+                        i.Value.ForceNullDamageable = ForceNullDamageable;
                     i.Value.Refresh(Damageable);
+                }
+            ForceNullDamageable = false;
         }
 
         private static void UpdateFade(object sender = null)

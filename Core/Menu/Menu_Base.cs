@@ -92,6 +92,12 @@ namespace OpenVIII
         /// </summary>
         public virtual void Refresh() => RefreshChild();
 
+
+        /// <summary>
+        /// by default null damageable won't propogate to children. resets to false after refresh.
+        /// </summary>
+        public bool ForceNullDamageable { get; set; } = false;
+
         /// <summary>
         /// Update set characters and then refresh.
         /// </summary>
@@ -99,43 +105,52 @@ namespace OpenVIII
         /// <param name="Visiblecharacter"></param>
         public virtual void Refresh(Damageable damageable)
         {
-            Init(damageable, null);         
+            SetDamageable(damageable, null);         
             Refresh();
         }
 
-        protected void Init(Damageable damageable, sbyte? partypos)
+        public void SetDamageable(Damageable damageable, sbyte? partypos = null, bool forcenull = false)
         {
-            if (partypos != null)
+            if ((Damageable != damageable) || (partypos.HasValue && partypos.Value != PartyPos))
             {
-                Damageable = damageable;
-                PartyPos = partypos.Value;
-                if (Damageable == null)
+                if (partypos != null)
                 {
-                    if(PartyPos >=0 && Memory.State?.PartyData != null && PartyPos < Memory.State.PartyData.Count)
-                        Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
-                    else
+                    Damageable = damageable;
+                    PartyPos = partypos.Value;
+                    if (Damageable == null)
                     {
-                        int enemypos = (0 - PartyPos) - 1;
-                        if (PartyPos < 0 && Enemy.Party != null && enemypos < Enemy.Party.Count)
+                        if (PartyPos >= 0 && Memory.State?.PartyData != null && PartyPos < Memory.State.PartyData.Count)
+                            Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+                        else
                         {
-                            Damageable = Enemy.Party[enemypos];
+                            int enemypos = (0 - PartyPos) - 1;
+                            if (PartyPos < 0 && Enemy.Party != null && enemypos < Enemy.Party.Count)
+                            {
+                                Damageable = Enemy.Party[enemypos];
+                            }
                         }
                     }
-                }
 
-            }
-            else if (damageable != null)
-            {
-                Damageable = damageable;
-                if (Damageable.GetCharacterData(out Saves.CharacterData c))
-                {
-                    PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
                 }
-                else if (typeof(Enemy).Equals(Damageable.GetType()))
+                else if (damageable != null)
                 {
-                    PartyPos = checked((sbyte)(0 - Enemy.Party.FindIndex(x => x.Equals(Damageable)) - 1));
+                    Damageable = damageable;
+                    if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                    {
+                        PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
+                    }
+                    else if (typeof(Enemy).Equals(Damageable.GetType()))
+                    {
+                        PartyPos = checked((sbyte)(0 - Enemy.Party.FindIndex(x => x.Equals(Damageable)) - 1));
+                    }
+                    else PartyPos = sbyte.MaxValue;
                 }
-                else PartyPos = sbyte.MaxValue;
+                else if(ForceNullDamageable || forcenull)
+                {
+                    ForceNullDamageable = true;
+                    Damageable = null;
+                    PartyPos = sbyte.MaxValue;
+                }
             }
         }
 

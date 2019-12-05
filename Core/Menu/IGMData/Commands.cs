@@ -13,6 +13,7 @@ namespace OpenVIII.IGMData
 
         private bool _crisisLevel;
         private Kernel_bin.Battle_Commands[] commands;
+        private Debug_battleDat.Abilities[] enemycommands;
         private int nonbattleWidth;
         private sbyte page = 0;
         private bool skipRefresh;
@@ -88,7 +89,7 @@ namespace OpenVIII.IGMData
                 Battle = battle
             };
 
-            r.Init(damageable, null);
+            r.SetDamageable(damageable, null);
             r.Init(10, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
             return r;
         }
@@ -244,77 +245,109 @@ namespace OpenVIII.IGMData
         {
             if (Damageable != null)
             {
-                if (Battle && (Damageable.IsGameOver || !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
+                if (!skipRefresh)
                 {
-                    Hide();
-                    return;
-                }
-                else
-                    Show();
-                if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
-                {
-
                     if (Battle)
-                        CrisisLevel = c.GenerateCrisisLevel() >= 0;
-                    Rectangle DataSize = Rectangle.Empty;
-                    base.Refresh();
-                    page = 0;
-                    Cursor_Status &= ~Cursor_Status.Horizontal;
-                    commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
-                    ITEM[0, 0] = new IGMDataItem.Text
                     {
-                        Data = commands[0].Name,
-                        Pos = SIZE[0]
-                    };
-
-                    for (int pos = 1; pos < Rows; pos++)
-                    {
-                        Kernel_bin.Abilities cmd = c.Commands[pos - 1];
-
-                        if (cmd != Kernel_bin.Abilities.None)
+                        if ((Damageable.IsGameOver || !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
                         {
-                            if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                            Hide();
+                            goto end;
+                        }
+                        else
+                            Show();
+                    }
+                    if (typeof(Enemy).Equals(Damageable.GetType()))
+                    {
+                        Enemy e = (Enemy)Damageable;
+                        enemycommands = e.Abilities;
+                        int pos = 0;
+                        foreach (Debug_battleDat.Abilities a in enemycommands)
+                        {
+                            if (pos >= Rows) break;
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Hide();
+                            BLANKS[pos] = true;
+                            if (a.ITEM != null)
                             {
-                                continue;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = a.ITEM.Value.Name;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Show();
+                                BLANKS[pos] = false;
                             }
+                            else if (a.MAGIC != null)
+                            {
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MAGIC.Name;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Show();
+                                BLANKS[pos] = false;
+                            }
+                            else if (a.MONSTER != null)
+                            {
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MONSTER.Name;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Show();
+                                BLANKS[pos] = false;
+                            }
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
+                            pos++;
+                        }
+                    }
+                    else if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    {
+                        if (Battle)
+                            CrisisLevel = c.GenerateCrisisLevel() >= 0;
+                        Rectangle DataSize = Rectangle.Empty;
+                        page = 0;
+                        Cursor_Status &= ~Cursor_Status.Horizontal;
+                        commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
+                        ITEM[0, 0] = new IGMDataItem.Text
+                        {
+                            Data = commands[0].Name,
+                            Pos = SIZE[0]
+                        };
+
+                        for (int pos = 1; pos < Rows; pos++)
+                        {
+                            Kernel_bin.Abilities cmd = c.Commands[pos - 1];
+
+                            if (cmd != Kernel_bin.Abilities.None)
+                            {
+                                if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                                {
+                                    continue;
+                                }
 #if DEBUG
-                            if (!Battle) commands[pos] = cmdval.BattleCommand;
-                            else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
+                                if (!Battle) commands[pos] = cmdval.BattleCommand;
+                                else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
-                            ((IGMDataItem.Text)ITEM[pos, 0]).Data = commands[pos].Name;
-                            ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
-                            ITEM[pos, 0].Show();
-                            CheckBounds(ref DataSize, pos);
-                            BLANKS[pos] = false;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = commands[pos].Name;
+                                ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
+                                ITEM[pos, 0].Show();
+                                CheckBounds(ref DataSize, pos);
+                                BLANKS[pos] = false;
+                            }
+                            else
+                            {
+                                ITEM[pos, 0]?.Hide();
+                                BLANKS[pos] = true;
+                            }
+                        }
+                        const int crisiswidth = 294;
+                        if (Battle && CrisisLevel)
+                        {
+                            CONTAINER.Width = crisiswidth;
+                            ITEM[Limit_Arrow, 0].Show();
                         }
                         else
                         {
-                            ITEM[pos, 0]?.Hide();
-                            BLANKS[pos] = true;
+                            CONTAINER.Width = nonbattleWidth;
+                            ITEM[Limit_Arrow, 0].Hide();
                         }
-                    }
-                    const int crisiswidth = 294;
-                    if (Battle && CrisisLevel)
-                    {
-                        CONTAINER.Width = crisiswidth;
-                        ITEM[Limit_Arrow, 0].Show();
-                    }
-                    else
-                    {
-                        CONTAINER.Width = nonbattleWidth;
-                        ITEM[Limit_Arrow, 0].Hide();
-                    }
-                    AutoAdjustContainerWidth(DataSize);
-                    if (Damageable != null)
-                    {
-                        Target_Group.Refresh(Damageable);
-                        MagPool.Refresh(Damageable);
-                        ItemPool.Refresh(Damageable);
+                        AutoAdjustContainerWidth(DataSize);
                     }
                 }
+            end:
                 skipRefresh = false;
+                base.Refresh();
             }
         }
 
@@ -323,9 +356,6 @@ namespace OpenVIII.IGMData
             if (Damageable != damageable)
                 skipRefresh = false;
             base.Refresh(damageable);
-            Target_Group.Refresh(Damageable);
-            MagPool.Refresh(Damageable);
-            ItemPool.Refresh(Damageable);
         }
 
         /// <summary>
@@ -352,6 +382,7 @@ namespace OpenVIII.IGMData
             ITEM[Limit_Arrow, 0].Hide();
             ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
+            enemycommands = null;
             PointerZIndex = Limit_Arrow;
             nonbattleWidth = Width;
         }
