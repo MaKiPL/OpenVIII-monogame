@@ -18,7 +18,7 @@ namespace OpenVIII
         private Kernel_bin.Persistent_Statuses _statuses0;
         private Kernel_bin.Battle_Only_Statuses _statuses1;
         private Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistent_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> _statusesActions;
-        private ATBTimer ATBTimer;
+        protected ATBTimer ATBTimer;
 
         #endregion Fields
 

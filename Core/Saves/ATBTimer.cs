@@ -41,6 +41,7 @@ namespace OpenVIII
             {
                 ATBBarPos = Damageable?.ATBBarStart() ?? 0;
                 First = false;
+                Damageable?.EndTurn();
             }
             else
                 ATBBarPos = 0;

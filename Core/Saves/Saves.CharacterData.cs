@@ -348,6 +348,8 @@ namespace OpenVIII
                     Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
                 if (Abilities.Contains(Kernel_bin.Abilities.Auto_Shell))
                     Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
+                //reset the ATB timer.
+                ATBTimer.FirstTurn();
             }
 
             public override Damageable Clone()
