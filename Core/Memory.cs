@@ -57,7 +57,7 @@ namespace OpenVIII
 
     public static class Memory
     {
-        public static BattleSpeed CurrentBattleSpeed = BattleSpeed.Normal;
+        public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
         public static List<Task> LeftOverTask = new List<Task>();
 
         public enum GraphicModes

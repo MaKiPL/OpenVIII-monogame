@@ -17,7 +17,7 @@ namespace OpenVIII
 
             public Configuration(BinaryReader br)
             {
-                BattleSpeed = br.ReadByte();
+                BattleSpeed = (BattleSpeed)br.ReadByte();
                 BattleMessage = br.ReadByte();
                 FieldMessage = br.ReadByte();
                 Volume = br.ReadByte();
@@ -57,7 +57,7 @@ namespace OpenVIII
             #region Properties
 
             public byte BattleMessage { get; private set; }
-            public byte BattleSpeed { get; private set; }
+            public BattleSpeed BattleSpeed { get; private set; }
             public byte Camera { get; private set; }
             public byte FieldMessage { get; private set; }
             public ConfigFlag Flag { get; private set; }
