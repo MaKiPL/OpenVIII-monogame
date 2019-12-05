@@ -23,7 +23,6 @@ namespace OpenVIII.IGMData
 
         #region Properties
 
-        public bool Battle { get; set; } = false;
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
         public IGMData.Pool.Item GFPool => (IGMData.Pool.Item)(((Base)ITEM[GF_Pool, 0]));
         public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));

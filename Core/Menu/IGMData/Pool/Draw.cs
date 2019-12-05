@@ -6,7 +6,6 @@ namespace OpenVIII.IGMData.Pool
     {
         #region Fields
 
-        private bool Battle = true;
 
         #endregion Fields
 
@@ -14,10 +13,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Draw Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
-            Draw r = Create<Draw>(5, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.CHOICE }, 4, 1, damageable);
-            r.Battle = battle;
-            r.Refresh();
-            return r;
+            return Create<Draw>(5, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.CHOICE }, 4, 1, damageable, battle: battle);
         }
 
         public override bool Inputs()

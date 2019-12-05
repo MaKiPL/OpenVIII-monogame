@@ -15,7 +15,6 @@ namespace OpenVIII.IGMData.Pool
 
         private const Font.ColorID nostat = Font.ColorID.Dark_Grey;
 
-        private bool Battle = false;
 
         private bool eventAdded = false;
 
@@ -81,10 +80,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Magic Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
-            Magic r = Create<Magic>(5, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.MAGIC }, 4, 13, damageable);
-            r.Battle = battle;
-            r.Refresh();
-            return r;
+            return Create<Magic>(5, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.MAGIC }, 4, 13, damageable,battle:battle);
         }
 
         public static Magic Create() => Create<Magic>(6, 3, new IGMDataItem.Box { Pos = new Rectangle(135, 150, 300, 192), Title = Icons.ID.MAGIC }, 4, 13);

@@ -104,9 +104,10 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
+        public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null, bool battle = false) where T : Base, new()
         {
             T r = Create<T>(damageable, partypos);
+            r.Battle = battle;
             r.Init(count, depth, container, cols, rows);
             return r;
         }

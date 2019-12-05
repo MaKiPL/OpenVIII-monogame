@@ -10,7 +10,6 @@ namespace OpenVIII.IGMData.Pool
 
         private FF8String[] _helpStr;
 
-        private bool Battle = false;
         private bool eventSet = false;
 
         #endregion Fields
@@ -33,8 +32,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Item Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable);
-            r.Battle = battle;
+            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable,battle:battle);
             if (battle)
                 r.ITEM[r.Targets_Window, 0] = IGMData.Target.Group.Create(r.Damageable);
             return r;
@@ -121,7 +119,7 @@ namespace OpenVIII.IGMData.Pool
             if (!Battle && !eventSet && Menu.IGM_Items != null)
             {
                 Menu.IGM_Items.ModeChangeHandler += ModeChangeEvent;
-                Menu.IGM_Items.ReInitCompletedHandler += ReInitCompletedEvent;
+                Menu.IGM_Items.RefreshCompletedHandler += RefreshCompletedEvent;
                 eventSet = true;
             }
             base.Refresh();
@@ -158,6 +156,9 @@ namespace OpenVIII.IGMData.Pool
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).FontColor = color;
                     _helpStr[pos] = itemdata.Description;
                     Contents[pos] = itemdata;
+
+                    ITEM[pos, 1].Show();
+                    ITEM[pos, 0].Show();
                     pos++;
                 }
                 for (; pos < Rows; pos++)
@@ -168,6 +169,8 @@ namespace OpenVIII.IGMData.Pool
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = 0;
                     ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = Icons.ID.None;
                     BLANKS[pos] = true;
+                    ITEM[pos, 1].Hide();
+                    ITEM[pos, 0].Hide();
                 }
             }
         }
@@ -246,7 +249,7 @@ namespace OpenVIII.IGMData.Pool
             }
         }
 
-        private void ReInitCompletedEvent(object sender, EventArgs e) => ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+        private void RefreshCompletedEvent(object sender, EventArgs e) => ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
 
         #endregion Methods
     }

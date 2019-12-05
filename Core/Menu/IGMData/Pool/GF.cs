@@ -8,7 +8,6 @@ namespace OpenVIII.IGMData.Pool
     {
         #region Fields
 
-        private bool Battle = false;
 
         #endregion Fields
 

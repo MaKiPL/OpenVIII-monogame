@@ -36,10 +36,10 @@
 
         #region Methods
 
-        public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null)
+        public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null,bool battle = false)
                                                                     where J : Base<T, T2>, new()
         {
-            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable);
+            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable,battle:battle);
             r.DefaultPages = pages ?? 1;
             return r;
         }

@@ -17,7 +17,7 @@ namespace OpenVIII
 
         public event EventHandler<KeyValuePair<byte, FF8String>> ChoiceChangeHandler;
 
-        public event EventHandler ReInitCompletedHandler;
+        public event EventHandler RefreshCompletedHandler;
 
         public event EventHandler<Faces.ID> TargetChangeHandler;
 
@@ -74,7 +74,7 @@ namespace OpenVIII
             if (!skipmode)
                 SetMode(Mode.SelectItem);
             base.Refresh();
-            ReInitCompletedHandler?.Invoke(this, null);
+            RefreshCompletedHandler?.Invoke(this, null);
         }
 
         protected override void Init()

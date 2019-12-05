@@ -108,7 +108,7 @@ namespace OpenVIII
             SetDamageable(damageable, null);         
             Refresh();
         }
-
+        public bool Battle { get; protected set; } = false;
         public void SetDamageable(Damageable damageable, sbyte? partypos = null, bool forcenull = false)
         {
             if ((Damageable != damageable) || (partypos.HasValue && partypos.Value != PartyPos))
