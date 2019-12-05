@@ -91,14 +91,25 @@ namespace OpenVIII.IGMData.Pool
             int skip = Page * Rows;
 
             if (Battle || Sort == null)
-                for (int i = 0; pos < Rows && Source?.Magics != null && i < Source.Magics.Count; i++)
+                if (Damageable.GetType().Equals(typeof(Enemy)))
                 {
-                    // magic id and count
-                    KeyValuePair<byte, byte> dat = Source.Magics[i];
-                    // if invalid
-                    if (dat.Key == 0 || Kernel_bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
-                    addMagic(ref pos, Kernel_bin.MagicData[dat.Key], @default);
+                    for(int i = 0; pos< Rows; i++)
+                    {
+                        if(skip-- >0)
+                        {
+
+                        }
+                    }
                 }
+                else
+                    for (int i = 0; pos < Rows && Source?.Magics != null && i < Source.Magics.Count; i++)
+                    {
+                        // magic id and count
+                        KeyValuePair<byte, byte> dat = Source.Magics[i];
+                        // if invalid
+                        if (dat.Key == 0 || Kernel_bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
+                        addMagic(ref pos, Kernel_bin.MagicData[dat.Key], @default);
+                    }
             else
                 foreach (Kernel_bin.Magic_Data i in Sort)
                 {
