@@ -445,21 +445,6 @@ namespace OpenVIII.IGMData
 
         protected int GetCursor_select() => _cursor_select;
 
-        protected void Init(Damageable damageable, sbyte? partypos)
-        {
-            if (partypos != null)
-            {
-                Damageable = damageable;
-                PartyPos = partypos.Value;
-                if (Memory.State?.PartyData != null)
-                    Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
-            }
-            else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
-            {
-                Damageable = damageable;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(c.ID)) ?? -1);
-            }
-        }
 
         /// <summary>
         /// Most objects set all these values. also Init Refresh and Update

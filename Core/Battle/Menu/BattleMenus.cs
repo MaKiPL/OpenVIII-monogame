@@ -58,46 +58,57 @@ namespace OpenVIII
             /// Party Member Menu
             /// </summary>
             Party1,
+
             /// <summary>
             /// Party Member Menu
             /// </summary>
             Party2,
+
             /// <summary>
             /// Party Member Menu
             /// </summary>
             Party3,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy1,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy2,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy3,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy4,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy5,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy6,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy7,
+
             /// <summary>
             /// Debug Enemy Menu
             /// </summary>
             Enemy8,
+
             /// <summary>
             /// Victory Menu
             /// </summary>
@@ -168,7 +179,7 @@ namespace OpenVIII
 
         public override void Refresh()
         {
-            if (Memory.State?.Characters != null  && Memory.State.Characters.Count > 0 && Memory.State.Party!=null)
+            if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Memory.State.Party != null)
             {
                 IEnumerable<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank));
                 int count = party.Count();
@@ -185,12 +196,13 @@ namespace OpenVIII
                     ((BattleMenu)Data[SectionName.Party1 + i]).Hide();
                 }
                 i = 0;
-                if(Enemy.Party != null)
-                foreach(var e in Enemy.Party)
-                {
-                    ((BattleMenu)Data[SectionName.Enemy1 + i]).Refresh(e);
-                    ((BattleMenu)Data[SectionName.Enemy1 + i]).Show();
-                }
+                if (Enemy.Party != null)
+                    foreach (Enemy e in Enemy.Party)
+                    {
+                        ((BattleMenu)Data[SectionName.Enemy1 + i]).Refresh(e);
+                        ((BattleMenu)Data[SectionName.Enemy1 + i]).Show();
+                        i++;
+                    }
                 for (; i < 8; i++)
                 {
                     ((BattleMenu)Data[SectionName.Enemy1 + i]).Refresh(null);
@@ -425,9 +437,9 @@ namespace OpenVIII
             }
             if (!GetCurrentBattleMenu().Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
             {
-                if (_player + 1 == bml.Count)
+                int cnt = bml.Count;
+                if (_player + 1 == cnt)
                     _player = 0;
-                int cnt = 3;
                 for (byte i = _player; cnt > 0; cnt--)
                 {
                     if (bml[i].Damageable.StartTurn())

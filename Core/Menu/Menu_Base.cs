@@ -99,21 +99,44 @@ namespace OpenVIII
         /// <param name="Visiblecharacter"></param>
         public virtual void Refresh(Damageable damageable)
         {
-            if (damageable != null)
+            Init(damageable, null);         
+            Refresh();
+        }
+
+        protected void Init(Damageable damageable, sbyte? partypos)
+        {
+            if (partypos != null)
             {
                 Damageable = damageable;
+                PartyPos = partypos.Value;
+                if (Damageable == null)
+                {
+                    if(PartyPos >=0 && Memory.State?.PartyData != null && PartyPos < Memory.State.PartyData.Count)
+                        Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+                    else
+                    {
+                        int enemypos = (0 - PartyPos) - 1;
+                        if (PartyPos < 0 && Enemy.Party != null && enemypos < Enemy.Party.Count)
+                        {
+                            Damageable = Enemy.Party[enemypos];
+                        }
+                    }
+                }
 
+            }
+            else if (damageable != null)
+            {
+                Damageable = damageable;
                 if (Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
                 }
                 else if (typeof(Enemy).Equals(Damageable.GetType()))
                 {
-                    PartyPos = checked((sbyte)(0 - Enemy.Party.FindIndex(x => x.Equals(Damageable))));
+                    PartyPos = checked((sbyte)(0 - Enemy.Party.FindIndex(x => x.Equals(Damageable)) - 1));
                 }
                 else PartyPos = sbyte.MaxValue;
             }
-            Refresh();
         }
 
         /// <summary>

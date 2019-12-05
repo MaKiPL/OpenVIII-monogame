@@ -243,15 +243,16 @@ namespace OpenVIII.IGMData
         {
             if (Damageable != null)
             {
+                if (Battle && (Damageable.IsGameOver || !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
+                {
+                    Hide();
+                    return;
+                }
+                else
+                    Show();
                 if (Memory.State.Characters != null && !skipRefresh && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    if (Battle && (Damageable.IsGameOver || !Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
-                    {
-                        Hide();
-                        return;
-                    }
-                    else
-                        Show();
+
                     if (Battle)
                         CrisisLevel = c.GenerateCrisisLevel() >= 0;
                     Rectangle DataSize = Rectangle.Empty;
