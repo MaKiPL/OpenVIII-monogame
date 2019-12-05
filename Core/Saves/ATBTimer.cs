@@ -20,16 +20,19 @@ namespace OpenVIII
 
         private Damageable Damageable;
 
-        public ATBTimer(Damageable damageable) => Damageable = damageable;
+        public ATBTimer(Damageable damageable) => Refresh(damageable);
 
         /// <summary>
-        /// Refresh damageable and start new turn.
+        /// Refresh damageable and start new turn. if Damageable is changed.
         /// </summary>
         /// <param name="damageable">Character,GF,Enemy</param>
         public void Refresh(Damageable damageable)
         {
-            Damageable = damageable;
-            NewTurn();
+            if (damageable != Damageable)
+            {
+                Damageable = damageable;
+                FirstTurn();
+            }
         }
 
         /// <summary>
@@ -41,7 +44,6 @@ namespace OpenVIII
             {
                 ATBBarPos = Damageable?.ATBBarStart() ?? 0;
                 First = false;
-                Damageable?.EndTurn();
             }
             else
                 ATBBarPos = 0;
@@ -53,6 +55,7 @@ namespace OpenVIII
         public void FirstTurn()
         {
             First = true;
+            Damageable?.Charging();
             NewTurn();
         }
 

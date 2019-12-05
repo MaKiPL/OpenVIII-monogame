@@ -84,7 +84,6 @@ namespace OpenVIII
                 EII = eII,
                 FixedLevel = fixedLevel
             };
-            r.Init();
             r._CurrentHP = startinghp ?? r.MaxHP();
             if ((r.info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
             {
@@ -106,6 +105,7 @@ namespace OpenVIII
             {
                 r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Float;
             }
+            r.Init();
             return r;
         }
 

@@ -767,12 +767,12 @@ namespace OpenVIII
                 //init offset 0;
                 for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
-                    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i));
+                    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i,this));
                 }
                 //init offset 1088;
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
-                    CharacterData tmp = CharacterData.Load(br, (Characters)i);
+                    CharacterData tmp = CharacterData.Load(br, (Characters)i, this);
 
                     tmp.Name = Memory.Strings.GetName((Characters)i, this);
                     _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total

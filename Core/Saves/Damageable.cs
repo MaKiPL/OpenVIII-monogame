@@ -78,7 +78,7 @@ namespace OpenVIII
         public virtual int ATBBarSize => (int)Memory.CurrentBattleSpeed * 4000;
 
         public float ATBPercent => ATBTimer.Percent;
-
+        public bool Charging() => SetBattleMode(BattleMode.ATB_Charging);
         public IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> DamageActions
         {
             get
@@ -488,13 +488,14 @@ namespace OpenVIII
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public static int BarIncrement(int spd, SpeedMod speedMod = SpeedMod.Normal) => (spd + 30) * ((byte)speedMod / 2);
 
-        public static T Load<T>(BinaryReader br, Enum @enum) where T : Damageable, new()
+        public static T Load<T>(BinaryReader br, Enum @enum, Saves.Data data) where T : Damageable, new()
         {
-            T r = new T();
-            r.Init();
+            T r = new T { Data = data };
             r.ReadData(br, @enum);
+            r.Init();
             return r;
         }
+        protected Saves.Data Data { get; set; }
 
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public static int TimeToFillBarGF(int spd) => 200 * (int)Memory.CurrentBattleSpeed / (3 * (spd + 30));
@@ -507,11 +508,17 @@ namespace OpenVIII
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public virtual int ATBBarStart(int spd)
         {
-            int i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
-            if (i > 0 && i < ATBBarSize)
-                return i;
-            else if (i < 0) return 0;
-            else return ATBBarSize;
+            int i = 0;
+            do
+            {
+                i = ((spd / 4) + Memory.Random.Next(128) - 34) * (int)Memory.CurrentBattleSpeed * 40;
+            }
+            while (i <= 0 || i > ATBBarSize);
+            return i;
+            //if (i > 0 && i < ATBBarSize)
+            //    return i;
+            //else if (i < 0) return 0;
+            //else return ATBBarSize;
         }
 
         public int ATBBarStart()
@@ -627,6 +634,7 @@ namespace OpenVIII
             {
                 SetBattleMode(BattleMode.EndTurn); // trigger any end of turn clean up.
                 SetBattleMode(BattleMode.ATB_Charging); //start charging next turn.
+                ATBTimer.NewTurn();
                 Refresh();
                 return true;
             }
@@ -684,7 +692,10 @@ namespace OpenVIII
 
         public virtual float PercentFullHP() => (float)CurrentHP() / MaxHP();
 
-        public virtual void Refresh() => ATBTimer.Refresh(this);
+        public virtual void Refresh()
+        {
+            ATBTimer.Refresh(this);            
+        }
 
         public virtual void Reset()
         {

@@ -87,12 +87,11 @@ namespace OpenVIII
                     return (int)(Compability * (int)Memory.CurrentBattleSpeed * 0.9143 / 32);
                 }
             }
-            public override int BarIncrement()
-            {
-                return (int)GetSpeedMod();
-            }
+
+            public override int BarIncrement() => (int)GetSpeedMod();
 
             public override int ATBBarStart(int spd) => 0;
+
             public override byte EVA => 0;
 
             public override int EXP => checked((int)Experience);
@@ -118,7 +117,19 @@ namespace OpenVIII
             /// <summary>
             /// Kernel bin data on this GF
             /// </summary>
-            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData => Kernel_bin.JunctionableGFsData[ID];
+            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData
+            {
+                get
+                {
+                    if (
+                        Kernel_bin.JunctionableGFsData != null &&
+                        Kernel_bin.JunctionableGFsData.TryGetValue(ID, out Kernel_bin.Junctionable_GFs_Data value))
+                    {
+                        return value;
+                    }
+                    return null;
+                }
+            }
 
             /// <summary>
             /// This is the ability that will gain AP from battles.
@@ -132,8 +143,13 @@ namespace OpenVIII
             {
                 get
                 {
-                    uint ret = (Experience / JunctionableGFsData.EXPperLevel) + 1;
-                    return ret > 100 ? (byte)100 : (byte)ret;
+                    Kernel_bin.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
+                    if (junctionableGFsData != null)
+                    {
+                        uint ret = (Experience / junctionableGFsData.EXPperLevel) + 1;
+                        return ret > 100 ? (byte)100 : (byte)ret;
+                    }
+                    return 0;
                 }
             }
 
@@ -196,7 +212,7 @@ namespace OpenVIII
                 get
                 {
                     List<Kernel_bin.Abilities> abilities = new List<Kernel_bin.Abilities>();
-                    for (int i = 1; i < Complete.Length; i++)//0 is none so skipping it.
+                    for (int i = 1; Complete != null && i < Complete.Length; i++)//0 is none so skipping it.
                     {
                         if (Complete[i])
                             abilities.Add((Kernel_bin.Abilities)i);
@@ -212,7 +228,7 @@ namespace OpenVIII
 
             #region Methods
 
-            public static GFData Load(BinaryReader br, GFs @enum) => Load<GFData>(br, @enum);
+            public static GFData Load(BinaryReader br, GFs @enum, Saves.Data data) => Load<GFData>(br, @enum,data);
 
             /// <summary>
             /// Create a copy of this gfdata object
@@ -289,8 +305,13 @@ namespace OpenVIII
             /// </summary>
             public override ushort MaxHP()
             {
-                int max = ((Level * Level / 25) + 250 + JunctionableGFsData.HP_MOD * Level) * (Percent + 100) / 100;
-                return (ushort)(max > Kernel_bin.MAX_HP_VALUE ? Kernel_bin.MAX_HP_VALUE : max);
+                Kernel_bin.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
+                if (junctionableGFsData != null)
+                {
+                    int max = ((Level * Level / 25) + 250 + junctionableGFsData.HP_MOD * Level) * (Percent + 100) / 100;
+                    return (ushort)(max > Kernel_bin.MAX_HP_VALUE ? Kernel_bin.MAX_HP_VALUE : max);
+                }
+                return 0;
             }
 
             /// <summary>

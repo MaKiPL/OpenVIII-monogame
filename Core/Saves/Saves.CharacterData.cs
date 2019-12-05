@@ -114,6 +114,7 @@ namespace OpenVIII
             }
 
             public OrderedDictionary<byte, byte> CloneMagic() => Magics.Clone();
+
             public Dictionary<Kernel_bin.Stat, byte> CloneMagicJunction() => new Dictionary<Kernel_bin.Stat, byte>(Stat_J);
 
             #endregion Methods
@@ -199,7 +200,6 @@ namespace OpenVIII
 
             public byte Unknown3;
 
-
             public byte Unknown4;
 
             /// <summary>
@@ -209,6 +209,7 @@ namespace OpenVIII
 
             //public CharacterData(BinaryReader br, Characters c) => Read(br, c);
             public CharacterData() { }
+
             /// <summary>
             /// 25.4% chance to cast automaticly on gameover, if used once in battle
             /// </summary>
@@ -242,6 +243,7 @@ namespace OpenVIII
 
             public ushort ExperienceToNextLevel => (ushort)(Level == 100 ? 0 : MathHelper.Clamp(CharacterStats.EXP((byte)(Level + 1)) - Experience, 0, CharacterStats.EXP(2)));
             private Characters id;
+
             /// <summary>
             /// If TeamLaguna the id will change to a Luguna Party member
             /// </summary>
@@ -258,7 +260,15 @@ namespace OpenVIII
 
             public bool IsCritical => CurrentHP() <= CriticalHP();
 
-            public override byte Level => CharacterStats.LEVEL(Experience);
+            public override byte Level
+            {
+                get
+                {
+                    if (CharacterStats != null)
+                        return CharacterStats.LEVEL(Experience);
+                    return 0;
+                }
+            }
 
             /// <summary>
             /// If TeamLaguna the name will change to a Luguna Party member
@@ -307,7 +317,15 @@ namespace OpenVIII
             /// <summary>
             /// Kernel Stats
             /// </summary>
-            public Kernel_bin.Character_Stats CharacterStats => Kernel_bin.CharacterStats[id];
+            public Kernel_bin.Character_Stats CharacterStats
+            {
+                get
+                {
+                    if (Kernel_bin.CharacterStats != null && Kernel_bin.CharacterStats.TryGetValue(id, out Kernel_bin.Character_Stats value))
+                        return value;
+                    return null;
+                }
+            }
 
             public override byte EVA => checked((byte)TotalStat(Kernel_bin.Stat.EVA));
 
@@ -452,12 +470,14 @@ namespace OpenVIII
 
             public float PercentFullHP(Characters c) => (float)CurrentHP(c) / MaxHP(c);
 
-            public static CharacterData Load(BinaryReader br, Characters @enum) => Load<CharacterData>(br, @enum);
+            public static CharacterData Load(BinaryReader br, Characters @enum, Data data) => Load<CharacterData>(br, @enum,data);
+            
             protected override void ReadData(BinaryReader br, Enum c)
             {
                 if (!c.GetType().Equals(typeof(Characters))) throw new ArgumentException($"Enum {c} is not Characters");
-                //Name = Memory.Strings.GetName(c, data);
-                id = (Characters) c;
+                
+                id = (Characters)c;
+                Name = Memory.Strings.GetName(id, Data ?? Memory.State);
                 _CurrentHP = br.ReadUInt16();//0x00
                 _HP = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
@@ -506,6 +526,7 @@ namespace OpenVIII
                 Statuses0 = (Kernel_bin.Persistent_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
+
             public void RemoveAll()
             {
                 Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
@@ -537,46 +558,47 @@ namespace OpenVIII
                 if (c != id && c < Characters.Laguna_Loire)
                     throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({id}) unless Laguna Kiros or Ward!");
                 int total = 0;
-                foreach (Kernel_bin.Abilities i in Abilities)
-                {
-                    if (Kernel_bin.Statpercentabilities.ContainsKey(i) && Kernel_bin.Statpercentabilities[i].Stat == s)
-                        total += Kernel_bin.Statpercentabilities[i].Value;
-                }
+                if (Kernel_bin.Statpercentabilities != null)
+                    foreach (Kernel_bin.Abilities i in Abilities)
+                    {
+                        if (Kernel_bin.Statpercentabilities.TryGetValue(i, out Kernel_bin.Stat_percent_abilities ability) && ability.Stat == s)
+                            total += ability.Value;
+                    }
+                if (CharacterStats != null)
+                    switch (s)
+                    {
+                        case Kernel_bin.Stat.HP:
+                            return CharacterStats.HP((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], _HP, total);
 
-                switch (s)
-                {
-                    case Kernel_bin.Stat.HP:
-                        return CharacterStats.HP((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], _HP, total);
+                        case Kernel_bin.Stat.EVA:
+                            //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
+                            return CharacterStats.EVA((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], 0, TotalStat(Kernel_bin.Stat.SPD, c), total);
 
-                    case Kernel_bin.Stat.EVA:
-                        //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
-                        return CharacterStats.EVA((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], 0, TotalStat(Kernel_bin.Stat.SPD, c), total);
+                        case Kernel_bin.Stat.SPD:
+                            return CharacterStats.SPD((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
-                    case Kernel_bin.Stat.SPD:
-                        return CharacterStats.SPD((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Kernel_bin.Stat.HIT:
+                            return CharacterStats.HIT(Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], WeaponID);
 
-                    case Kernel_bin.Stat.HIT:
-                        return CharacterStats.HIT(Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], WeaponID);
+                        case Kernel_bin.Stat.LUCK:
+                            return CharacterStats.LUCK((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
-                    case Kernel_bin.Stat.LUCK:
-                        return CharacterStats.LUCK((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Kernel_bin.Stat.MAG:
+                            return CharacterStats.MAG((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
-                    case Kernel_bin.Stat.MAG:
-                        return CharacterStats.MAG((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Kernel_bin.Stat.SPR:
+                            return CharacterStats.SPR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
 
-                    case Kernel_bin.Stat.SPR:
-                        return CharacterStats.SPR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Kernel_bin.Stat.STR:
+                            return CharacterStats.STR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total, WeaponID);
 
-                    case Kernel_bin.Stat.STR:
-                        return CharacterStats.STR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total, WeaponID);
-
-                    case Kernel_bin.Stat.VIT:
-                        return CharacterStats.VIT((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
-                }
+                        case Kernel_bin.Stat.VIT:
+                            return CharacterStats.VIT((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                    }
                 return 0;
             }
 
-            public override ushort TotalStat(Kernel_bin.Stat s) => TotalStat(s,ID);
+            public override ushort TotalStat(Kernel_bin.Stat s) => TotalStat(s, ID);
 
             public bool Unlocked(Kernel_bin.Stat stat) => Unlocked(UnlockedGFAbilities, stat);
 
@@ -620,7 +642,6 @@ namespace OpenVIII
                         return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
                 }
             }
-
         }
 
         #endregion Classes

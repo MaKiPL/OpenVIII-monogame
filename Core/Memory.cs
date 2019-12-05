@@ -251,12 +251,16 @@ namespace OpenVIII
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
+
+            // requires strings because it uses an array generated in strings.
+            // saves data will reference kernel_bin.
+            if (!token.IsCancellationRequested)
+                Kernel_Bin = new Kernel_bin();
+
             var tasks = new List<Task>();
      
             if (!token.IsCancellationRequested)
             {
-                // requires strings because it uses an array generated in strings.       
-                tasks.Add(Task.Run(() => { Kernel_Bin = new Kernel_bin(); }, token));
                 // this has a soft requirement on kernel_bin. It checks for null so should work without it.                
                 tasks.Add(Task.Run(() => { MItems = Items_In_Menu.Read(); }, token));
                 //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
