@@ -355,8 +355,8 @@ namespace OpenVIII
                     int cnt = 0;
                     do
                     {
-                        if (++_player > 2) _player = 0;
-                        if (++cnt > 6) return false;
+                        if (++_player > (int)SectionName.Enemy8) _player = 0;
+                        if (++cnt > (int)SectionName.Enemy8*2) return false;
                     }
                     while (Data.Count <= _player ||
                     Data[PossibleValidPlayer()] == null ||
@@ -384,7 +384,7 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(14);
         }
 
-        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(_player, 0, 2);
+        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(_player, 0, (int)SectionName.Enemy8);
 
         private void ReturnBattleFunction()
         {

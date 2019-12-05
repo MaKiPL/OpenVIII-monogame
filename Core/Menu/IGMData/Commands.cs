@@ -132,8 +132,9 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs_OKAY()
         {
-            base.Inputs_OKAY();
             Kernel_bin.Battle_Commands c = commands[CURSOR_SELECT];
+            if (c == null) return false;
+            base.Inputs_OKAY();
             Target_Group.SelectTargetWindows(c);
             switch (c.ID)
             {
