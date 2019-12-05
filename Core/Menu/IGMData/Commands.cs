@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace OpenVIII.IGMData
 {
@@ -261,6 +262,8 @@ namespace OpenVIII.IGMData
                         Enemy e = (Enemy)Damageable;
                         enemycommands = e.Abilities;
                         int pos = 0;
+                        bool Item, Magic, Attack;
+                        Item= Magic= Attack = false;
                         foreach (Debug_battleDat.Abilities a in enemycommands)
                         {
                             if (pos >= Rows) break;
@@ -268,24 +271,51 @@ namespace OpenVIII.IGMData
                             BLANKS[pos] = true;
                             if (a.ITEM != null)
                             {
-                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = a.ITEM.Value.Name;
-                                ((IGMDataItem.Text)ITEM[pos, 0]).Show();
-                                BLANKS[pos] = false;
+                                Item = true;
+                                //((IGMDataItem.Text)ITEM[pos, 0]).Data = a.ITEM.Value.Name;
+                                //((IGMDataItem.Text)ITEM[pos, 0]).Show();
+                                //BLANKS[pos] = false;
                             }
                             else if (a.MAGIC != null)
                             {
-                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MAGIC.Name;
-                                ((IGMDataItem.Text)ITEM[pos, 0]).Show();
-                                BLANKS[pos] = false;
+                                Magic = true;                                
+                                //((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MAGIC.Name;
+                                //((IGMDataItem.Text)ITEM[pos, 0]).Show();
+                                //BLANKS[pos] = false;
                             }
                             else if (a.MONSTER != null)
                             {
-                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MONSTER.Name;
-                                ((IGMDataItem.Text)ITEM[pos, 0]).Show();
-                                BLANKS[pos] = false;
+                                Attack = true;
+                                //((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MONSTER.Name;
+                                //((IGMDataItem.Text)ITEM[pos, 0]).Show();
+                                //BLANKS[pos] = false;
                             }
+
+                            //((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
+                            //pos++;
+                        }
+                        
+                        if (Attack)
+                            AddCommand(Kernel_bin.BattleCommands[1]);
+                        if (Magic || e.DrawList.Any(x => x.DATA != null))
+                            AddCommand(Kernel_bin.BattleCommands[2]);
+                        if (Item || e.DropList.Any(x => x.DATA?.Battle != null) || e.MugList.Any(x => x.DATA?.Battle != null))
+                            AddCommand(Kernel_bin.BattleCommands[4]);
+                        if (e.DrawList.Any(x => x.GF >= GFs.Quezacotl && x.GF <= GFs.Eden))
+                            AddCommand(Kernel_bin.BattleCommands[3]);
+                        void AddCommand(Kernel_bin.Battle_Commands c)
+                        {
+                            commands[pos] = c;
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Data = c.Name;
                             ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
+                            ITEM[pos, 0].Show();
+                            BLANKS[pos] = false;
                             pos++;
+                        }
+                        for(;pos<Rows;pos++)
+                        {
+                            ITEM[pos, 0].Hide();
+                            BLANKS[pos] = true;
                         }
                     }
                     else if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
