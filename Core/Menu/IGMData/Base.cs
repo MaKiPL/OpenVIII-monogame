@@ -516,12 +516,12 @@ namespace OpenVIII.IGMData
         {
         }
 
-        protected bool InputITEM(int i, int d, ref bool ret)
+        protected bool InputITEM(Menu_Base menuitem, ref bool ret)
         {
-            if (ITEM[i, d] != null && ITEM[i, d].Enabled)
+            if (menuitem != null && menuitem.Enabled)
             {
                 Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                ret = ITEM[i, d].Inputs();
+                ret = menuitem.Inputs();
                 return true;
             }
             return false;

@@ -25,20 +25,36 @@ namespace OpenVIII.IGMData
         #region Properties
 
         public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
-        public IGMData.Pool.Item GFPool => (IGMData.Pool.Item)(((Base)ITEM[GF_Pool, 0]));
-        public IGMData.Pool.Item ItemPool => (IGMData.Pool.Item)(((Base)ITEM[Item_Pool, 0]));
-        public IGMData.Pool.Magic MagPool => (IGMData.Pool.Magic)(((Base)ITEM[Mag_Pool, 0]));
-        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((Base)ITEM[Targets_Window, 0]));
-        private int Item_Pool => Count - 2;
+        public IGMData.Pool.GF GFPool { get => (IGMData.Pool.GF)ITEM[Offsets.GF_Pool, 0]; protected set => ITEM[Offsets.GF_Pool, 0] = value; }
+        public IGMData.Pool.Item ItemPool { get => (IGMData.Pool.Item)ITEM[Offsets.Item_Pool, 0]; protected set => ITEM[Offsets.Item_Pool, 0] = value; }
+        public IGMData.Pool.Magic MagPool { get => (IGMData.Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; protected set => ITEM[Offsets.Mag_Pool, 0] = value; }
+        public IGMData.Pool.BlueMagic BluePool { get => (IGMData.Pool.BlueMagic)ITEM[Offsets.Blue_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
+        public IGMDataItem.Icon LimitArrow { get => (IGMDataItem.Icon)ITEM[Offsets.Limit_Arrow, 0]; protected set => ITEM[Offsets.Limit_Arrow, 0] = value; }
 
-        private int GF_Pool => Count - 6;
-        private int Limit_Arrow => Count - 5;
+        public IGMData.Target.Group Target_Group
+        {
+            get => (IGMData.Target.Group)ITEM[Offsets.Targets_Window, 0];
+            protected set => ITEM[Offsets.Targets_Window, 0] = value;
+        }
 
-        private int Blue_Pool => Count - 4;
+        public IGMData.Pool.Enemy_Attacks EnemyAttacks
+        {
+            get => ((IGMData.Pool.Enemy_Attacks)ITEM[Offsets.Enemy_Attacks_Pool, 0]);
+            protected set => ITEM[Offsets.Enemy_Attacks_Pool, 0] = value;
+        }
 
-        private int Mag_Pool => Count - 3;
-
-        private int Targets_Window => Count - 1;
+        private static class Offsets
+        {
+            public const int
+                Limit_Arrow = 4,
+                Blue_Pool = 5,
+                Mag_Pool = 6,
+                GF_Pool = 7,
+                Enemy_Attacks_Pool = 8,
+                Item_Pool = 9,
+                Targets_Window = 10,
+                Count = 11;
+        }
 
         //base.Inputs_CANCEL();
         private static int Cidoff
@@ -90,22 +106,24 @@ namespace OpenVIII.IGMData
             };
 
             r.SetDamageable(damageable, null);
-            r.Init(10, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
+            r.Init(Offsets.Count, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.COMMAND }, 1, 4);
             return r;
         }
 
         public override bool Inputs()
         {
             bool ret = false;
-            if (InputITEM(Mag_Pool, 0, ref ret))
+            if (InputITEM(MagPool, ref ret))
             { }
-            else if (InputITEM(Item_Pool, 0, ref ret))
+            else if (InputITEM(ItemPool, ref ret))
             { }
-            else if (InputITEM(GF_Pool, 0, ref ret))
+            else if (InputITEM(GFPool, ref ret))
             { }
-            else if (InputITEM(Targets_Window, 0, ref ret))
+            else if (InputITEM(Target_Group, ref ret))
             { }
-            else if (InputITEM(Blue_Pool, 0, ref ret))
+            else if (InputITEM(BluePool, ref ret))
+            { }
+            else if (InputITEM(EnemyAttacks, ref ret))
             { }
             else
             {
@@ -137,89 +155,96 @@ namespace OpenVIII.IGMData
             if (c == null) return false;
             base.Inputs_OKAY();
             Target_Group.SelectTargetWindows(c);
-            switch (c.ID)
+            if (c.ID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
-                default:
-                    // ITEM[Targets_Window, 0].Show();
-                    throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.ID}) doesn't have explict operation defined!");
-                case 1: //ATTACK
-                case 14: //SHOT
-                case 5: //Renzokuken
-                case 12: //MUG
-                case 6: //DRAW
-                case 29: //CARD
-                case 32: //ABSORB
-                case 28: //DARKSIDE
-                case 30: //DOOM
-                case 26: //RECOVER
-                case 27: //REVIVE
-                case 33: //LVL DOWN
-                case 34: //LVL UP
-                case 31: //Kamikaze
-                case 38: //MiniMog
-                case 24: //MADRUSH
-                case 25: //Treatment
-                case 20: //Desperado
-                case 21: //Blood Pain
-                case 22: //Massive Anchor
-                case 7: //DEVOUR
-                case 11: //DUEL
-                case 17: //FIRE CROSS / NO MERCY
-                case 18: //SORCERY /  ICE STRIKE
-                    Target_Group.ShowTargetWindows();
-                    return true;
-
-                case 16: // SLOT
-                    //TODO add slot menu to randomly choose spell to cast.
-                    return true;
-
-                case 19: //COMBINE (ANGELO or ANGEL WING)
-                    //TODO see if ANGEL WING unlock if so show menu to choose angelo or angel wing.
-                    Target_Group.ShowTargetWindows();
-                    return true;
-
-                case 0: //null
-                case 9: //CAST is part of DRAW menu.
-                case 10: // Stock is part of DRAW menu.
-                case 8: // NOMSG
-                case 13: // NOMSG
-                    return false;
-
-                case 36: //DOUBLE
-                case 37: //TRIPLE
-                    //TODO 2 casts 2 targets
-                    //TODO 3 casts 3 targets
-                    ITEM[Mag_Pool, 0].Show();
-                    ITEM[Mag_Pool, 0].Refresh();
-                    return true;
-
-                case 2: //magic
-                        //TODO ADD a menu for DOUBLE and TRIPLE to choose SINGLE DOUBLE OR TRIPLE
-                case 35: //SINGLE
-                    ITEM[Mag_Pool, 0].Show();
-                    ITEM[Mag_Pool, 0].Refresh();
-                    return true;
-
-                case 3: //GF
-                    ITEM[GF_Pool, 0].Show();
-                    ITEM[GF_Pool, 0].Refresh();
-                    return true;
-
-                case 4: //items
-                    ITEM[Item_Pool, 0].Show();
-                    ITEM[Item_Pool, 0].Refresh();
-                    return true;
-
-                case 15: //Blue magic
-                    ITEM[Blue_Pool, 0].Show();
-                    ITEM[Blue_Pool, 0].Refresh();
-                    return true;
-
-                case 23: //Defend
-                    Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.ID})");
-                    Damageable.EndTurn();
-                    return true;
+                EnemyAttacks.Refresh();
+                EnemyAttacks.Show();
+                return true;
             }
+            else
+                switch (c.ID)
+                {
+                    default:
+                        // ITEM[Targets_Window, 0].Show();
+                        throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.ID}) doesn't have explict operation defined!");
+                    case 1: //ATTACK
+                    case 14: //SHOT
+                    case 5: //Renzokuken
+                    case 12: //MUG
+                    case 6: //DRAW
+                    case 29: //CARD
+                    case 32: //ABSORB
+                    case 28: //DARKSIDE
+                    case 30: //DOOM
+                    case 26: //RECOVER
+                    case 27: //REVIVE
+                    case 33: //LVL DOWN
+                    case 34: //LVL UP
+                    case 31: //Kamikaze
+                    case 38: //MiniMog
+                    case 24: //MADRUSH
+                    case 25: //Treatment
+                    case 20: //Desperado
+                    case 21: //Blood Pain
+                    case 22: //Massive Anchor
+                    case 7: //DEVOUR
+                    case 11: //DUEL
+                    case 17: //FIRE CROSS / NO MERCY
+                    case 18: //SORCERY /  ICE STRIKE
+                        Target_Group.ShowTargetWindows();
+                        return true;
+
+                    case 16: // SLOT
+                             //TODO add slot menu to randomly choose spell to cast.
+                        return true;
+
+                    case 19: //COMBINE (ANGELO or ANGEL WING)
+                             //TODO see if ANGEL WING unlock if so show menu to choose angelo or angel wing.
+                        Target_Group.ShowTargetWindows();
+                        return true;
+
+                    case 0: //null
+                    case 9: //CAST is part of DRAW menu.
+                    case 10: // Stock is part of DRAW menu.
+                    case 8: // NOMSG
+                    case 13: // NOMSG
+                        return false;
+
+                    case 36: //DOUBLE
+                    case 37: //TRIPLE
+                             //TODO 2 casts 2 targets
+                             //TODO 3 casts 3 targets
+                        MagPool.Show();
+                        MagPool.Refresh();
+                        return true;
+
+                    case 2: //magic
+                            //TODO ADD a menu for DOUBLE and TRIPLE to choose SINGLE DOUBLE OR TRIPLE
+                    case 35: //SINGLE
+                        MagPool.Show();
+                        MagPool.Refresh();
+                        return true;
+
+                    case 3: //GF
+                        GFPool.Show();
+                        GFPool.Refresh();
+                        return true;
+
+                    case 4: //items
+                        ItemPool.Show();
+                        ItemPool.Refresh();
+                        return true;
+
+                    case 15: //Blue magic
+                        BluePool.Show();
+                        BluePool.Refresh();
+                        return true;
+
+                    case 23: //Defend
+                        Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.ID})");
+                        Damageable.EndTurn();
+                        return true;
+                }
         }
 
         public override void Inputs_Right()
@@ -233,7 +258,7 @@ namespace OpenVIII.IGMData
                     skipsnd = true;
                     base.Inputs_Right();
                     page++;
-                    ITEM[Limit_Arrow, 0].Hide();
+                    LimitArrow.Hide();
                 }
             }
         }
@@ -257,13 +282,12 @@ namespace OpenVIII.IGMData
                         else
                             Show();
                     }
-                    if (typeof(Enemy).Equals(Damageable.GetType()))
+                    if (Damageable.GetEnemy(out Enemy e))
                     {
-                        Enemy e = (Enemy)Damageable;
                         enemycommands = e.Abilities;
                         int pos = 0;
                         bool Item, Magic, Attack;
-                        Item= Magic= Attack = false;
+                        Item = Magic = Attack = false;
                         foreach (Debug_battleDat.Abilities a in enemycommands)
                         {
                             if (pos >= Rows) break;
@@ -278,7 +302,7 @@ namespace OpenVIII.IGMData
                             }
                             else if (a.MAGIC != null)
                             {
-                                Magic = true;                                
+                                Magic = true;
                                 //((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MAGIC.Name;
                                 //((IGMDataItem.Text)ITEM[pos, 0]).Show();
                                 //BLANKS[pos] = false;
@@ -294,7 +318,7 @@ namespace OpenVIII.IGMData
                             //((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
                             //pos++;
                         }
-                        
+
                         if (Attack)
                             AddCommand(Kernel_bin.BattleCommands[1]);
                         if (Magic || e.DrawList.Any(x => x.DATA != null))
@@ -312,7 +336,7 @@ namespace OpenVIII.IGMData
                             BLANKS[pos] = false;
                             pos++;
                         }
-                        for(;pos<Rows;pos++)
+                        for (; pos < Rows; pos++)
                         {
                             ITEM[pos, 0].Hide();
                             BLANKS[pos] = true;
@@ -364,12 +388,12 @@ namespace OpenVIII.IGMData
                         if (Battle && CrisisLevel)
                         {
                             CONTAINER.Width = crisiswidth;
-                            ITEM[Limit_Arrow, 0].Show();
+                            LimitArrow.Show();
                         }
                         else
                         {
                             CONTAINER.Width = nonbattleWidth;
-                            ITEM[Limit_Arrow, 0].Hide();
+                            LimitArrow.Hide();
                         }
                         AutoAdjustContainerWidth(DataSize);
                     }
@@ -393,26 +417,28 @@ namespace OpenVIII.IGMData
         protected override void Init()
         {
             base.Init();
-            BLANKS[Limit_Arrow] = true;
+            BLANKS[Offsets.Limit_Arrow] = true;
             for (int pos = 0; pos < Rows; pos++)
                 ITEM[pos, 0] = new IGMDataItem.Text
                 {
                     Pos = SIZE[pos]
                 };
-            ITEM[GF_Pool, 0] = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 320, 192), Damageable, true);
-            ITEM[GF_Pool, 0].Hide();
-            ITEM[Blue_Pool, 0] = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
-            ITEM[Blue_Pool, 0].Hide();
-            ITEM[Mag_Pool, 0] = Pool.Magic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
-            ITEM[Mag_Pool, 0].Hide();
-            ITEM[Item_Pool, 0] = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
-            ITEM[Item_Pool, 0].Hide();
-            ITEM[Limit_Arrow, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
-            ITEM[Limit_Arrow, 0].Hide();
-            ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable);
+            GFPool = Pool.GF.Create(new Rectangle(X + 50, Y - 20, 320, 192), Damageable, true);
+            GFPool.Hide();
+            BluePool = Pool.BlueMagic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            BluePool.Hide();
+            MagPool = Pool.Magic.Create(new Rectangle(X + 50, Y - 20, 300, 192), Damageable, true);
+            MagPool.Hide();
+            ItemPool = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
+            ItemPool.Hide();
+            EnemyAttacks = Pool.Enemy_Attacks.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
+            EnemyAttacks.Hide();
+            LimitArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
+            LimitArrow.Hide();
+            Target_Group = IGMData.Target.Group.Create(Damageable);
             commands = new Kernel_bin.Battle_Commands[Rows];
             enemycommands = null;
-            PointerZIndex = Limit_Arrow;
+            PointerZIndex = Offsets.Limit_Arrow;
             nonbattleWidth = Width;
         }
 
@@ -459,8 +485,8 @@ namespace OpenVIII.IGMData
             if (Damageable != null && !EventAdded)
             {
                 Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
-                Damageable.BattleModeChangeEventHandler += (((Base)ITEM[Item_Pool, 0])).ModeChangeEvent;
-                Damageable.BattleModeChangeEventHandler += (((Base)ITEM[Mag_Pool, 0])).ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler += ItemPool.ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler += MagPool.ModeChangeEvent;
                 EventAdded = true;
             }
         }
@@ -470,8 +496,8 @@ namespace OpenVIII.IGMData
             if (Damageable != null && EventAdded)
             {
                 Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
-                Damageable.BattleModeChangeEventHandler -= (((Base)ITEM[Item_Pool, 0])).ModeChangeEvent;
-                Damageable.BattleModeChangeEventHandler -= (((Base)ITEM[Mag_Pool, 0])).ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler -= ItemPool.ModeChangeEvent;
+                Damageable.BattleModeChangeEventHandler -= MagPool.ModeChangeEvent;
                 EventAdded = false;
             }
         }

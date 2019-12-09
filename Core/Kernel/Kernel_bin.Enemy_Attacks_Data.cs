@@ -31,8 +31,11 @@ namespace OpenVIII
             public byte Attack_parameter { get; private set; }//0x0D	1 byte Attack Parameter, HIT?
             public Persistent_Statuses Statuses0 { get; private set; }//0x0E	2 bytes status_0; //statuses 0-7
             public Battle_Only_Statuses Statuses1 { get; private set; }//0x10	4 bytes status_1; //statuses 8-31
+            public int ID { get; private set; }
+
             public void Read(BinaryReader br, int i)
             {
+                ID = i;
                 if(i == 2)
                 {
                     Name = Kernel_bin.BattleCommands[1].Name;
@@ -42,7 +45,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16(); //0x02	2 bytes Magic ID
                 CameraChange = br.ReadByte(); //0x04	1 byte Camera Change
-                Unknown0 = br.ReadByte(); //0x05	1 byte Unknown
+                Unknown0 = br.ReadByte(); //0x05	1 byte Unknown Maybe something similar to Target.
                 Attack_type = (Attack_Type) br.ReadByte();//0x06	1 byte Attack type
                 Attack_power = br.ReadByte();//0x07	1 byte Attack power
                 Attack_flags = (Attack_Flags)(br.ReadByte());//0x08	1 byte Attack flags

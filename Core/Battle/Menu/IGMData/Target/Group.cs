@@ -20,7 +20,7 @@ namespace OpenVIII.IGMData.Target
         public Kernel_bin.Blue_magic_Quistis_limit_break BlueMagic { get; private set; }
 
         public Kernel_bin.Battle_Commands Command { get; private set; }
-
+        public Kernel_bin.Enemy_Attacks_Data EnemyAttack { get; private set; }
         public Item_In_Menu Item { get; private set; }
 
         public Kernel_bin.Magic_Data Magic { get; private set; }
@@ -125,6 +125,18 @@ namespace OpenVIII.IGMData.Target
             base.Reset();
         }
 
+
+        public void SelectTargetWindows(Kernel_bin.Enemy_Attacks_Data c)
+        {
+            // we don't know what the enemy attacks default target is. Setting a general default here.
+            // The battle AI script sets the target for the enemies
+            // http://forums.qhimm.com/index.php?topic=18384.0
+            Kernel_bin.Target t = Kernel_bin.Target.Ally | Kernel_bin.Target.Enemy | Kernel_bin.Target.Single_Target;
+            SelectTargetWindows(t);
+            Command = Kernel_bin.BattleCommands[1];
+            EnemyAttack = c;
+        }
+
         public void SelectTargetWindows(Item_In_Menu c)
         {
             Kernel_bin.Target t = c.Battle.Target;
@@ -222,6 +234,10 @@ namespace OpenVIII.IGMData.Target
             bool Command01_ATTACK()
             {
                 Neededvaribles(out Damageable[] d);
+                if (EnemyAttack != null && Damageable.GetEnemy(out Enemy e))
+                {
+                    Debug.WriteLine($"{Damageable.Name} uses {EnemyAttack.Name}({EnemyAttack.MagicID}) enemy attack on { DebugMessageSuffix(d) }");
+                }
                 Damageable.EndTurn();
                 return true;
             }
@@ -598,7 +614,7 @@ namespace OpenVIII.IGMData.Target
         {
             Damageable[] e;
             Damageable[] vc;
-            if ((Target & Kernel_bin.Target.Single_Target) != 0)
+            if (Target.HasFlag(Kernel_bin.Target.Single_Target))
             {
                 e = new Enemy[] { Enemy.Party[TargetParty.CURSOR_SELECT < Enemy.Party.Count ? TargetParty.CURSOR_SELECT : Enemy.Party.Count - 1] };
                 Characters charvar = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];

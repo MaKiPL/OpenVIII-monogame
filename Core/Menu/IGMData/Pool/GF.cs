@@ -216,7 +216,7 @@ namespace OpenVIII.IGMData.Pool
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem.Icon
             {
-                Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0),
+                Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - (Battle?50:30), SIZE[Rows].Y, 0, 0),
                 Scale = new Vector2(2.5f)
             };
             for (int i = 0; i < Rows;)
@@ -268,6 +268,7 @@ namespace OpenVIII.IGMData.Pool
                 ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = color;
                 ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Battle ? Source.GFs[g].CurrentHP() : Source.GFs[g].Level;
                 ShowChild(pos, g);
+                if (Battle) ITEM[pos, 1].Hide();
             }
             else
             {

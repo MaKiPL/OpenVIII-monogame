@@ -58,7 +58,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs()
         {
             bool ret = false;
-            if (InputITEM(Targets_Window, 0, ref ret))
+            if (InputITEM(Target_Group, ref ret))
             {
             }
             else
@@ -129,7 +129,7 @@ namespace OpenVIII.IGMData.Pool
             {
                 ((IGMDataItem.Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                 byte pos = 0;
-                sbyte skip = checked((sbyte)(Page * Rows));
+                short skip = checked((short)(Page * Rows));
                 Enemy e = null;
                 if (Damageable?.GetEnemy(out e) ?? false)
                 {
@@ -148,7 +148,7 @@ namespace OpenVIII.IGMData.Pool
                     foreach (var i in items)
                         if (addEnemyItem(i) == 0) break;
                     NUM_.Hide();
-                    Pages = DefaultPages = items.Count / Rows;
+                    DefaultPages = items.Count / Rows;
                 }
                 else
                 for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
@@ -171,7 +171,7 @@ namespace OpenVIII.IGMData.Pool
             }
         }
 
-        private sbyte AddItem(ref byte pos, ref sbyte skip, Saves.Item item, Item_In_Menu itemdata)
+        private sbyte AddItem(ref byte pos, ref short skip, Saves.Item item, Item_In_Menu itemdata)
         {
             if ((pos >= Rows))  //reached max rows.
                 return 0;

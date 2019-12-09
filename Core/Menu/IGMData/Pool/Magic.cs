@@ -114,7 +114,7 @@ namespace OpenVIII.IGMData.Pool
                             break;
                     }
                     ITEM[Rows, 2].Hide();
-                    DefaultPages = Pages = Unique_Magic.Count / Rows;
+                    DefaultPages = Unique_Magic.Count / Rows;
                     UpdateTitle();
                 }
                 else
@@ -245,7 +245,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs()
         {
             bool ret = false;
-            if (InputITEM(Targets_Window, 0, ref ret))
+            if (InputITEM(Target_Group, ref ret))
             { }
             else
             {

@@ -12,11 +12,16 @@
 
         public T2[] Contents { get; set; }
 
+        /// <summary>
+        /// Sets the Pages on refresh to this.
+        /// </summary>
         public int DefaultPages { get; protected set; }
 
         public int Page { get; protected set; }
-
-        public int Pages { get; protected set; }
+        /// <summary>
+        /// On refresh this is overrode by DefaultPages
+        /// </summary>
+        public int Pages { get; private set; }
 
         protected Menu_Base LeftArrow
         {
