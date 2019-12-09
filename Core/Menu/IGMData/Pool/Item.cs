@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
@@ -128,39 +129,34 @@ namespace OpenVIII.IGMData.Pool
             {
                 ((IGMDataItem.Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                 byte pos = 0;
-                int skip = Page * Rows;
-                for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
+                sbyte skip = checked((sbyte)(Page * Rows));
+                Enemy e = null;
+                if (Damageable?.GetEnemy(out e) ?? false)
                 {
-                    Saves.Item item = Source.Items[i];
-                    if (item.ID == 0 || item.QTY == 0) continue; // skip empty values.
-                    if (skip-- > 0) continue; //skip items that are on prev pages.
-                    Item_In_Menu itemdata = item.DATA ?? new Item_In_Menu();
-                    if (Battle && itemdata.Battle == null) continue;
-                    if (itemdata.ID == 0) continue; // skip empty values.
-                    Font.ColorID color = Font.ColorID.White;
-                    byte palette = itemdata.Palette;
-                    if (!itemdata.ValidTarget(Battle))
+                    sbyte addEnemyItem(Item_In_Menu itemdata)
                     {
-                        color = Font.ColorID.Grey;
-                        BLANKS[pos] = true;
-                        palette = itemdata.Faded_Palette;
+                        Saves.Item item = new Saves.Item { ID = itemdata.ID, QTY = byte.MaxValue };
+                        return AddItem(ref pos, ref skip, item, itemdata);
                     }
-                    else
-                        BLANKS[pos] = false;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Data = itemdata.Name;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = itemdata.Icon;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).Palette = palette;
-                    ((IGMDataItem.Text)(ITEM[pos, 0])).FontColor = color;
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = item.QTY;
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).Show();
-                    ((IGMDataItem.Integer)(ITEM[pos, 1])).FontColor = color;
-                    _helpStr[pos] = itemdata.Description;
-                    Contents[pos] = itemdata;
-
-                    ITEM[pos, 1].Show();
-                    ITEM[pos, 0].Show();
-                    pos++;
+                    HashSet<Item_In_Menu> items = new HashSet<Item_In_Menu>();
+                    foreach(var a in e.Abilities.Where(x=>x.ITEM != null))
+                        items.Add(a.ITEM.Value);
+                    foreach (var a in e.DropList.Where(x => x.ID != 0 && x.DATA != null))
+                        items.Add(a.DATA.Value);
+                    foreach (var a in e.MugList.Where(x => x.ID != 0 && x.DATA != null))
+                        items.Add(a.DATA.Value);
+                    foreach (var i in items)
+                        if (addEnemyItem(i) == 0) break;
+                    NUM_.Hide();
+                    Pages = DefaultPages = items.Count / Rows;
                 }
+                else
+                for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
+                    {
+                        Saves.Item item = Source.Items[i];
+                        Item_In_Menu itemdata = item.DATA ?? new Item_In_Menu();
+                        if (AddItem(ref pos, ref skip, item, itemdata) == 0) break;
+                    }
                 for (; pos < Rows; pos++)
                 {
                     ((IGMDataItem.Integer)(ITEM[pos, 1])).Hide();
@@ -173,6 +169,47 @@ namespace OpenVIII.IGMData.Pool
                     ITEM[pos, 0].Hide();
                 }
             }
+        }
+
+        private sbyte AddItem(ref byte pos, ref sbyte skip, Saves.Item item, Item_In_Menu itemdata)
+        {
+            if ((pos >= Rows))  //reached max rows.
+                return 0;
+            if ((item.ID == 0 || item.QTY == 0) || // skip empty values.
+                (Battle && itemdata.Battle == null) || // if battle mode skip nonbattle items.
+                (itemdata.ID == 0) || // skip empty values.
+                (skip-- > 0)) //skip items that are on prev pages.
+                return -1;
+            Enemy e = null;
+            if ((Damageable?.GetEnemy(out e) ?? false))
+            {
+            }
+            Font.ColorID color = Font.ColorID.White;
+            byte palette = itemdata.Palette;
+            if (!itemdata.ValidTarget(Battle))
+            {
+                color = Font.ColorID.Grey;
+                BLANKS[pos] = true;
+                palette = itemdata.Faded_Palette;
+            }
+            else
+                BLANKS[pos] = false;
+            ((IGMDataItem.Text)(ITEM[pos, 0])).Data = itemdata.Name;
+            ((IGMDataItem.Text)(ITEM[pos, 0])).Icon = itemdata.Icon;
+            ((IGMDataItem.Text)(ITEM[pos, 0])).Palette = palette;
+            ((IGMDataItem.Text)(ITEM[pos, 0])).FontColor = color;
+            ((IGMDataItem.Integer)(ITEM[pos, 1])).Data = item.QTY;
+            if (e != null)
+                ITEM[pos, 1].Hide();
+            else
+                ITEM[pos, 1].Show();
+            ((IGMDataItem.Integer)(ITEM[pos, 1])).FontColor = color;
+            _helpStr[pos] = itemdata.Description;
+            Contents[pos] = itemdata;
+
+            ITEM[pos, 0].Show();
+            pos++;
+            return 1;
         }
 
         public override void Reset()
@@ -197,10 +234,11 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
                 ITEM[pos, 1] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.sysFntBig, Spaces = 3 };
             }
-            ITEM[Count - 1, 2] = new IGMDataItem.Icon { Data = Icons.ID.NUM_, Pos = new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), Scale = new Vector2(2.5f) };
+            NUM_ = new IGMDataItem.Icon { Data = Icons.ID.NUM_, Pos = new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), Scale = new Vector2(2.5f) };
             PointerZIndex = Rows - 1;
         }
-
+        protected IGMDataItem.Icon NUM_ { get
+            { return ((IGMDataItem.Icon)ITEM[Count - 1, 2]); } private set { ITEM[Count - 1, 2] = value; } }
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
