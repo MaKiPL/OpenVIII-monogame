@@ -610,8 +610,7 @@ namespace OpenVIII.IGMData.Target
                 e = Enemy.Party.ToArray();
             }
             Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
-            int p = Menu.BattleMenus.Player;
-            Characters fromc = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[p];
+            Damageable fromc = Menu.BattleMenus.GetDamageable();
             //fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
             d = vc;
             if ((TargetEnemies.Cursor_Status & Cursor_Status.Enabled) != 0 && TargetEnemies.Enabled)

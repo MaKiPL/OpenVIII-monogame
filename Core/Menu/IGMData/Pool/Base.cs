@@ -16,7 +16,7 @@
 
         public int Page { get; protected set; }
 
-        public int Pages { get; private set; }
+        public int Pages { get; protected set; }
 
         protected Menu_Base LeftArrow
         {

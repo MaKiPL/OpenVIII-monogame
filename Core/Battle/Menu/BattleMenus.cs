@@ -13,9 +13,8 @@ namespace OpenVIII
     /// </summary>
     public partial class BattleMenus : Menu
     {
-        #region Fields
 
-        private byte _player = 0;
+        #region Fields
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
         private MODULE lastgamestate;
@@ -119,7 +118,12 @@ namespace OpenVIII
 
         #region Properties
 
-        public byte Player { get => _player; protected set => _player = value; }
+        protected byte Player { get; set; } = 0;
+        /// <summary>
+        /// Get Damageable from active battle menu;
+        /// </summary>
+        /// <returns></returns>
+        public Damageable GetDamageable() => GetCurrentBattleMenu()?.Damageable;
 
         public VictoryMenu Victory_Menu { get => (VictoryMenu)(Data[SectionName.Victory]); protected set => Data[SectionName.Victory] = value; }
 
@@ -375,10 +379,10 @@ namespace OpenVIII
                     int cnt = 0;
                     do
                     {
-                        if (++_player > (int)SectionName.Enemy8) _player = 0;
+                        if (++Player > (int)SectionName.Enemy8) Player = 0;
                         if (++cnt > (int)SectionName.Enemy8 * 2) return false;
                     }
-                    while (Data.Count <= _player ||
+                    while (Data.Count <= Player ||
                     Data[PossibleValidPlayer()]?.Damageable == null ||
                     Data[PossibleValidPlayer()].GetType() != typeof(BattleMenu) ||
                     !GetCurrentBattleMenu().Damageable.StartTurn());
@@ -403,7 +407,7 @@ namespace OpenVIII
                 init_debugger_Audio.PlaySound(14);
         }
 
-        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(_player, 0, (int)SectionName.Enemy8);
+        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(Player, 0, (int)SectionName.Enemy8);
 
         private void ReturnBattleFunction()
         {
@@ -454,16 +458,16 @@ namespace OpenVIII
             {
                 ret = m.Update() || ret;
             }
-            if (!GetCurrentBattleMenu().Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+            if (!(GetCurrentBattleMenu()?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)?? false))
             {
                 int cnt = bml.Count;
-                if (_player + 1 == cnt)
-                    _player = 0;
-                for (byte i = _player; cnt > 0; cnt--)
+                if (Player + 1 == cnt)
+                    Player = 0;
+                for (byte i = Player; cnt > 0; cnt--)
                 {
-                    if (bml[i].Damageable.StartTurn())
+                    if (i < bml.Count && bml[i].Damageable.StartTurn())
                     {
-                        _player = i;
+                        Player = i;
                         NewTurnSND();
                         break;
                     }

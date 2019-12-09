@@ -842,7 +842,8 @@ namespace OpenVIII
         /// <summary>
         /// Random number generator seeded with time.
         /// </summary>
-        public static Random Random;
+        /// <remarks>creates global random class for all sort of things</remarks>
+        public static Random Random = new Random((int) DateTime.Now.Ticks);
 
         #endregion DrawPointMagic
 
