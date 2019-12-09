@@ -637,10 +637,29 @@ namespace OpenVIII.IGMData.Target
                 TargetEnemies.Hide();
             void TargetAll(IGMData.Base i)
             {
-                if ((Target & Kernel_bin.Target.Single_Target) == 0)
-                    i.Cursor_Status |= Cursor_Status.All;
-                else
+                if (Target.HasFlag(Kernel_bin.Target.Single_Target))
+                {
                     i.Cursor_Status &= ~Cursor_Status.All;
+                }
+                else
+                    i.Cursor_Status |= Cursor_Status.All;
+            }
+            if(Damageable.GetEnemy(out Enemy e))
+            {
+                if(TargetEnemies.Enabled == (TargetParty.Enabled == true))
+                {
+                    //do nothing
+                }
+                else if (TargetEnemies.Enabled && !TargetParty.Enabled)
+                {
+                    TargetParty.Show();
+                    TargetEnemies.Hide();
+                }
+                else if (!TargetEnemies.Enabled && TargetParty.Enabled)
+                {
+                    TargetParty.Hide();
+                    TargetEnemies.Show();
+                }
             }
         }
 
