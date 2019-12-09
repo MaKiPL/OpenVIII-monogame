@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -325,7 +326,7 @@ namespace OpenVIII.IGMData
                             AddCommand(Kernel_bin.BattleCommands[2]);
                         if (Item || e.DropList.Any(x => x.DATA?.Battle != null) || e.MugList.Any(x => x.DATA?.Battle != null))
                             AddCommand(Kernel_bin.BattleCommands[4]);
-                        if (e.DrawList.Any(x => x.GF >= GFs.Quezacotl && x.GF <= GFs.Eden))
+                        if (e.DrawList.Any(x => x.GF >= GFs.Quezacotl && x.GF <= GFs.Eden && !UnlockedGFs.Contains(x.GF)))
                             AddCommand(Kernel_bin.BattleCommands[3]);
                         void AddCommand(Kernel_bin.Battle_Commands c)
                         {
@@ -479,6 +480,8 @@ namespace OpenVIII.IGMData
                 }
             }
         }
+
+        public IEnumerable<GFs> UnlockedGFs => Memory.State?.UnlockedGFs;
 
         private void SubscribeEvents()
         {

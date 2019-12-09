@@ -10,8 +10,7 @@ namespace OpenVIII
 {
     public static partial class Saves
     {
-
-#region Classes
+        #region Classes
 
         /// <summary>
         /// Save Data
@@ -767,7 +766,7 @@ namespace OpenVIII
                 //init offset 0;
                 for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
-                    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i,this));
+                    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i, this));
                 }
                 //init offset 1088;
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
@@ -802,28 +801,14 @@ namespace OpenVIII
                 LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
-                for (int i = 0; br.BaseStream.Position+2 <= br.BaseStream.Length &&i < _items.Capacity; i++)
+                for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < _items.Capacity; i++)
                     _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
             /// <summary>
             /// List of all Unlocked GFs
             /// </summary>
-            public List<GFs> UnlockedGFs()
-            {
-                List<GFs> r = new List<GFs>(16);
-                if (GFs != null)
-                {
-                    foreach (KeyValuePair<GFs, GFData> g in GFs)
-                    {
-                        if (g.Value.Exists) //needs testing could be wrong.
-                        {
-                            r.Add(g.Key);
-                        }
-                    }
-                }
-                return r;
-            }
+            public IEnumerable<GFs> UnlockedGFs => GFs.Where(x => x.Value.Exists).Select(x => x.Key);
 
             private CharacterData GetDamageable(Characters id)
             {

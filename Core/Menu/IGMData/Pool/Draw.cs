@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
@@ -56,7 +57,7 @@ namespace OpenVIII.IGMData.Pool
                 int skip = Page * Rows;
                 for (byte i = 0; pos < Rows && i < Contents.Length; i++)
                 {
-                    bool unlocked = Source.UnlockedGFs().Contains(Contents[i].GF);
+                    bool unlocked = Source.UnlockedGFs.Contains(Contents[i].GF);
                     bool junctioned = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.Stat_J.ContainsValue(Contents[i].ID));
                     ((IGMDataItem.Text)(ITEM[pos, 0])).Data = Contents[i].Name;
                     ((IGMDataItem.Text)(ITEM[pos, 0])).Show();
