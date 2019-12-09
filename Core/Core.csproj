@@ -202,6 +202,7 @@
     <Compile Include="Menu\IGMData\Group\Base.cs" />
     <Compile Include="Menu\IGMData\Group\TopMenu.cs" />
     <Compile Include="Menu\IGMData\Pool\Base.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\Enemy_Attacks.cs" />
     <Compile Include="Menu\IGMData\Pool\GF.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic.cs" />
