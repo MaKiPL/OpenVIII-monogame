@@ -84,6 +84,9 @@ namespace OpenVIII.IGMDataItem
 
         public void Draw(bool skipdraw)
         {
+            if (changed)
+                //notice the integers would move from right to left over the course of 1 frame because draw was before update.
+                Update(); 
             if (Enabled)
             {
                 DataSize = Memory.Icons.Draw(Data, NumType, Palette, $"D{_padding}", Pos.Location.ToVector2() +
@@ -97,7 +100,6 @@ namespace OpenVIII.IGMDataItem
             if (changed)
             {
                 UpdateOffset();
-                changed = false;
                 return true;
             }
             return r;
@@ -108,6 +110,7 @@ namespace OpenVIII.IGMDataItem
             _pos = original_pos;
             int digits = Digits;
             _pos.Offset(space_width * (_spaces - (digits < _padding ? _padding : digits)), 0);
+            changed = false;
         }
 
         #endregion Methods
