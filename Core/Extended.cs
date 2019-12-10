@@ -13,57 +13,57 @@ namespace OpenVIII
     //Class that provides language extensions made by Maki
     public static class Extended
     {
-        public enum languages
+        public enum Languages
         {
             en,
             fr,
             de,
             es,
-            it
+            it,
         }
 
         //WORLD MAP COORDINATES HELPER
         /// <summary>
         /// Indicates vanilla game X axis coordinate for minimum possible X - visually the nearest to left on worldmap
         /// </summary>
-        public static int WORLD_COORDS_MINLEFT = unchecked((int)0xFFFE0000);
+        public const int WORLD_COORDS_MINLEFT = unchecked((int)0xFFFE0000);
         /// <summary>
         /// Indicates vanilla game X axis coordinate for maximum possible X - visually the furthest to right on worldmap
         /// </summary>
-        public static int WORLD_COORDS_MAXRIGHT = unchecked((int)0x0001FFFF);
+        public const int WORLD_COORDS_MAXRIGHT = unchecked((int)0x0001FFFF);
 
         /// <summary>
         /// zero based range of maximum left-right for worldmap coordinates
         /// </summary>
-        public static int WORLD_COORDS_XRANGE = Math.Abs(WORLD_COORDS_MINLEFT) + WORLD_COORDS_MAXRIGHT;
+        public static readonly int WORLD_COORDS_XRANGE = Math.Abs(WORLD_COORDS_MINLEFT) + WORLD_COORDS_MAXRIGHT;
 
         /// <summary>
         /// Indicates vanilla game Y axis coordinate for minimum possible Y - visually at the semi top of worldmap
         /// </summary>
-        public static int WORLD_COORDS_MINTOP = unchecked((int)0xFFFE8000);
+        public const int WORLD_COORDS_MINTOP = unchecked((int)0xFFFE8000);
         /// <summary>
         /// Indicates vanilla game Y axis coordinate for maximum possible Y - visually at the very bottom of worldmap
         /// </summary>
-        public static int WORLD_COORDS_MAXBOTTOM = unchecked((int)0x00017FFF);
+        public const int WORLD_COORDS_MAXBOTTOM = unchecked((int)0x00017FFF);
 
         /// <summary>
         /// zero based range of maximum left-right for worldmap coordinates
         /// </summary>
-        public static int WORLD_COORDS_ZRANGE = Math.Abs(WORLD_COORDS_MINTOP) + WORLD_COORDS_MAXBOTTOM;
+        public static readonly int WORLD_COORDS_ZRANGE = Math.Abs(WORLD_COORDS_MINTOP) + WORLD_COORDS_MAXBOTTOM;
 
         /// <summary>
         /// Indicates the OpenVIII coordinate system which shows maximum X axis. Minimum is always zero (it's the nearest to left side of worldmap)
         /// </summary>
-        public static int WORLD_OPENVIII_MAXRIGHT = -(32 * 512);
+        public const int WORLD_OPENVIII_MAXRIGHT = -(32 * 512);
         /// <summary>
         /// Indicates the OpenVIII coordinate system which shows maximum Y axis. Minimum is always zero (it's the furthest to bottom of worldmap)
         /// </summary>
-        public static int WORLD_OPENVIII_MAXBOTTOM = -(24 * 512);
+        public const int WORLD_OPENVIII_MAXBOTTOM = -(24 * 512);
 
         /// <summary>
         /// Result of Vanilla.Y * x = openviii.Y equation
         /// </summary>
-        public static float WORLD_COORD_YHELPER = -0.06f;
+        public const float WORLD_COORD_YHELPER = -0.06f;
 
         /// <summary>
         /// This method converts vanilla world map coordinates to openVIII equivalent. 
@@ -132,8 +132,8 @@ namespace OpenVIII
                 tex.SaveAsPng(fs, tex.Width, tex.Height);
         }
 #endif
-
-        //https://stackoverflow.com/questions/1130698/checking-if-an-object-is-a-number-in-c-sharp
+        ///<summary>Detect if an object is a number</summary>
+        ///<see cref="https://stackoverflow.com/questions/1130698/checking-if-an-object-is-a-number-in-c-sharp"/>
         public static bool IsNumber(object value) => value is sbyte
                     || value is byte
                     || value is short
