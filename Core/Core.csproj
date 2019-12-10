@@ -194,6 +194,7 @@
     <Compile Include="Menu\IGMDataItem\Text.cs" />
     <Compile Include="Menu\IGMDataItem\Texture.cs" />
     <Compile Include="Menu\IGMDataItem\Texture_Handler.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\Angelo.cs" />
     <Compile Include="Menu\IGMData\Base.cs" />
     <Compile Include="Menu\IGMData\Commands.cs" />
     <Compile Include="Menu\IGMData\Dialog\Confirm.cs" />

@@ -1,14 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public class Enemy_Attacks : Base<Enemy, Kernel_bin.Enemy_Attacks_Data>
+    public class Angelo : Base<Damageable, Kernel_bin.Battle_Commands>
     {
-        public static Enemy_Attacks Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
+        public static Angelo Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 2)
         {
-            Enemy_Attacks r = Create<Enemy_Attacks>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ABILITY }, count, 1, damageable, battle: battle);
+            Angelo r = Create<Angelo>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ABILITY }, count, 1, damageable, battle: battle);
             if (battle)
                 r.Target_Group = Target.Group.Create(r.Damageable);
             return r;
@@ -31,49 +29,29 @@ namespace OpenVIII.IGMData.Pool
 
         public override void Refresh()
         {
-            if (Damageable != null && Damageable.GetEnemy(out Enemy e))
-            {
-                IEnumerable<Debug_battleDat.Abilities> abilities = e.Abilities.Where(x => x.MONSTER != null);
-                DefaultPages = abilities.Count() / Rows;
-                int i = 0;
-                int skip = Page * Rows;
-                foreach (Debug_battleDat.Abilities a in abilities)
-                {
-                    if (i >= Rows) break;
-                    if (skip-- > 0) continue;
-                    ((IGMDataItem.Text)ITEM[i, 0]).Data = a.MONSTER.Name;
-                    ITEM[i, 0].Show();
-                    BLANKS[i] = false;
-                    Contents[i] = a.MONSTER;
-                    i++;
-                }
-
-                for (; i < Rows; i++)
-                {
-                    ITEM[i, 0].Hide();
-                    BLANKS[i] = true;
-                    Contents[i] = null;
-                }
-            }
+            //Memory.State.LimitBreakAngelocompleted;
             base.Refresh();
         }
+
         public override bool Inputs_CANCEL()
         {
             base.Inputs_CANCEL();
             Hide();
             return true;
         }
+
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            Kernel_bin.Enemy_Attacks_Data enemy_Attacks_Data = Contents[CURSOR_SELECT];
-            if (enemy_Attacks_Data != null)
-            {
-                Target_Group?.SelectTargetWindows(enemy_Attacks_Data);
-                Target_Group?.ShowTargetWindows();
-            }
+            //Kernel_bin.Enemy_Attacks_Data enemy_Attacks_Data = Contents[CURSOR_SELECT];
+            //if (enemy_Attacks_Data != null)
+            //{
+            //    Target_Group?.SelectTargetWindows(enemy_Attacks_Data);
+            //    Target_Group?.ShowTargetWindows();
+            //}
             return true;
         }
+
         public override void Reset()
         {
             Hide();

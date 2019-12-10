@@ -30,6 +30,7 @@ namespace OpenVIII.IGMData
         public IGMData.Pool.Item ItemPool { get => (IGMData.Pool.Item)ITEM[Offsets.Item_Pool, 0]; protected set => ITEM[Offsets.Item_Pool, 0] = value; }
         public IGMData.Pool.Magic MagPool { get => (IGMData.Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; protected set => ITEM[Offsets.Mag_Pool, 0] = value; }
         public IGMData.Pool.BlueMagic BluePool { get => (IGMData.Pool.BlueMagic)ITEM[Offsets.Blue_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
+        public IGMData.Pool.Angelo AngeloPool { get => (IGMData.Pool.Angelo)ITEM[Offsets.Angelo_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
         public IGMDataItem.Icon LimitArrow { get => (IGMDataItem.Icon)ITEM[Offsets.Limit_Arrow, 0]; protected set => ITEM[Offsets.Limit_Arrow, 0] = value; }
 
         public IGMData.Target.Group Target_Group
@@ -54,7 +55,8 @@ namespace OpenVIII.IGMData
                 Enemy_Attacks_Pool = 8,
                 Item_Pool = 9,
                 Targets_Window = 10,
-                Count = 11;
+                Angelo_Pool = 11,
+                Count = 12;
         }
 
         //base.Inputs_CANCEL();
@@ -158,8 +160,19 @@ namespace OpenVIII.IGMData
             Target_Group.SelectTargetWindows(c);
             if (c.ID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
-                EnemyAttacks.Refresh();
-                EnemyAttacks.Show();
+                var ecattacks = e.Abilities.Where(x => x.MONSTER != null);
+                if (ecattacks.Count() == 1)
+                {
+                    var monster = ecattacks.First().MONSTER;
+                    Target_Group.SelectTargetWindows(monster);
+                    Target_Group.ShowTargetWindows();
+                }
+                else
+                {
+                    EnemyAttacks.Refresh();
+                    EnemyAttacks.Show();
+                }
+
                 return true;
             }
             else
@@ -321,17 +334,20 @@ namespace OpenVIII.IGMData
                         }
 
                         if (Attack)
-                            AddCommand(Kernel_bin.BattleCommands[1]);
+                        {
+                            IEnumerable<Debug_battleDat.Abilities> ecattacks = enemycommands.Where(x => x.MONSTER != null);
+                            AddCommand(Kernel_bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().MONSTER.Name : null));
+                        }
                         if (Magic || e.DrawList.Any(x => x.DATA != null))
                             AddCommand(Kernel_bin.BattleCommands[2]);
                         if (Item || e.DropList.Any(x => x.DATA?.Battle != null) || e.MugList.Any(x => x.DATA?.Battle != null))
                             AddCommand(Kernel_bin.BattleCommands[4]);
                         if (e.DrawList.Any(x => x.GF >= GFs.Quezacotl && x.GF <= GFs.Eden && !UnlockedGFs.Contains(x.GF)))
                             AddCommand(Kernel_bin.BattleCommands[3]);
-                        void AddCommand(Kernel_bin.Battle_Commands c)
+                        void AddCommand(Kernel_bin.Battle_Commands c, FF8String alt = null)
                         {
                             commands[pos] = c;
-                            ((IGMDataItem.Text)ITEM[pos, 0]).Data = c.Name;
+                            ((IGMDataItem.Text)ITEM[pos, 0]).Data = alt ?? c.Name;
                             ((IGMDataItem.Text)ITEM[pos, 0]).Pos = SIZE[pos];
                             ITEM[pos, 0].Show();
                             BLANKS[pos] = false;
