@@ -28,23 +28,23 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[i, 0].Hide();
             }
         }
-
+        
         public override void Refresh()
         {
             if (Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
-                IEnumerable<Debug_battleDat.Abilities> abilities = e.Abilities.Where(x => x.MONSTER != null);
-                DefaultPages = abilities.Count() / Rows;
+                IEnumerable<Kernel_bin.Enemy_Attacks_Data> enemy_attacks_datas = e.Enemy_Attacks_Datas;
+                DefaultPages = enemy_attacks_datas.Count() / Rows;
                 int i = 0;
                 int skip = Page * Rows;
-                foreach (Debug_battleDat.Abilities a in abilities)
+                foreach (Kernel_bin.Enemy_Attacks_Data enemy_attacks_data in enemy_attacks_datas)
                 {
                     if (i >= Rows) break;
                     if (skip-- > 0) continue;
-                    ((IGMDataItem.Text)ITEM[i, 0]).Data = a.MONSTER.Name;
+                    ((IGMDataItem.Text)ITEM[i, 0]).Data = enemy_attacks_data.Name;
                     ITEM[i, 0].Show();
                     BLANKS[i] = false;
-                    Contents[i] = a.MONSTER;
+                    Contents[i] = enemy_attacks_data;
                     i++;
                 }
 

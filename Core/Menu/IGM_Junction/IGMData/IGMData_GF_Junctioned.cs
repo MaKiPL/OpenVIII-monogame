@@ -20,13 +20,10 @@ namespace OpenVIII
                 base.Refresh();
                 if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(Saves.GFflags)).Cast<Enum>();
                     int pos = 0;
-                    foreach (Enum flag in availableFlags.Where(c.JunctionnedGFs.HasFlag))
+                    foreach (var gf in c.JunctionedGFs)
                     {
-                        if ((Saves.GFflags)flag == Saves.GFflags.None) continue;
-                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.State.GFs[Saves.ConvertGFEnum[(Saves.GFflags)flag]].Name;
-
+                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.State.GFs[gf].Name;
                         ITEM[pos, 0].Show();
                         BLANKS[pos++] = false;
                     }

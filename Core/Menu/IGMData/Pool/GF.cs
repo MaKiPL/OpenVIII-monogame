@@ -78,7 +78,7 @@ namespace OpenVIII.IGMData.Pool
                     {
                         //Purge everything that you can't have anymore. Because the GF provided for you.
                         List<Kernel_bin.Abilities> a = (characterdata).UnlockedGFAbilities;
-                        characterdata.JunctionnedGFs ^= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == select).Key;
+                        characterdata.RemoveJunctionedGF(select);
                         List<Kernel_bin.Abilities> b = (characterdata).UnlockedGFAbilities;
                         foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => !Kernel_bin.Junctionabilities.ContainsKey(v)))
                         {
@@ -185,11 +185,8 @@ namespace OpenVIII.IGMData.Pool
                 }
                 else if (Damageable.GetEnemy(out Enemy e))
                 {
-                    IEnumerable<Debug_battleDat.Magic> GFS = e.DrawList.Where(x => x.GF >= GFs.Quezacotl && x.GF <= GFs.Eden && !UnlockedGFs.Contains(x.GF));
-                    HashSet<GFs> uniqueGfs = new HashSet<GFs>();
-                    foreach (Debug_battleDat.Magic magic in GFS)
-                        uniqueGfs.Add(magic.GF);
-                    foreach (GFs g in uniqueGfs)
+                    var gfs = e.JunctionedGFs;
+                    foreach (GFs g in gfs)
                     {
                         if(!AddGF(ref pos, ref skip, g, Source[g].IsDead ? Font.ColorID.Red : Font.ColorID.White, Source[g].IsDead)) break;
                     }
@@ -200,7 +197,7 @@ namespace OpenVIII.IGMData.Pool
             base.Refresh();
             UpdateTitle();
         }
-
+        
         public override void UpdateTitle()
         {
             base.UpdateTitle();

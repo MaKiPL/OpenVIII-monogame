@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -75,11 +76,11 @@ namespace OpenVIII
             {
                 if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Font.ColorID color = (c.JunctionnedGFs == Saves.GFflags.None) ? Font.ColorID.Grey : Font.ColorID.White;
+                    Font.ColorID color = (c.JunctionedGFs?.Any() ?? false) ? Font.ColorID.Grey : Font.ColorID.White;
                     for (int i = 1; i <= 3; i++)
                     {
                         ((IGMDataItem.Text)ITEM[i, 0]).FontColor = color;
-                        BLANKS[i] = c.JunctionnedGFs == Saves.GFflags.None;
+                        BLANKS[i] = c.JunctionedGFs?.Any() ?? false;
                     }
                 }
                 base.Refresh();

@@ -659,15 +659,18 @@ namespace OpenVIII
                 {
                     foreach (KeyValuePair<Characters, CharacterData> c in Characters)
                     {
-                        if (c.Value.JunctionnedGFs != GFflags.None)
-                        {
-                            IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
-                            foreach (Enum flag in availableFlags.Where(c.Value.JunctionnedGFs.HasFlag))
-                            {
-                                if ((GFflags)flag == GFflags.None) continue;
-                                r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
-                            }
-                        }
+                        foreach (var gf in c.Value.JunctionedGFs)
+                            r.Add(gf, c.Key);
+
+                        //if (c.Value.JunctionedGFs != GFflags.None)
+                        //{
+                        //    IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
+                        //    foreach (Enum flag in availableFlags.Where(c.Value.JunctionedGFs.HasFlag))
+                        //    {
+                        //        if ((GFflags)flag == GFflags.None) continue;
+                        //        r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
+                        //    }
+                        //}
                     }
                 }
                 return r;

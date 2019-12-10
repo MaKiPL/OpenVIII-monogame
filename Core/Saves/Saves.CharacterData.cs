@@ -155,10 +155,18 @@ namespace OpenVIII
             public Exists Exists;
 
             /// <summary>
+            /// Juctioned GFs - raw value
+            /// </summary>
+            private GFflags rawJunctionedGFs;
+            /// <summary>
             /// Juctioned GFs
             /// </summary>
-            public GFflags JunctionnedGFs;
-
+            public IEnumerable<GFs> JunctionedGFs => Enum.GetValues(rawJunctionedGFs.GetType()).Cast<GFflags>().Where(x => rawJunctionedGFs.HasFlag(x) && ConvertGFEnum.ContainsKey(x)).Distinct().Select(x=> ConvertGFEnum[x]);
+            
+            public void JunctionGF(GFs gf) =>
+                rawJunctionedGFs |= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == gf).Key;
+            public void RemoveJunctionedGF(GFs gf) => 
+                rawJunctionedGFs ^= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == gf).Key;
             //public byte _STR; //0x09
             //public byte _VIT; //0x0A
             //public byte _MAG; //0x0B
@@ -292,11 +300,9 @@ namespace OpenVIII
                 {
                     BitArray total = new BitArray(16 * 8);
                     List<Kernel_bin.Abilities> abilities = new List<Kernel_bin.Abilities>();
-                    IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
-                    foreach (Enum flag in availableFlags.Where(JunctionnedGFs.HasFlag))
+                    foreach (GFs gf in JunctionedGFs)
                     {
-                        if ((GFflags)flag == GFflags.None) continue;
-                        total.Or(Memory.State.GFs[ConvertGFEnum[(GFflags)flag]].Complete);
+                        total.Or(Memory.State.GFs[gf].Complete);
                     }
                     for (int i = 1; i < total.Length; i++)//0 is none so skipping it.
                     {
@@ -503,7 +509,7 @@ namespace OpenVIII
                 Commands = Array.ConvertAll(br.ReadBytes(3), Item => (Kernel_bin.Abilities)Item).ToList();//0x50
                 Paddingorunusedcommand = br.ReadByte();//0x53
                 Abilities = Array.ConvertAll(br.ReadBytes(4), Item => (Kernel_bin.Abilities)Item).ToList();//0x54
-                JunctionnedGFs = (GFflags)br.ReadUInt16();//0x58 each bit is one gf.
+                rawJunctionedGFs = (GFflags)br.ReadUInt16();//0x58 each bit is one gf.
                 Unknown1 = br.ReadByte();//0x5A
                 Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
                 Stat_J = new Dictionary<Kernel_bin.Stat, byte>(9);
@@ -532,7 +538,7 @@ namespace OpenVIII
                 Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
                 Commands = Commands.ConvertAll(Item => Kernel_bin.Abilities.None);
                 Abilities = Abilities.ConvertAll(Item => Kernel_bin.Abilities.None);
-                JunctionnedGFs = GFflags.None;
+                rawJunctionedGFs = GFflags.None;
             }
 
             public void RemoveMagic() => Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
