@@ -483,12 +483,20 @@ namespace OpenVIII
                         Vector3 boneRotation = animHeader.animations[i].animationFrames[n].bonesVectorRotations[k];
                         boneRotation = Extended.S16VectorToFloat(boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
                         boneRotation *= DEGREES; //bone rotations are in 360 scope
+                        //maki way
                         Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
                         Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
                         Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
+
+                        //this is the monogame way and gives same results as above.
+                        //Matrix xRot = Matrix.CreateRotationX(MathHelper.ToRadians(boneRotation.X));
+                        //Matrix yRot = Matrix.CreateRotationY(MathHelper.ToRadians(boneRotation.Y));
+                        //Matrix zRot = Matrix.CreateRotationZ(MathHelper.ToRadians(boneRotation.Z));
+
                         Matrix MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
                         MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
 
+                        
                         if (skeleton.bones[k].parentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
                         {
                             MatrixZ.M41 = -animHeader.animations[i].animationFrames[n].Position.X;
