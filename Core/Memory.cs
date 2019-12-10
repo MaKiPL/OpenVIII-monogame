@@ -93,7 +93,7 @@ namespace OpenVIII
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
 
-        public static Extended.languages languages = Extended.languages.en;
+        public static Extended.Languages languages = Extended.Languages.en;
 
         public enum ScaleMode
         {
