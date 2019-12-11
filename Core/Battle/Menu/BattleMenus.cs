@@ -401,7 +401,7 @@ namespace OpenVIII
 
         private void NewTurnSND()
         {
-            if (((BattleMenu)Data[PossibleValidPlayer()]).CrisisLevel)
+            if (((BattleMenu)Data[PossibleValidPlayer()]).CrisisLevel > -1)
                 init_debugger_Audio.PlaySound(94);
             else
                 init_debugger_Audio.PlaySound(14);
