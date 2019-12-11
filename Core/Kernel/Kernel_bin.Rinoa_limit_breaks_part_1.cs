@@ -24,9 +24,16 @@ namespace OpenVIII
             public Target Target { get; private set; }
             public byte AbilityID { get; private set; }
             public byte Unknown1 { get; private set; }
+            public int ID { get; private set; }
+            public Angelo Angelo { get; private set; }
 
             public void Read(BinaryReader br, int i)
             {
+                ID = i;
+                if (i == 1)
+                    Angelo = Angelo.Angel_Wing;
+                else
+                    Angelo = Angelo.None;
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);

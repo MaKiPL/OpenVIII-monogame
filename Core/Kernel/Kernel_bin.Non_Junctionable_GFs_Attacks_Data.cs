@@ -14,6 +14,7 @@ namespace OpenVIII
             public const int count = 16;
             public const int id = 9;
 
+            public int ID { get; private set; }
             public FF8String Name { get; private set; }
 
             //0x0000	2 bytes Offset to GF attack name
@@ -116,12 +117,33 @@ namespace OpenVIII
 
             //0x0012	1 byte Power Mod(used in damage formula)
             public byte Level_Mod { get; private set; }
+            public Angelo Angelo { get; private set; }
 
             //0x0013	1 byte Level Mod(used in damage formula)
 
             public void Read(BinaryReader br, int i)
             {
+                ID = i;
+                switch(i)
+                {
+                    case 11:
+                        Angelo = Angelo.Rush;
+                        break;
+                    case 12:
+                        Angelo = Angelo.Recover;
+                        break;
+                    case 13:
+                        Angelo = Angelo.Reverse;
+                        break;
+                    case 14:
+                        Angelo = Angelo.Search;
+                        break;
+                    default:
+                        Angelo = Angelo.None;
+                        break;
+                }
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
+                int n =Name.Length;
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 //0x0000	2 bytes Offset to GF attack name
                 MagicID = (Magic_ID)br.ReadUInt16();

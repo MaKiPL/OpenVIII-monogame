@@ -298,19 +298,6 @@ namespace OpenVIII
             /// <para>Each bit is a completely learned ability</para>
             /// </summary>
             public Angelo LimitBreakAngelocompleted { get; set; }
-            [Flags]
-            public enum Angelo : byte
-            {
-                None = 0x0,
-                Rush = 0x1,
-                Recover = 0x2,
-                Reverse = 0x4,
-                Search = 0x8,
-                Cannon = 0x10,
-                Strike = 0x20,
-                Invincible_Moon = 0x40,
-                Wishing_Star = 0x80
-            }
             /// <summary>
             /// <para>0x0B2B 1 byte Limit Break Angelo known</para>
             /// <para>Each bit is an ability is known about/able to be learned</para>

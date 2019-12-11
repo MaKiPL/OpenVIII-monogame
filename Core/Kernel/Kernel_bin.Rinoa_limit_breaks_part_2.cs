@@ -31,9 +31,33 @@ namespace OpenVIII
             public byte Status_Attack { get; private set; }
             public Persistent_Statuses Statuses0 { get; private set; }
             public Battle_Only_Statuses Statuses1 { get; private set; }
+            public Angelo Angelo { get; private set; }
+            public int ID { get; private set; }
 
             public void Read(BinaryReader br,int i)
             {
+                ID = i;
+                switch(i)
+                {
+                    case 0:
+                        Angelo = Angelo.Cannon;
+                        break;
+                    case 1:
+                        Angelo = Angelo.Strike;
+                        break;
+                    case 2:
+                        Angelo = Angelo.Invincible_Moon;
+                        break;
+                    case 3:
+                        Angelo = Angelo.Wishing_Star;
+                        break;
+                    case 4:
+                        Angelo = Angelo.Angel_Wing;
+                        break;
+                    default:
+                        Angelo = Angelo.None;
+                        break;
+                }
                 var offset = br.ReadUInt16();
                 Name = new FF8StringReference(Memory.Strings[Strings.FileID.KERNEL].GetArchive(), Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0],
                     Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions[(int)((Strings.Kernel)Memory.Strings[Strings.FileID.KERNEL]).StringLocations[id].Item1]+offset,settings: (FF8StringReference.Settings.Namedic | FF8StringReference.Settings.MultiCharByte));

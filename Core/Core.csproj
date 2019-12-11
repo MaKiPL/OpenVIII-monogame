@@ -151,6 +151,7 @@
     <Compile Include="Battle\Menu\IGMData\PartyAP.cs" />
     <Compile Include="Battle\Menu\IGMData\PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\PlayerEXP.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\Combine.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
     <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
@@ -194,7 +195,6 @@
     <Compile Include="Menu\IGMDataItem\Text.cs" />
     <Compile Include="Menu\IGMDataItem\Texture.cs" />
     <Compile Include="Menu\IGMDataItem\Texture_Handler.cs" />
-    <Compile Include="Battle\Menu\IGMData\Pool\Angelo.cs" />
     <Compile Include="Menu\IGMData\Base.cs" />
     <Compile Include="Menu\IGMData\Commands.cs" />
     <Compile Include="Menu\IGMData\Dialog\Confirm.cs" />
@@ -236,6 +236,7 @@
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
     <Compile Include="Menu\Debug\IGMData\DebugChoose.cs" />
+    <Compile Include="Saves\Angelo.cs" />
     <Compile Include="Saves\ATBTimer.cs" />
     <Compile Include="Saves\CompatibilitywithGF.cs" />
     <Compile Include="Saves\Damageable.cs" />

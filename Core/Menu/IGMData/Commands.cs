@@ -30,7 +30,7 @@ namespace OpenVIII.IGMData
         public IGMData.Pool.Item ItemPool { get => (IGMData.Pool.Item)ITEM[Offsets.Item_Pool, 0]; protected set => ITEM[Offsets.Item_Pool, 0] = value; }
         public IGMData.Pool.Magic MagPool { get => (IGMData.Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; protected set => ITEM[Offsets.Mag_Pool, 0] = value; }
         public IGMData.Pool.BlueMagic BluePool { get => (IGMData.Pool.BlueMagic)ITEM[Offsets.Blue_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
-        public IGMData.Pool.Angelo AngeloPool { get => (IGMData.Pool.Angelo)ITEM[Offsets.Angelo_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
+        public IGMData.Pool.Combine AngeloPool { get => (IGMData.Pool.Combine)ITEM[Offsets.Angelo_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
         public IGMDataItem.Icon LimitArrow { get => (IGMDataItem.Icon)ITEM[Offsets.Limit_Arrow, 0]; protected set => ITEM[Offsets.Limit_Arrow, 0] = value; }
 
         public IGMData.Target.Group Target_Group
