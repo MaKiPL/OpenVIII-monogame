@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.IGMData.Pool;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,6 +21,7 @@ namespace OpenVIII.IGMData.Target
         public Kernel_bin.Blue_magic_Quistis_limit_break BlueMagic { get; private set; }
 
         public Kernel_bin.Battle_Commands Command { get; private set; }
+        public Combine.KernelItem CombineKernelItem { get; private set; }
         public Kernel_bin.Enemy_Attacks_Data EnemyAttack { get; private set; }
         public Item_In_Menu Item { get; private set; }
 
@@ -125,6 +127,13 @@ namespace OpenVIII.IGMData.Target
             base.Reset();
         }
 
+        public void SelectTargetWindows(Combine.KernelItem c)
+        {
+            Kernel_bin.Target t = c.Target;
+            SelectTargetWindows(t);
+            Command = Kernel_bin.BattleCommands[19];
+            CombineKernelItem = c;
+        }
 
         public void SelectTargetWindows(Kernel_bin.Enemy_Attacks_Data c)
         {
@@ -407,7 +416,8 @@ namespace OpenVIII.IGMData.Target
                 //perform angelo attack unless angel wing is unlocked and chosen in menu.
                 Neededvaribles(out Damageable[] d);
 
-                Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
+                Debug.WriteLine($"{Damageable.Name} used {CombineKernelItem.Name}({CombineKernelItem.ID}) - Combine Limit Break on { DebugMessageSuffix(d) }");
+                
                 Damageable.EndTurn();
 
                 return true;

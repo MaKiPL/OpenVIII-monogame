@@ -121,6 +121,7 @@ namespace OpenVIII
 
             //0x0013	1 byte Level Mod(used in damage formula)
 
+            public override string ToString() => Name?.Value_str ?? base.ToString();
             public void Read(BinaryReader br, int i)
             {
                 ID = i;

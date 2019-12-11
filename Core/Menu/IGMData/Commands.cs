@@ -30,10 +30,10 @@ namespace OpenVIII.IGMData
         public IGMData.Pool.Item ItemPool { get => (IGMData.Pool.Item)ITEM[Offsets.Item_Pool, 0]; protected set => ITEM[Offsets.Item_Pool, 0] = value; }
         public IGMData.Pool.Magic MagPool { get => (IGMData.Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; protected set => ITEM[Offsets.Mag_Pool, 0] = value; }
         public IGMData.Pool.BlueMagic BluePool { get => (IGMData.Pool.BlueMagic)ITEM[Offsets.Blue_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
-        public IGMData.Pool.Combine AngeloPool { get => (IGMData.Pool.Combine)ITEM[Offsets.Angelo_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
+        public IGMData.Pool.Combine CombinePool { get => (IGMData.Pool.Combine)ITEM[Offsets.Combine_Pool, 0]; protected set => ITEM[Offsets.Combine_Pool, 0] = value; }
         public IGMDataItem.Icon LimitArrow { get => (IGMDataItem.Icon)ITEM[Offsets.Limit_Arrow, 0]; protected set => ITEM[Offsets.Limit_Arrow, 0] = value; }
 
-        public IGMData.Target.Group Target_Group
+        public IGMData.Target.Group TargetGroup
         {
             get => (IGMData.Target.Group)ITEM[Offsets.Targets_Window, 0];
             protected set => ITEM[Offsets.Targets_Window, 0] = value;
@@ -55,7 +55,7 @@ namespace OpenVIII.IGMData
                 Enemy_Attacks_Pool = 8,
                 Item_Pool = 9,
                 Targets_Window = 10,
-                Angelo_Pool = 11,
+                Combine_Pool = 11,
                 Count = 12;
         }
 
@@ -122,11 +122,13 @@ namespace OpenVIII.IGMData
             { }
             else if (InputITEM(GFPool, ref ret))
             { }
-            else if (InputITEM(Target_Group, ref ret))
+            else if (InputITEM(TargetGroup, ref ret))
             { }
             else if (InputITEM(BluePool, ref ret))
             { }
             else if (InputITEM(EnemyAttacks, ref ret))
+            { }
+            else if (InputITEM(CombinePool, ref ret))
             { }
             else
             {
@@ -157,15 +159,15 @@ namespace OpenVIII.IGMData
             Kernel_bin.Battle_Commands c = commands[CURSOR_SELECT];
             if (c == null) return false;
             base.Inputs_OKAY();
-            Target_Group.SelectTargetWindows(c);
+            TargetGroup.SelectTargetWindows(c);
             if (c.ID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
-                var ecattacks = e.Abilities.Where(x => x.MONSTER != null);
+                IEnumerable<Debug_battleDat.Abilities> ecattacks = e.Abilities.Where(x => x.MONSTER != null);
                 if (ecattacks.Count() == 1)
                 {
-                    var monster = ecattacks.First().MONSTER;
-                    Target_Group.SelectTargetWindows(monster);
-                    Target_Group.ShowTargetWindows();
+                    Kernel_bin.Enemy_Attacks_Data monster = ecattacks.First().MONSTER;
+                    TargetGroup.SelectTargetWindows(monster);
+                    TargetGroup.ShowTargetWindows();
                 }
                 else
                 {
@@ -205,7 +207,7 @@ namespace OpenVIII.IGMData
                     case 11: //DUEL
                     case 17: //FIRE CROSS / NO MERCY
                     case 18: //SORCERY /  ICE STRIKE
-                        Target_Group.ShowTargetWindows();
+                        TargetGroup.ShowTargetWindows();
                         return true;
 
                     case 16: // SLOT
@@ -214,7 +216,9 @@ namespace OpenVIII.IGMData
 
                     case 19: //COMBINE (ANGELO or ANGEL WING)
                              //TODO see if ANGEL WING unlock if so show menu to choose angelo or angel wing.
-                        Target_Group.ShowTargetWindows();
+                             //TargetGroup.ShowTargetWindows();
+                        CombinePool.Show();
+                        CombinePool.Refresh();
                         return true;
 
                     case 0: //null
@@ -450,9 +454,12 @@ namespace OpenVIII.IGMData
             ItemPool.Hide();
             EnemyAttacks = Pool.Enemy_Attacks.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             EnemyAttacks.Hide();
+            CombinePool = Pool.Combine.Create(new Rectangle(X + 50, Y - 22, 300, 112), Damageable, true);
+            CombinePool.Hide();
             LimitArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
             LimitArrow.Hide();
-            Target_Group = IGMData.Target.Group.Create(Damageable);
+            TargetGroup = IGMData.Target.Group.Create(Damageable);
+            TargetGroup.Hide();
             commands = new Kernel_bin.Battle_Commands[Rows];
             enemycommands = null;
             PointerZIndex = Offsets.Limit_Arrow;
@@ -496,8 +503,6 @@ namespace OpenVIII.IGMData
                 }
             }
         }
-
-
 
         private void SubscribeEvents()
         {

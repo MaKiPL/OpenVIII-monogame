@@ -170,6 +170,7 @@ namespace OpenVIII.IGMData
                 if (CONTAINER != null)
                     CONTAINER.Draw();
                 bool pointer = false;
+                Target.Group targetgroup = null;
                 if (!skipdata && ITEM != null)
                     if (DepthFirst)
                         for (int d = 0; d < Depth; d++)
@@ -177,7 +178,10 @@ namespace OpenVIII.IGMData
                             {
                                 if (i == PointerZIndex && !pointer)
                                     pointer = DrawPointer();
-                                DrawITEM(i, d);
+                                if (ITEM[i, d] != null && (ITEM[i, d].GetType()).Equals(typeof(Target.Group)))
+                                    targetgroup = (Target.Group)(ITEM[i, d]);
+                                else
+                                    DrawITEM(i, d);
                             }
                     else
                         for (int i = 0; i < Count; i++)
@@ -185,13 +189,16 @@ namespace OpenVIII.IGMData
                             {
                                 if (i == PointerZIndex && !pointer)
                                     pointer = DrawPointer();
-                                DrawITEM(i, d);
+                                if (ITEM[i, d]!=null && (ITEM[i, d].GetType()).Equals(typeof(Target.Group)))
+                                    targetgroup = (Target.Group)(ITEM[i, d]);
+                                else
+                                    DrawITEM(i, d);
                             }
-
                 if (!pointer)
                 {
                     pointer = DrawPointer();
                 }
+                targetgroup?.Draw();
             }
         }
 
@@ -369,11 +376,11 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            var count = Memory.State.PartyData.Count;
+            int count = Memory.State.PartyData.Count;
             if (Memory.State?.PartyData != null &&
-                Damageable == null && 
-                PartyPos >=0 && 
-                PartyPos < count && 
+                Damageable == null &&
+                PartyPos >= 0 &&
+                PartyPos < count &&
                 Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
                 Damageable = c;
             base.Refresh();
@@ -445,7 +452,6 @@ namespace OpenVIII.IGMData
         }
 
         protected int GetCursor_select() => _cursor_select;
-
 
         /// <summary>
         /// Most objects set all these values. also Init Refresh and Update
@@ -542,7 +548,7 @@ namespace OpenVIII.IGMData
                     for (int i = 0; i < Count; i++)
                         for (int d = 0; d < Depth; d++)
                         {
-                            if (ForceNullDamageable && ITEM[i, d]!=null)
+                            if (ForceNullDamageable && ITEM[i, d] != null)
                                 ITEM[i, d].ForceNullDamageable = ForceNullDamageable;
                             ITEM[i, d]?.Refresh(Damageable);
                         }
