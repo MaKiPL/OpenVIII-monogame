@@ -84,7 +84,7 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs_CANCEL()
         {
-            base.Inputs_CANCEL();
+            base.Inputs_OKAY();
             Refresh();
             return true;
         }
@@ -112,7 +112,10 @@ namespace OpenVIII.IGMData
                         // Execute the spells.
                         // This should hide the targetwindow as turn ends.
                         TargetGroup?.Execute();
+                        Hide();
                     }
+                    else
+                        Inputs_CANCEL();
                     break;
             }
             return true;
