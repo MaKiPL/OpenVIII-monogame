@@ -310,6 +310,7 @@ namespace OpenVIII
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
+            Random = new Random((int)DateTime.Now.Ticks);
             mainThreadID = Thread.CurrentThread.ManagedThreadId;
             MainThreadOnlyActions = new ConcurrentQueue<Action>();
 
@@ -843,7 +844,7 @@ namespace OpenVIII
         /// Random number generator seeded with time.
         /// </summary>
         /// <remarks>creates global random class for all sort of things</remarks>
-        public static Random Random = new Random((int) DateTime.Now.Ticks);
+        public static Random Random = null;
 
         #endregion DrawPointMagic
 

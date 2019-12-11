@@ -558,7 +558,7 @@ namespace OpenVIII.IGMData
 
         protected virtual void SetCursor_select(int value)
         {
-            if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && CURSOR != null && value < CURSOR.Length && CURSOR[value] != Point.Zero)
+            if (value >= 0 && CURSOR != null && value < CURSOR.Length && CURSOR[value] != Point.Zero)
                 _cursor_select = value;
         }
 
