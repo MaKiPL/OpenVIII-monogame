@@ -152,6 +152,7 @@
     <Compile Include="Battle\Menu\IGMData\PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\PlayerEXP.cs" />
     <Compile Include="Battle\Menu\IGMData\Pool\Combine.cs" />
+    <Compile Include="Battle\Menu\IGMData\Selphie_Slots.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
     <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
