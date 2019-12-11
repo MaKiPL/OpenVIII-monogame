@@ -16,6 +16,24 @@ namespace OpenVIII
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public byte ID { get; private set; }
+            public bool PositiveMagic
+            {
+                get
+                {
+                    switch (Attack_type)
+                    {
+                        case Attack_Type.Curative_Item:
+                        case Attack_Type.Curative_Magic:
+                        case Attack_Type.Give_Percentage_HP:
+                        case Attack_Type.Revive:
+                        case Attack_Type.Revive_At_Full_HP:
+                        case Attack_Type.White_WindQuistis:
+                        case Attack_Type.Scan: //scan is kinda both.
+                            return true;
+                    }
+                    return false;
+                }
+            }
 
             public override string ToString() => Name;
 

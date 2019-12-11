@@ -106,7 +106,7 @@ namespace OpenVIII.IGMData
 
                         //Single targets are random but if cursor is on enemy it will only hit an enemy.
                         // and if it's on a party member it'll only hit a party member.
-                        TargetGroup?.SelectTargetWindows(MagicData, Casts, new Target.Random { Single = true });
+                        TargetGroup?.SelectTargetWindows(MagicData, Casts, new Target.Random { Single = true, PositiveMatters = true });
                         // show target window so target selection code works.
                         TargetGroup?.ShowTargetWindows();
                         // Execute the spells.

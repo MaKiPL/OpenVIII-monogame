@@ -1,14 +1,12 @@
 ﻿using System.Collections;
-using System.Linq;
 
 namespace OpenVIII.IGMData.Target
 {
     public class Random
     {
-
         #region Fields
 
-        private BitArray fields = new BitArray(2, false);
+        private BitArray fields = new BitArray(3, false);
 
         #endregion Fields
 
@@ -16,21 +14,21 @@ namespace OpenVIII.IGMData.Target
 
         public Random()
         {
-
         }
 
         /// <summary>
         /// Set all feilds to a true/false value
         /// </summary>
         /// <param name="value">true/false</param>
-        public Random(bool value)
-        {
-            fields.SetAll(value);
-        }
+        public Random(bool value) => fields.SetAll(value);
 
         #endregion Constructors
 
         #region Properties
+        /// <summary>
+        /// Positive spells go to allies and Negative go to enemies.
+        /// </summary>
+        public bool PositiveMatters { get => fields[2]; set => fields[2] = value; }
 
         /// <summary>
         /// if true the side (enemy or party) is randomized
@@ -49,6 +47,5 @@ namespace OpenVIII.IGMData.Target
         public static implicit operator Random(bool value) => new Random(value);
 
         #endregion Methods
-
     }
 }

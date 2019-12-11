@@ -32,11 +32,11 @@ namespace OpenVIII.IGMData.Target
         public int Casts { get; private set; }
         public Kernel_bin.Target Target { get; private set; }
 
-        private IGMData.Pool.Draw Draw_Pool => (IGMData.Pool.Draw)(((IGMData.Base)ITEM[2, 0]));
+        private Draw Draw_Pool => (Draw)ITEM[2, 0];
 
-        private IGMData.Target.Enemies TargetEnemies => (IGMData.Target.Enemies)(((IGMData.Base)ITEM[0, 0]));
+        private Enemies TargetEnemies => (Enemies)ITEM[0, 0];
 
-        private IGMData.Target.Party TargetParty => (IGMData.Target.Party)(((IGMData.Base)ITEM[1, 0]));
+        private Party TargetParty => (Party)ITEM[1, 0];
 
         #endregion Properties
 
@@ -52,8 +52,8 @@ namespace OpenVIII.IGMData.Target
             const int Y = 632 - Height;
 
             Group r = Create<Group>(
-                IGMData.Target.Enemies.Create(new Rectangle(X1, Y, Width1, Height)),
-                IGMData.Target.Party.Create(new Rectangle(X2, Y, Width2, Height)),
+                Enemies.Create(new Rectangle(X1, Y, Width1, Height)),
+                Party.Create(new Rectangle(X2, Y, Width2, Height)),
                 makesubs ? IGMData.Pool.Draw.Create(new Rectangle(X1 + 50, Y - 50, 300, 192), damageable, true) : null);
             r.SetDamageable(damageable, null);
             r.CONTAINER.Pos = new Rectangle(X1, Y, Width1 + Width2, Height);
@@ -276,7 +276,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command02_MAGIC()
             {
-                Neededvaribles(out Damageable[] d);
+                Neededvaribles(out Damageable[] d, Magic.PositiveMagic);
                 Debug.WriteLine($"{Damageable.Name} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return true;
@@ -643,18 +643,29 @@ namespace OpenVIII.IGMData.Target
         /// <param name="drawList"></param>
         private void DrawMagic(Debug_battleDat.Magic[] drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
 
-        private void Neededvaribles(out Damageable[] d)
+        private void Neededvaribles(out Damageable[] d, bool positive = false)
         {
             Damageable[] e = null;
             Damageable[] vc = null;
+            IEnumerable<Saves.CharacterData> party = Memory.State.Party.Where(x => x != Characters.Blank).Select(y => Memory.State[y]);
             if (Target.HasFlag(Kernel_bin.Target.Single_Target))
             {
                 if (TargetEnemies.Enabled && TargetParty.Enabled && RandomTarget.Single && RandomTarget.Side)
                 {
                     List<Damageable> CombinedTargets = new List<Damageable>();
 
-                    CombinedTargets.AddRange(Enemy.Party);
-                    CombinedTargets.AddRange(Memory.State.Party.Where(x => x != Characters.Blank).Select(y => Memory.State[y]));
+                    if (RandomTarget.PositiveMatters)
+                    {
+                        if (positive)
+                            CombinedTargets.AddRange(party);
+                        else
+                            CombinedTargets.AddRange(Enemy.Party);
+                    }
+                    else
+                    {
+                        CombinedTargets.AddRange(Enemy.Party);
+                        CombinedTargets.AddRange(party);
+                    }
                     Damageable rand = CombinedTargets.Random();
                     if (typeof(Enemy).Equals(rand.GetType()))
                     {
@@ -674,17 +685,24 @@ namespace OpenVIII.IGMData.Target
                     }
 
                     e = new Enemy[] { Enemy.Party[TargetEnemies.CURSOR_SELECT < Enemy.Party.Count ? TargetEnemies.CURSOR_SELECT : Enemy.Party.Count - 1] };
-                    Characters charvar = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
-                    vc = new Saves.CharacterData[] { Memory.State[charvar] };
+                    vc = new Saves.CharacterData[] { party.ElementAt(TargetParty.CURSOR_SELECT) };
                 }
             }
             else
             {
-                vc = Memory.State.Party.Where(x => x != Characters.Blank).Select(y => Memory.State[y]).ToArray();
+                vc = party.ToArray();
                 e = Enemy.Party.ToArray();
 
                 if (RandomTarget.Side && TargetEnemies.Enabled && TargetParty.Enabled)
                 {
+                    if (RandomTarget.PositiveMatters)
+                    {
+                        if (positive)
+                            e = null;
+                        else
+                            vc = null;
+                    }
+                    else
                     switch (Memory.Random.Next(2))
                     {
                         case 0:
@@ -700,6 +718,13 @@ namespace OpenVIII.IGMData.Target
             Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
             Damageable fromc = Menu.BattleMenus.GetDamageable();
             //fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
+            if(RandomTarget.PositiveMatters)
+            {
+                if (positive)
+                    e = null;
+                else
+                    vc = null;
+            }
             d = vc;
             if (((TargetEnemies.Cursor_Status & Cursor_Status.Enabled) != 0 && TargetEnemies.Enabled) || d == null)
                 d = e;
