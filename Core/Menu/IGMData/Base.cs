@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -10,7 +11,7 @@ namespace OpenVIII.IGMData
     {
         #region Fields
 
-        public bool[] BLANKS;
+        public BitArray BLANKS;
 
         /// <summary>
         /// location of where pointer finger will point.
@@ -607,7 +608,7 @@ namespace OpenVIII.IGMData
             {
                 CURSOR = new Point[cellcount];
                 SIZE = new Rectangle[cellcount];
-                BLANKS = new bool[cellcount];
+                BLANKS = new BitArray(cellcount,false);
             }
         }
 

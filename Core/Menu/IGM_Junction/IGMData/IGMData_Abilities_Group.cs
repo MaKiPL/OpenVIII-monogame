@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections;
 
 namespace OpenVIII
 {
@@ -97,10 +98,10 @@ namespace OpenVIII
 
                 int total_Count = (Commands?.Count ?? 0) + (Ability?.Count ?? 0);
                 if (Memory.State.Characters != null)
-                {
+                {//TODO fix this. these values should be set in init() not refresh...
                     SIZE = new Rectangle[total_Count];
                     CURSOR = new Point[total_Count];
-                    BLANKS = new bool[total_Count];
+                    BLANKS = new BitArray(total_Count,false);
                     int i = 0;
                     test(Commands, ref i);
                     test(Ability, ref i);

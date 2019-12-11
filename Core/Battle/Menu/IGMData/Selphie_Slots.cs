@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII.IGMData
 {
-    internal class Selphie_Slots : Base
+    public class Selphie_Slots : Base
     {
         #region Fields
 
@@ -51,7 +51,7 @@ namespace OpenVIII.IGMData
         /// <summary>
         /// Spell set
         /// </summary>
-        private Kernel_bin.Slot_array SpellSet => Kernel_bin.Slotarray[MathHelper.Clamp(TombolaLevel * 12 + TombolaLevel, 0, Kernel_bin.Slotarray.Count)];
+        private Kernel_bin.Slot_array SpellSet => Kernel_bin.Slotarray[MathHelper.Clamp(TombolaLevel * 12 + TombolaLevel, 0, Kernel_bin.Slotarray.Count-1)];
 
         private Target.Group TargetGroup { get => (Target.Group)ITEM[8, 0]; set => ITEM[8, 0] = value; }
 
@@ -93,11 +93,11 @@ namespace OpenVIII.IGMData
         {
             switch (CURSOR_SELECT)
             {
-                case 0:
+                case 3:
                     Inputs_CANCEL();
                     break;
 
-                case 1:
+                case 6:
                     base.Inputs_OKAY();
                     if (MagicData != null)
                     {
@@ -129,27 +129,36 @@ namespace OpenVIII.IGMData
 
         protected override void Init()
         {
+            Table_Options |= Table_Options.FillRows;
             base.Init();
 
             // 0,1,2
             // 3,4,5
             // 6,7,8
-
+            BLANKS.SetAll(true);
             Spell = new IGMDataItem.Text { Pos = SIZE[0] };
-            BLANKS[0] = true;
-            Number = new IGMDataItem.Integer { Pos = SIZE[1], Spaces = 3 };
-            BLANKS[1] = true;
+            Number = new IGMDataItem.Integer { Pos = SIZE[1], Spaces = 3, NumType = Icons.NumType.sysFntBig };
             Times = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 65], Pos = SIZE[2] };
-            BLANKS[2] = true;
             Do_Over = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 67], Pos = SIZE[3] };
             BLANKS[3] = false;
             Cast = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 66], Pos = SIZE[6] };
             BLANKS[6] = false;
             TargetGroup = Target.Group.Create(Damageable);
             TargetGroup.Hide();
+            Cursor_Status |= Cursor_Status.Enabled;
         }
 
-        private Selphie_Slots Create(Rectangle pos, Damageable damageable = null) => Create<Selphie_Slots>(9, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 3, 3);
+        protected override void InitShift(int i, int col, int row)
+        {
+            base.InitShift(i, col, row);
+            SIZE[i].Inflate(-22, -12);
+            if (row == 0) SIZE[i].Offset(0, 8);
+            if (col == 1) SIZE[i].Offset(8, 0);
+            if (col == 2) SIZE[i].Offset(-16, 0);
+            if (row > 0) SIZE[i].Offset(20, 0);
+        }
+
+        static public Selphie_Slots Create(Rectangle pos, Damageable damageable = null, bool battle =true) => Create<Selphie_Slots>(9, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 3, 3,damageable,battle: battle);
 
         #endregion Methods
     }
