@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace OpenVIII.IGMData.Target
 {
@@ -62,6 +63,8 @@ namespace OpenVIII.IGMData.Target
             }
             base.Inputs_Right();
         }
+
+        public void Random() => SetCursor_select(BLANKS.Select((enabled, index) => new { enabled, index }).Where(x => !x.enabled).Random().index);
 
         public override void Refresh()
         {

@@ -157,6 +157,7 @@
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
     <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Party.cs" />
+    <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="FfAudio.cs" />
