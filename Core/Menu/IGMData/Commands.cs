@@ -24,14 +24,14 @@ namespace OpenVIII.IGMData
         #endregion Fields
 
         #region Properties
-
-        public bool CrisisLevel { get => _crisisLevel; set => _crisisLevel = value; }
-        public IGMData.Pool.GF GFPool { get => (IGMData.Pool.GF)ITEM[Offsets.GF_Pool, 0]; protected set => ITEM[Offsets.GF_Pool, 0] = value; }
-        public IGMData.Pool.Item ItemPool { get => (IGMData.Pool.Item)ITEM[Offsets.Item_Pool, 0]; protected set => ITEM[Offsets.Item_Pool, 0] = value; }
-        public IGMData.Pool.Magic MagPool { get => (IGMData.Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; protected set => ITEM[Offsets.Mag_Pool, 0] = value; }
-        public IGMData.Pool.BlueMagic BluePool { get => (IGMData.Pool.BlueMagic)ITEM[Offsets.Blue_Pool, 0]; protected set => ITEM[Offsets.Blue_Pool, 0] = value; }
-        public IGMData.Pool.Combine CombinePool { get => (IGMData.Pool.Combine)ITEM[Offsets.Combine_Pool, 0]; protected set => ITEM[Offsets.Combine_Pool, 0] = value; }
-        public IGMDataItem.Icon LimitArrow { get => (IGMDataItem.Icon)ITEM[Offsets.Limit_Arrow, 0]; protected set => ITEM[Offsets.Limit_Arrow, 0] = value; }
+        //Selphie_Slots
+        
+        private IGMData.Pool.GF GFPool { get => (IGMData.Pool.GF)ITEM[Offsets.GF_Pool, 0]; set => ITEM[Offsets.GF_Pool, 0] = value; }
+        private IGMData.Pool.Item ItemPool { get => (IGMData.Pool.Item)ITEM[Offsets.Item_Pool, 0]; set => ITEM[Offsets.Item_Pool, 0] = value; }
+        private IGMData.Pool.Magic MagPool { get => (IGMData.Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; set => ITEM[Offsets.Mag_Pool, 0] = value; }
+        private IGMData.Pool.BlueMagic BluePool { get => (IGMData.Pool.BlueMagic)ITEM[Offsets.Blue_Pool, 0]; set => ITEM[Offsets.Blue_Pool, 0] = value; }
+        private IGMData.Pool.Combine CombinePool { get => (IGMData.Pool.Combine)ITEM[Offsets.Combine_Pool, 0]; set => ITEM[Offsets.Combine_Pool, 0] = value; }
+        private IGMDataItem.Icon LimitArrow { get => (IGMDataItem.Icon)ITEM[Offsets.Limit_Arrow, 0]; set => ITEM[Offsets.Limit_Arrow, 0] = value; }
 
         public IGMData.Target.Group TargetGroup
         {
@@ -143,7 +143,7 @@ namespace OpenVIII.IGMData
 
         public override void Inputs_Left()
         {
-            if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
+            if (Battle && CURSOR_SELECT == 0 && CrisisLevel > -1)
             {
                 if (page == 1)
                 {
@@ -267,7 +267,7 @@ namespace OpenVIII.IGMData
 
         public override void Inputs_Right()
         {
-            if (Battle && CURSOR_SELECT == 0 && CrisisLevel)
+            if (Battle && CURSOR_SELECT == 0 && CrisisLevel > -1)
             {
                 if (page == 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
@@ -366,7 +366,7 @@ namespace OpenVIII.IGMData
                     else if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                     {
                         if (Battle)
-                            CrisisLevel = c.GenerateCrisisLevel() >= 0;
+                            c.GenerateCrisisLevel();
                         Rectangle DataSize = Rectangle.Empty;
                         page = 0;
                         Cursor_Status &= ~Cursor_Status.Horizontal;
@@ -406,7 +406,7 @@ namespace OpenVIII.IGMData
                             }
                         }
                         const int crisiswidth = 294;
-                        if (Battle && CrisisLevel)
+                        if (Battle && CrisisLevel>-1)
                         {
                             CONTAINER.Width = crisiswidth;
                             LimitArrow.Show();
@@ -503,6 +503,8 @@ namespace OpenVIII.IGMData
                 }
             }
         }
+
+        public sbyte CrisisLevel { get => Damageable!= null && Damageable.GetCharacterData(out Saves.CharacterData c) ? c.CurrentCrisisLevel : (sbyte)-1; }
 
         private void SubscribeEvents()
         {

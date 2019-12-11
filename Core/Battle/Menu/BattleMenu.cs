@@ -34,7 +34,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public bool CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
+        public sbyte CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
 
         public IGMData.Renzokeken Renzokeken
         {
