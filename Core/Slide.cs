@@ -23,6 +23,7 @@ namespace OpenVIII
         public T Current { get; private set; }
         public TimeSpan CurrentTime { get; private set; }
         public float CurrentPercent { get; private set; }
+        public bool Repeat { get; set; } = false;
 
         /// <summary>
         /// When started wait this many MS before moving.
@@ -66,7 +67,7 @@ namespace OpenVIII
 
         public T Update()
         {
-            if (!Done && Function != null)
+            if ((!Done || Repeat) && Function != null)
             {
                 UpdatePercent();
                 Current = Function(Start, End, CurrentPercent);
@@ -78,13 +79,24 @@ namespace OpenVIII
         public float UpdatePercent()
         {
             CurrentPercent = 1f;
-            if (!Done)
+            if (!Done || Repeat)
             {
                 CurrentTime += Memory.gameTime.ElapsedGameTime;
-                return CurrentPercent = CurrentTime < Delay ? 0f : (float)(Done ? 1f : (CurrentTime - Delay).TotalMilliseconds / TotalTime.TotalMilliseconds);
+                //CheckRepeat();
+                //return CurrentPercent = CurrentTime < Delay ? 0f : (float)(Done ? 1f : (CurrentTime - Delay).TotalMilliseconds / TotalTime.TotalMilliseconds);
+                CheckRepeat();
+                if (CurrentTime < Delay)
+                    return CurrentPercent = 0f;
+                return CurrentPercent = (float)((CurrentTime - Delay).Ticks / (double)TotalTime.Ticks);
             }
             else
                 return CurrentPercent;
+        }
+
+        private void CheckRepeat()
+        {
+            if (Repeat && Done)
+                CurrentTime = TimeSpan.FromTicks((CurrentTime-Delay).Ticks % TotalTime.Ticks);
         }
 
         #endregion Methods

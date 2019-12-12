@@ -14,6 +14,7 @@ namespace OpenVIII
 {
     public static class Module_battle_debug
     {
+        private static Battle.RegularPyramid RegularPyramid;
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees = 90;
@@ -210,7 +211,9 @@ namespace OpenVIII
         }
 
         public static void ResetState() => battleModule = BATTLEMODULE_INIT;
+
         public static bool PauseATB = false;
+
         public static void Update()
         {
             if (CharacterInstances != null)
@@ -230,9 +233,9 @@ namespace OpenVIII
                     //    cii.SetAnimationID(20);
                     //cii.SetAnimationID(31);
                 }
-            if(Enemy.Party!=null)
-            foreach (var e in Enemy.Party)
-                e.Update(); //updates ATB for enemy.
+            if (Enemy.Party != null)
+                foreach (Enemy e in Enemy.Party)
+                    e.Update(); //updates ATB for enemy.
             bool ret = false;
             switch (battleModule)
             {
@@ -257,6 +260,7 @@ namespace OpenVIII
                     }
                     break;
             }
+            RegularPyramid.Update();
             if (!ret) Inputs();
         }
 
@@ -359,9 +363,9 @@ namespace OpenVIII
             {
                 if (Enemy.Party[i].EII.Data.Sequences.Count > sid)
                 {
-                    section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x=>x.id == sid);
-                    if(section5.AnimationQueue != null)
-                    AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
+                    section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x => x.id == sid);
+                    if (section5.AnimationQueue != null)
+                        AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
                     //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
                 }
             }
@@ -396,7 +400,9 @@ namespace OpenVIII
                     DrawMonsters();
                     DrawCharactersWeapons();
                     UpdateFrames();
-                    Menu.BattleMenus.Draw();
+                    DrawPyramid();
+                    if(!bUseFPSCamera)
+                        Menu.BattleMenus.Draw();
                     break;
             }
         }
@@ -507,9 +513,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 }
                 DrawShadow(charaPosition, ate, .5f);
             }
-            
+
             //WEAPON
-            for (int n = 0; n < CharacterInstances.Count && CharacterInstances[n].Data.weapon !=null; n++)
+            for (int n = 0; n < CharacterInstances.Count && CharacterInstances[n].Data.weapon != null; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
                 Vector3 weaponPosition = getPos(n);// new Vector3(-40 + n * 10, -2.5f, -40 + 1);
@@ -578,7 +584,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                         CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[n];
                         if (CharacterInstances[n].animationSystem.AnimationQueue.TryDequeue(out int animid) &&
                            (animid < InstanceInformationProvider.Data.character.animHeader.animations.Length ||
-                           animid < (InstanceInformationProvider.Data.weapon?.animHeader.animations.Length??0)) &&
+                           animid < (InstanceInformationProvider.Data.weapon?.animHeader.animations.Length ?? 0)) &&
                            animid >= 0)
                         {
                             InstanceInformationProvider.animationSystem.AnimationId = animid;
@@ -948,6 +954,31 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
             Memory.SpriteBatchEnd();
         }
+        static BasicEffect PyramidEffect;
+        private static void DrawPyramid()
+        {
+            //donno why but direct x crashes when i try to draw colored primatives.
+            if (Memory.currentGraphicMode == Memory.GraphicModes.DirectX) return;
+            PyramidEffect.World = worldMatrix;
+            PyramidEffect.View = viewMatrix;
+            PyramidEffect.Projection = projectionMatrix;
+            PyramidEffect.VertexColorEnabled = true;
+            PyramidEffect.LightingEnabled = true;                
+            PyramidEffect.EnableDefaultLighting();
+            
+            Memory.graphics.GraphicsDevice.SetVertexBuffer(RegularPyramid.VertexBuffer);
+            Memory.graphics.GraphicsDevice.Indices = RegularPyramid.Indices;
+            //RasterizerState rasterizerState = new RasterizerState
+            //{
+            //    CullMode = CullMode.None
+            //};
+            //Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
+            foreach (EffectPass pass in PyramidEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                Memory.graphics.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,0, 0, RegularPyramid.Indices.IndexCount);
+            }
+        }
 
         /// <summary>
         /// Moves sky
@@ -1046,8 +1077,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             battlename = $"a0stg{stage.ToString("000")}.x";
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
             Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
-
+            RegularPyramid = new Battle.RegularPyramid();
+            RegularPyramid.Set(-2.5f, 2.5f, Color.Black, Color.Yellow, Color.Yellow, Color.Yellow, Color.Yellow);
+            RegularPyramid.Set(Matrix.CreateTranslation(0, 15f, 0));
             //init renderer
+            PyramidEffect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
             camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
