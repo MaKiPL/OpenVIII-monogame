@@ -11,6 +11,7 @@ namespace OpenVIII.IGMData
         public bool Save { get; private set; }
         public bool Slot { get; private set; }
         public int TotalWidth { get; private set; }
+        private static TimeSpan time => TimeSpan.FromMilliseconds(1000d);
         private IGMDataItem.Icon RedBar { get => (IGMDataItem.Icon)ITEM[0, 1]; set => ITEM[0, 1] = value; }
 
         #endregion Properties
@@ -118,7 +119,8 @@ namespace OpenVIII.IGMData
             //r.Offset(0, 0);
             r.Inflate(-4, -4);
             TotalWidth = r.Width;
-            LoadBarSlide = new Slide<float>(0, TotalWidth, 1000d, MathHelper.SmoothStep);
+
+            LoadBarSlide = new Slide<float>(0, TotalWidth, time, MathHelper.SmoothStep);
             r.Width = 0;
             ITEM[0, 1] = new IGMDataItem.Icon { Data = Icons.ID.Bar_Fill, Pos = r };
             Cursor_Status |= Cursor_Status.Enabled | Cursor_Status.Hidden | Cursor_Status.Static;

@@ -11,6 +11,7 @@ namespace OpenVIII
             #region Fields
 
             public Slide<Vector2> Slider;
+            private static TimeSpan time => TimeSpan.FromMilliseconds(500d);
             private int _lastpage = -1;
             private int _page = -1;
 
@@ -148,7 +149,7 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                Slider = new Slide<Vector2>(Vector2.Zero, Vector2.Zero, 500, Vector2.SmoothStep);
+                Slider = new Slide<Vector2>(Vector2.Zero, Vector2.Zero, time, Vector2.SmoothStep);
                 BlockNumber = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), NumType = Icons.NumType.Num_8x16_0, Spaces = 2, Padding = 2 };
                 Face1 = new IGMDataItem.Face { Pos = new Rectangle(BlockNumber.X + 44, SIZE[0].Y, 124, SIZE[0].Height), Border = true };
                 Face2 = new IGMDataItem.Face { Pos = new Rectangle(Face1.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };

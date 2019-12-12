@@ -160,6 +160,7 @@
     <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
+    <Compile Include="CountDown.cs" />
     <Compile Include="FfAudio.cs" />
     <Compile Include="FfVideo.cs" />
     <Compile Include="Image\TDW.cs" />
