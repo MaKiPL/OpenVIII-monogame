@@ -47,7 +47,7 @@ namespace OpenVIII
         private const int BATTLEMODULE_READDATA = 1; //parses battle stage and all monsters
         private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
         private const int BATTLEMODULE_ACTIVE = 3;
-        private readonly static TimeSpan FPS = TimeSpan.FromMilliseconds(1000.0d / 15d); //Natively the game we are rewritting works in 15 FPS per second
+        private static readonly TimeSpan FPS = TimeSpan.FromMilliseconds(1000.0d / 15d); //Natively the game we are rewritting works in 15 FPS per second
 
         /// <summary>
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
@@ -400,7 +400,7 @@ namespace OpenVIII
                     DrawGeometry();
                     DrawMonsters();
                     DrawCharactersWeapons();
-                    RegularPyramid.Draw(worldMatrix,viewMatrix,projectionMatrix);
+                    RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
                     if (!bUseFPSCamera)
                         Menu.BattleMenus.Draw();
                     break;
@@ -490,57 +490,42 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
                 Vector3 charaPosition = getPos(n);
-                for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
-                {
-                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.character.GetVertexPositions(
-                        i,
-                        charaPosition,
-                        Quaternion.CreateFromYawPitchRoll(3f, 0, 0),
-                        ref CharacterInstances[n].animationSystem,
-                        CharacterInstanceGenerateStep(n)); //DEBUG
-                    if (a == null || a.Item1.Length == 0)
-                        return;
-                    for (int k = 0; k < a.Item1.Length / 3; k++)
-                    {
-                        ate.Texture = (Texture2D)CharacterInstances[n].Data.character.textures.textures[a.Item2[k]];
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a.Item1, vertexOffset: k * 3, primitiveCount: 1);
-                        }
-                    }
-                }
+                UpdatePos(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
             }
-
             //WEAPON
             for (int n = 0; n < CharacterInstances.Count && CharacterInstances[n].Data.weapon != null; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                Vector3 weaponPosition = getPos(n);// new Vector3(-40 + n * 10, -2.5f, -40 + 1);
-                for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
+                UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, getPos(n));
+            }
+        }
+
+        private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, Vector3 position, Quaternion? _rotation = null)
+        {
+            for (int i = 0; i < battledat.geometry.cObjects; i++)
+            {
+                Quaternion rotation = _rotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
+                Debug_battleDat.VertexPositionTexturePointersGRP vptpg = battledat.GetVertexPositions(
+                    i,
+                    position,
+                    rotation,
+                    ref animationSystem,
+                    step); //DEBUG
+                if ((vptpg.VPT?.Length ?? 0) == 0 || (vptpg.TexturePointers?.Length ?? 0) == 0)
+                    return;
+                for (int k = 0; k < vptpg.VPT.Length / 3; k++)
                 {
-                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.weapon.GetVertexPositions(
-                        i,
-                        weaponPosition,
-                        Quaternion.CreateFromYawPitchRoll(3f, 0, 0),
-                        ref CharacterInstances[n].animationSystem,
-                        CharacterInstanceGenerateStep(n)); //DEBUG
-                    if (a == null || a.Item1.Length == 0)
-                        return;
-                    for (int k = 0; k < a.Item1.Length / 3; k++)
+                    ate.Texture = (Texture2D)battledat.textures.textures[vptpg.TexturePointers[k]];
+                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                     {
-                        ate.Texture = (Texture2D)CharacterInstances[n].Data.weapon.textures.textures[a.Item2[k]];
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a.Item1, vertexOffset: k * 3, primitiveCount: 1);
-                        }
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                        vertexData: vptpg.VPT, vertexOffset: k * 3, primitiveCount: 1);
                     }
                 }
             }
+            return;
         }
 
         private static double CharacterInstanceGenerateStep(int n) => GenerateStep(CharacterInstanceAnimationStopped(n));
@@ -673,28 +658,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
 
                 Init_debugger_battle.Coordinate enemyPosition = Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index);
-
-                for (int i = 0; i < Enemy.Party[n].EII.Data.geometry.cObjects; i++)
-                {
-                    Tuple<VertexPositionTexture[], byte[]> a = Enemy.Party[n].EII.Data.GetVertexPositions(
-                        objectId: i,
-                        position: enemyPosition.GetVector(),
-                        rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
-                        animationSystem: ref Enemy.Party[n].EII.animationSystem,
-                        step: GenerateStep(EnemyInstanceAnimationStopped(n)));
-                    if (a == null || a.Item1.Length == 0)
-                        return;
-                    for (int k = 0; k < a.Item1.Length / 3; k++)
-                    {
-                        ate.Texture = (Texture2D)Enemy.Party[n].EII.Data.textures.textures[a.Item2[k]];
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a.Item1, vertexOffset: k * 3, primitiveCount: 1);
-                        }
-                    }
-                }
+                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, enemyPosition.GetVector(), Quaternion.CreateFromYawPitchRoll(0f, 0f, 0f));
                 DrawShadow(enemyPosition.GetVector(), ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
             }
         }
@@ -953,7 +917,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
             Memory.SpriteBatchEnd();
         }
-        
+
         /// <summary>
         /// Moves sky
         /// </summary>
@@ -1040,7 +1004,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             return new Vector2(fU, fV);
         }
 
-        static Matrix PyramidOffset = Matrix.CreateTranslation(0, 16f, 0);
+        private static Matrix PyramidOffset = Matrix.CreateTranslation(0, 16f, 0);
+
         private static void InitBattle()
         {
             //MakiExtended.Debugger_Spawn();
@@ -1132,10 +1097,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         public static int DEBUG = 0;
         private static TimeSpan FrameTime = TimeSpan.Zero;
-        private static void ResetTime()
-        {
-            FrameTime = TimeSpan.FromTicks(FrameTime.Ticks % FPS.Ticks);
-        }
+
+        private static void ResetTime() => FrameTime = TimeSpan.FromTicks(FrameTime.Ticks % FPS.Ticks);
 
         public static ConcurrentDictionary<Characters, SortedSet<byte>> Costumes { get; private set; }
 

@@ -251,7 +251,28 @@ namespace OpenVIII
 
             return @object;
         }
+        struct VectorBoneGRP
+        {
+            public Vector3 Vector { get; private set; }
+            public int BoneID { get; private set; }
 
+            public VectorBoneGRP(Vector3 vector, int boneID)
+            {
+                Vector = vector;
+                BoneID = boneID;
+            }
+        }
+        public struct VertexPositionTexturePointersGRP
+        {
+            public VertexPositionTexturePointersGRP(VertexPositionTexture[] vpt, byte[] texturepointers) : this()
+            {
+                this.VPT = vpt;
+                this.TexturePointers = texturepointers;
+            }
+
+            public VertexPositionTexture[] VPT { get; private set; }
+            public byte[] TexturePointers { get; private set; }
+        }
         /// <summary>
         /// This method returns geometry data AFTER animation matrix translations, local
         /// position/rotation translations. This is the final step of calculation. This data should
@@ -276,7 +297,7 @@ namespace OpenVIII
         /// constant 15 FPS
         /// </param>
         /// <returns></returns>
-        public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
+        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
         {
             Object obj = geometry.objects[objectId];
             if (animationSystem.AnimationFrame >= animHeader.animations[animationSystem.AnimationId].animationFrames.Length || animationSystem.AnimationFrame < 0)
@@ -286,21 +307,21 @@ namespace OpenVIII
             AnimationFrame frame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrames[lastAnimationFrame] : lastAnimationFrames[lastAnimationFrames.Length - 1];
             AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
-            List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();
+            List<VectorBoneGRP> verts = new List<VectorBoneGRP>();
 
             int i = 0;
             foreach (VerticeData a in obj.verticeData)
                 foreach (Vertex b in a.vertices)
-                    verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId), frame, nextFrame, step));
+                    verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
 
             //Triangle parsing
             for (; i < obj.cTriangles; i++)
             {
-                Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Item1, rotation, translationPosition);
+                Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Vector, rotation, translationPosition);
+                Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Vector, rotation, translationPosition);
+                Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Vector, rotation, translationPosition);
 
                 Texture2D prevarTexT = (Texture2D)textures.textures[obj.triangles[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
@@ -312,10 +333,10 @@ namespace OpenVIII
             //Quad parsing
             for (i = 0; i < obj.cQuads; i++)
             {
-                Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Item1, rotation, translationPosition);
+                Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Vector, rotation, translationPosition);
+                Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Vector, rotation, translationPosition);
+                Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Vector, rotation, translationPosition);
+                Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Vector, rotation, translationPosition);
 
                 Texture2D preVarTex = (Texture2D)textures.textures[obj.quads[i].textureIndex];
                 vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
@@ -330,7 +351,7 @@ namespace OpenVIII
                 texturePointers[obj.cTriangles + i * 2 + 1] = obj.quads[i].textureIndex;
             }
 
-            return new Tuple<VertexPositionTexture[], byte[]>(vpt.ToArray(), texturePointers);
+            return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
         private Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
@@ -345,7 +366,7 @@ namespace OpenVIII
         /// Complex function that provides linear interpolation between two matrices of actual
         /// to-render animation frame and next frame data for blending
         /// </summary>
-        /// <param name="tuple">the tuple that contains vertex and bone ident</param>
+        /// <param name="VBG">the tuple that contains vertex and bone ident</param>
         /// <param name="frame">current animation frame to render</param>
         /// <param name="nextFrame">
         /// animation frame to render that is AFTER the actual one. If last frame, then usually 0 is
@@ -356,22 +377,22 @@ namespace OpenVIII
         /// current frame and 1 for next frame; 0.5 for blend of two frames
         /// </param>
         /// <returns></returns>
-        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame, AnimationFrame nextFrame, double step)
+        private VectorBoneGRP CalculateFrame(VectorBoneGRP VBG, AnimationFrame frame, AnimationFrame nextFrame, double step)
         {
-            Matrix matrix = frame.boneMatrix[tuple.Item2]; //get's bone matrix
+            Matrix matrix = frame.boneMatrix[VBG.BoneID]; //get's bone matrix
             Vector3 rootFramePos = new Vector3(
-                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
-                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            matrix = nextFrame.boneMatrix[tuple.Item2];
+                matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
+                matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
+                matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
+            matrix = nextFrame.boneMatrix[VBG.BoneID];
             Vector3 nextFramePos = new Vector3(
-                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
-                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
+                matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
+                matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
+                matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
             rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
             nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
             rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
-            return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
+            return new VectorBoneGRP(rootFramePos, VBG.BoneID);
         }
 
         #endregion section 2 Geometry
