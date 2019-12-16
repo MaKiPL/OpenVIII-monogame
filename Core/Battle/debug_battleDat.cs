@@ -370,7 +370,7 @@ namespace OpenVIII
                 matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
             rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
             nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, (float)step);
+            rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
             return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
         }
 
