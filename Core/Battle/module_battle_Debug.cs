@@ -47,7 +47,7 @@ namespace OpenVIII
         private const int BATTLEMODULE_READDATA = 1; //parses battle stage and all monsters
         private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
         private const int BATTLEMODULE_ACTIVE = 3;
-        private const double FPS = 1000.0d / 15d; //Natively the game we are rewritting works in 15 FPS per second
+        private readonly static TimeSpan FPS = TimeSpan.FromMilliseconds(1000.0d / 15d); //Natively the game we are rewritting works in 15 FPS per second
 
         /// <summary>
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
@@ -260,8 +260,9 @@ namespace OpenVIII
                     }
                     break;
             }
-            RegularPyramid.Update();
             if (!ret) Inputs();
+            RegularPyramid.Update();
+            UpdateFrames();
         }
 
         public static void Inputs()
@@ -399,9 +400,8 @@ namespace OpenVIII
                     DrawGeometry();
                     DrawMonsters();
                     DrawCharactersWeapons();
-                    UpdateFrames();
-                    DrawPyramid();
-                    if(!bUseFPSCamera)
+                    RegularPyramid.Draw(worldMatrix,viewMatrix,projectionMatrix);
+                    if (!bUseFPSCamera)
                         Menu.BattleMenus.Draw();
                     break;
             }
@@ -724,7 +724,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         {
             if (AnimationStopped)
                 return 1d;
-            return frameperFPS / FPS;
+            return (double)FrameTime.Ticks / FPS.Ticks;
         }
 
         /// <summary>
@@ -756,9 +756,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </summary>
         private static void UpdateFrames()
         {
-            double tick = (float)Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-            frameperFPS += tick;
-            if (frameperFPS > FPS)
+            FrameTime += Memory.gameTime.ElapsedGameTime;
+            if (FrameTime > FPS)
             {
                 if (Enemy.Party != null)
                     foreach (Enemy e in Enemy.Party)
@@ -784,7 +783,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 //    InstanceInformationProvider.animationSystem.animationFrame++;
                 //    CharacterInstances[x] = InstanceInformationProvider;
                 //}
-                frameperFPS = 0.0f;
+                ResetTime();
             }
         }
 
@@ -954,32 +953,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
             Memory.SpriteBatchEnd();
         }
-        static BasicEffect PyramidEffect;
-        private static void DrawPyramid()
-        {
-            //donno why but direct x crashes when i try to draw colored primatives.
-            if (Memory.currentGraphicMode == Memory.GraphicModes.DirectX) return;
-            PyramidEffect.World = worldMatrix;
-            PyramidEffect.View = viewMatrix;
-            PyramidEffect.Projection = projectionMatrix;
-            PyramidEffect.VertexColorEnabled = true;
-            PyramidEffect.LightingEnabled = true;                
-            PyramidEffect.EnableDefaultLighting();
-            
-            Memory.graphics.GraphicsDevice.SetVertexBuffer(RegularPyramid.VertexBuffer);
-            Memory.graphics.GraphicsDevice.Indices = RegularPyramid.Indices;
-            //RasterizerState rasterizerState = new RasterizerState
-            //{
-            //    CullMode = CullMode.None
-            //};
-            //Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
-            foreach (EffectPass pass in PyramidEffect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList,0, 0, RegularPyramid.Indices.IndexCount);
-            }
-        }
-
+        
         /// <summary>
         /// Moves sky
         /// </summary>
@@ -1066,6 +1040,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             return new Vector2(fU, fV);
         }
 
+        static Matrix PyramidOffset = Matrix.CreateTranslation(0, 16f, 0);
         private static void InitBattle()
         {
             //MakiExtended.Debugger_Spawn();
@@ -1078,10 +1053,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
             Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
             RegularPyramid = new Battle.RegularPyramid();
-            RegularPyramid.Set(-2.5f, 2.5f, Color.Black, Color.Yellow, Color.Yellow, Color.Yellow, Color.Yellow);
-            RegularPyramid.Set(Matrix.CreateTranslation(0, 15f, 0));
+            RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
+            RegularPyramid.Set(PyramidOffset);
             //init renderer
-            PyramidEffect = new BasicEffect(Memory.graphics.GraphicsDevice);
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
             camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
@@ -1157,7 +1131,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         }
 
         public static int DEBUG = 0;
-        private static double frameperFPS = 0.0d;
+        private static TimeSpan FrameTime = TimeSpan.Zero;
+        private static void ResetTime()
+        {
+            FrameTime = TimeSpan.FromTicks(FrameTime.Ticks % FPS.Ticks);
+        }
 
         public static ConcurrentDictionary<Characters, SortedSet<byte>> Costumes { get; private set; }
 

@@ -9,11 +9,17 @@ namespace OpenVIII.Battle
     /// </summary>
     public class RegularPyramid
     {
+        #region Fields
+
+        private BasicEffect effect;
+        private Matrix offset;
+        private Slide<float> slider;
+        private VertexPositionColor[] tempVertices;
         private VertexPositionColor[] uniqueVertices;
-        //public VertexPositionColor[] Vertices { get; private set; }
-        public VertexBuffer VertexBuffer { get; private set; }
-        public IndexBuffer Indices { get; private set; }
-        Slide<float> slider;
+
+        #endregion Fields
+
+        #region Constructors
 
         public RegularPyramid()
         {
@@ -24,10 +30,90 @@ namespace OpenVIII.Battle
             {
                 Repeat = true
             };
+            effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             Set(1, 1, null);
         }
 
-        public int Triangles { get; private set; }
+        #endregion Constructors
+
+        #region Properties
+
+        private IndexBuffer Indices { get; set; }
+        private int Triangles { get; set; }
+        private VertexBuffer VertexBuffer { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public void Draw(Matrix worldMatrix, Matrix viewMatrix, Matrix projectionMatrix)
+        {
+            //donno why but direct x crashes when i try to draw colored primatives.
+            if (Memory.currentGraphicMode == Memory.GraphicModes.DirectX) return;
+            effect.World = worldMatrix;
+            effect.View = viewMatrix;
+            effect.Projection = projectionMatrix;
+            effect.VertexColorEnabled = true;
+
+            //PyramidEffect.EnableDefaultLighting();
+
+            Memory.graphics.GraphicsDevice.SetVertexBuffer(VertexBuffer);
+            Memory.graphics.GraphicsDevice.Indices = Indices;
+            //RasterizerState rasterizerState = new RasterizerState
+            //{
+            //    CullMode = CullMode.None
+            //};
+            //Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                Memory.graphics.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Indices.IndexCount);
+            }
+        }
+
+        public void Set(float height, float basewidth, params Color[] color) => Set(height, basewidth, basewidth, color);
+
+        public void Set(float height, float basewidth, float baselength, params Color[] color)
+        {
+            if (color == null || color.Length == 0)
+            {
+                Color c = Color.Yellow;
+                color = new Color[] { c, c, c, c, c };
+            }
+            else if (color.Length < uniqueVertices.Length)
+            {
+                Color c = color[0];
+                color = new Color[] { c, c, c, c, c };
+            }
+            //techinally there are 5 unique. but everything is triangles.
+            float bottom = height < 0 ? -height : 0f;
+            if (height < 0) height = 0;
+            uniqueVertices[0].Position = new Vector3(0f, height, 0f);
+            uniqueVertices[0].Color = color[0];
+            uniqueVertices[1].Position = new Vector3(-basewidth / 2f, bottom, -baselength / 2f);
+            uniqueVertices[1].Color = color[1];
+            uniqueVertices[2].Position = new Vector3(-basewidth / 2f, bottom, baselength / 2f);
+            uniqueVertices[2].Color = color[2];
+            uniqueVertices[3].Position = new Vector3(basewidth / 2f, bottom, -baselength / 2f);
+            uniqueVertices[3].Color = color[3];
+            uniqueVertices[4].Position = new Vector3(basewidth / 2f, bottom, baselength / 2f);
+            uniqueVertices[4].Color = color[4];
+            GenerateVertices();
+        }
+
+        public void Set(Matrix offset) => this.offset = offset;
+
+        public void Update()
+        {
+            float r = slider.Update();
+            Matrix rotation = Matrix.CreateRotationY(r);
+            for (int i = 0; i < tempVertices.Length; i++)
+            {
+                tempVertices[i].Position = Vector3.Transform(Vector3.Transform(uniqueVertices[i].Position, rotation), offset);
+            }
+            VertexBuffer.SetData(tempVertices);
+        }
+
         private void GenerateVertices()
         {
             short[] indices = new short[]
@@ -62,51 +148,6 @@ namespace OpenVIII.Battle
             Indices.SetData(indices);
         }
 
-        VertexPositionColor[] tempVertices;
-        public void Update()
-        {
-            var r=slider.Update();
-            var rotation = Matrix.CreateRotationY(r);
-            for (int i = 0; i< tempVertices.Length; i++)
-            {
-                tempVertices[i].Position = Vector3.Transform(Vector3.Transform(uniqueVertices[i].Position, rotation),offset);
-
-            }
-            VertexBuffer.SetData(tempVertices);
-        }
-        public void Set(float height, float basewidth, params Color[] color) => Set(height, basewidth, basewidth, color);
-
-        public void Set(float height, float basewidth, float baselength, params Color[] color)
-        {
-            if (color == null || color.Length == 0)
-            {
-                Color c = Color.Yellow;
-                color = new Color[] { c, c, c, c, c };
-            }
-            else if (color.Length < uniqueVertices.Length)
-            {
-                Color c = color[0];
-                color = new Color[] { c, c, c, c, c };
-            }
-            //techinally there are 5 unique. but everything is triangles.
-            float bottom = height<0? -height: 0f;
-            if (height < 0) height = 0;
-            uniqueVertices[0].Position = new Vector3(0f, height, 0f);
-            uniqueVertices[0].Color = color[0];
-            uniqueVertices[1].Position = new Vector3(-basewidth / 2f, bottom, -baselength / 2f);
-            uniqueVertices[1].Color = color[1];
-            uniqueVertices[2].Position = new Vector3(-basewidth / 2f, bottom, baselength / 2f);
-            uniqueVertices[2].Color = color[2];
-            uniqueVertices[3].Position = new Vector3(basewidth / 2f, bottom, -baselength / 2f);
-            uniqueVertices[3].Color = color[3];
-            uniqueVertices[4].Position = new Vector3(basewidth / 2f, bottom, baselength / 2f);
-            uniqueVertices[4].Color = color[4];
-            GenerateVertices();
-        }
-        Matrix offset;
-        public void Set(Matrix offset)
-        {
-            this.offset = offset;
-        }
+        #endregion Methods
     }
 }
