@@ -172,10 +172,84 @@ namespace OpenVIII
             public UV vtc;
             public ushort u;
 
+            private VertexPositionTexture[] TempVPT;
+
             public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+
+            public ushort GetIndex(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return C1; //for some reason C is first in triangle
+
+                    case 1:
+                        return A1;
+
+                    case 2:
+                        return B1;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+            }
+
+            public UV GetUV(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return vta;
+
+                    case 1:
+                        return vtb;
+
+                    case 2:
+                        return vtc;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+            }
+
+            public byte this[int i]
+            {
+                get
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            return 0;
+
+                        case 1:
+                            return 1;
+
+                        case 2:
+                            return 2;
+                    }
+                    throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+                }
+            }
+
+            public byte[] Indices => new byte[] { this[0], this[1], this[2] };
+            public byte Count => 3;
+
+            public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> verts, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
+            {
+                if (TempVPT == null)
+                    TempVPT = new VertexPositionTexture[Count];
+                VertexPositionTexture GetVPT(ref Triangle t, byte i)
+                {
+                    Vector3 GetVertex(ref Triangle tv, byte iv)
+                    {
+                        return TranslateVertex(verts[tv.GetIndex(iv)].Vector, rotation, translationPosition);
+                    }
+                    return new VertexPositionTexture(GetVertex(ref t, i), new Vector2(t.GetUV(i).U1(preVarTex.Width), t.GetUV(i).V1(preVarTex.Height)));
+                }
+                TempVPT[0] = GetVPT(ref this, this[0]);
+                TempVPT[1] = GetVPT(ref this, this[1]);
+                TempVPT[2] = GetVPT(ref this, this[2]);
+                return TempVPT;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
@@ -237,45 +311,50 @@ namespace OpenVIII
                 }
                 throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
             }
-            //public byte this[int i]
-            //{
-            //    get {
-            //        switch (i)
-            //        {
-            //            case 0:
-            //                return 0;
-            //            case 1:
-            //                return 1;
-            //            case 2:
-            //                return 3;
-            //            case 3:
-            //                return 0;
-            //            case 4:
-            //                return 2;
-            //            case 5:
-            //                return 3;
-            //        }
-            //        throw new IndexOutOfRangeException($"{this} :: 0-5 are only valid values");
-            //    }
-            //}
-            //public byte[] Indices => new byte[] { this[0], this[1], this[2], this[3], this[4], this[5]};
-            //public byte Count => 6;
+
+            public byte this[int i]
+            {
+                get
+                {
+                    switch (i)
+                    {
+                        case 0:
+                        case 3:
+                            return 0;
+
+                        case 1:
+                            return 1;
+
+                        case 2:
+                        case 5:
+                            return 3;
+
+                        case 4:
+                            return 2;
+                    }
+                    throw new IndexOutOfRangeException($"{this} :: 0-5 are only valid values");
+                }
+            }
+
+            public byte[] Indices => new byte[] { this[0], this[1], this[2], this[3], this[4], this[5] };
+            public byte Count => 6;
+
             public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> verts, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
             {
-                if(TempVPT == null)
-                TempVPT = new VertexPositionTexture[6];
-                VertexPositionTexture GetVPT(ref Quad q,byte i)
+                if (TempVPT == null)
+                    TempVPT = new VertexPositionTexture[Count];
+                VertexPositionTexture GetVPT(ref Quad q, byte i)
                 {
                     Vector3 GetVertex(ref Quad qv, byte iv)
                     {
                         return TranslateVertex(verts[qv.GetIndex(iv)].Vector, rotation, translationPosition);
                     }
-                    return new VertexPositionTexture(GetVertex(ref q,i), new Vector2(q.GetUV(i).U1(preVarTex.Width), q.GetUV(i).V1(preVarTex.Height)));
+                    return new VertexPositionTexture(GetVertex(ref q, i), new Vector2(q.GetUV(i).U1(preVarTex.Width), q.GetUV(i).V1(preVarTex.Height)));
                 }
-                TempVPT[0] = TempVPT[3] = GetVPT(ref this, 0);
-                TempVPT[1] = GetVPT(ref this, 1);
-                TempVPT[4] = GetVPT(ref this, 2);
-                TempVPT[2] = TempVPT[5] = GetVPT(ref this, 3);
+                TempVPT[0] = TempVPT[3] = GetVPT(ref this, this[0]);
+                TempVPT[1] = GetVPT(ref this, this[1]);
+                TempVPT[4] = GetVPT(ref this, this[4]);
+                TempVPT[2] = TempVPT[5] = GetVPT(ref this, this[2]);
                 return TempVPT;
             }
         }
@@ -419,14 +498,15 @@ namespace OpenVIII
             //Triangle parsing
             for (; i < obj.cTriangles; i++)
             {
-                Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Vector, rotation, translationPosition);
-                Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Vector, rotation, translationPosition);
-                Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Vector, rotation, translationPosition);
+                Texture2D preVarTex = (Texture2D)textures.textures[obj.triangles[i].textureIndex];
+                vpt.AddRange(obj.triangles[i].GenerateVPT(verts, rotation, translationPosition, preVarTex));
+                //Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Vector, rotation, translationPosition);
+                //Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Vector, rotation, translationPosition);
+                //Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Vector, rotation, translationPosition);
 
-                Texture2D prevarTexT = (Texture2D)textures.textures[obj.triangles[i].textureIndex];
-                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1(prevarTexT.Width), obj.triangles[i].vtc.V1(prevarTexT.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1(prevarTexT.Width), obj.triangles[i].vtc.V1(prevarTexT.Height))));
                 texturePointers[i] = obj.triangles[i].textureIndex;
             }
 
