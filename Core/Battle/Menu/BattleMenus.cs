@@ -124,6 +124,18 @@ namespace OpenVIII
         /// </summary>
         /// <returns></returns>
         public Damageable GetDamageable() => GetCurrentBattleMenu()?.Damageable;
+        public new sbyte? PartyPos
+        {
+            get
+            {
+                var bm = GetCurrentBattleMenu();
+                if(bm != null && bm.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+                {
+                    return bm.PartyPos;
+                }
+                return null;
+            }
+        }
 
         public VictoryMenu Victory_Menu { get => (VictoryMenu)(Data[SectionName.Victory]); protected set => Data[SectionName.Victory] = value; }
 

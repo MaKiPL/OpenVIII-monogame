@@ -214,7 +214,7 @@ namespace OpenVIII
         public static void ResetState() => battleModule = BATTLEMODULE_INIT;
 
         public static bool PauseATB = false;
-
+        private static sbyte? partypos = null;
         public static void Update()
         {
             if (CharacterInstances != null)
@@ -252,6 +252,19 @@ namespace OpenVIII
 
                 case BATTLEMODULE_DRAWGEOMETRY:
                     Menu.BattleMenus.Update();
+                    sbyte? partypos = Menu.BattleMenus.PartyPos;
+                    if (partypos != Module_battle_debug.partypos)
+                    {
+                        if (partypos == null)
+                        {
+                            RegularPyramid.FadeOut();
+                        }
+                        else
+                        {
+                            RegularPyramid.Set(GetPos(partypos ?? 0) + PyramidOffset);
+                        }
+                        Module_battle_debug.partypos = partypos;
+                    }
                     if (bUseFPSCamera)
                         viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
                     else
@@ -485,12 +498,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             //CHARACTER
             if (CharacterInstances == null)
                 return;
-            Vector3 getPos(int _n) => new Vector3(-10 + _n * 10, 0, 0);
 
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
-                Vector3 charaPosition = getPos(n);
+                Vector3 charaPosition = GetCharPos(n);
                 UpdatePos(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
             }
@@ -498,9 +510,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             for (int n = 0; n < CharacterInstances.Count && CharacterInstances[n].Data.weapon != null; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, getPos(n));
+                UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, GetCharPos(n));
             }
         }
+
+        private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, 0, -40);
 
         private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, Vector3 position, Quaternion? _rotation = null)
         {
@@ -657,12 +671,16 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 }
 
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
-
-                Init_debugger_battle.Coordinate enemyPosition = Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index);
-                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, enemyPosition.GetVector(), Quaternion.CreateFromYawPitchRoll(0f, 0f, 0f));
-                DrawShadow(enemyPosition.GetVector(), ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
+                Vector3 enemyPosition = GetEnemyPos(n);
+                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, enemyPosition, Quaternion.CreateFromYawPitchRoll(0f, 0f, 0f));
+                DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
             }
         }
+
+        private static Vector3 GetPos(int n) => n >= 0 ? GetCharPos(n) : GetEnemyPos(-n-1);
+
+        private static Vector3 GetEnemyPos(int n) =>
+                        Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();
 
         private static bool EnemyInstanceAnimationStopped(int n) =>
             Enemy.Party[n].EII.animationSystem.AnimationStopped ||
@@ -1005,7 +1023,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             return new Vector2(fU, fV);
         }
 
-        private static Matrix PyramidOffset = Matrix.CreateTranslation(0, 16f, 0);
+        private static Vector3 PyramidOffset = new Vector3(0, 16f, 0);
 
         private static void InitBattle()
         {
@@ -1020,7 +1038,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
             RegularPyramid = new Battle.RegularPyramid();
             RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
-            RegularPyramid.Set(PyramidOffset);
+            //RegularPyramid.Set(PyramidOffset);
+            RegularPyramid.Hide();
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);

@@ -476,7 +476,7 @@ namespace OpenVIII
         /// constant 15 FPS
         /// </param>
         /// <returns></returns>
-        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
+        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, Vector3 translationPosition, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
         {
             Object obj = geometry.objects[objectId];
             if (animationSystem.AnimationFrame >= animHeader.animations[animationSystem.AnimationId].animationFrames.Length || animationSystem.AnimationFrame < 0)
@@ -493,7 +493,6 @@ namespace OpenVIII
                 foreach (Vertex b in a.vertices)
                     verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
-            Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
             //Triangle parsing
             for (; i < obj.cTriangles; i++)

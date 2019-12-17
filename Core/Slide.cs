@@ -99,6 +99,12 @@ namespace OpenVIII
                 CurrentTime = TimeSpan.FromTicks((CurrentTime-Delay).Ticks % TotalTime.Ticks);
         }
 
+        public void GotoEnd()
+        {
+            Current = End;
+            CurrentTime = TotalTime;
+        }
+
         #endregion Methods
     }
 }

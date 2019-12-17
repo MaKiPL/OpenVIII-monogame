@@ -54,7 +54,7 @@ namespace OpenVIII.Battle
         public void Draw(Matrix worldMatrix, Matrix viewMatrix, Matrix projectionMatrix)
         {
             //donno why but direct x crashes when i try to draw colored primatives.
-            if (Memory.currentGraphicMode == Memory.GraphicModes.DirectX) return;
+            if (Memory.currentGraphicMode == Memory.GraphicModes.DirectX || alpha < float.Epsilon) return;
             effect.World = worldMatrix;
             effect.View = viewMatrix;
             effect.Projection = projectionMatrix;
@@ -106,9 +106,9 @@ namespace OpenVIII.Battle
             FadeIn();
         }
 
-        public void Set(Matrix offset)
+        public void Set(Vector3 offset)
         {
-            this.offset = offset;
+            this.offset = Matrix.CreateTranslation(offset);
             FadeIn();
         }
 
@@ -174,6 +174,13 @@ namespace OpenVIII.Battle
             Triangles = indices.Length / 3;
             tempVertices = (VertexPositionColor[])uniqueVertices.Clone();
             Indices.SetData(indices);
+        }
+
+        public void Hide()
+        {
+            FadeOut();
+            alpha = 0f;
+            fader.GotoEnd();
         }
 
         #endregion Methods
