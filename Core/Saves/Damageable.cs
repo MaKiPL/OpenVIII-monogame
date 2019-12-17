@@ -578,7 +578,7 @@ namespace OpenVIII
 
         public abstract Damageable Clone();
 
-        public virtual bool Critical() => CurrentHP() <= CriticalHP();
+        public virtual bool IsCritical => CurrentHP() <= CriticalHP();
 
         public virtual ushort CriticalHP() => (ushort)((MaxHP() / 4) - 1);
 

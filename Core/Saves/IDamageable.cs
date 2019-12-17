@@ -28,7 +28,7 @@ namespace OpenVIII
         FF8String Name { get; set; }
 
         bool ChangeHP(int dmg);
-        bool Critical();
+        bool IsCritical { get; }
         ushort CurrentHP();
         bool DealDamage(int dmg, Kernel_bin.Attack_Type type, Kernel_bin.Attack_Flags? flags);
         ushort ReviveHP();

@@ -15,6 +15,7 @@ namespace OpenVIII
 {
     public static class Module_battle_debug
     {
+        private static DeadTime DeadTime;
         private static Battle.RegularPyramid RegularPyramid;
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
@@ -215,8 +216,10 @@ namespace OpenVIII
 
         public static bool PauseATB = false;
         private static sbyte? partypos = null;
+
         public static void Update()
         {
+            DeadTime?.Update();
             if (CharacterInstances != null)
                 foreach (CharacterInstanceInformation cii in CharacterInstances)
                 {
@@ -677,7 +680,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
-        private static Vector3 GetPos(int n) => n >= 0 ? GetCharPos(n) : GetEnemyPos(-n-1);
+        private static Vector3 GetPos(int n) => n >= 0 ? GetCharPos(n) : GetEnemyPos(-n - 1);
 
         private static Vector3 GetEnemyPos(int n) =>
                         Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();
@@ -1030,6 +1033,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             InputMouse.Mode = MouseLockMode.Center;
+            if (DeadTime == null)
+            {
+                DeadTime = new DeadTime();
+                DeadTime.DoneEvent += DeadTime_DoneEvent;
+            }
+            DeadTime.Restart();
             fps_camera = new FPS_Camera();
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int stage = enc.Scenario;
@@ -1064,6 +1073,54 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 World = worldMatrix
             };
             return;
+        }
+        /// <summary>
+        /// Trigger Event when DeadTime is done.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+        private static void DeadTime_DoneEvent(object sender, int e)
+        {
+
+            //Will Gilgamesh appear?
+            if (TestGilgamesh())
+            { }
+            //Will Angelo Recover be used?
+            else if (TestAngelo(Angelo.Recover))
+            { }
+            //Will Angelo Reverse be used?
+            else if (TestAngelo(Angelo.Reverse))
+            { }
+            //Will Angelo Search be used?
+            else if (TestAngelo(Angelo.Search))
+            { }
+        }
+
+        private static bool TestAngelo(Angelo ability)
+        {
+
+            //else if (8 >= [0..255] Angelo Recover is used (3.3 %)
+            //else if (2 >= [0..255] Angelo Reverse is used (1 %)
+            //else if (8 >= [0..255] Angelo Search is used (3.2 %)
+            if(Memory.State.LimitBreakAngelocompleted.HasFlag(ability))
+            switch(ability)
+            {
+                case Angelo.Recover:
+                    return Memory.State.Characters.Any(x=>x.Value.IsCritical && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 8;
+                case Angelo.Reverse:
+                    return Memory.State.Characters.Any(x=>x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 2;
+                case Angelo.Search:
+                    return Memory.Random.Next(256) < 8;
+            }
+            return false;
+        }
+
+        private static bool TestGilgamesh()
+        {
+
+            //if (12 >= [0..255]) Gilgamesh is summoned (5.1 %)
+            return Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) <12;
         }
 
         #region fileParsing

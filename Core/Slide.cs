@@ -93,13 +93,13 @@ namespace OpenVIII
                 return CurrentPercent;
         }
 
-        private void CheckRepeat()
+        protected virtual void CheckRepeat()
         {
             if (Repeat && Done)
-                CurrentTime = TimeSpan.FromTicks((CurrentTime-Delay).Ticks % TotalTime.Ticks);
+                CurrentTime = TimeSpan.FromTicks((CurrentTime - Delay).Ticks % TotalTime.Ticks);
         }
 
-        public void GotoEnd()
+        public virtual void GotoEnd()
         {
             Current = End;
             CurrentTime = TotalTime;
