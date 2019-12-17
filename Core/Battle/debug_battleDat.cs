@@ -9,6 +9,22 @@ using System.Runtime.InteropServices;
 
 namespace OpenVIII
 {
+    public static class VertexPositionTexturePointersGRP_Ext
+    {
+        public static bool IsNotSet(this Debug_battleDat.VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP)
+        {
+            if ((vertexPositionTexturePointersGRP.VPT?.Length ?? 0) > 0 && (vertexPositionTexturePointersGRP.TexturePointers?.Length ?? 0) > 0)
+            {
+                //3 vertices per every texture pointer.
+                Debug.Assert(vertexPositionTexturePointersGRP.VPT.Length / 3 == vertexPositionTexturePointersGRP.TexturePointers.Length);
+                return false;
+            }
+            return true;
+        }
+
+        public static bool IsSet(this Debug_battleDat.VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP) => !vertexPositionTexturePointersGRP.IsNotSet();
+    }
+
     public partial class Debug_battleDat
     {
         private byte[] buffer;
@@ -176,11 +192,92 @@ namespace OpenVIII
             public UV vtc;
             public UV vtd;
 
+            private VertexPositionTexture[] TempVPT;
+
             public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
             public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+
+            public ushort GetIndex(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return A1;
+
+                    case 1:
+                        return B1;
+
+                    case 2:
+                        return C1;
+
+                    case 3:
+                        return D1;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
+            }
+
+            public UV GetUV(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return vta;
+
+                    case 1:
+                        return vtb;
+
+                    case 2:
+                        return vtc;
+
+                    case 3:
+                        return vtd;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
+            }
+            //public byte this[int i]
+            //{
+            //    get {
+            //        switch (i)
+            //        {
+            //            case 0:
+            //                return 0;
+            //            case 1:
+            //                return 1;
+            //            case 2:
+            //                return 3;
+            //            case 3:
+            //                return 0;
+            //            case 4:
+            //                return 2;
+            //            case 5:
+            //                return 3;
+            //        }
+            //        throw new IndexOutOfRangeException($"{this} :: 0-5 are only valid values");
+            //    }
+            //}
+            //public byte[] Indices => new byte[] { this[0], this[1], this[2], this[3], this[4], this[5]};
+            //public byte Count => 6;
+            public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> verts, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
+            {
+                if(TempVPT == null)
+                TempVPT = new VertexPositionTexture[6];
+                VertexPositionTexture GetVPT(ref Quad q,byte i)
+                {
+                    Vector3 GetVertex(ref Quad qv, byte iv)
+                    {
+                        return TranslateVertex(verts[qv.GetIndex(iv)].Vector, rotation, translationPosition);
+                    }
+                    return new VertexPositionTexture(GetVertex(ref q,i), new Vector2(q.GetUV(i).U1(preVarTex.Width), q.GetUV(i).V1(preVarTex.Height)));
+                }
+                TempVPT[0] = TempVPT[3] = GetVPT(ref this, 0);
+                TempVPT[1] = GetVPT(ref this, 1);
+                TempVPT[4] = GetVPT(ref this, 2);
+                TempVPT[2] = TempVPT[5] = GetVPT(ref this, 3);
+                return TempVPT;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 2)]
@@ -251,7 +348,8 @@ namespace OpenVIII
 
             return @object;
         }
-        struct VectorBoneGRP
+
+        public struct VectorBoneGRP
         {
             public Vector3 Vector { get; private set; }
             public int BoneID { get; private set; }
@@ -262,6 +360,7 @@ namespace OpenVIII
                 BoneID = boneID;
             }
         }
+
         public struct VertexPositionTexturePointersGRP
         {
             public VertexPositionTexturePointersGRP(VertexPositionTexture[] vpt, byte[] texturepointers) : this()
@@ -273,6 +372,7 @@ namespace OpenVIII
             public VertexPositionTexture[] VPT { get; private set; }
             public byte[] TexturePointers { get; private set; }
         }
+
         /// <summary>
         /// This method returns geometry data AFTER animation matrix translations, local
         /// position/rotation translations. This is the final step of calculation. This data should
@@ -306,7 +406,7 @@ namespace OpenVIII
             AnimationFrame[] lastAnimationFrames = animHeader.animations[animationSystem.LastAnimationId].animationFrames;
             AnimationFrame frame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrames[lastAnimationFrame] : lastAnimationFrames[lastAnimationFrames.Length - 1];
             AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
-            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
+
             List<VectorBoneGRP> verts = new List<VectorBoneGRP>();
 
             int i = 0;
@@ -315,7 +415,7 @@ namespace OpenVIII
                     verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
-
+            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
             //Triangle parsing
             for (; i < obj.cTriangles; i++)
             {
@@ -333,19 +433,20 @@ namespace OpenVIII
             //Quad parsing
             for (i = 0; i < obj.cQuads; i++)
             {
-                Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Vector, rotation, translationPosition);
-                Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Vector, rotation, translationPosition);
-                Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Vector, rotation, translationPosition);
-                Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Vector, rotation, translationPosition);
-
                 Texture2D preVarTex = (Texture2D)textures.textures[obj.quads[i].textureIndex];
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
+                vpt.AddRange(obj.quads[i].GenerateVPT(verts, rotation, translationPosition, preVarTex));
+                //Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Vector, rotation, translationPosition);
+                //Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Vector, rotation, translationPosition);
+                //Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Vector, rotation, translationPosition);
+                //Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Vector, rotation, translationPosition);
 
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1(preVarTex.Width), obj.quads[i].vtc.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
+
+                //vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1(preVarTex.Width), obj.quads[i].vtc.V1(preVarTex.Height))));
+                //vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
 
                 texturePointers[obj.cTriangles + i * 2] = obj.quads[i].textureIndex;
                 texturePointers[obj.cTriangles + i * 2 + 1] = obj.quads[i].textureIndex;
@@ -354,10 +455,10 @@ namespace OpenVIII
             return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
-        private Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
+        private static Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
         {
             Vector3 verticeData = vertex;
-            verticeData = Vector3.Transform(verticeData, Matrix.CreateFromQuaternion(rotation));
+            verticeData = Vector3.Transform(verticeData, rotation);
             verticeData = Vector3.Transform(verticeData, Matrix.CreateTranslation(localTranslate));
             return verticeData;
         }
@@ -517,7 +618,6 @@ namespace OpenVIII
                         Matrix MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
                         MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
 
-                        
                         if (skeleton.bones[k].parentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
                         {
                             MatrixZ.M41 = -animHeader.animations[i].animationFrames[n].Position.X;

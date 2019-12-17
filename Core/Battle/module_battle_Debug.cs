@@ -512,7 +512,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     rotation,
                     ref animationSystem,
                     step); //DEBUG
-                if ((vptpg.VPT?.Length ?? 0) == 0 || (vptpg.TexturePointers?.Length ?? 0) == 0)
+                if (vptpg.IsNotSet())
                     return;
                 for (int k = 0; k < vptpg.VPT.Length / 3; k++)
                 {
