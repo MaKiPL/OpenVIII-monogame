@@ -1749,9 +1749,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </summary>
         /// <param name="encounter">instance of current encounter</param>
         /// <returns>Either primary or alternative camera from encounter</returns>
-        private static int GetRandomCameraN(Init_debugger_battle.Encounter encounter)
+        private static byte GetRandomCameraN(Init_debugger_battle.Encounter encounter)
         {
-            int camToss = Memory.Random.Next(3 + 1) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
+            int camToss = Memory.Random.Next(3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
             switch (camToss)
             {
                 case 0:
@@ -1782,11 +1782,11 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </summary>
         /// <param name="animId">6bit variable containing camera pointer</param>
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
-        private static CameraSetAnimGRP GetCameraCollectionPointers(int animId)
+        private static CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
-            int pSet = enc.ResolveCameraSet((byte)animId);
-            int pAnim = enc.ResolveCameraAnimation((byte)animId);
+            int pSet = enc.ResolveCameraSet(animId);
+            int pAnim = enc.ResolveCameraAnimation(animId);
             return new CameraSetAnimGRP(pSet, pAnim);
         }
 
@@ -1798,9 +1798,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// Animation Id as of binary mask (0bXXXXYYYY where XXXX= animationSet and YYYY=animationId)
         /// </param>
         /// <returns></returns>
-        private static uint ReadAnimationById(int animId)
+        private static uint ReadAnimationById(byte animId)
         {
-            animId = DEBUGframe; //DEBUG
+            animId = (byte)DEBUGframe; //DEBUG
             CameraSetAnimGRP tpGetter = GetCameraCollectionPointers(animId);
             BattleCameraSet[] battleCameraSetArray = battleCamera.battleCameraCollection.battleCameraSet;
             if (battleCameraSetArray.Length > tpGetter.Set && battleCameraSetArray[tpGetter.Set].animPointers.Length > tpGetter.Anim)
