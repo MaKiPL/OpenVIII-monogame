@@ -9,11 +9,14 @@ namespace OpenVIII.Battle
     /// </summary>
     public class RegularPyramid
     {
+        private const float persistentAlpha = .9f;
         #region Fields
-
+        static readonly TimeSpan RotationTime = TimeSpan.FromMilliseconds(1500d);
+        static readonly TimeSpan FadeTime = TimeSpan.FromMilliseconds(1000);
         private BasicEffect effect;
         private Matrix offset;
-        private Slide<float> slider;
+        private Slide<float> radians;
+        private Slide<float> fader;
         private VertexPositionColor[] tempVertices;
         private VertexPositionColor[] uniqueVertices;
 
@@ -25,11 +28,13 @@ namespace OpenVIII.Battle
         {
             uniqueVertices = new VertexPositionColor[5];
             VertexBuffer = new VertexBuffer(Memory.graphics.GraphicsDevice, uniqueVertices[0].GetType(), 5, BufferUsage.WriteOnly);
-            Indices = new IndexBuffer(Memory.graphics.GraphicsDevice, typeof(short), 18, BufferUsage.WriteOnly);
-            slider = new Slide<float>(0f, MathHelper.TwoPi, TimeSpan.FromMilliseconds(1500d), MathHelper.Lerp)
+            Indices = new IndexBuffer(Memory.graphics.GraphicsDevice, typeof(short), 18, BufferUsage.WriteOnly);            
+            radians = new Slide<float>(0f, MathHelper.TwoPi, RotationTime, MathHelper.Lerp)
             {
                 Repeat = true
             };
+            
+            fader = new Slide<float>(0f, 1f, FadeTime, MathHelper.Lerp);
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             Set(1, 1, null);
         }
@@ -54,21 +59,20 @@ namespace OpenVIII.Battle
             effect.View = viewMatrix;
             effect.Projection = projectionMatrix;
             effect.VertexColorEnabled = true;
+            effect.Alpha = alpha * persistentAlpha;
 
             //PyramidEffect.EnableDefaultLighting();
 
             Memory.graphics.GraphicsDevice.SetVertexBuffer(VertexBuffer);
             Memory.graphics.GraphicsDevice.Indices = Indices;
-            //RasterizerState rasterizerState = new RasterizerState
-            //{
-            //    CullMode = CullMode.None
-            //};
-            //Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
+            var tmp = Memory.graphics.GraphicsDevice.RasterizerState;
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 Memory.graphics.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Indices.IndexCount);
             }
+            Memory.graphics.GraphicsDevice.RasterizerState = tmp;
         }
 
         public void Set(float height, float basewidth, params Color[] color) => Set(height, basewidth, basewidth, color);
@@ -99,14 +103,38 @@ namespace OpenVIII.Battle
             uniqueVertices[4].Position = new Vector3(basewidth / 2f, bottom, baselength / 2f);
             uniqueVertices[4].Color = color[4];
             GenerateVertices();
+            FadeIn();
         }
 
-        public void Set(Matrix offset) => this.offset = offset;
+        public void Set(Matrix offset)
+        {
+            this.offset = offset;
+            FadeIn();
+        }
 
+        float alpha;
+        public void FadeIn()
+        {
+            if (fader.Reversed)
+            {
+                fader.ReverseRestart();
+            }
+            else fader.Restart();
+        }
+        public void FadeOut()
+        {
+            if (!fader.Reversed)
+            {
+                fader.ReverseRestart();
+            }
+            else fader.Restart();
+        }
         public void Update()
         {
-            float r = slider.Update();
-            Matrix rotation = Matrix.CreateRotationY(r);
+            // Update Fade
+            alpha = fader.Update();
+            // Update Rotation
+            Matrix rotation = Matrix.CreateRotationY(radians.Update());
             for (int i = 0; i < tempVertices.Length; i++)
             {
                 tempVertices[i].Position = Vector3.Transform(Vector3.Transform(uniqueVertices[i].Position, rotation), offset);
