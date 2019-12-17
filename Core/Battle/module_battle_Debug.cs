@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -1764,17 +1765,29 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
+        private struct CameraSetAnimGRP
+        {
+            public int Set { get; private set; }
+            public int Anim { get; private set; }
+
+            public CameraSetAnimGRP(int set, int anim)
+            {
+                Set = set;
+                Anim = anim;
+            }
+        }
+
         /// <summary>
         /// Returns tuple containing camera animation set pointer and camera animation in that set
         /// </summary>
         /// <param name="animId">6bit variable containing camera pointer</param>
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
-        private static Tuple<int, int> GetCameraCollectionPointers(int animId)
+        private static CameraSetAnimGRP GetCameraCollectionPointers(int animId)
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int pSet = enc.ResolveCameraSet((byte)animId);
             int pAnim = enc.ResolveCameraAnimation((byte)animId);
-            return new Tuple<int, int>(pSet, pAnim);
+            return new CameraSetAnimGRP(pSet, pAnim);
         }
 
         /// <summary>
@@ -1788,9 +1801,21 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         private static uint ReadAnimationById(int animId)
         {
             animId = DEBUGframe; //DEBUG
-            Tuple<int, int> tpGetter = GetCameraCollectionPointers(animId);
-            uint cameraAnimationGlobalPointer = battleCamera.battleCameraCollection.battleCameraSet[tpGetter.Item1].animPointers[tpGetter.Item2];
-            return ReadAnimation(cameraAnimationGlobalPointer);
+            CameraSetAnimGRP tpGetter = GetCameraCollectionPointers(animId);
+            BattleCameraSet[] battleCameraSetArray = battleCamera.battleCameraCollection.battleCameraSet;
+            if (battleCameraSetArray.Length > tpGetter.Set && battleCameraSetArray[tpGetter.Set].animPointers.Length > tpGetter.Anim)
+            {
+                BattleCameraSet battleCameraSet = battleCameraSetArray[tpGetter.Set];
+                uint cameraAnimationGlobalPointer = battleCameraSet.animPointers[tpGetter.Anim];
+                return ReadAnimation(cameraAnimationGlobalPointer);
+            }
+            else
+            {
+                Debug.WriteLine($"ReadAnimationById::{battleCameraSetArray.Length} < {tpGetter.Set}" +
+                    $"\nor\n" +
+                    $"{battleCameraSetArray[tpGetter.Set].animPointers.Length} < {tpGetter.Anim}");
+            }
+            return 0;
         }
 
         /// <summary>
