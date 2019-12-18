@@ -1208,7 +1208,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         private static List<Battle.Mag> MagALL;
 
-        static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.TIM != null) ?? null;
+        static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
+        static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
 
         private static void ReadData()
         {
