@@ -38,9 +38,7 @@ namespace OpenVIII.Battle
                 //Offset Description
                 //0x00    Probably always null
                 uint pPadding = br.ReadUInt32();
-                if (pPadding == 0)
-                    isPackedMag = true;
-                else
+                if (pPadding != 0)
                     return;
                 //0x04    Probably bones/ animation data, might be 0x00
                 pBones = br.ReadUInt32();
@@ -54,7 +52,15 @@ namespace OpenVIII.Battle
                 pTexture = br.ReadUInt32();
                 //0x18 == 0x98
                 //0x1C == 0xAC
-
+                if(pBones > br.BaseStream.Length||
+                    pTextureSize > br.BaseStream.Length ||
+                    pGeometry > br.BaseStream.Length ||
+                    pSCOT > br.BaseStream.Length ||
+                    pTexture > br.BaseStream.Length)
+                {
+                    return;
+                }
+                isPackedMag = true;
                 ReadGeometry(br);
                 ReadTextures(br);
             }
