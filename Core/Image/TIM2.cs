@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -18,10 +17,7 @@ namespace OpenVIII
     /// <remarks>upgraded TIM class, because that first one is a trash</remarks>
     public class TIM2 : Texture_Base
     {
-
         #region Fields
-
-        protected static readonly bool throwexc = true;
 
         /// <summary>
         /// Bits per pixel
@@ -38,6 +34,8 @@ namespace OpenVIII
         /// </summary>
         protected bool CLP;
 
+        protected bool ignorealpha = false;
+
         /// <summary>
         /// Texture Data
         /// </summary>
@@ -48,14 +46,14 @@ namespace OpenVIII
         /// </summary>
         protected uint textureDataPointer;
 
+        protected bool throwexc = true;
+
         /// <summary>
         /// Start of Tim Data
         /// </summary>
         protected uint timOffset;
 
         protected bool trimExcess = false;
-
-        protected bool ignorealpha = false;
 
         #endregion Fields
 
@@ -66,14 +64,17 @@ namespace OpenVIII
         /// </summary>
         /// <param name="buffer">Raw Data buffer</param>
         /// <param name="offset">Start of Tim Data</param>
-        public TIM2(byte[] buffer, uint offset = 0)
+        public TIM2(byte[] buffer, uint offset = 0, bool noExc = false)
         {
+            throwexc = !noExc;
             _Init(buffer, offset);
         }
+
         /// <summary> <summary> Initialize TIM class </summary> <param name="br">BinaryReader
         /// pointing to the file data</param> <param name="offset">Start of Tim Data</param>
-        public TIM2(BinaryReader br, uint offset = 0)
+        public TIM2(BinaryReader br, uint offset = 0, bool noExec = false)
         {
+            throwexc = !noExec;
             _Init(br, offset);
         }
 
@@ -129,6 +130,11 @@ namespace OpenVIII
         #region Properties
 
         /// <summary>
+        /// Gets Bits per pixel
+        /// </summary>
+        public override byte GetBpp => (byte)bpp;
+
+        /// <summary>
         /// Number of clut color palettes
         /// </summary>
         public override int GetClutCount => texture.NumOfCluts;
@@ -137,11 +143,6 @@ namespace OpenVIII
         /// Gets size of clut data as in TIM file
         /// </summary>
         public override int GetClutSize => texture.clutdataSize;
-
-        /// <summary>
-        /// Gets Bits per pixel
-        /// </summary>
-        public override byte GetBpp => (byte)bpp;
 
         /// <summary>
         /// Gets number of colours per palette
@@ -170,24 +171,30 @@ namespace OpenVIII
 
         public bool IgnoreAlpha { get => ignorealpha; set => ignorealpha = value; }
 
+        public bool NOT_TIM { get; protected set; }
+
         #endregion Properties
 
         #region Methods
 
-        public static void Assert(bool a)
+        public bool Assert(bool a)
         {
             if (!a)
             {
+                NOT_TIM = true;
                 if (throwexc)
                 {
                     throw new InvalidDataException($"Invalid TIM File");
                 }
-                else
-                    Debug.Assert(a);
+                //else
+                //    Debug.Assert(a);
             }
+            return !a;
         }
 
+        public override void ForceSetClutColors(ushort newNumOfColours) => texture.NumOfColours = newNumOfColours;
 
+        public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = newClut;
 
         public override Color[] GetClutColors(ushort clut)
         {
@@ -197,9 +204,18 @@ namespace OpenVIII
             }
         }
 
-        public override void ForceSetClutColors(ushort newNumOfColours) => texture.NumOfColours = newNumOfColours;
-
-        public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = newClut;
+        /// <summary>
+        /// Gets Color[] palette from TIM image data
+        /// </summary>
+        /// <param name="clut">clut index</param>
+        /// <returns></returns>
+        public Color[] GetPalette(ushort clut = 0)
+        {
+            Color[] colors;
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                colors = GetClutColors(br, clut);
+            return colors;
+        }
 
         /// <summary>
         /// Create Texture from Tim image data.
@@ -229,38 +245,23 @@ namespace OpenVIII
         {
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
-                Assert(CLP);
-                Assert(colors.Length == texture.NumOfColours);
+                if (Assert(CLP) || Assert(colors.Length == texture.NumOfColours))
+                    return null;
                 return GetTexture(br, colors);
             }
         }
 
-
-
-                /// <summary>
-                /// Gets Color[] palette from TIM image data
-        /// </summary>
-        /// <param name="clut">clut index</param>
-        /// <returns></returns>
-        public Color[] GetPalette(ushort clut = 0)
-        {
-            Color[] colors;
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
-                colors = GetClutColors(br, clut);
-            return colors;
-        }
-
-
-                /// <summary>
-/// Initialize TIM class
+        /// <summary>
+        /// Initialize TIM class
         /// </summary>
         /// <param name="br">BinaryReader pointing to the file data</param>
         /// <param name="offset">Start of Tim Data</param>
         public void Init(BinaryReader br, uint offset)
         {
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
-            Assert(br.ReadByte() == 0x10); //tag
-            Assert(br.ReadByte() == 0); // version
+            if (Assert(br.ReadByte() == 0x10) || //tag
+            Assert(br.ReadByte() == 0)) // version
+                return;
             br.BaseStream.Seek(2, SeekOrigin.Current);
             Bppflag b = (Bppflag)br.ReadByte();
             timOffset = offset;
@@ -269,7 +270,8 @@ namespace OpenVIII
             else if ((b & Bppflag._8bpp) != 0) bpp = 8;
             else bpp = 4;
             CLP = (b & Bppflag.CLP) != 0;
-            Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP));
+            if (Assert(((bpp == 4 || bpp == 8) && CLP) || ((bpp == 16 || bpp == 24) && !CLP)))
+                return;
             ReadParameters(br);
         }
 
@@ -296,6 +298,7 @@ namespace OpenVIII
                 Init(br, offset);
             }
         }
+
         protected void _Init(BinaryReader br, uint offset)
         {
             trimExcess = true;
@@ -306,6 +309,7 @@ namespace OpenVIII
                 Init(br2, 0);
             }
         }
+
         /// <summary>
         /// Output 32 bit Color data for image.
         /// </summary>
@@ -322,7 +326,8 @@ namespace OpenVIII
         {
             br.BaseStream.Seek(textureDataPointer, SeekOrigin.Begin);
             Color[] buffer = new Color[texture.Width * texture.Height]; //ARGB
-            Assert((buffer.Length / bpp) <= br.BaseStream.Length - br.BaseStream.Position); //make sure the buffer is large enough
+            if (Assert((buffer.Length / bpp) <= br.BaseStream.Length - br.BaseStream.Position)) //make sure the buffer is large enough
+                return null;
             if (bpp == 8)
             {
                 for (int i = 0; i < buffer.Length; i++)
@@ -379,7 +384,7 @@ namespace OpenVIII
             {
                 br.BaseStream.Seek(timOffset + 20 + (texture.NumOfColours * 2 * clut), SeekOrigin.Begin);
                 for (int i = 0; i < texture.NumOfColours; i++)
-                    colorPixels[i] = ABGR1555toRGBA32bit(br.ReadUInt16(),ignorealpha);
+                    colorPixels[i] = ABGR1555toRGBA32bit(br.ReadUInt16(), ignorealpha);
             }
             else if (bpp > 8) throw new Exception("TIM that has bpp mode higher than 8 has no clut data!");
 
@@ -392,6 +397,7 @@ namespace OpenVIII
             image.SetData(CreateImageBuffer(br, colors));
             return image;
         }
+
         /// <summary>
         /// Populate Texture structure
         /// </summary>
@@ -400,7 +406,8 @@ namespace OpenVIII
         protected void ReadParameters(BinaryReader br)
         {
             texture = new Texture();
-            texture.Read(br, (byte)bpp, CLP);
+            texture.Read(br, (byte)bpp, CLP, !throwexc);
+            if (Assert(!texture.NOT_TIM)) return;
             textureDataPointer = (uint)br.BaseStream.Position;
             if (trimExcess)
                 buffer = buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer - timOffset)).ToArray();
@@ -412,7 +419,6 @@ namespace OpenVIII
 
         protected struct Texture
         {
-
             #region Fields
 
             public byte[] ClutData;
@@ -433,19 +439,42 @@ namespace OpenVIII
             public ushort NumOfColours;
             public ushort PaletteX;
             public ushort PaletteY;
+            public bool throwexc;
             public ushort Width;
 
             #endregion Fields
 
+            #region Properties
+
+            public bool NOT_TIM { get; private set; }
+
+            #endregion Properties
+
             #region Methods
+
+            public bool Assert(bool a)
+            {
+                if (!a)
+                {
+                    NOT_TIM = true;
+                    if (throwexc)
+                    {
+                        throw new InvalidDataException($"Invalid TIM File");
+                    }
+                    //else
+                    //    Debug.Assert(a);
+                }
+                return !a;
+            }
 
             /// <summary>
             /// Populate Texture structure
             /// </summary>
             /// <param name="br">Binaryreader pointing to memorystream of data.</param>
             /// <param name="_bpp">bits per pixel</param>
-            public void Read(BinaryReader br, byte _bpp, bool clp)
+            public void Read(BinaryReader br, byte _bpp, bool clp, bool noExec = false)
             {
+                throwexc = !noExec;
                 br.BaseStream.Seek(3, SeekOrigin.Current);
                 if (clp)
                 {
@@ -456,9 +485,10 @@ namespace OpenVIII
                     NumOfColours = br.ReadUInt16();
                     NumOfCluts = br.ReadUInt16();
                     clutdataSize = (int)(clutSize - 12);//(NumOfColours * NumOfCluts*2);
-                    Assert(clutdataSize == NumOfColours * NumOfCluts * 2 || clutdataSize == NumOfColours * NumOfCluts);
-                    Assert(PaletteX % 16 == 0);
-                    Assert(PaletteY >= 0 && PaletteY <= 511);
+                    if (Assert(clutdataSize == NumOfColours * NumOfCluts * 2 || clutdataSize == NumOfColours * NumOfCluts) ||
+                    Assert(PaletteX % 16 == 0) ||
+                    Assert(PaletteY >= 0 && PaletteY <= 511))
+                        return;
                     ClutData = br.ReadBytes(clutdataSize);
                     //br.BaseStream.Seek(start+clutSize, SeekOrigin.Begin);
                 }
@@ -498,10 +528,8 @@ namespace OpenVIII
             }
 
             #endregion Methods
-
         }
 
         #endregion Structs
-
     }
 }

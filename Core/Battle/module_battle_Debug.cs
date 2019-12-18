@@ -1188,12 +1188,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     case Angelo.Search:
                         Saves.CharacterData c = Memory.State[Characters.Rinoa_Heartilly];
                         if (!(c.IsGameOver ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) || 
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) || 
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) || 
-                            c.Statuses1.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) || 
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) ||
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) ||
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) ||
+                            c.Statuses1.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) ||
                             c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Angel_Wing)))
-                        return Memory.Random.Next(256) < 8;
+                            return Memory.Random.Next(256) < 8;
                         break;
                 }
             return false;
@@ -1206,10 +1206,23 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         #region fileParsing
 
+        private static List<Battle.Mag> MagALL;
+
+        static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.TIM != null) ?? null;
+
         private static void ReadData()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string[] test = aw.GetListOfFiles();
+            MagALL = new List<Battle.Mag>();
+            foreach (string filename in test.Where(x => x.IndexOf("mag", StringComparison.OrdinalIgnoreCase) > 0))
+            {
+                using (BinaryReader br = new BinaryReader(new MemoryStream(ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, filename))))
+                {
+                    Battle.Mag mag = new Battle.Mag(filename, br);
+                    MagALL.Add(mag);
+                }
+            }
             battlename = test.First(x => x.ToLower().Contains(battlename));
             string fileName = Path.GetFileNameWithoutExtension(battlename);
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);

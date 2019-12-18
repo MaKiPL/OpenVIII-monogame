@@ -142,6 +142,7 @@
     <Compile Include="Battle\IEnemy.cs" />
     <Compile Include="Battle\Information.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
+    <Compile Include="Battle\Mag.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\ATB.cs" />
