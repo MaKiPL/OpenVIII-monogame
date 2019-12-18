@@ -1074,6 +1074,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             };
             return;
         }
+
         /// <summary>
         /// Trigger Event when DeadTime is done.
         /// </summary>
@@ -1082,7 +1083,6 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         private static void DeadTime_DoneEvent(object sender, int e)
         {
-
             //Will Gilgamesh appear?
             if (TestGilgamesh())
             { }
@@ -1094,34 +1094,115 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             { }
             //Will Angelo Search be used?
             else if (TestAngelo(Angelo.Search))
-            { }
+            {
+                //Real game has a counter that count to 255 and resets to 0
+                //instead of a random number. The counter counts up every 1 tick.
+                //60 ticks per second.
+                byte rnd = checked((byte)Memory.Random.Next(256));
+                if (rnd < 128) Algorithm(1);
+                else if (rnd < 160) Algorithm(2);
+                else if (rnd < 176) Algorithm(3);
+                else if (rnd < 192) Algorithm(4);
+                else if (rnd < 200) Algorithm(5);
+                else Algorithm(6);
+                Saves.Item Algorithm(byte i)
+                {
+                    //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936
+                    //I'm unsure where in the game files this is.
+                    //In remaster they changed this. But unsure how
+                    // they added (Ribbon, Friendship, and Mog's Amulet)
+                    // using a true random kinda breaks this.
+                    // because in game random is a set array of numbers 0-255
+                    // so the number you get previous would determin the possible number you get
+                    // so these can only select specific numbers. But because we are using a real random
+                    // more items are possible. might need to tweak this.
+
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
+                    //these are added in remaster as possible items.
+                    const byte Ribbon = 100;
+                    const byte Friendship = 32;
+                    const byte Mogs_Amulet = 65;
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
+
+                    Saves.Item item = new Saves.Item { QTY = 1 };
+                    rnd = checked((byte)Memory.Random.Next(256));
+                    switch (i)
+                    {
+                        case 1: // 1-8
+                            item.ID = (byte)(rnd % 8 + 1);
+                            break;
+
+                        case 2: // 102-199
+                            item.ID = (byte)(rnd % 98);
+                            if (item.ID == 0) item.ID = 98;
+                            item.ID += 101;
+                            break;
+
+                        case 3: // 102-124
+                            item.ID = (byte)(rnd % 23);
+                            if (item.ID == 0)
+                                item.ID = 23;
+                            item.ID += 101;
+                            break;
+
+                        case 4: // 67-100
+                            item.ID = (byte)(rnd % 34);
+                            if (item.ID == 0)
+                                item.ID = 34;
+                            item.ID += 66;
+                            break;
+
+                        case 5: // 33-54
+                            item.ID = (byte)(rnd % 32 + 33);
+                            break;
+
+                        case 6:
+                        default: // 33-40
+                            item.ID = (byte)(rnd % 7 + 33);
+                            break;
+                    }
+                    return item;
+                }
+            }
         }
 
         private static bool TestAngelo(Angelo ability)
         {
-
             //else if (8 >= [0..255] Angelo Recover is used (3.3 %)
             //else if (2 >= [0..255] Angelo Reverse is used (1 %)
             //else if (8 >= [0..255] Angelo Search is used (3.2 %)
-            if(Memory.State.LimitBreakAngelocompleted.HasFlag(ability))
-            switch(ability)
-            {
-                case Angelo.Recover:
-                    return Memory.State.Characters.Any(x=>x.Value.IsCritical && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 8;
-                case Angelo.Reverse:
-                    return Memory.State.Characters.Any(x=>x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 2;
-                case Angelo.Search:
-                    return Memory.Random.Next(256) < 8;
-            }
+            //Angelo_Disabled I think is set when Rinoa is in space so angelo is out of reach;
+            //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/25194
+            if (Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Angelo_Disabled) ||
+                !Memory.State.PartyData.Contains(Characters.Rinoa_Heartilly) ||
+                !Memory.State.LimitBreakAngelocompleted.HasFlag(ability)) return false;
+            else
+                switch (ability)
+                {
+                    case Angelo.Recover:
+                        return Memory.State.Characters.Any(x => x.Value.IsCritical && !x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 8;
+
+                    case Angelo.Reverse:
+                        return Memory.State.Characters.Any(x => x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 2;
+
+                    case Angelo.Search:
+                        Saves.CharacterData c = Memory.State[Characters.Rinoa_Heartilly];
+                        if (!(c.IsGameOver ||
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) || 
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) || 
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) || 
+                            c.Statuses1.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) || 
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Angel_Wing)))
+                        return Memory.Random.Next(256) < 8;
+                        break;
+                }
             return false;
         }
 
-        private static bool TestGilgamesh()
-        {
+        private static bool TestGilgamesh() =>
 
             //if (12 >= [0..255]) Gilgamesh is summoned (5.1 %)
-            return Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) <12;
-        }
+            Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) < 12;
 
         #region fileParsing
 
