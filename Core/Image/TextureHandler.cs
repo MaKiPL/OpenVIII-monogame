@@ -193,21 +193,13 @@ namespace OpenVIII
                 string tex;
                 if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
                     tex = _findPNG(bn);
-
+                if(tex !=null)
                 return tex;
             }
             return null;
             string _findPNG(string testname)
             {
-                for (int i = 0; i < pngs.Length; i++)
-                {
-                    if (pngs[i].IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        //possibility of collision if filenames are too similar.
-                        return pngs[i];
-                    }
-                }
-                return null;
+                return pngs.Where(x => x.IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x=>x).FirstOrDefault();
             }
         }
 
