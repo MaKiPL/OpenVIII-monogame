@@ -426,25 +426,29 @@ namespace OpenVIII
 
         private static void UpdateCamera()
         {
-            const float V = 100f;
+            //const float V = 100f;
             //battleCamera.cam.startingTime = 64;
-            float step = battleCamera.cam.startingTime / (float)battleCamera.cam.time;
-            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
-                battleCamera.cam.Camera_World_X_s16[1] / V, step) + 30;
-            float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
-                battleCamera.cam.Camera_World_Y_s16[1] / V, step) - 40;
-            float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
-                battleCamera.cam.Camera_World_Z_s16[1] / V, step) + 0;
+            float step = battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks;
+            camTarget = Vector3.Lerp(battleCamera.cam.Camera_Lookat(0),battleCamera.cam.Camera_Lookat(1),step);
+            camPosition = Vector3.Lerp(battleCamera.cam.Camera_World(0), battleCamera.cam.Camera_World(1), step);
 
-            float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
-    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) + 30;
-            float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) - 40;
-            float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
-            camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
-            camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
+            //            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
+            //                battleCamera.cam.Camera_World_X_s16[1] / V, step) + 30;
+            //            float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
+            //                battleCamera.cam.Camera_World_Y_s16[1] / V, step) - 40;
+            //            float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
+            //                battleCamera.cam.Camera_World_Z_s16[1] / V, step) + 0;
+
+            //            float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
+            //    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) + 30;
+            //            float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
+            //battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) - 40;
+            //            float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
+            //battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
+
+            //camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
+            //camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
 
             float fovDirector = MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
 
@@ -462,7 +466,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             //    World = worldMatrix
             //};
 
-            if (battleCamera.cam.startingTime >= battleCamera.cam.time)
+            if (battleCamera.cam.CurrentTime >= battleCamera.cam.TotalTime)
             {
                 if (battleCamera.bMultiShotAnimation && battleCamera.cam.time != 0)
                 {
@@ -471,7 +475,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     CloseStageStreams();
                 }
             }
-            else battleCamera.cam.startingTime += Module_battle_debug.BATTLECAMERA_FRAMETIME;
+            else //battleCamera.cam.startingTime += Module_battle_debug.BATTLECAMERA_FRAMETIME;
+                battleCamera.cam.UpdateTime();
         }
 
         private static void ReopenStageStreams()
@@ -929,10 +934,10 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
             if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
                 Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.CurrentTime}/{battleCamera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
@@ -1210,6 +1215,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
         static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
+        static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count??0) >0) ?? null;
+        static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType >0).Select(x=>x.UnknownType) ?? null;
 
         private static void ReadData()
         {
@@ -1224,6 +1231,10 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     MagALL.Add(mag);
                 }
             }
+            var _MagGeo = MagGeometries.ToList();
+            var _MagPack = MagPacked.ToList();
+            var _MagTIM = MagTIMs.ToList();
+            var _MagUNKID = MagUNKID.ToList();
             battlename = test.First(x => x.ToLower().Contains(battlename));
             string fileName = Path.GetFileNameWithoutExtension(battlename);
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
@@ -1766,7 +1777,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             public ushort endingFOV; //006
             public ushort startingCameraRoll; //usually 0 unless you're aiming for some wicked animation
             public ushort endingCameraRoll; //
-            public ushort startingTime; //usually 0, that's pretty logical
+            private ushort startingTime; //usually 0, that's pretty logical
 
             /// <summary>
             /// Time is calculated from number of frames. You basically set starting position
@@ -1822,6 +1833,25 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
             public byte[] unkbyte4A4; //4A4
+            private const float V = 100f;
+            Vector3 offset => new Vector3(30, +40, 0);
+
+            public Vector3 Camera_World(int i) => new Vector3(
+                Camera_World_X_s16[i] / V, 
+                -(Camera_World_Y_s16[i] / V),
+                -(Camera_World_Z_s16[i] / V))+offset;
+            public Vector3 Camera_Lookat(int i) => new Vector3(
+                Camera_Lookat_X_s16[i] / V, 
+                -(Camera_Lookat_Y_s16[i] / V), 
+                -(Camera_Lookat_Z_s16[i] / V))+offset;
+            public void UpdateTime() => CurrentTime += Memory.gameTime.ElapsedGameTime;
+            public TimeSpan CurrentTime;
+            public TimeSpan TotalTime => TimeSpan.FromMilliseconds(TotalTimePerFrame.TotalMilliseconds * time);
+            /// <summary>
+            /// (1000) milliseconds / frames per second
+            /// </summary>
+            public TimeSpan TotalTimePerFrame => TimeSpan.FromMilliseconds(1000d / 240d);
+            
         };
 
         /// <summary>
@@ -2140,7 +2170,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
             battleCamera.cam.keyframeCount = keyframecount;
             battleCamera.cam.time = totalframecount;
-            battleCamera.cam.startingTime = 0;
+            //battleCamera.cam.startingTime = 0;
+            battleCamera.cam.CurrentTime = TimeSpan.Zero;
             battleCamera.lastCameraPointer = (uint)(ms_.Position + 2);
             battleCamera.bMultiShotAnimation = br.ReadInt16() != -1;
             return (uint)(ms_.Position);
