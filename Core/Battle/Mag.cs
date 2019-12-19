@@ -302,7 +302,7 @@ namespace OpenVIII.Battle
             if (pTexture == 0 ||
                 pTexture >= pTextureLimit ||
                 pTexture + pTextureLimit >= br.BaseStream.Length ||
-                pTextureLimit - pTexture % 4 != 0
+                (pTextureLimit - pTexture) % 4 != 0
                 ) return null;
 
             br.BaseStream.Seek(pTexture, SeekOrigin.Begin);
