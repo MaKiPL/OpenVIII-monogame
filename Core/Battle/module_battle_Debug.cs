@@ -1846,7 +1846,7 @@ namespace OpenVIII
                 -(Camera_Lookat_Z_s16[i] / V))+offset;
             public void UpdateTime() => CurrentTime += Memory.gameTime.ElapsedGameTime;
             public TimeSpan CurrentTime;
-            public TimeSpan TotalTime => TimeSpan.FromMilliseconds(TotalTimePerFrame.TotalMilliseconds * time);
+            public TimeSpan TotalTime => TimeSpan.FromTicks(TotalTimePerFrame.Ticks * time);
             /// <summary>
             /// (1000) milliseconds / frames per second
             /// </summary>
