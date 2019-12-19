@@ -429,8 +429,8 @@ namespace OpenVIII
             //const float V = 100f;
             //battleCamera.cam.startingTime = 64;
             float step = battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks;
-            camTarget = Vector3.Lerp(battleCamera.cam.Camera_Lookat(0),battleCamera.cam.Camera_Lookat(1),step);
-            camPosition = Vector3.Lerp(battleCamera.cam.Camera_World(0), battleCamera.cam.Camera_World(1), step);
+            camTarget = Vector3.SmoothStep(battleCamera.cam.Camera_Lookat(0),battleCamera.cam.Camera_Lookat(1),step);
+            camPosition = Vector3.SmoothStep(battleCamera.cam.Camera_World(0), battleCamera.cam.Camera_World(1), step);
 
 
             //            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
@@ -450,7 +450,7 @@ namespace OpenVIII
             //camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
             //camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
 
-            float fovDirector = MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
+            float fovDirector = MathHelper.SmoothStep(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
 
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
