@@ -55,6 +55,7 @@ namespace OpenVIII
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
         /// </summary>
         private const int BATTLECAMERA_FRAMETIME = 3;
+        public const int Yoffset = -10;
 
         /// <summary>
         /// This is helper struct that works along with VertexPosition to provide Clut, texture page
@@ -511,27 +512,28 @@ namespace OpenVIII
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
                 Vector3 charaPosition = GetCharPos(n);
-                UpdatePos(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, charaPosition);
+                UpdatePos(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
-            }
-            //WEAPON
-            for (int n = 0; n < CharacterInstances.Count && CharacterInstances[n].Data.weapon != null; n++)
-            {
-                CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, GetCharPos(n));
+
+                //WEAPON
+                if (CharacterInstances[n].Data.weapon != null)
+                {
+                    CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
+                    UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
+                }
             }
         }
 
-        private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, 0, -40);
+        private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
 
-        private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, Vector3 position, Quaternion? _rotation = null)
+        private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
         {
             for (int i = 0; i < battledat.geometry.cObjects; i++)
             {
                 Quaternion rotation = _rotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
                 Debug_battleDat.VertexPositionTexturePointersGRP vptpg = battledat.GetVertexPositions(
                     i,
-                    position,
+                    ref position,
                     rotation,
                     ref animationSystem,
                     step); //DEBUG
@@ -680,12 +682,14 @@ namespace OpenVIII
 
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
                 Vector3 enemyPosition = GetEnemyPos(n);
-                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, enemyPosition, Quaternion.CreateFromYawPitchRoll(0f, 0f, 0f));
+                enemyPosition.Y += Yoffset;
+                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.CreateFromYawPitchRoll(0f, 0f, 0f));
                 DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
             }
         }
 
-        private static Vector3 GetPos(int n) => n >= 0 ? GetCharPos(n) : GetEnemyPos(-n - 1);
+        private static Vector3 GetPos(int n) => n >= 0 ? GetCharPos(n)*new Vector3(1,0,1)+new Vector3(0,CharacterInstances[n].Data.character.Highpoint,0) : 
+            GetEnemyPos(-n - 1) * new Vector3(1, 0, 1) + new Vector3(0,Enemy.Party[-n - 1].EII.Data.Highpoint,0);
 
         private static Vector3 GetEnemyPos(int n) =>
                         Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();
@@ -1031,7 +1035,7 @@ namespace OpenVIII
             return new Vector2(fU, fV);
         }
 
-        private static Vector3 PyramidOffset = new Vector3(0, 16f, 0);
+        private static Vector3 PyramidOffset = new Vector3(0, 3f, 0);
 
         private static void InitBattle()
         {

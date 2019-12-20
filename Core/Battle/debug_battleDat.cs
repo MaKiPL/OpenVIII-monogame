@@ -452,6 +452,9 @@ namespace OpenVIII
             public byte[] TexturePointers { get; private set; }
         }
 
+        public float Highpoint { get; private set; }
+        //public ConcurrentDictionary<Tuple<int, int>, float> lowpoints = new ConcurrentDictionary<Tuple<int, int>, float>();
+
         /// <summary>
         /// This method returns geometry data AFTER animation matrix translations, local
         /// position/rotation translations. This is the final step of calculation. This data should
@@ -476,9 +479,8 @@ namespace OpenVIII
         /// constant 15 FPS
         /// </param>
         /// <returns></returns>
-        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, Vector3 translationPosition, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
+        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, ref Vector3 translationPosition, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
         {
-            Object obj = geometry.objects[objectId];
             if (animationSystem.AnimationFrame >= animHeader.animations[animationSystem.AnimationId].animationFrames.Length || animationSystem.AnimationFrame < 0)
                 animationSystem.AnimationFrame = 0;
             int lastAnimationFrame = animationSystem.LastAnimationFrame;
@@ -488,12 +490,50 @@ namespace OpenVIII
 
             List<VectorBoneGRP> verts = new List<VectorBoneGRP>();
 
+            Object obj = geometry.objects[objectId];
             int i = 0;
             foreach (VerticeData a in obj.verticeData)
                 foreach (Vertex b in a.vertices)
                     verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
+            Vector3 _translationPosition = translationPosition;
+
+            if (objectId == 0 && translationPosition.Y == Module_battle_debug.Yoffset)
+            {
+                //Tuple<int, int> key = new Tuple<int, int>(animationSystem.AnimationId, animationSystem.AnimationFrame);
+                //if (!lowpoints.TryGetValue(key, out float lowpoint))
+                //{
+                //test all object verts at once.
+                List<VectorBoneGRP> j = geometry.objects.Length == 1 ? verts :
+                    geometry.objects.SelectMany(x => x.verticeData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z.GetVector, y.boneId), frame, nextFrame, step)))).ToList();
+
+                IEnumerable<float> test = j.Select(x => TranslateVertex(x.Vector, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
+                float highpoint = test.Last();
+                float lowpoint = test.First();
+
+                if (lowpoint < 0)
+                {
+                    highpoint -= lowpoint;
+                    if (this.Highpoint < highpoint)
+                        this.Highpoint = highpoint;
+                    translationPosition.Y -= lowpoint;
+                }
+                //lowpoints.TryAdd(key, lowpoint);
+                //if (animationSystem.AnimationId == 0)
+                //    this.lowpoint = lowpoints.Min(x => x.Value);
+                //}
+                //if (animationSystem.AnimationId == 0 && this.lowpoint < 0)
+                //{
+                //    translationPosition.Y -= this.lowpoint;
+                //}
+                //else if (lowpoint < 0)
+                //{
+                //    translationPosition.Y += MathHelper.Distance(lowpoint,this.lowpoint);
+                //    //Debug.Assert(lowpoint + translationPosition.Y == 0);
+                //}
+            }
+
             //Triangle parsing
             for (; i < obj.cTriangles; i++)
             {
@@ -534,7 +574,7 @@ namespace OpenVIII
             return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
-        private static Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
+        public static Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
         {
             Vector3 verticeData = vertex;
             verticeData = Vector3.Transform(verticeData, rotation);
@@ -564,14 +604,17 @@ namespace OpenVIII
                 matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
                 matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
                 matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
-            matrix = nextFrame.boneMatrix[VBG.BoneID];
-            Vector3 nextFramePos = new Vector3(
-                matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
-                matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
-                matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
-            rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
-            nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
-            rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
+            if (step > 0f)
+            {
+                matrix = nextFrame.boneMatrix[VBG.BoneID];
+                Vector3 nextFramePos = new Vector3(
+                    matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
+                    matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
+                    matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
+                rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
+                nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
+                rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
+            }
             return new VectorBoneGRP(rootFramePos, VBG.BoneID);
         }
 
@@ -820,6 +863,7 @@ namespace OpenVIII
 
         public Textures textures;
         private BinaryReader br;
+        //private float lowpoint;
 
         #endregion section 11 Textures
 
