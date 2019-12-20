@@ -393,13 +393,13 @@ namespace OpenVIII
                 geometry.pObjects[i] = br.ReadUInt32();
             geometry.objects = new Object[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
-                geometry.objects[i] = ReadGeometryObject(start + geometry.pObjects[i], br);
+                geometry.objects[i] = ReadGeometryObject(start + geometry.pObjects[i]);
             geometry.cTotalVert = br.ReadUInt32();
         }
 
-        private Object ReadGeometryObject(uint v, BinaryReader br)
+        private Object ReadGeometryObject(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             Object @object = new Object { cVertices = br.ReadUInt16() };
             @object.verticeData = new VerticeData[@object.cVertices];
             if (br.BaseStream.Position + @object.cVertices * 6 >= br.BaseStream.Length)
@@ -485,8 +485,11 @@ namespace OpenVIII
                 animationSystem.AnimationFrame = 0;
             int lastAnimationFrame = animationSystem.LastAnimationFrame;
             AnimationFrame[] lastAnimationFrames = animHeader.animations[animationSystem.LastAnimationId].animationFrames;
-            AnimationFrame frame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrames[lastAnimationFrame] : lastAnimationFrames[lastAnimationFrames.Length - 1];
+            lastAnimationFrame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrame : lastAnimationFrames.Length - 1;
+
+            AnimationFrame frame = lastAnimationFrames[lastAnimationFrame];
             AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
+            Module_battle_debug.AnimationSystem _animationSystem = animationSystem;
 
             List<VectorBoneGRP> verts = new List<VectorBoneGRP>();
 
@@ -497,15 +500,20 @@ namespace OpenVIII
                     verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
-            
 
-            if (objectId == 0 && translationPosition.Y == Module_battle_debug.Yoffset)
+            if (objectId == 0)
             {
+                AnimationYOffset lastoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.LastAnimationId && x.Frame == lastAnimationFrame) ?? default;
+                AnimationYOffset nextoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.AnimationId && x.Frame == _animationSystem.AnimationFrame) ?? default;
+                float offsetylow = MathHelper.Lerp(lastoffsets.Low, nextoffsets.Low, (float)step);
+                this.Highpoint = MathHelper.Lerp(lastoffsets.High, nextoffsets.High, (float)step);
+                if (offsetylow < 0)
+                    translationPosition.Y -= offsetylow;
                 //Tuple<int, int> key = new Tuple<int, int>(animationSystem.AnimationId, animationSystem.AnimationFrame);
                 //if (!lowpoints.TryGetValue(key, out float lowpoint))
                 //{
                 //test all object verts at once.
-                FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
+                //FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
                 //lowpoints.TryAdd(key, lowpoint);
                 //if (animationSystem.AnimationId == 0)
                 //    this.lowpoint = lowpoints.Min(x => x.Value);
@@ -561,10 +569,12 @@ namespace OpenVIII
             return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
+        private Vector2 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null) => FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
+
         private Vector2 FindLowHighPoints(ref Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null)
         {
             Vector3 _translationPosition = translationPosition;
-            List<VectorBoneGRP> j = geometry.objects.Length == 1 && verts !=null ? verts :
+            List<VectorBoneGRP> j = geometry.objects.Length == 1 && verts != null ? verts :
                 geometry.objects.SelectMany(x => x.verticeData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z.GetVector, y.boneId), frame, nextFrame, step)))).ToList();
 
             IEnumerable<float> test = j.Select(x => TranslateVertex(x.Vector, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
@@ -574,12 +584,12 @@ namespace OpenVIII
             if (lowpoint < 0)
             {
                 highpoint -= lowpoint;
-                if (this.Highpoint < highpoint)
-                    this.Highpoint = highpoint;
+                //if (this.Highpoint < highpoint)
+                //    this.Highpoint = highpoint;
                 translationPosition.Y -= lowpoint;
             }
 
-            return new Vector2(lowpoint,highpoint);
+            return new Vector2(lowpoint, highpoint);
         }
 
         public static Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
@@ -931,7 +941,52 @@ namespace OpenVIII
                 return null;
             }
             r.ExportFile();
-            return r.LoadFile(skeletonReference);
+            r.LoadFile(skeletonReference);
+            r.FindAllLowHighPoints();
+            return r;
+        }
+
+        private void FindAllLowHighPoints()
+        {
+            if (entityType == EntityType.Character || entityType == EntityType.Monster)
+            {
+                List<Vector2> a0lowhigh = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, 0f, x, x)).ToList();
+                float baselinelow = a0lowhigh.Min(x => x.X);
+                float baselinehigh = a0lowhigh.Max(x => x.Y);
+                float offset = 0f;
+                if (Math.Abs(baselinelow) < 10f)
+                {
+                    offset -= baselinelow;
+                    baselinehigh += offset;
+                    baselinelow += offset;
+                }
+                Highpoint = baselinehigh;
+                AnimationYOffsets = animHeader.animations.SelectMany((animation, index) => animation.animationFrames.Select((animationframe, index2) => new AnimationYOffset(index, index2, FindLowHighPoints(new Vector3(0, offset, 0), Quaternion.Identity, 0f, animationframe, animationframe)))).ToList();
+            }
+        }
+
+        private List<AnimationYOffset> AnimationYOffsets;
+
+        public struct AnimationYOffset
+        {
+            public int ID { get; private set; }
+            public int Frame { get; private set; }
+            public float Low { get; private set; }
+            public float High { get; private set; }
+
+            public AnimationYOffset(int iD, int frame, Vector2 lowhigh)
+                : this(iD, frame, lowhigh.X, lowhigh.Y)
+            { }
+
+            public AnimationYOffset(int iD, int frame, float low, float high)
+            {
+                ID = iD;
+                Frame = frame;
+                Low = low;
+                High = high;
+            }
+
+            public override string ToString() => $"[{ID}, {Frame}, {Low}, {High}]";
         }
 
         private void ExportFile()

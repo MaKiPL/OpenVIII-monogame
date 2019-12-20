@@ -55,7 +55,7 @@ namespace OpenVIII
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
         /// </summary>
         private const int BATTLECAMERA_FRAMETIME = 3;
-        public const int Yoffset = -10;
+        public const int Yoffset = 0;//-10;
 
         /// <summary>
         /// This is helper struct that works along with VertexPosition to provide Clut, texture page
