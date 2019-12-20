@@ -497,7 +497,7 @@ namespace OpenVIII
                     verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
-            Vector3 _translationPosition = translationPosition;
+            
 
             if (objectId == 0 && translationPosition.Y == Module_battle_debug.Yoffset)
             {
@@ -505,20 +505,7 @@ namespace OpenVIII
                 //if (!lowpoints.TryGetValue(key, out float lowpoint))
                 //{
                 //test all object verts at once.
-                List<VectorBoneGRP> j = geometry.objects.Length == 1 ? verts :
-                    geometry.objects.SelectMany(x => x.verticeData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z.GetVector, y.boneId), frame, nextFrame, step)))).ToList();
-
-                IEnumerable<float> test = j.Select(x => TranslateVertex(x.Vector, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
-                float highpoint = test.Last();
-                float lowpoint = test.First();
-
-                if (lowpoint < 0)
-                {
-                    highpoint -= lowpoint;
-                    if (this.Highpoint < highpoint)
-                        this.Highpoint = highpoint;
-                    translationPosition.Y -= lowpoint;
-                }
+                FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
                 //lowpoints.TryAdd(key, lowpoint);
                 //if (animationSystem.AnimationId == 0)
                 //    this.lowpoint = lowpoints.Min(x => x.Value);
@@ -572,6 +559,27 @@ namespace OpenVIII
             }
 
             return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
+        }
+
+        private Vector2 FindLowHighPoints(ref Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null)
+        {
+            Vector3 _translationPosition = translationPosition;
+            List<VectorBoneGRP> j = geometry.objects.Length == 1 && verts !=null ? verts :
+                geometry.objects.SelectMany(x => x.verticeData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z.GetVector, y.boneId), frame, nextFrame, step)))).ToList();
+
+            IEnumerable<float> test = j.Select(x => TranslateVertex(x.Vector, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
+            float highpoint = test.Last();
+            float lowpoint = test.First();
+
+            if (lowpoint < 0)
+            {
+                highpoint -= lowpoint;
+                if (this.Highpoint < highpoint)
+                    this.Highpoint = highpoint;
+                translationPosition.Y -= lowpoint;
+            }
+
+            return new Vector2(lowpoint,highpoint);
         }
 
         public static Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
