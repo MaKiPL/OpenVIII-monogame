@@ -147,7 +147,7 @@ namespace OpenVIII
         {
             public ushort boneId;
             public ushort cVertices;
-            public Vertex[] vertices;
+            public Vector3[] vertices;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
@@ -418,7 +418,7 @@ namespace OpenVIII
             {
                 @object.vertexData[n].boneId = br.ReadUInt16();
                 @object.vertexData[n].cVertices = br.ReadUInt16();
-                @object.vertexData[n].vertices = new Vertex[@object.vertexData[n].cVertices];
+                @object.vertexData[n].vertices = new Vector3[@object.vertexData[n].cVertices];
                 for (int i = 0; i < @object.vertexData[n].cVertices; i++)
                     @object.vertexData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));
             }
