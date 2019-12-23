@@ -109,7 +109,6 @@ namespace OpenVIII.Battle
         public void Set(Vector3 offset)
         {
             this.offset = Matrix.CreateTranslation(offset);
-            FadeIn();
         }
 
         float alpha;

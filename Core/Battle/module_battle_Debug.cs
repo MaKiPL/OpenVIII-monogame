@@ -257,6 +257,7 @@ namespace OpenVIII
                 case BATTLEMODULE_DRAWGEOMETRY:
                     Menu.BattleMenus.Update();
                     sbyte? partypos = Menu.BattleMenus.PartyPos;
+                    RegularPyramid.Set(GetIndicatorPoint(partypos ?? 0));
                     if (partypos != Module_battle_debug.partypos)
                     {
                         if (partypos == null)
@@ -265,7 +266,7 @@ namespace OpenVIII
                         }
                         else
                         {
-                            RegularPyramid.Set(GetPos(partypos ?? 0) + PyramidOffset);
+                            RegularPyramid.FadeIn();
                         }
                         Module_battle_debug.partypos = partypos;
                     }
@@ -688,8 +689,8 @@ namespace OpenVIII
             }
         }
 
-        private static Vector3 GetPos(int n) => n >= 0 ? GetCharPos(n)*new Vector3(1,0,1)+new Vector3(0,CharacterInstances[n].Data.character.Highpoint,0) : 
-            GetEnemyPos(-n - 1) * new Vector3(1, 0, 1) + new Vector3(0,Enemy.Party[-n - 1].EII.Data.Highpoint,0);
+        private static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint : 
+            Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
 
         private static Vector3 GetEnemyPos(int n) =>
                         Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();

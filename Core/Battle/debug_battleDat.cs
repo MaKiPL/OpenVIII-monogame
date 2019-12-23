@@ -470,7 +470,7 @@ namespace OpenVIII
             public byte[] TexturePointers { get; private set; }
         }
 
-        public float Highpoint { get; private set; }
+        public Vector3 IndicatorPoint { get => _indicatorPoint; }
         //public ConcurrentDictionary<Tuple<int, int>, float> lowpoints = new ConcurrentDictionary<Tuple<int, int>, float>();
 
         /// <summary>
@@ -522,17 +522,19 @@ namespace OpenVIII
                 Module_battle_debug.AnimationSystem _animationSystem = animationSystem;
                 AnimationYOffset lastoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.LastAnimationId && x.Frame == lastAnimationFrame) ?? default;
                 AnimationYOffset nextoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.AnimationId && x.Frame == _animationSystem.AnimationFrame) ?? default;
-                float offsetylow = MathHelper.Lerp(lastoffsets.Low, nextoffsets.Low, (float)step);
-                this.Highpoint = MathHelper.Lerp(lastoffsets.High, nextoffsets.High, (float)step);
+                float offsetylow = MathHelper.Lerp(lastoffsets.LowY, nextoffsets.LowY, (float)step);
+                _indicatorPoint.X = MathHelper.Lerp(lastoffsets.MidX, nextoffsets.MidX, (float)step);
+                _indicatorPoint.Y = MathHelper.Lerp(lastoffsets.HighY, nextoffsets.HighY, (float)step);
+                _indicatorPoint.Z = MathHelper.Lerp(lastoffsets.MidZ, nextoffsets.MidZ, (float)step);
                 // Move All Y axis down to 0 based on Lowest Y axis in Animation ID 0.
                 if (OffsetY < 0)
                 {
                     translationPosition.Y += OffsetY;
-                    Highpoint += OffsetY;
                 }
                 // If any Y axis readings are lower than 0 in Animation ID >0. Bring it up to zero.
                 if (offsetylow < 0)
                     translationPosition.Y -= offsetylow;
+                _indicatorPoint += translationPosition;
             }
 
             //Triangle parsing
@@ -557,17 +559,17 @@ namespace OpenVIII
 
         private List<VectorBoneGRP> GetVertices(Object @object, AnimationFrame frame, AnimationFrame nextFrame, double step) => @object.vertexData.SelectMany(vertexdata => vertexdata.vertices.Select(vertex => CalculateFrame(new VectorBoneGRP(vertex, vertexdata.boneId), frame, nextFrame, step))).ToList();
 
-        private Vector2 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, AnimationFrame frame, AnimationFrame nextFrame, double step)
+        private Vector4 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, AnimationFrame frame, AnimationFrame nextFrame, double step)
         {
             List<VectorBoneGRP> vertices =
                 geometry.objects.SelectMany(@object => GetVertices(@object, frame, nextFrame, step)).ToList();
             if (translationPosition != Vector3.Zero || rotation != Quaternion.Identity)
             {
-                List<float> y = vertices.Select(vertex => TransformVertex(vertex, translationPosition, rotation)).Select(vertex => vertex.Y).OrderBy(x => x).ToList();
-                return new Vector2(y.First(), y.Last());
+                IEnumerable<Vector3> _vertices = vertices.Select(vertex => TransformVertex(vertex, translationPosition, rotation));
+                return new Vector4(_vertices.Min(x => x.Y), _vertices.Max(x => x.Y), (_vertices.Min(x => x.X) + _vertices.Max(x => x.X)) / 2f, (_vertices.Min(x => x.Z) + _vertices.Max(x => x.Z)) / 2f);
             }
             else
-                return new Vector2(vertices.Min(x => x.Y), vertices.Max(x => x.Y));
+                return new Vector4(vertices.Min(x => x.Y), vertices.Max(x => x.Y), (vertices.Min(x => x.X) + vertices.Max(x => x.X)) / 2f, (vertices.Min(x => x.Z) + vertices.Max(x => x.Z)) / 2f);
         }
 
         public static Vector3 TransformVertex(Vector3 vertex, Vector3 localTranslate, Quaternion rotation) => Vector3.Transform(Vector3.Transform(vertex, rotation), Matrix.CreateTranslation(localTranslate));
@@ -921,7 +923,8 @@ namespace OpenVIII
         {
             if (entityType == EntityType.Character || entityType == EntityType.Monster)
             {
-                List<Vector2> a0lowhigh = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
+                //X is lowY, Y is high Y, Z is mid x, W is mid z
+                List<Vector4> a0lowhigh = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
                 float baselinelow = a0lowhigh.Min(x => x.X);
                 float baselinehigh = a0lowhigh.Max(x => x.Y);
                 float offset = 0f;
@@ -930,37 +933,43 @@ namespace OpenVIII
                     offset -= baselinelow;
                     baselinehigh += offset;
                 }
-                Highpoint = baselinehigh;
+                _indicatorPoint = new Vector3(0, baselinehigh, 0);
                 OffsetY = offset; // donno if we need this later yet.
                 AnimationYOffsets = animHeader.animations.SelectMany((animation, index) => animation.animationFrames.Select((animationframe, index2) => new AnimationYOffset(index, index2, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationframe, animationframe, 0f)))).ToList();
             }
         }
 
         private List<AnimationYOffset> AnimationYOffsets;
+        private Vector3 _indicatorPoint;
 
         private float OffsetY { get; set; }
         private Vector3 OffsetYVector => new Vector3(0f, OffsetY, 0f);
 
         public struct AnimationYOffset
         {
+
             public int ID { get; private set; }
             public int Frame { get; private set; }
-            public float Low { get; private set; }
-            public float High { get; private set; }
+            public float LowY { get; private set; }
+            public float HighY { get; private set; }
+            public float MidX { get; private set; }
+            public float MidZ { get; private set; }
 
-            public AnimationYOffset(int iD, int frame, Vector2 lowhigh)
-                : this(iD, frame, lowhigh.X, lowhigh.Y)
+            public AnimationYOffset(int iD, int frame, Vector4 lowhigh)
+                : this(iD, frame, lowhigh.X, lowhigh.Y, lowhigh.Z, lowhigh.W)
             { }
 
-            public AnimationYOffset(int iD, int frame, float low, float high)
+            public AnimationYOffset(int iD, int frame, float low, float high, float midx, float midz)
             {
                 ID = iD;
                 Frame = frame;
-                Low = low;
-                High = high;
+                LowY = low;
+                HighY = high;
+                MidX = midx;
+                MidZ = midz;
             }
 
-            public override string ToString() => $"[{ID}, {Frame}, {Low}, {High}]";
+            public override string ToString() => $"[{ID}, {Frame}, {LowY}, {HighY}, {MidX}, {MidZ}]";
         }
 
         private void ExportFile()
