@@ -167,7 +167,6 @@ namespace OpenVIII
             public static implicit operator Vector3(Vertex v) => new Vector3(-v.x / SCALEHELPER, -v.z / SCALEHELPER, -v.y / SCALEHELPER);
 
             public override string ToString() => $"x={x}, y={y}, z={z}, Vector3={(Vector3)this}";
-
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
@@ -247,13 +246,13 @@ namespace OpenVIII
             {
                 if (TempVPT == null)
                     TempVPT = new VertexPositionTexture[Count];
-                VertexPositionTexture GetVPT(ref Triangle t, byte i)
+                VertexPositionTexture GetVPT(ref Triangle triangle, byte i)
                 {
-                    Vector3 GetVertex(ref Triangle tv, byte iv)
+                    Vector3 GetVertex(ref Triangle _triangle, byte _i)
                     {
-                        return TranslateVertex(verts[tv.GetIndex(iv)], rotation, translationPosition);
+                        return TransformVertex(verts[_triangle.GetIndex(_i)], translationPosition, rotation);
                     }
-                    return new VertexPositionTexture(GetVertex(ref t, i), new Vector2(t.GetUV(i).U1(preVarTex.Width), t.GetUV(i).V1(preVarTex.Height)));
+                    return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width,preVarTex.Height));
                 }
                 TempVPT[0] = GetVPT(ref this, this[0]);
                 TempVPT[1] = GetVPT(ref this, this[1]);
@@ -353,13 +352,13 @@ namespace OpenVIII
             {
                 if (TempVPT == null)
                     TempVPT = new VertexPositionTexture[Count];
-                VertexPositionTexture GetVPT(ref Quad q, byte i)
+                VertexPositionTexture GetVPT(ref Quad quad, byte i)
                 {
-                    Vector3 GetVertex(ref Quad qv, byte iv)
+                    Vector3 GetVertex(ref Quad _quad, byte _i)
                     {
-                        return TranslateVertex(verts[qv.GetIndex(iv)], rotation, translationPosition);
+                        return TransformVertex(verts[_quad.GetIndex(_i)], translationPosition, rotation);
                     }
-                    return new VertexPositionTexture(GetVertex(ref q, i), new Vector2(q.GetUV(i).U1(preVarTex.Width), q.GetUV(i).V1(preVarTex.Height)));
+                    return new VertexPositionTexture(GetVertex(ref quad, i), quad.GetUV(i).ToVector2(preVarTex.Width,preVarTex.Height));
                 }
                 TempVPT[0] = TempVPT[3] = GetVPT(ref this, this[0]);
                 TempVPT[1] = GetVPT(ref this, this[1]);
@@ -382,7 +381,7 @@ namespace OpenVIII
                     : w == 32 ?  //if equals 32, then it's weapon texture and should be in range of 96-128
                         (V - 96) / w
                         : V / w;  //if none of these cases, then divide by resolution;
-
+            public Vector2 ToVector2(float w, float h) => new Vector2(U1(w), V1(h));
             public override string ToString() => $"{U};{U1()};{V};{V1()}";
         }
 
@@ -453,6 +452,8 @@ namespace OpenVIII
                 Vector = vector;
                 BoneID = boneID;
             }
+
+            public override string ToString() => $"Vector: {Vector}, Bone ID: {BoneID}";
         }
 
         public struct VertexPositionTexturePointersGRP
@@ -506,7 +507,8 @@ namespace OpenVIII
 
             Object obj = geometry.objects[objectId];
             int i = 0;
-            List<VectorBoneGRP> verts = GetVerts(obj, frame, nextFrame, step);
+
+            List<VectorBoneGRP> verts = GetVertices(obj, frame, nextFrame, step);
             float minY = verts.Min(x => x.Y);
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
@@ -520,7 +522,6 @@ namespace OpenVIII
                 this.Highpoint = MathHelper.Lerp(lastoffsets.High, nextoffsets.High, (float)step);
                 if (offsetylow < 0)
                     translationPosition.Y -= offsetylow;
-
             }
 
             //Triangle parsing
@@ -543,29 +544,22 @@ namespace OpenVIII
             return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
-        private List<VectorBoneGRP> GetVerts(Object obj, AnimationFrame frame, AnimationFrame nextFrame, double step) => obj.vertexData.SelectMany(vertexdata => vertexdata.vertices.Select(vertex => CalculateFrame(new VectorBoneGRP(vertex, vertexdata.boneId), frame, nextFrame, step))).ToList();
+        private List<VectorBoneGRP> GetVertices(Object @object, AnimationFrame frame, AnimationFrame nextFrame, double step) => @object.vertexData.SelectMany(vertexdata => vertexdata.vertices.Select(vertex => CalculateFrame(new VectorBoneGRP(vertex, vertexdata.boneId), frame, nextFrame, step))).ToList();
 
-        private Vector2 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null) => FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
-
-        private Vector2 FindLowHighPoints(ref Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null)
+        private Vector2 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, AnimationFrame frame, AnimationFrame nextFrame, double step)
         {
-            Vector3 _translationPosition = translationPosition;
-            List<VectorBoneGRP> j = geometry.objects.Length == 1 && verts != null ? verts :
-                geometry.objects.SelectMany(x => x.vertexData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z, y.boneId), frame, nextFrame, step)))).ToList();
-
-            IEnumerable<float> test = j.Select(x => TranslateVertex(x, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
-            float highpoint = test.Last();
-            float lowpoint = test.First();
-            return new Vector2(lowpoint, highpoint);
+            List<VectorBoneGRP> vertices =
+                geometry.objects.SelectMany(@object => GetVertices(@object, frame, nextFrame, step)).ToList();
+            if (translationPosition != Vector3.Zero || rotation != Quaternion.Identity)
+            {
+                List<float> y = vertices.Select(vertex => TransformVertex(vertex, translationPosition, rotation)).Select(vertex => vertex.Y).OrderBy(x => x).ToList();
+                return new Vector2(y.First(), y.Last());
+            }
+            else
+                return new Vector2(vertices.Min(x => x.Y), vertices.Max(x => x.Y));
         }
 
-        public static Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
-        {
-            Vector3 verticeData = vertex;
-            verticeData = Vector3.Transform(verticeData, rotation);
-            verticeData = Vector3.Transform(verticeData, Matrix.CreateTranslation(localTranslate));
-            return verticeData;
-        }
+        public static Vector3 TransformVertex(Vector3 vertex, Vector3 localTranslate, Quaternion rotation) => Vector3.Transform(Vector3.Transform(vertex, rotation), Matrix.CreateTranslation(localTranslate));
 
         /// <summary>
         /// Complex function that provides linear interpolation between two matrices of actual
@@ -916,7 +910,7 @@ namespace OpenVIII
         {
             if (entityType == EntityType.Character || entityType == EntityType.Monster)
             {
-                List<Vector2> a0lowhigh = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, 0f, x, x)).ToList();
+                List<Vector2> a0lowhigh = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
                 float baselinelow = a0lowhigh.Min(x => x.X);
                 float baselinehigh = a0lowhigh.Max(x => x.Y);
                 float offset = 0f;
@@ -924,15 +918,17 @@ namespace OpenVIII
                 {
                     offset -= baselinelow;
                     baselinehigh += offset;
-                    baselinelow += offset;
                 }
                 Highpoint = baselinehigh;
-                AnimationYOffsets = animHeader.animations.SelectMany((animation, index) => animation.animationFrames.Select((animationframe, index2) => new AnimationYOffset(index, index2, FindLowHighPoints(new Vector3(0, offset, 0), Quaternion.Identity, 0f, animationframe, animationframe)))).ToList();
+                OffsetY = offset; // donno if we need this later yet.
+                AnimationYOffsets = animHeader.animations.SelectMany((animation, index) => animation.animationFrames.Select((animationframe, index2) => new AnimationYOffset(index, index2, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationframe, animationframe, 0f)))).ToList();
             }
         }
 
         private List<AnimationYOffset> AnimationYOffsets;
 
+        private float OffsetY { get; set; }
+        private Vector3 OffsetYVector => new Vector3(0f, OffsetY, 0f);
         public struct AnimationYOffset
         {
             public int ID { get; private set; }
