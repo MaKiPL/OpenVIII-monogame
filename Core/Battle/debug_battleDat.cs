@@ -252,7 +252,7 @@ namespace OpenVIII
                     {
                         return TransformVertex(verts[_triangle.GetIndex(_i)], translationPosition, rotation);
                     }
-                    return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width,preVarTex.Height));
+                    return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
                 }
                 TempVPT[0] = GetVPT(ref this, this[0]);
                 TempVPT[1] = GetVPT(ref this, this[1]);
@@ -358,7 +358,7 @@ namespace OpenVIII
                     {
                         return TransformVertex(verts[_quad.GetIndex(_i)], translationPosition, rotation);
                     }
-                    return new VertexPositionTexture(GetVertex(ref quad, i), quad.GetUV(i).ToVector2(preVarTex.Width,preVarTex.Height));
+                    return new VertexPositionTexture(GetVertex(ref quad, i), quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
                 }
                 TempVPT[0] = TempVPT[3] = GetVPT(ref this, this[0]);
                 TempVPT[1] = GetVPT(ref this, this[1]);
@@ -381,7 +381,9 @@ namespace OpenVIII
                     : w == 32 ?  //if equals 32, then it's weapon texture and should be in range of 96-128
                         (V - 96) / w
                         : V / w;  //if none of these cases, then divide by resolution;
+
             public Vector2 ToVector2(float w, float h) => new Vector2(U1(w), V1(h));
+
             public override string ToString() => $"{U};{U1()};{V};{V1()}";
         }
 
@@ -509,7 +511,9 @@ namespace OpenVIII
             int i = 0;
 
             List<VectorBoneGRP> verts = GetVertices(obj, frame, nextFrame, step);
-            float minY = verts.Min(x => x.Y);
+            //float minY = verts.Min(x => x.Y);
+            //Vector2 HLPTS = FindLowHighPoints(translationPosition, rotation, frame, nextFrame, step);
+
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
 
@@ -520,6 +524,13 @@ namespace OpenVIII
                 AnimationYOffset nextoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.AnimationId && x.Frame == _animationSystem.AnimationFrame) ?? default;
                 float offsetylow = MathHelper.Lerp(lastoffsets.Low, nextoffsets.Low, (float)step);
                 this.Highpoint = MathHelper.Lerp(lastoffsets.High, nextoffsets.High, (float)step);
+                // Move All Y axis down to 0 based on Lowest Y axis in Animation ID 0.
+                if (OffsetY < 0)
+                {
+                    translationPosition.Y += OffsetY;
+                    Highpoint += OffsetY;
+                }
+                // If any Y axis readings are lower than 0 in Animation ID >0. Bring it up to zero.
                 if (offsetylow < 0)
                     translationPosition.Y -= offsetylow;
             }
@@ -929,6 +940,7 @@ namespace OpenVIII
 
         private float OffsetY { get; set; }
         private Vector3 OffsetYVector => new Vector3(0f, OffsetY, 0f);
+
         public struct AnimationYOffset
         {
             public int ID { get; private set; }

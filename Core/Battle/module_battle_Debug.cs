@@ -528,7 +528,7 @@ namespace OpenVIII
 
         private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
         {
-            for (int i = 0; i < battledat.geometry.cObjects; i++)
+            for (int i = 0; /*i<1 &&*/ i < battledat.geometry.cObjects; i++)
             {
                 Quaternion rotation = _rotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
                 Debug_battleDat.VertexPositionTexturePointersGRP vptpg = battledat.GetVertexPositions(
