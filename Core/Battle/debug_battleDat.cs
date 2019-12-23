@@ -141,6 +141,7 @@ namespace OpenVIII
             public ulong padding;
             public Triangle[] triangles;
             public Quad[] quads;
+
         }
 
         public struct VerticeData
@@ -241,7 +242,7 @@ namespace OpenVIII
                 {
                     Vector3 GetVertex(ref Triangle tv, byte iv)
                     {
-                        return TranslateVertex(verts[tv.GetIndex(iv)].Vector, rotation, translationPosition);
+                        return TranslateVertex(verts[tv.GetIndex(iv)], rotation, translationPosition);
                     }
                     return new VertexPositionTexture(GetVertex(ref t, i), new Vector2(t.GetUV(i).U1(preVarTex.Width), t.GetUV(i).V1(preVarTex.Height)));
                 }
@@ -347,7 +348,7 @@ namespace OpenVIII
                 {
                     Vector3 GetVertex(ref Quad qv, byte iv)
                     {
-                        return TranslateVertex(verts[qv.GetIndex(iv)].Vector, rotation, translationPosition);
+                        return TranslateVertex(verts[qv.GetIndex(iv)], rotation, translationPosition);
                     }
                     return new VertexPositionTexture(GetVertex(ref q, i), new Vector2(q.GetUV(i).U1(preVarTex.Width), q.GetUV(i).V1(preVarTex.Height)));
                 }
@@ -430,9 +431,12 @@ namespace OpenVIII
 
         public struct VectorBoneGRP
         {
-            public Vector3 Vector { get; private set; }
+            private Vector3 Vector { get; set; }
             public int BoneID { get; private set; }
-
+            public float X => Vector.X;
+            public float Y => Vector.Y;
+            public float Z => Vector.Z;
+            public static implicit operator Vector3(VectorBoneGRP vbg) => vbg.Vector;
             public VectorBoneGRP(Vector3 vector, int boneID)
             {
                 Vector = vector;
@@ -491,13 +495,12 @@ namespace OpenVIII
             AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
             Module_battle_debug.AnimationSystem _animationSystem = animationSystem;
 
-            List<VectorBoneGRP> verts = new List<VectorBoneGRP>();
+            
 
             Object obj = geometry.objects[objectId];
             int i = 0;
-            foreach (VerticeData a in obj.verticeData)
-                foreach (Vertex b in a.vertices)
-                    verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
+            List<VectorBoneGRP> verts = GetVerts(obj, frame, nextFrame, step);
+            var minY = verts.Min(x => x.Y);
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
 
@@ -569,6 +572,15 @@ namespace OpenVIII
             return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
+        private List<VectorBoneGRP> GetVerts(Object obj, AnimationFrame frame, AnimationFrame nextFrame, double step)
+        {
+            List<VectorBoneGRP> verts = new List<VectorBoneGRP>();
+            foreach (VerticeData a in obj.verticeData)
+                foreach (Vertex b in a.vertices)
+                    verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
+            return verts;
+        }
+
         private Vector2 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null) => FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
 
         private Vector2 FindLowHighPoints(ref Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null)
@@ -577,7 +589,7 @@ namespace OpenVIII
             List<VectorBoneGRP> j = geometry.objects.Length == 1 && verts != null ? verts :
                 geometry.objects.SelectMany(x => x.verticeData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z.GetVector, y.boneId), frame, nextFrame, step)))).ToList();
 
-            IEnumerable<float> test = j.Select(x => TranslateVertex(x.Vector, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
+            IEnumerable<float> test = j.Select(x => TranslateVertex(x, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
             float highpoint = test.Last();
             float lowpoint = test.First();
 
@@ -621,9 +633,9 @@ namespace OpenVIII
             {
 
                 Vector3 r = new Vector3(
-                    matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
-                    matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
-                    matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
+                    matrix.M11 * VBG.X + matrix.M41 + matrix.M12 * VBG.Z + matrix.M13 * -VBG.Y,
+                    matrix.M21 * VBG.X + matrix.M42 + matrix.M22 * VBG.Z + matrix.M23 * -VBG.Y,
+                    matrix.M31 * VBG.X + matrix.M43 + matrix.M32 * VBG.Z + matrix.M33 * -VBG.Y);
                 r = Vector3.Transform(r, Matrix.CreateScale(skeleton.GetScale));
                 return r;
             }
