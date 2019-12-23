@@ -265,7 +265,7 @@ namespace OpenVIII
                         }
                         else
                         {
-                            RegularPyramid.Set(GetPos(partypos ?? 0) + PyramidOffset);
+                            RegularPyramid.Set((GetPos(partypos ?? 0) + PyramidOffset)*new Vector3(1,0,1));
                         }
                         Module_battle_debug.partypos = partypos;
                     }
