@@ -28,7 +28,7 @@ namespace OpenVIII
     public partial class Debug_battleDat
     {
         private byte[] buffer;
-
+        private const float BaseLineMaxYFilter = 10f;
         public const float SCALEHELPER = 2048.0f;
         private const float DEGREES = 360f;
 
@@ -566,9 +566,11 @@ namespace OpenVIII
             if (translationPosition != Vector3.Zero || rotation != Quaternion.Identity)
             {
                 IEnumerable<Vector3> _vertices = vertices.Select(vertex => TransformVertex(vertex, translationPosition, rotation));
+                // midpoints
                 return new Vector4(_vertices.Min(x => x.Y), _vertices.Max(x => x.Y), (_vertices.Min(x => x.X) + _vertices.Max(x => x.X)) / 2f, (_vertices.Min(x => x.Z) + _vertices.Max(x => x.Z)) / 2f);
             }
             else
+                // alt midpoints
                 return new Vector4(vertices.Min(x => x.Y), vertices.Max(x => x.Y), (vertices.Min(x => x.X) + vertices.Max(x => x.X)) / 2f, (vertices.Min(x => x.Z) + vertices.Max(x => x.Z)) / 2f);
         }
 
@@ -923,19 +925,25 @@ namespace OpenVIII
         {
             if (entityType == EntityType.Character || entityType == EntityType.Monster)
             {
+                // Get baseline from running function on only Animation 0;
+                List<Vector4> baseline = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
                 //X is lowY, Y is high Y, Z is mid x, W is mid z
-                List<Vector4> a0lowhigh = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
-                float baselinelow = a0lowhigh.Min(x => x.X);
-                float baselinehigh = a0lowhigh.Max(x => x.Y);
-                float offset = 0f;
-                if (Math.Abs(baselinelow) < 10f)
+                float baselinelowY = baseline.Min(x => x.X);
+                float baselinehighY = baseline.Max(x => x.Y);
+                float offsetY = 0f;
+                if (Math.Abs(baselinelowY) < BaseLineMaxYFilter)
                 {
-                    offset -= baselinelow;
-                    baselinehigh += offset;
+                    offsetY -= baselinelowY;
+                    baselinehighY += offsetY;
                 }
-                _indicatorPoint = new Vector3(0, baselinehigh, 0);
-                OffsetY = offset; // donno if we need this later yet.
-                AnimationYOffsets = animHeader.animations.SelectMany((animation, index) => animation.animationFrames.Select((animationframe, index2) => new AnimationYOffset(index, index2, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationframe, animationframe, 0f)))).ToList();
+                // Default indicator point
+                _indicatorPoint = new Vector3(0, baselinehighY, 0);
+                // Need to add this later to bring baselinelow to 0.
+                OffsetY = offsetY; 
+                // Brings all Y values less than baselinelow to baselinelow
+                AnimationYOffsets = animHeader.animations.SelectMany((animation, animationid) =>
+                animation.animationFrames.Select((animationframe, animationframenumber) => 
+                new AnimationYOffset(animationid, animationframenumber, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationframe, animationframe, 0f)))).ToList();
             }
         }
 
