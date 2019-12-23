@@ -2,6 +2,7 @@
 {
     public abstract class Base<T, T2> : IGMData.Base
     {
+        private int _defaultPages;
         #region Constructors
 
         protected Base() => ExtraCount = 2;
@@ -12,21 +13,33 @@
 
         public T2[] Contents { get; set; }
 
-        public int DefaultPages { get; protected set; }
+        /// <summary>
+        /// Sets the Pages on refresh to this.
+        /// </summary>
+        public int DefaultPages
+        {
+            get => _defaultPages; protected set
+            {
+                _defaultPages = value;
+                ResetPages();
+            }
+        }
 
         public int Page { get; protected set; }
-
+        /// <summary>
+        /// On refresh this is overrode by DefaultPages
+        /// </summary>
         public int Pages { get; private set; }
 
         protected Menu_Base LeftArrow
         {
-            get => ITEM[Count - 2, 0];
+            get => ITEM?[Count - 2, 0];
             private set => SIZE[Count - 2] = ITEM[Count - 2, 0] = value;
         }
 
         protected Menu_Base RightArrow
         {
-            get => ITEM[Count - 1, 0];
+            get => ITEM?[Count - 1, 0];
             private set => SIZE[Count - 1] = ITEM[Count - 1, 0] = value;
         }
 
@@ -36,10 +49,10 @@
 
         #region Methods
 
-        public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null)
+        public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null, bool battle = false)
                                                                     where J : Base<T, T2>, new()
         {
-            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable);
+            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable, battle: battle);
             r.DefaultPages = pages ?? 1;
             return r;
         }
@@ -95,16 +108,19 @@
         {
             base.Refresh();
             ResetPages();
-            if (Pages <= 1)
-                PagesOne();
         }
 
         public virtual void ResetPages()
         {
             Pages = DefaultPages;
-            Cursor_Status &= ~Cursor_Status.Horizontal;
-            RightArrow?.Show();
-            LeftArrow?.Show();
+            if (Pages <= 1)
+                PagesOne();
+            else
+            {
+                Cursor_Status &= ~Cursor_Status.Horizontal;
+                RightArrow?.Show();
+                LeftArrow?.Show();
+            }
         }
 
         public virtual void UpdateTitle()

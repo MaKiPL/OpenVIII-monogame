@@ -10,8 +10,7 @@ namespace OpenVIII
 {
     public static partial class Saves
     {
-
-#region Classes
+        #region Classes
 
         /// <summary>
         /// Save Data
@@ -150,8 +149,19 @@ namespace OpenVIII
             /// <summary>
             /// Battle: dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
             /// </summary>
-            public BitArray BattleUNK { get; set; }
-
+            public MiscIndicator BattleMISCIndicator { get; set; }
+            [Flags]
+            public enum MiscIndicator : byte
+            {
+                Dream = 0x1,
+                Odin = 0x2,
+                Phoenix = 0x4,
+                Gilgamesh = 0x8,
+                Angelo_Disabled = 0x10,
+                Angel_Wing_Enabled = 0x20,
+                UNK40 = 0x40,
+                UNK80 = 0x80
+            }
             /// <summary>
             /// 0x0CEC 4 bytes Battle: victory count
             /// </summary>
@@ -287,19 +297,18 @@ namespace OpenVIII
             /// <para>0x0B2A 1 byte Limit Break Angelo completed</para>
             /// <para>Each bit is a completely learned ability</para>
             /// </summary>
-            public BitArray LimitBreakAngelocompleted { get; set; }
-
+            public Angelo LimitBreakAngelocompleted { get; set; }
             /// <summary>
             /// <para>0x0B2B 1 byte Limit Break Angelo known</para>
             /// <para>Each bit is an ability is known about/able to be learned</para>
             /// </summary>
-            public BitArray LimitBreakAngeloknown { get; set; }
+            public Angelo LimitBreakAngeloknown { get; set; }
 
             /// <summary>
             /// <para>0x0B2C 8 bytes Limit Break Angelo points</para>
             /// <para>Each byte is progress to learing an ability</para>
             /// </summary>
-            public byte[] LimitBreakAngelopoints { get; set; }
+            public Dictionary<Angelo,byte> LimitBreakAngelopoints { get; set; }
 
             public BitArray LimitBreakIrvine_Unlocked_Shot { get; set; }
 
@@ -537,6 +546,7 @@ namespace OpenVIII
                 d.Fieldvars = Fieldvars.Clone();
                 d.Worldmap = Worldmap.Clone();
                 d.TripleTriad = TripleTriad.Clone();
+                d.LimitBreakAngelopoints = LimitBreakAngelopoints.ToDictionary(x => x.Key, x => x.Value);
                 d._shops = _shops.Select(x => x.Clone()).ToList();
                 d._items = _items.Select(x => x.Clone()).ToList();
                 return d;
@@ -636,15 +646,18 @@ namespace OpenVIII
                 {
                     foreach (KeyValuePair<Characters, CharacterData> c in Characters)
                     {
-                        if (c.Value.JunctionnedGFs != GFflags.None)
-                        {
-                            IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
-                            foreach (Enum flag in availableFlags.Where(c.Value.JunctionnedGFs.HasFlag))
-                            {
-                                if ((GFflags)flag == GFflags.None) continue;
-                                r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
-                            }
-                        }
+                        foreach (var gf in c.Value.JunctionedGFs)
+                            r.Add(gf, c.Key);
+
+                        //if (c.Value.JunctionedGFs != GFflags.None)
+                        //{
+                        //    IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
+                        //    foreach (Enum flag in availableFlags.Where(c.Value.JunctionedGFs.HasFlag))
+                        //    {
+                        //        if ((GFflags)flag == GFflags.None) continue;
+                        //        r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
+                        //    }
+                        //}
                     }
                 }
                 return r;
@@ -733,7 +746,7 @@ namespace OpenVIII
                 BattleSCAN = new BitArray(br.ReadBytes(20));//0x0D1C Ennemy scanned once
                 BattleRAUTO = br.ReadByte() > 0;//0x0D30 Renzokuken auto
                 BattleRINDICATOR = br.ReadByte() > 0;//0x0D31 Renzokuken indicator
-                BattleUNK = new BitArray(br.ReadBytes(1));//0x0D32 dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
+                BattleMISCIndicator = (MiscIndicator)br.ReadByte();//0x0D32 dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
                 TutorialInfos = new BitArray(br.ReadBytes(16));//0x0D33
                 SeeDTestLevel = br.ReadByte();//0x0D43
                 Unknown7 = br.ReadUInt32();//0x0D44
@@ -767,12 +780,12 @@ namespace OpenVIII
                 //init offset 0;
                 for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
                 {
-                    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i));
+                    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i, this));
                 }
                 //init offset 1088;
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
-                    CharacterData tmp = CharacterData.Load(br, (Characters)i);
+                    CharacterData tmp = CharacterData.Load(br, (Characters)i, this);
 
                     tmp.Name = Memory.Strings.GetName((Characters)i, this);
                     _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total
@@ -797,33 +810,19 @@ namespace OpenVIII
                 LimitBreakZell_Unlocked_Duel = new BitArray(br.ReadBytes(2));//0x0B26
                 LimitBreakIrvine_Unlocked_Shot = new BitArray(br.ReadBytes(1));//0x0B28
                 LimitBreakSelphie_Used_RareSpells = new BitArray(br.ReadBytes(1));//0x0B29
-                LimitBreakAngelocompleted = new BitArray(br.ReadBytes(1));//0x0B2A
-                LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
-                LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
+                LimitBreakAngelocompleted = (Angelo)br.ReadByte();//0x0B2A
+                LimitBreakAngeloknown = (Angelo)br.ReadByte();//0x0B2B
+                LimitBreakAngelopoints = br.ReadBytes(8).Select((value,key) => new {key,value}).ToDictionary(x=>(Angelo)(x.key+1),x=> checked((byte)x.value));//0x0B2C
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
-                for (int i = 0; br.BaseStream.Position+2 <= br.BaseStream.Position &&i < _items.Capacity; i++)
+                for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < _items.Capacity; i++)
                     _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
             /// <summary>
             /// List of all Unlocked GFs
             /// </summary>
-            public List<GFs> UnlockedGFs()
-            {
-                List<GFs> r = new List<GFs>(16);
-                if (GFs != null)
-                {
-                    foreach (KeyValuePair<GFs, GFData> g in GFs)
-                    {
-                        if (g.Value.Exists) //needs testing could be wrong.
-                        {
-                            r.Add(g.Key);
-                        }
-                    }
-                }
-                return r;
-            }
+            public IEnumerable<GFs> UnlockedGFs => GFs.Where(x => x.Value.Exists).Select(x => x.Key);
 
             private CharacterData GetDamageable(Characters id)
             {

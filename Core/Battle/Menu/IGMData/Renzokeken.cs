@@ -10,7 +10,6 @@ namespace OpenVIII.IGMData
         #region Fields
 
         private const int Renzokeken_Gradient_Width = 192;
-
         private static object locker = new object();
         private static Texture2D pixel;
         private static Color Renzokenken_Seperator_Color;
@@ -18,10 +17,18 @@ namespace OpenVIII.IGMData
         private byte _count = 0;
         private int _hits = 7;
         private double delayMS;
-        private Slide<Color> HitSlider = new Slide<Color>(Color.White, Color.TransparentBlack, 300, Color.Lerp);
+        private Slide<Color> HitSlider = new Slide<Color>(Color.White, Color.TransparentBlack, HitTime, Color.Lerp);
         private Color newattack;
 
         #endregion Fields
+
+        #region Properties
+
+        private static TimeSpan HitTime => TimeSpan.FromMilliseconds(300d);
+        private static TimeSpan RenzoDelay => TimeSpan.FromMilliseconds(500d);
+        private static TimeSpan RenzoTime => TimeSpan.FromMilliseconds(2000d);
+
+        #endregion Properties
 
         #region Methods
 
@@ -191,12 +198,10 @@ namespace OpenVIII.IGMData
             ITEM[Count - 1, 0] = new IGMDataItem.Icon { Data = Icons.ID.Trigger_, Pos = tr, Palette = 6, Scale = new Vector2(scale) };// { Color = rc};
 
             newattack = new Color(104, 80, 255);
-            int delay = 500;
-            const int Time = 2000;
             Rectangle pos = new Rectangle(r.X, r.Y + 4, Renzokeken_Gradient_Width, r.Height - 8);
             r.Inflate(-4, -4);
             for (int x = 0; x <= _hits && x <= 7; x++)
-                ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokeken.Create(pos, newattack, Renzokenken_Seperator_Color, 1f, hotspot, r, time: Time, delay * (x));
+                ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokeken.Create(pos, newattack, Renzokenken_Seperator_Color, 1f, hotspot, r, time: RenzoTime, TimeSpan.FromTicks(RenzoDelay.Ticks * x));
             float totalx = 0;
             for (byte i = 0; i <= 7; i++)
             {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace OpenVIII
@@ -84,9 +85,10 @@ namespace OpenVIII
                 int total_Count = (Party?.Count ?? 0) + (Non_Party?.Count ?? 0);
                 if (Memory.State.Characters != null && Memory.State.Characters.Count > 0 && Party != null && Non_Party != null)
                 {
+                    //TODO fix this... should be set in Init not Refresh
                     SIZE = new Rectangle[total_Count];
                     CURSOR = new Point[total_Count];
-                    BLANKS = new bool[total_Count];
+                    BLANKS = new BitArray(total_Count,false);
                     Contents = new Damageable[total_Count];
                     int i = 0;
                     test(Party, ref i, Party.Contents);

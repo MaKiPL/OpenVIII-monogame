@@ -135,12 +135,14 @@
   <ItemGroup>
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
+    <Compile Include="Battle\DeadTime.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
     <Compile Include="Battle\Enemy.cs" />
     <Compile Include="Battle\FPS_Camera.cs" />
     <Compile Include="Battle\IEnemy.cs" />
     <Compile Include="Battle\Information.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
+    <Compile Include="Battle\Mag.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\ATB.cs" />
@@ -151,12 +153,17 @@
     <Compile Include="Battle\Menu\IGMData\PartyAP.cs" />
     <Compile Include="Battle\Menu\IGMData\PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\PlayerEXP.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\Combine.cs" />
+    <Compile Include="Battle\Menu\IGMData\Selphie_Slots.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
     <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Party.cs" />
+    <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
+    <Compile Include="Battle\RegularPyramid.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
+    <Compile Include="CountDown.cs" />
     <Compile Include="FfAudio.cs" />
     <Compile Include="FfVideo.cs" />
     <Compile Include="Image\TDW.cs" />
@@ -202,6 +209,7 @@
     <Compile Include="Menu\IGMData\Group\Base.cs" />
     <Compile Include="Menu\IGMData\Group\TopMenu.cs" />
     <Compile Include="Menu\IGMData\Pool\Base.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\Enemy_Attacks.cs" />
     <Compile Include="Menu\IGMData\Pool\GF.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic.cs" />
@@ -234,7 +242,9 @@
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
     <Compile Include="Menu\Debug\IGMData\DebugChoose.cs" />
+    <Compile Include="Saves\Angelo.cs" />
     <Compile Include="Saves\ATBTimer.cs" />
+    <Compile Include="Saves\CompatibilitywithGF.cs" />
     <Compile Include="Saves\Damageable.cs" />
     <Compile Include="Saves\ICharacterData.cs" />
     <Compile Include="Saves\IDamageable.cs" />

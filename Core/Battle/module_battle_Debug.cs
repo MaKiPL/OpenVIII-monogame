@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace OpenVIII
 {
     public static class Module_battle_debug
     {
+        private static DeadTime DeadTime;
+        private static Battle.RegularPyramid RegularPyramid;
         private static uint bs_cameraPointer;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees = 90;
@@ -46,12 +49,13 @@ namespace OpenVIII
         private const int BATTLEMODULE_READDATA = 1; //parses battle stage and all monsters
         private const int BATTLEMODULE_DRAWGEOMETRY = 2; //draw geometry also supports updateCamera
         private const int BATTLEMODULE_ACTIVE = 3;
-        private const double FPS = 1000.0d / 15d; //Natively the game we are rewritting works in 15 FPS per second
+        private static readonly TimeSpan FPS = TimeSpan.FromMilliseconds(1000.0d / 15d); //Natively the game we are rewritting works in 15 FPS per second
 
         /// <summary>
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
         /// </summary>
         private const int BATTLECAMERA_FRAMETIME = 3;
+        public const int Yoffset = 0;//-10;
 
         /// <summary>
         /// This is helper struct that works along with VertexPosition to provide Clut, texture page
@@ -97,14 +101,12 @@ namespace OpenVIII
 
             public void SetAnimationID(int id)
             {
-                
-                if (animationSystem.animationId != id &&
+                if (animationSystem.AnimationId != id &&
                     id < Data.character.animHeader.animations.Length &&
                     id < Data.weapon.animHeader.animations.Length &&
-                    id >=0)
+                    id >= 0)
                 {
-                    animationSystem.animationId = id;
-                    animationSystem.animationFrame = 0;
+                    animationSystem.AnimationId = id;
                 }
             }
         }
@@ -213,14 +215,18 @@ namespace OpenVIII
 
         public static void ResetState() => battleModule = BATTLEMODULE_INIT;
 
+        public static bool PauseATB = false;
+        private static sbyte? partypos = null;
+
         public static void Update()
         {
+            DeadTime?.Update();
             if (CharacterInstances != null)
                 foreach (CharacterInstanceInformation cii in CharacterInstances)
                 {
                     Saves.CharacterData c = Memory.State?[cii.VisibleCharacter];
-
-                    if (c != null && cii.animationSystem.animationId >= 0 && cii.animationSystem.animationId <= 2)
+                    c.Update(); //updates ATB for Character.
+                    if (c != null && cii.animationSystem.AnimationId >= 0 && cii.animationSystem.AnimationId <= 2)
                     {
                         // this would probably interfeer with other animations. I am hoping the limits above will keep it good.
                         if (c.IsDead)
@@ -232,6 +238,9 @@ namespace OpenVIII
                     //    cii.SetAnimationID(20);
                     //cii.SetAnimationID(31);
                 }
+            if (Enemy.Party != null)
+                foreach (Enemy e in Enemy.Party)
+                    e.Update(); //updates ATB for enemy.
             bool ret = false;
             switch (battleModule)
             {
@@ -247,6 +256,20 @@ namespace OpenVIII
 
                 case BATTLEMODULE_DRAWGEOMETRY:
                     Menu.BattleMenus.Update();
+                    sbyte? partypos = Menu.BattleMenus.PartyPos;
+                    RegularPyramid.Set(GetIndicatorPoint(partypos ?? 0));
+                    if (partypos != Module_battle_debug.partypos)
+                    {
+                        if (partypos == null)
+                        {
+                            RegularPyramid.FadeOut();
+                        }
+                        else
+                        {
+                            RegularPyramid.FadeIn();
+                        }
+                        Module_battle_debug.partypos = partypos;
+                    }
                     if (bUseFPSCamera)
                         viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
                     else
@@ -257,6 +280,8 @@ namespace OpenVIII
                     break;
             }
             if (!ret) Inputs();
+            RegularPyramid.Update();
+            UpdateFrames();
         }
 
         public static void Inputs()
@@ -291,9 +316,100 @@ namespace OpenVIII
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 3);
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 0);
             }
+            if (Input2.Button(Keys.F12))
+            {
+                if (SID < 255)
+                    SID++;
+                else SID = 0;
+            }
 
+            if (Input2.Button(Keys.F11))
+            {
+                if (SID <= 0)
+                    SID = 255;
+                else SID--;
+            }
+            if (Input2.Button(Keys.F10))
+            {
+                AddSequenceToAllQueues(SID);
+            }
+            if (Input2.Button(Keys.F9))
+            {
+                AddSequenceToAllQueues(new Debug_battleDat.AnimationSequence
+                {
+                    AnimationQueue = new List<byte> {
+                    //0x2,
+                    //0x5,
+                    //0xf,
+                    //0x10,
+                    //0xb,
+                    //0x3,
+                    //0x6,
+                    0xe,
+                    //0x1,
+                    0xf,
+                    0x0
+                }
+                });
+            }
+
+            if (Input2.Button(Keys.F8))
+            {
+                StopAnimations();
+            }
+            if (Input2.Button(Keys.F7))
+            {
+                StartAnimations();
+            }
 #endif
         }
+
+        private static void AddSequenceToAllQueues(Debug_battleDat.AnimationSequence section5)
+        {
+            for (int i = 0; i < Enemy.Party.Count; i++)
+            {
+                AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
+            }
+            for (int i = 0; i < CharacterInstances.Count; i++)
+            {
+                AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
+            }
+        }
+
+        private static void AddSequenceToAllQueues(byte sid)
+        {
+            Debug_battleDat.AnimationSequence section5;
+            for (int i = 0; i < Enemy.Party.Count; i++)
+            {
+                if (Enemy.Party[i].EII.Data.Sequences.Count > sid)
+                {
+                    section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x => x.id == sid);
+                    if (section5.AnimationQueue != null)
+                        AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
+                    //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
+                }
+            }
+            for (int i = 0; i < CharacterInstances.Count; i++)
+            {
+                Debug_battleDat weapon = CharacterInstances[i].Data.weapon;
+                Debug_battleDat character = CharacterInstances[i].Data.character;
+                List<Debug_battleDat.AnimationSequence> sequences;
+                if ((weapon?.Sequences.Count ?? 0) == 0)
+                {
+                    sequences = character.Sequences;
+                }
+                else sequences = weapon.Sequences;
+                if (sequences.Count > sid)
+                {
+                    section5 = sequences.FirstOrDefault(x => x.id == sid);
+                    if (section5.AnimationQueue != null)
+                        AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
+                    //AddAnimationToQueue(Debug_battleDat.EntityType.Character, i, 0);
+                }
+            }
+        }
+
+        private static byte SID = 0;
 
         public static void Draw()
         {
@@ -303,35 +419,40 @@ namespace OpenVIII
                     DrawGeometry();
                     DrawMonsters();
                     DrawCharactersWeapons();
-                    UpdateFrames();
-                    Menu.BattleMenus.Draw();
+                    RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
+                    if (!bUseFPSCamera)
+                        Menu.BattleMenus.Draw();
                     break;
             }
         }
 
         private static void UpdateCamera()
         {
-            const float V = 100f;
+            //const float V = 100f;
             //battleCamera.cam.startingTime = 64;
-            float step = battleCamera.cam.startingTime / (float)battleCamera.cam.time;
-            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
-                battleCamera.cam.Camera_World_X_s16[1] / V, step) + 30;
-            float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
-                battleCamera.cam.Camera_World_Y_s16[1] / V, step) - 40;
-            float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
-                battleCamera.cam.Camera_World_Z_s16[1] / V, step) + 0;
+            float step = battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks;
+            camTarget = Vector3.SmoothStep(battleCamera.cam.Camera_Lookat(0),battleCamera.cam.Camera_Lookat(1),step);
+            camPosition = Vector3.SmoothStep(battleCamera.cam.Camera_World(0), battleCamera.cam.Camera_World(1), step);
 
-            float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
-    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) + 30;
-            float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) - 40;
-            float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
-battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
-            camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
-            camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
+            //            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
+            //                battleCamera.cam.Camera_World_X_s16[1] / V, step) + 30;
+            //            float camWorldY = MathHelper.Lerp(battleCamera.cam.Camera_World_Y_s16[0] / V,
+            //                battleCamera.cam.Camera_World_Y_s16[1] / V, step) - 40;
+            //            float camWorldZ = MathHelper.Lerp(battleCamera.cam.Camera_World_Z_s16[0] / V,
+            //                battleCamera.cam.Camera_World_Z_s16[1] / V, step) + 0;
 
-            float fovDirector = MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
+            //            float camTargetX = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_X_s16[0] / V,
+            //    battleCamera.cam.Camera_Lookat_X_s16[1] / V, step) + 30;
+            //            float camTargetY = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Y_s16[0] / V,
+            //battleCamera.cam.Camera_Lookat_Y_s16[1] / V, step) - 40;
+            //            float camTargetZ = MathHelper.Lerp(battleCamera.cam.Camera_Lookat_Z_s16[0] / V,
+            //battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
+
+            //camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
+            //camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
+
+            float fovDirector = MathHelper.SmoothStep(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, step);
 
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
@@ -347,7 +468,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             //    World = worldMatrix
             //};
 
-            if (battleCamera.cam.startingTime >= battleCamera.cam.time)
+            if (battleCamera.cam.CurrentTime >= battleCamera.cam.TotalTime)
             {
                 if (battleCamera.bMultiShotAnimation && battleCamera.cam.time != 0)
                 {
@@ -356,7 +477,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                     CloseStageStreams();
                 }
             }
-            else battleCamera.cam.startingTime += Module_battle_debug.BATTLECAMERA_FRAMETIME;
+            else //battleCamera.cam.startingTime += Module_battle_debug.BATTLECAMERA_FRAMETIME;
+                battleCamera.cam.UpdateTime();
         }
 
         private static void ReopenStageStreams()
@@ -386,51 +508,58 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             //CHARACTER
             if (CharacterInstances == null)
                 return;
+
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
-                Vector3 charaPosition = new Vector3(-40 + n * 10, -2.5f, -40);
-                for (int i = 0; i < CharacterInstances[n].Data.character.geometry.cObjects; i++)
-                {
-                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.character.GetVertexPositions(i, charaPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
-                    if (a == null || a.Item1.Length == 0)
-                        return;
-                    for (int k = 0; k < a.Item1.Length / 3; k++)
-                    {
-                        ate.Texture = (Texture2D)CharacterInstances[n].Data.character.textures.textures[a.Item2[k]];
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a.Item1, vertexOffset: k * 3, primitiveCount: 1);
-                        }
-                    }
-                }
+                Vector3 charaPosition = GetCharPos(n);
+                UpdatePos(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
-            }
-            //WEAPON
-            for (int n = 0; n < CharacterInstances.Count; n++)
-            {
-                CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                Vector3 weaponPosition = new Vector3(-40 + n * 10, -2.5f, -40 + 1);
-                for (int i = 0; i < CharacterInstances[n].Data.weapon.geometry.cObjects; i++)
+
+                //WEAPON
+                if (CharacterInstances[n].Data.weapon != null)
                 {
-                    Tuple<VertexPositionTexture[], byte[]> a = CharacterInstances[n].Data.weapon.GetVertexPositions(i, weaponPosition, Quaternion.CreateFromYawPitchRoll(3f, 0, 0), CharacterInstances[n].animationSystem.animationId, CharacterInstances[n].animationSystem.animationFrame, frameperFPS / FPS); //DEBUG
-                    if (a == null || a.Item1.Length == 0)
-                        return;
-                    for (int k = 0; k < a.Item1.Length / 3; k++)
-                    {
-                        ate.Texture = (Texture2D)CharacterInstances[n].Data.weapon.textures.textures[a.Item2[k]];
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a.Item1, vertexOffset: k * 3, primitiveCount: 1);
-                        }
-                    }
+                    CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
+                    UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 }
             }
         }
+
+        private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
+
+        private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
+        {
+            for (int i = 0; /*i<1 &&*/ i < battledat.geometry.cObjects; i++)
+            {
+                Quaternion rotation = _rotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
+                Debug_battleDat.VertexPositionTexturePointersGRP vptpg = battledat.GetVertexPositions(
+                    i,
+                    ref position,
+                    rotation,
+                    ref animationSystem,
+                    step); //DEBUG
+                if (vptpg.IsNotSet())
+                    return;
+                for (int k = 0; k < vptpg.VPT.Length / 3; k++)
+                {
+                    ate.Texture = (Texture2D)battledat.textures.textures[vptpg.TexturePointers[k]];
+                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                        vertexData: vptpg.VPT, vertexOffset: k * 3, primitiveCount: 1);
+                    }
+                }
+            }
+            return;
+        }
+
+        private static double CharacterInstanceGenerateStep(int n) => GenerateStep(CharacterInstanceAnimationStopped(n));
+
+        private static bool CharacterInstanceAnimationStopped(int n) =>
+            CharacterInstances[n].animationSystem.AnimationStopped ||
+            ((Memory.State?[(Characters)CharacterInstances[n].characterId]?.IsPetrify ?? false) &&
+            CharacterInstances[n].animationSystem.StopAnimation());
 
         /// <summary>
         /// This function is responsible for deleting the queue of animation if passed correctly
@@ -443,17 +572,16 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             switch (type)
             {
                 case Debug_battleDat.EntityType.Monster:
-                    animationSystem = Enemy.Party[n].EII.Data.animHeader.animations[Enemy.Party[n].EII.animationSystem.animationId];
-                    if (Enemy.Party[n].EII.animationSystem.animationFrame >= animationSystem.cFrames)
+                    animationSystem = Enemy.Party[n].EII.Data.animHeader.animations[Enemy.Party[n].EII.animationSystem.AnimationId];
+                    if (Enemy.Party[n].EII.animationSystem.AnimationFrame >= animationSystem.cFrames)
                     {
                         EnemyInstanceInformation InstanceInformationProvider = Enemy.Party[n].EII;
-                        InstanceInformationProvider.animationSystem.animationFrame = 0;
                         if (Enemy.Party[n].EII.animationSystem.AnimationQueue.TryDequeue(out int animid) &&
                            animid < InstanceInformationProvider.Data.animHeader.animations.Length &&
-                           animid >=0
+                           animid >= 0
                             )
                         {
-                            InstanceInformationProvider.animationSystem.animationId = animid;
+                            InstanceInformationProvider.animationSystem.AnimationId = animid;
                         }
                         Enemy.Party[n].EII = InstanceInformationProvider;
                     }
@@ -461,17 +589,16 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
                 case Debug_battleDat.EntityType.Character:
                 case Debug_battleDat.EntityType.Weapon:
-                    animationSystem = CharacterInstances[n].Data.character.animHeader.animations[CharacterInstances[n].animationSystem.animationId];
-                    if (CharacterInstances[n].animationSystem.animationFrame >= animationSystem.cFrames)
+                    animationSystem = CharacterInstances[n].Data.character.animHeader.animations[CharacterInstances[n].animationSystem.AnimationId];
+                    if (CharacterInstances[n].animationSystem.AnimationFrame >= animationSystem.cFrames)
                     {
                         CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[n];
-                        InstanceInformationProvider.animationSystem.animationFrame = 0;
                         if (CharacterInstances[n].animationSystem.AnimationQueue.TryDequeue(out int animid) &&
-                           animid < InstanceInformationProvider.Data.character.animHeader.animations.Length &&
-                           animid < InstanceInformationProvider.Data.weapon.animHeader.animations.Length &&
+                           (animid < InstanceInformationProvider.Data.character.animHeader.animations.Length ||
+                           animid < (InstanceInformationProvider.Data.weapon?.animHeader.animations.Length ?? 0)) &&
                            animid >= 0)
                         {
-                            InstanceInformationProvider.animationSystem.animationId = animid;
+                            InstanceInformationProvider.animationSystem.AnimationId = animid;
                         }
                         CharacterInstances[n] = InstanceInformationProvider;
                     }
@@ -488,10 +615,49 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </summary>
         public struct AnimationSystem
         {
-            public int animationId;
-            public int animationFrame;
-            public bool bStopAnimation; //pertification placeholder?
+            public int AnimationId
+            {
+                get => _animationId; set
+                {
+                    _lastAnimationId = _animationId;
+                    _animationId = value;
+                    AnimationFrame = 0;
+                }
+            }
+
+            public int AnimationFrame
+            {
+                get => _animationFrame; set
+                {
+                    _lastAnimationFrame = _animationFrame;
+                    _animationFrame = value;
+                    if (_animationFrame > 0 && _lastAnimationId != _animationId)
+                        _lastAnimationId = _animationId;
+                }
+            }
+
+            public int NextFrame() => ++AnimationFrame;
+
+            public int LastAnimationId { get => _lastAnimationId; private set => _lastAnimationId = value; }
+            public int LastAnimationFrame { get => _lastAnimationFrame; private set => _lastAnimationFrame = value; }
+
+            public bool AnimationStopped => bAnimationStopped;
+
+            public bool StopAnimation()
+            {
+                LastAnimationFrame = AnimationFrame;
+                AnimationId = AnimationId;
+                return bAnimationStopped = true;
+            }
+
+            public bool StartAnimation() => bAnimationStopped = false;
+
+            private bool bAnimationStopped; //pertification placeholder?
             public ConcurrentQueue<int> AnimationQueue;
+            private int _lastAnimationFrame;
+            private int _animationFrame;
+            private int _lastAnimationId;
+            private int _animationId;
         }
 
         public static int DEBUGframe = 0;
@@ -516,33 +682,45 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 }
 
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
-
-                Init_debugger_battle.Coordinate enemyPosition = Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index);
-
-                for (int i = 0; i < Enemy.Party[n].EII.Data.geometry.cObjects; i++)
-                {
-                    Tuple<VertexPositionTexture[], byte[]> a = Enemy.Party[n].EII.Data.GetVertexPositions(
-                        objectId: i,
-                        position: enemyPosition.GetVector(),
-                        rotation: Quaternion.CreateFromYawPitchRoll(0, 0, 0),
-                        animationId: Enemy.Party[n].EII.animationSystem.animationId,
-                        animationFrame: Enemy.Party[n].EII.animationSystem.animationFrame,
-                        step: frameperFPS / FPS);
-                    if (a == null || a.Item1.Length == 0)
-                        return;
-                    for (int k = 0; k < a.Item1.Length / 3; k++)
-                    {
-                        ate.Texture = (Texture2D)Enemy.Party[n].EII.Data.textures.textures[a.Item2[k]];
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                            vertexData: a.Item1, vertexOffset: k * 3, primitiveCount: 1);
-                        }
-                    }
-                }
-                DrawShadow(enemyPosition.GetVector(), ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
+                Vector3 enemyPosition = GetEnemyPos(n);
+                enemyPosition.Y += Yoffset;
+                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
+                DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
             }
+        }
+
+        private static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint : 
+            Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
+
+        private static Vector3 GetEnemyPos(int n) =>
+                        Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();
+
+        private static bool EnemyInstanceAnimationStopped(int n) =>
+            Enemy.Party[n].EII.animationSystem.AnimationStopped ||
+            (Enemy.Party[n].IsPetrify &&
+            Enemy.Party[n].EII.animationSystem.StopAnimation());
+
+        private static void StopAnimations()
+        {
+            foreach (CharacterInstanceInformation c in CharacterInstances)
+                c.animationSystem.StopAnimation();
+            foreach (Enemy e in Enemy.Party)
+                e.EII.animationSystem.StopAnimation();
+        }
+
+        private static void StartAnimations()
+        {
+            foreach (CharacterInstanceInformation c in CharacterInstances)
+                c.animationSystem.StartAnimation();
+            foreach (Enemy e in Enemy.Party)
+                e.EII.animationSystem.StartAnimation();
+        }
+
+        private static double GenerateStep(bool AnimationStopped)
+        {
+            if (AnimationStopped)
+                return 1d;
+            return (double)FrameTime.Ticks / FPS.Ticks;
         }
 
         /// <summary>
@@ -574,15 +752,14 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </summary>
         private static void UpdateFrames()
         {
-            double tick = (float)Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-            frameperFPS += tick;
-            if (frameperFPS > FPS)
+            FrameTime += Memory.gameTime.ElapsedGameTime;
+            if (FrameTime > FPS)
             {
                 if (Enemy.Party != null)
                     foreach (Enemy e in Enemy.Party)
                     {
-                        if (!e.EII.animationSystem.bStopAnimation && !e.IsPetrify)
-                            e.EII.animationSystem.animationFrame++;
+                        if (!e.EII.animationSystem.AnimationStopped && !e.IsPetrify)
+                            e.EII.animationSystem.NextFrame();
                     }
                 //for (int x = 0; x < Enemy.Party.Count; x++)
                 //{
@@ -593,8 +770,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 if (CharacterInstances != null)
                     foreach (CharacterInstanceInformation cii in CharacterInstances)
                     {
-                        if (!cii.animationSystem.bStopAnimation && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
-                            cii.animationSystem.animationFrame++;
+                        if (!cii.animationSystem.AnimationStopped && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
+                            cii.animationSystem.NextFrame();
                     }
                 //for (int x = 0; x < CharacterInstances.Count; x++)
                 //{
@@ -602,7 +779,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 //    InstanceInformationProvider.animationSystem.animationFrame++;
                 //    CharacterInstances[x] = InstanceInformationProvider;
                 //}
-                frameperFPS = 0.0f;
+                ResetTime();
             }
         }
 
@@ -621,16 +798,14 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             {
                 case Debug_battleDat.EntityType.Monster:
                     EnemyInstanceInformation MInstanceInformationProvider = Enemy.Party[nIndex].EII;
-                    MInstanceInformationProvider.animationSystem.animationId = newAnimId;
-                    MInstanceInformationProvider.animationSystem.animationFrame = 0;
+                    MInstanceInformationProvider.animationSystem.AnimationId = newAnimId;
                     Enemy.Party[nIndex].EII = MInstanceInformationProvider;
                     return;
 
                 case Debug_battleDat.EntityType.Character:
                 case Debug_battleDat.EntityType.Weapon:
                     CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
-                    CInstanceInformationProvider.animationSystem.animationId = newAnimId;
-                    CInstanceInformationProvider.animationSystem.animationFrame = 0;
+                    CInstanceInformationProvider.animationSystem.AnimationId = newAnimId;
                     CharacterInstances[nIndex] = CInstanceInformationProvider;
                     return;
 
@@ -644,20 +819,24 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             switch (entityType)
             {
                 case Debug_battleDat.EntityType.Monster:
-                    EnemyInstanceInformation MInstanceInformationProvider = Enemy.Party[nIndex].EII;
-                    MInstanceInformationProvider.animationSystem.AnimationQueue.Enqueue(newAnimId);
-                    Enemy.Party[nIndex].EII = MInstanceInformationProvider;
+                    Enemy.Party[nIndex].EII.animationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 case Debug_battleDat.EntityType.Character:
                 case Debug_battleDat.EntityType.Weapon:
-                    CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
-                    CInstanceInformationProvider.animationSystem.AnimationQueue.Enqueue(newAnimId);
-                    CharacterInstances[nIndex] = CInstanceInformationProvider;
+                    CharacterInstances[nIndex].animationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 default:
                     return;
+            }
+        }
+
+        public static void AddSequenceToQueue(Debug_battleDat.EntityType entityType, int nIndex, Debug_battleDat.AnimationSequence section5)
+        {
+            foreach (byte newAnimId in section5.AnimationQueue)
+            {
+                AddAnimationToQueue(entityType, nIndex, newAnimId);
             }
         }
 
@@ -760,12 +939,13 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
             if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
                 Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.startingTime}/{battleCamera.cam.time}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.CurrentTime}/{battleCamera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.startingTime / (float)battleCamera.cam.time)}"), 20, 30 * 6, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
         }
@@ -856,18 +1036,29 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             return new Vector2(fU, fV);
         }
 
+        private static Vector3 PyramidOffset = new Vector3(0, 3f, 0);
+
         private static void InitBattle()
         {
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             InputMouse.Mode = MouseLockMode.Center;
+            if (DeadTime == null)
+            {
+                DeadTime = new DeadTime();
+                DeadTime.DoneEvent += DeadTime_DoneEvent;
+            }
+            DeadTime.Restart();
             fps_camera = new FPS_Camera();
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
             int stage = enc.Scenario;
             battlename = $"a0stg{stage.ToString("000")}.x";
             Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
             Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
-
+            RegularPyramid = new Battle.RegularPyramid();
+            RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
+            //RegularPyramid.Set(PyramidOffset);
+            RegularPyramid.Hide();
             //init renderer
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
@@ -894,12 +1085,161 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             return;
         }
 
+        /// <summary>
+        /// Trigger Event when DeadTime is done.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+        private static void DeadTime_DoneEvent(object sender, int e)
+        {
+            //Will Gilgamesh appear?
+            if (TestGilgamesh())
+            { }
+            //Will Angelo Recover be used?
+            else if (TestAngelo(Angelo.Recover))
+            { }
+            //Will Angelo Reverse be used?
+            else if (TestAngelo(Angelo.Reverse))
+            { }
+            //Will Angelo Search be used?
+            else if (TestAngelo(Angelo.Search))
+            {
+                //Real game has a counter that count to 255 and resets to 0
+                //instead of a random number. The counter counts up every 1 tick.
+                //60 ticks per second.
+                byte rnd = checked((byte)Memory.Random.Next(256));
+                if (rnd < 128) Algorithm(1);
+                else if (rnd < 160) Algorithm(2);
+                else if (rnd < 176) Algorithm(3);
+                else if (rnd < 192) Algorithm(4);
+                else if (rnd < 200) Algorithm(5);
+                else Algorithm(6);
+                Saves.Item Algorithm(byte i)
+                {
+                    //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936
+                    //I'm unsure where in the game files this is.
+                    //In remaster they changed this. But unsure how
+                    // they added (Ribbon, Friendship, and Mog's Amulet)
+                    // using a true random kinda breaks this.
+                    // because in game random is a set array of numbers 0-255
+                    // so the number you get previous would determin the possible number you get
+                    // so these can only select specific numbers. But because we are using a real random
+                    // more items are possible. might need to tweak this.
+
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
+                    //these are added in remaster as possible items.
+                    const byte Ribbon = 100;
+                    const byte Friendship = 32;
+                    const byte Mogs_Amulet = 65;
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
+
+                    Saves.Item item = new Saves.Item { QTY = 1 };
+                    rnd = checked((byte)Memory.Random.Next(256));
+                    switch (i)
+                    {
+                        case 1: // 1-8
+                            item.ID = (byte)(rnd % 8 + 1);
+                            break;
+
+                        case 2: // 102-199
+                            item.ID = (byte)(rnd % 98);
+                            if (item.ID == 0) item.ID = 98;
+                            item.ID += 101;
+                            break;
+
+                        case 3: // 102-124
+                            item.ID = (byte)(rnd % 23);
+                            if (item.ID == 0)
+                                item.ID = 23;
+                            item.ID += 101;
+                            break;
+
+                        case 4: // 67-100
+                            item.ID = (byte)(rnd % 34);
+                            if (item.ID == 0)
+                                item.ID = 34;
+                            item.ID += 66;
+                            break;
+
+                        case 5: // 33-54
+                            item.ID = (byte)(rnd % 32 + 33);
+                            break;
+
+                        case 6:
+                        default: // 33-40
+                            item.ID = (byte)(rnd % 7 + 33);
+                            break;
+                    }
+                    return item;
+                }
+            }
+        }
+
+        private static bool TestAngelo(Angelo ability)
+        {
+            //else if (8 >= [0..255] Angelo Recover is used (3.3 %)
+            //else if (2 >= [0..255] Angelo Reverse is used (1 %)
+            //else if (8 >= [0..255] Angelo Search is used (3.2 %)
+            //Angelo_Disabled I think is set when Rinoa is in space so angelo is out of reach;
+            //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/25194
+            if (Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Angelo_Disabled) ||
+                !Memory.State.PartyData.Contains(Characters.Rinoa_Heartilly) ||
+                !Memory.State.LimitBreakAngelocompleted.HasFlag(ability)) return false;
+            else
+                switch (ability)
+                {
+                    case Angelo.Recover:
+                        return Memory.State.Characters.Any(x => x.Value.IsCritical && !x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 8;
+
+                    case Angelo.Reverse:
+                        return Memory.State.Characters.Any(x => x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 2;
+
+                    case Angelo.Search:
+                        Saves.CharacterData c = Memory.State[Characters.Rinoa_Heartilly];
+                        if (!(c.IsGameOver ||
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) ||
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) ||
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) ||
+                            c.Statuses1.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) ||
+                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Angel_Wing)))
+                            return Memory.Random.Next(256) < 8;
+                        break;
+                }
+            return false;
+        }
+
+        private static bool TestGilgamesh() =>
+
+            //if (12 >= [0..255]) Gilgamesh is summoned (5.1 %)
+            Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) < 12;
+
         #region fileParsing
+
+        private static List<Battle.Mag> MagALL;
+
+        static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
+        static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
+        static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count??0) >0) ?? null;
+        static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType >0).Select(x=>x.UnknownType) ?? null;
 
         private static void ReadData()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string[] test = aw.GetListOfFiles();
+            MagALL = new List<Battle.Mag>();
+            foreach (string filename in test.Where(x => x.IndexOf("mag", StringComparison.OrdinalIgnoreCase) > 0))
+            {
+                using (BinaryReader br = new BinaryReader(new MemoryStream(ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, filename))))
+                {
+                    Battle.Mag mag = new Battle.Mag(filename, br);
+                    MagALL.Add(mag);
+                }
+            }
+            var _MagGeo = MagGeometries.ToList();
+            var _MagPack = MagPacked.ToList();
+            var _MagTIM = MagTIMs.ToList();
+            var _MagUNKID = MagUNKID.ToList();
             battlename = test.First(x => x.ToLower().Contains(battlename));
             string fileName = Path.GetFileNameWithoutExtension(battlename);
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
@@ -944,7 +1284,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         }
 
         public static int DEBUG = 0;
-        private static double frameperFPS = 0.0d;
+        private static TimeSpan FrameTime = TimeSpan.Zero;
+
+        private static void ResetTime() => FrameTime = TimeSpan.FromTicks(FrameTime.Ticks % FPS.Ticks);
 
         public static ConcurrentDictionary<Characters, SortedSet<byte>> Costumes { get; private set; }
 
@@ -976,28 +1318,40 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
-        public static List<byte> Weapons { get; private set; }
+        public static ConcurrentDictionary<Characters, List<byte>> Weapons
+        {
+            get
+            {
+                FillWeapons();
+                return s_weapons;
+            }
+            private set => s_weapons = value;
+        }
 
         private static void FillWeapons()
         {
-            if (Weapons == null)
+            if (s_weapons == null)
             {
-                SortedSet<byte> _weapons = new SortedSet<byte>();
-                Regex r = new Regex(@"d([\da-fA-F]+)w(\d+)\.dat", RegexOptions.IgnoreCase);
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-
-                foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
+                Weapons = new ConcurrentDictionary<Characters, List<byte>>();
+                for (int i = 0; i <= (int)Characters.Ward_Zabac; i++)
                 {
-                    Match match = r.Match(s);
-                    if (match != null)
+                    SortedSet<byte> _weapons = new SortedSet<byte>();
+                    Regex r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase);
+                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+
+                    foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
                     {
-                        if (byte.TryParse(match.Groups[2].Value, out byte a))
+                        Match match = r.Match(s);
+                        if (match != null)
                         {
-                            _weapons.Add(a);
+                            if (byte.TryParse(match.Groups[2].Value, out byte a))
+                            {
+                                _weapons.Add(a);
+                            }
                         }
                     }
+                    Weapons.TryAdd((Characters)i, _weapons.ToList());
                 }
-                Weapons = _weapons.ToList();
             }
         }
 
@@ -1060,11 +1414,20 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
                 {
                     if (c != Characters.Blank)
                     {
+                        byte weaponId = 0;
+                        if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
+                            characterData.WeaponID < Kernel_bin.WeaponsData.Count)
+                        {
+                            byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
+                            if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
+                                weaponId = weapons[altID];
+                        }
+
                         CharacterInstanceInformation cii = new CharacterInstanceInformation
                         {
                             Data = ReadCharacterData((int)c,
                                 Memory.State[c].Alternativemodel == 0 ? Costumes[c].First() : Costumes[c].Last(),
-                                Weapons[Memory.State[c].WeaponID]),
+                                weaponId),
                             animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
                             characterId = cid++,
                         };
@@ -1100,12 +1463,12 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
         {
-            Debug_battleDat character = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
+            Debug_battleDat character = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
             Debug_battleDat weapon;
             if (characterId == 1 || characterId == 9)
-                weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
+                weapon = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
 #pragma warning disable IDE0045 // Convert to conditional expression
-            else if (weaponId != -1) weapon = new Debug_battleDat(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+            else if (weaponId != -1) weapon = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
 #pragma warning restore IDE0045 // Convert to conditional expression
             else weapon = null;
             return new CharacterData()
@@ -1138,7 +1501,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             IGrouping<byte, byte>[] DistinctMonsterPointers = monstersList.GroupBy(x => x).ToArray();
             monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
             for (int n = 0; n < monstersData.Length; n++)
-                monstersData[n] = new Debug_battleDat(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
+                monstersData[n] = Debug_battleDat.Load(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
             if (monstersData == null)
                 monstersData = new Debug_battleDat[0];
             Enemy.Party = new List<Enemy>(8);
@@ -1419,7 +1782,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             public ushort endingFOV; //006
             public ushort startingCameraRoll; //usually 0 unless you're aiming for some wicked animation
             public ushort endingCameraRoll; //
-            public ushort startingTime; //usually 0, that's pretty logical
+            private ushort startingTime; //usually 0, that's pretty logical
 
             /// <summary>
             /// Time is calculated from number of frames. You basically set starting position
@@ -1475,6 +1838,25 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
             public byte[] unkbyte4A4; //4A4
+            private const float V = 100f;
+            Vector3 offset => new Vector3(30, +40, 0);
+
+            public Vector3 Camera_World(int i) => new Vector3(
+                Camera_World_X_s16[i] / V, 
+                -(Camera_World_Y_s16[i] / V),
+                -(Camera_World_Z_s16[i] / V))+offset;
+            public Vector3 Camera_Lookat(int i) => new Vector3(
+                Camera_Lookat_X_s16[i] / V, 
+                -(Camera_Lookat_Y_s16[i] / V), 
+                -(Camera_Lookat_Z_s16[i] / V))+offset;
+            public void UpdateTime() => CurrentTime += Memory.gameTime.ElapsedGameTime;
+            public TimeSpan CurrentTime;
+            public TimeSpan TotalTime => TimeSpan.FromTicks(TotalTimePerFrame.Ticks * time);
+            /// <summary>
+            /// (1000) milliseconds / frames per second
+            /// </summary>
+            public TimeSpan TotalTimePerFrame => TimeSpan.FromMilliseconds(1000d / 240d);
+            
         };
 
         /// <summary>
@@ -1492,6 +1874,7 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
 
         private static BattleCamera battleCamera;
         private static bool bUseFPSCamera = false;
+        private static ConcurrentDictionary<Characters, List<byte>> s_weapons;
 
         /// <summary>
         /// Battle camera settings are about 32 bytes of unknown flags and variables used in whole
@@ -1572,9 +1955,9 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// </summary>
         /// <param name="encounter">instance of current encounter</param>
         /// <returns>Either primary or alternative camera from encounter</returns>
-        private static int GetRandomCameraN(Init_debugger_battle.Encounter encounter)
+        private static byte GetRandomCameraN(Init_debugger_battle.Encounter encounter)
         {
-            int camToss = Memory.Random.Next(3 + 1) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
+            int camToss = Memory.Random.Next(3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
             switch (camToss)
             {
                 case 0:
@@ -1588,17 +1971,29 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
         }
 
+        private struct CameraSetAnimGRP
+        {
+            public int Set { get; private set; }
+            public int Anim { get; private set; }
+
+            public CameraSetAnimGRP(int set, int anim)
+            {
+                Set = set;
+                Anim = anim;
+            }
+        }
+
         /// <summary>
         /// Returns tuple containing camera animation set pointer and camera animation in that set
         /// </summary>
         /// <param name="animId">6bit variable containing camera pointer</param>
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
-        private static Tuple<int, int> GetCameraCollectionPointers(int animId)
+        private static CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
         {
             Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
-            int pSet = enc.ResolveCameraSet((byte)animId);
-            int pAnim = enc.ResolveCameraAnimation((byte)animId);
-            return new Tuple<int, int>(pSet, pAnim);
+            int pSet = enc.ResolveCameraSet(animId);
+            int pAnim = enc.ResolveCameraAnimation(animId);
+            return new CameraSetAnimGRP(pSet, pAnim);
         }
 
         /// <summary>
@@ -1609,12 +2004,24 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
         /// Animation Id as of binary mask (0bXXXXYYYY where XXXX= animationSet and YYYY=animationId)
         /// </param>
         /// <returns></returns>
-        private static uint ReadAnimationById(int animId)
+        private static uint ReadAnimationById(byte animId)
         {
-            animId = DEBUGframe; //DEBUG
-            Tuple<int, int> tpGetter = GetCameraCollectionPointers(animId);
-            uint cameraAnimationGlobalPointer = battleCamera.battleCameraCollection.battleCameraSet[tpGetter.Item1].animPointers[tpGetter.Item2];
-            return ReadAnimation(cameraAnimationGlobalPointer);
+            animId = (byte)DEBUGframe; //DEBUG
+            CameraSetAnimGRP tpGetter = GetCameraCollectionPointers(animId);
+            BattleCameraSet[] battleCameraSetArray = battleCamera.battleCameraCollection.battleCameraSet;
+            if (battleCameraSetArray.Length > tpGetter.Set && battleCameraSetArray[tpGetter.Set].animPointers.Length > tpGetter.Anim)
+            {
+                BattleCameraSet battleCameraSet = battleCameraSetArray[tpGetter.Set];
+                uint cameraAnimationGlobalPointer = battleCameraSet.animPointers[tpGetter.Anim];
+                return ReadAnimation(cameraAnimationGlobalPointer);
+            }
+            else
+            {
+                Debug.WriteLine($"ReadAnimationById::{battleCameraSetArray.Length} < {tpGetter.Set}" +
+                    $"\nor\n" +
+                    $"{battleCameraSetArray[tpGetter.Set].animPointers.Length} < {tpGetter.Anim}");
+            }
+            return 0;
         }
 
         /// <summary>
@@ -1768,7 +2175,8 @@ battleCamera.cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
             }
             battleCamera.cam.keyframeCount = keyframecount;
             battleCamera.cam.time = totalframecount;
-            battleCamera.cam.startingTime = 0;
+            //battleCamera.cam.startingTime = 0;
+            battleCamera.cam.CurrentTime = TimeSpan.Zero;
             battleCamera.lastCameraPointer = (uint)(ms_.Position + 2);
             battleCamera.bMultiShotAnimation = br.ReadInt16() != -1;
             return (uint)(ms_.Position);

@@ -131,19 +131,29 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if(Damageable!=null) 
             {
-                List<KeyValuePair<int, Characters>> party = GetParty();
-                byte pos = GetCharPos(party);
-                if (pos == 0xFF) return;
-                Rectangle atbbarpos = new Rectangle(SIZE[pos].X + 230, SIZE[pos].Y + 12, ATBWidth, 15);
+                if (Memory.State?.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                {
+                    List<KeyValuePair<int, Characters>> party = GetParty();
+                    if (GetCharPos(party) == 0xFF) return;
+                }
+                else
+                {
+
+                }
+                sbyte pos = PartyPos;
+                Rectangle rectangle = SIZE[0];
+                Vector2 vector = SIZE[1].Location.ToVector2() - SIZE[0].Location.ToVector2();
+                rectangle.Offset(vector * pos);
+                Rectangle atbbarpos = new Rectangle(rectangle.X + 230, rectangle.Y + 12, ATBWidth, 15);
                 ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Pos = atbbarpos;
                 ((IGMDataItem.Texture)ITEM[0, (byte)DepthID.ATBCharged]).Pos = atbbarpos;
                 ((IGMDataItem.Icon)ITEM[0, (byte)DepthID.ATBBorder]).Pos = atbbarpos;
                 ((IGMDataItem.Gradient.GF)ITEM[0, (byte)DepthID.GFCharging]).Pos = atbbarpos;
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Data = c.Name;
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0);
-                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Pos = new Rectangle(SIZE[pos].X + 128, SIZE[pos].Y, 0, 0);
+                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Data = Damageable.Name;
+                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(rectangle.X-60, rectangle.Y, 0, 0);
+                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Pos = new Rectangle(rectangle.X + 128, rectangle.Y, 0, 0);
 
                 ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Draw(true);
                 ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Draw(true);
@@ -153,7 +163,7 @@ namespace OpenVIII.IGMData
                     ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).DataSize);
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y -= 4;
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Y = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Height = SIZE[pos].Height;
+                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Height = rectangle.Height;
                 ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).X =
                     ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).X -
                     (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width * 3) / 8;
@@ -224,10 +234,10 @@ namespace OpenVIII.IGMData
             {
                 IGMDataItem.Gradient.ATB hg = (IGMDataItem.Gradient.ATB)ITEM[0, 2];
             }
-            if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Damageable != null)
             {
-                int HP = c.CurrentHP();
-                int CriticalHP = c.CriticalHP();
+                int HP = Damageable.CurrentHP();
+                int CriticalHP = Damageable.CriticalHP();
                 Font.ColorID colorid = Font.ColorID.White;
                 if (HP < CriticalHP)
                 {

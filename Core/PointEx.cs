@@ -1,14 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
     /// <summary>
-    /// class to add offset to point
+    /// More Extensions
     /// </summary>
     public static class PointEx
     {
         #region Methods
+        /// <see cref="https://stackoverflow.com/questions/4615410/random-element-of-listt-from-linq-sql"/>
+        public static T Random<T>(this IEnumerable<T> input) => input.ElementAt(Memory.Random.Next(input.Count()));
+        public static T RandomOrDefault<T>(this IEnumerable<T> input) => input.ElementAtOrDefault(Memory.Random.Next(input.Count()));
         /// <summary>
         /// Rotate a Vector2 by degrees
         /// </summary>

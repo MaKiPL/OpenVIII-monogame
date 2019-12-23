@@ -105,13 +105,15 @@ namespace OpenVIII
             {
                 r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Float;
             }
+            r.Init();
             return r;
         }
 
         #endregion Constructors
 
         #region Properties
-
+        public IEnumerable<Kernel_bin.Enemy_Attacks_Data> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
+        public IEnumerable<GFs> JunctionedGFs => Memory.State != null? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
         public static List<Enemy> Party { get; set; }
 
         public byte AP => info.ap;
@@ -122,6 +124,7 @@ namespace OpenVIII
         /// Randomly gain 1 or 0 from this list.
         /// </summary>
         public Saves.Item[] DropList => hml(info.drophigh, info.dropmed, info.droplow);
+        public Debug_battleDat.Abilities[] Abilities => hml(info.abilitiesHigh, info.abilitiesMed, info.abilitiesLow);
 
         public byte DropRate => (byte)(MathHelper.Clamp(info.dropRate * 100 / byte.MaxValue, 0, 100));
 

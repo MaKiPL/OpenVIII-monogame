@@ -15,7 +15,6 @@ namespace OpenVIII.IGMData.Pool
 
         private const Font.ColorID nostat = Font.ColorID.Dark_Grey;
 
-        private bool Battle = false;
 
         private bool eventAdded = false;
 
@@ -81,10 +80,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Magic Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
-            Magic r = Create<Magic>(5, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.MAGIC }, 4, 13, damageable);
-            r.Battle = battle;
-            r.Refresh();
-            return r;
+            return Create<Magic>(5, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.MAGIC }, 4, 13, damageable,battle:battle);
         }
 
         public static Magic Create() => Create<Magic>(6, 3, new IGMDataItem.Box { Pos = new Rectangle(135, 150, 300, 192), Title = Icons.ID.MAGIC }, 4, 13);
@@ -95,14 +91,41 @@ namespace OpenVIII.IGMData.Pool
             int skip = Page * Rows;
 
             if (Battle || Sort == null)
-                for (int i = 0; pos < Rows && i < Source.Magics.Count; i++)
+                if (Damageable.GetEnemy(out Enemy e))
                 {
-                    // magic id and count
-                    KeyValuePair<byte, byte> dat = Source.Magics[i];
-                    // if invalid
-                    if (dat.Key == 0 || Kernel_bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
-                    addMagic(ref pos, Kernel_bin.MagicData[dat.Key], @default);
+                    bool add(Kernel_bin.Magic_Data magic)
+                    {
+                        if (pos >= Rows)
+                            return false;
+                        if (skip-- <= 0)
+                        {
+                            addMagic(ref pos, magic);
+                        }
+                        return true;
+                    }
+                    HashSet<Kernel_bin.Magic_Data> Unique_Magic = new HashSet<Kernel_bin.Magic_Data>();
+                    foreach (var m in e.Abilities.Where(x => x.MAGIC != null))
+                        Unique_Magic.Add(m.MAGIC);
+                    foreach (var m in e.DrawList.Where(x => x.DATA != null))
+                        Unique_Magic.Add(m.DATA);
+                    foreach(var m in Unique_Magic)
+                    {
+                        if (!add(m))
+                            break;
+                    }
+                    ITEM[Rows, 2].Hide();
+                    DefaultPages = Unique_Magic.Count / Rows;
+                    UpdateTitle();
                 }
+                else
+                    for (int i = 0; pos < Rows && Source?.Magics != null && i < Source.Magics.Count; i++)
+                    {
+                        // magic id and count
+                        KeyValuePair<byte, byte> dat = Source.Magics[i];
+                        // if invalid
+                        if (dat.Key == 0 || Kernel_bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
+                        addMagic(ref pos, Kernel_bin.MagicData[dat.Key], @default);
+                    }
             else
                 foreach (Kernel_bin.Magic_Data i in Sort)
                 {
@@ -222,7 +245,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs()
         {
             bool ret = false;
-            if (InputITEM(Targets_Window, 0, ref ret))
+            if (InputITEM(Target_Group, ref ret))
             { }
             else
             {
@@ -453,8 +476,12 @@ namespace OpenVIII.IGMData.Pool
 
         private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = @default)
         {
+            if (!Damageable.GetEnemy(out Enemy e))
+            {
+                e = null;
+            }
             bool j = false;
-            if (color == @default && Source.Stat_J.ContainsValue(spell.ID))
+            if (color == @default && e == null && Source != null && Source.Stat_J.ContainsValue(spell.ID))
             {
                 //spell is junctioned
                 if (!Battle)
@@ -468,8 +495,12 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[pos, 1].Show();
             else
                 ITEM[pos, 1].Hide();
-            ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Source.Magics[spell.ID];
-            ITEM[pos, 2].Show();
+            int count = Source?.Magics[spell.ID] ?? 0;
+            ((IGMDataItem.Integer)ITEM[pos, 2]).Data = count;
+            if (count <= 0)
+                ITEM[pos, 2].Hide();
+            else
+                ITEM[pos, 2].Show();
             //makes it so you cannot junction a magic to a stat that does nothing.
             BLANKS[pos] = color == nostat ? true : false;
             Contents[pos] = spell.ID;

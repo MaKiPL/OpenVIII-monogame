@@ -6,17 +6,11 @@ namespace OpenVIII.IGMData.Pool
 {
     public class GF : IGMData.Pool.Base<Saves.Data, GFs>
     {
-        #region Fields
-
-        private bool Battle = false;
-
-        #endregion Fields
-
         #region Properties
 
         public Dictionary<GFs, Characters> JunctionedGFs { get; private set; }
 
-        public List<GFs> UnlockedGFs { get; private set; }
+        public IEnumerable<GFs> UnlockedGFs { get; private set; }
 
         #endregion Properties
 
@@ -37,7 +31,7 @@ namespace OpenVIII.IGMData.Pool
                 DefaultPages = 4,
                 Battle = battle
             };
-            r.Init(damageable, null);
+            r.SetDamageable(damageable, null);
             r.Init();
             r.Refresh();
             r.Update();
@@ -84,7 +78,7 @@ namespace OpenVIII.IGMData.Pool
                     {
                         //Purge everything that you can't have anymore. Because the GF provided for you.
                         List<Kernel_bin.Abilities> a = (characterdata).UnlockedGFAbilities;
-                        characterdata.JunctionnedGFs ^= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == select).Key;
+                        characterdata.RemoveJunctionedGF(select);
                         List<Kernel_bin.Abilities> b = (characterdata).UnlockedGFAbilities;
                         foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => !Kernel_bin.Junctionabilities.ContainsKey(v)))
                         {
@@ -168,31 +162,42 @@ namespace OpenVIII.IGMData.Pool
         {
             Source = Memory.State;
             JunctionedGFs = Source.JunctionedGFs();
-            UnlockedGFs = Source.UnlockedGFs();
+            UnlockedGFs = Source.UnlockedGFs;
             ((IGMDataItem.Icon)ITEM[Rows, 2]).Data = Battle ? Icons.ID.HP : Icons.ID.Size_16x08_Lv_;
-            if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Damageable != null)
             {
                 int pos = 0;
                 int skip = Page * Rows;
-                if (Battle)
+                if (Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID && !Source[g].IsDead, Font.ColorID.White);
-                    AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID && Source[g].IsDead, Font.ColorID.Red, true);
+                    if (Battle)
+                    {
+                        AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID && !Source[g].IsDead, Font.ColorID.White);
+                        AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID && Source[g].IsDead, Font.ColorID.Red, true);
+                    }
+                    else
+                    {
+                        AddGFs(ref pos, ref skip, g => !JunctionedGFs.ContainsKey(g), Font.ColorID.White);
+                        AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID, Font.ColorID.Grey);
+                        AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID, Font.ColorID.Dark_Grey);
+                        UpdateCharacter();
+                    }
                 }
-                else
+                else if (Damageable.GetEnemy(out Enemy e))
                 {
-                    AddGFs(ref pos, ref skip, g => !JunctionedGFs.ContainsKey(g), Font.ColorID.White);
-                    AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID, Font.ColorID.Grey);
-                    AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID, Font.ColorID.Dark_Grey);
-                    UpdateCharacter();
+                    var gfs = e.JunctionedGFs;
+                    foreach (GFs g in gfs)
+                    {
+                        if(!AddGF(ref pos, ref skip, g, Source[g].IsDead ? Font.ColorID.Red : Font.ColorID.White, Source[g].IsDead)) break;
+                    }
                 }
                 for (; pos < Rows; pos++)
                     HideChild(pos);
-                base.Refresh();
-                UpdateTitle();
             }
+            base.Refresh();
+            UpdateTitle();
         }
-
+        
         public override void UpdateTitle()
         {
             base.UpdateTitle();
@@ -217,7 +222,7 @@ namespace OpenVIII.IGMData.Pool
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem.Icon
             {
-                Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 30, SIZE[Rows].Y, 0, 0),
+                Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - (Battle ? 50 : 30), SIZE[Rows].Y, 0, 0),
                 Scale = new Vector2(2.5f)
             };
             for (int i = 0; i < Rows;)
@@ -269,6 +274,7 @@ namespace OpenVIII.IGMData.Pool
                 ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = color;
                 ((IGMDataItem.Integer)ITEM[pos, 2]).Data = Battle ? Source.GFs[g].CurrentHP() : Source.GFs[g].Level;
                 ShowChild(pos, g);
+                if (Battle) ITEM[pos, 1].Hide();
             }
             else
             {
@@ -287,13 +293,19 @@ namespace OpenVIII.IGMData.Pool
         {
             foreach (GFs g in UnlockedGFs.Where(predicate))
             {
-                if (pos >= Rows) break;
-                if (skip-- <= 0)
-                {
-                    BLANKS[pos] = blank;
-                    AddGF(ref pos, g, colorid);
-                }
+                if (!AddGF(ref pos, ref skip, g, colorid, blank)) break;
             }
+        }
+
+        private bool AddGF(ref int pos, ref int skip, GFs g, Font.ColorID colorid, bool blank)
+        {
+            if (pos >= Rows) return false;
+            if (skip-- <= 0)
+            {
+                BLANKS[pos] = blank;
+                AddGF(ref pos, g, colorid);
+            }
+            return true;
         }
 
         private void HideChild(int pos)

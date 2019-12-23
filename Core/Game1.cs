@@ -41,7 +41,6 @@ namespace OpenVIII
 
             Module_movie_test.Init();
 
-            Memory.Random = new Random((int)DateTime.Now.Ticks); //creates global random class for all sort of things
             base.Initialize();
         }
 

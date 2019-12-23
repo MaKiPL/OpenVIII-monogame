@@ -39,6 +39,8 @@ namespace OpenVIII.IGMData.Target
             base.Inputs_Right();
         }
 
+        public void Random() => SetCursor_select(BLANKS.Cast<bool>().Select((enabled, index) => new { enabled, index }).Where(x => !x.enabled).Random().index);
+
         public override void Refresh()
         {
             if (Memory.State?.Characters != null && Memory.State?.Party != null)

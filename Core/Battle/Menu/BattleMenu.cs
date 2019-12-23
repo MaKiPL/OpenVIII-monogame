@@ -34,7 +34,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public bool CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
+        public sbyte CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
 
         public IGMData.Renzokeken Renzokeken
         {
@@ -80,15 +80,6 @@ namespace OpenVIII
                 case Damageable.BattleMode.EndTurn:
                     Reset();
                     Refresh();
-                    break;
-
-                case Damageable.BattleMode.ATB_Charged:
-                    Data[SectionName.Commands].Hide();
-                    break;
-
-                case Damageable.BattleMode.YourTurn:
-                    Data[SectionName.Commands].Show();
-                    Data[SectionName.Commands].Refresh();
                     break;
             }
         }

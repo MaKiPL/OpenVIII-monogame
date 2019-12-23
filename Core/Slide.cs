@@ -5,96 +5,104 @@ namespace OpenVIII
 {
     public class Slide<T>
     {
-        #region Fields
-
-        private T _current;
-        private double _currentMS;
-        private float _currentPercent;
-        private T _end;
-        private Func<T, T, float, T> _function;
-        private T _start;
-        private double _totalMS;
-        private double _reverseMS = 0;
-        private double _delayMS = 0;
-
-        #endregion Fields
-
         #region Constructors
 
-        public Slide(T start, T end, double totalMS, Func<T, T, float, T> function)
+        public Slide(T start, T end, TimeSpan totalTime, Func<T, T, float, T> function)
         {
-            _start = start;
-            _end = end;
-            _totalMS = totalMS;
-            _function = function;
+            Start = start;
+            End = end;
+            TotalTime = totalTime;
+            Debug.Assert(TotalTime != TimeSpan.Zero);
+            Function = function;
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public T Current => _current;//Done ? _end : _current;
-        public double CurrentMS => _currentMS;
-        public float CurrentPercent => _currentPercent;
-        public bool Done => _currentMS-DelayMS >= _totalMS;
+        public T Current { get; private set; }
+        public TimeSpan CurrentTime { get; private set; }
+        public float CurrentPercent { get; private set; }
+        public bool Repeat { get; set; } = false;
 
-        public T End { get => _end; set => _end = value; }
-        public Func<T, T, float, T> Function { get => _function; set => _function = value; }
-        public T Start { get => _start; set => _start = value; }
-        public double TotalMS { get => _totalMS; set => _totalMS = value; }
-        public double ReverseMS { get => _reverseMS; set => _reverseMS = value; }
-        public bool Reversed { get; private set; } = false;
         /// <summary>
         /// When started wait this many MS before moving.
         /// </summary>
-        public double DelayMS { get => _delayMS; set => _delayMS = value; }
+        public TimeSpan Delay { get; set; }
+
+        public bool Done => CurrentTime - Delay >= TotalTime;
+
+        public T End { get; set; }
+        public Func<T, T, float, T> Function { get; set; }
+        public bool Reversed { get; private set; } = false;
+        public TimeSpan ReversedTime { get; set; }
+        public T Start { get; set; }
+        public TimeSpan TotalTime { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        public void Restart() => _currentMS = 0d;
+        public void Restart() => CurrentTime = TimeSpan.Zero;
+
+        public void Reverse()
+        {
+            T tempValue = Start;
+            Start = End;
+            End = tempValue;
+            if (ReversedTime > TimeSpan.Zero)
+            {
+                TimeSpan tempTime = ReversedTime;
+                ReversedTime = TotalTime;
+                TotalTime = tempTime;
+            }
+            Reversed = !Reversed;
+        }
+
         public void ReverseRestart()
         {
             Reverse();
             Restart();
         }
-        public void Reverse()
-        {
-            T tmp = _start;
-            _start = _end;
-            _end = tmp;
-            if (_reverseMS > double.Epsilon)
-            {
-                double t = _reverseMS;
-                _reverseMS = _totalMS;
-                _totalMS = t;
-            }
-            Reversed = !Reversed;
-        }
 
         public T Update()
         {
-            if (!Done && _function != null)
+            if ((!Done || Repeat) && Function != null)
             {
                 UpdatePercent();
-                _current = _function(_start, _end, _currentPercent);
-                return _current;
+                Current = Function(Start, End, CurrentPercent);
+                return Current;
             }
-            return _end;
+            return End;
         }
 
         public float UpdatePercent()
         {
-            //Debug.WriteLine($"{this}::{Memory.gameTime.ElapsedGameTime.TotalMilliseconds}");
-            _currentPercent = 1f;
-            if (!Done)
+            CurrentPercent = 1f;
+            if (!Done || Repeat)
             {
-                _currentMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                return _currentPercent = _currentMS < _delayMS? 0f: (float)(Done ? 1f : (_currentMS- _delayMS) / _totalMS);
+                CurrentTime += Memory.gameTime.ElapsedGameTime;
+                //CheckRepeat();
+                //return CurrentPercent = CurrentTime < Delay ? 0f : (float)(Done ? 1f : (CurrentTime - Delay).TotalMilliseconds / TotalTime.TotalMilliseconds);
+                CheckRepeat();
+                if (CurrentTime < Delay)
+                    return CurrentPercent = 0f;
+                return CurrentPercent = (float)((CurrentTime - Delay).Ticks / (double)TotalTime.Ticks);
             }
             else
-                return _currentPercent;
+                return CurrentPercent;
+        }
+
+        protected virtual void CheckRepeat()
+        {
+            if (Repeat && Done)
+                CurrentTime = TimeSpan.FromTicks((CurrentTime - Delay).Ticks % TotalTime.Ticks);
+        }
+
+        public virtual void GotoEnd()
+        {
+            Current = End;
+            CurrentTime = TotalTime;
         }
 
         #endregion Methods

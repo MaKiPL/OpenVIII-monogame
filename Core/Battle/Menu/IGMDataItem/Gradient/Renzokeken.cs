@@ -33,7 +33,7 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         #region Methods
 
-        public static Renzokeken Create(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, double time = 0d, double delay = 0d, Color? darkcolor = null, bool rev = false, bool vanish = true)
+        public static Renzokeken Create(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, TimeSpan time = default, TimeSpan delay = default, Color? darkcolor = null, bool rev = false, bool vanish = true)
         {
             int total = 12 + 180;
             if (pos.HasValue && pos.Value.Width > 0)
@@ -75,8 +75,8 @@ namespace OpenVIII.IGMDataItem.Gradient
             r.Width = r.Data.Width;
             r.Data.SetData(cfade);
 
-            if (vanish) r.HitSlide = new Slide<int>(r.Restriction.X + r.Restriction.Width, r.Restriction.X - r.Width, time, Lerp) { DelayMS = delay };
-            else r.HitSlide = new Slide<int>(r.Restriction.X, r.Restriction.X - r.Width, time, Lerp) { DelayMS = delay };
+            if (vanish) r.HitSlide = new Slide<int>(r.Restriction.X + r.Restriction.Width, r.Restriction.X - r.Width, time, Lerp) { Delay = delay };
+            else r.HitSlide = new Slide<int>(r.Restriction.X, r.Restriction.X - r.Width, time, Lerp) { Delay = delay };
             if (rev) r.HitSlide.Reverse();
 
             int Lerp(int x, int y, float p) => (int)Math.Round(MathHelper.Lerp(x, y, p));

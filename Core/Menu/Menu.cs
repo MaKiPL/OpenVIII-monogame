@@ -11,13 +11,13 @@ namespace OpenVIII
     {
         #region Fields
 
-        public static Slide<float> BlinkSlider = new Slide<float>(_fadedout, _fadedin, _blinkinspeed, MathHelper.Lerp) { ReverseMS = _blinkoutspeed };
+        public static Slide<float> BlinkSlider = new Slide<float>(_fadedout, _fadedin, _blinkinspeed, MathHelper.Lerp) { ReversedTime = _blinkoutspeed };
 
         public static EventHandler FadedInHandler;
 
         public static EventHandler FadedOutHandler;
 
-        public static Slide<float> FadeSlider = new Slide<float>(_fadedout, _fadedin, _fadeinspeed, MathHelper.Lerp) { ReverseMS = _fadeoutspeed };
+        public static Slide<float> FadeSlider = new Slide<float>(_fadedout, _fadedin, _fadeinspeed, MathHelper.Lerp) { ReversedTime = _fadeoutspeed };
 
         public ConcurrentDictionary<Enum, Menu_Base> Data;
 
@@ -25,33 +25,9 @@ namespace OpenVIII
 
         protected bool skipdata;
 
-        /// <summary>
-        /// <para>Time to fade out in milliseconds</para>
-        /// <para>Larger is slower</para>
-        /// </summary>
-        private const int _blinkinspeed = 500;
-
-        /// <summary>
-        /// <para>Time to fade out in milliseconds</para>
-        /// <para>Larger is slower</para>
-        /// </summary>
-        private const int _blinkoutspeed = 900;
-
         private const float _fadedin = 1f;
 
         private const float _fadedout = 0f;
-
-        /// <summary>
-        /// <para>Time to fade out in milliseconds</para>
-        /// <para>Larger is slower</para>
-        /// </summary>
-        private const int _fadeinspeed = 700;
-
-        /// <summary>
-        /// <para>Time to fade out in milliseconds</para>
-        /// <para>Larger is slower</para>
-        /// </summary>
-        private const int _fadeoutspeed = 1500;
 
         /// <summary>
         /// Scale of Menu Items (Background and Cursor)
@@ -163,6 +139,30 @@ namespace OpenVIII
         /// Viewport dimensions
         /// </summary>
         protected Vector2 vp => new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private static TimeSpan _blinkinspeed => TimeSpan.FromMilliseconds(500d);
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private static TimeSpan _blinkoutspeed => TimeSpan.FromMilliseconds(900d);
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private static TimeSpan _fadeinspeed => TimeSpan.FromMilliseconds(700d);
+
+        /// <summary>
+        /// <para>Time to fade out in milliseconds</para>
+        /// <para>Larger is slower</para>
+        /// </summary>
+        private static TimeSpan _fadeoutspeed => TimeSpan.FromMilliseconds(1500d);
 
         /// <summary>
         /// if canceled don't init menu.
@@ -433,7 +433,14 @@ namespace OpenVIII
         {
             if (!skipdata)
                 foreach (KeyValuePair<Enum, Menu_Base> i in Data)
+                // children might have a damageable set.
+                // if parents may not always have one set.
+                {
+                    if (ForceNullDamageable)
+                        i.Value.ForceNullDamageable = ForceNullDamageable;
                     i.Value.Refresh(Damageable);
+                }
+            ForceNullDamageable = false;
         }
 
         private static void UpdateFade(object sender = null)

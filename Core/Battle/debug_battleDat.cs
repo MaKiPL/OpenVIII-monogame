@@ -9,12 +9,26 @@ using System.Runtime.InteropServices;
 
 namespace OpenVIII
 {
+    public static class VertexPositionTexturePointersGRP_Ext
+    {
+        public static bool IsNotSet(this Debug_battleDat.VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP)
+        {
+            if ((vertexPositionTexturePointersGRP.VPT?.Length ?? 0) > 0 && (vertexPositionTexturePointersGRP.TexturePointers?.Length ?? 0) > 0)
+            {
+                //3 vertices per every texture pointer.
+                Debug.Assert(vertexPositionTexturePointersGRP.VPT.Length / 3 == vertexPositionTexturePointersGRP.TexturePointers.Length);
+                return false;
+            }
+            return true;
+        }
+
+        public static bool IsSet(this Debug_battleDat.VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP) => !vertexPositionTexturePointersGRP.IsNotSet();
+    }
+
     public partial class Debug_battleDat
     {
-        private int id;
-        private readonly EntityType entityType;
         private byte[] buffer;
-
+        private const float BaseLineMaxYFilter = 10f;
         public const float SCALEHELPER = 2048.0f;
         private const float DEGREES = 360f;
 
@@ -45,14 +59,14 @@ namespace OpenVIII
             public Vector3 GetScale => new Vector3(scale / SCALEHELPER * 12, scale / SCALEHELPER * 12, scale / SCALEHELPER * 12);
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 48)]
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 44)]
         public struct Bone
         {
             public ushort parentId;
             public short boneSize;
-            private short unk1; //360
-            private short unk2; //360
-            private short unk3; //360
+            private short rotx; //360
+            private short roty; //360
+            private short rotz; //360
             private short unk4;
             private short unk5;
             private short unk6;
@@ -61,9 +75,9 @@ namespace OpenVIII
             public byte[] Unk;
 
             public float Size => boneSize / SCALEHELPER;
-            public float Unk1 => unk1 / 4096.0f * 360.0f;  //rotX
-            public float Unk2 => unk2 / 4096.0f * 360.0f;  //rotY
-            public float Unk3 => unk3 / 4096.0f * 360.0f;  //rotZ
+            public float RotX => rotx / 4096.0f * 360.0f;  //rotX
+            public float RotY => roty / 4096.0f * 360.0f;  //rotY
+            public float RotZ => rotz / 4096.0f * 360.0f;  //rotZ
             public float Unk4 => unk4 / 4096.0f;  //unk1v
             public float Unk5 => unk5 / 4096.0f;  //unk2v
             public float Unk6 => unk6 / 4096.0f;  //unk3v
@@ -72,12 +86,10 @@ namespace OpenVIII
         /// <summary>
         /// Skeleton data section
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="ms"></param>
-        /// <param name="br"></param>
-        private void ReadSection1(uint v, BinaryReader br, string fileName)
+        /// <param name="start"></param>
+        private void ReadSection1(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
 #if _WINDOWS //looks like Linux Mono doesn't like marshalling structure with LPArray to Bone[]
             skeleton = Extended.ByteArrayToStructure<Skeleton>(br.ReadBytes(16));
 #else
@@ -95,7 +107,10 @@ namespace OpenVIII
 #endif
             skeleton.bones = new Bone[skeleton.cBones];
             for (int i = 0; i < skeleton.cBones; i++)
-                skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(48));
+            {
+                skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(44));
+                br.BaseStream.Seek(4, SeekOrigin.Current);
+            }
             //string debugBuffer = string.Empty;
             //for (int i = 0; i< skeleton.cBones; i++)
             //    debugBuffer += $"{i}|{skeleton.bones[i].parentId}|{skeleton.bones[i].boneSize}|{skeleton.bones[i].Size}\n";
@@ -120,7 +135,7 @@ namespace OpenVIII
         public struct Object
         {
             public ushort cVertices;
-            public VerticeData[] verticeData;
+            public VerticeData[] vertexData;
             public ushort cTriangles;
             public ushort cQuads;
             public ulong padding;
@@ -132,17 +147,26 @@ namespace OpenVIII
         {
             public ushort boneId;
             public ushort cVertices;
-            public Vertex[] vertices;
+            public Vector3[] vertices;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
         public struct Vertex
         {
-            public short x;
-            public short y;
-            public short z;
+            public short x { get; private set; }
+            public short y { get; private set; }
+            public short z { get; private set; }
 
-            public Vector3 GetVector => new Vector3(-x / SCALEHELPER, -z / SCALEHELPER, -y / SCALEHELPER);
+            public Vertex(short x, short y, short z)
+            {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            }
+
+            public static implicit operator Vector3(Vertex v) => new Vector3(-v.x / SCALEHELPER, -v.z / SCALEHELPER, -v.y / SCALEHELPER);
+
+            public override string ToString() => $"x={x}, y={y}, z={z}, Vector3={(Vector3)this}";
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
@@ -157,10 +181,84 @@ namespace OpenVIII
             public UV vtc;
             public ushort u;
 
+            private VertexPositionTexture[] TempVPT;
+
             public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+
+            public ushort GetIndex(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return C1; //for some reason C is first in triangle
+
+                    case 1:
+                        return A1;
+
+                    case 2:
+                        return B1;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+            }
+
+            public UV GetUV(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return vta;
+
+                    case 1:
+                        return vtb;
+
+                    case 2:
+                        return vtc;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+            }
+
+            public byte this[int i]
+            {
+                get
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            return 0;
+
+                        case 1:
+                            return 1;
+
+                        case 2:
+                            return 2;
+                    }
+                    throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+                }
+            }
+
+            public byte[] Indices => new byte[] { this[0], this[1], this[2] };
+            public byte Count => 3;
+
+            public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> verts, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
+            {
+                if (TempVPT == null)
+                    TempVPT = new VertexPositionTexture[Count];
+                VertexPositionTexture GetVPT(ref Triangle triangle, byte i)
+                {
+                    Vector3 GetVertex(ref Triangle _triangle, byte _i)
+                    {
+                        return TransformVertex(verts[_triangle.GetIndex(_i)], translationPosition, rotation);
+                    }
+                    return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
+                }
+                TempVPT[0] = GetVPT(ref this, this[0]);
+                TempVPT[1] = GetVPT(ref this, this[1]);
+                TempVPT[2] = GetVPT(ref this, this[2]);
+                return TempVPT;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
@@ -177,11 +275,97 @@ namespace OpenVIII
             public UV vtc;
             public UV vtd;
 
+            private VertexPositionTexture[] TempVPT;
+
             public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
             public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+
+            public ushort GetIndex(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return A1;
+
+                    case 1:
+                        return B1;
+
+                    case 2:
+                        return C1;
+
+                    case 3:
+                        return D1;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
+            }
+
+            public UV GetUV(int i)
+            {
+                switch (i)
+                {
+                    case 0:
+                        return vta;
+
+                    case 1:
+                        return vtb;
+
+                    case 2:
+                        return vtc;
+
+                    case 3:
+                        return vtd;
+                }
+                throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
+            }
+
+            public byte this[int i]
+            {
+                get
+                {
+                    switch (i)
+                    {
+                        case 0:
+                        case 3:
+                            return 0;
+
+                        case 1:
+                            return 1;
+
+                        case 2:
+                        case 5:
+                            return 3;
+
+                        case 4:
+                            return 2;
+                    }
+                    throw new IndexOutOfRangeException($"{this} :: 0-5 are only valid values");
+                }
+            }
+
+            public byte[] Indices => new byte[] { this[0], this[1], this[2], this[3], this[4], this[5] };
+            public byte Count => 6;
+
+            public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> verts, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
+            {
+                if (TempVPT == null)
+                    TempVPT = new VertexPositionTexture[Count];
+                VertexPositionTexture GetVPT(ref Quad quad, byte i)
+                {
+                    Vector3 GetVertex(ref Quad _quad, byte _i)
+                    {
+                        return TransformVertex(verts[_quad.GetIndex(_i)], translationPosition, rotation);
+                    }
+                    return new VertexPositionTexture(GetVertex(ref quad, i), quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
+                }
+                TempVPT[0] = TempVPT[3] = GetVPT(ref this, this[0]);
+                TempVPT[1] = GetVPT(ref this, this[1]);
+                TempVPT[4] = GetVPT(ref this, this[4]);
+                TempVPT[2] = TempVPT[5] = GetVPT(ref this, this[2]);
+                return TempVPT;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 2)]
@@ -198,44 +382,46 @@ namespace OpenVIII
                         (V - 96) / w
                         : V / w;  //if none of these cases, then divide by resolution;
 
+            public Vector2 ToVector2(float w, float h) => new Vector2(U1(w), V1(h));
+
             public override string ToString() => $"{U};{U1()};{V};{V1()}";
         }
 
         public Geometry geometry;
 
         /// <summary>
-        /// Geometry section
+        /// Model Geometry section
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="ms"></param>
+        /// <param name="start"></param>
         /// <param name="br"></param>
-        private void ReadSection2(uint v, BinaryReader br, string fileName)
+        /// <param name="fileName"></param>
+        private void ReadSection2(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             geometry = new Geometry { cObjects = br.ReadUInt32() };
             geometry.pObjects = new uint[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
                 geometry.pObjects[i] = br.ReadUInt32();
             geometry.objects = new Object[geometry.cObjects];
             for (int i = 0; i < geometry.cObjects; i++)
-                geometry.objects[i] = ReadGeometryObject(v + geometry.pObjects[i], br);
+                geometry.objects[i] = ReadGeometryObject(start + geometry.pObjects[i]);
             geometry.cTotalVert = br.ReadUInt32();
         }
 
-        private Object ReadGeometryObject(uint v, BinaryReader br)
+        private Object ReadGeometryObject(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             Object @object = new Object { cVertices = br.ReadUInt16() };
-            @object.verticeData = new VerticeData[@object.cVertices];
+            @object.vertexData = new VerticeData[@object.cVertices];
             if (br.BaseStream.Position + @object.cVertices * 6 >= br.BaseStream.Length)
                 return @object;
             for (int n = 0; n < @object.cVertices; n++)
             {
-                @object.verticeData[n].boneId = br.ReadUInt16();
-                @object.verticeData[n].cVertices = br.ReadUInt16();
-                @object.verticeData[n].vertices = new Vertex[@object.verticeData[n].cVertices];
-                for (int i = 0; i < @object.verticeData[n].cVertices; i++)
-                    @object.verticeData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));
+                @object.vertexData[n].boneId = br.ReadUInt16();
+                @object.vertexData[n].cVertices = br.ReadUInt16();
+                @object.vertexData[n].vertices = new Vector3[@object.vertexData[n].cVertices];
+                for (int i = 0; i < @object.vertexData[n].cVertices; i++)
+                    @object.vertexData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));
             }
             br.BaseStream.Seek(4 - (br.BaseStream.Position % 4 == 0 ? 4 : br.BaseStream.Position % 4), SeekOrigin.Current);
             @object.cTriangles = br.ReadUInt16();
@@ -252,6 +438,40 @@ namespace OpenVIII
 
             return @object;
         }
+
+        public struct VectorBoneGRP
+        {
+            private Vector3 Vector { get; set; }
+            public int BoneID { get; private set; }
+            public float X => Vector.X;
+            public float Y => Vector.Y;
+            public float Z => Vector.Z;
+
+            public static implicit operator Vector3(VectorBoneGRP vbg) => vbg.Vector;
+
+            public VectorBoneGRP(Vector3 vector, int boneID)
+            {
+                Vector = vector;
+                BoneID = boneID;
+            }
+
+            public override string ToString() => $"Vector: {Vector}, Bone ID: {BoneID}";
+        }
+
+        public struct VertexPositionTexturePointersGRP
+        {
+            public VertexPositionTexturePointersGRP(VertexPositionTexture[] vpt, byte[] texturepointers) : this()
+            {
+                this.VPT = vpt;
+                this.TexturePointers = texturepointers;
+            }
+
+            public VertexPositionTexture[] VPT { get; private set; }
+            public byte[] TexturePointers { get; private set; }
+        }
+
+        public Vector3 IndicatorPoint { get => _indicatorPoint; }
+        //public ConcurrentDictionary<Tuple<int, int>, float> lowpoints = new ConcurrentDictionary<Tuple<int, int>, float>();
 
         /// <summary>
         /// This method returns geometry data AFTER animation matrix translations, local
@@ -277,76 +497,90 @@ namespace OpenVIII
         /// constant 15 FPS
         /// </param>
         /// <returns></returns>
-        public Tuple<VertexPositionTexture[], byte[]> GetVertexPositions(int objectId, Vector3 position, Quaternion rotation, int animationId, int animationFrame, double step)
+        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, ref Vector3 translationPosition, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
         {
-            Object obj = geometry.objects[objectId];
-            if (animationFrame >= animHeader.animations[animationId].animationFrames.Length || animationFrame < 0)
-                animationFrame = 0;
-            AnimationFrame frame = animHeader.animations[animationId].animationFrames[animationFrame];
-            AnimationFrame nextFrame = animationFrame + 1 >= animHeader.animations[animationId].animationFrames.Length
-                ? animHeader.animations[animationId].animationFrames[0]
-                : animHeader.animations[animationId].animationFrames[animationFrame + 1];
-            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
-            List<Tuple<Vector3, int>> verts = new List<Tuple<Vector3, int>>();
+            if (animationSystem.AnimationFrame >= animHeader.animations[animationSystem.AnimationId].animationFrames.Length || animationSystem.AnimationFrame < 0)
+                animationSystem.AnimationFrame = 0;
+            AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
+            int lastAnimationFrame = animationSystem.LastAnimationFrame;
+            AnimationFrame[] lastAnimationFrames = animHeader.animations[animationSystem.LastAnimationId].animationFrames;
+            lastAnimationFrame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrame : lastAnimationFrames.Length - 1;
+            AnimationFrame frame = lastAnimationFrames[lastAnimationFrame];
 
+            Object obj = geometry.objects[objectId];
             int i = 0;
-            foreach (VerticeData a in obj.verticeData)
-                foreach (Vertex b in a.vertices)
-                    verts.Add(CalculateFrame(new Tuple<Vector3, int>(b.GetVector, a.boneId), frame, nextFrame, step));
+
+            List<VectorBoneGRP> verts = GetVertices(obj, frame, nextFrame, step);
+            //float minY = verts.Min(x => x.Y);
+            //Vector2 HLPTS = FindLowHighPoints(translationPosition, rotation, frame, nextFrame, step);
+
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
-            Vector3 translationPosition = position /*+ Vector3.SmoothStep(frame.Position, nextFrame.Position, step) + snapToGround*/;
+            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
+
+            if (objectId == 0)
+            {
+                Module_battle_debug.AnimationSystem _animationSystem = animationSystem;
+                AnimationYOffset lastoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.LastAnimationId && x.Frame == lastAnimationFrame) ?? default;
+                AnimationYOffset nextoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.AnimationId && x.Frame == _animationSystem.AnimationFrame) ?? default;
+                float offsetylow = MathHelper.Lerp(lastoffsets.LowY, nextoffsets.LowY, (float)step);
+                _indicatorPoint.X = MathHelper.Lerp(lastoffsets.MidX, nextoffsets.MidX, (float)step);
+                _indicatorPoint.Y = MathHelper.Lerp(lastoffsets.HighY, nextoffsets.HighY, (float)step);
+                _indicatorPoint.Z = MathHelper.Lerp(lastoffsets.MidZ, nextoffsets.MidZ, (float)step);
+                // Move All Y axis down to 0 based on Lowest Y axis in Animation ID 0.
+                if (OffsetY < 0)
+                {
+                    translationPosition.Y += OffsetY;
+                }
+                // If any Y axis readings are lower than 0 in Animation ID >0. Bring it up to zero.
+                if (offsetylow < 0)
+                    translationPosition.Y -= offsetylow;
+                _indicatorPoint += translationPosition;
+            }
 
             //Triangle parsing
             for (; i < obj.cTriangles; i++)
             {
-                Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Item1, rotation, translationPosition);
-
-                Texture2D prevarTexT = (Texture2D)textures.textures[obj.triangles[i].textureIndex];
-                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1(prevarTexT.Width), obj.triangles[i].vtc.V1(prevarTexT.Height))));
+                Texture2D preVarTex = (Texture2D)textures.textures[obj.triangles[i].textureIndex];
+                vpt.AddRange(obj.triangles[i].GenerateVPT(verts, rotation, translationPosition, preVarTex));
                 texturePointers[i] = obj.triangles[i].textureIndex;
             }
 
             //Quad parsing
             for (i = 0; i < obj.cQuads; i++)
             {
-                Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Item1, rotation, translationPosition);
-                Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Item1, rotation, translationPosition);
-
                 Texture2D preVarTex = (Texture2D)textures.textures[obj.quads[i].textureIndex];
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
-
-                vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1(preVarTex.Width), obj.quads[i].vtc.V1(preVarTex.Height))));
-                vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
-
+                vpt.AddRange(obj.quads[i].GenerateVPT(verts, rotation, translationPosition, preVarTex));
                 texturePointers[obj.cTriangles + i * 2] = obj.quads[i].textureIndex;
                 texturePointers[obj.cTriangles + i * 2 + 1] = obj.quads[i].textureIndex;
             }
 
-            return new Tuple<VertexPositionTexture[], byte[]>(vpt.ToArray(), texturePointers);
+            return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
-        private Vector3 TranslateVertex(Vector3 vertex, Quaternion rotation, Vector3 localTranslate)
+        private List<VectorBoneGRP> GetVertices(Object @object, AnimationFrame frame, AnimationFrame nextFrame, double step) => @object.vertexData.SelectMany(vertexdata => vertexdata.vertices.Select(vertex => CalculateFrame(new VectorBoneGRP(vertex, vertexdata.boneId), frame, nextFrame, step))).ToList();
+
+        private Vector4 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, AnimationFrame frame, AnimationFrame nextFrame, double step)
         {
-            Vector3 verticeData = vertex;
-            verticeData = Vector3.Transform(verticeData, Matrix.CreateFromQuaternion(rotation));
-            verticeData = Vector3.Transform(verticeData, Matrix.CreateTranslation(localTranslate));
-            return verticeData;
+            List<VectorBoneGRP> vertices =
+                geometry.objects.SelectMany(@object => GetVertices(@object, frame, nextFrame, step)).ToList();
+            if (translationPosition != Vector3.Zero || rotation != Quaternion.Identity)
+            {
+                IEnumerable<Vector3> _vertices = vertices.Select(vertex => TransformVertex(vertex, translationPosition, rotation));
+                // midpoints
+                return new Vector4(_vertices.Min(x => x.Y), _vertices.Max(x => x.Y), (_vertices.Min(x => x.X) + _vertices.Max(x => x.X)) / 2f, (_vertices.Min(x => x.Z) + _vertices.Max(x => x.Z)) / 2f);
+            }
+            else
+                // alt midpoints
+                return new Vector4(vertices.Min(x => x.Y), vertices.Max(x => x.Y), (vertices.Min(x => x.X) + vertices.Max(x => x.X)) / 2f, (vertices.Min(x => x.Z) + vertices.Max(x => x.Z)) / 2f);
         }
+
+        public static Vector3 TransformVertex(Vector3 vertex, Vector3 localTranslate, Quaternion rotation) => Vector3.Transform(Vector3.Transform(vertex, rotation), Matrix.CreateTranslation(localTranslate));
 
         /// <summary>
         /// Complex function that provides linear interpolation between two matrices of actual
         /// to-render animation frame and next frame data for blending
         /// </summary>
-        /// <param name="tuple">the tuple that contains vertex and bone ident</param>
+        /// <param name="VBG">the tuple that contains vertex and bone ident</param>
         /// <param name="frame">current animation frame to render</param>
         /// <param name="nextFrame">
         /// animation frame to render that is AFTER the actual one. If last frame, then usually 0 is
@@ -357,22 +591,24 @@ namespace OpenVIII
         /// current frame and 1 for next frame; 0.5 for blend of two frames
         /// </param>
         /// <returns></returns>
-        private Tuple<Vector3, int> CalculateFrame(Tuple<Vector3, int> tuple, AnimationFrame frame, AnimationFrame nextFrame, double step)
+        private VectorBoneGRP CalculateFrame(VectorBoneGRP VBG, AnimationFrame frame, AnimationFrame nextFrame, double step)
         {
-            Matrix matrix = frame.boneMatrix[tuple.Item2]; //get's bone matrix
-            Vector3 rootFramePos = new Vector3(
-                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
-                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            matrix = nextFrame.boneMatrix[tuple.Item2];
-            Vector3 nextFramePos = new Vector3(
-                matrix.M11 * tuple.Item1.X + matrix.M41 + matrix.M12 * tuple.Item1.Z + matrix.M13 * -tuple.Item1.Y,
-                matrix.M21 * tuple.Item1.X + matrix.M42 + matrix.M22 * tuple.Item1.Z + matrix.M23 * -tuple.Item1.Y,
-                matrix.M31 * tuple.Item1.X + matrix.M43 + matrix.M32 * tuple.Item1.Z + matrix.M33 * -tuple.Item1.Y);
-            rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
-            nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
-            rootFramePos = Vector3.SmoothStep(rootFramePos, nextFramePos, (float)step);
-            return new Tuple<Vector3, int>(rootFramePos, tuple.Item2);
+            Vector3 getvector(Matrix matrix)
+            {
+                Vector3 r = new Vector3(
+                    matrix.M11 * VBG.X + matrix.M41 + matrix.M12 * VBG.Z + matrix.M13 * -VBG.Y,
+                    matrix.M21 * VBG.X + matrix.M42 + matrix.M22 * VBG.Z + matrix.M23 * -VBG.Y,
+                    matrix.M31 * VBG.X + matrix.M43 + matrix.M32 * VBG.Z + matrix.M33 * -VBG.Y);
+                r = Vector3.Transform(r, Matrix.CreateScale(skeleton.GetScale));
+                return r;
+            }
+            Vector3 rootFramePos = getvector(frame.boneMatrix[VBG.BoneID]); //get's bone matrix
+            if (step > 0f)
+            {
+                Vector3 nextFramePos = getvector(nextFrame.boneMatrix[VBG.BoneID]);
+                rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
+            }
+            return new VectorBoneGRP(rootFramePos, VBG.BoneID);
         }
 
         #endregion section 2 Geometry
@@ -402,14 +638,14 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Animation section
+        /// Model Animation section
         /// </summary>
-        /// <param name="v"></param>
-        /// <param name="ms"></param>
+        /// <param name="start"></param>
         /// <param name="br"></param>
-        private void ReadSection3(uint v, BinaryReader br, string fileName)
+        /// <param name="fileName"></param>
+        private void ReadSection3(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             animHeader = new AnimationData() { cAnimations = br.ReadUInt32() };
             animHeader.pAnimations = new uint[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++)
@@ -420,7 +656,7 @@ namespace OpenVIII
             animHeader.animations = new Animation[animHeader.cAnimations];
             for (int i = 0; i < animHeader.cAnimations; i++) //animation
             {
-                br.BaseStream.Seek(v + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
+                br.BaseStream.Seek(start + animHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
                 animHeader.animations[i] = new Animation() { cFrames = br.ReadByte() }; //Create new animation with cFrames frames
                 animHeader.animations[i].animationFrames = new AnimationFrame[animHeader.animations[i].cFrames];
                 ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(br.BaseStream);
@@ -484,9 +720,16 @@ namespace OpenVIII
                         Vector3 boneRotation = animHeader.animations[i].animationFrames[n].bonesVectorRotations[k];
                         boneRotation = Extended.S16VectorToFloat(boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
                         boneRotation *= DEGREES; //bone rotations are in 360 scope
+                        //maki way
                         Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
                         Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
                         Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
+
+                        //this is the monogame way and gives same results as above.
+                        //Matrix xRot = Matrix.CreateRotationX(MathHelper.ToRadians(boneRotation.X));
+                        //Matrix yRot = Matrix.CreateRotationY(MathHelper.ToRadians(boneRotation.Y));
+                        //Matrix zRot = Matrix.CreateRotationZ(MathHelper.ToRadians(boneRotation.Z));
+
                         Matrix MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
                         MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
 
@@ -574,15 +817,21 @@ namespace OpenVIII
             public TextureHandler[] textures;
         }
 
-        private void ReadSection11(uint v, BinaryReader br, string fileName)
+        /// <summary>
+        /// TIMS - Textures
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="br"></param>
+        /// <param name="fileName"></param>
+        private void ReadSection11(uint start)
         {
 #if DEBUG
             //Dump for debug
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
-            using (BinaryWriter fs = new BinaryWriter(File.Create(Path.Combine(Path.GetTempPath(), $"{v}.dump"), (int)(br.BaseStream.Length - br.BaseStream.Position), FileOptions.None)))
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
+            using (BinaryWriter fs = new BinaryWriter(File.Create(Path.Combine(Path.GetTempPath(), $"{start}.dump"), (int)(br.BaseStream.Length - br.BaseStream.Position), FileOptions.None)))
                 fs.Write(br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position)));
 #endif
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             //Begin create Textures struct
             //populate the tim count;
             textures = new Textures() { cTims = br.ReadUInt32() };
@@ -596,16 +845,18 @@ namespace OpenVIII
             textures.Eof = br.ReadUInt32();
             //Read TIM -> TextureHandler into array
             for (int i = 0; i < textures.cTims; i++)
-                if (buffer[v + textures.pTims[i]] == 0x10)
+                if (buffer[start + textures.pTims[i]] == 0x10)
                 {
-                    TIM2 tm = new TIM2(buffer, v + textures.pTims[i]); //broken
+                    TIM2 tm = new TIM2(buffer, start + textures.pTims[i]); //broken
                     textures.textures[i] = TextureHandler.Create($"{fileName}_{i/*.ToString("D2")*/}", tm, 0);// tm.GetTexture(0);
                 }
                 else
-                    Debug.WriteLine($"DEBUG: {this}.{this.id}.{v + textures.pTims[i]} :: Not a tim file!");
+                    Debug.WriteLine($"DEBUG: {this}.{this.id}.{start + textures.pTims[i]} :: Not a tim file!");
         }
 
         public Textures textures;
+        private BinaryReader br;
+        //private float lowpoint;
 
         #endregion section 11 Textures
 
@@ -616,6 +867,10 @@ namespace OpenVIII
             Weapon
         };
 
+        public Debug_battleDat()
+        {
+        }
+
         /// <summary>
         /// Creates new instance of DAT class that provides every sections parsed into structs and
         /// helper functions for renderer
@@ -623,18 +878,22 @@ namespace OpenVIII
         /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
         /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
         /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
-        public Debug_battleDat(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
+        public static Debug_battleDat Load(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
         {
-            id = fileId;
+            Debug_battleDat r = new Debug_battleDat()
+            {
+                id = fileId,
+                altid = additionalFileId
+            };
             Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             char et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
-            string fileName = entityType == EntityType.Monster ? $"c0m{id.ToString("D03")}" :
+            string fileName = entityType == EntityType.Monster ? $"c0m{r.id.ToString("D03")}" :
                 entityType == EntityType.Character || entityType == EntityType.Weapon ? $"d{fileId.ToString("x")}{et}{additionalFileId.ToString("D03")}"
                 : string.Empty;
-            this.entityType = entityType;
+            r.entityType = entityType;
             if (string.IsNullOrEmpty(fileName))
-                return;
+                return null;
             string path = null;
             string searchstring = "";
             if (et != default)
@@ -642,17 +901,87 @@ namespace OpenVIII
                 searchstring = $"d{fileId.ToString("x")}{et}";
                 IEnumerable<string> test = aw.GetListOfFiles().Where(x => x.IndexOf(searchstring, StringComparison.OrdinalIgnoreCase) >= 0);
                 path = test.FirstOrDefault(x => x.ToLower().Contains(fileName));
-                if (string.IsNullOrWhiteSpace(path) && test.Count() > 0)
+
+                if (string.IsNullOrWhiteSpace(path) && test.Count() > 0 && entityType == EntityType.Character)
                     path = test.First();
             }
-            else path = aw.GetListOfFiles().First(x => x.ToLower().Contains(fileName));
+            else path = aw.GetListOfFiles().FirstOrDefault(x => x.ToLower().Contains(fileName));
+
+            r.fileName = fileName;
             if (!string.IsNullOrWhiteSpace(path))
-                buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
-            if (buffer == null || buffer.Length < 0)
+                r.buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+            if (r.buffer == null || r.buffer.Length < 0)
             {
                 Debug.WriteLine($"Search String: {searchstring} Not Found skipping {entityType}; So resulting file buffer is null.");
-                return;
+                return null;
             }
+            r.ExportFile();
+            r.LoadFile(skeletonReference);
+            r.FindAllLowHighPoints();
+            return r;
+        }
+
+        private void FindAllLowHighPoints()
+        {
+            if (entityType == EntityType.Character || entityType == EntityType.Monster)
+            {
+                // Get baseline from running function on only Animation 0;
+                List<Vector4> baseline = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
+                //X is lowY, Y is high Y, Z is mid x, W is mid z
+                float baselinelowY = baseline.Min(x => x.X);
+                float baselinehighY = baseline.Max(x => x.Y);
+                float offsetY = 0f;
+                if (Math.Abs(baselinelowY) < BaseLineMaxYFilter)
+                {
+                    offsetY -= baselinelowY;
+                    baselinehighY += offsetY;
+                }
+                // Default indicator point
+                _indicatorPoint = new Vector3(0, baselinehighY, 0);
+                // Need to add this later to bring baselinelow to 0.
+                OffsetY = offsetY; 
+                // Brings all Y values less than baselinelow to baselinelow
+                AnimationYOffsets = animHeader.animations.SelectMany((animation, animationid) =>
+                animation.animationFrames.Select((animationframe, animationframenumber) => 
+                new AnimationYOffset(animationid, animationframenumber, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationframe, animationframe, 0f)))).ToList();
+            }
+        }
+
+        private List<AnimationYOffset> AnimationYOffsets;
+        private Vector3 _indicatorPoint;
+
+        private float OffsetY { get; set; }
+        private Vector3 OffsetYVector => new Vector3(0f, OffsetY, 0f);
+
+        public struct AnimationYOffset
+        {
+
+            public int ID { get; private set; }
+            public int Frame { get; private set; }
+            public float LowY { get; private set; }
+            public float HighY { get; private set; }
+            public float MidX { get; private set; }
+            public float MidZ { get; private set; }
+
+            public AnimationYOffset(int iD, int frame, Vector4 lowhigh)
+                : this(iD, frame, lowhigh.X, lowhigh.Y, lowhigh.Z, lowhigh.W)
+            { }
+
+            public AnimationYOffset(int iD, int frame, float low, float high, float midx, float midz)
+            {
+                ID = iD;
+                Frame = frame;
+                LowY = low;
+                HighY = high;
+                MidX = midx;
+                MidZ = midz;
+            }
+
+            public override string ToString() => $"[{ID}, {Frame}, {LowY}, {HighY}, {MidX}, {MidZ}]";
+        }
+
+        private void ExportFile()
+        {
 #if _WINDOWS && DEBUG
             try
             {
@@ -669,75 +998,106 @@ namespace OpenVIII
             {
             }
 #endif
+        }
 
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+        private Debug_battleDat LoadFile(Debug_battleDat skeletonReference)
+        {
+            using (br = new BinaryReader(new MemoryStream(buffer)))
             {
-                datFile = new DatFile { cSections = br.ReadUInt32() };
-                datFile.pSections = new uint[datFile.cSections];
-                for (int i = 0; i < datFile.cSections; i++)
-                    datFile.pSections[i] = br.ReadUInt32();
-                datFile.eof = br.ReadUInt32();
-                switch (this.entityType)
+                if (br.BaseStream.Length - br.BaseStream.Position < 4)
+                    return null;
+                Init();
+                switch (entityType)
                 {
                     case EntityType.Monster:
-                        if (id == 127)
-                        {
-                            // per wiki 127 only have 7 & 8
-                            //ReadSection7(datFile.pSections[6], br, fileName);
-                            //ReadSection8(datFile.pSections[7]);
-                            return;
-                        }
-                        ReadSection1(datFile.pSections[0], br, fileName);
-                        ReadSection3(datFile.pSections[2], br, fileName); // animation data
-                        ReadSection2(datFile.pSections[1], br, fileName);
-                        //ReadSection4(datFile.pSections[3]);
-                        ReadSection5(datFile.pSections[4], datFile.pSections[5], br, fileName);
-                        //ReadSection6(datFile.pSections[5]);
-                        ReadSection7(datFile.pSections[6], br, fileName);
-                        //ReadSection8(datFile.pSections[7]);
-                        ReadSection9(datFile.pSections[8], datFile.pSections[9], br, fileName); //AKAO sounds
-                        //ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
-                        ReadSection11(datFile.pSections[10], br, fileName);
-                        break;
+                        return LoadMonster();
 
                     case EntityType.Character:
-                        ReadSection1(datFile.pSections[0], br, fileName);
-                        ReadSection3(datFile.pSections[2], br, fileName);
-                        ReadSection2(datFile.pSections[1], br, fileName);
-                        if (fileId == 7 && entityType == EntityType.Character)
-                        {
-                            ReadSection11(datFile.pSections[8], br, fileName);
-                            ReadSection5(datFile.pSections[5], datFile.pSections[6], br, fileName);
-                        }
-                        else
-                            ReadSection11(datFile.pSections[5], br, fileName);
-                        break;
+                        return LoadCharacter();
 
                     case EntityType.Weapon:
-                        if (skeletonReference == null)
-                        {
-                            ReadSection1(datFile.pSections[0], br, fileName);
-                            ReadSection3(datFile.pSections[2], br, fileName);
-                            ReadSection2(datFile.pSections[1], br, fileName);
-                            ReadSection5(datFile.pSections[3], datFile.pSections[4], br, fileName);
-                            ReadSection11(datFile.pSections[6], br, fileName);
-                        }
-                        else
-                        {
-                            skeleton = skeletonReference.skeleton;
-                            animHeader = skeletonReference.animHeader;
-                            ReadSection2(datFile.pSections[0], br, fileName);
-                            ReadSection5(datFile.pSections[1], datFile.pSections[2], br, fileName);
-                            ReadSection11(datFile.pSections[4], br, fileName);
-                        }
-                        break;
+                        return LoadWeapon(skeletonReference);
                 }
+                return null;
             }
         }
 
-        
+        private void Init()
+        {
+            datFile = new DatFile { cSections = br.ReadUInt32() };
+            datFile.pSections = new uint[datFile.cSections];
+            for (int i = 0; i < datFile.cSections; i++)
+                datFile.pSections[i] = br.ReadUInt32();
+            datFile.eof = br.ReadUInt32();
+        }
 
-        private void ReadSection9(uint start, uint end, BinaryReader br, string fileName)
+        private Debug_battleDat LoadMonster()
+        {
+            if (id == 127)
+            {
+                // per wiki 127 only have 7 & 8
+                //ReadSection7(datFile.pSections[6], br, fileName);
+                //ReadSection8(datFile.pSections[7]);
+                return null;
+            }
+            ReadSection1(datFile.pSections[0]);
+            ReadSection3(datFile.pSections[2]); // animation data
+            ReadSection2(datFile.pSections[1]);
+            //ReadSection4(datFile.pSections[3]);
+            ReadSection5(datFile.pSections[4], datFile.pSections[5]);
+            //ReadSection6(datFile.pSections[5]);
+            ReadSection7(datFile.pSections[6]);
+            //ReadSection8(datFile.pSections[7]); // battle scripts/ai
+            ReadSection9(datFile.pSections[8], datFile.pSections[9]); //AKAO sounds
+            //ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
+            ReadSection11(datFile.pSections[10]);
+            return this;
+        }
+
+        private Debug_battleDat LoadCharacter()
+        {
+            ReadSection1(datFile.pSections[0]);
+            ReadSection3(datFile.pSections[2]);
+            ReadSection2(datFile.pSections[1]);
+            if (id == 7 && entityType == EntityType.Character)
+            {
+                ReadSection11(datFile.pSections[8]);
+                ReadSection5(datFile.pSections[5], datFile.pSections[6]);
+            }
+            else
+                ReadSection11(datFile.pSections[5]);
+            return this;
+        }
+
+        private Debug_battleDat LoadWeapon(Debug_battleDat skeletonReference)
+        {
+            if (id != 1 && id != 9)
+            {
+                ReadSection1(datFile.pSections[0]);
+                ReadSection3(datFile.pSections[2]);
+                ReadSection2(datFile.pSections[1]);
+                ReadSection5(datFile.pSections[3], datFile.pSections[4]);
+                ReadSection11(datFile.pSections[6]);
+            }
+            else if (skeletonReference != null)
+            {
+                skeleton = skeletonReference.skeleton;
+                animHeader = skeletonReference.animHeader;
+                ReadSection2(datFile.pSections[0]);
+                ReadSection5(datFile.pSections[1], datFile.pSections[2]);
+                ReadSection11(datFile.pSections[4]);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Sounds
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="br"></param>
+        /// <param name="fileName"></param>
+        private void ReadSection9(uint start, uint end)
         {
             //Contains AKAO sequences(can be empty).
             //Offset Length  Description
@@ -757,7 +1117,7 @@ namespace OpenVIII
                     continue;
                 offsets[i] = offset + start;
             }
-            uint newend = br.ReadUInt16()+start;
+            uint newend = br.ReadUInt16() + start;
             if (newend < end) end = newend;
             List<uint> sortedoffsets = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList();
             Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
@@ -765,11 +1125,73 @@ namespace OpenVIII
             {
                 uint offset = sortedoffsets[i];
                 uint localend = end;
-                if(i+1 < sortedoffsets.Count)
-                    localend = sortedoffsets[i+1];
+                if (i + 1 < sortedoffsets.Count)
+                    localend = sortedoffsets[i + 1];
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
-                if(offset<localend)
+                if (offset < localend)
                     dataatoffsets.Add(offset, br.ReadBytes(checked((int)(localend - offset))));
+            }
+        }
+
+        public List<AnimationSequence> Sequences { get; private set; }
+
+        public struct AnimationSequence
+        {
+            public int id;
+            public uint offset;
+            public byte[] data;
+
+            /// <summary>
+            /// Test-Reason for list is so i can go read the data with out removing it.
+            /// </summary>
+            public List<byte> AnimationQueue { get; set; }
+
+            //public static Dictionary<byte, Action<byte[], int>> ParseData = new Dictionary<byte, Action<byte[], int>>{
+            //    { 0xA3, (byte[] data, int i) => { } } };
+            public void GenerateQueue(Debug_battleDat dat)
+            {
+                AnimationQueue = new List<byte>();
+                for (int i = 0; data != null && i < data.Length; i++)
+                {
+                    byte b;
+                    byte[] data = this.data;
+                    byte get(int _i = -1)
+                    {
+                        return b = data[_i < 0 ? i : _i];
+                    }
+                    if (get() < (dat.animHeader.animations?.Length ?? 0))
+                    {
+                        AnimationQueue.Add(b);
+                    }
+                    //else switch(b)
+                    //{
+                    //        case 0xA3:
+                    //            // following value is animation.
+                    //            break;
+                    //        case 0xE6:
+                    //            switch (get(++i))
+                    //            {
+                    //                case 0x03:
+                    //                    i += 1;
+                    //                    break;
+                    //            }
+                    //            break;
+                    //        case 0xEA:
+                    //            switch (get(++i))
+                    //            {
+                    //                case 0x05:
+                    //                    i += 1;
+                    //                    break;
+                    //                case 0x06:
+                    //                    i += 2;
+                    //                    break;
+                    //            }
+                    //            break;
+                    //        default:
+                    //            i++;//skip next byte //as might not be a animation.
+                    //            break;
+                    //}
+                }
             }
         }
 
@@ -781,7 +1203,7 @@ namespace OpenVIII
         /// <param name="br"></param>
         /// <param name="fileName"></param>
         /// <see cref="http://forums.qhimm.com/index.php?topic=19362.msg270092"/>
-        private void ReadSection5(uint start, uint end, BinaryReader br, string fileName)
+        private void ReadSection5(uint start, uint end)
         {
             // nothing final in here just was trying to dump data to see what was there.
             br.BaseStream.Seek(start, SeekOrigin.Begin);
@@ -794,7 +1216,8 @@ namespace OpenVIII
                 offsets[i] = offset + start;
             }
             List<uint> sortedoffsets = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList();
-            Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
+            Sequences = new List<AnimationSequence>(sortedoffsets.Count);
+            //Dictionary<uint, byte[]> dataatoffsets = new Dictionary<uint, byte[]>(sortedoffsets.Count);
             for (ushort i = 0; i < sortedoffsets.Count; i++)
             {
                 uint offset = sortedoffsets[i];
@@ -808,106 +1231,145 @@ namespace OpenVIII
                 while (br.ReadByte() != 0xa2 && br.BaseStream.Position < end && (i + 1 < sortedoffsets.Count ? br.BaseStream.Position < sortedoffsets[i + 1] : true));
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
                 foreach (var offsetindexed in offsets.Select((value, index) => new { value, index }).Where(x => x.value == offset))
-                    dataatoffsets.Add((uint)offsetindexed.index, br.ReadBytes(checked((int)(localend - offset))));
-            }
-            Debug.WriteLine($"\n {fileName} - {animHeader.animations.Length} animations, { offsets.Length } segments");
-            foreach (KeyValuePair<uint, byte[]> ob in dataatoffsets)
-            {
-                Debug.Write($"{ob.Key}({string.Format("{0:x}", offsets[ob.Key])}) - ");
-                byte last = 0xff;
-                foreach (byte b in ob.Value)
                 {
-                    switch (b)
-                    {
-                        case 0xa5:
-                            Debug.Write("{Aura}");
-                            break;
-
-                        case 0xbb:
-                            Debug.Write("{Effect}");
-                            break;
-
-                        case 0xa2:
-                            Debug.Write("{Return}");
-                            break;
-
-                        case 0xa0:
-                            Debug.Write("{Loop}");
-                            break;
-
-                        case 0xc3:
-                            Debug.Write("{Special}");
-                            break;
-
-                        case 0x91:
-                            Debug.Write("{Text}");
-                            break;
-
-                        case 0x1e:
-                            Debug.Write("{TextREF}");
-                            break;
-
-                        case 0xa3:
-                            Debug.Write("{End}");
-                            break;
-
-                        case 0xa8:
-                            Debug.Write("{Visibility}");
-                            break;
-                    }
-
-                    switch (last)
-                    {
-                        case 0xa8:
-                            switch (b)
-                            {
-                                case 0x02:
-                                    Debug.Write("{Hide}");
-                                    break;
-
-                                case 0x03:
-                                    Debug.Write("{Show}");
-                                    break;
-                            }
-                            break;
-
-                        case 0xa5:
-                            switch (b)
-                            {
-                                case 0x00:
-                                    Debug.Write("{Magic}");
-                                    break;
-
-                                case 0x01:
-                                    Debug.Write("{GF}");
-                                    break;
-
-                                case 0x02:
-                                    Debug.Write("{Limit}");
-                                    break;
-
-                                case 0x03:
-                                    Debug.Write("{Finisher}");
-                                    break;
-
-                                case 0x04:
-                                    Debug.Write("{Enemy Magic}");
-                                    break;
-                            }
-                            break;
-
-                        case 0xa3:
-                        case 0xa0:
-                            Debug.Write("{Anim}");
-                            break;
-                    }
-                    Debug.Write(string.Format("{0:x2} ", b));
-                    last = b;
+                    AnimationSequence sequence = new AnimationSequence { id = offsetindexed.index, offset = offsetindexed.value, data = br.ReadBytes(checked((int)(localend - offset))) };
+                    sequence.GenerateQueue(this);
+                    Sequences.Add(sequence);
                 }
-                Debug.Write($"   ({ob.Value.Length} length)\n");
             }
+            //foreach (KeyValuePair<uint, byte[]> ob in dataatoffsets)
+            //{
+            //    Debug.Write($"{ob.Key}({string.Format("{0:x}", offsets[ob.Key])}) - ");
+            //    for (int i = 0; i< ob.Value.Length; i++)
+            //    {
+            //        byte b;
+            //        byte Get(int pos = -1)
+            //        { return b = ob.Value[pos<0?i:pos]; }
+            //        switch (Get())
+            //        {
+            //            case 0xa5:
+            //                Debug.Write("{Aura-A5}");
+            //                switch (Get(++i))
+            //                {
+            //                    case 0x00:
+            //                        Debug.Write("{Magic-00}");
+            //                        break;
+
+            //                    case 0x01:
+            //                        Debug.Write("{GF-01}");
+            //                        break;
+
+            //                    case 0x02:
+            //                        Debug.Write("{Limit-02}");
+            //                        break;
+
+            //                    case 0x03:
+            //                        Debug.Write("{Finisher-03}");
+            //                        break;
+
+            //                    case 0x04:
+            //                        Debug.Write("{Enemy Magic-04}");
+            //                        break;
+            //                    default:
+            //                        Debug.Write(string.Format("{0:x2}", b));
+            //                        break;
+
+            //                }
+            //                break;
+            //            case 0xb5:
+            //                Debug.Write("Sound-B5");
+            //                break;
+            //            case 0xbb:
+            //                Debug.Write("{Effect-BB}");
+            //                break;
+
+            //            case 0xa2:
+            //                Debug.Write("{Return-A2}");
+            //                break;
+
+            //            case 0xa0:
+            //                Debug.Write("{Loop-A0}");
+            //                Debug.Write("{Anim}");
+            //                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                break;
+
+            //            case 0xc1:
+            //                if (Get(i + 2) == 0xe5 && Get(i + 3) == 0x7f)
+            //                {
+            //                    Debug.Write("{Repeat-C1}");
+            //                    //loop 0x1E times Animation 28
+            //                    //C1 1E E5 7F 28
+            //                    Debug.Write("{Count}");
+            //                    Debug.Write($"{Get(++i)} ");
+            //                    Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                    Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                    Debug.Write("{Anim}");
+            //                    Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                }
+            //                else if(Get(i + 1) == 0x00 && Get(i + 2) == 0xe5 && Get(i + 3) == 0x0f)
+            //                {
+            //                    //Return to home location.
+            //                    //C1 00 E5 0F
+            //                    Debug.Write("{Place model at home location}");
+            //                }
+            //                else
+            //                    Debug.Write(string.Format(" {0:x2}", Get()));
+
+            //                break;
+            //            case 0xc3:
+            //                Debug.Write("{Special-C3}");
+            //                //C3 7F C5 FF E5 7F E7 F9 //wait till previous sequence is complete.
+            //                //C3 0c e1 23 e5 7f ba
+            //                //C3 08 d8 00 01 e5 08 {04,05}
+            //                break;
+
+            //            case 0x91:
+            //                Debug.Write("{Text-91}");
+            //                break;
+
+            //            case 0x1e:
+            //                Debug.Write("{TextREF-1E}");
+            //                break;
+
+            //            case 0xa3:
+            //                Debug.Write("{End-A3}");
+            //                Debug.Write("{Anim}");
+            //                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                i += 2;
+            //                break;
+
+            //            case 0xa8:
+            //                Debug.Write("{Visibility-A8}");
+            //                switch (Get(++i))
+            //                {
+            //                    case 0x02:
+            //                        Debug.Write("{Hide-02}");
+            //                        break;
+
+            //                    case 0x03:
+            //                        Debug.Write("{Show-03}");
+            //                        break;
+            //                    default:
+            //                        Debug.Write(string.Format("{0:x2}", b));
+            //                        break;
+            //                }
+            //                Debug.Write("{Anim}");
+            //                Debug.Write(string.Format("{0:x2} ", Get(++i)));
+            //                break;
+            //            default:
+            //                Debug.Write(string.Format(" {0:x2}", b));
+            //                break;
+            //        }
+            //    }
+            //    Debug.Write($"   ({ob.Value.Length} length)\n");
+            //}
         }
 
         public int GetId => id;
+
+        public int altid { get; private set; }
+        public int id { get; private set; }
+        public EntityType entityType { get; private set; }
+        public string fileName { get; private set; }
     }
 }

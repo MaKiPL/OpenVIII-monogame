@@ -132,8 +132,8 @@ namespace OpenVIII
         private static Vector2 scale;
         private static Vector2 lastscale;
         private static Matrix IGM_focus;
-
-        public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, 1000, Vector2.SmoothStep);
+        private static TimeSpan time => TimeSpan.FromMilliseconds(1000d);
+        public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, time, Vector2.SmoothStep);
         //public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
         //public static Slide<float> FadeSlide = new Slide<float>(0f, 1f, 500d, MathHelper.Lerp);
 

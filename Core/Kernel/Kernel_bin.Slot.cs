@@ -10,13 +10,15 @@ namespace OpenVIII
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Selphie-limit-break-sets"/>
         public struct Slot
         {
-            public byte MagicID { get; private set; }
-            public byte Count { get; private set; }
+            private byte _count;
+            private byte _magicID;
+            public Magic_Data Magic_Data => _magicID<MagicData.Count ? MagicData[_magicID]:null;
+            public byte Casts { get => checked((byte)(Memory.Random.Next(_count)+1));}
 
             public void Read(BinaryReader br, int i = 0)
             {
-                MagicID = br.ReadByte();
-                Count = br.ReadByte();
+                _magicID = br.ReadByte();
+                _count = br.ReadByte();
             }
         }
     }

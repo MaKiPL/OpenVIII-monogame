@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -10,7 +11,7 @@ namespace OpenVIII.IGMData
     {
         #region Fields
 
-        public bool[] BLANKS;
+        public BitArray BLANKS;
 
         /// <summary>
         /// location of where pointer finger will point.
@@ -104,9 +105,10 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
+        public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null, bool battle = false) where T : Base, new()
         {
             T r = Create<T>(damageable, partypos);
+            r.Battle = battle;
             r.Init(count, depth, container, cols, rows);
             return r;
         }
@@ -169,6 +171,7 @@ namespace OpenVIII.IGMData
                 if (CONTAINER != null)
                     CONTAINER.Draw();
                 bool pointer = false;
+                Target.Group targetgroup = null;
                 if (!skipdata && ITEM != null)
                     if (DepthFirst)
                         for (int d = 0; d < Depth; d++)
@@ -176,7 +179,10 @@ namespace OpenVIII.IGMData
                             {
                                 if (i == PointerZIndex && !pointer)
                                     pointer = DrawPointer();
-                                DrawITEM(i, d);
+                                if (ITEM[i, d] != null && (ITEM[i, d].GetType()).Equals(typeof(Target.Group)))
+                                    targetgroup = (Target.Group)(ITEM[i, d]);
+                                else
+                                    DrawITEM(i, d);
                             }
                     else
                         for (int i = 0; i < Count; i++)
@@ -184,13 +190,16 @@ namespace OpenVIII.IGMData
                             {
                                 if (i == PointerZIndex && !pointer)
                                     pointer = DrawPointer();
-                                DrawITEM(i, d);
+                                if (ITEM[i, d]!=null && (ITEM[i, d].GetType()).Equals(typeof(Target.Group)))
+                                    targetgroup = (Target.Group)(ITEM[i, d]);
+                                else
+                                    DrawITEM(i, d);
                             }
-
                 if (!pointer)
                 {
                     pointer = DrawPointer();
                 }
+                targetgroup?.Draw();
             }
         }
 
@@ -368,7 +377,12 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            if (Memory.State?.PartyData != null && Damageable == null && PartyPos != -1 && Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
+            int count = Memory.State.PartyData.Count;
+            if (Memory.State?.PartyData != null &&
+                Damageable == null &&
+                PartyPos >= 0 &&
+                PartyPos < count &&
+                Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
                 Damageable = c;
             base.Refresh();
         }
@@ -440,22 +454,6 @@ namespace OpenVIII.IGMData
 
         protected int GetCursor_select() => _cursor_select;
 
-        protected void Init(Damageable damageable, sbyte? partypos)
-        {
-            if (partypos != null)
-            {
-                Damageable = damageable;
-                PartyPos = partypos.Value;
-                if (Memory.State?.PartyData != null)
-                    Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
-            }
-            else if (damageable != null && damageable.GetCharacterData(out Saves.CharacterData c))
-            {
-                Damageable = damageable;
-                PartyPos = (sbyte)(Memory.State?.PartyData?.FindIndex(x => x.Equals(c.ID)) ?? -1);
-            }
-        }
-
         /// <summary>
         /// Most objects set all these values. also Init Refresh and Update
         /// </summary>
@@ -525,12 +523,12 @@ namespace OpenVIII.IGMData
         {
         }
 
-        protected bool InputITEM(int i, int d, ref bool ret)
+        protected bool InputITEM(Menu_Base menuitem, ref bool ret)
         {
-            if (ITEM[i, d] != null && ITEM[i, d].Enabled)
+            if (menuitem != null && menuitem.Enabled)
             {
                 Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Blinking);
-                ret = ITEM[i, d].Inputs();
+                ret = menuitem.Inputs();
                 return true;
             }
             return false;
@@ -542,11 +540,17 @@ namespace OpenVIII.IGMData
             if (!skipdata)
             {
                 if (CONTAINER != null)
+                {
+                    if (ForceNullDamageable)
+                        CONTAINER.ForceNullDamageable = ForceNullDamageable;
                     CONTAINER.Refresh(Damageable);
+                }
                 if (ITEM != null)
                     for (int i = 0; i < Count; i++)
                         for (int d = 0; d < Depth; d++)
                         {
+                            if (ForceNullDamageable && ITEM[i, d] != null)
+                                ITEM[i, d].ForceNullDamageable = ForceNullDamageable;
                             ITEM[i, d]?.Refresh(Damageable);
                         }
             }
@@ -554,7 +558,7 @@ namespace OpenVIII.IGMData
 
         protected virtual void SetCursor_select(int value)
         {
-            if ((Cursor_Status & Cursor_Status.Enabled) != 0 && value >= 0 && CURSOR != null && value < CURSOR.Length && CURSOR[value] != Point.Zero)
+            if (value >= 0 && CURSOR != null && value < CURSOR.Length && CURSOR[value] != Point.Zero)
                 _cursor_select = value;
         }
 
@@ -566,7 +570,7 @@ namespace OpenVIII.IGMData
         private static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
         {
             T r = new T();
-            r.Init(damageable, partypos);
+            r.SetDamageable(damageable, partypos);
             return r;
         }
 
@@ -604,7 +608,7 @@ namespace OpenVIII.IGMData
             {
                 CURSOR = new Point[cellcount];
                 SIZE = new Rectangle[cellcount];
-                BLANKS = new bool[cellcount];
+                BLANKS = new BitArray(cellcount,false);
             }
         }
 

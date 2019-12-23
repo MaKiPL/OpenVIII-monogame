@@ -13,9 +13,8 @@ namespace OpenVIII
     /// </summary>
     public partial class BattleMenus : Menu
     {
-        #region Fields
 
-        private byte _player = 0;
+        #region Fields
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
         private MODULE lastgamestate;
@@ -54,17 +53,89 @@ namespace OpenVIII
 
         public enum SectionName
         {
+            /// <summary>
+            /// Party Member Menu
+            /// </summary>
             Party1,
+
+            /// <summary>
+            /// Party Member Menu
+            /// </summary>
             Party2,
+
+            /// <summary>
+            /// Party Member Menu
+            /// </summary>
             Party3,
-            Victory
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy1,
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy2,
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy3,
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy4,
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy5,
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy6,
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy7,
+
+            /// <summary>
+            /// Debug Enemy Menu
+            /// </summary>
+            Enemy8,
+
+            /// <summary>
+            /// Victory Menu
+            /// </summary>
+            Victory,
         }
 
         #endregion Enums
 
         #region Properties
 
-        public byte Player { get => _player; protected set => _player = value; }
+        protected byte Player { get; set; } = 0;
+        /// <summary>
+        /// Get Damageable from active battle menu;
+        /// </summary>
+        /// <returns></returns>
+        public Damageable GetDamageable() => GetCurrentBattleMenu()?.Damageable;
+        public new sbyte? PartyPos
+        {
+            get
+            {
+                var bm = GetCurrentBattleMenu();
+                if(bm != null && bm.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+                {
+                    return bm.PartyPos;
+                }
+                return null;
+            }
+        }
 
         public VictoryMenu Victory_Menu { get => (VictoryMenu)(Data[SectionName.Victory]); protected set => Data[SectionName.Victory] = value; }
 
@@ -124,58 +195,90 @@ namespace OpenVIII
 
         public override void Refresh()
         {
-            if (Memory.State?.Characters != null  && Memory.State.Characters.Count > 0 && Memory.State.Party!=null)
-            {
-                IEnumerable<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank));
-                int count = party.Count();
-                byte i = 0;
-                foreach (KeyValuePair<int, Characters> m in party)
-                {
-                    ((BattleMenu)Data[SectionName.Party1 + i]).Refresh(Memory.State[Memory.State.PartyData[m.Key]]);
-                    ((BattleMenu)Data[SectionName.Party1 + i]).Show();
-                    i++;
-                }
-                for (; i < 3; i++)
-                {
-                    ((BattleMenu)Data[SectionName.Party1 + i]).Refresh(null);
-                    ((BattleMenu)Data[SectionName.Party1 + i]).Hide();
-                }
-                SetMode(Mode.Battle);
-                if (UpdateFunctions == null)
-                    UpdateFunctions = new Dictionary<Mode, Func<bool>>()
+            SetParty();
+            SetEnemyParty();
+            SetMode(Mode.Battle);
+
+            // exp, items and ap you are going to get after the battle is over.
+            base.Refresh();
+        }
+
+        private void InitDictionarys()
+        {
+            if (UpdateFunctions == null)
+                UpdateFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     {Mode.Starting, UpdateStartingFunction},
                     {Mode.Battle, UpdateBattleFunction},
                     {Mode.Victory, UpdateVictoryFunction},
                     {Mode.GameOver, UpdateGameOverFunction},
                 };
-                if (DrawActions == null)
-                    DrawActions = new Dictionary<Mode, Action>()
+            if (DrawActions == null)
+                DrawActions = new Dictionary<Mode, Action>()
                 {
                     {Mode.Starting, DrawStartingAction},
                     {Mode.Battle, DrawBattleAction},
                     {Mode.Victory, DrawVictoryAction},
                     {Mode.GameOver, DrawGameOverAction},
                 };
-                if (InputFunctions == null)
-                    InputFunctions = new Dictionary<Mode, Func<bool>>()
+            if (InputFunctions == null)
+                InputFunctions = new Dictionary<Mode, Func<bool>>()
                 {
                     //{Mode.Starting, InputStartingFunction},
                     {Mode.Battle, InputBattleFunction},
                     {Mode.Victory, InputVictoryFunction},
                     //{Mode.GameOver, InputGameOverFunction},
                 };
-                if (ReturnAction == null)
-                    ReturnAction = new Dictionary<Mode, Action>()
+            if (ReturnAction == null)
+                ReturnAction = new Dictionary<Mode, Action>()
                 {
                     {Mode.Starting, ReturnStartingFunction},
                     {Mode.Battle, ReturnBattleFunction},
                     {Mode.Victory, ReturnVictoryFunction},
                     {Mode.GameOver, ReturnGameOverFunction},
                 };
+        }
+
+        private void SetEnemyParty()
+        {
+            if (Enemy.Party != null && Enemy.Party.Count > 0)
+            {
+                byte i = 0;
+                foreach (Enemy e in Enemy.Party)
+                {
+                    Data[SectionName.Enemy1 + i].SetDamageable(e);
+                    Data[SectionName.Enemy1 + i].Show();
+                    i++;
+                }
+
+                for (; i < 8; i++)
+                {
+                    Data[SectionName.Enemy1 + i].SetDamageable(null, forcenull: true);
+                    Data[SectionName.Enemy1 + i].Hide();
+                }
             }
-            // exp, items and ap you are going to get after the battle is over.
-            base.Refresh();
+        }
+
+        private void SetParty()
+        {
+            if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Memory.State.Party != null)
+            {
+                byte i = 0;
+                IEnumerable<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank));
+                int count = party.Count();
+
+                foreach (KeyValuePair<int, Characters> m in party)
+                {
+                    Data[SectionName.Party1 + i].SetDamageable(Memory.State[Memory.State.PartyData[m.Key]]);
+                    Data[SectionName.Party1 + i].Show();
+                    i++;
+                }
+                for (; i <= (int)SectionName.Party3; i++)
+                {
+                    Data[SectionName.Party1 + i].SetDamageable(null, forcenull: true);
+                    Data[SectionName.Party1 + i].Hide();
+                }
+            }
         }
 
         /// <summary>
@@ -225,8 +328,17 @@ namespace OpenVIII
             Data.TryAdd(SectionName.Party1, BattleMenu.Create(null));
             Data.TryAdd(SectionName.Party2, BattleMenu.Create(null));
             Data.TryAdd(SectionName.Party3, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy1, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy2, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy3, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy4, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy5, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy6, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy7, BattleMenu.Create(null));
+            Data.TryAdd(SectionName.Enemy8, BattleMenu.Create(null));
             Data.TryAdd(SectionName.Victory, VictoryMenu.Create());
             Data.ForEach(x => x.Value.Hide());
+            InitDictionarys();
         }
 
         private bool BoolBattleMenu() => Data?.Any(m => m.Value.GetType().Equals(typeof(BattleMenu)) && m.Value.Enabled) ?? false;
@@ -274,18 +386,17 @@ namespace OpenVIII
             }
             if (Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                if (GetCurrentBattleMenu().Damageable.Switch())
+                if (GetCurrentBattleMenu().Damageable?.Switch() ?? true)
                 {
                     int cnt = 0;
                     do
                     {
-                        if (++_player > 2) _player = 0;
-                        if (++cnt > 6) return false;
+                        if (++Player > (int)SectionName.Enemy8) Player = 0;
+                        if (++cnt > (int)SectionName.Enemy8 * 2) return false;
                     }
-                    while (Data.Count <= _player ||
-                    Data[PossibleValidPlayer()] == null ||
+                    while (Data.Count <= Player ||
+                    Data[PossibleValidPlayer()]?.Damageable == null ||
                     Data[PossibleValidPlayer()].GetType() != typeof(BattleMenu) ||
-                    Data[PossibleValidPlayer()].Damageable == null ||
                     !GetCurrentBattleMenu().Damageable.StartTurn());
                     NewTurnSND();
                 }
@@ -302,13 +413,13 @@ namespace OpenVIII
 
         private void NewTurnSND()
         {
-            if (((BattleMenu)Data[PossibleValidPlayer()]).CrisisLevel)
+            if (((BattleMenu)Data[PossibleValidPlayer()]).CrisisLevel > -1)
                 init_debugger_Audio.PlaySound(94);
             else
                 init_debugger_Audio.PlaySound(14);
         }
 
-        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(_player, 0, 2);
+        private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(Player, 0, (int)SectionName.Enemy8);
 
         private void ReturnBattleFunction()
         {
@@ -359,16 +470,16 @@ namespace OpenVIII
             {
                 ret = m.Update() || ret;
             }
-            if (!GetCurrentBattleMenu().Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+            if (!(GetCurrentBattleMenu()?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)?? false))
             {
-                if (_player + 1 == bml.Count)
-                    _player = 0;
-                int cnt = 3;
-                for (byte i = _player; cnt > 0; cnt--)
+                int cnt = bml.Count;
+                if (Player + 1 == cnt)
+                    Player = 0;
+                for (byte i = Player; cnt > 0; cnt--)
                 {
-                    if (bml[i].Damageable.StartTurn())
+                    if (i < bml.Count && bml[i].Damageable.StartTurn())
                     {
-                        _player = i;
+                        Player = i;
                         NewTurnSND();
                         break;
                     }

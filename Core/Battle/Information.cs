@@ -15,10 +15,15 @@ namespace OpenVIII
         #endregion Fields
 
         #region Methods
-
-        private void ReadSection7(uint v, BinaryReader br, string fileName)
+        /// <summary>
+        /// Information
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="br"></param>
+        /// <param name="fileName"></param>
+        private void ReadSection7(uint start)
         {
-            br.BaseStream.Seek(v, SeekOrigin.Begin);
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
             information = Extended.ByteArrayToStructure<Information>(br.ReadBytes(Section7Size));
         }
 
@@ -122,7 +127,7 @@ namespace OpenVIII
             }
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
-            public byte[] name;
+            private byte[] _name;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public byte[] hp;
@@ -267,6 +272,8 @@ namespace OpenVIII
             public byte explusionResistanceMental;
 
             public byte percentResistanceMental;
+
+            public FF8String name => _name;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 2)]
