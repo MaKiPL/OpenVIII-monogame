@@ -683,7 +683,7 @@ namespace OpenVIII
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
                 Vector3 enemyPosition = GetEnemyPos(n);
                 enemyPosition.Y += Yoffset;
-                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.CreateFromYawPitchRoll(0f, 0f, 0f));
+                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
                 DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
             }
         }

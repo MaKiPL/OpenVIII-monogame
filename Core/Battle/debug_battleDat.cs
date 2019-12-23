@@ -617,20 +617,20 @@ namespace OpenVIII
         /// <returns></returns>
         private VectorBoneGRP CalculateFrame(VectorBoneGRP VBG, AnimationFrame frame, AnimationFrame nextFrame, double step)
         {
-            Matrix matrix = frame.boneMatrix[VBG.BoneID]; //get's bone matrix
-            Vector3 rootFramePos = new Vector3(
-                matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
-                matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
-                matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
-            if (step > 0f)
+            Vector3 getvector(Matrix matrix)
             {
-                matrix = nextFrame.boneMatrix[VBG.BoneID];
-                Vector3 nextFramePos = new Vector3(
+
+                Vector3 r = new Vector3(
                     matrix.M11 * VBG.Vector.X + matrix.M41 + matrix.M12 * VBG.Vector.Z + matrix.M13 * -VBG.Vector.Y,
                     matrix.M21 * VBG.Vector.X + matrix.M42 + matrix.M22 * VBG.Vector.Z + matrix.M23 * -VBG.Vector.Y,
                     matrix.M31 * VBG.Vector.X + matrix.M43 + matrix.M32 * VBG.Vector.Z + matrix.M33 * -VBG.Vector.Y);
-                rootFramePos = Vector3.Transform(rootFramePos, Matrix.CreateScale(skeleton.GetScale));
-                nextFramePos = Vector3.Transform(nextFramePos, Matrix.CreateScale(skeleton.GetScale));
+                r = Vector3.Transform(r, Matrix.CreateScale(skeleton.GetScale));
+                return r;
+            }
+            Vector3 rootFramePos = getvector(frame.boneMatrix[VBG.BoneID]); //get's bone matrix
+            if (step > 0f)
+            {
+                Vector3 nextFramePos = getvector(nextFrame.boneMatrix[VBG.BoneID]);
                 rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
             }
             return new VectorBoneGRP(rootFramePos, VBG.BoneID);
