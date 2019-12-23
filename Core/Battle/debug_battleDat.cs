@@ -64,9 +64,9 @@ namespace OpenVIII
         {
             public ushort parentId;
             public short boneSize;
-            private short unk1; //360
-            private short unk2; //360
-            private short unk3; //360
+            private short rotx; //360
+            private short roty; //360
+            private short rotz; //360
             private short unk4;
             private short unk5;
             private short unk6;
@@ -75,9 +75,9 @@ namespace OpenVIII
             public byte[] Unk;
 
             public float Size => boneSize / SCALEHELPER;
-            public float Unk1 => unk1 / 4096.0f * 360.0f;  //rotX
-            public float Unk2 => unk2 / 4096.0f * 360.0f;  //rotY
-            public float Unk3 => unk3 / 4096.0f * 360.0f;  //rotZ
+            public float RotX => rotx / 4096.0f * 360.0f;  //rotX
+            public float RotY => roty / 4096.0f * 360.0f;  //rotY
+            public float RotZ => rotz / 4096.0f * 360.0f;  //rotZ
             public float Unk4 => unk4 / 4096.0f;  //unk1v
             public float Unk5 => unk5 / 4096.0f;  //unk2v
             public float Unk6 => unk6 / 4096.0f;  //unk3v
@@ -135,13 +135,12 @@ namespace OpenVIII
         public struct Object
         {
             public ushort cVertices;
-            public VerticeData[] verticeData;
+            public VerticeData[] vertexData;
             public ushort cTriangles;
             public ushort cQuads;
             public ulong padding;
             public Triangle[] triangles;
             public Quad[] quads;
-
         }
 
         public struct VerticeData
@@ -154,11 +153,21 @@ namespace OpenVIII
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
         public struct Vertex
         {
-            public short x;
-            public short y;
-            public short z;
+            public short x { get; private set; }
+            public short y { get; private set; }
+            public short z { get; private set; }
 
-            public Vector3 GetVector => new Vector3(-x / SCALEHELPER, -z / SCALEHELPER, -y / SCALEHELPER);
+            public Vertex(short x, short y, short z)
+            {
+                this.x = x;
+                this.y = y;
+                this.z = z;
+            }
+
+            public static implicit operator Vector3(Vertex v) => new Vector3(-v.x / SCALEHELPER, -v.z / SCALEHELPER, -v.y / SCALEHELPER);
+
+            public override string ToString() => $"x={x}, y={y}, z={z}, Vector3={(Vector3)this}";
+
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
@@ -402,16 +411,16 @@ namespace OpenVIII
         {
             br.BaseStream.Seek(start, SeekOrigin.Begin);
             Object @object = new Object { cVertices = br.ReadUInt16() };
-            @object.verticeData = new VerticeData[@object.cVertices];
+            @object.vertexData = new VerticeData[@object.cVertices];
             if (br.BaseStream.Position + @object.cVertices * 6 >= br.BaseStream.Length)
                 return @object;
             for (int n = 0; n < @object.cVertices; n++)
             {
-                @object.verticeData[n].boneId = br.ReadUInt16();
-                @object.verticeData[n].cVertices = br.ReadUInt16();
-                @object.verticeData[n].vertices = new Vertex[@object.verticeData[n].cVertices];
-                for (int i = 0; i < @object.verticeData[n].cVertices; i++)
-                    @object.verticeData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));
+                @object.vertexData[n].boneId = br.ReadUInt16();
+                @object.vertexData[n].cVertices = br.ReadUInt16();
+                @object.vertexData[n].vertices = new Vertex[@object.vertexData[n].cVertices];
+                for (int i = 0; i < @object.vertexData[n].cVertices; i++)
+                    @object.vertexData[n].vertices[i] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(6));
             }
             br.BaseStream.Seek(4 - (br.BaseStream.Position % 4 == 0 ? 4 : br.BaseStream.Position % 4), SeekOrigin.Current);
             @object.cTriangles = br.ReadUInt16();
@@ -436,7 +445,9 @@ namespace OpenVIII
             public float X => Vector.X;
             public float Y => Vector.Y;
             public float Z => Vector.Z;
+
             public static implicit operator Vector3(VectorBoneGRP vbg) => vbg.Vector;
+
             public VectorBoneGRP(Vector3 vector, int boneID)
             {
                 Vector = vector;
@@ -487,49 +498,29 @@ namespace OpenVIII
         {
             if (animationSystem.AnimationFrame >= animHeader.animations[animationSystem.AnimationId].animationFrames.Length || animationSystem.AnimationFrame < 0)
                 animationSystem.AnimationFrame = 0;
+            AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
             int lastAnimationFrame = animationSystem.LastAnimationFrame;
             AnimationFrame[] lastAnimationFrames = animHeader.animations[animationSystem.LastAnimationId].animationFrames;
             lastAnimationFrame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrame : lastAnimationFrames.Length - 1;
-
             AnimationFrame frame = lastAnimationFrames[lastAnimationFrame];
-            AnimationFrame nextFrame = animHeader.animations[animationSystem.AnimationId].animationFrames[animationSystem.AnimationFrame];
-            Module_battle_debug.AnimationSystem _animationSystem = animationSystem;
-
-            
 
             Object obj = geometry.objects[objectId];
             int i = 0;
             List<VectorBoneGRP> verts = GetVerts(obj, frame, nextFrame, step);
-            var minY = verts.Min(x => x.Y);
+            float minY = verts.Min(x => x.Y);
             byte[] texturePointers = new byte[obj.cTriangles + obj.cQuads * 2];
             List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
 
             if (objectId == 0)
             {
+                Module_battle_debug.AnimationSystem _animationSystem = animationSystem;
                 AnimationYOffset lastoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.LastAnimationId && x.Frame == lastAnimationFrame) ?? default;
                 AnimationYOffset nextoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.AnimationId && x.Frame == _animationSystem.AnimationFrame) ?? default;
                 float offsetylow = MathHelper.Lerp(lastoffsets.Low, nextoffsets.Low, (float)step);
                 this.Highpoint = MathHelper.Lerp(lastoffsets.High, nextoffsets.High, (float)step);
                 if (offsetylow < 0)
                     translationPosition.Y -= offsetylow;
-                //Tuple<int, int> key = new Tuple<int, int>(animationSystem.AnimationId, animationSystem.AnimationFrame);
-                //if (!lowpoints.TryGetValue(key, out float lowpoint))
-                //{
-                //test all object verts at once.
-                //FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
-                //lowpoints.TryAdd(key, lowpoint);
-                //if (animationSystem.AnimationId == 0)
-                //    this.lowpoint = lowpoints.Min(x => x.Value);
-                //}
-                //if (animationSystem.AnimationId == 0 && this.lowpoint < 0)
-                //{
-                //    translationPosition.Y -= this.lowpoint;
-                //}
-                //else if (lowpoint < 0)
-                //{
-                //    translationPosition.Y += MathHelper.Distance(lowpoint,this.lowpoint);
-                //    //Debug.Assert(lowpoint + translationPosition.Y == 0);
-                //}
+
             }
 
             //Triangle parsing
@@ -537,13 +528,6 @@ namespace OpenVIII
             {
                 Texture2D preVarTex = (Texture2D)textures.textures[obj.triangles[i].textureIndex];
                 vpt.AddRange(obj.triangles[i].GenerateVPT(verts, rotation, translationPosition, preVarTex));
-                //Vector3 VerticeDataC = TranslateVertex(verts[obj.triangles[i].C1].Vector, rotation, translationPosition);
-                //Vector3 VerticeDataA = TranslateVertex(verts[obj.triangles[i].A1].Vector, rotation, translationPosition);
-                //Vector3 VerticeDataB = TranslateVertex(verts[obj.triangles[i].B1].Vector, rotation, translationPosition);
-
-                //vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.triangles[i].vta.U1(prevarTexT.Width), obj.triangles[i].vta.V1(prevarTexT.Height))));
-                //vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.triangles[i].vtb.U1(prevarTexT.Width), obj.triangles[i].vtb.V1(prevarTexT.Height))));
-                //vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.triangles[i].vtc.U1(prevarTexT.Width), obj.triangles[i].vtc.V1(prevarTexT.Height))));
                 texturePointers[i] = obj.triangles[i].textureIndex;
             }
 
@@ -552,19 +536,6 @@ namespace OpenVIII
             {
                 Texture2D preVarTex = (Texture2D)textures.textures[obj.quads[i].textureIndex];
                 vpt.AddRange(obj.quads[i].GenerateVPT(verts, rotation, translationPosition, preVarTex));
-                //Vector3 VerticeDataA = TranslateVertex(verts[obj.quads[i].A1].Vector, rotation, translationPosition);
-                //Vector3 VerticeDataB = TranslateVertex(verts[obj.quads[i].B1].Vector, rotation, translationPosition);
-                //Vector3 VerticeDataC = TranslateVertex(verts[obj.quads[i].C1].Vector, rotation, translationPosition);
-                //Vector3 VerticeDataD = TranslateVertex(verts[obj.quads[i].D1].Vector, rotation, translationPosition);
-
-                //vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
-                //vpt.Add(new VertexPositionTexture(VerticeDataB, new Vector2(obj.quads[i].vtb.U1(preVarTex.Width), obj.quads[i].vtb.V1(preVarTex.Height))));
-                //vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
-
-                //vpt.Add(new VertexPositionTexture(VerticeDataA, new Vector2(obj.quads[i].vta.U1(preVarTex.Width), obj.quads[i].vta.V1(preVarTex.Height))));
-                //vpt.Add(new VertexPositionTexture(VerticeDataC, new Vector2(obj.quads[i].vtc.U1(preVarTex.Width), obj.quads[i].vtc.V1(preVarTex.Height))));
-                //vpt.Add(new VertexPositionTexture(VerticeDataD, new Vector2(obj.quads[i].vtd.U1(preVarTex.Width), obj.quads[i].vtd.V1(preVarTex.Height))));
-
                 texturePointers[obj.cTriangles + i * 2] = obj.quads[i].textureIndex;
                 texturePointers[obj.cTriangles + i * 2 + 1] = obj.quads[i].textureIndex;
             }
@@ -572,14 +543,7 @@ namespace OpenVIII
             return new VertexPositionTexturePointersGRP(vpt.ToArray(), texturePointers);
         }
 
-        private List<VectorBoneGRP> GetVerts(Object obj, AnimationFrame frame, AnimationFrame nextFrame, double step)
-        {
-            List<VectorBoneGRP> verts = new List<VectorBoneGRP>();
-            foreach (VerticeData a in obj.verticeData)
-                foreach (Vertex b in a.vertices)
-                    verts.Add(CalculateFrame(new VectorBoneGRP(b.GetVector, a.boneId), frame, nextFrame, step));
-            return verts;
-        }
+        private List<VectorBoneGRP> GetVerts(Object obj, AnimationFrame frame, AnimationFrame nextFrame, double step) => obj.vertexData.SelectMany(vertexdata => vertexdata.vertices.Select(vertex => CalculateFrame(new VectorBoneGRP(vertex, vertexdata.boneId), frame, nextFrame, step))).ToList();
 
         private Vector2 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, double step, AnimationFrame frame, AnimationFrame nextFrame, List<VectorBoneGRP> verts = null) => FindLowHighPoints(ref translationPosition, rotation, step, frame, nextFrame, verts);
 
@@ -587,20 +551,11 @@ namespace OpenVIII
         {
             Vector3 _translationPosition = translationPosition;
             List<VectorBoneGRP> j = geometry.objects.Length == 1 && verts != null ? verts :
-                geometry.objects.SelectMany(x => x.verticeData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z.GetVector, y.boneId), frame, nextFrame, step)))).ToList();
+                geometry.objects.SelectMany(x => x.vertexData.SelectMany(y => y.vertices.Select(z => CalculateFrame(new VectorBoneGRP(z, y.boneId), frame, nextFrame, step)))).ToList();
 
             IEnumerable<float> test = j.Select(x => TranslateVertex(x, rotation, _translationPosition)).Select(x => x.Y).OrderBy(x => x);
             float highpoint = test.Last();
             float lowpoint = test.First();
-
-            if (lowpoint < 0)
-            {
-                highpoint -= lowpoint;
-                //if (this.Highpoint < highpoint)
-                //    this.Highpoint = highpoint;
-                translationPosition.Y -= lowpoint;
-            }
-
             return new Vector2(lowpoint, highpoint);
         }
 
@@ -631,7 +586,6 @@ namespace OpenVIII
         {
             Vector3 getvector(Matrix matrix)
             {
-
                 Vector3 r = new Vector3(
                     matrix.M11 * VBG.X + matrix.M41 + matrix.M12 * VBG.Z + matrix.M13 * -VBG.Y,
                     matrix.M21 * VBG.X + matrix.M42 + matrix.M22 * VBG.Z + matrix.M23 * -VBG.Y,
