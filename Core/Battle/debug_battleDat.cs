@@ -180,13 +180,29 @@ namespace OpenVIII
             public ushort texUnk;
             public UV vtc;
             public ushort u;
-
             private VertexPositionTexture[] TempVPT;
 
             public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
             public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+
+            public static Triangle Create(BinaryReader br)
+            {
+                Triangle r = new Triangle()
+                {
+                    A = br.ReadUInt16(),
+                    B = br.ReadUInt16(),
+                    C = br.ReadUInt16(),
+                    vta = UV.Create(br),
+                    vtb = UV.Create(br),
+                    texUnk = br.ReadUInt16(),
+                    vtc = UV.Create(br),
+                    u = br.ReadUInt16(),
+                    TempVPT = new VertexPositionTexture[Count]
+                };
+                return r;
+            }
 
             public ushort GetIndex(int i)
             {
@@ -240,7 +256,7 @@ namespace OpenVIII
             }
 
             public byte[] Indices => new byte[] { this[0], this[1], this[2] };
-            public byte Count => 3;
+            public static byte Count => 3;
 
             public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> verts, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
             {
@@ -282,6 +298,21 @@ namespace OpenVIII
             public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
             public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
             public byte textureIndex => (byte)((texUnk >> 6) & 0b111);
+
+            public static Quad Create(BinaryReader br) => new Quad()
+            {
+                A = br.ReadUInt16(),
+                B = br.ReadUInt16(),
+                C = br.ReadUInt16(),
+                D = br.ReadUInt16(),
+                vta = UV.Create(br),
+                texUnk = br.ReadUInt16(),
+                vtb = UV.Create(br),
+                u = br.ReadUInt16(),
+                vtc = UV.Create(br),
+                vtd = UV.Create(br),
+                TempVPT = new VertexPositionTexture[Count]
+            };
 
             public ushort GetIndex(int i)
             {
@@ -346,7 +377,7 @@ namespace OpenVIII
             }
 
             public byte[] Indices => new byte[] { this[0], this[1], this[2], this[3], this[4], this[5] };
-            public byte Count => 6;
+            public static byte Count => 6;
 
             public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> verts, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
             {
@@ -381,6 +412,12 @@ namespace OpenVIII
                     : w == 32 ?  //if equals 32, then it's weapon texture and should be in range of 96-128
                         (V - 96) / w
                         : V / w;  //if none of these cases, then divide by resolution;
+
+            public static UV Create(BinaryReader br) => new UV()
+            {
+                U = br.ReadByte(),
+                V = br.ReadByte()
+            };
 
             public Vector2 ToVector2(float w, float h) => new Vector2(U1(w), V1(h));
 
@@ -432,9 +469,9 @@ namespace OpenVIII
                 return @object;
             @object.quads = new Quad[@object.cQuads];
             for (int i = 0; i < @object.cTriangles; i++)
-                @object.triangles[i] = Extended.ByteArrayToStructure<Triangle>(br.ReadBytes(16));
+                @object.triangles[i] = Triangle.Create(br);//Extended.ByteArrayToStructure<Triangle>(br.ReadBytes(16));
             for (int i = 0; i < @object.cQuads; i++)
-                @object.quads[i] = Extended.ByteArrayToStructure<Quad>(br.ReadBytes(20));
+                @object.quads[i] = Quad.Create(br);// Extended.ByteArrayToStructure<Quad>(br.ReadBytes(20));
 
             return @object;
         }
@@ -470,7 +507,7 @@ namespace OpenVIII
             public byte[] TexturePointers { get; private set; }
         }
 
-        public Vector3 IndicatorPoint { get => _indicatorPoint; }
+        public Vector3 IndicatorPoint => _indicatorPoint;
         //public ConcurrentDictionary<Tuple<int, int>, float> lowpoints = new ConcurrentDictionary<Tuple<int, int>, float>();
 
         /// <summary>
@@ -939,10 +976,10 @@ namespace OpenVIII
                 // Default indicator point
                 _indicatorPoint = new Vector3(0, baselinehighY, 0);
                 // Need to add this later to bring baselinelow to 0.
-                OffsetY = offsetY; 
+                OffsetY = offsetY;
                 // Brings all Y values less than baselinelow to baselinelow
                 AnimationYOffsets = animHeader.animations.SelectMany((animation, animationid) =>
-                animation.animationFrames.Select((animationframe, animationframenumber) => 
+                animation.animationFrames.Select((animationframe, animationframenumber) =>
                 new AnimationYOffset(animationid, animationframenumber, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationframe, animationframe, 0f)))).ToList();
             }
         }
@@ -955,7 +992,6 @@ namespace OpenVIII
 
         public struct AnimationYOffset
         {
-
             public int ID { get; private set; }
             public int Frame { get; private set; }
             public float LowY { get; private set; }

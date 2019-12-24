@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -248,6 +249,29 @@ namespace OpenVIII
             Trim(ID.Perfect__, 2);
             Trim(ID.Renzokeken_Seperator, 6);
         }
+
+        //public VertexPositionTexture[] GenerateVPT(Vector3 v, float width, float height)
+        //{
+        //    Vector3[] verts = new Vector3[]
+        //    {
+        //        new Vector3(v.X-width/2f,v.Y+height/2f,v.Z),
+        //        new Vector3(v.X+width/2f,v.Y+height/2f,v.Z),
+        //        new Vector3(v.X+width/2f,v.Y-height/2f,v.Z),
+        //        new Vector3(v.X-width/2f,v.Y-height/2f,v.Z),
+        //    };
+        //    VertexPositionTexture GetVPT(ref Debug_battleDat.Quad quad, byte i)
+        //    {
+        //        Vector3 GetVertex(ref Quad _quad, byte _i)
+        //        {
+        //            return TransformVertex(verts[_quad.GetIndex(_i)], translationPosition, rotation);
+        //        }
+        //        return new VertexPositionTexture(GetVertex(quad, i), quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
+        //    }
+        //    TempVPT[0] = TempVPT[3] = GetVPT(ref this, this[0]);
+        //    TempVPT[1] = GetVPT(ref this, this[1]);
+        //    TempVPT[4] = GetVPT(ref this, this[4]);
+        //    TempVPT[2] = TempVPT[5] = GetVPT(ref this, this[2]);
+        //}
 
         #endregion Methods
     }

@@ -129,7 +129,7 @@ namespace OpenVIII
             get
             {
                 var bm = GetCurrentBattleMenu();
-                if(bm != null && bm.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn))
+                if(bm?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false)
                 {
                     return bm.PartyPos;
                 }
