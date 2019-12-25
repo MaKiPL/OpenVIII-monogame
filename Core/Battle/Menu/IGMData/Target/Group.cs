@@ -169,11 +169,13 @@ namespace OpenVIII.IGMData.Target
             EnemyAttack = c;
         }
 
-        public void SelectTargetWindows(Item_In_Menu c)
+        public void SelectTargetWindows(Item_In_Menu c,bool shot = false)
         {
-            Kernel_bin.Target t = c.Battle.Target;
+            Kernel_bin.Target t = c.Battle?.Target ?? Kernel_bin.Target.Enemy | Kernel_bin.Target.Single_Target;
+            if (shot)
+                t = c.Shot.Target;
             SelectTargetWindows(t);
-            Command = Kernel_bin.BattleCommands[4];
+            Command = Kernel_bin.BattleCommands[shot? 14:4];
             Item = c;
         }
 

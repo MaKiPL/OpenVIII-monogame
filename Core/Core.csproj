@@ -153,6 +153,7 @@
     <Compile Include="Battle\Menu\IGMData\PartyAP.cs" />
     <Compile Include="Battle\Menu\IGMData\PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\PlayerEXP.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\Bullet.cs" />
     <Compile Include="Battle\Menu\IGMData\Pool\Combine.cs" />
     <Compile Include="Battle\Menu\IGMData\Selphie_Slots.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
