@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
@@ -13,7 +14,7 @@ namespace OpenVIII.IGMData.Pool
 
         #region Methods
 
-        public static Bullet Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4 )
+        public static Bullet Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
             Bullet r = Create<Bullet>(count + 1, 2, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
             if (battle)
@@ -44,7 +45,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            var item = Contents[CURSOR_SELECT];
+            Item_In_Menu item = Contents[CURSOR_SELECT];
             if (!BLANKS[CURSOR_SELECT])
             {
                 Target_Group?.SelectTargetWindows(item, true);
@@ -52,12 +53,11 @@ namespace OpenVIII.IGMData.Pool
             }
             return true;
         }
-
         public override void Refresh()
         {
             if (Memory.State?.Items != null)
             {
-                var ammo = Memory.State.Items.Where(x => x.DATA != null && x.QTY >0 && x.DATA?.Type == Item_In_Menu._Type.Ammo).OrderBy(x=>x.ID).ToList();
+                List<Saves.Item> ammo = Memory.State.Items.Where(x => x.DATA != null && x.QTY > 0 && x.DATA?.Type == Item_In_Menu._Type.Ammo).OrderBy(x => x.ID).ToList();
                 int i = 0;
                 int skip = Page * Rows;
                 bool AddItem(Saves.Item item)
@@ -76,7 +76,7 @@ namespace OpenVIII.IGMData.Pool
                     }
                     return true;
                 }
-                foreach(var bullet in ammo)
+                foreach (Saves.Item bullet in ammo)
                     AddItem(bullet);
                 DefaultPages = ammo.Count / Rows;
                 for (; i < Rows; i++)
@@ -85,7 +85,6 @@ namespace OpenVIII.IGMData.Pool
                     ITEM[i, 0].Hide();
                     ITEM[i, 1].Hide();
                 }
-
             }
             UpdateTitle();
             base.Refresh();
@@ -96,6 +95,7 @@ namespace OpenVIII.IGMData.Pool
             Hide();
             base.Reset();
         }
+
         public override void UpdateTitle()
         {
             base.UpdateTitle();
@@ -121,11 +121,13 @@ namespace OpenVIII.IGMData.Pool
                     case 3:
                         ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
                         break;
+
                     default:
                         ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
                         break;
                 }
         }
+
         protected override void Init()
         {
             base.Init();
@@ -142,7 +144,6 @@ namespace OpenVIII.IGMData.Pool
                     Pos = new Rectangle(SIZE[i].Right - widthofnumber, SIZE[i].Top, widthofnumber, SIZE[i].Height),
                     NumType = Icons.NumType.sysFntBig,
                     Spaces = 3
-
                 };
                 ITEM[i, 1].Hide();
             }
