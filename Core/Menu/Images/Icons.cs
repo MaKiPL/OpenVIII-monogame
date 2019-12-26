@@ -208,19 +208,51 @@ namespace OpenVIII
             }
         }
 
-        public VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = .25f, int piece = 0)
+        public VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = .25f, int piece = 0, Box_Options options = Box_Options.Middle | Box_Options.Center)
         {
             Trim(ic, pal);
             EntryGroup eg = this[(ID)ic];
             Rectangle r = eg[piece].GetRectangle;
             Vector2 s = Textures[pal].ScaleFactor;
             VertexPositionTexture[] vpt = new VertexPositionTexture[6];
+            float left = 0f, right = 0f, bottom = 0f, top = 0f;
+            if (options.HasFlag(Box_Options.Left))
+            {
+                left = 0;
+                right = r.Width;
+            }
+            else if (options.HasFlag(Box_Options.Right))
+            {
+                left = -r.Width;
+                right = 0;
+            }
+            else// (options.HasFlag(Box_Options.Center))
+            {
+                left = -r.Width / 2f;
+                right = r.Width / 2f;
+            }
+            if (options.HasFlag(Box_Options.Top))
+            {
+                bottom = 0;
+                top = r.Height;
+            }
+            else if (options.HasFlag(Box_Options.Buttom))
+            {
+                bottom = -r.Height;
+                top = 0;
+            }
+            else //(options.HasFlag(Box_Options.Middle))
+            {
+                bottom = -r.Height / 2f;
+                top = r.Height / 2f;
+            }
+
             VertexPositionTexture[] v = new VertexPositionTexture[]
             {
-                new VertexPositionTexture(new Vector3(-r.Width/2f,r.Height/2f,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
-                new VertexPositionTexture(new Vector3(r.Width/2f,r.Height/2f,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
-                new VertexPositionTexture(new Vector3(r.Width/2f,-r.Height/2f,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
-                new VertexPositionTexture(new Vector3(-r.Width/2f,-r.Height/2f,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
+                new VertexPositionTexture(new Vector3(left,top,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
+                new VertexPositionTexture(new Vector3(right,top,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
+                new VertexPositionTexture(new Vector3(right,bottom,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
+                new VertexPositionTexture(new Vector3(left,bottom,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
             };
             vpt[0] = v[0];
             vpt[1] = v[1];
