@@ -156,9 +156,10 @@
     <Compile Include="Battle\Menu\IGMData\Pool\Bullet.cs" />
     <Compile Include="Battle\Menu\IGMData\Pool\Combine.cs" />
     <Compile Include="Battle\Menu\IGMData\Selphie_Slots.cs" />
+    <Compile Include="Battle\Menu\IGMData\Limit\Shot.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
-    <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
+    <Compile Include="Battle\Menu\IGMData\Limit\Renzokeken.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Party.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
     <Compile Include="Battle\RegularPyramid.cs" />

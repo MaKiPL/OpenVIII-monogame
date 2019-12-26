@@ -3,8 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
 
-namespace OpenVIII.IGMData
+namespace OpenVIII.IGMData.Limit
 {
+
     public class Renzokeken : IGMData.Base
     {
         #region Fields

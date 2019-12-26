@@ -36,12 +36,12 @@ namespace OpenVIII
 
         public sbyte CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
 
-        public IGMData.Renzokeken Renzokeken
+        public IGMData.Limit.Renzokeken Renzokeken
         {
             get
             {
                 if (Data.TryGetValue(SectionName.Renzokeken, out Menu_Base val))
-                    return (IGMData.Renzokeken)val;
+                    return (IGMData.Limit.Renzokeken)val;
                 return null;
             }
         }
@@ -118,7 +118,7 @@ namespace OpenVIII
             //IGMData.NamesHPATB.ThreadUnsafeOperations(); //seems to work fine in init thread.
 
             //Memory.MainThreadOnlyActions.Enqueue(IGMData.Renzokeken.ThreadUnsafeOperations); //only works in main thread.
-            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124))));
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Limit.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124))));
 
             List<Task> tasks = new List<Task>
             {
