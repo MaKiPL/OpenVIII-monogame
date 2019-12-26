@@ -9,19 +9,19 @@ namespace OpenVIII.IGMData.Limit
         #region Fields
 
         private Item_In_Menu ammo;
-        private Damageable[] targets;
         private bool skipupdate;
+        private Damageable[] targets;
         private Slide<float> timeSlide;
 
         #endregion Fields
 
         #region Properties
-
-        public IGMDataItem.Gradient.GF BLUEBAR { get => (IGMDataItem.Gradient.GF)ITEM[3, 0]; set => ITEM[3, 0] = value; }
-        public IGMDataItem.Icon BRACKET { get => (IGMDataItem.Icon)ITEM[4, 0]; set => ITEM[4, 0] = value; }
-        public IGMDataItem.Icon BULLET { get => (IGMDataItem.Icon)ITEM[0, 0]; set => ITEM[0, 0] = value; }
+        private IGMDataItem.Icon CROSSHAIR { get; set; }
+        private IGMDataItem.Gradient.GF BLUEBAR { get => (IGMDataItem.Gradient.GF)ITEM[3, 0]; set => ITEM[3, 0] = value; }
+        private IGMDataItem.Icon BRACKET { get => (IGMDataItem.Icon)ITEM[4, 0]; set => ITEM[4, 0] = value; }
+        private IGMDataItem.Icon BULLET { get => (IGMDataItem.Icon)ITEM[0, 0]; set => ITEM[0, 0] = value; }
         public float CriticalPercent { get; private set; }
-        public IGMDataItem.Integer QTY { get => (IGMDataItem.Integer)ITEM[1, 0]; set => ITEM[1, 0] = value; }
+        private IGMDataItem.Integer QTY { get => (IGMDataItem.Integer)ITEM[1, 0]; set => ITEM[1, 0] = value; }
 
         public IGMDataItem.Icon TIME { get => (IGMDataItem.Icon)ITEM[2, 0]; set => ITEM[2, 0] = value; }
 
@@ -30,6 +30,17 @@ namespace OpenVIII.IGMData.Limit
         #region Methods
 
         public static Shot Create(Rectangle pos, Damageable damageable = null) => Create<Shot>(5, 1, new IGMDataItem.Empty { Pos = pos }, 1, 4, damageable, battle: true);
+
+        public override bool Inputs() => base.Inputs() || true;
+
+        public override bool Inputs_OKAY()
+        {
+            skipsnd = true;
+            Memory.State.EarnItem(this.ammo.ID, -1);
+            return base.Inputs_OKAY();
+        }
+
+        public override bool Inputs_RotateRight() => Inputs_OKAY();
 
         public void Refresh(Item_In_Menu ammo, Damageable[] d)
         {
@@ -92,8 +103,6 @@ namespace OpenVIII.IGMData.Limit
             return false;
         }
 
-        public override bool Inputs() => base.Inputs() || true;
-
         protected override void Init()
         {
             timeSlide = new Slide<float>(100f, 0f, TimeSpan.Zero, MathHelper.Lerp);
@@ -107,20 +116,33 @@ namespace OpenVIII.IGMData.Limit
             SIZE[3].Height = 15;
             BLUEBAR = IGMDataItem.Gradient.GF.Create(SIZE[3]);
             BRACKET = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Pos = SIZE[3] };
+            CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
 
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
 
             Hide();
         }
-
-        public override bool Inputs_OKAY()
+        public void DrawCrosshair()
+        {
+            foreach (var d in this.targets)
+            {
+                if (d.GetEnemy(out Enemy e))
+                {
+                    Vector3 my3dObjectPos = Module_battle_debug.GetIndicatorPoint(-1);
+                    Vector3 my2dScreenPos = Memory.graphics.GraphicsDevice.Viewport.Project(my3dObjectPos, Module_battle_debug.ProjectionMatrix, Module_battle_debug.ViewMatrix,Module_battle_debug.WorldMatrix);
+                    Memory.SpriteBatchStartAlpha();
+                    //CROSSHAIR.Scale = new Vector2(1, -1);
+                    CROSSHAIR.Pos = new Rectangle(new Vector2(my2dScreenPos.X,my2dScreenPos.Y).ToPoint(),Point.Zero);
+                    CROSSHAIR.Draw();
+                    Memory.SpriteBatchEnd();
+                }
+            }
+        }
+        public override bool Inputs_CANCEL()
         {
             skipsnd = true;
-            Memory.State.EarnItem(this.ammo.ID, -1);
-            return base.Inputs_OKAY();
+            return base.Inputs_CANCEL() || true;
         }
-
-        public override bool Inputs_RotateRight() => Inputs_OKAY();
 
         #endregion Methods
     }

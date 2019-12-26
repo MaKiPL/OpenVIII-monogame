@@ -348,6 +348,12 @@ namespace OpenVIII
         private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokeken?.Enabled ?? false)) ?? false;
 
         private bool BoolShot() => GetBattleMenus()?.Any(m => m.Enabled && (m.Shot?.Enabled ?? false)) ?? false;
+        public override void StartDraw()
+        {
+            if (BoolShot())
+                GetOneShot().Shot.DrawCrosshair();
+            base.StartDraw();
+        }
 
         private void DrawBattleAction()
         {
