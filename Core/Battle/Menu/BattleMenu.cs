@@ -27,7 +27,8 @@ namespace OpenVIII
         {
             Commands,
             HP,
-            Renzokeken
+            Renzokeken,
+            Shot
         }
 
         #endregion Enums
@@ -42,6 +43,16 @@ namespace OpenVIII
             {
                 if (Data.TryGetValue(SectionName.Renzokeken, out Menu_Base val))
                     return (IGMData.Limit.Renzokeken)val;
+                return null;
+            }
+        }
+
+        public IGMData.Limit.Shot Shot
+        {
+            get
+            {
+                if (Data.TryGetValue(SectionName.Shot, out Menu_Base val))
+                    return (IGMData.Limit.Shot)val;
                 return null;
             }
         }
@@ -70,6 +81,8 @@ namespace OpenVIII
         {
             if (Data[SectionName.Renzokeken].Enabled)
                 return Data[SectionName.Renzokeken].Inputs();
+            else if (Data[SectionName.Shot].Enabled)
+                return Data[SectionName.Shot].Inputs();
             return Data[SectionName.Commands].Inputs();
         }
 
@@ -119,6 +132,8 @@ namespace OpenVIII
 
             //Memory.MainThreadOnlyActions.Enqueue(IGMData.Renzokeken.ThreadUnsafeOperations); //only works in main thread.
             Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Limit.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124))));
+            int width = 100, height = 100;
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, IGMData.Limit.Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 20 - height - 20, width, height))));
 
             List<Task> tasks = new List<Task>
             {

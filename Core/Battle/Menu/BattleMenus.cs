@@ -13,8 +13,8 @@ namespace OpenVIII
     /// </summary>
     public partial class BattleMenus : Menu
     {
-
         #region Fields
+
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
         private MODULE lastgamestate;
@@ -119,17 +119,19 @@ namespace OpenVIII
         #region Properties
 
         protected byte Player { get; set; } = 0;
+
         /// <summary>
         /// Get Damageable from active battle menu;
         /// </summary>
         /// <returns></returns>
         public Damageable GetDamageable() => GetCurrentBattleMenu()?.Damageable;
+
         public new sbyte? PartyPos
         {
             get
             {
-                var bm = GetCurrentBattleMenu();
-                if(bm?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false)
+                BattleMenu bm = GetCurrentBattleMenu();
+                if (bm?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false)
                 {
                     return bm.PartyPos;
                 }
@@ -345,12 +347,17 @@ namespace OpenVIII
 
         private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokeken?.Enabled ?? false)) ?? false;
 
+        private bool BoolShot() => GetBattleMenus()?.Any(m => m.Enabled && (m.Shot?.Enabled ?? false)) ?? false;
+
         private void DrawBattleAction()
         {
             StartDraw();
             //Had to split up the HP and Commands drawing. So that Commands would draw over HP.
             if (BoolRenzokeken())
                 GetOneRenzokeken().DrawData(BattleMenu.SectionName.Renzokeken);
+
+            else if (BoolShot())
+                GetOneShot().DrawData(BattleMenu.SectionName.Shot);
             else if (BoolBattleMenu())
             {
                 GetBattleMenus().ForEach(m => m.DrawData(BattleMenu.SectionName.HP));
@@ -371,6 +378,7 @@ namespace OpenVIII
         private void DrawVictoryAction() => Victory_Menu.Draw();
 
         private BattleMenu GetOneRenzokeken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokeken.Enabled);
+        private BattleMenu GetOneShot() => GetBattleMenus()?.First(m => m.Enabled && m.Shot.Enabled);
 
         private bool InputBattleFunction()
         {
@@ -470,7 +478,7 @@ namespace OpenVIII
             {
                 ret = m.Update() || ret;
             }
-            if (!(GetCurrentBattleMenu()?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)?? false))
+            if (!(GetCurrentBattleMenu()?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false))
             {
                 int cnt = bml.Count;
                 if (Player + 1 == cnt)
