@@ -10,7 +10,7 @@ namespace OpenVIII
         {
             #region Methods
 
-            public static IGMData_CharacterInfo Create() => Create<IGMData_CharacterInfo>(1, 15, new IGMDataItem.Empty(new Rectangle(20, 153, 395, 255)));
+            public static IGMData_CharacterInfo Create() => Create<IGMData_CharacterInfo>(1, 15, new IGMDataItem.Empty { Pos = new Rectangle(20, 153, 395, 255) });
 
             /// <summary>
             /// Things that may of changed before screen loads or junction is changed.

@@ -26,7 +26,7 @@ namespace OpenVIII
 
             #region Methods
 
-            public static IGMData_Party Create() => Create<IGMData_Party>(3, 12, new IGMDataItem.Empty(Rectangle.Empty), 1, 3);
+            public static IGMData_Party Create() => Create<IGMData_Party>(3, 12, new IGMDataItem.Empty(), 1, 3);
 
             public override void Refresh()
             {
