@@ -23,7 +23,6 @@ namespace OpenVIII
             #endregion Fields
 
             #region Constructors
-
             public Item(byte ID, byte QTY) { this.ID = ID; this.QTY = QTY; }
 
             public Item(KeyValuePair<byte, byte> e) : this(e.Key, e.Value)
@@ -35,20 +34,22 @@ namespace OpenVIII
 
             public Item_In_Menu? DATA => Memory.MItems?.Items[ID];
             public override string ToString() => DATA?.Name;
-            public void UsedOne()
+            public Item UsedOne()
             {
                 if(QTY <= 1)
                 {
                     ID = 0;
                 }
                 QTY--;
+                return this;
             }
-            public void Remove()
+            public Item Remove()
             {
                 QTY = 0;
                 ID = 0;
+                return this;
             }
-            public bool Add(byte qty, byte? id = null)
+            public Item Add(byte qty, byte? id = null)
             {
                 ID = id ?? ID;
                 if (ID > 0)
@@ -57,10 +58,10 @@ namespace OpenVIII
                     if (Q > QTY)
                     {
                         QTY = Q;
-                        return true;
+                        
                     }
                 }
-                return false;
+                return this;
             }
 
             public Item Clone()
@@ -70,6 +71,13 @@ namespace OpenVIII
                 //deepcopy anything that needs it here.
                 return d;
             }
+
+            public Item Add(sbyte qty)
+            {
+                QTY = (byte)(QTY + qty);
+                return this;
+            }
+
             #endregion Properties
         };
 
