@@ -43,28 +43,25 @@ namespace OpenVIII.IGMData.Limit
             if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
             {
                 TimeSpan timeleft;
-                //if (c.CurrentCrisisLevel >= 0)
-                    switch (c.CurrentCrisisLevel)
-                    {
-                        case 0:
-                            timeleft = TimeSpan.FromSeconds(8);
-                            break;
+                switch (c.CurrentCrisisLevel)
+                {
+                    case 0:
+                    default:
+                        timeleft = TimeSpan.FromSeconds(8);
+                        break;
 
-                        case 1:
-                            timeleft = TimeSpan.FromSeconds(12);
-                            break;
+                    case 1:
+                        timeleft = TimeSpan.FromSeconds(12);
+                        break;
 
-                        case 2:
-                            timeleft = TimeSpan.FromSeconds(20);
-                            break;
+                    case 2:
+                        timeleft = TimeSpan.FromSeconds(20);
+                        break;
 
-                        case 3:
-                        default:
-                            timeleft = TimeSpan.FromSeconds(26.6);
-                            break;
-                    }
-                //else
-                //    timeleft = TimeSpan.Zero;
+                    case 3:
+                        timeleft = TimeSpan.FromSeconds(26.6);
+                        break;
+                }
                 timeSlide.TotalTime = timeleft;
                 timeSlide.Restart();
                 CriticalPercent = (c.LUCK + 26) / 256f;
@@ -95,19 +92,17 @@ namespace OpenVIII.IGMData.Limit
             return false;
         }
 
-        public override bool Inputs()
-        {
-            return base.Inputs() || true;
-        }
+        public override bool Inputs() => base.Inputs() || true;
+
         protected override void Init()
         {
             timeSlide = new Slide<float>(100f, 0f, TimeSpan.Zero, MathHelper.Lerp);
             base.Init();
-            Memory.Icons.Trim(Icons.ID.BULLET,2);
+            Memory.Icons.Trim(Icons.ID.BULLET, 2);
             Memory.Icons.Trim(Icons.ID.TIME, 2);
             BULLET = new IGMDataItem.Icon { Data = Icons.ID.BULLET, Pos = SIZE[0] };
             const int QTYwidth = 60;
-            QTY = new IGMDataItem.Integer { Data = 0, Pos = new Rectangle(SIZE[1].Right - QTYwidth, SIZE[1].Top, QTYwidth, SIZE[1].Height), Spaces = 3};
+            QTY = new IGMDataItem.Integer { Data = 0, Pos = new Rectangle(SIZE[1].Right - QTYwidth, SIZE[1].Top, QTYwidth, SIZE[1].Height), Spaces = 3 };
             TIME = new IGMDataItem.Icon { Data = Icons.ID.TIME, Pos = SIZE[2] };
             SIZE[3].Height = 15;
             BLUEBAR = IGMDataItem.Gradient.GF.Create(SIZE[3]);
