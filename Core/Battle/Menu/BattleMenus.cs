@@ -350,8 +350,8 @@ namespace OpenVIII
         private bool BoolShot() => GetBattleMenus()?.Any(m => m.Enabled && (m.Shot?.Enabled ?? false)) ?? false;
         public override void StartDraw()
         {
-            if (BoolShot())
-                GetOneShot().Shot.DrawCrosshair();
+            //if (BoolShot())
+            //    GetOneShot().Shot.DrawCrosshair();
             base.StartDraw();
         }
 

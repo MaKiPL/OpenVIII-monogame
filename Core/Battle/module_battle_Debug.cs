@@ -412,6 +412,8 @@ namespace OpenVIII
 
         private static byte SID = 0;
 
+        private static IGMDataItem.Icon CROSSHAIR { get; set; }
+
         public static void Draw()
         {
             switch (battleModule)
@@ -422,12 +424,40 @@ namespace OpenVIII
                     DrawCharactersWeapons();
                     RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
                     //var v = Enemy.Party[0].EII.Data.VertexPositionTexturePointersGroup.VPT.Select(x => x.Position).OrderBy(x => Vector3.Distance(x, CenterOfScreen)).First();
-                    var v = GetIndicatorPoint(-1);
+                    Vector3 v = GetIndicatorPoint(-1);
                     v.Y -= 5f;
-                    testQuad.Draw(v);
+                    //testQuad.Draw(v);
                     if (!bUseFPSCamera)
                         Menu.BattleMenus.Draw();
                     break;
+            }
+        }
+
+        public static void DrawCrosshair(Enemy enemy)
+        {
+            IGMData.Limit.Shot shot = Menu.BattleMenus.GetCurrentBattleMenu()?.Shot;
+            if (shot != null && shot.Enabled)
+            {
+                Damageable[] targets = shot?.Targets;
+                if (targets != null)
+                    foreach (Damageable d in targets)
+                    {
+                        if (d.GetEnemy(out Enemy e) && e.Equals(enemy))
+                        {
+                            Vector3 posIn3DSpace = e.EII.Data.IndicatorPoint;
+                            posIn3DSpace.Y -= 1f;
+                            Vector3 ScreenPos = Memory.graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
+                            Memory.SpriteBatchStartAlpha();
+                            CROSSHAIR.Pos = new Rectangle(new Vector2(ScreenPos.X, ScreenPos.Y).ToPoint(), Point.Zero);
+                            EntryGroup icons = Memory.Icons[CROSSHAIR.Data];
+                            TextureHandler texture = Memory.Icons.GetTexture(Icons.ID.Cross_Hair1);
+                            Vector2 s = texture.ScaleFactor;
+                            CROSSHAIR.Pos.Offset(-icons.Width * s.X / 2f, -icons.Height * s.Y / 2f);
+                            CROSSHAIR.Draw();
+                            Memory.SpriteBatchEnd();
+                            break;
+                        }
+                    }
             }
         }
 
@@ -690,6 +720,7 @@ namespace OpenVIII
                 enemyPosition.Y += Yoffset;
                 DrawBattleDat(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
                 DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
+                DrawCrosshair(Enemy.Party[n]);
             }
         }
 
@@ -1041,11 +1072,12 @@ namespace OpenVIII
         }
 
         private static Vector3 PyramidOffset = new Vector3(0, 3f, 0);
-        private static Icons.VertexPositionTexture_Texture2D testQuad;
+        //private static Icons.VertexPositionTexture_Texture2D testQuad;
 
         private static void InitBattle()
         {
-            testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
+            CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
+            //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             InputMouse.Mode = MouseLockMode.Center;

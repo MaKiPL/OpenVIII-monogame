@@ -10,13 +10,12 @@ namespace OpenVIII.IGMData.Limit
 
         private Item_In_Menu ammo;
         private bool skipupdate;
-        private Damageable[] targets;
+        public Damageable[] Targets { get; private set; }
         private Slide<float> timeSlide;
 
         #endregion Fields
 
         #region Properties
-        private IGMDataItem.Icon CROSSHAIR { get; set; }
         private IGMDataItem.Gradient.GF BLUEBAR { get => (IGMDataItem.Gradient.GF)ITEM[3, 0]; set => ITEM[3, 0] = value; }
         private IGMDataItem.Icon BRACKET { get => (IGMDataItem.Icon)ITEM[4, 0]; set => ITEM[4, 0] = value; }
         private IGMDataItem.Icon BULLET { get => (IGMDataItem.Icon)ITEM[0, 0]; set => ITEM[0, 0] = value; }
@@ -45,7 +44,7 @@ namespace OpenVIII.IGMData.Limit
         public void Refresh(Item_In_Menu ammo, Damageable[] d)
         {
             this.ammo = ammo;
-            this.targets = d;
+            this.Targets = d;
             Refresh();
         }
 
@@ -116,27 +115,10 @@ namespace OpenVIII.IGMData.Limit
             SIZE[3].Height = 15;
             BLUEBAR = IGMDataItem.Gradient.GF.Create(SIZE[3]);
             BRACKET = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Pos = SIZE[3] };
-            CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
 
             Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Static | Cursor_Status.Hidden;
 
             Hide();
-        }
-        public void DrawCrosshair()
-        {
-            foreach (var d in this.targets)
-            {
-                if (d.GetEnemy(out Enemy e))
-                {
-                    Vector3 my3dObjectPos = Module_battle_debug.GetIndicatorPoint(-1);
-                    Vector3 my2dScreenPos = Memory.graphics.GraphicsDevice.Viewport.Project(my3dObjectPos, Module_battle_debug.ProjectionMatrix, Module_battle_debug.ViewMatrix,Module_battle_debug.WorldMatrix);
-                    Memory.SpriteBatchStartAlpha();
-                    //CROSSHAIR.Scale = new Vector2(1, -1);
-                    CROSSHAIR.Pos = new Rectangle(new Vector2(my2dScreenPos.X,my2dScreenPos.Y).ToPoint(),Point.Zero);
-                    CROSSHAIR.Draw();
-                    Memory.SpriteBatchEnd();
-                }
-            }
         }
         public override bool Inputs_CANCEL()
         {
