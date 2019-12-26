@@ -12,7 +12,7 @@ namespace OpenVIII
             Start = start;
             End = end;
             TotalTime = totalTime;
-            Debug.Assert(TotalTime != TimeSpan.Zero);
+            //Debug.Assert(TotalTime != TimeSpan.Zero);
             Function = function;
         }
 
