@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -140,6 +141,95 @@ namespace OpenVIII
         {
             EntryGroup eg = this[(ID)ic];
             return eg.MostSaturated(Textures[pal], pal);
+        }
+
+        public struct VertexPositionTexture_Texture2D
+        {
+            public VertexPositionTexture[] VPT;
+            private VertexPositionTexture[] TransformedVPT;
+            public TextureHandler Texture;
+            private AlphaTestEffect ate;
+
+            public VertexPositionTexture_Texture2D(VertexPositionTexture[] vPT, TextureHandler texture)
+            {
+                VPT = vPT;
+                TransformedVPT = (VertexPositionTexture[])VPT.Clone();
+                Texture = texture;
+                ate = null;
+            }
+
+            public void Draw(Vector3 pos)
+            {
+                RasterizerState rs = new RasterizerState
+                {
+                    CullMode = CullMode.CullClockwiseFace,
+                    FillMode = FillMode.Solid
+                };
+                Memory.graphics.GraphicsDevice.RasterizerState = rs;
+                Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+                Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+                Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                Module_battle_debug.Effect.TextureEnabled = true;
+                ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+                {
+                    World = Module_battle_debug.WorldMatrix,
+                    View = Module_battle_debug.ViewMatrix,
+                    Projection = Module_battle_debug.ProjectionMatrix,
+                    Texture = (Texture2D)Texture
+                };
+                //Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+                //var _1 = vp.Unproject(new Vector3(vp.Width / 2f, vp.Height / 2f, 0f), Module_battle_debug.ProjectionMatrix, Module_battle_debug.ViewMatrix, Module_battle_debug.WorldMatrix);
+                //var _2 = vp.Unproject(new Vector3(vp.Width / 2f, vp.Height / 2f, 1f), Module_battle_debug.ProjectionMatrix, Module_battle_debug.ViewMatrix, Module_battle_debug.WorldMatrix);
+                //var centerscreen = Vector3.Normalize(_2 - _1);
+
+                Matrix bb = Module_battle_debug.CreateBillboard(pos);
+                //Matrix t = Matrix.CreateTranslation(pos);
+                //Matrix lookat = Matrix.CreateLookAt(pos, _1, Vector3.Up);
+
+                //float yaw = (float)Math.Atan2(lookat.M13, lookat.M33);
+                //float pitch = (float)Math.Asin(-lookat.M23);
+                //float roll = (float)Math.Atan2(lookat.M21, lookat.M22);
+
+                //Quaternion q = Quaternion.CreateFromYawPitchRoll(yaw, pitch, 0f);
+
+                for (int i = 0; i < VPT.Length; i++)
+                {
+                    TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, bb);
+                    //TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, q);
+                    //TransformedVPT[i].Position = Vector3.Transform(TransformedVPT[i].Position, t);
+                }
+                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                    vertexData: TransformedVPT, vertexOffset: 0, primitiveCount: VPT.Length / 3);
+                }
+                ate.Dispose();
+            }
+        }
+
+        public VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = 2f, int piece = 0)
+        {
+            Trim(ic, pal);
+            EntryGroup eg = this[(ID)ic];
+            Rectangle r = eg[piece].GetRectangle;
+            Vector2 s = Textures[pal].ScaleFactor;
+            VertexPositionTexture[] vpt = new VertexPositionTexture[6];
+            VertexPositionTexture[] v = new VertexPositionTexture[]
+            {
+                new VertexPositionTexture(new Vector3(-r.Width/2f,r.Height/2f,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
+                new VertexPositionTexture(new Vector3(r.Width/2f,r.Height/2f,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
+                new VertexPositionTexture(new Vector3(r.Width/2f,-r.Height/2f,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
+                new VertexPositionTexture(new Vector3(-r.Width/2f,-r.Height/2f,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
+            };
+            vpt[0] = v[0];
+            vpt[1] = v[1];
+            vpt[2] = v[3];
+
+            vpt[3] = v[1];
+            vpt[4] = v[2];
+            vpt[5] = v[3];
+            return new VertexPositionTexture_Texture2D(vpt, Textures[pal]);
         }
 
         public new void Trim(Enum ic, byte pal)

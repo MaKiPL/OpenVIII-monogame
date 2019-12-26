@@ -33,7 +33,7 @@ namespace OpenVIII
 
         private static float localRotator = 0.0f; //a rotator is a float that holds current axis rotation for sky. May be malformed by skyRotators or TimeCompression magic
 
-        public static BasicEffect effect;
+        private static BasicEffect effect;
         public static AlphaTestEffect ate;
 
         private static string battlename = "a0stg000.x";
@@ -421,6 +421,7 @@ namespace OpenVIII
                     DrawMonsters();
                     DrawCharactersWeapons();
                     RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
+                    testQuad.Draw(GetIndicatorPoint(-1));
                     if (!bUseFPSCamera)
                         Menu.BattleMenus.Draw();
                     break;
@@ -513,21 +514,21 @@ namespace OpenVIII
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
                 Vector3 charaPosition = GetCharPos(n);
-                UpdatePos(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
+                DrawBattleDat(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
 
                 //WEAPON
                 if (CharacterInstances[n].Data.weapon != null)
                 {
                     CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                    UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
+                    DrawBattleDat(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 }
             }
         }
 
         private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
 
-        private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
+        private static void DrawBattleDat(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
         {
             for (int i = 0; /*i<1 &&*/ i < battledat.geometry.cObjects; i++)
             {
@@ -684,7 +685,7 @@ namespace OpenVIII
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
                 Vector3 enemyPosition = GetEnemyPos(n);
                 enemyPosition.Y += Yoffset;
-                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
+                DrawBattleDat(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
                 DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
             }
         }
@@ -1037,9 +1038,11 @@ namespace OpenVIII
         }
 
         private static Vector3 PyramidOffset = new Vector3(0, 3f, 0);
+        private static Icons.VertexPositionTexture_Texture2D testQuad;
 
         private static void InitBattle()
         {
+            testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             InputMouse.Mode = MouseLockMode.Center;
@@ -1334,6 +1337,18 @@ namespace OpenVIII
         public static Matrix ProjectionMatrix { get => projectionMatrix; private set => projectionMatrix = value; }
         public static Matrix ViewMatrix { get => viewMatrix; private set => viewMatrix = value; }
         public static Matrix WorldMatrix { get => worldMatrix; private set => worldMatrix = value; }
+
+        public static BasicEffect Effect { get => effect; private set => effect = value; }
+        public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
+        public static Vector3 CamTarget { get => camTarget; private set => camTarget = value; }
+
+        public static Matrix CreateBillboard(Vector3 pos)
+        {
+            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+            Vector3 _1 = vp.Unproject(new Vector3(vp.Width / 2f, vp.Height / 2f, 0f), ProjectionMatrix, ViewMatrix, WorldMatrix);
+
+            return Matrix.CreateBillboard(pos, _1, Vector3.Up,null);
+        }
 
         private static void FillWeapons()
         {
@@ -2029,9 +2044,10 @@ namespace OpenVIII
             }
             else
             {
-                Debug.WriteLine($"ReadAnimationById::{battleCameraSetArray.Length} < {tpGetter.Set}" +
-                    $"\nor\n" +
-                    $"{battleCameraSetArray[tpGetter.Set].animPointers.Length} < {tpGetter.Anim}");
+                Debug.WriteLine($"ReadAnimationById::{battleCameraSetArray.Length} < {tpGetter.Set}");
+
+                if (battleCameraSetArray.Length > tpGetter.Set)
+                    Debug.WriteLine($" or \n{battleCameraSetArray[tpGetter.Set].animPointers.Length} < {tpGetter.Anim}");
             }
             return 0;
         }
