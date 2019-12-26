@@ -135,7 +135,7 @@ namespace OpenVIII.IGMData.Pool
                 {
                     sbyte addEnemyItem(Item_In_Menu itemdata)
                     {
-                        Saves.Item item = new Saves.Item { ID = itemdata.ID, QTY = byte.MaxValue };
+                        Saves.Item item = new Saves.Item (itemdata.ID, byte.MaxValue );
                         return AddItem(ref pos, ref skip, item, itemdata);
                     }
                     HashSet<Item_In_Menu> items = new HashSet<Item_In_Menu>();

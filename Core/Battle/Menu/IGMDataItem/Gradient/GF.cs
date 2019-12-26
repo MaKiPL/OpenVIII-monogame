@@ -82,14 +82,16 @@ namespace OpenVIII.IGMDataItem.Gradient
             damageable?.Refresh();
         }
 
-        public override bool Update()
+        public override bool Update() => Update(null);
+
+        public bool Update(float? Percent = null)
         {
             if (Enabled)
             {
-                if (Damageable != null)
+                if (Damageable != null && (Percent != null || Damageable.SummonedGF!= null))
                 {
                     Rectangle r = Restriction;
-                    r.Width = Lerp(Width, 0, Damageable.SummonedGF.ATBPercent);
+                    r.Width = Lerp(Width, 0, Percent ?? Damageable.SummonedGF.ATBPercent);
                     Restriction = r;
 
                     Color = Faded_Color = Color.White * .8f;

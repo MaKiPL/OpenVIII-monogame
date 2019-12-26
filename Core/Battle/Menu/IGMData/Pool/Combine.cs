@@ -137,6 +137,7 @@ namespace OpenVIII.IGMData.Pool
             base.PAGE_PREV();
             Refresh();
         }
+
         public override void UpdateTitle()
         {
             base.UpdateTitle();
@@ -162,11 +163,13 @@ namespace OpenVIII.IGMData.Pool
                     case 3:
                         ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
                         break;
+
                     default:
                         ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
                         break;
                 }
         }
+
         #endregion Methods
 
         #region Structs

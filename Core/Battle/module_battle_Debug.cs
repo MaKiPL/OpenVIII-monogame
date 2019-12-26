@@ -55,6 +55,7 @@ namespace OpenVIII
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
         /// </summary>
         private const int BATTLECAMERA_FRAMETIME = 3;
+
         public const int Yoffset = 0;//-10;
 
         /// <summary>
@@ -431,9 +432,8 @@ namespace OpenVIII
             //const float V = 100f;
             //battleCamera.cam.startingTime = 64;
             float step = battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks;
-            camTarget = Vector3.SmoothStep(battleCamera.cam.Camera_Lookat(0),battleCamera.cam.Camera_Lookat(1),step);
+            camTarget = Vector3.SmoothStep(battleCamera.cam.Camera_Lookat(0), battleCamera.cam.Camera_Lookat(1), step);
             camPosition = Vector3.SmoothStep(battleCamera.cam.Camera_World(0), battleCamera.cam.Camera_World(1), step);
-
 
             //            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
             //                battleCamera.cam.Camera_World_X_s16[1] / V, step) + 30;
@@ -689,7 +689,7 @@ namespace OpenVIII
             }
         }
 
-        private static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint : 
+        private static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
             Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
 
         private static Vector3 GetEnemyPos(int n) =>
@@ -1218,10 +1218,13 @@ namespace OpenVIII
 
         private static List<Battle.Mag> MagALL;
 
-        static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
-        static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
-        static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count??0) >0) ?? null;
-        static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType >0).Select(x=>x.UnknownType) ?? null;
+        private static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
+
+        private static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
+
+        private static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count ?? 0) > 0) ?? null;
+
+        private static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType > 0).Select(x => x.UnknownType) ?? null;
 
         private static void ReadData()
         {
@@ -1236,10 +1239,10 @@ namespace OpenVIII
                     MagALL.Add(mag);
                 }
             }
-            var _MagGeo = MagGeometries.ToList();
-            var _MagPack = MagPacked.ToList();
-            var _MagTIM = MagTIMs.ToList();
-            var _MagUNKID = MagUNKID.ToList();
+            List<Battle.Mag> _MagGeo = MagGeometries.ToList();
+            List<Battle.Mag> _MagPack = MagPacked.ToList();
+            List<Battle.Mag> _MagTIM = MagTIMs.ToList();
+            List<int> _MagUNKID = MagUNKID.ToList();
             battlename = test.First(x => x.ToLower().Contains(battlename));
             string fileName = Path.GetFileNameWithoutExtension(battlename);
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
@@ -1838,25 +1841,30 @@ namespace OpenVIII
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
             public byte[] unkbyte4A4; //4A4
+
             private const float V = 100f;
-            Vector3 offset => new Vector3(30, +40, 0);
+
+            private Vector3 offset => new Vector3(30, +40, 0);
 
             public Vector3 Camera_World(int i) => new Vector3(
-                Camera_World_X_s16[i] / V, 
+                Camera_World_X_s16[i] / V,
                 -(Camera_World_Y_s16[i] / V),
-                -(Camera_World_Z_s16[i] / V))+offset;
+                -(Camera_World_Z_s16[i] / V)) + offset;
+
             public Vector3 Camera_Lookat(int i) => new Vector3(
-                Camera_Lookat_X_s16[i] / V, 
-                -(Camera_Lookat_Y_s16[i] / V), 
-                -(Camera_Lookat_Z_s16[i] / V))+offset;
+                Camera_Lookat_X_s16[i] / V,
+                -(Camera_Lookat_Y_s16[i] / V),
+                -(Camera_Lookat_Z_s16[i] / V)) + offset;
+
             public void UpdateTime() => CurrentTime += Memory.gameTime.ElapsedGameTime;
+
             public TimeSpan CurrentTime;
             public TimeSpan TotalTime => TimeSpan.FromTicks(TotalTimePerFrame.Ticks * time);
+
             /// <summary>
             /// (1000) milliseconds / frames per second
             /// </summary>
             public TimeSpan TotalTimePerFrame => TimeSpan.FromMilliseconds(1000d / 240d);
-            
         };
 
         /// <summary>

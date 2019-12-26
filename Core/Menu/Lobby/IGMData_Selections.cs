@@ -21,7 +21,7 @@ namespace OpenVIII
             #region Methods
 
             public static IGMData_Selections Create() =>
-                Create<IGMData_Selections>(count: 3, depth: 1, container: new IGMDataItem.Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3);
+                Create<IGMData_Selections>(count: 3, depth: 1, container: new IGMDataItem.Empty { Pos = new Rectangle(320, 445, 250, 170) }, cols: 1, rows: 3);
 
             public override void Draw() => base.Draw();
 

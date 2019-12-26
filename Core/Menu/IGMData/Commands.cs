@@ -23,8 +23,10 @@ namespace OpenVIII.IGMData
         #endregion Fields
 
         #region Properties
+
         //Selphie_Slots
         private Selphie_Slots Selphie_Slots { get => (Selphie_Slots)ITEM[Offsets.Selphie_Slots, 0]; set => ITEM[Offsets.Selphie_Slots, 0] = value; }
+
         private Pool.GF GFPool { get => (Pool.GF)ITEM[Offsets.GF_Pool, 0]; set => ITEM[Offsets.GF_Pool, 0] = value; }
         private Pool.Item ItemPool { get => (Pool.Item)ITEM[Offsets.Item_Pool, 0]; set => ITEM[Offsets.Item_Pool, 0] = value; }
         private Pool.Magic MagPool { get => (Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; set => ITEM[Offsets.Mag_Pool, 0] = value; }
@@ -119,18 +121,18 @@ namespace OpenVIII.IGMData
         public override bool Inputs()
         {
             bool ret = false;
-            var found = false;
+            bool found = false;
             //loop through Start to Count
             //This is to only check for input from the dialogs that popup.
-            for(int i = Offsets.Start;i<Offsets.Count;i++)
+            for (int i = Offsets.Start; i < Offsets.Count; i++)
             {
-                if (InputITEM(ITEM[i,0], ref ret))
+                if (InputITEM(ITEM[i, 0], ref ret))
                 {
                     found = true;
                     break;
                 }
             }
-            if(!found)
+            if (!found)
             {
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status &= ~Cursor_Status.Blinking;
@@ -219,6 +221,7 @@ namespace OpenVIII.IGMData
                         BulletPool.Show();
                         BulletPool.Refresh();
                         return true;
+
                     case 19: //COMBINE (ANGELO or ANGEL WING)
                              //TODO see if ANGEL WING unlock if so show menu to choose angelo or angel wing.
                              //TargetGroup.ShowTargetWindows();
@@ -411,7 +414,7 @@ namespace OpenVIII.IGMData
                             }
                         }
                         const int crisiswidth = 294;
-                        if (Battle && CrisisLevel>-1)
+                        if (Battle && CrisisLevel > -1)
                         {
                             CONTAINER.Width = crisiswidth;
                             LimitArrow.Show();
@@ -513,7 +516,7 @@ namespace OpenVIII.IGMData
             }
         }
 
-        public sbyte CrisisLevel { get => Damageable!= null && Damageable.GetCharacterData(out Saves.CharacterData c) ? c.CurrentCrisisLevel : (sbyte)-1; }
+        public sbyte CrisisLevel => Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) ? c.CurrentCrisisLevel : (sbyte)-1;
 
         private void SubscribeEvents()
         {

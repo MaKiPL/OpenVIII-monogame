@@ -9,7 +9,6 @@ namespace OpenVIII.IGMData.Target
 {
     public class Group : IGMData.Group.Base
     {
-
         #region Fields
 
         private readonly int[] Renzokuken_hits = { 4, 5, 6, 7 };
@@ -113,6 +112,7 @@ namespace OpenVIII.IGMData.Target
             base.Inputs_OKAY();
             return Execute();
         }
+
         /// <summary>
         /// Execute the ability on the Target. If Random is set execute on random target.
         /// </summary>
@@ -169,13 +169,13 @@ namespace OpenVIII.IGMData.Target
             EnemyAttack = c;
         }
 
-        public void SelectTargetWindows(Item_In_Menu c,bool shot = false)
+        public void SelectTargetWindows(Item_In_Menu c, bool shot = false)
         {
             Kernel_bin.Target t = c.Battle?.Target ?? Kernel_bin.Target.Enemy | Kernel_bin.Target.Single_Target;
             if (shot)
                 t = c.Shot.Target;
             SelectTargetWindows(t);
-            Command = Kernel_bin.BattleCommands[shot? 14:4];
+            Command = Kernel_bin.BattleCommands[shot ? 14 : 4];
             Item = c;
         }
 
@@ -400,9 +400,10 @@ namespace OpenVIII.IGMData.Target
             {
                 Neededvaribles(out Damageable[] d);
 
-                Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.ID}) on { DebugMessageSuffix(d) }");
-                EndTurn();
+                Menu.BattleMenus.GetCurrentBattleMenu().Shot.Refresh(Item,d);
+                Menu.BattleMenus.GetCurrentBattleMenu().Shot.Show();
 
+                Debug.WriteLine($"{Damageable.Name} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(d) }");
                 return true;
             }
 
@@ -705,22 +706,22 @@ namespace OpenVIII.IGMData.Target
                             vc = null;
                     }
                     else
-                    switch (Memory.Random.Next(2))
-                    {
-                        case 0:
-                            vc = null;
-                            break;
+                        switch (Memory.Random.Next(2))
+                        {
+                            case 0:
+                                vc = null;
+                                break;
 
-                        case 1:
-                            e = null;
-                            break;
-                    }
+                            case 1:
+                                e = null;
+                                break;
+                        }
                 }
             }
             Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
             Damageable fromc = Menu.BattleMenus.GetDamageable();
             //fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
-            if(RandomTarget.PositiveMatters)
+            if (RandomTarget.PositiveMatters)
             {
                 if (positive)
                     e = null;

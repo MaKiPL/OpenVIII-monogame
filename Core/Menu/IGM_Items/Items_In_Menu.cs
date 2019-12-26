@@ -11,6 +11,7 @@ namespace OpenVIII
     public struct Item_In_Menu
     {
         private const int bulletoffset = 101;
+
         #region Fields
 
         private _Type _type;
@@ -103,8 +104,9 @@ namespace OpenVIII
         private Kernel_bin.Attack_Type Attack_Type => Battle?.Attack_Type ?? Kernel_bin.Attack_Type.None;
 
         public Kernel_bin.Battle_Items_Data Battle => (Kernel_bin.BattleItemsData?.Count ?? 0) > ID ? Kernel_bin.BattleItemsData[ID] : null;
-        public Kernel_bin.Shot_Irvine_limit_break Shot => (Kernel_bin.ShotIrvinelimitbreak?.Count ?? 0) < ID- bulletoffset || ID- bulletoffset < 0 ? null : Kernel_bin.ShotIrvinelimitbreak[ID- bulletoffset];
-            /// <summary>
+        public Kernel_bin.Shot_Irvine_limit_break Shot => (Kernel_bin.ShotIrvinelimitbreak?.Count ?? 0) < ID - bulletoffset || ID - bulletoffset < 0 ? null : Kernel_bin.ShotIrvinelimitbreak[ID - bulletoffset];
+
+        /// <summary>
         /// Which persistant statuses are removed.
         /// </summary>
         public Kernel_bin.Persistent_Statuses Cleansed_Statuses

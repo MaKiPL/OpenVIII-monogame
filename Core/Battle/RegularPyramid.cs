@@ -10,9 +10,11 @@ namespace OpenVIII.Battle
     public class RegularPyramid
     {
         private const float persistentAlpha = .9f;
+
         #region Fields
-        static readonly TimeSpan RotationTime = TimeSpan.FromMilliseconds(1500d);
-        static readonly TimeSpan FadeTime = TimeSpan.FromMilliseconds(1000);
+
+        private static readonly TimeSpan RotationTime = TimeSpan.FromMilliseconds(1500d);
+        private static readonly TimeSpan FadeTime = TimeSpan.FromMilliseconds(1000);
         private BasicEffect effect;
         private Matrix offset;
         private Slide<float> radians;
@@ -28,12 +30,12 @@ namespace OpenVIII.Battle
         {
             uniqueVertices = new VertexPositionColor[5];
             VertexBuffer = new VertexBuffer(Memory.graphics.GraphicsDevice, uniqueVertices[0].GetType(), 5, BufferUsage.WriteOnly);
-            Indices = new IndexBuffer(Memory.graphics.GraphicsDevice, typeof(short), 18, BufferUsage.WriteOnly);            
+            Indices = new IndexBuffer(Memory.graphics.GraphicsDevice, typeof(short), 18, BufferUsage.WriteOnly);
             radians = new Slide<float>(0f, MathHelper.TwoPi, RotationTime, MathHelper.Lerp)
             {
                 Repeat = true
             };
-            
+
             fader = new Slide<float>(0f, 1f, FadeTime, MathHelper.Lerp);
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
             Set(1, 1, null);
@@ -65,7 +67,7 @@ namespace OpenVIII.Battle
 
             Memory.graphics.GraphicsDevice.SetVertexBuffer(VertexBuffer);
             Memory.graphics.GraphicsDevice.Indices = Indices;
-            var tmp = Memory.graphics.GraphicsDevice.RasterizerState;
+            RasterizerState tmp = Memory.graphics.GraphicsDevice.RasterizerState;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
@@ -106,12 +108,10 @@ namespace OpenVIII.Battle
             FadeIn();
         }
 
-        public void Set(Vector3 offset)
-        {
-            this.offset = Matrix.CreateTranslation(offset);
-        }
+        public void Set(Vector3 offset) => this.offset = Matrix.CreateTranslation(offset);
 
-        float alpha;
+        private float alpha;
+
         public void FadeIn()
         {
             if (fader.Reversed)
@@ -120,6 +120,7 @@ namespace OpenVIII.Battle
             }
             else fader.Restart();
         }
+
         public void FadeOut()
         {
             if (!fader.Reversed)
@@ -128,6 +129,7 @@ namespace OpenVIII.Battle
             }
             else fader.Restart();
         }
+
         public void Update()
         {
             // Update Fade
