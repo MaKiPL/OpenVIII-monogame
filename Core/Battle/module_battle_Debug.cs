@@ -421,7 +421,10 @@ namespace OpenVIII
                     DrawMonsters();
                     DrawCharactersWeapons();
                     RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
-                    testQuad.Draw(GetIndicatorPoint(-1));
+                    //var v = Enemy.Party[0].EII.Data.VertexPositionTexturePointersGroup.VPT.Select(x => x.Position).OrderBy(x => Vector3.Distance(x, CenterOfScreen)).First();
+                    var v = GetIndicatorPoint(-1);
+                    v.Y -= 5f;
+                    testQuad.Draw(v);
                     if (!bUseFPSCamera)
                         Menu.BattleMenus.Draw();
                     break;
@@ -1342,13 +1345,11 @@ namespace OpenVIII
         public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
         public static Vector3 CamTarget { get => camTarget; private set => camTarget = value; }
 
-        public static Matrix CreateBillboard(Vector3 pos)
-        {
-            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
-            Vector3 _1 = vp.Unproject(new Vector3(vp.Width / 2f, vp.Height / 2f, 0f), ProjectionMatrix, ViewMatrix, WorldMatrix);
+        public static Matrix CreateBillboard(Vector3 pos) => Matrix.CreateBillboard(pos, CenterOfScreen, Vector3.Up, null);
 
-            return Matrix.CreateBillboard(pos, _1, Vector3.Up,null);
-        }
+        public static Matrix CreateConstrainedBillboard(Vector3 pos, Vector3 rotateAxis) => Matrix.CreateConstrainedBillboard(pos, CenterOfScreen, rotateAxis, null, null);
+
+        private static Vector3 CenterOfScreen => Memory.graphics.GraphicsDevice.Viewport.Unproject(new Vector3(Memory.graphics.GraphicsDevice.Viewport.Width / 2f, Memory.graphics.GraphicsDevice.Viewport.Height / 2f, 0f), ProjectionMatrix, ViewMatrix, WorldMatrix);
 
         private static void FillWeapons()
         {
