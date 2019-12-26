@@ -208,7 +208,7 @@ namespace OpenVIII
             }
         }
 
-        public VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = 2f, int piece = 0)
+        public VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = .25f, int piece = 0)
         {
             Trim(ic, pal);
             EntryGroup eg = this[(ID)ic];
