@@ -689,7 +689,7 @@ namespace OpenVIII
             }
         }
 
-        private static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
+        public static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
             Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
 
         private static Vector3 GetEnemyPos(int n) =>
@@ -1330,6 +1330,10 @@ namespace OpenVIII
             }
             private set => s_weapons = value;
         }
+
+        public static Matrix ProjectionMatrix { get => projectionMatrix; private set => projectionMatrix = value; }
+        public static Matrix ViewMatrix { get => viewMatrix; private set => viewMatrix = value; }
+        public static Matrix WorldMatrix { get => worldMatrix; private set => worldMatrix = value; }
 
         private static void FillWeapons()
         {
