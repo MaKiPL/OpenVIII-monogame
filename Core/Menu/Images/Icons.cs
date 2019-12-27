@@ -12,6 +12,7 @@ namespace OpenVIII
     /// </summary>
     public sealed partial class Icons : SP2
     {
+
         #region Fields
 
         private Rectangle _dataSize;
@@ -143,128 +144,7 @@ namespace OpenVIII
             return eg.MostSaturated(Textures[pal], pal);
         }
 
-        public struct VertexPositionTexture_Texture2D
-        {
-            public VertexPositionTexture[] VPT;
-            private VertexPositionTexture[] TransformedVPT;
-            public TextureHandler Texture;
-            private AlphaTestEffect ate;
-
-            public VertexPositionTexture_Texture2D(VertexPositionTexture[] vPT, TextureHandler texture)
-            {
-                VPT = vPT;
-                TransformedVPT = (VertexPositionTexture[])VPT.Clone();
-                Texture = texture;
-                ate = null;
-            }
-
-            public void Draw(Vector3 pos)
-            {
-                RasterizerState rs = new RasterizerState
-                {
-                    CullMode = CullMode.CullClockwiseFace,
-                    FillMode = FillMode.Solid
-                };
-                Memory.graphics.GraphicsDevice.RasterizerState = rs;
-                Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-                Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-                Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-                Module_battle_debug.Effect.TextureEnabled = true;
-                ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
-                {
-                    World = Module_battle_debug.WorldMatrix,
-                    View = Module_battle_debug.ViewMatrix,
-                    Projection = Module_battle_debug.ProjectionMatrix,
-                    Texture = (Texture2D)Texture
-                };
-                //Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
-                //var _1 = vp.Unproject(new Vector3(vp.Width / 2f, vp.Height / 2f, 0f), Module_battle_debug.ProjectionMatrix, Module_battle_debug.ViewMatrix, Module_battle_debug.WorldMatrix);
-                //var _2 = vp.Unproject(new Vector3(vp.Width / 2f, vp.Height / 2f, 1f), Module_battle_debug.ProjectionMatrix, Module_battle_debug.ViewMatrix, Module_battle_debug.WorldMatrix);
-                //var centerscreen = Vector3.Normalize(_2 - _1);
-
-                Matrix bb = Module_battle_debug.CreateBillboard(pos);
-                //Matrix t = Matrix.CreateTranslation(pos);
-                //Matrix lookat = Matrix.CreateLookAt(pos, _1, Vector3.Up);
-
-                //float yaw = (float)Math.Atan2(lookat.M13, lookat.M33);
-                //float pitch = (float)Math.Asin(-lookat.M23);
-                //float roll = (float)Math.Atan2(lookat.M21, lookat.M22);
-
-                //Quaternion q = Quaternion.CreateFromYawPitchRoll(yaw, pitch, 0f);
-
-                for (int i = 0; i < VPT.Length; i++)
-                {
-                    TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, bb);
-                    //TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, q);
-                    //TransformedVPT[i].Position = Vector3.Transform(TransformedVPT[i].Position, t);
-                }
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                    vertexData: TransformedVPT, vertexOffset: 0, primitiveCount: VPT.Length / 3);
-                }
-                ate.Dispose();
-            }
-        }
-
-        public VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = .25f, int piece = 0, Box_Options options = Box_Options.Middle | Box_Options.Center)
-        {
-            Trim(ic, pal);
-            EntryGroup eg = this[(ID)ic];
-            Rectangle r = eg[piece].GetRectangle;
-            Vector2 s = Textures[pal].ScaleFactor;
-            VertexPositionTexture[] vpt = new VertexPositionTexture[6];
-            float left = 0f, right = 0f, bottom = 0f, top = 0f;
-            if (options.HasFlag(Box_Options.Left))
-            {
-                left = 0;
-                right = r.Width;
-            }
-            else if (options.HasFlag(Box_Options.Right))
-            {
-                left = -r.Width;
-                right = 0;
-            }
-            else// (options.HasFlag(Box_Options.Center))
-            {
-                left = -r.Width / 2f;
-                right = r.Width / 2f;
-            }
-            if (options.HasFlag(Box_Options.Top))
-            {
-                bottom = 0;
-                top = r.Height;
-            }
-            else if (options.HasFlag(Box_Options.Buttom))
-            {
-                bottom = -r.Height;
-                top = 0;
-            }
-            else //(options.HasFlag(Box_Options.Middle))
-            {
-                bottom = -r.Height / 2f;
-                top = r.Height / 2f;
-            }
-
-            VertexPositionTexture[] v = new VertexPositionTexture[]
-            {
-                new VertexPositionTexture(new Vector3(left,top,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
-                new VertexPositionTexture(new Vector3(right,top,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Top*s.Y/Textures[pal].Height)),
-                new VertexPositionTexture(new Vector3(right,bottom,0f)*scale,new Vector2(r.Left*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
-                new VertexPositionTexture(new Vector3(left,bottom,0f)*scale,new Vector2(r.Right*s.X/Textures[pal].Width,r.Bottom*s.Y/Textures[pal].Height)),
-            };
-            vpt[0] = v[0];
-            vpt[1] = v[1];
-            vpt[2] = v[3];
-
-            vpt[3] = v[1];
-            vpt[4] = v[2];
-            vpt[5] = v[3];
-            return new VertexPositionTexture_Texture2D(vpt, Textures[pal]);
-        }
-
-        public new void Trim(Enum ic, byte pal)
+        public override void Trim(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];
             eg.Trim(Textures[pal]);
@@ -357,6 +237,22 @@ namespace OpenVIII
             }
         }
 
+        protected override VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = 0.25F, Box_Options options = Box_Options.Center | Box_Options.Middle, float z = 0f)
+        {
+            Trim(ic, pal);
+            EntryGroup eg = this[(ID)ic];
+            VertexPositionTexture_Texture2D r = Quad(eg[0], Textures[pal], scale, eg.Count == 1 ? options : options | Box_Options.UseOffset);
+
+            if (eg.Count > 1)
+            {
+                List<VertexPositionTexture> tmp = new List<VertexPositionTexture>(r.VPT.Length * eg.Count);
+                tmp.AddRange(r.VPT);
+                for (int i = 1; i < eg.Count; i++)
+                    tmp.AddRange(Quad(eg[0], Textures[pal], scale, options | Box_Options.UseOffset, i * 0.001f).VPT);
+                return new VertexPositionTexture_Texture2D(tmp.ToArray(), r.Texture);
+            }
+            return r;
+        }
         private void Trim()
         {
             Trim(ID.Bar_Fill, 5);
@@ -370,6 +266,8 @@ namespace OpenVIII
             Trim(ID.Perfect__, 2);
             Trim(ID.Renzokeken_Seperator, 6);
         }
+
+        #endregion Methods
 
         //public VertexPositionTexture[] GenerateVPT(Vector3 v, float width, float height)
         //{
@@ -394,6 +292,5 @@ namespace OpenVIII
         //    TempVPT[2] = TempVPT[5] = GetVPT(ref this, this[2]);
         //}
 
-        #endregion Methods
     }
 }

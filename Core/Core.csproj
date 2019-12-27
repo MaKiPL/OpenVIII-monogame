@@ -222,6 +222,7 @@
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Abilities.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Command.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
+    <Compile Include="Menu\Images\VertexPositionTexture_Texture2D.cs" />
     <Compile Include="Menu\LGSG\IGMData\GameBlock.cs" />
     <Compile Include="Menu\LGSG\IGMData\GameChoose.cs" />
     <Compile Include="Menu\LGSG\IGMData\SlotChoose.cs" />

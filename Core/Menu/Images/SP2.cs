@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -161,10 +162,71 @@ namespace OpenVIII
             return GetTexture(id);
         }
 
-        public void Trim(Enum ic, byte pal)
+        public virtual void Trim(Enum ic, byte pal)
         {
-            Entry eg = this[ic];
-            eg.SetTrimNonGroup(Textures[pal]);
+            Entry entry = this[ic];
+            entry.SetTrimNonGroup(Textures[pal]);
+        }
+
+        protected virtual VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = .25f, Box_Options options = Box_Options.Middle | Box_Options.Center, float z = 0f)
+        {
+            Trim(ic, pal);
+            return Quad(this[ic], Textures[pal], scale, options, z);
+        }
+
+        protected virtual VertexPositionTexture_Texture2D Quad(Entry entry, TextureHandler texture, float scale = .25f, Box_Options options = Box_Options.Middle | Box_Options.Center, float z = 0f)
+        {
+            Rectangle r = entry.GetRectangle;
+            Vector2 s = texture.ScaleFactor;
+            Vector2 o = options.HasFlag(Box_Options.UseOffset) ? entry.Offset : Vector2.Zero;
+            VertexPositionTexture[] vpt = new VertexPositionTexture[6];
+            float left = 0f, right = 0f, bottom = 0f, top = 0f;
+            if (options.HasFlag(Box_Options.Left))
+            {
+                left = 0;
+                right = r.Width;
+            }
+            else if (options.HasFlag(Box_Options.Right))
+            {
+                left = -r.Width;
+                right = 0;
+            }
+            else// (options.HasFlag(Box_Options.Center))
+            {
+                left = -r.Width / 2f;
+                right = r.Width / 2f;
+            }
+            if (options.HasFlag(Box_Options.Top))
+            {
+                bottom = 0;
+                top = r.Height;
+            }
+            else if (options.HasFlag(Box_Options.Buttom))
+            {
+                bottom = -r.Height;
+                top = 0;
+            }
+            else //(options.HasFlag(Box_Options.Middle))
+            {
+                bottom = -r.Height / 2f;
+                top = r.Height / 2f;
+            }
+
+            VertexPositionTexture[] v = new VertexPositionTexture[]
+            {
+                new VertexPositionTexture(new Vector3(left+o.X,top+o.Y,z)*scale,new Vector2(r.Right*s.X/texture.Width,r.Top*s.Y/texture.Height)),
+                new VertexPositionTexture(new Vector3(right+o.X,top+o.Y,z)*scale,new Vector2(r.Left*s.X/texture.Width,r.Top*s.Y/texture.Height)),
+                new VertexPositionTexture(new Vector3(right+o.X,bottom+o.Y,z)*scale,new Vector2(r.Left*s.X/texture.Width,r.Bottom*s.Y/texture.Height)),
+                new VertexPositionTexture(new Vector3(left+o.X,bottom+o.Y,z)*scale,new Vector2(r.Right*s.X/texture.Width,r.Bottom*s.Y/texture.Height)),
+            };
+            vpt[0] = v[0];
+            vpt[1] = v[1];
+            vpt[2] = v[3];
+
+            vpt[3] = v[1];
+            vpt[4] = v[2];
+            vpt[5] = v[3];
+            return new VertexPositionTexture_Texture2D(vpt, texture);
         }
 
         protected virtual void DefaultValues()
