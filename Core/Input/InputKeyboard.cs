@@ -23,6 +23,7 @@ namespace OpenVIII
         #region Properties
 
         protected static KeyboardState Last_State => last_state;
+
         protected static KeyboardState State
         {
             get => state; set
@@ -36,7 +37,7 @@ namespace OpenVIII
 
         #region Methods
 
-        public override bool ButtonTriggered(InputButton test,ButtonTrigger trigger = ButtonTrigger.None)
+        public override bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (test != null && test.Key != Keys.None &&
                 (state.GetPressedKeys().Contains(test.Key) || last_state.GetPressedKeys().Contains(test.Key)))
@@ -44,7 +45,7 @@ namespace OpenVIII
                 bool combotest = false;
                 if (test.Combo != null)
                 {
-                    foreach (var item in test.Combo)
+                    foreach (InputButton item in test.Combo)
                     {
                         item.Trigger = ButtonTrigger.Press;
                         if (!base.ButtonTriggered(item))
@@ -54,7 +55,7 @@ namespace OpenVIII
                     }
                     combotest = true;
                 }
-                var triggertest = test.Trigger | trigger;
+                ButtonTrigger triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
                 return ((test.Combo == null || combotest) &&
                     ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.Key)) ||
                     ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.Key)) ||
