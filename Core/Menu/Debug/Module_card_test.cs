@@ -12,8 +12,8 @@ namespace OpenVIII
         private static Mode currentMode;
         private static int pointer = -1;
 
-        private static double time;
-
+        private static TimeSpan time;
+        private static TimeSpan totaltime = TimeSpan.FromMilliseconds(2000);
         #endregion Fields
 
         #region Enums
@@ -69,11 +69,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.Wait:
-                    time += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                    if (time > 2000)
+                    time += Memory.gameTime.ElapsedGameTime;
+                    if (time > totaltime)
                     {
                         currentMode--;
-                        time = 0;
+                        time = TimeSpan.Zero;
                     }
                     else
                         Memory.SuppressDraw = true;
