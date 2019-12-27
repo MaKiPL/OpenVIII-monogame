@@ -93,9 +93,12 @@ namespace OpenVIII
                 uint col = (uint)(Memory.Cards.GetEntry(id).X / Memory.Cards.GetEntry(id).Width) + 1;
                 uint row = (uint)(Memory.Cards.GetEntry(id).Y / Memory.Cards.GetEntry(id).Width) + 1;
 
-                float scale = vp.Height / Memory.Cards.GetEntry(id).Height;
-                Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size * scale).ToPoint());
-                dst.Offset(vp.Width / 2 - dst.Center.X, 0);
+                Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size).ToPoint());
+                dst.Height = (int)Math.Round(dst.Width * (1+Cards.AspectRatio));
+
+                float scale = vp.Height / dst.Height;
+                dst = dst.Scale(new Vector2(scale));
+                dst.Offset(vp.Width / 2 - dst.Center.X, vp.Height / 2 - dst.Center.Y);
                 Memory.SpriteBatchStartAlpha();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Cards.Draw(id, dst);

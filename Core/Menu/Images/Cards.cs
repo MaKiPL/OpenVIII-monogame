@@ -32,9 +32,10 @@ namespace OpenVIII
             EntriesPerTexture = 11;
             IndexFilename = "cardanm.sp2";
         }
-
+        public const float AspectRatio = 62f / 88f; //B6 paper
         protected override void Init()
         {
+
             base.Init();
             Entries[(uint)ID.Card_Back] = new Entry
             {
