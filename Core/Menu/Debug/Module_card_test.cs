@@ -63,20 +63,30 @@ namespace OpenVIII
                     break;
 
                 case Mode.Draw:
-                    pointer++;
-                    if (pointer >= CardValue.Length) pointer = 0;
                     currentMode++;
                     break;
 
                 case Mode.Wait:
-                    time += Memory.gameTime.ElapsedGameTime;
-                    if (time > totaltime)
+                    //time += Memory.gameTime.ElapsedGameTime;
+                    //if (time > totaltime)
+                    //{
+                    //    currentMode--;
+                    //    time = TimeSpan.Zero;
+                    //}
+                    //else
+                    if (Input2.DelayedButton(Button_Flags.Right,ButtonTrigger.OnPress|ButtonTrigger.Force))
                     {
+                        pointer++;
+                        if (pointer >= CardValue.Length) pointer = 0;
                         currentMode--;
-                        time = TimeSpan.Zero;
                     }
-                    else
-                        Memory.SuppressDraw = true;
+                    if (Input2.DelayedButton(Button_Flags.Left, ButtonTrigger.OnPress | ButtonTrigger.Force))
+                    {
+                        pointer--;
+                        if (pointer <0) pointer = CardValue.Length-1;
+                        currentMode--;
+                    }
+                    Memory.SuppressDraw = true;
                     break;
             }
         }
