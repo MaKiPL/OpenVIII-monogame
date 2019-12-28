@@ -79,13 +79,15 @@ namespace OpenVIII
 
         public override void SaveCLUT(string path)
         {
-            Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts);
-            for (ushort i = 0; i < texture.NumOfCluts; i++)
+            using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
             {
-                CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(i), 0, texture.NumOfColours);
+                for (ushort i = 0; i < texture.NumOfCluts; i++)
+                {
+                    CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(i), 0, texture.NumOfColours);
+                }
+                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                    CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
             }
-            using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
-                CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
         }
 
         public override Color[] GetClutColors(ushort clut)
