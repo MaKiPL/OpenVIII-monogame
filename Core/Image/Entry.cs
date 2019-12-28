@@ -6,7 +6,6 @@ namespace OpenVIII
 {
     public class Entry
     {
-
         #region Fields
 
         public Vector2 End;
@@ -35,11 +34,13 @@ namespace OpenVIII
         public sbyte CustomPalette { get; set; } = -1;
         public byte File { get; set; }
         public Vector2 Fill { get; set; }
+
         //public Loc GetLoc => loc;
         public Rectangle GetRectangle => new Rectangle(Location.ToPoint(), Size.ToPoint());
 
         public float Height { get => Size.Y; set => Size.Y = value; }
         public byte Part { get; set; } = 1;
+
         /// <summary>
         /// point where you want to stop drawing from bottom side so -8 would stop 8*scale pixels
         /// from edge
@@ -64,6 +65,26 @@ namespace OpenVIII
         public float X { get => Location.X; set => Location.X = value; }
 
         public float Y { get => Location.Y; set => Location.Y = value; }
+
+        /// <summary>
+        /// Animation Frame
+        /// </summary>
+        public int Frame { get; set; } = -1;
+
+        /// <summary>
+        /// How long to spend on each frame.
+        /// </summary>
+        public TimeSpan TimePerFrame { get; set; } = TimeSpan.Zero;
+
+        /// <summary>
+        /// Number Value, set if this is a number.
+        /// </summary>
+        public int? NumberValue { get; set; } = null;
+
+        /// <summary>
+        /// If set this has ID, default behavior is to leave unset.
+        /// </summary>
+        public Enum ID { get; set; } = null;
 
         #endregion Properties
 
@@ -136,7 +157,23 @@ namespace OpenVIII
                 SetTrim_1stPass(tex.Trim(GetRectangle));
         }
 
-        public override string ToString() => $"{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
+        public override string ToString()
+        {        //public override string ToString() => $"{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
+
+            string prefix = "";
+            string suffix = "";
+            if (ID != null)
+                prefix = ID.ToString();
+            if (NumberValue.HasValue)
+                suffix = NumberValue.Value.ToString();
+            if (!string.IsNullOrWhiteSpace(prefix) && !string.IsNullOrWhiteSpace(suffix))
+                return $"{prefix}.{suffix}";
+            else if (!string.IsNullOrWhiteSpace(prefix))
+                return prefix;
+            else if (!string.IsNullOrWhiteSpace(suffix))
+                return suffix;
+            return base.ToString();
+        }
 
         #endregion Methods
     }
