@@ -7,6 +7,7 @@ namespace OpenVIII
 {
     public class Card_Game
     {
+        private const int year = 2013;
         private TextureHandler[] _symbolsNumbers;
         private TextureHandler[] _cardFaces;
         private TextureHandler[] _cardGameBG;
@@ -24,31 +25,33 @@ namespace OpenVIII
 
         public Card_Game()
         {
-            using (BinaryReader br = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
+            using (BinaryReader br = new BinaryReader(FileStreamOpen()))
             {
                 Memory.MainThreadOnlyActions.Enqueue(() =>
                 {
-                    //Memory.EnableDumpingData = true;
-                    using (BinaryReader br2 = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
+                    using (BinaryReader br2 = new BinaryReader(FileStreamOpen()))
                         ReadSymbolsNumbers(0, br2);
-                    //Memory.EnableDumpingData = false;
                 });
                 //ReadTIM(1, br,out Other);
 
                 Memory.MainThreadOnlyActions.Enqueue(() =>
                 {
-                    using (BinaryReader br2 = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
+                    using (BinaryReader br2 = new BinaryReader(FileStreamOpen()))
                         ReadCardFaces(2, br2);
                 });
 
+                Memory.EnableDumpingData = true;
                 ReadTIM(50, br, out _cardGameBG);
                 ReadTIM(51, br, out _cardOtherBG);
+                Memory.EnableDumpingData = false;
             }
         }
 
+        private FileStream FileStreamOpen() => new FileStream(EXE_Offsets.FileName[year], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
         private void ReadCardFaces(int id, BinaryReader br)
         {
-            TIM2 cardtim = new TIM2(br, EXE_Offsets.TIM[id]);
+            TIM2 cardtim = new TIM2(br, EXE_Offsets.TIM[year][id]);
 
             using (Texture2D cardback = cardtim.GetTexture(55))
             {
@@ -224,7 +227,7 @@ namespace OpenVIII
                     Size = new Vector2(256, 64),
                 });
             }
-            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[id]);
+            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
             temp.ForceSetClutColors(16);
             temp.ForceSetClutCount(48);
             int size = 256;
@@ -296,7 +299,7 @@ namespace OpenVIII
 
         private void ReadTIM(int id, BinaryReader br, out TextureHandler[] tex, ushort ForceSetClutColors = 0, ushort ForceSetClutCount = 0)
         {
-            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[id]);
+            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
             if (ForceSetClutColors > 0)
                 temp.ForceSetClutColors(ForceSetClutColors);
             if (ForceSetClutCount > 0)
@@ -304,8 +307,8 @@ namespace OpenVIII
             string filename = $"ff8exe{id.ToString("D2")}";
             if (Memory.EnableDumpingData)
                 Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
-            tex = new TextureHandler[temp.GetClutCount];
-            for (ushort i = 0; i < temp.GetClutCount; i++)
+            tex = new TextureHandler[temp.GetClutCount==0? 1: temp.GetClutCount];
+            for (ushort i = 0; i < temp.GetClutCount || i == 0 && temp.GetClutCount == 0; i++)
             {
                 tex[i] = TextureHandler.Create(filename, temp, i);
             }
