@@ -25,25 +25,24 @@ namespace OpenVIII
 
         public Card_Game()
         {
+            Memory.MainThreadOnlyActions.Enqueue(() =>
+            {
+                //Memory.EnableDumpingData = true;
+                using (BinaryReader br = new BinaryReader(FileStreamOpen()))
+                    ReadSymbolsNumbers(0, br);
+                //Memory.EnableDumpingData = false;
+            });
+
+            Memory.MainThreadOnlyActions.Enqueue(() =>
+            {
+                using (BinaryReader br = new BinaryReader(FileStreamOpen()))
+                    ReadCardFaces(2, br);
+            });
             using (BinaryReader br = new BinaryReader(FileStreamOpen()))
             {
-                Memory.MainThreadOnlyActions.Enqueue(() =>
-                {
-                    using (BinaryReader br2 = new BinaryReader(FileStreamOpen()))
-                        ReadSymbolsNumbers(0, br2);
-                });
                 //ReadTIM(1, br,out Other);
-
-                Memory.MainThreadOnlyActions.Enqueue(() =>
-                {
-                    using (BinaryReader br2 = new BinaryReader(FileStreamOpen()))
-                        ReadCardFaces(2, br2);
-                });
-
-                Memory.EnableDumpingData = true;
                 ReadTIM(50, br, out _cardGameBG);
                 ReadTIM(51, br, out _cardOtherBG);
-                Memory.EnableDumpingData = false;
             }
         }
 
@@ -119,7 +118,8 @@ namespace OpenVIII
                 //}
             }
         }
-        enum SymbolID
+
+        private enum SymbolID
         {
             None,
             HexNumbers,
@@ -141,6 +141,7 @@ namespace OpenVIII
             Plus,
             Combo,
         }
+
         private void ReadSymbolsNumbers(int id, BinaryReader br)
         {
             const int pages = 3;
@@ -154,6 +155,86 @@ namespace OpenVIII
             //          row 5 has 2 items: +1, -1 (31 or 34)
             //page 2 = 3 rows of 256x48: You Win!(2), You Lose...(5), Draw(8)
             //page 3 = 3 rows of 256x64: Same!(9), Plus!(6), Combo!(9)
+            GenerateEntriesSymbolsNumbers();
+            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
+            //temp.ForceSetClutColors(16);
+            //temp.ForceSetClutCount(48);
+            int size = 256;
+            //Rectangle pagesrc = new Rectangle(new Point(size * (page), size), new Point(size));
+            //Rectangle dst;
+
+            //using (Texture2D combined = new Texture2D(Memory.graphics.GraphicsDevice, size * 3, temp.GetHeight))
+            //{
+            Texture2D texture = null;
+            Texture2D pagetex = null;
+            sbyte CustomPalette = -1;
+            sbyte File = -1;
+            string filename = "";
+            //string combinedfilename = $"text_combined.png";
+            foreach (Entry e in SymbolNumberEntries)
+            {
+                if (File != e.File)
+                {
+                    savepagetex();
+                    File = checked((sbyte)e.File);
+                    pagetex = new Texture2D(Memory.graphics.GraphicsDevice, size, size);
+                    filename = $"text_{File}.png";
+                }
+                if (CustomPalette != e.CustomPalette)
+                {
+                    if (texture != null)
+                        texture.Dispose();
+                    CustomPalette = e.CustomPalette;
+                    texture = temp.GetTexture((ushort)CustomPalette);
+                }
+                Color[] data = new Color[(int)(e.Width * e.Height)];
+                Rectangle src = e.GetRectangle;
+                Rectangle dst = src;
+                src.Offset(e.File * 256, 0);
+                texture.GetData(0, src, data, 0, data.Length);
+                pagetex.SetData(0, dst, data, 0, data.Length);
+                //dst = src;
+                //combined.SetData(0, dst, data, 0, data.Length);
+            }
+            texture.Dispose();
+            savepagetex();
+            void savepagetex()
+            {
+                if (pagetex != null)
+                {
+                    if (Memory.EnableDumpingData)
+                        using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                            pagetex.SaveAsPng(fs, pagetex.Width, pagetex.Height);
+
+                    th.Add(TextureHandler.Create(filename, new Texture2DWrapper(pagetex)));
+                }
+            }
+            //if (Memory.EnableDumpingData)
+            //    using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), combinedfilename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            //        combined.SaveAsPng(fs, combined.Width, combined.Height);
+            //}
+            //if (Memory.EnableDumpingData)
+            //    Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
+            //SymbolsNumbers = new TextureHandler[temp.GetClutCount];
+            //for (ushort i = 0; i < temp.GetClutCount; i++)
+            //{
+            //    SymbolsNumbers[i] = TextureHandler.Create(filename, temp, i);
+            //    //Memory.MainThreadOnlyActions.Enqueue(SymbolsNumbers[i].Save);
+            //}
+
+            if (Memory.EnableDumpingData)
+            {
+                filename = $"text_raw.png";
+                for (ushort i = 0; i < temp.GetClutCount || i == 0 && temp.GetClutCount == 0; i++)
+                {
+                    th.Add(TextureHandler.Create(filename, temp, i));
+                }
+            }
+            _symbolsNumbers = th.ToArray();
+        }
+
+        private void GenerateEntriesSymbolsNumbers()
+        {
             SymbolNumberEntries = new List<Entry>();
             for (int i = 0; i < 11; i++)
             {
@@ -227,74 +308,6 @@ namespace OpenVIII
                     Size = new Vector2(256, 64),
                 });
             }
-            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
-            temp.ForceSetClutColors(16);
-            temp.ForceSetClutCount(48);
-            int size = 256;
-            //Rectangle pagesrc = new Rectangle(new Point(size * (page), size), new Point(size));
-            //Rectangle dst;
-
-            //using (Texture2D combined = new Texture2D(Memory.graphics.GraphicsDevice, size * 3, temp.GetHeight))
-            //{
-                Texture2D texture = null;
-                Texture2D pagetex = null;
-                sbyte CustomPalette = -1;
-                sbyte File = -1;
-                string filename = "";
-                //string combinedfilename = $"text_combined.png";
-                foreach (var e in SymbolNumberEntries)
-                {
-                    if (File != e.File)
-                    {
-                        savepagetex();
-                        File = checked((sbyte)e.File);
-                        pagetex = new Texture2D(Memory.graphics.GraphicsDevice, size, size);
-                        filename = $"text_{File}.png";
-
-                    }
-                    if (CustomPalette != e.CustomPalette)
-                    {
-                        if (texture != null)
-                            texture.Dispose();
-                        CustomPalette = e.CustomPalette;
-                        texture = temp.GetTexture((ushort)CustomPalette);
-                    }
-                    Color[] data = new Color[(int)(e.Width * e.Height)];
-                    var src = e.GetRectangle;
-                    var dst = src;
-                    src.Offset(e.File * 256, 0);
-                    texture.GetData(0, src, data, 0, data.Length);
-                    pagetex.SetData(0, dst, data, 0, data.Length);
-                    //dst = src;
-                    //combined.SetData(0, dst, data, 0, data.Length);
-                }
-                texture.Dispose();
-                savepagetex();
-                void savepagetex()
-                {
-                    if (pagetex != null)
-                    {
-                        if (Memory.EnableDumpingData)
-                            using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                                pagetex.SaveAsPng(fs, pagetex.Width, pagetex.Height);
-
-                        th.Add(TextureHandler.Create(filename, new Texture2DWrapper(pagetex)));
-                    }
-                }
-                //if (Memory.EnableDumpingData)
-                //    using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), combinedfilename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                //        combined.SaveAsPng(fs, combined.Width, combined.Height);
-            //}
-            //if (Memory.EnableDumpingData)
-            //    Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
-            //SymbolsNumbers = new TextureHandler[temp.GetClutCount];
-            //for (ushort i = 0; i < temp.GetClutCount; i++)
-            //{
-            //    SymbolsNumbers[i] = TextureHandler.Create(filename, temp, i);
-            //    //Memory.MainThreadOnlyActions.Enqueue(SymbolsNumbers[i].Save);
-            //}
-
-            _symbolsNumbers = th.ToArray();
         }
 
         private void ReadTIM(int id, BinaryReader br, out TextureHandler[] tex, ushort ForceSetClutColors = 0, ushort ForceSetClutCount = 0)
@@ -307,7 +320,7 @@ namespace OpenVIII
             string filename = $"ff8exe{id.ToString("D2")}";
             if (Memory.EnableDumpingData)
                 Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
-            tex = new TextureHandler[temp.GetClutCount==0? 1: temp.GetClutCount];
+            tex = new TextureHandler[temp.GetClutCount == 0 ? 1 : temp.GetClutCount];
             for (ushort i = 0; i < temp.GetClutCount || i == 0 && temp.GetClutCount == 0; i++)
             {
                 tex[i] = TextureHandler.Create(filename, temp, i);
