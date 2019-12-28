@@ -7,13 +7,20 @@ namespace OpenVIII
 {
     public class Card_Game
     {
-        private TextureHandler[] SymbolsNumbers;
+        private TextureHandler[] _symbolsNumbers;
+        private TextureHandler[] _cardFaces;
+        private TextureHandler[] _cardGameBG;
+        private TextureHandler[] _cardOtherBG;
+
+        public TextureHandler[] SymbolsNumbers { get => _symbolsNumbers; private set => _symbolsNumbers = value; }
 
         //private TextureHandler[] Other;
-        private TextureHandler[] CardFaces;
+        public TextureHandler[] CardFaces { get => _cardFaces; private set => _cardFaces = value; }
 
-        private TextureHandler[] CardGameBG;
-        private TextureHandler[] CardOtherBG;
+        public TextureHandler[] CardGameBG { get => _cardGameBG; private set => _cardGameBG = value; }
+        public TextureHandler[] CardOtherBG { get => _cardOtherBG; private set => _cardOtherBG = value; }
+
+        public List<Entry> SymbolNumberEntries { get; private set; }
 
         public Card_Game()
         {
@@ -21,10 +28,10 @@ namespace OpenVIII
             {
                 Memory.MainThreadOnlyActions.Enqueue(() =>
                 {
-                    Memory.EnableDumpingData = true;
+                    //Memory.EnableDumpingData = true;
                     using (BinaryReader br2 = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
                         ReadSymbolsNumbers(0, br2);
-                    Memory.EnableDumpingData = false;
+                    //Memory.EnableDumpingData = false;
                 });
                 //ReadTIM(1, br,out Other);
 
@@ -33,8 +40,9 @@ namespace OpenVIII
                     using (BinaryReader br2 = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
                         ReadCardFaces(2, br2);
                 });
-                ReadTIM(50, br, out CardGameBG);
-                ReadTIM(51, br, out CardOtherBG);
+
+                ReadTIM(50, br, out _cardGameBG);
+                ReadTIM(51, br, out _cardOtherBG);
             }
         }
 
@@ -112,10 +120,28 @@ namespace OpenVIII
         {
             None,
             HexNumbers,
-
+            Fire,
+            Ice,
+            Lightning,
+            Earth,
+            Poison,
+            Wind,
+            Water,
+            Holy,
+            Score,
+            Buff,
+            Debuff,
+            Win,
+            Lose,
+            Draw,
+            Same,
+            Plus,
+            Combo,
         }
         private void ReadSymbolsNumbers(int id, BinaryReader br)
         {
+            const int pages = 3;
+            List<TextureHandler> th = new List<TextureHandler>(pages);
             //3 pages, 256x256; inside () is palette id +1.
             //page 1 = 5 rows. first 3 rows are 16x16 grid, last 2 rows are a 24x24 grid
             //          row 1 has 11 hex numbers: 0-A (1)
@@ -125,10 +151,10 @@ namespace OpenVIII
             //          row 5 has 2 items: +1, -1 (31 or 34)
             //page 2 = 3 rows of 256x48: You Win!(2), You Lose...(5), Draw(8)
             //page 3 = 3 rows of 256x64: Same!(9), Plus!(6), Combo!(9)
-            List<Entry> entries = new List<Entry>();
+            SymbolNumberEntries = new List<Entry>();
             for (int i = 0; i < 11; i++)
             {
-                entries.Add(new Entry
+                SymbolNumberEntries.Add(new Entry
                 {
                     ID = SymbolID.HexNumbers,
                     File = 0,
@@ -142,8 +168,9 @@ namespace OpenVIII
                 for (int j = 0; j < 4; j++)
                     for (int i = 0; i < 4; i++)
                     {
-                        entries.Add(new Entry
+                        SymbolNumberEntries.Add(new Entry
                         {
+                            ID = (SymbolID)((int)(SymbolID.Fire) + j + (k * 4)),
                             File = 0,
                             CustomPalette = checked((sbyte)(3 * (j + 1 + (k * 4)))),
                             Location = new Vector2((i + (4 * j)) * 16, 16 * (k + 1)),
@@ -153,28 +180,33 @@ namespace OpenVIII
                     }
             for (int i = 0; i < 9; i++)
             {
-                entries.Add(new Entry
+                SymbolNumberEntries.Add(new Entry
                 {
+                    ID = SymbolID.Score,
                     File = 0,
                     CustomPalette = 27,
                     Location = new Vector2(i * 24, 16 * 3),
                     Size = new Vector2(24, 24),
+                    NumberValue = i
                 });
             }
             for (int i = 0; i < 2; i++)
             {
-                entries.Add(new Entry
+                SymbolNumberEntries.Add(new Entry
                 {
+                    ID = (SymbolID)((int)(SymbolID.Buff) + i),
                     File = 0,
                     CustomPalette = 30,
                     Location = new Vector2(i * 24, 16 * 3 + 24),
                     Size = new Vector2(24, 24),
+                    NumberValue = 1 + (-2 * i)
                 });
             }
             for (int i = 0; i < 3; i++)
             {
-                entries.Add(new Entry
+                SymbolNumberEntries.Add(new Entry
                 {
+                    ID = (SymbolID)((int)(SymbolID.Win) + i),
                     File = 1,
                     CustomPalette = checked((sbyte)(1 + 3 * i)),
                     Location = new Vector2(0, 48 * i),
@@ -183,8 +215,9 @@ namespace OpenVIII
             }
             for (int i = 0; i < 3; i++)
             {
-                entries.Add(new Entry
+                SymbolNumberEntries.Add(new Entry
                 {
+                    ID = (SymbolID)((int)(SymbolID.Same) + i),
                     File = 2,
                     CustomPalette = checked((sbyte)(2 + 3 * i)),
                     Location = new Vector2(0, 64 * i),
@@ -198,17 +231,17 @@ namespace OpenVIII
             //Rectangle pagesrc = new Rectangle(new Point(size * (page), size), new Point(size));
             //Rectangle dst;
 
-            using (Texture2D combined = new Texture2D(Memory.graphics.GraphicsDevice, size*3, temp.GetHeight))
-            {
+            //using (Texture2D combined = new Texture2D(Memory.graphics.GraphicsDevice, size * 3, temp.GetHeight))
+            //{
                 Texture2D texture = null;
                 Texture2D pagetex = null;
                 sbyte CustomPalette = -1;
                 sbyte File = -1;
                 string filename = "";
-                string combinedfilename = $"text_combined.png";
-                foreach (var e in entries)
+                //string combinedfilename = $"text_combined.png";
+                foreach (var e in SymbolNumberEntries)
                 {
-                    if(File != e.File)
+                    if (File != e.File)
                     {
                         savepagetex();
                         File = checked((sbyte)e.File);
@@ -216,34 +249,39 @@ namespace OpenVIII
                         filename = $"text_{File}.png";
 
                     }
-                    if(CustomPalette != e.CustomPalette)
+                    if (CustomPalette != e.CustomPalette)
                     {
-                        if(texture != null)
+                        if (texture != null)
                             texture.Dispose();
                         CustomPalette = e.CustomPalette;
                         texture = temp.GetTexture((ushort)CustomPalette);
                     }
-                    Color[] data = new Color[(int)(e.Width*e.Height)];
+                    Color[] data = new Color[(int)(e.Width * e.Height)];
                     var src = e.GetRectangle;
                     var dst = src;
                     src.Offset(e.File * 256, 0);
                     texture.GetData(0, src, data, 0, data.Length);
                     pagetex.SetData(0, dst, data, 0, data.Length);
-                    dst = src;
-                    combined.SetData(0, dst, data, 0, data.Length);
+                    //dst = src;
+                    //combined.SetData(0, dst, data, 0, data.Length);
                 }
                 texture.Dispose();
                 savepagetex();
                 void savepagetex()
                 {
-                    if (pagetex != null && Memory.EnableDumpingData)
-                        using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                            pagetex.SaveAsPng(fs, pagetex.Width, pagetex.Height);
+                    if (pagetex != null)
+                    {
+                        if (Memory.EnableDumpingData)
+                            using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                                pagetex.SaveAsPng(fs, pagetex.Width, pagetex.Height);
+
+                        th.Add(TextureHandler.Create(filename, new Texture2DWrapper(pagetex)));
+                    }
                 }
-                if (Memory.EnableDumpingData)
-                    using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), combinedfilename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                        combined.SaveAsPng(fs, combined.Width, combined.Height);
-            }
+                //if (Memory.EnableDumpingData)
+                //    using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), combinedfilename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                //        combined.SaveAsPng(fs, combined.Width, combined.Height);
+            //}
             //if (Memory.EnableDumpingData)
             //    Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
             //SymbolsNumbers = new TextureHandler[temp.GetClutCount];
@@ -252,6 +290,8 @@ namespace OpenVIII
             //    SymbolsNumbers[i] = TextureHandler.Create(filename, temp, i);
             //    //Memory.MainThreadOnlyActions.Enqueue(SymbolsNumbers[i].Save);
             //}
+
+            _symbolsNumbers = th.ToArray();
         }
 
         private void ReadTIM(int id, BinaryReader br, out TextureHandler[] tex, ushort ForceSetClutColors = 0, ushort ForceSetClutCount = 0)
