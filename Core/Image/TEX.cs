@@ -45,14 +45,15 @@ namespace OpenVIII
         #region Properties
 
         public bool CLP => texture.PaletteFlag != 0;
-        public override int GetClutCount => texture.NumOfPalettes;
+        public override int GetClutCount => texture.NumOfCluts;
         public override int GetClutSize => (int)texture.PaletteSize;
         public override byte GetBpp => texture.bytesPerPixel;
-        public override int GetColorsCountPerPalette => (int)texture.NumOfColorsPerPalette;
+        public override int GetColorsCountPerPalette => texture.NumOfColours;
         public override int GetHeight => texture.Height;
         public override int GetOrigX => 0;
         public override int GetOrigY => 0;
         public override int GetWidth => texture.Width;
+
         /// <summary>
         /// size of header section
         /// </summary>
@@ -72,25 +73,30 @@ namespace OpenVIII
 
         #region Methods
 
-        public override void ForceSetClutColors(ushort newNumOfColours)
-        {
-            texture.NumOfColorsPerPalette = newNumOfColours;
-        }
+        public override void ForceSetClutColors(ushort newNumOfColours) => texture.NumOfColours = newNumOfColours;
 
-        public override void ForceSetClutCount(ushort newClut)
+        public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = (byte)newClut;
+
+        public override void SaveCLUT(string path)
         {
-            texture.NumOfPalettes = (byte)newClut;
+            Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts);
+            for (ushort i = 0; i < texture.NumOfCluts; i++)
+            {
+                CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(i), 0, texture.NumOfColours);
+            }
+            using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
         }
 
         public override Color[] GetClutColors(ushort clut)
         {
             if (!CLP) return null;
-            else if (clut >= texture.NumOfPalettes)
-                throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {texture.NumOfPalettes}");
+            else if (clut >= texture.NumOfCluts)
+                throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {texture.NumOfCluts}");
 
-            Color[] colors = new Color[texture.NumOfColorsPerPalette];
+            Color[] colors = new Color[texture.NumOfColours];
             int k = 0;
-            for (uint i = clut * texture.NumOfColorsPerPalette * 4; i < texture.paletteData.Length && k < colors.Length; i += 4)
+            for (int i = clut * texture.NumOfColours * 4; i < texture.paletteData.Length && k < colors.Length; i += 4)
             {
                 colors[k].B = texture.paletteData[i];
                 colors[k].G = texture.paletteData[i + 1];
@@ -118,8 +124,8 @@ namespace OpenVIII
             {
                 if (texture.PaletteFlag != 0)
                 {
-                    if (colors != null && colors.Length != texture.NumOfColorsPerPalette)
-                        throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColorsPerPalette}");
+                    if (colors != null && colors.Length != texture.NumOfColours)
+                        throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColours}");
 
                     MemoryStream ms;
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
@@ -225,8 +231,8 @@ namespace OpenVIII
             texture.Width = (int)BitConverter.ToUInt32(buffer, 0x3C); //nothing will be uint size big.
             texture.Height = (int)BitConverter.ToUInt32(buffer, 0x40);
             texture.bytesPerPixel = buffer[0x68];
-            texture.NumOfPalettes = buffer[0x30];
-            texture.NumOfColorsPerPalette = BitConverter.ToUInt32(buffer, 0x34);
+            texture.NumOfCluts = buffer[0x30];
+            texture.NumOfColours = BitConverter.ToInt32(buffer, 0x34);
             texture.bitDepth = BitConverter.ToUInt32(buffer, 0x38);
             texture.PaletteFlag = buffer[0x4C];
             texture.PaletteSize = BitConverter.ToUInt32(buffer, 0x58);
@@ -268,12 +274,12 @@ namespace OpenVIII
             /// <summary>
             /// 0x34
             /// </summary>
-            public uint NumOfColorsPerPalette;
+            public int NumOfColours;
 
             /// <summary>
             /// 0x30
             /// </summary>
-            public byte NumOfPalettes;
+            public byte NumOfCluts;
 
             /// <summary>
             /// 0xF0 for ff8;0xEC for ff7; size = PaletteSize * 4;

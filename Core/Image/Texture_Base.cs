@@ -128,6 +128,8 @@ namespace OpenVIII
 
         public abstract void Save(string path);
 
+        public abstract void SaveCLUT(string path);
+
         //public static class Transparency
         //{
         //    /// <summary>

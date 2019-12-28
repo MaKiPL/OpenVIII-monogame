@@ -40,5 +40,9 @@ namespace OpenVIII
             using (FileStream fs = File.Create(path))
                 tex.SaveAsPng(fs, tex.Width, tex.Height);
         }
+
+        public override void SaveCLUT(string path)
+        { // no clut data.
+        }
     }
 }

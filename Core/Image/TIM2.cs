@@ -331,7 +331,13 @@ namespace OpenVIII
             if (bpp == 8)
             {
                 for (int i = 0; i < buffer.Length; i++)
-                    buffer[i] = palette[br.ReadByte()]; //colorkey
+                {
+                    byte colorkey = br.ReadByte();
+                    if (colorkey < texture.NumOfColours)
+                        buffer[i] = palette[colorkey]; //colorkey
+                    else
+                        buffer[i] = Color.TransparentBlack; // trying something out of oridinary.
+                }
             }
             else if (bpp == 4)
             {
@@ -368,6 +374,20 @@ namespace OpenVIII
             return buffer;
         }
 
+        public override void SaveCLUT(string path)
+        {
+            if(CLP)
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            {
+                Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts);
+                for (ushort i = 0; i < texture.NumOfCluts; i++)
+                {
+                    CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(br, i), 0, texture.NumOfColours);
+                }
+                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                    CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
+            }
+        }
         /// <summary>
         /// Get clut color palette
         /// </summary>
@@ -377,20 +397,18 @@ namespace OpenVIII
         protected Color[] GetClutColors(BinaryReader br, ushort clut)
         {
             if (clut > texture.NumOfCluts)
-                throw new Exception("TIM_v2::GetClutColors::given clut is bigger than texture number of cluts");
+                throw new Exception($"TIM_v2::GetClutColors::given clut {clut} is bigger than texture number of cluts {texture.NumOfCluts}");
 
-            Color[] colorPixels = new Color[texture.NumOfColours];
             if (CLP)
             {
+                Color[] colorPixels = new Color[texture.NumOfColours];
                 br.BaseStream.Seek(timOffset + 20 + (texture.NumOfColours * 2 * clut), SeekOrigin.Begin);
                 for (int i = 0; i < texture.NumOfColours; i++)
                     colorPixels[i] = ABGR1555toRGBA32bit(br.ReadUInt16(), ignorealpha);
+                return colorPixels;
             }
-            else if (bpp > 8) throw new Exception("TIM that has bpp mode higher than 8 has no clut data!");
-
-            return colorPixels;
+            else throw new Exception($"TIM that has {bpp} bpp mode and has no clut data!");
         }
-
         protected Texture2D GetTexture(BinaryReader br, Color[] colors)
         {
             Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
