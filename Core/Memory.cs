@@ -57,6 +57,7 @@ namespace OpenVIII
 
     public static class Memory
     {
+        public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
         public static List<Task> LeftOverTask = new List<Task>();
 
