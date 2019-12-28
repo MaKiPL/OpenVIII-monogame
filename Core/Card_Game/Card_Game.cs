@@ -16,7 +16,7 @@ namespace OpenVIII
         {
             using (BinaryReader br = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
             {
-                ReadSymbolsNumbers(0, br, out SymbolsNumbers);
+                ReadSymbolsNumbers(0, br);
                 Memory.MainThreadOnlyActions.Enqueue(() =>
                 {
                     using (BinaryReader br2 = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
@@ -98,7 +98,7 @@ namespace OpenVIII
             }
         }
 
-        private void ReadSymbolsNumbers(int id, BinaryReader br, out TextureHandler[] tex)
+        private void ReadSymbolsNumbers(int id, BinaryReader br)
         {
             //3 pages, 256x256; inside () is palette id +1.
             //page 1 = 5 rows. first 3 rows are 16x16 grid, last 2 rows are a 24x24 grid
@@ -117,11 +117,11 @@ namespace OpenVIII
             string filename = $"ff8exe{id.ToString("D2")}";
             //if (Memory.EnableDumpingData)
                 Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
-            tex = new TextureHandler[temp.GetClutCount];
+            SymbolsNumbers = new TextureHandler[temp.GetClutCount];
             for (ushort i = 0; i < temp.GetClutCount; i++)
             {
-                tex[i] = TextureHandler.Create(filename, temp, i);
-                Memory.MainThreadOnlyActions.Enqueue(tex[i].Save);
+                SymbolsNumbers[i] = TextureHandler.Create(filename, temp, i);
+                Memory.MainThreadOnlyActions.Enqueue(SymbolsNumbers[i].Save);
             }
         }
 
