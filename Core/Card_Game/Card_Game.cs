@@ -8,6 +8,7 @@ namespace OpenVIII
     public class Card_Game
     {
         private TextureHandler[] SymbolsNumbers;
+        //private TextureHandler[] Other;
         private TextureHandler[] CardFaces;
         private TextureHandler[] CardGameBG;
         private TextureHandler[] CardOtherBG;
@@ -17,6 +18,9 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
             {
                 ReadSymbolsNumbers(0, br);
+                //Memory.EnableDumpingData = true;
+                //ReadTIM(1, br,out Other);
+                //Memory.EnableDumpingData = false;
                 Memory.MainThreadOnlyActions.Enqueue(() =>
                 {
                     using (BinaryReader br2 = new BinaryReader(File.OpenRead(EXE_Offsets.FileName)))
@@ -115,13 +119,13 @@ namespace OpenVIII
             temp.ForceSetClutColors(16);
             temp.ForceSetClutCount(48);
             string filename = $"ff8exe{id.ToString("D2")}";
-            //if (Memory.EnableDumpingData)
+            if (Memory.EnableDumpingData)
                 Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
             SymbolsNumbers = new TextureHandler[temp.GetClutCount];
             for (ushort i = 0; i < temp.GetClutCount; i++)
             {
                 SymbolsNumbers[i] = TextureHandler.Create(filename, temp, i);
-                Memory.MainThreadOnlyActions.Enqueue(SymbolsNumbers[i].Save);
+                //Memory.MainThreadOnlyActions.Enqueue(SymbolsNumbers[i].Save);
             }
         }
 
