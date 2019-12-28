@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
 
 namespace OpenVIII
 {
@@ -32,18 +34,33 @@ namespace OpenVIII
             EntriesPerTexture = 11;
             IndexFilename = "cardanm.sp2";
         }
-        public const float AspectRatio = 62f / 88f; //B6 paper
-        protected override void Init()
-        {
 
-            base.Init();
-            Entries[(uint)ID.Card_Back] = new Entry
+        public const float AspectRatio = 62f / 88f; //B6 paper
+
+        protected override void Init() => base.Init();
+
+        public override void Draw(Enum id, Rectangle dst, float fade = 1)
+        {
+            int v = Convert.ToInt32(id);
+            //int t =  (v / EntriesPerTexture);
+            //int pos = v % EntriesPerTexture;
+
+            //    pos = (int) Memory.Cards.Count - 1;
+            //base.Draw((Cards.ID)(pos+(EntriesPerTexture *t)), dst, fade);
+            if (v >= (uint)Cards.ID.Card_Back)
             {
-                X = 192,
-                Y = 128,
-                Width = 64,
-                Height = 64
-            };
+                int ept = EntriesPerTexture;
+                EntriesPerTexture = -1;
+                id = (Cards.ID)(ept);
+                //Rectangle src = GetEntry(id).GetRectangle;
+                //TextureHandler tex = GetTexture(id,v/ept);
+                //tex.Draw(dst, src, Color.White * fade);
+
+                base.Draw(id, dst, fade);
+                EntriesPerTexture = ept;
+            }
+            else
+                base.Draw(id, dst, fade);
         }
 
         #endregion Methods

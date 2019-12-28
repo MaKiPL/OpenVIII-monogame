@@ -51,7 +51,7 @@ namespace OpenVIII
         /// <summary>
         /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
         /// </summary>
-        protected virtual int EntriesPerTexture { get; set; }
+        public virtual int EntriesPerTexture { get; protected set; }
 
         /// <summary>
         /// If true disable mods and high res textures.
@@ -128,26 +128,32 @@ namespace OpenVIII
             TextureHandler tex = GetTexture(id);
             tex.Draw(dst, src, Color.White * fade);
         }
-
         public virtual Entry GetEntry(Enum id)
         {
-            if (Entries.ContainsKey(Convert.ToUInt32(id)))
-                return Entries[Convert.ToUInt32(id)];
-            if (Entries.ContainsKey((uint)(Convert.ToUInt32(id) % EntriesPerTexture)))
-                return Entries[(uint)(Convert.ToUInt32(id) % EntriesPerTexture)];
+            return GetEntry(Convert.ToUInt32(id));
+        }
+        public virtual Entry GetEntry(UInt32 id)
+        {
+            if (EntriesPerTexture <=0 && Entries.ContainsKey(id))
+                return Entries[id];
+            else if (Entries.ContainsKey((uint)(id % EntriesPerTexture)))
+                return Entries[(uint)(id % EntriesPerTexture)];
             return null;
         }
 
-        public virtual TextureHandler GetTexture(Enum id)
+        public virtual TextureHandler GetTexture(Enum id, int file = -1)
         {
-            uint pos = Convert.ToUInt32(id);
-            uint File = GetEntry(id).File;
+            int pos = Convert.ToInt32(id);
+            int File = file >=0? file : GetEntry((uint)pos).File;
             //check if we set a custom file and we have a pos more then set entriespertexture
-            if (File == 0 && EntriesPerTexture > 0 && pos > EntriesPerTexture)
-                File = (uint)(pos / EntriesPerTexture);
+            if (File <= 0)
+            {
+                if (EntriesPerTexture > 0 && pos >= EntriesPerTexture)
+                    File = (pos / EntriesPerTexture);
+            }
             if (File > 0)
             {
-                uint j = (uint)Props.Sum(x => x.Count);
+                int j = (int)Props.Sum(x => x.Count);
                 if (File >= j)
                 {
                     File %= j;

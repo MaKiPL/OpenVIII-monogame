@@ -74,19 +74,20 @@ namespace OpenVIII
                     //    time = TimeSpan.Zero;
                     //}
                     //else
-                    if (Input2.DelayedButton(Button_Flags.Right,ButtonTrigger.OnPress|ButtonTrigger.Force))
+                    if (pointer<0 || Input2.DelayedButton(Button_Flags.Right,ButtonTrigger.OnPress|ButtonTrigger.Force))
                     {
                         pointer++;
                         if (pointer >= CardValue.Length) pointer = 0;
                         currentMode--;
                     }
-                    if (Input2.DelayedButton(Button_Flags.Left, ButtonTrigger.OnPress | ButtonTrigger.Force))
+                    else if (Input2.DelayedButton(Button_Flags.Left, ButtonTrigger.OnPress | ButtonTrigger.Force))
                     {
                         pointer--;
                         if (pointer <0) pointer = CardValue.Length-1;
                         currentMode--;
                     }
-                    Memory.SuppressDraw = true;
+                    else 
+                        Memory.SuppressDraw = true;
                     break;
             }
         }
@@ -98,12 +99,14 @@ namespace OpenVIII
                 Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
                 Cards.ID id = CardValue[pointer];
-                uint pos = (uint)id;
+                uint pos = (uint)((uint)id % Memory.Cards.EntriesPerTexture);
+                if (id >= Cards.ID.Card_Back)
+                    pos = Memory.Cards.Count-1;
                 //int i = cards.GetEntry(id).File;
-                uint col = (uint)(Memory.Cards.GetEntry(id).X / Memory.Cards.GetEntry(id).Width) + 1;
-                uint row = (uint)(Memory.Cards.GetEntry(id).Y / Memory.Cards.GetEntry(id).Width) + 1;
-
-                Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size).ToPoint());
+                Entry entry = Memory.Cards.GetEntry(pos);
+                uint col = (uint)(entry.X / entry.Width) + 1;
+                uint row = (uint)(entry.Y / entry.Width) + 1;
+                Rectangle dst = new Rectangle(new Point(0), entry.Size.ToPoint());
                 dst.Height = (int)Math.Round(dst.Width * (1+Cards.AspectRatio));
 
                 float scale = vp.Height / dst.Height;
@@ -114,13 +117,13 @@ namespace OpenVIII
                 Memory.Cards.Draw(id, dst);
                 Memory.font.RenderBasicText(
                     $"{CardValue[pointer].ToString().Replace('_', ' ')}\n" +
-                    $"pos: {pos}\n" +
+                    $"pos: {(uint)id}\n" +
                     $"col: {col}\n" +
                     $"row: {row}\n" +
-                    $"x: {Memory.Cards.GetEntry(id).X}\n" +
-                    $"y: {Memory.Cards.GetEntry(id).Y}\n" +
-                    $"width: {Memory.Cards.GetEntry(id).Width}\n" +
-                    $"height: {Memory.Cards.GetEntry(id).Height}",
+                    $"x: {entry.X}\n" +
+                    $"y: {entry.Y}\n" +
+                    $"width: {entry.Width}\n" +
+                    $"height: {entry.Height}",
                     (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), lineSpacing: 1);
                 Memory.SpriteBatchEnd();
             }
