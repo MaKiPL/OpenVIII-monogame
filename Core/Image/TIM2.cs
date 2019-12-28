@@ -502,13 +502,22 @@ namespace OpenVIII
                     clutSize = br.ReadUInt32();
                     PaletteX = br.ReadUInt16();
                     PaletteY = br.ReadUInt16();
-                    NumOfColours = br.ReadUInt16();
-                    NumOfCluts = br.ReadUInt16();
+                    NumOfColours = br.ReadUInt16(); //width of clut
+                    NumOfCluts = br.ReadUInt16(); //height of clut
                     clutdataSize = (int)(clutSize - 12);//(NumOfColours * NumOfCluts*2);
                     if (Assert(clutdataSize == NumOfColours * NumOfCluts * 2 || clutdataSize == NumOfColours * NumOfCluts) ||
                     Assert(PaletteX % 16 == 0) ||
                     Assert(PaletteY >= 0 && PaletteY <= 511))
                         return;
+                    if (_bpp == 4 && NumOfColours >16)
+                    {
+                        // timviewer was overriding the read number of colors per pixel to 16
+                        // and this makes sense because you cannot read more than 16 colors with only a 4 bit value.
+                        // though this might break stuff.
+                        NumOfColours = 16;
+                        NumOfCluts = checked((ushort)(clutdataSize / (NumOfColours * 2)));
+                    }
+                    Assert(_bpp == 8 && NumOfColours <= 256|| _bpp!=8);
                     ClutData = br.ReadBytes(clutdataSize);
                     //br.BaseStream.Seek(start+clutSize, SeekOrigin.Begin);
                 }
