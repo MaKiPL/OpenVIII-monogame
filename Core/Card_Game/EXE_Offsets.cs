@@ -5,6 +5,16 @@ namespace OpenVIII
 {
     public class EXE_Offsets
     {
+        public static readonly uint[] STRINGS =
+        {
+            //Start with Count
+            0x875074, // Card Names, Uint16 Count, Uint16[Count] Offsets, FF8String[Count] Null Ending.
+            0x875524, // Card Names2, Uint16 Count, Uint16[Count] Offsets, FF8String[Count] Null Ending. Ignore null Offsets.
+            0x874B58, // Card Text, Uint16 Count, Uint16[Count] Offsets, FF8String[Count] Null Ending.
+            //There is no count at start of section only offsets
+            0x7921E4, // Text related to discs and draw points, Count = 9, Uint32[Count] Offsets, FF8String[Count] Null Ending.
+            0x14838D4 // Scan Text, Count = 160, Uint16[Count] Offset from start of first string. FF8String[Count] Null Ending.
+        };
         public static readonly uint[] TIM =
         {// The ones commented out weren't real tim files. But were close enough to not set off exceptions.
             //4 bpp
