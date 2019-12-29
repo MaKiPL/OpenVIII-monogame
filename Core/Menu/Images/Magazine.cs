@@ -23,8 +23,8 @@ namespace OpenVIII
             base.DefaultValues();
             Props = new List<TexProps>()
             {
-                new TexProps("mag{0:00}.tex",20),
-                new TexProps("magita.TEX",1),
+                new TexProps{Filename = "mag{0:00}.tex",Count =20 },
+                new TexProps{Filename="magita.TEX",Count =1},
             };
             TextureStartOffset = 0;
             IndexFilename = "";

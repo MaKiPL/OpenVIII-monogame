@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -34,6 +35,7 @@ namespace OpenVIII
         private bool _compressed;
         private uint _locationInFs;
         private uint _unpackedFileSize;
+        private bool isDir = false;
 
         #endregion Fields
 
@@ -46,6 +48,10 @@ namespace OpenVIII
         /// <param name="skiplist">If list generation is unneeded you can skip it by setting true</param>
         public ArchiveWorker(Memory.Archive path, bool skiplist = false)
         {
+            if (Directory.Exists(path))
+            {
+                isDir = true;
+            }
             _path = path;
             if (!skiplist)
                 FileList = ProduceFileLists();
@@ -187,6 +193,17 @@ namespace OpenVIII
 
         private byte[] GetBinaryFile(string fileName, int loc, bool cache)
         {
+            if (isDir)
+            {
+                if (FileList == null || FileList.Length == 0)
+                    ProduceFileLists();
+                fileName = FileList.FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+                if (!string.IsNullOrWhiteSpace(fileName))
+                    using (BinaryReader br = new BinaryReader(new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                    {
+                        return br.ReadBytes(checked((int)br.BaseStream.Length));
+                    }
+            }
             byte[] temp = null;
             if (ArchiveCache.ContainsKey(_path) && ArchiveCache[_path].ContainsKey(fileName))
                 return (ArchiveCache[_path][fileName]);
@@ -216,6 +233,8 @@ namespace OpenVIII
         /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
         private string[] ProduceFileLists()
         {
+            if (isDir)
+                return Directory.GetFiles(_path, "*", SearchOption.AllDirectories);
             //return File.ReadAllLines(_path.FL, System.Text.Encoding.ASCII);
             using (StreamReader sr = new StreamReader(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.ASCII))
             {

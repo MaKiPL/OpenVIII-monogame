@@ -55,7 +55,7 @@ namespace OpenVIII
         AlwaysFull = 0xFF //not sure what i should set this too.
     }
 
-    public static class Memory
+    public static partial class Memory
     {
         public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
@@ -85,7 +85,7 @@ namespace OpenVIII
         //public static Texture2D[] iconsTex;
 
         public static Cards Cards;
-        public static Card_Game Card_Game;
+        public static Card.Game Card_Game;
         public static Faces Faces;
         public static Icons Icons;
         public static Strings Strings;
@@ -276,7 +276,7 @@ namespace OpenVIII
                     // card images in menu.                              
                     tasks.Add(Task.Run(() => { Cards = Cards.Load(); }, token));
 
-                    tasks.Add(Task.Run(() => { Card_Game = new Card_Game(); }, token));                        
+                    tasks.Add(Task.Run(() => { Card_Game = new Card.Game(); }, token));                        
 
                     tasks.Add(Task.Run(() => { Faces = Faces.Load(); }, token));                        
 
@@ -846,6 +846,7 @@ namespace OpenVIII
         /// </summary>
         /// <remarks>creates global random class for all sort of things</remarks>
         public static Random Random = null;
+        public static int Year = 2013; // need to dynamicly detect if 2000/2013/2019, maybe need 2000 1.2 as well.
 
         #endregion DrawPointMagic
 
@@ -862,94 +863,6 @@ namespace OpenVIII
                     LeftOverTask.RemoveAt(i--);
                 }
             }
-        }
-
-        /// <summary>
-        /// Archive class handles the filename formatting and extensions for archive files.
-        /// </summary>
-        public class Archive
-        {
-            public Archive Parent;
-            public string _Root { get; set; }
-            public string _Filename { get; private set; }
-
-            public Archive(Archive parent, string path)
-            {
-                Parent = parent;
-                _Root = "";
-                if (Path.HasExtension(path))
-                {
-                    string ext = Path.GetExtension(path);
-                    if (ext == B_FileArchive || ext == B_FileIndex || ext == B_FileList)
-                    {
-                        int index = path.LastIndexOf('.');
-                        path = index == -1 ? path : path.Substring(0, index);
-                    }
-                }
-                _Filename = path;
-            }
-
-            public Archive(string path) : this(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path))
-            { }
-
-            public Archive(string root, string filename)
-            {
-                _Root = root;
-                _Filename = filename;
-            }
-
-            /// <summary>
-            /// File Archive Extension
-            /// </summary>
-            public const string B_FileList = ".fl";
-
-            /// <summary>
-            /// File Index Extension
-            /// </summary>
-            public const string B_FileIndex = ".fi";
-
-            /// <summary>
-            /// File Archive Extension
-            /// </summary>
-            public const string B_FileArchive = ".fs";
-
-            /// <summary>
-            /// File Index
-            /// </summary>
-            public string FI => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileIndex}"));
-
-            /// <summary>
-            /// File List
-            /// </summary>
-            public string FL => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileList}"));
-
-            /// <summary>
-            /// File Archive
-            /// </summary>
-            public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileArchive}"));
-
-            /// <summary>
-            /// Test if input file path exists
-            /// </summary>
-            /// <param name="input">file path</param>
-            /// <returns></returns>
-            private string Test(string input)
-            {
-                if (!File.Exists(input)) throw new FileNotFoundException($"There is no {input} file!\nExiting...");
-                return input;
-            }
-
-            public override string ToString() => Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}");
-        }
-
-        public static class Archives
-        {
-            public static Archive A_BATTLE = new Archive(FF8DIRdata_lang, "battle");
-            public static Archive A_FIELD = new Archive(FF8DIRdata_lang, "field");
-            public static Archive A_MAGIC = new Archive(FF8DIRdata_lang, "magic");
-            public static Archive A_MAIN = new Archive(FF8DIRdata_lang, "main");
-            public static Archive A_MENU = new Archive(FF8DIRdata_lang, "menu");
-            public static Archive A_WORLD = new Archive(FF8DIRdata_lang, "world");
         }
 
         public static class FieldHolder

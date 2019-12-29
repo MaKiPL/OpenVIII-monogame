@@ -6,6 +6,13 @@ namespace OpenVIII
 {
     public abstract class Texture_Base
     {
+        public enum TextureType : byte
+        {
+            TEX,
+            TIM,
+            Texture2D,
+            PNG
+        }
         #region Fields
 
         private const ushort blue_mask = 0x7C00;
@@ -161,6 +168,8 @@ namespace OpenVIII
             // I set this to always return false for black. As it's transparency is handled in
             // conversion method.
             (pixel & 0x7FFF) == 0 ? false : ((pixel & STP_mask) >> 15) > 0;
+
+        public abstract void Load(byte[] buffer, uint offset = 0);
 
         #endregion Methods
 

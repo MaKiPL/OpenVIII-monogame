@@ -28,7 +28,7 @@ namespace OpenVIII
             base.DefaultValues();
             Props = new List<TexProps>()
             {
-                new TexProps("mc{0:00}.tex",10),
+                new TexProps{Filename="mc{0:00}.tex",Count =10 },
             };
             TextureStartOffset = 0;
             EntriesPerTexture = 11;

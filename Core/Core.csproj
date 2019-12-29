@@ -133,6 +133,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Archive.cs" />
+    <Compile Include="Archives.cs" />
     <Compile Include="ArchiveWorker.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
     <Compile Include="Battle\DeadTime.cs" />
@@ -165,6 +167,7 @@
     <Compile Include="Battle\RegularPyramid.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
+    <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
     <Compile Include="FfAudio.cs" />
     <Compile Include="FfVideo.cs" />
@@ -221,7 +224,9 @@
     <Compile Include="Menu\IGMData\Pool\BlueMagic.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Abilities.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Command.cs" />
+    <Compile Include="Menu\Images\BigTexProps.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
+    <Compile Include="Menu\Images\TexProps.cs" />
     <Compile Include="Menu\Images\VertexPositionTexture_Texture2D.cs" />
     <Compile Include="Menu\LGSG\IGMData\GameBlock.cs" />
     <Compile Include="Menu\LGSG\IGMData\GameChoose.cs" />

@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace OpenVIII
+namespace OpenVIII.Card
 {
-    public class Card_Game
+    public class Game
     {
         private const int year = 2013;
         private TextureHandler[] _symbolsNumbers;
@@ -27,7 +27,7 @@ namespace OpenVIII
         public IReadOnlyList<Entry> SymbolNumberEntries => _symbolNumberEntries;
         public IReadOnlyList<Entry> CardFacesEntries => _cardFacesEntries;
 
-        public Card_Game()
+        public Game()
         {
             Memory.MainThreadOnlyActions.Enqueue(() =>
             {

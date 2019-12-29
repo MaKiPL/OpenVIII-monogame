@@ -28,11 +28,10 @@ namespace OpenVIII
 
         #region Constructors
 
-        public TEX(byte[] buffer)
+        public TEX(byte[] buffer) => Load(buffer);
+
+        public TEX()
         {
-            texture = new Texture();
-            this.buffer = buffer;
-            ReadParameters();
         }
 
         #endregion Constructors
@@ -243,6 +242,13 @@ namespace OpenVIII
                 texture.paletteData = new byte[PaletteSectionSize];
                 Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, PaletteSectionSize);
             }
+        }
+
+        public override void Load(byte[] buffer, uint offset = 0)
+        {
+            texture = new Texture();
+            this.buffer = buffer;
+            ReadParameters();
         }
 
         #endregion Methods

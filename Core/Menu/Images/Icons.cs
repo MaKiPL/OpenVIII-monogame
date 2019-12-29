@@ -12,7 +12,6 @@ namespace OpenVIII
     /// </summary>
     public sealed partial class Icons : SP2
     {
-
         #region Fields
 
         private Rectangle _dataSize;
@@ -165,9 +164,9 @@ namespace OpenVIII
             //FORCE_ORIGINAL = true;
             Props = new List<TexProps>()
             {
-                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 palette
-                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 palette
-                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
+                new TexProps{Filename = "icon.tex",Count = 1,Big = new List<BigTexProps>{ new BigTexProps{Filename = "iconfl{0:00}.TEX",Split = 4} } }, //0-15 palette
+                new TexProps{Filename = "icon.tex",Count = 1,Colors = red,Big = new List<BigTexProps>{ new BigTexProps{Filename = "iconfl{0:00}.TEX",Split = 4,Colors = red } } },//16 palette
+                new TexProps{Filename = "icon.tex",Count = 1,Colors = yellow,Big = new List<BigTexProps>{ new BigTexProps { Filename = "iconfl{0:00}.TEX", Split = 4, Colors = yellow } } }//17 palette
             };
             IndexFilename = "icon.sp1";
         }
@@ -209,13 +208,13 @@ namespace OpenVIII
             }
         }
 
-        protected override void InitTextures(ArchiveWorker aw = null)
+        protected override void InitTextures<T>(ArchiveWorker aw = null)
         {
             Textures = new List<TextureHandler>();
             for (int t = 0; t < Props.Count; t++)
             {
-                TEX tex;
-                tex = new TEX(ArchiveWorker.GetBinaryFile(ArchiveString,
+                T tex = new T();
+                tex.Load(ArchiveWorker.GetBinaryFile(ArchiveString,
                     aw.GetListOfFiles().First(x => x.IndexOf(Props[t].Filename, StringComparison.OrdinalIgnoreCase) >= 0)));
                 if (Props[t].Colors == null || Props[t].Colors.Length == 0)
                 {
@@ -253,6 +252,7 @@ namespace OpenVIII
             }
             return r;
         }
+
         private void Trim()
         {
             Trim(ID.Bar_Fill, 5);
@@ -291,6 +291,5 @@ namespace OpenVIII
         //    TempVPT[4] = GetVPT(ref this, this[4]);
         //    TempVPT[2] = TempVPT[5] = GetVPT(ref this, this[2]);
         //}
-
     }
 }

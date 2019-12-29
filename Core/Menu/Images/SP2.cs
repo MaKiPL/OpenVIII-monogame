@@ -11,7 +11,7 @@ namespace OpenVIII
     /// SP2 is a handler for .sp1 and .sp2 files. They are texture atlas coordinates
     /// <para>This stores the entries in Entry objects or EntryGroup objects</para>
     /// </summary>
-    public abstract class SP2
+    public abstract partial class SP2
     {
         #region Constructors
 
@@ -134,7 +134,7 @@ namespace OpenVIII
         }
         public virtual Entry GetEntry(UInt32 id)
         {
-            if (EntriesPerTexture <=0 && Entries.ContainsKey(id))
+            if (EntriesPerTexture <= 0 && Entries.ContainsKey(id))
                 return Entries[id];
             else if (Entries.ContainsKey((uint)(id % EntriesPerTexture)))
                 return Entries[(uint)(id % EntriesPerTexture)];
@@ -144,7 +144,7 @@ namespace OpenVIII
         public virtual TextureHandler GetTexture(Enum id, int file = -1)
         {
             int pos = Convert.ToInt32(id);
-            int File = file >=0? file : GetEntry((uint)pos).File;
+            int File = file >= 0 ? file : GetEntry((uint)pos).File;
             //check if we set a custom file and we have a pos more then set entriespertexture
             if (File <= 0)
             {
@@ -255,7 +255,7 @@ namespace OpenVIII
                 ArchiveWorker aw = new ArchiveWorker(ArchiveString);
                 InitEntries(aw);
                 InsertCustomEntries();
-                InitTextures(aw);
+                InitTextures<TEX>(aw);
             }
         }
 
@@ -302,7 +302,7 @@ namespace OpenVIII
             }
         }
 
-        protected virtual void InitTextures(ArchiveWorker aw = null)
+        protected virtual void InitTextures<T>(ArchiveWorker aw = null) where T : Texture_Base, new()
         {
             int count = (int)Props.Sum(x => x.Count);
             if (Textures == null)
@@ -311,14 +311,16 @@ namespace OpenVIII
             {
                 if (aw == null)
                     aw = new ArchiveWorker(ArchiveString);
-                TEX tex;
+                T tex;
                 Scale = new Dictionary<uint, Vector2>(count);
                 int b = 0;
                 for (int j = 0; j < Props.Count; j++)
                     for (uint i = 0; i < Props[j].Count; i++)
                     {
                         string path = aw.GetListOfFiles().First(x => x.IndexOf(string.Format(Props[j].Filename, i + TextureStartOffset), StringComparison.OrdinalIgnoreCase) > -1);
-                        tex = new TEX(aw.GetBinaryFile(path));
+                        tex = new T();
+                        tex.Load(aw.GetBinaryFile(path));
+
                         if (Props[j].Big != null && FORCE_ORIGINAL == false && b < Props[j].Big.Count)
                         {
                             TextureHandler th = TextureHandler.Create(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
@@ -339,99 +341,6 @@ namespace OpenVIII
         protected virtual void InsertCustomEntries()
         {
         }
-
         #endregion Methods
-
-        #region Classes
-
-        /// <summary>
-        /// For big textures.
-        /// </summary>
-        public class BigTexProps
-        {
-            #region Fields
-
-            /// <summary>
-            /// leave null unless big version has a different custom palette than normal.
-            /// </summary>
-            public Color[] Colors;
-
-            /// <summary>
-            /// Filename; To match more than one number use {0:00} or {00:00} for ones with leading zeros.
-            /// </summary>
-            public string Filename;
-
-            /// <summary>
-            /// Big versions of textures take the file and split it into multiple. How many splits
-            /// per BigFilename. Value to be interval of 2. As these files are all 2 cols wide. And
-            /// must be &gt;= 2
-            /// </summary>
-            public uint Split;
-
-            #endregion Fields
-
-            #region Constructors
-
-            public BigTexProps(string filename, uint split, Color[] colors = null)
-            {
-                Filename = filename;
-                Split = split;
-                Colors = colors;
-            }
-
-            #endregion Constructors
-        }
-
-        public class TexProps
-        {  /// <summary>
-            #region Fields
-
-            /// <summary>
-            /// For big textures.
-            /// </summary>
-            public List<BigTexProps> Big;
-
-            /// <summary>
-            /// Override palette of texture to this and don't load other palettes. If null ignore.
-            /// </summary>
-            public Color[] Colors;
-
-            /// <summary>
-            /// Number of Textures
-            /// </summary>
-            public uint Count;
-
-            /// Filename. To match more than one number use {0:00} or {00:00} for ones with leading
-            /// zeros. </summary>
-            public string Filename;
-
-            #endregion Fields
-
-            #region Constructors
-
-            public TexProps(string filename, uint count, params BigTexProps[] big)
-            {
-                Filename = filename;
-                Count = count;
-                if (big != null && Count != big.Length && big.Length > 0)
-                    throw new Exception($"Count of big textures should match small ones {Count} != {big.Length}");
-                Big = big.ToList();
-                Colors = null;
-            }
-
-            public TexProps(string filename, uint count, Color[] colors, params BigTexProps[] big)
-            {
-                Filename = filename;
-                Count = count;
-                if (big != null && Count != big.Length && big.Length > 0)
-                    throw new Exception($"Count of big textures should match small ones {Count} != {big.Length}");
-                Big = big.ToList();
-                Colors = colors;
-            }
-
-            #endregion Constructors
-        }
-
-        #endregion Classes
     }
 }

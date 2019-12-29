@@ -376,20 +376,21 @@ namespace OpenVIII
 
         public override void SaveCLUT(string path)
         {
-            if(CLP)
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
-            {
-                using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
+            if (CLP)
+                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
                 {
-                    for (ushort i = 0; i < texture.NumOfCluts; i++)
+                    using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
                     {
-                        CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(br, i), 0, texture.NumOfColours);
+                        for (ushort i = 0; i < texture.NumOfCluts; i++)
+                        {
+                            CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(br, i), 0, texture.NumOfColours);
+                        }
+                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                            CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
                     }
-                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
-                        CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
                 }
-            }
         }
+
         /// <summary>
         /// Get clut color palette
         /// </summary>
@@ -411,6 +412,7 @@ namespace OpenVIII
             }
             else throw new Exception($"TIM that has {bpp} bpp mode and has no clut data!");
         }
+
         protected Texture2D GetTexture(BinaryReader br, Color[] colors)
         {
             Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
@@ -432,6 +434,8 @@ namespace OpenVIII
             if (trimExcess)
                 buffer = buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer - timOffset)).ToArray();
         }
+
+        public override void Load(byte[] buffer, uint offset = 0) => _Init(buffer, offset);
 
         #endregion Methods
 
@@ -509,7 +513,7 @@ namespace OpenVIII
                     Assert(PaletteX % 16 == 0) ||
                     Assert(PaletteY >= 0 && PaletteY <= 511))
                         return;
-                    if (_bpp == 4 && NumOfColours >16)
+                    if (_bpp == 4 && NumOfColours > 16)
                     {
                         // timviewer was overriding the read number of colors per pixel to 16
                         // and this makes sense because you cannot read more than 16 colors with only a 4 bit value.
@@ -517,7 +521,7 @@ namespace OpenVIII
                         NumOfColours = 16;
                         NumOfCluts = checked((ushort)(clutdataSize / (NumOfColours * 2)));
                     }
-                    Assert(_bpp == 8 && NumOfColours <= 256|| _bpp!=8);
+                    Assert(_bpp == 8 && NumOfColours <= 256 || _bpp != 8);
                     ClutData = br.ReadBytes(clutdataSize);
                     //br.BaseStream.Seek(start+clutSize, SeekOrigin.Begin);
                 }
