@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -12,6 +13,8 @@ namespace OpenVIII
         private TextureHandler[] _cardFaces;
         private TextureHandler[] _cardGameBG;
         private TextureHandler[] _cardOtherBG;
+        private List<Entry> _symbolNumberEntries;
+        private List<Entry> _cardFacesEntries;
 
         public TextureHandler[] SymbolsNumbers { get => _symbolsNumbers; private set => _symbolsNumbers = value; }
 
@@ -21,7 +24,8 @@ namespace OpenVIII
         public TextureHandler[] CardGameBG { get => _cardGameBG; private set => _cardGameBG = value; }
         public TextureHandler[] CardOtherBG { get => _cardOtherBG; private set => _cardOtherBG = value; }
 
-        public List<Entry> SymbolNumberEntries { get; private set; }
+        public IReadOnlyList<Entry> SymbolNumberEntries => _symbolNumberEntries;
+        public IReadOnlyList<Entry> CardFacesEntries => _cardFacesEntries;
 
         public Card_Game()
         {
@@ -51,9 +55,9 @@ namespace OpenVIII
         private void ReadCardFaces(int id, BinaryReader br)
         {
             TIM2 cardtim = new TIM2(br, EXE_Offsets.TIM[year][id]);
-
             using (Texture2D cardback = cardtim.GetTexture(55))
             {
+                GenernateCardFaceEntries();
                 cardtim.ForceSetClutColors(128);
                 cardtim.ForceSetClutCount(112);
                 int rows = 4;
@@ -116,6 +120,33 @@ namespace OpenVIII
                 //        using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), $"{filename}.combined.png"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                 //            combined.SaveAsPng(fs, cardback.Width, cardback.Height);
                 //}
+            }
+        }
+
+        private void GenernateCardFaceEntries()
+        {
+            if (_cardFacesEntries == null || _cardFacesEntries.Count == 0)
+            {
+                _cardFacesEntries = new List<Entry>();
+                Cards.ID[] CardValues = (Cards.ID[])Enum.GetValues(typeof(Cards.ID));
+                Array.Sort(CardValues);
+                const int size = 64;
+                const int numberofcardsperpage = 8;
+                const int cols = 2;
+                const int rows = 4;
+                for (int i = 0; i < CardValues.Length && CardValues[i] <= Cards.ID.Card_Back; i++)
+                {
+                    new Entry
+                    {
+                        ID = CardValues[i],
+                        File = checked((byte)(i / numberofcardsperpage)),
+                        X = i % cols == 1 ? size : 0,
+                        Y = ((i / cols) % rows) * size,
+                        Height = size,
+                        Width = size,
+                        CustomPalette = checked((sbyte)i),
+                    };
+                }
             }
         }
 
@@ -235,78 +266,81 @@ namespace OpenVIII
 
         private void GenerateEntriesSymbolsNumbers()
         {
-            SymbolNumberEntries = new List<Entry>();
-            for (int i = 0; i < 11; i++)
+            if (_symbolNumberEntries == null || _symbolNumberEntries.Count == 0)
             {
-                SymbolNumberEntries.Add(new Entry
+                _symbolNumberEntries = new List<Entry>();
+                for (int i = 0; i < 11; i++)
                 {
-                    ID = SymbolID.HexNumbers,
-                    File = 0,
-                    CustomPalette = 0,
-                    Location = new Vector2(i * 16, 0),
-                    Size = new Vector2(16, 16),
-                    NumberValue = i
-                });
-            }
-            for (int k = 0; k < 2; k++)
-                for (int j = 0; j < 4; j++)
-                    for (int i = 0; i < 4; i++)
+                    _symbolNumberEntries.Add(new Entry
                     {
-                        SymbolNumberEntries.Add(new Entry
+                        ID = SymbolID.HexNumbers,
+                        File = 0,
+                        CustomPalette = 0,
+                        Location = new Vector2(i * 16, 0),
+                        Size = new Vector2(16, 16),
+                        NumberValue = i
+                    });
+                }
+                for (int k = 0; k < 2; k++)
+                    for (int j = 0; j < 4; j++)
+                        for (int i = 0; i < 4; i++)
                         {
-                            ID = (SymbolID)((int)(SymbolID.Fire) + j + (k * 4)),
-                            File = 0,
-                            CustomPalette = checked((sbyte)(3 * (j + 1 + (k * 4)))),
-                            Location = new Vector2((i + (4 * j)) * 16, 16 * (k + 1)),
-                            Size = new Vector2(16, 16),
-                            Frame = i,
-                        });
-                    }
-            for (int i = 0; i < 9; i++)
-            {
-                SymbolNumberEntries.Add(new Entry
+                            _symbolNumberEntries.Add(new Entry
+                            {
+                                ID = (SymbolID)((int)(SymbolID.Fire) + j + (k * 4)),
+                                File = 0,
+                                CustomPalette = checked((sbyte)(3 * (j + 1 + (k * 4)))),
+                                Location = new Vector2((i + (4 * j)) * 16, 16 * (k + 1)),
+                                Size = new Vector2(16, 16),
+                                Frame = i,
+                            });
+                        }
+                for (int i = 0; i < 9; i++)
                 {
-                    ID = SymbolID.Score,
-                    File = 0,
-                    CustomPalette = 27,
-                    Location = new Vector2(i * 24, 16 * 3),
-                    Size = new Vector2(24, 24),
-                    NumberValue = i
-                });
-            }
-            for (int i = 0; i < 2; i++)
-            {
-                SymbolNumberEntries.Add(new Entry
+                    _symbolNumberEntries.Add(new Entry
+                    {
+                        ID = SymbolID.Score,
+                        File = 0,
+                        CustomPalette = 27,
+                        Location = new Vector2(i * 24, 16 * 3),
+                        Size = new Vector2(24, 24),
+                        NumberValue = i
+                    });
+                }
+                for (int i = 0; i < 2; i++)
                 {
-                    ID = (SymbolID)((int)(SymbolID.Buff) + i),
-                    File = 0,
-                    CustomPalette = 30,
-                    Location = new Vector2(i * 24, 16 * 3 + 24),
-                    Size = new Vector2(24, 24),
-                    NumberValue = 1 + (-2 * i)
-                });
-            }
-            for (int i = 0; i < 3; i++)
-            {
-                SymbolNumberEntries.Add(new Entry
+                    _symbolNumberEntries.Add(new Entry
+                    {
+                        ID = (SymbolID)((int)(SymbolID.Buff) + i),
+                        File = 0,
+                        CustomPalette = 30,
+                        Location = new Vector2(i * 24, 16 * 3 + 24),
+                        Size = new Vector2(24, 24),
+                        NumberValue = 1 + (-2 * i)
+                    });
+                }
+                for (int i = 0; i < 3; i++)
                 {
-                    ID = (SymbolID)((int)(SymbolID.Win) + i),
-                    File = 1,
-                    CustomPalette = checked((sbyte)(1 + 3 * i)),
-                    Location = new Vector2(0, 48 * i),
-                    Size = new Vector2(256, 48),
-                });
-            }
-            for (int i = 0; i < 3; i++)
-            {
-                SymbolNumberEntries.Add(new Entry
+                    _symbolNumberEntries.Add(new Entry
+                    {
+                        ID = (SymbolID)((int)(SymbolID.Win) + i),
+                        File = 1,
+                        CustomPalette = checked((sbyte)(1 + 3 * i)),
+                        Location = new Vector2(0, 48 * i),
+                        Size = new Vector2(256, 48),
+                    });
+                }
+                for (int i = 0; i < 3; i++)
                 {
-                    ID = (SymbolID)((int)(SymbolID.Same) + i),
-                    File = 2,
-                    CustomPalette = checked((sbyte)(2 + 3 * i)),
-                    Location = new Vector2(0, 64 * i),
-                    Size = new Vector2(256, 64),
-                });
+                    _symbolNumberEntries.Add(new Entry
+                    {
+                        ID = (SymbolID)((int)(SymbolID.Same) + i),
+                        File = 2,
+                        CustomPalette = checked((sbyte)(2 + 3 * i)),
+                        Location = new Vector2(0, 64 * i),
+                        Size = new Vector2(256, 64),
+                    });
+                }
             }
         }
 
