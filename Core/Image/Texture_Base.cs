@@ -33,6 +33,10 @@ namespace OpenVIII
         /// <see cref="http://www.psxdev.net/forum/viewtopic.php?t=109"/>
         /// <seealso cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
         private const ushort STP_mask = 0x8000;
+        /// <summary>
+        /// all bits except the STP bit.
+        /// </summary>
+        private const ushort NotSTP_mask = 0x7FFF;
 
         #endregion Fields
 
@@ -164,10 +168,10 @@ namespace OpenVIII
         /// </summary>
         /// <param name="pixel">16 bit color</param>
         /// <returns>true if bit is set and not black, otherwise false.</returns>
-        protected static bool GetSTP(ushort pixel) =>
+        public static bool GetSTP(ushort pixel) =>
             // I set this to always return false for black. As it's transparency is handled in
             // conversion method.
-            (pixel & 0x7FFF) == 0 ? false : ((pixel & STP_mask) >> 15) > 0;
+            (pixel & NotSTP_mask) == 0 ? false : (pixel & STP_mask) != 0;
 
         public abstract void Load(byte[] buffer, uint offset = 0);
 

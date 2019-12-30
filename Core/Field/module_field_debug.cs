@@ -1,11 +1,11 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.Encoding.Tags;
 using System;
-using System.Linq;
-using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using OpenVIII.Encoding.Tags;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -17,6 +17,7 @@ namespace OpenVIII
         private static EventEngine eventEngine;
         private static IServices services;
         private static List<Tile> tiles;
+
         private struct Tile
         {
             public short x, y;
@@ -34,7 +35,6 @@ namespace OpenVIII
 
         private static int width, height;
 
-        
         private enum Field_mods
         {
             INIT,
@@ -54,10 +54,7 @@ namespace OpenVIII
             }
         }
 
-        public static void ResetField()
-        {
-            mod = Field_mods.INIT;
-        }
+        public static void ResetField() => mod = Field_mods.INIT;
 
         private static void DrawDebug()
         {
@@ -69,7 +66,7 @@ namespace OpenVIII
             //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
             //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
             dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
-            Memory.spriteBatch.Draw(tex,dst, src, Color.White);
+            Memory.spriteBatch.Draw(tex, dst, src, Color.White);
             //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
             //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
             Memory.SpriteBatchEnd();
@@ -79,7 +76,7 @@ namespace OpenVIII
         {
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
-            if (Input2.DelayedButton(FF8TextTagKey.Left) )
+            if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Memory.FieldHolder.FieldID > 0)
@@ -88,7 +85,7 @@ namespace OpenVIII
                     Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
                 ResetField();
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Right) )
+            if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
@@ -103,6 +100,7 @@ namespace OpenVIII
                 case Field_mods.INIT:
                     Init();
                     break;
+
                 case Field_mods.DEBUGRENDER:
                     UpdateScript();
                     break; //await events here
@@ -126,111 +124,87 @@ namespace OpenVIII
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
                 return;
-            var CollectionEntry = test.Where(x => x.ToLower().Contains(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]));
-            if (!CollectionEntry.Any()) return;
-            string fieldArchive = CollectionEntry.First();
-            int fieldLen = fieldArchive.Length - 3;
-            fieldArchive = fieldArchive.Substring(0, fieldLen);
-            byte[] fs = aw.GetBinaryFile( $"{fieldArchive}{Memory.Archive.B_FileArchive}");
-            byte[] fi = aw.GetBinaryFile( $"{fieldArchive}{Memory.Archive.B_FileIndex}");
-            byte[] fl = aw.GetBinaryFile( $"{fieldArchive}{Memory.Archive.B_FileList}");
-            if (fs == null || fi == null || fl == null) return;
-            string[] test_ = aw.GetBinaryFileList(fl);
-            string mim = null;
-            string map = null;
-            try
-            {
-                mim = test_.First(x => x.ToLower().Contains(".mim"));
-            }
-            catch{}
-            try
-            {
-                 map = test_.First(x => x.ToLower().Contains(".map"));
-            }
-            catch{}
+            string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0);
+            if (string.IsNullOrWhiteSpace(fieldArchiveName)) return;
+            int fieldLen = fieldArchiveName.Length - 3;
+            fieldArchiveName = fieldArchiveName.Substring(0, fieldLen);
+            ArchiveWorker fieldArchive = aw.GetArchive(fieldArchiveName);
+            string[] filelist = fieldArchive.GetListOfFiles();
+            string findstr(string s) =>
+                filelist.FirstOrDefault(x => x.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
 
-            if (mim != null && map != null)
+            byte[] getfile(string s)
             {
-                byte[] mimb = aw.FileInTwoArchives(fi, fs, fl, mim);
-                byte[] mapb = aw.FileInTwoArchives(fi, fs, fl, map);
-
-                ParseBackground(mimb, mapb);
+                s = findstr(s);
+                if (!string.IsNullOrWhiteSpace(s))
+                    return fieldArchive.GetBinaryFile(s);
+                else
+                    return null;
             }
+            string mim = findstr(".mim");
+            string map = findstr(".map");
+            string s_jsm = findstr(".jsm");
+            string s_sy = findstr(".sy");
+            if (!string.IsNullOrWhiteSpace(mim) && !string.IsNullOrWhiteSpace(map))
+                ParseBackground(fieldArchive.GetBinaryFile(mim), fieldArchive.GetBinaryFile(map));
             //let's start with scripts
-            byte[] jsm = null;
-            byte[] sy = null;
-            string s_jsm = null;
-            string s_sy = null;
-            s_jsm = test_.FirstOrDefault(x => x.IndexOf(".jsm", StringComparison.OrdinalIgnoreCase) >= 0);
-            s_sy = test_.FirstOrDefault(x => x.IndexOf(".sy", StringComparison.OrdinalIgnoreCase) >= 0);
-            if (!string.IsNullOrWhiteSpace(s_jsm) && !string.IsNullOrWhiteSpace(s_sy))
+            List<Jsm.GameObject> jsmObjects;
+
+            if (!string.IsNullOrWhiteSpace(s_jsm))
             {
-                jsm = aw.FileInTwoArchives(fi, fs, fl, s_jsm);
-                sy = aw.FileInTwoArchives(fi, fs, fl, s_sy);
+                try
+                {
+                    jsmObjects = Jsm.File.Read(fieldArchive.GetBinaryFile(s_jsm));
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                    mod = Field_mods.DISABLED;
+                    return;
+                }
+
+                Sym.GameObjects symObjects;
+                if (!string.IsNullOrWhiteSpace(s_sy))
+                {
+                    symObjects = Sym.Reader.FromBytes(fieldArchive.GetBinaryFile(s_sy));
+                }
+                else
+                    return;
+                services = FieldInitializer.GetServices();
+                eventEngine = ServiceId.Field[services].Engine;
+                eventEngine.Reset();
+                for (int objIndex = 0; objIndex < jsmObjects.Count; objIndex++)
+                {
+                    Jsm.GameObject obj = jsmObjects[objIndex];
+                    FieldObject fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
+
+                    foreach (Jsm.GameScript script in obj.Scripts)
+                        fieldObject.Scripts.Add(script.ScriptId, script.Segment.GetExecuter());
+
+                    eventEngine.RegisterObject(fieldObject);
+                }
             }
             else
             {
-                Debug.WriteLine($"s_jsm={s_jsm} or s_sy={s_sy} values are null/empty");
-                mod = Field_mods.DISABLED;
-                return; // 
-            }
-            List<Jsm.GameObject> jsmObjects = new List<Jsm.GameObject>(0);
-            try
-            {
-                jsmObjects = Jsm.File.Read(jsm);
-            }
-            catch(Exception e)
-            {
-                Debug.WriteLine(e);
                 mod = Field_mods.DISABLED;
                 return;
             }
-            if (sy == null)
-                return;
-            Sym.GameObjects symObjects = Sym.Reader.FromBytes(sy);
-            
-            services = FieldInitializer.GetServices();
-            eventEngine = ServiceId.Field[services].Engine;
-            eventEngine.Reset();
-            for (var objIndex = 0; objIndex < jsmObjects.Count; objIndex++)
-            {
-                Jsm.GameObject obj = jsmObjects[objIndex];
-                FieldObject fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
 
-                foreach (Jsm.GameScript script in obj.Scripts)
-                    fieldObject.Scripts.Add(script.ScriptId, script.Segment.GetExecuter());
-
-                eventEngine.RegisterObject(fieldObject);
-            }
-            //string mch = test_.Where(x => x.ToLower().Contains(".mch")).First();
-            //string one = test_.Where(x => x.ToLower().Contains(".one")).First();
-            //string msd = test_.Where(x => x.ToLower().Contains(".msd")).First();
-            //string inf = test_.Where(x => x.ToLower().Contains(".inf")).First();
-            //string id = test_.Where(x => x.ToLower().Contains(".id")).First();
-            //string ca = test_.Where(x => x.ToLower().Contains(".ca")).First();
-            //string tdw = test_.Where(x => x.ToLower().Contains(".tdw")).First();
-            //string msk = test_.Where(x => x.ToLower().Contains(".msk")).First();
-            //string rat = test_.Where(x => x.ToLower().Contains(".rat")).First();
-            //string pmd = test_.Where(x => x.ToLower().Contains(".pmd")).First();
-            //string sfx = test_.Where(x => x.ToLower().Contains(".sfx")).First();
-
-            //byte[] mchb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, mch); //Field character models
-            //byte[] oneb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, one); //Field character models container
-            //byte[] msdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msd); //dialogs
-            //byte[] infb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, inf); //gateways
-            //byte[] idb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, id); //walkmesh
-            //byte[] cab = ArchiveWorker.FileInTwoArchives(fi, fs, fl, ca); //camera
-            //byte[] tdwb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, tdw); //extra font
-            //byte[] mskb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, msk); //movie cam
-            //byte[] ratb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, rat); //battle on field
-            //byte[] pmdb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, pmd); //particle info
-            //byte[] sfxb = ArchiveWorker.FileInTwoArchives(fi, fs, fl, sfx); //sound effects
-
+            //byte[] mchb = getfile(".mch");//Field character models
+            //byte[] oneb = getfile(".one");//Field character models container
+            //byte[] msdb = getfile(".msd");//dialogs
+            //byte[] infb = getfile(".inf");//gateways
+            //byte[] idb = getfile(".id");//walkmesh
+            //byte[] cab = getfile(".ca");//camera
+            //byte[] tdwb = getfile(".tdw");//extra font
+            //byte[] mskb = getfile(".msk");//movie cam
+            //byte[] ratb = getfile(".rat");//battle on field
+            //byte[] pmdb = getfile(".pmd");//particle info
+            //byte[] sfxb = getfile(".sfx");//sound effects
 
             mod++;
             return;
         }
-
 
         private static void ParseBackground(byte[] mimb, byte[] mapb)
         {
@@ -277,12 +251,12 @@ namespace OpenVIII
 
             height = Math.Abs(lowestY) + maximumY + 16; //224
             width = Math.Abs(lowestX) + maximumX + 16; //320
-            byte[] finalImage = new byte[height * width * 4]; //ARGB;
-            byte[] finalOverlapImage = new byte[height * width * 4];
+            Color[] finalImage = new Color[height * width]; //ARGB;
+            Color[] finalOverlapImage = new Color[height * width];
             tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
             texOverlap = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
-            var MaximumLayer = tiles.Max(x => x.layId);
-            var MinimumLayer = tiles.Min(x => x.layId);
+            byte MaximumLayer = tiles.Max(x => x.layId);
+            byte MinimumLayer = tiles.Min(x => x.layId);
 
             List<ushort> BufferDepth = tiles.GroupBy(x => x.z).Select(group => group.First()).Select(x => x.z).ToList();
             BufferDepth.Sort();
@@ -307,56 +281,48 @@ namespace OpenVIII
 
                     int realX = Math.Abs(lowestX) + tile.x; //baseX
                     int realY = Math.Abs(lowestY) + tile.y; //*width
-                    int realDestinationPixel = ((realY * width) + realX) * 4;
+                    int realDestinationPixel = ((realY * width) + realX);
                     if (tile.blend2 >= 4)
                     {
                         int startPixel = sourceImagePointer + tile.srcx + 128 * tile.texID + (type1Width * tile.srcy);
                         for (int y = 0; y < 16; y++)
                             for (int x = 0; x < 16; x++)
                             {
+                                int pos = realDestinationPixel + (x) + (y * width);
                                 byte pixel = mimb[startPixel + x + (y * 1664)];
-                                ushort pixels = BitConverter.ToUInt16(mimb, 2 * pixel + palettePointer);
-                                if (pixels == 00)
+                                ushort color16bit = BitConverter.ToUInt16(mimb, 2 * pixel + palettePointer);
+                                if (color16bit == 0) // 0 is 100 % transparent so not blending that pixel
                                     continue;
-                                byte red = (byte)((pixels) & 0x1F);
-                                byte green = (byte)((pixels >> 5) & 0x1F);
-                                byte blue = (byte)((pixels >> 10) & 0x1F);
-                                red = (byte)MathHelper.Clamp((red * 8), 0, 255);
-                                green = (byte)MathHelper.Clamp((green * 8), 0, 255);
-                                blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
-                                if (tile.blendType < 4)
+                                Color color = Texture_Base.ABGR1555toRGBA32bit(color16bit);
+                                //bool stp = Texture_Base.GetSTP(color16bit);
+                                if (tile.blendType < 4 /*&& stp*/)
                                 {
+                                    if (color == Color.Black)
+                                        continue;
+                                    //stp should be set for pixel to blend
+                                    //seems stp isn't being used in fields.
+                                    //normally if black and stp enabled black isn't transparent.
+                                    //but I think blendtype might override that.
+                                    //since black put into blend modes won't do anything might
+                                    // as well skip it.
+                                    // might be spots that should be black that aren't and will need
+                                    // to revisit this.
                                     if (true)//!bSaveToOverlapBuffer)
-                                    {
-
-                                        byte baseColorR = finalImage[realDestinationPixel + (x * 4) + (y * width * 4)];
-                                        byte baseColorG = finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1];
-                                        byte baseColorB = finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2];
-                                        Blend(baseColorR, baseColorG, baseColorB, red, green, blue, tile, finalImage, realDestinationPixel, x, y);
-                                    }
+                                        Blend(ref finalImage[pos], color, tile);
                                     else
-                                    {
-                                        byte baseColorR = finalOverlapImage[realDestinationPixel + (x * 4) + (y * width * 4)];
-                                        byte baseColorG = finalOverlapImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1];
-                                        byte baseColorB = finalOverlapImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2];
-                                        Blend(baseColorR, baseColorG, baseColorB, red, green, blue, tile, finalOverlapImage, realDestinationPixel, x, y);
-                                    }
+                                        Blend(ref finalOverlapImage[pos], color, tile);
                                 }
                                 else
                                 {
                                     if (true)//!bSaveToOverlapBuffer)
                                     {
-                                        finalImage[realDestinationPixel + (x * 4) + (y * width * 4)] = red;
-                                        finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1] = green;
-                                        finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2] = blue;
-                                        finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 3] = 0xFF;
+                                        finalImage[pos] = color;
+                                        finalImage[pos].A = 0xFF;
                                     }
                                     else
                                     {
-                                        finalOverlapImage[realDestinationPixel + (x * 4) + (y * width * 4)] = red;
-                                        finalOverlapImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1] = green;
-                                        finalOverlapImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2] = blue;
-                                        finalOverlapImage[realDestinationPixel + (x * 4) + (y * width * 4) + 3] = 0xFF;
+                                        finalOverlapImage[pos] = color;
+                                        finalOverlapImage[pos].A = 0xFF;
                                     }
                                 }
                             }
@@ -377,7 +343,6 @@ namespace OpenVIII
                         //            blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
                         //            if (pixels != 0)
                         //            {
-
                         //                if (tile.blendType < 4)
                         //                {
                         //                    byte baseColorR = finalImage[realDestinationPixel + (x * 4) + (y * width * 4)];
@@ -395,7 +360,6 @@ namespace OpenVIII
                         //            blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
                         //            if (pixels != 0)
                         //            {
-
                         //                if (tile.blendType < 4)
                         //                {
                         //                    byte baseColorR = finalImage[realDestinationPixel + (x * 4) + (y * width * 4)];
@@ -419,37 +383,88 @@ namespace OpenVIII
             texOverlap.SetData(finalOverlapImage);
         }
 
-        private static void DrawEntities()
-        {
-            throw new NotImplementedException();
-        }
+        private static void DrawEntities() => throw new NotImplementedException();
 
-        private static void Blend(byte baseColorR, byte baseColorG, byte baseColorB, byte red, byte green, byte blue, Tile tile, byte[] finalImage, int realDestinationPixel, int x, int y)
+        /// <summary>
+        /// Blend the colors depending on tile.blendmode
+        /// </summary>
+        /// <param name="finalImageColor"></param>
+        /// <param name="color"></param>
+        /// <param name="tile"></param>
+        /// <returns>Color</returns>
+        /// <see cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
+        /// <seealso cref="http://www.psxdev.net/forum/viewtopic.php?t=953"/>
+        /// <seealso cref="//http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_MAP"/>
+        private static Color Blend(ref Color finalImageColor, Color color, Tile tile)
         {
+            //• Semi Transparency
+            //When semi transparency is set for a pixel, the GPU first reads the pixel it wants to write to, and then calculates
+            //the color it will write from the 2 pixels according to the semi - transparency mode selected.Processing speed is lower
+            //in this mode because additional reading and calculating are necessary.There are 4 semi - transparency modes in the
+            //GPU.
+            //B = the pixel read from the image in the frame buffer, F = the half transparent pixel
+            //• 1.0 x B + 0.5 x F
+            //• 1.0 x B + 1.0 x F
+            //• 1.0 x B - 1.0 x F
+            //• 1.0 x B + 0.25 x F
+            //color must not be black
+            Color baseColor = finalImageColor;
+            Color blend0()
+            {
+                Color r;
+
+                r.R = (byte)MathHelper.Clamp(baseColor.R + color.R / 2, 0, 255);
+                r.G = (byte)MathHelper.Clamp(baseColor.R + color.G / 2, 0, 255);
+                r.B = (byte)MathHelper.Clamp(baseColor.B + color.B / 2, 0, 255);
+
+                //r.R = (byte)((baseColor.R + color.R) / 2);
+                //r.G = (byte)((baseColor.R + color.G) / 2);
+                //r.B = (byte)((baseColor.B + color.B) / 2);
+                return r;
+            }
+            Color blend1()
+            {
+                Color r;
+                r.R = (byte)MathHelper.Clamp(baseColor.R + color.R, 0, 255);
+                r.G = (byte)MathHelper.Clamp(baseColor.G + color.G, 0, 255);
+                r.B = (byte)MathHelper.Clamp(baseColor.B + color.B, 0, 255);
+                return r;
+            }
+            Color blend2()
+            {
+                Color r;
+                r.R = (byte)MathHelper.Clamp(baseColor.R - color.R, 0, 255);
+                r.G = (byte)MathHelper.Clamp(baseColor.G - color.G, 0, 255);
+                r.B = (byte)MathHelper.Clamp(baseColor.B - color.B, 0, 255);
+                return r;
+            }
+            Color blend3()
+            {
+                Color r;
+                r.R = (byte)MathHelper.Clamp((byte)(baseColor.R + (0.25 * color.R)), 0, 255);
+                r.G = (byte)MathHelper.Clamp((byte)(baseColor.G + (0.25 * color.G)), 0, 255);
+                r.B = (byte)MathHelper.Clamp((byte)(baseColor.B + (0.25 * color.B)), 0, 255);
+                //r.R = (byte)MathHelper.Clamp((byte)(baseColor.R + (0.25 * color.R)), 0, 255);
+                //r.G = (byte)MathHelper.Clamp((byte)(baseColor.G + (0.25 * color.G)), 0, 255);
+                //r.B = (byte)MathHelper.Clamp((byte)(baseColor.B + (0.25 * color.B)), 0, 255);
+                return r;
+            }
             switch (tile.blendType)
             {
                 case 0:
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4)] = (byte)((baseColorR + red) / 2);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1] = (byte)((baseColorG + green) / 2);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2] = (byte)((baseColorB + blue) / 2);
-                    break;
+                    return finalImageColor = blend0();
+
                 case 1:
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4)] = (byte)MathHelper.Clamp(baseColorR + red, 0, 255);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1] = (byte)MathHelper.Clamp(baseColorG + green, 0, 255);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2] = (byte)MathHelper.Clamp(baseColorB + blue, 0, 255);
-                    break;
+                    return finalImageColor = blend1();
+
                 case 2:
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4)] = (byte)MathHelper.Clamp(baseColorR - red, 0, 255);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1] = (byte)MathHelper.Clamp(baseColorG - green, 0, 255);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2] = (byte)MathHelper.Clamp(baseColorB - blue, 0, 255);
-                    break;
+                    return finalImageColor = blend2();
+
                 case 3:
-                    break;
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4)] = (byte)MathHelper.Clamp((byte)(baseColorR + (0.25 * red)), 0, 255);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1] = (byte)MathHelper.Clamp((byte)(baseColorG + (0.25 * green)), 0, 255);
-                    finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2] = (byte)MathHelper.Clamp((byte)(baseColorB + (0.25 * blue)), 0, 255);
-                    break;
+                    //break;
+                    return finalImageColor = blend3();
             }
+            throw new Exception($"Blendtype is {tile.blendType}: There are only 4 blend modes, 0-3, 4+ are drawn directly.");
         }
     }
 }
