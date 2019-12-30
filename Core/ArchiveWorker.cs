@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,15 +18,16 @@ namespace OpenVIII
         /// </summary>
         public string[] FileList;
 
-        private static Dictionary<Memory.Archive, Dictionary<string, byte[]>> ArchiveCache = new Dictionary<Memory.Archive, Dictionary<string, byte[]>>
-            {
-                { Memory.Archives.A_BATTLE, new Dictionary<string, byte[]>() },
-                { Memory.Archives.A_FIELD, new Dictionary<string, byte[]>() },
-                { Memory.Archives.A_MAGIC, new Dictionary<string, byte[]>() },
-                { Memory.Archives.A_MAIN, new Dictionary<string, byte[]>() },
-                { Memory.Archives.A_MENU, new Dictionary<string, byte[]>() },
-                { Memory.Archives.A_WORLD, new Dictionary<string, byte[]>() }
-            };
+        private static ConcurrentDictionary<Memory.Archive, ConcurrentDictionary<string, byte[]>> ArchiveCache =
+            new ConcurrentDictionary<Memory.Archive, ConcurrentDictionary<string, byte[]>>
+                (new Dictionary<Memory.Archive, ConcurrentDictionary<string, byte[]>> {
+                { Memory.Archives.A_BATTLE, new ConcurrentDictionary<string, byte[]>() },
+                { Memory.Archives.A_FIELD, new ConcurrentDictionary<string, byte[]>() },
+                { Memory.Archives.A_MAGIC, new ConcurrentDictionary<string, byte[]>() },
+                { Memory.Archives.A_MAIN, new ConcurrentDictionary<string, byte[]>() },
+                { Memory.Archives.A_MENU, new ConcurrentDictionary<string, byte[]>() },
+                { Memory.Archives.A_WORLD, new ConcurrentDictionary<string, byte[]>() }
+            });
 
         /// <summary>
         /// prevent two threads from writing to cache at the same time.
@@ -57,6 +59,15 @@ namespace OpenVIII
                 FileList = ProduceFileLists();
         }
 
+        public ArchiveWorker(byte[] fI, byte[] fS, byte[] fL, bool skiplist = false)
+        {
+            FI = fI;
+            FS = fS;
+            FL = fL;
+            if (!skiplist)
+                FileList = ProduceFileLists();
+        }
+
         #endregion Constructors
 
         #region Methods
@@ -73,6 +84,8 @@ namespace OpenVIII
             return tmp.GetBinaryFile(fileName, cache);
         }
 
+        private byte[] FI, FS, FL;
+
         /// <summary>
         /// Give me three archives as bytes uncompressed please!
         /// </summary>
@@ -85,7 +98,7 @@ namespace OpenVIII
         /// Does the same thing as Get Binary file, but it reads from byte arrays in ram because the
         /// data was already pulled from a file earlier.
         /// </remarks>
-        public byte[] FileInTwoArchives(byte[] FI, byte[] FS, byte[] FL, string filename)
+        private byte[] FileInTwoArchives(string filename)
         {
             int loc = FindFile(ref filename, new MemoryStream(FL, false));
             if (loc == -1)
@@ -106,6 +119,8 @@ namespace OpenVIII
             return compe ? LZSS.DecompressAllNew(file) : file;
         }
 
+        public ArchiveWorker GetArchive(Memory.Archive archive) => new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL)) { _path = archive };
+
         /// <summary>
         /// GetBinary
         /// </summary>
@@ -116,33 +131,33 @@ namespace OpenVIII
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new FileNotFoundException("NO FILENAME");
 
-            int loc = FindFile(ref fileName, new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)); //File.OpenRead(_path.FL));
-
-            // read file list
-
-            if (loc == -1)
-            {
-                Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
-                //throw new Exception("ArchiveWorker: No such file!");
-            }
+            if (FL != null && FL.Length > 0 && FI != null && FL.Length > 0 && FI != null && FL.Length > 0)
+                return FileInTwoArchives(fileName);
             else
+            if (!isDir)
             {
-                if (cache)
-                    lock (cachelock)
-                    {
-                        return GetBinaryFile(fileName, loc, cache);
-                    }
+                int loc = FindFile(ref fileName, new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)); //File.OpenRead(_path.FL));
+
+                // read file list
+
+                if (loc == -1)
+                {
+                    Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
+                    //throw new Exception("ArchiveWorker: No such file!");
+                }
                 else
                     return GetBinaryFile(fileName, loc, cache);
             }
+            else
+                return GetBinaryFile(fileName, 0, cache);
             throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
         }
 
         /// <summary>
         /// Generate a file list from binary data.
         /// </summary>
-        /// <param name="fl"></param>
-        public string[] GetBinaryFileList(byte[] fl) => System.Text.Encoding.ASCII.GetString(fl).Replace("\r", "").Replace("\0", "").Split('\n');
+        /// <param name="fl">raw File List</param>
+        private string[] GetListOfFiles(byte[] fl) => ProduceFileLists(new MemoryStream(fl));
 
         /// <summary>
         /// Get current file list for loaded archive.
@@ -150,6 +165,17 @@ namespace OpenVIII
         public string[] GetListOfFiles() => FileList;
 
         public Memory.Archive GetPath() => _path;
+
+        private static bool GetLine(TextReader tr, out string line)
+        {
+            line = tr.ReadLine();
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                line.TrimEnd('\0');
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Search file list for line filename is on.
@@ -180,19 +206,10 @@ namespace OpenVIII
             return -1;
         }
 
-        private static bool GetLine(TextReader tr, out string line)
-        {
-            line = tr.ReadLine();
-            if (!string.IsNullOrWhiteSpace(line))
-            {
-                line.TrimEnd('\0');
-                return true;
-            }
-            return false;
-        }
-
         private byte[] GetBinaryFile(string fileName, int loc, bool cache)
         {
+            if (ArchiveCache.TryGetValue(_path, out ConcurrentDictionary<string, byte[]> a) && a.TryGetValue(fileName, out byte[] b))
+                return b;
             if (isDir)
             {
                 if (FileList == null || FileList.Length == 0)
@@ -205,8 +222,6 @@ namespace OpenVIII
                     }
             }
             byte[] temp = null;
-            if (ArchiveCache.ContainsKey(_path) && ArchiveCache[_path].ContainsKey(fileName))
-                return (ArchiveCache[_path][fileName]);
             //read index data
             using (BinaryReader br = new BinaryReader(new FileStream(_path.FI, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))//File.OpenRead(_path.FI)))
             {
@@ -223,7 +238,8 @@ namespace OpenVIII
             }
 
             temp = temp == null ? null : _compressed ? LZSS.DecompressAllNew(temp) : temp;
-            if (temp != null && cache) ArchiveCache[_path][fileName] = temp;
+            if (temp != null && cache && ArchiveCache.TryGetValue(_path, out a))
+                a.TryAdd(fileName, temp);
             return temp;
         }
 
@@ -235,37 +251,22 @@ namespace OpenVIII
         {
             if (isDir)
                 return Directory.GetFiles(_path, "*", SearchOption.AllDirectories);
-            //return File.ReadAllLines(_path.FL, System.Text.Encoding.ASCII);
-            using (StreamReader sr = new StreamReader(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.ASCII))
+            if (FL != null && FL.Length > 0)
+                return GetListOfFiles(FL);
+            return ProduceFileLists(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+        }
+
+        private string[] ProduceFileLists(Stream s)
+        {
+            using (StreamReader sr = new StreamReader(s, System.Text.Encoding.ASCII))
             {
                 List<string> fl = new List<string>();
                 while (!sr.EndOfStream)
-                    fl.Add(sr.ReadLine());
+                    fl.Add(sr.ReadLine().Trim('\0', '\r', '\n'));
                 return fl.ToArray();
             }
         }
 
         #endregion Methods
-
-        //public struct FI
-        //{
-        //    public uint LengthOfUnpackedFile;
-        //    public uint LocationInFS;
-        //    public uint LZSS;
-        //}
-
-        //public FI[] GetFI()
-        //{
-        //    FI[] FileIndex = new FI[FileList.Length];
-        //    using (FileStream fs = new FileStream(_path.FI, FileMode.Open, FileAccess.Read))
-        //    using (BinaryReader br = new BinaryReader(fs))
-        //        for (int i = 0; i <= FileIndex.Length - 1; i++)
-        //        {
-        //            FileIndex[i].LengthOfUnpackedFile = br.ReadUInt32();
-        //            FileIndex[i].LocationInFS = br.ReadUInt32();
-        //            FileIndex[i].LZSS = br.ReadUInt32();
-        //        }
-        //    return FileIndex;
-        //}
     }
 }

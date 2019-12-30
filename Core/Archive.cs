@@ -13,6 +13,7 @@ namespace OpenVIII
         public class Archive
         {
             public Archive Parent;
+
             public string _Root { get; set; }
             public string _Filename { get; private set; }
 
@@ -35,6 +36,8 @@ namespace OpenVIII
             public Archive(string path) : this(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path))
             { }
             public static implicit operator string(Archive val) => Extended.GetUnixFullPath($"{Path.Combine(val._Root, val._Filename)}");
+
+            public static implicit operator Archive(string path) => new Archive(path);
             public Archive(string root, string filename)
             {
                 _Root = root;
@@ -71,6 +74,8 @@ namespace OpenVIII
             /// </summary>
             public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileArchive}"));
 
+            public bool FileExistsInFolder { get; private set; }
+
             /// <summary>
             /// Test if input file path exists
             /// </summary>
@@ -78,7 +83,9 @@ namespace OpenVIII
             /// <returns></returns>
             private string Test(string input)
             {
-                if (!File.Exists(input)) throw new FileNotFoundException($"There is no {input} file!\nExiting...");
+                //using this for archives in archives would always throw exceptions
+                if (!File.Exists(input)) FileExistsInFolder = false; //throw new FileNotFoundException($"There is no {input} file!\nExiting...");
+                else FileExistsInFolder = true;
                 return input;
             }
 
