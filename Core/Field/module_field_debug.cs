@@ -126,14 +126,14 @@ namespace OpenVIII
                 return;
             string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0);
             if (string.IsNullOrWhiteSpace(fieldArchiveName)) return;
-            int fieldLen = fieldArchiveName.Length - 3;
-            fieldArchiveName = fieldArchiveName.Substring(0, fieldLen);
             ArchiveWorker fieldArchive = aw.GetArchive(fieldArchiveName);
             string[] filelist = fieldArchive.GetListOfFiles();
             string findstr(string s) =>
                 filelist.FirstOrDefault(x => x.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
 
+#pragma warning disable CS8321 // Local function is declared but never used
             byte[] getfile(string s)
+#pragma warning restore CS8321 // Local function is declared but never used
             {
                 s = findstr(s);
                 if (!string.IsNullOrWhiteSpace(s))
@@ -141,12 +141,10 @@ namespace OpenVIII
                 else
                     return null;
             }
-            string mim = findstr(".mim");
-            string map = findstr(".map");
             string s_jsm = findstr(".jsm");
             string s_sy = findstr(".sy");
-            if (!string.IsNullOrWhiteSpace(mim) && !string.IsNullOrWhiteSpace(map))
-                ParseBackground(fieldArchive.GetBinaryFile(mim), fieldArchive.GetBinaryFile(map));
+            if (!ParseBackground(getfile(".mim"), getfile(".map")))
+                return;
             //let's start with scripts
             List<Jsm.GameObject> jsmObjects;
 
@@ -206,10 +204,10 @@ namespace OpenVIII
             return;
         }
 
-        private static void ParseBackground(byte[] mimb, byte[] mapb)
+        private static bool ParseBackground(byte[] mimb, byte[] mapb)
         {
             if (mimb == null || mapb == null)
-                return;
+                return false;
 
             int type1Width = 1664;
 
@@ -255,26 +253,33 @@ namespace OpenVIII
             Color[] finalOverlapImage = new Color[height * width];
             tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
             texOverlap = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
-            byte MaximumLayer = tiles.Max(x => x.layId);
-            byte MinimumLayer = tiles.Min(x => x.layId);
+            IOrderedEnumerable<byte> layers = tiles.Select(x => x.layId).Distinct().OrderBy(x => x);
+            byte MaximumLayer = layers.Max();
+            byte MinimumLayer = layers.Min();
+            IOrderedEnumerable<ushort> BufferDepth = tiles.Select(x => x.z).Distinct().OrderByDescending(x => x); // larger number is farther away.
 
-            List<ushort> BufferDepth = tiles.GroupBy(x => x.z).Select(group => group.First()).Select(x => x.z).ToList();
-            BufferDepth.Sort();
+            
 
-            for (int LayerId = 1; LayerId <= MaximumLayer + 1; LayerId++)
-            {
-                foreach (Tile tile in tiles)
+            foreach (ushort z in BufferDepth)
+                //foreach (byte layerID in layers)
+                    // i saw atleast one field look better checking the z and not layerid.
+                    //maybe once we start drawing this in 3d space it'll make more sense.
+                    // z is def important. I think layerID might be more for turning things on and off or moving things around.
+                    // So maybe in the end we can have things grouped by layer but drawn in z index order
+                    // I think the layers more control what we are to see like animation frames of elevators and such.
+                    // like all layers aren't ment to be drawn at all times.
+                    // Sky texture is drawing differently for dollet bridge and such like i guess it's supposed to be stretched.
+                    // or maybe the bridge just moves infront of the sky so it doesn't need to fill the space.
                 {
-                    if (LayerId != MaximumLayer + 1)
-                    {
-                        if (tile.layId != LayerId)
-                            continue;
-                        //if (tile.z != BufferDepth[LayerId])
-                        //    continue;
-                    }
-                    else
-                        if (tile.layId != 0)
-                        continue;
+                foreach (Tile tile in tiles.Where(x =>x.z ==z /*&& x.layId == layerID)*/))
+                {
+                    //if (tile.z != z)
+                    //    continue;
+                    //if (tile.z != BufferDepth[LayerId])
+                    //    continue;
+                    //else
+                    //if (LayerId != 0)
+                    //    continue;
 
                     int palettePointer = 4096 + ((tile.pallID) * 512);
                     int sourceImagePointer = 512 * palettees;
@@ -379,8 +384,10 @@ namespace OpenVIII
                     }
                 }
             }
+
             tex.SetData(finalImage);
             texOverlap.SetData(finalOverlapImage);
+            return true;
         }
 
         private static void DrawEntities() => throw new NotImplementedException();
