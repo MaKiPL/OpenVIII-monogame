@@ -897,7 +897,7 @@ namespace OpenVIII
         public static class FieldHolder
         {
             //public static string[] MapList;
-            public static ushort FieldID = 161;
+            public static ushort FieldID = 634;
 
             public static string[] fields;
             public static int[] FieldMemory;
