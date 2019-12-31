@@ -206,14 +206,16 @@ namespace OpenVIII
 
         public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
 
-        //public static object spritebatchlock = new object();
         public static void SpriteBatchStartStencil(SamplerState ss = null) =>
-            //lock (spritebatchlock)
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss, graphics.GraphicsDevice.DepthStencilState);
+
+            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss ?? SamplerState.PointClamp, graphics.GraphicsDevice.DepthStencilState);
+
+        public static void SpriteBatchStart(BlendState bs = null, SamplerState ss = null) =>
+
+    spriteBatch.Begin(SpriteSortMode.Deferred, bs ?? BlendState.AlphaBlend, ss ?? SamplerState.PointClamp, graphics.GraphicsDevice.DepthStencilState);
 
         public static void SpriteBatchStartAlpha(SpriteSortMode sortMode = SpriteSortMode.Deferred, SamplerState ss = null, Matrix? tm = null) =>
 
-            //lock (spritebatchlock)
             spriteBatch.Begin(sortMode: sortMode, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
 
         public static void SpriteBatchEnd() => spriteBatch.End();
@@ -227,6 +229,32 @@ namespace OpenVIII
             AlphaSourceBlend = Blend.SourceAlpha,
             AlphaDestinationBlend = Blend.DestinationAlpha,
             AlphaBlendFunction = BlendFunction.Add
+        };
+        /// <summary>
+        /// untested subtract.
+        /// </summary>
+        /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
+        public static readonly BlendState blendState_Subtract = new BlendState
+        {
+            ColorWriteChannels = ColorWriteChannels.Blue|ColorWriteChannels.Green|ColorWriteChannels.Red,
+            ColorSourceBlend = Blend.One,
+            //AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            //AlphaDestinationBlend = Blend.One,
+            ColorBlendFunction = BlendFunction.ReverseSubtract
+        };
+        /// <summary>
+        /// untested subtract.
+        /// </summary>
+        /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
+        public static readonly BlendState blendState_Add = new BlendState
+        {
+            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
+            ColorSourceBlend = Blend.One,
+            //AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            //AlphaDestinationBlend = Blend.One,
+            ColorBlendFunction = BlendFunction.Add
         };
 
         public static readonly BlendState blendState_forceDraw = new BlendState()
@@ -258,11 +286,11 @@ namespace OpenVIII
             if (!token.IsCancellationRequested)
                 Kernel_Bin = new Kernel_bin();
 
-            var tasks = new List<Task>();
-     
+            List<Task> tasks = new List<Task>();
+
             if (!token.IsCancellationRequested)
             {
-                // this has a soft requirement on kernel_bin. It checks for null so should work without it.                
+                // this has a soft requirement on kernel_bin. It checks for null so should work without it.
                 tasks.Add(Task.Run(() => { MItems = Items_In_Menu.Read(); }, token));
                 //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
                 //TODO allow chosing of which save folder to use.
@@ -273,12 +301,12 @@ namespace OpenVIII
                 {
                     //this initializes the fonts and drawing system- holds fonts in-memory
                     tasks.Add(Task.Run(() => { font = new Font(); }, token));
-                    // card images in menu.                              
+                    // card images in menu.
                     tasks.Add(Task.Run(() => { Cards = Cards.Load(); }, token));
 
-                    tasks.Add(Task.Run(() => { Card_Game = new Card.Game(); }, token));                        
+                    tasks.Add(Task.Run(() => { Card_Game = new Card.Game(); }, token));
 
-                    tasks.Add(Task.Run(() => { Faces = Faces.Load(); }, token));                        
+                    tasks.Add(Task.Run(() => { Faces = Faces.Load(); }, token));
 
                     tasks.Add(Task.Run(() => { Icons = Icons.Load(); }, token));
 
@@ -325,7 +353,6 @@ namespace OpenVIII
             Memory.content = content;
             Memory.FieldHolder.FieldMemory = new int[1024];
 
-
             FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
@@ -341,6 +368,7 @@ namespace OpenVIII
         public static bool IsMouseVisible { get; set; } = false;
 
         public static Saves.Data PrevState { get; set; }
+
         public static Saves.Data State
         {
             get => _state; set
@@ -846,6 +874,7 @@ namespace OpenVIII
         /// </summary>
         /// <remarks>creates global random class for all sort of things</remarks>
         public static Random Random = null;
+
         public static int Year = 2013; // need to dynamicly detect if 2000/2013/2019, maybe need 2000 1.2 as well.
 
         #endregion DrawPointMagic
@@ -853,9 +882,9 @@ namespace OpenVIII
         public static void Update()
         {
             Action a = null;
-            while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a)?? false))
+            while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a) ?? false))
             { a.Invoke(); }
-            for (int i = 0; IsMainThread && i< LeftOverTask.Count; i++)
+            for (int i = 0; IsMainThread && i < LeftOverTask.Count; i++)
             {
                 if (LeftOverTask[i].IsCompleted)
                 {
