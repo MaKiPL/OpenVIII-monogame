@@ -31,7 +31,7 @@ namespace OpenVIII
 
         //private static Texture2D tex;
         //private static Texture2D texOverlap;
-        private static ConcurrentDictionary<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>> Textures;
+        private static ConcurrentDictionary<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>> Textures;
 
         private static EventEngine eventEngine;
         private static IServices services;
@@ -39,6 +39,8 @@ namespace OpenVIII
 
         private class Tile
         {
+            public const int size = 16;
+
             /// <summary>
             /// Distance from left side
             /// </summary>
@@ -76,10 +78,42 @@ namespace OpenVIII
             public byte AnimationState;
             public byte AnimationID;
             public byte blend1;
-            public byte blend2;
+            public byte Depth;
             public float Zfloat => Z / 4096f;
             public int TileID;
-
+            public bool Is8Bit => Depth >= 4;
+            public bool Is4Bit => Depth < 4;
+            /// <summary>
+            /// Gets +1 if Overlaps() == true;
+            /// </summary>
+            public byte OverLapID = 0;
+            //public byte[] PaletteID4Bit => new byte[] {  };
+            private uint pupuID;
+            /// <summary>
+            /// Pupu goes in a loop and +1 the id when it detects an overlap.
+            /// There are some wasted bits
+            /// </summary>
+            public uint PupuID
+            {
+                get
+                {
+                    if(pupuID ==0)
+                        pupuID = (uint)(((uint)(LayerID) << 24) + (((uint)BlendMode & 0x2) << 20) + ((uint)AnimationID << 12) + ((uint)(AnimationState & 0xF) << 4));
+                    return pupuID;
+                }
+                set => pupuID = value;
+            }
+            public bool Overlaps(Tile tile,bool rev = false) =>
+                (!rev && tile.Overlaps(this,!rev)) ||
+                X >= tile.X &&
+                X < tile.X + size &&
+                Y >= tile.Y &&
+                Y < tile.Y + size &&
+                Z == tile.Z &&
+                LayerID == tile.LayerID &&
+                BlendMode == tile.BlendMode &&
+                AnimationID == tile.AnimationID && 
+                AnimationState == tile.AnimationState;
             public static implicit operator Vector3(Tile @in) => new Vector3(@in.X, @in.Y, @in.Zfloat);
         }
 
@@ -106,7 +140,13 @@ namespace OpenVIII
 
         public static void ResetField() => mod = Field_mods.INIT;
 
-        private static List<KeyValuePair<BlendMode, Texture2D>> drawtextures() => Textures.OrderByDescending(x => x.Key).SelectMany(x => x.Value.OrderBy(y => y.Key).SelectMany(y => y.Value)).ToList();
+        private static List<KeyValuePair<BlendMode, Texture2D>> drawtextures() => 
+            Textures.OrderByDescending(kvp_Z => kvp_Z.Key)
+            .SelectMany(kvp_LayerID => kvp_LayerID.Value.OrderBy(x=>kvp_LayerID.Key)
+            .SelectMany(kvp_AnimationID => kvp_AnimationID.Value.OrderBy(x => kvp_AnimationID.Key))
+            .SelectMany(kvp_AnimationState => kvp_AnimationState.Value.OrderBy(x => kvp_AnimationState.Key))
+            .SelectMany(kvp_OverlapID => kvp_OverlapID.Value.OrderBy(x=> kvp_OverlapID.Key))
+            .SelectMany(kvp_BlendMode => kvp_BlendMode.Value)).ToList();
 
         private static void DrawDebug()
         {
@@ -131,12 +171,10 @@ namespace OpenVIII
                             break;
 
                         case BlendMode.halfadd:
-                            //alpha = .5f; // not right but may work okay lets see.
                             Memory.SpriteBatchStart(bs: Memory.blendState_Add);
                             break;
 
                         case BlendMode.quarteradd:
-                            //alpha = .25f; //not right but may work okay lets see.
                             Memory.SpriteBatchStart(bs: Memory.blendState_Add);
                             break;
 
@@ -145,8 +183,6 @@ namespace OpenVIII
                             break;
 
                         case BlendMode.subtract:
-                            //open = false;
-                            //continue; // isn't working. unsure why.
                             alpha = .9f;
                             Memory.SpriteBatchStart(bs: Memory.blendState_Subtract);
                             break;
@@ -385,26 +421,24 @@ namespace OpenVIII
                     tile.Z = pbsmap.ReadUInt16();// (ushort)(4096 - pbsmap.ReadUShort());
                     byte texIdBuffer = pbsmap.ReadByte();
                     tile.TextureID = (byte)(texIdBuffer & 0xF);
+                   // pbsmap.BaseStream.Seek(-1, SeekOrigin.Current);
                     pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
-                    //short testz = pbsmap.ReadShort();
-                    //testz = (short)(testz >> 6);
-                    //testz &= 0xF;
                     tile.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
                     tile.SourceX = pbsmap.ReadByte();
                     tile.SourceY = pbsmap.ReadByte();
-                    tile.LayerID = (byte)(pbsmap.ReadByte() & 0x7F);
+                    tile.LayerID = (byte)(pbsmap.ReadByte() >> 1/*& 0x7F*/);
                     tile.BlendMode = (BlendMode)pbsmap.ReadByte();
                     tile.AnimationID = pbsmap.ReadByte();
                     tile.AnimationState = pbsmap.ReadByte();
                     tile.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
-                    tile.blend2 = (byte)(texIdBuffer >> 5);
+                    tile.Depth = (byte)(texIdBuffer >> 5);
                     tile.TileID = tiles.Count;
                     tiles.Add(tile);
-                    if ((Memory.EnableDumpingData) && tile.blend2 < 4)
+                    if ((Memory.EnableDumpingData) && tile.Depth < 4)
                     {
                         string path = Path.Combine(Path.GetTempPath(), "Fields", Memory.FieldHolder.FieldID.ToString());
                         Directory.CreateDirectory(path);
-                        path = Path.Combine(path, $"SkipTile.{Memory.FieldHolder.FieldID}.{tiles.Count - 1}.{tile.blend2}.bin");
+                        path = Path.Combine(path, $"SkipTile.{Memory.FieldHolder.FieldID}.{tiles.Count - 1}.{tile.Depth}.bin");
                         if (!File.Exists(path))
                             using (BinaryWriter bw = new BinaryWriter(new FileStream(
                                 path,
@@ -416,7 +450,6 @@ namespace OpenVIII
                     }
                     //srcY = srcX == texID * 128 + srcX;
                 }
-
             int lowestY = tiles.Min(x => x.Y);
             int maximumY = tiles.Max(x => x.Y);
             int lowestX = tiles.Min(x => x.X); //-160;
@@ -429,19 +462,36 @@ namespace OpenVIII
                                                              //tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
                                                              //texOverlap = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
             IOrderedEnumerable<byte> layers = tiles.Select(x => x.LayerID).Distinct().OrderBy(x => x);
+            Debug.WriteLine($"FieldID: {Memory.FieldHolder.FieldID}, Layers: {layers.Count()}, ({string.Join(",", layers.ToArray())}) ");
             byte MaximumLayer = layers.Max();
             byte MinimumLayer = layers.Min();
             IOrderedEnumerable<ushort> BufferDepth = tiles.Select(x => x.Z).Distinct().OrderByDescending(x => x); // larger number is farther away.
-            var sortedtiles = tiles.OrderByDescending(x => x.Z).ThenBy(x => x.LayerID).ThenBy(x => x.BlendMode).ThenBy(x => x.Y).ThenBy(x => x.X).ToList();
-
+            var overlapIssues = (from t1 in tiles
+                          from t2 in tiles
+                          where t1 != t2
+                          where t1.TileID < t2.TileID
+                          where t1.BlendMode == BlendMode.none
+                          where t1.Overlaps(t2)
+                          orderby t1.TileID,t2.TileID ascending
+                          select new [] {t1,t2}      
+                          ).Distinct().ToList();
+            foreach(var overlappingTiles in overlapIssues)
+            {
+                overlappingTiles[1].OverLapID = checked((byte)(overlappingTiles[0].OverLapID + 1));
+            }
+            var sortedtiles = tiles.OrderBy(x => x.OverLapID).ThenByDescending(x => x.Z).ThenBy(x => x.LayerID).ThenBy(x => x.AnimationID).ThenBy(x => x.AnimationState).ThenBy(x => x.BlendMode).ToList();
+            //var issues = titles.Where(k => (k.X >= tile.X && k.X < tile.X + 16) && (k.Y >= tile.Y && k.Y < tile.Y + 16) && k.Z == tile.Z && k.LayerID == tile.LayerID && k.AnimationID == tile.AnimationID && k.AnimationState == tile.AnimationState).ToList();
             if (Textures != null)
             {
                 foreach (Texture2D tex in drawtextures().Select(x => x.Value))
                     tex.Dispose();
             }
-            Textures = new ConcurrentDictionary<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>();
+            Textures = new ConcurrentDictionary<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>>();
             ushort z = 0;
             byte layerID = 0;
+            byte animationID = 0;
+            byte animationState = 0;
+            byte overlapID = 0;
             BlendMode blendmode = BlendMode.none;
             TextureBuffer texturebuffer = null;
             bool hasColor = false;
@@ -449,9 +499,12 @@ namespace OpenVIII
             {
                 if (!hasColor || texturebuffer == null) return;
                 hasColor = false;
-                ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>> dictlayers = Textures.GetOrAdd(z, new ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>());
-                ConcurrentDictionary<BlendMode, Texture2D> dictblend = dictlayers.GetOrAdd(layerID, new ConcurrentDictionary<BlendMode, Texture2D>());
-                Texture2D tex = dictblend.GetOrAdd(blendmode, new Texture2D(Memory.graphics.GraphicsDevice, Width, Height));
+                var dictLayerID = Textures.GetOrAdd(z, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>());
+                var dictAnimationID = dictLayerID.GetOrAdd(layerID, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>());
+                var dictAnimationState = dictAnimationID.GetOrAdd(animationID, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>());
+                var dictOverlapID = dictAnimationState.GetOrAdd(animationState, new ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>());
+                var dictblend = dictOverlapID.GetOrAdd(overlapID, new ConcurrentDictionary<BlendMode, Texture2D>());
+                var tex = dictblend.GetOrAdd(blendmode, new Texture2D(Memory.graphics.GraphicsDevice, Width, Height));
                 texturebuffer.SetData(tex);
             }
             for (int i = 0; i < sortedtiles.Count; i++)
@@ -461,16 +514,23 @@ namespace OpenVIII
                 if (texturebuffer == null || previousTile == null ||
                     (previousTile.Z != tile.Z ||
                     previousTile.LayerID != tile.LayerID ||
-                    previousTile.BlendMode != tile.BlendMode))
+                    previousTile.BlendMode != tile.BlendMode ||
+                    previousTile.AnimationID != tile.AnimationID ||
+                    previousTile.AnimationState != tile.AnimationState ||
+                    previousTile.OverLapID != tile.OverLapID))
                 {
                     convertColorToTexture2d();
                     texturebuffer = new TextureBuffer(Width, Height);
                     z = tile.Z;
                     layerID = tile.LayerID;
                     blendmode = tile.BlendMode;
+                    animationID = tile.AnimationID;
+                    animationState = tile.AnimationState;
+                    overlapID = tile.OverLapID;
                 }
 
-                const int bytesPerPalette = 2 * 256; //16 bit color (2 bytes) * 256 colors
+                const int colorsPerPalette = 256;
+                const int bytesPerPalette = 2 * colorsPerPalette; //16 bit color (2 bytes) * 256 colors
                 int palettePointer = 4096 + ((tile.PaletteID) * bytesPerPalette);
                 int sourceImagePointer = bytesPerPalette * palettes;
 
@@ -478,7 +538,7 @@ namespace OpenVIII
                 int realY = Math.Abs(lowestY) + tile.Y; //*width
                 int realDestinationPixel = ((realY * Width) + realX);
 
-                if (tile.blend2 >= 4)
+                if (tile.Is8Bit)
                 {
                     Rectangle dst = new Rectangle(realX, realY, tilesize, tilesize);
                     const int texturewidth = 128;
@@ -516,7 +576,6 @@ namespace OpenVIII
                             }
                             else if (bufferedcolor != Color.TransparentBlack)
                             {
-                                var issues = sortedtiles.Where(k => (k.X >= tile.X && k.X < tile.X+16) && (k.Y >= tile.Y && k.Y < tile.Y + 16) && k.Z == tile.Z && k.LayerID == tile.LayerID).ToList();
                                 throw new Exception("Color is already set something may be wrong.");
                             }
                             color.A = 0xFF;
@@ -524,7 +583,7 @@ namespace OpenVIII
                             hasColor = true;
                         }
                 }
-                else
+                else // 4 bit colors.
                 {
                     //So there are tiles being skipped unsure why yet.
                     //if(tile.blend2 !=2 && tile.blend2 != 1&& tile.blend2 != 0&& tile.blend2 !=3)
@@ -585,18 +644,21 @@ namespace OpenVIII
 
         private static void SaveTextures()
         {
-            if (Memory.EnableDumpingData || true)
+            if (Memory.EnableDumpingData)
             {
                 //List<KeyValuePair<BlendModes, Texture2D>> _drawtextures = drawtextures();
-                foreach (KeyValuePair<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>> zv in Textures)
-                    foreach (KeyValuePair<byte, ConcurrentDictionary<BlendMode, Texture2D>> layer in zv.Value)
-                        foreach (KeyValuePair<BlendMode, Texture2D> kvp in layer.Value)
+                foreach (var kvp_Z in Textures)
+                    foreach (var kvp_Layer in kvp_Z.Value)
+                        foreach (var kvp_AnimationID in kvp_Layer.Value)
+                            foreach (var kvp_AnimationState in kvp_AnimationID.Value)
+                                foreach(var kvp_OverlapID in kvp_AnimationState.Value)
+                                foreach (KeyValuePair<BlendMode, Texture2D> kvp in kvp_OverlapID.Value)
                         {
                             string path = Path.Combine(Path.GetTempPath(), "Fields", Memory.FieldHolder.FieldID.ToString());
                             Directory.CreateDirectory(path);
                             kvp.Value.SaveAsPng(
                                 new FileStream(Path.Combine(path,
-                                $"Field.{Memory.FieldHolder.FieldID}.{zv.Key.ToString("D4")}.{layer.Key.ToString("D2")}.{(int)kvp.Key}.png"),
+                                $"Field.{Memory.FieldHolder.FieldID}.{kvp_Z.Key.ToString("D4")}.{kvp_Layer.Key}.{kvp_AnimationID.Key}.{kvp_AnimationState.Key}.{kvp_OverlapID.Key}.{(int)kvp.Key}.png"),
                                 FileMode.Create, FileAccess.Write, FileShare.ReadWrite),
                                 kvp.Value.Width, kvp.Value.Height);
                         }
