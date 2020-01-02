@@ -11,11 +11,10 @@ using System.Linq;
 namespace OpenVIII
 {
     //issues found.
-    //634 //mismatch tiles
-    //726 //mismatch tiles
-    //809 //mismatch tiles
-    //880 //mismatch tiles
+    //558 //color looks off on glow. with purple around it.
     //267 //text showing with white background.
+    //pupu states that there is are 2 widths of the texture for Type1 and Type2
+    //we are only using 1 so might be reading the wrong pixels somewhere.
     public static class Module_field_debug
     {
         public enum BlendMode : byte
@@ -107,18 +106,36 @@ namespace OpenVIII
                 set => pupuID = value;
             }
 
-            public bool Overlaps(Tile tile, bool rev = false) =>
-                (!rev && tile.Overlaps(this, !rev)) ||
-                X >= tile.X &&
-                X < tile.X + size &&
-                Y >= tile.Y &&
-                Y < tile.Y + size &&
-                Z == tile.Z &&
-                LayerID == tile.LayerID &&
-                BlendMode == tile.BlendMode &&
-                AnimationID == tile.AnimationID &&
-                AnimationState == tile.AnimationState;
+            public Rectangle Intersection { get => intersection; private set => intersection = value; }
 
+            private Rectangle intersection;
+
+            public bool Intersect(Tile tile, bool rev = false)
+            {
+                bool ret = Intersect(tile, out intersection, rev);
+                tile.Intersection = Intersection;
+                return ret;
+            }
+
+            public bool Intersect(Tile tile, out Rectangle intersection , bool rev = false)
+            {
+                intersection = Rectangle.Empty;
+                bool flip = !rev && tile.Intersect(this, out intersection, !rev);
+                bool ret = flip ||
+                    X >= tile.X &&
+                    X < tile.X + size &&
+                    Y >= tile.Y &&
+                    Y < tile.Y + size &&
+                    Z == tile.Z &&
+                    LayerID == tile.LayerID &&
+                    BlendMode == tile.BlendMode &&
+                    AnimationID == tile.AnimationID &&
+                    AnimationState == tile.AnimationState;
+                if (!flip && ret)
+                    intersection = Rectangle.Intersect(GetRectangle(), tile.GetRectangle());
+                return ret;
+            }
+            public Rectangle GetRectangle() => new Rectangle(X, Y, size, size);
             public static implicit operator Vector3(Tile @in) => new Vector3(@in.X, @in.Y, @in.Zfloat);
         }
 
@@ -487,16 +504,17 @@ namespace OpenVIII
                                           where t1 != t2
                                           where t1.TileID < t2.TileID
                                           where t1.BlendMode == BlendMode.none
-                                          where t1.Overlaps(t2)
+                                          where t1.Intersect(t2)
                                           orderby t1.TileID, t2.TileID ascending
                                           select new[] { t1, t2 }
                           ).Distinct().ToList();
             foreach (Tile[] overlappingTiles in overlapIssues)
             {
+                //if want pixel perfect test colors here.
                 overlappingTiles[1].OverLapID = checked((byte)(overlappingTiles[0].OverLapID + 1));
             }
             List<Tile> sortedtiles = tiles.OrderBy(x => x.OverLapID).ThenByDescending(x => x.Z).ThenBy(x => x.LayerID).ThenBy(x => x.AnimationID).ThenBy(x => x.AnimationState).ThenBy(x => x.BlendMode).ToList();
-            //var issues = titles.Where(k => (k.X >= tile.X && k.X < tile.X + 16) && (k.Y >= tile.Y && k.Y < tile.Y + 16) && k.Z == tile.Z && k.LayerID == tile.LayerID && k.AnimationID == tile.AnimationID && k.AnimationState == tile.AnimationState).ToList();
+            
             if (Textures != null)
             {
                 foreach (Texture2D tex in drawtextures().Select(x => x.Value))
