@@ -172,7 +172,7 @@ namespace OpenVIII.IGMData
                 { Ditems.Movie, ()=> {
                     Menu.FadeIn();
                     Memory.module = MODULE.MOVIETEST;
-                    Module_movie_test.MovieState = 0;
+                    Module_movie_test.Play();
                     Memory.IsMouseVisible = false;
                     return true;
                 }  },
@@ -232,7 +232,7 @@ namespace OpenVIII.IGMData
                     if(Module_movie_test.Index>0)
                         Module_movie_test.Index--;
                     else
-                        Module_movie_test.Index = Module_movie_test.Movies.Count - 1;
+                        Module_movie_test.Index = Movie.Files.Count - 1;
                     return true;
                 }  },
                 { Ditems.Music, ()=> {
@@ -268,7 +268,7 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
                 { Ditems.Movie, ()=> {
-                    if(Module_movie_test.Index<Module_movie_test.Movies.Count - 1)
+                    if(Module_movie_test.Index<Movie.Files.Count - 1)
                         Module_movie_test.Index++;
                     else
                         Module_movie_test.Index = 0;
@@ -295,11 +295,12 @@ namespace OpenVIII.IGMData
                 { Ditems.Battle, ()=> {return strDebugLobby[Ditems.Battle].Clone().Append(Memory.battle_encounter.ToString("D4")); } },
                 { Ditems.Field, ()=> {return strDebugLobby[Ditems.Field].Clone().Append(Memory.FieldHolder.FieldID.ToString("D3")); } },
                 { Ditems.Movie, ()=> {
-                    if (Module_movie_test.Movies.Count<=Module_movie_test.Index)
+                    if (Movie.Files.Count<=Module_movie_test.Index)
                         Module_movie_test.Index=0;
-                    if(Module_movie_test.Movies.Count ==0)
+                    if(Movie.Files.Count ==0)
                         return "";
-                    return strDebugLobby[Ditems.Movie].Clone().Append(Path.GetFileNameWithoutExtension(Module_movie_test.Movies[Module_movie_test.Index])); } },
+                    Movie.Files Files;
+                    return strDebugLobby[Ditems.Movie].Clone().Append(Path.GetFileNameWithoutExtension(Files[Module_movie_test.Index])); } },
                 { Ditems.Music, ()=> {return strDebugLobby[Ditems.Music].Clone().Append(Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0])); } },
                 { Ditems.Sounds, ()=> {return strDebugLobby[Ditems.Sounds].Clone().Append(debug_choosedAudio.ToString("D4")); } }
             };

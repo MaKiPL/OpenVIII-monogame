@@ -10,16 +10,16 @@ using DirectMidi;
 
 using System.Diagnostics;
 
-namespace OpenVIII
+namespace OpenVIII.AV.Midi
 {
     /// <summary>
     /// Direct Music
     /// </summary>
     /// <see cref="http://directmidi.sourceforge.net/"/>
     /// <seealso cref="http://directmidinet.sourceforge.net/"/>
-    public sealed class DM_Midi : IDisposable
+    public sealed class DirectMedia : IDisposable
     {
-#if _WINDOWS && !_X64
+#if _WINDOWS && (_X86 || !_X64)
         private CDirectMusic cdm;
         private CDLSLoader loader;
         private CSegment segment;

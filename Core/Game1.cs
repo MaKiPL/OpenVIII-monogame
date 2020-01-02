@@ -39,8 +39,6 @@ namespace OpenVIII
             FieldInitializer.Init(); //this initializes the field module, it's worth to have this at the beginning
             Init_debugger_battle.Init(); //this initializes the encounters
 
-            Module_movie_test.Init();
-
             base.Initialize();
         }
 

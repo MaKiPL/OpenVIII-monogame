@@ -7,11 +7,11 @@ namespace OpenVIII
     {
         Boolean IsSupported { get; }
         
-        void AddScreenColor(Color rgbColor);
-        void SubScreenColor(Color rgbColor);
+        void AddScreenColor(Color Color);
+        void SubScreenColor(Color Color);
 
-        void AddScreenColorTransition(Color rgbColor, Color offset, Int32 transitionDuration);
-        void SubScreenColorTransition(Color rgbColor, Color offset, Int32 transitionDuration);
+        void AddScreenColorTransition(Color Color, Color offset, Int32 transitionDuration);
+        void SubScreenColorTransition(Color Color, Color offset, Int32 transitionDuration);
         IAwaitable Wait();
         
         Int32 BackgroundFPS { get; set; }

@@ -12,8 +12,8 @@ namespace OpenVIII
     public static class init_debugger_Audio
 #pragma warning restore IDE1006 // Naming Styles
     {
-        private static DM_Midi dm_Midi;
-        private static Fluid_Midi fluid_Midi;
+        private static AV.Midi.DirectMedia dm_Midi;
+        private static AV.Midi.Fluid fluid_Midi;
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct SoundEntry
@@ -83,7 +83,7 @@ namespace OpenVIII
         /// SoundEffectInstance added to ffcc, and have those sounds be played like music where they
         /// loop in the background till stop.
         /// </summary>
-        public static Ffcc[] SoundChannels { get; } = new Ffcc[MaxSoundChannels];
+        public static AV.Audio[] SoundChannels { get; } = new AV.Audio[MaxSoundChannels];
 
         public static int CurrentSoundChannel
         {
@@ -241,16 +241,18 @@ namespace OpenVIII
         /// </para>
         /// </param>
         /// <param name="loop">If loop, sound will loop from the set sample number.</param>
-        public static Ffcc PlaySound(int soundID, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f, bool persist = false, bool loop = false)
+        public static AV.Audio PlaySound(int soundID, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f, bool persist = false, bool loop = false)
         {
             if (soundEntries == null || soundEntries[soundID].Size == 0)
             {
                 return null;
             }
-            Ffcc ffcc = FfAudio.Play(
-                new Ffcc.Buffer_Data { DataSeekLoc = soundEntries[soundID].Offset, DataSize = soundEntries[soundID].Size, HeaderSize = (uint)soundEntries[soundID].HeaderData.Length },
-                soundEntries[soundID].HeaderData,
-                Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat"), loop ? 0 : -1);
+            AV.Audio ffcc = AV.Audio.Play(
+                new AV.BufferData {
+                    DataSeekLoc = soundEntries[soundID].Offset,
+                    DataSize = soundEntries[soundID].Size,
+                    HeaderSize = (uint)soundEntries[soundID].HeaderData.Length,},
+                soundEntries[soundID].HeaderData, loop ? 0 : -1);
             if (!persist)
                 SoundChannels[CurrentSoundChannel++] = ffcc;
             ffcc.Play(volume, pitch, pan);
@@ -333,7 +335,7 @@ namespace OpenVIII
             }
         }
 
-        private static Ffcc ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
+        private static AV.Audio ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
         private static int _currentSoundChannel;
 
         public static void PlayMusic(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f, bool loop = true)
@@ -362,7 +364,7 @@ namespace OpenVIII
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
-                    ffccMusic = FfAudio.Create(pt, loop ? 0 : -1);
+                    ffccMusic = AV.Audio.Load(pt, loop ? 0 : -1);
                     if (!loop)
                         ffccMusic.LOOPSTART = -1;
                     ffccMusic.PlayInTask(volume, pitch, pan);
@@ -371,7 +373,7 @@ namespace OpenVIII
                 case ".sgt":
 #if _X64
                     if (fluid_Midi == null)
-                        fluid_Midi = new Fluid_Midi();
+                        fluid_Midi = new AV.Midi.Fluid();
                     fluid_Midi.ReadSegmentFileManually(pt);
                     fluid_Midi.Play();
 #else
@@ -384,7 +386,7 @@ namespace OpenVIII
                     else
                     {
                         if (dm_Midi == null)
-                            dm_Midi = new DM_Midi();
+                            dm_Midi = new AV.Midi.DirectMedia();
                         dm_Midi.Play(pt,loop);
                     }
 #endif

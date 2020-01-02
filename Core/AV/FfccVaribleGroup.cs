@@ -1,13 +1,10 @@
-﻿using FFmpeg.AutoGen;
-using System;
-
-
-
-namespace OpenVIII
+﻿namespace OpenVIII.AV
 {
+    using FFmpeg.AutoGen;
+    using System;
+
     public class FfccVaribleGroup : IDisposable
     {
-
         #region Fields
 
         public unsafe AVCodec* _codec;
@@ -44,12 +41,12 @@ namespace OpenVIII
         #region Properties
 
         /// <summary>
-        /// Codec 
+        /// Codec
         /// </summary>
         public unsafe AVCodec* Codec { get => _codec; set => _codec = value; }
 
         /// <summary>
-        /// CodecContext 
+        /// CodecContext
         /// </summary>
         public unsafe AVCodecContext* CodecContext { get => _codecContext; set => _codecContext = value; }
 
@@ -57,8 +54,9 @@ namespace OpenVIII
         /// Format holds alot of file info. File is opened and data about it is stored here.
         /// </summary>
         public unsafe AVFormatContext* Format { get => _format; set => _format = value; }
+
         /// <summary>
-        /// Frame holds a chunk of data related to the current stream. 
+        /// Frame holds a chunk of data related to the current stream.
         /// </summary>
         public unsafe AVFrame* Frame { get => _frame; set => _frame = value; }
 
@@ -66,6 +64,7 @@ namespace OpenVIII
         /// Packet of data can contain 1 or more frames.
         /// </summary>
         public unsafe AVPacket* Packet { get => _packet; set => _packet = value; }
+
         /// <summary>
         /// Current Stream based on index
         /// </summary>
@@ -75,6 +74,7 @@ namespace OpenVIII
         /// Set Stream Index typically 0 is video 1 is audio, unless no video then 0 is audio. -1 for no stream of type.
         /// </summary>
         public int StreamIndex { get; set; }
+
         /// <summary>
         /// Type of current Stream.
         /// </summary>
@@ -90,7 +90,7 @@ namespace OpenVIII
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
-             GC.SuppressFinalize(this);
+            GC.SuppressFinalize(this);
         }
 
         protected virtual unsafe void Dispose(bool disposing)
