@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace OpenVIII
 {
@@ -6,11 +7,11 @@ namespace OpenVIII
     {
         Boolean IsSupported { get; }
         
-        void AddScreenColor(RGBColor rgbColor);
-        void SubScreenColor(RGBColor rgbColor);
+        void AddScreenColor(Color rgbColor);
+        void SubScreenColor(Color rgbColor);
 
-        void AddScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration);
-        void SubScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration);
+        void AddScreenColorTransition(Color rgbColor, Color offset, Int32 transitionDuration);
+        void SubScreenColorTransition(Color rgbColor, Color offset, Int32 transitionDuration);
         IAwaitable Wait();
         
         Int32 BackgroundFPS { get; set; }

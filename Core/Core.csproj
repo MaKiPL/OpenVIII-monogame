@@ -171,6 +171,7 @@
     <Compile Include="CountDown.cs" />
     <Compile Include="FfAudio.cs" />
     <Compile Include="FfVideo.cs" />
+    <Compile Include="Field\Tile.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
     <Compile Include="Image\Texture_Base.cs" />
@@ -287,7 +288,6 @@
     <Compile Include="Field\Core\MusicId.cs" />
     <Compile Include="Field\Core\MusicName.cs" />
     <Compile Include="Field\Core\NamedEntity.cs" />
-    <Compile Include="Field\Core\RGBColor.cs" />
     <Compile Include="Field\Core\ScriptResultId.cs" />
     <Compile Include="Field\Core\Services\Implementation\FieldService.cs" />
     <Compile Include="Field\Core\Services\Implementation\GameplayService.cs" />
