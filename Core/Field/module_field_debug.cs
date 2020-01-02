@@ -83,12 +83,15 @@ namespace OpenVIII
             public int TileID;
             public bool Is8Bit => Depth >= 4;
             public bool Is4Bit => !Is8Bit;
+
             /// <summary>
             /// Gets +1 if Overlaps() == true;
             /// </summary>
             public byte OverLapID = 0;
+
             //public byte[] PaletteID4Bit => new byte[] {  };
             private uint pupuID;
+
             /// <summary>
             /// Pupu goes in a loop and +1 the id when it detects an overlap.
             /// There are some wasted bits
@@ -97,14 +100,15 @@ namespace OpenVIII
             {
                 get
                 {
-                    if(pupuID ==0)
-                        pupuID = (uint)(((uint)(LayerID) << 24) + (((uint)BlendMode & 0x2) << 20) + ((uint)AnimationID << 12) + ((uint)(AnimationState & 0xF) << 4));
+                    if (pupuID == 0)
+                        pupuID = ((uint)(LayerID) << 24) + (((uint)BlendMode & 0x2) << 20) + ((uint)AnimationID << 12) + ((uint)(AnimationState & 0xF) << 4);
                     return pupuID;
                 }
                 set => pupuID = value;
             }
-            public bool Overlaps(Tile tile,bool rev = false) =>
-                (!rev && tile.Overlaps(this,!rev)) ||
+
+            public bool Overlaps(Tile tile, bool rev = false) =>
+                (!rev && tile.Overlaps(this, !rev)) ||
                 X >= tile.X &&
                 X < tile.X + size &&
                 Y >= tile.Y &&
@@ -112,8 +116,9 @@ namespace OpenVIII
                 Z == tile.Z &&
                 LayerID == tile.LayerID &&
                 BlendMode == tile.BlendMode &&
-                AnimationID == tile.AnimationID && 
+                AnimationID == tile.AnimationID &&
                 AnimationState == tile.AnimationState;
+
             public static implicit operator Vector3(Tile @in) => new Vector3(@in.X, @in.Y, @in.Zfloat);
         }
 
@@ -140,12 +145,12 @@ namespace OpenVIII
 
         public static void ResetField() => mod = Field_mods.INIT;
 
-        private static List<KeyValuePair<BlendMode, Texture2D>> drawtextures() => 
+        private static List<KeyValuePair<BlendMode, Texture2D>> drawtextures() =>
             Textures.OrderByDescending(kvp_Z => kvp_Z.Key)
-            .SelectMany(kvp_LayerID => kvp_LayerID.Value.OrderBy(x=>kvp_LayerID.Key)
+            .SelectMany(kvp_LayerID => kvp_LayerID.Value.OrderBy(x => kvp_LayerID.Key)
             .SelectMany(kvp_AnimationID => kvp_AnimationID.Value.OrderBy(x => kvp_AnimationID.Key))
             .SelectMany(kvp_AnimationState => kvp_AnimationState.Value.OrderBy(x => kvp_AnimationState.Key))
-            .SelectMany(kvp_OverlapID => kvp_OverlapID.Value.OrderBy(x=> kvp_OverlapID.Key))
+            .SelectMany(kvp_OverlapID => kvp_OverlapID.Value.OrderBy(x => kvp_OverlapID.Key))
             .SelectMany(kvp_BlendMode => kvp_BlendMode.Value)).ToList();
 
         private static void DrawDebug()
@@ -398,21 +403,24 @@ namespace OpenVIII
                 }
             }
         }
+
         /// <summary>
         /// Width texture for type 1 and 4
         /// </summary>
-        const int type1Width = 1664;
+        private const int type1Width = 1664;
+
         /// <summary>
         /// Width texture for type 2 and 3.
         /// </summary>
-        const int type2Width = 1536;
+        private const int type2Width = 1536;
+
         private static bool Is4Bit = false;
+
         private static bool ParseBackground(byte[] mimb, byte[] mapb)
         {
             Is4Bit = false;
             if (mimb == null || mapb == null)
                 return false;
-
 
             tiles = new List<Tile>();
             int palettes = 24;
@@ -429,7 +437,7 @@ namespace OpenVIII
                     tile.Z = pbsmap.ReadUInt16();// (ushort)(4096 - pbsmap.ReadUShort());
                     byte texIdBuffer = pbsmap.ReadByte();
                     tile.TextureID = (byte)(texIdBuffer & 0xF);
-                   // pbsmap.BaseStream.Seek(-1, SeekOrigin.Current);
+                    // pbsmap.BaseStream.Seek(-1, SeekOrigin.Current);
                     pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
                     tile.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
                     tile.SourceX = pbsmap.ReadByte();
@@ -474,20 +482,20 @@ namespace OpenVIII
             byte MaximumLayer = layers.Max();
             byte MinimumLayer = layers.Min();
             IOrderedEnumerable<ushort> BufferDepth = tiles.Select(x => x.Z).Distinct().OrderByDescending(x => x); // larger number is farther away.
-            var overlapIssues = (from t1 in tiles
-                          from t2 in tiles
-                          where t1 != t2
-                          where t1.TileID < t2.TileID
-                          where t1.BlendMode == BlendMode.none
-                          where t1.Overlaps(t2)
-                          orderby t1.TileID,t2.TileID ascending
-                          select new [] {t1,t2}      
+            List<Tile[]> overlapIssues = (from t1 in tiles
+                                          from t2 in tiles
+                                          where t1 != t2
+                                          where t1.TileID < t2.TileID
+                                          where t1.BlendMode == BlendMode.none
+                                          where t1.Overlaps(t2)
+                                          orderby t1.TileID, t2.TileID ascending
+                                          select new[] { t1, t2 }
                           ).Distinct().ToList();
-            foreach(var overlappingTiles in overlapIssues)
+            foreach (Tile[] overlappingTiles in overlapIssues)
             {
                 overlappingTiles[1].OverLapID = checked((byte)(overlappingTiles[0].OverLapID + 1));
             }
-            var sortedtiles = tiles.OrderBy(x => x.OverLapID).ThenByDescending(x => x.Z).ThenBy(x => x.LayerID).ThenBy(x => x.AnimationID).ThenBy(x => x.AnimationState).ThenBy(x => x.BlendMode).ToList();
+            List<Tile> sortedtiles = tiles.OrderBy(x => x.OverLapID).ThenByDescending(x => x.Z).ThenBy(x => x.LayerID).ThenBy(x => x.AnimationID).ThenBy(x => x.AnimationState).ThenBy(x => x.BlendMode).ToList();
             //var issues = titles.Where(k => (k.X >= tile.X && k.X < tile.X + 16) && (k.Y >= tile.Y && k.Y < tile.Y + 16) && k.Z == tile.Z && k.LayerID == tile.LayerID && k.AnimationID == tile.AnimationID && k.AnimationState == tile.AnimationState).ToList();
             if (Textures != null)
             {
@@ -507,17 +515,17 @@ namespace OpenVIII
             {
                 if (!hasColor || texturebuffer == null) return;
                 hasColor = false;
-                var dictLayerID = Textures.GetOrAdd(z, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>());
-                var dictAnimationID = dictLayerID.GetOrAdd(layerID, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>());
-                var dictAnimationState = dictAnimationID.GetOrAdd(animationID, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>());
-                var dictOverlapID = dictAnimationState.GetOrAdd(animationState, new ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>());
-                var dictblend = dictOverlapID.GetOrAdd(overlapID, new ConcurrentDictionary<BlendMode, Texture2D>());
-                var tex = dictblend.GetOrAdd(blendmode, new Texture2D(Memory.graphics.GraphicsDevice, Width, Height));
+                ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>> dictLayerID = Textures.GetOrAdd(z, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>());
+                ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>> dictAnimationID = dictLayerID.GetOrAdd(layerID, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>());
+                ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>> dictAnimationState = dictAnimationID.GetOrAdd(animationID, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>());
+                ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>> dictOverlapID = dictAnimationState.GetOrAdd(animationState, new ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>());
+                ConcurrentDictionary<BlendMode, Texture2D> dictblend = dictOverlapID.GetOrAdd(overlapID, new ConcurrentDictionary<BlendMode, Texture2D>());
+                Texture2D tex = dictblend.GetOrAdd(blendmode, new Texture2D(Memory.graphics.GraphicsDevice, Width, Height));
                 texturebuffer.SetData(tex);
             }
             for (int i = 0; i < sortedtiles.Count; i++)
             {
-                Tile previousTile = (i > 0)? previousTile = sortedtiles[i - 1]:null;
+                Tile previousTile = (i > 0) ? previousTile = sortedtiles[i - 1] : null;
                 Tile tile = sortedtiles[i];
                 if (texturebuffer == null || previousTile == null ||
                     (previousTile.Z != tile.Z ||
@@ -546,52 +554,53 @@ namespace OpenVIII
                 int realY = Math.Abs(lowestY) + tile.Y; //*width
                 int realDestinationPixel = ((realY * Width) + realX);
 
-                    Rectangle dst = new Rectangle(realX, realY, tilesize, tilesize);
-                    const int texturewidth = 128;
-                    int startPixel = sourceImagePointer + tile.SourceX + texturewidth * tile.TextureID + (type1Width * tile.SourceY);
-                if (tile.Is4Bit) {
+                Rectangle dst = new Rectangle(realX, realY, tilesize, tilesize);
+                const int texturewidth = 128;
+                int startPixel = sourceImagePointer + tile.SourceX + texturewidth * tile.TextureID + (type1Width * tile.SourceY);
+                if (tile.Is4Bit)
+                {
                     startPixel -= tile.SourceX / 2;
                     Is4Bit = true;
                 }
-                    for (int y = 0; y < tilesize; y++)
-                        for (int x = 0; x < tilesize; x++)
+                for (int y = 0; y < tilesize; y++)
+                    for (int x = 0; x < tilesize; x++)
+                    {
+                        byte colorKey = GetColorKey(mimb, type1Width, startPixel, x, y, tile.Is8Bit);
+                        ushort color16bit = BitConverter.ToUInt16(mimb, 2 * colorKey + palettePointer);
+                        if (color16bit == 0) // 0 is Color.TransparentBlack So we skip it.
+                            continue;
+                        Color color = Texture_Base.ABGR1555toRGBA32bit(color16bit);
+
+                        int pos = realDestinationPixel + (x) + (y * Width);
+                        Color bufferedcolor = texturebuffer[pos];
+                        if (blendmode < BlendMode.none)
                         {
-                            byte colorKey = GetColorKey(mimb, type1Width, startPixel, x, y, tile.Is8Bit);
-                            ushort color16bit = BitConverter.ToUInt16(mimb, 2 * colorKey + palettePointer);
-                            if (color16bit == 0) // 0 is Color.TransparentBlack So we skip it.
+                            if (color == Color.Black)
                                 continue;
-                            Color color = Texture_Base.ABGR1555toRGBA32bit(color16bit);
 
-                            int pos = realDestinationPixel + (x) + (y * Width);
-                            Color bufferedcolor = texturebuffer[pos];
-                            if (blendmode < BlendMode.none)
+                            if (blendmode == BlendMode.subtract)
                             {
-                                if (color == Color.Black)
-                                    continue;
-
-                                if (blendmode == BlendMode.subtract)
-                                {
-                                    if (bufferedcolor != Color.TransparentBlack)
-                                        color = blend2(bufferedcolor, color);
-                                }
-                                else
-                                {
-                                    if (blendmode == BlendMode.quarteradd)
-                                        color = Color.Multiply(color, .25f);
-                                    else if (blendmode == BlendMode.halfadd)
-                                        color = Color.Multiply(color, .5f);
-                                    if (bufferedcolor != Color.TransparentBlack)
-                                        color = blend1(bufferedcolor, color);
-                                }
+                                if (bufferedcolor != Color.TransparentBlack)
+                                    color = blend2(bufferedcolor, color);
                             }
-                            else if (bufferedcolor != Color.TransparentBlack)
+                            else
                             {
-                                throw new Exception("Color is already set something may be wrong.");
+                                if (blendmode == BlendMode.quarteradd)
+                                    color = Color.Multiply(color, .25f);
+                                else if (blendmode == BlendMode.halfadd)
+                                    color = Color.Multiply(color, .5f);
+                                if (bufferedcolor != Color.TransparentBlack)
+                                    color = blend1(bufferedcolor, color);
                             }
-                            color.A = 0xFF;
-                            texturebuffer[pos] = color;
-                            hasColor = true;
                         }
+                        else if (bufferedcolor != Color.TransparentBlack)
+                        {
+                            throw new Exception("Color is already set something may be wrong.");
+                        }
+                        color.A = 0xFF;
+                        texturebuffer[pos] = color;
+                        hasColor = true;
+                    }
             }
             convertColorToTexture2d(); // gets leftover colors from last batch and makes a texture.
             SaveTextures();
@@ -600,9 +609,9 @@ namespace OpenVIII
 
         private static byte GetColorKey(byte[] mimb, int textureWidth, int startPixel, int x, int y, bool is8Bit)
         {
-            if(is8Bit)
-            return mimb[startPixel + x + (y * textureWidth)];
-            else 
+            if (is8Bit)
+                return mimb[startPixel + x + (y * textureWidth)];
+            else
             {
                 byte tempKey = mimb[startPixel + x / 2 + (y * textureWidth)];
                 if (x % 2 == 1)
@@ -617,21 +626,21 @@ namespace OpenVIII
             if (Memory.EnableDumpingData)
             {
                 //List<KeyValuePair<BlendModes, Texture2D>> _drawtextures = drawtextures();
-                foreach (var kvp_Z in Textures)
-                    foreach (var kvp_Layer in kvp_Z.Value)
-                        foreach (var kvp_AnimationID in kvp_Layer.Value)
-                            foreach (var kvp_AnimationState in kvp_AnimationID.Value)
-                                foreach(var kvp_OverlapID in kvp_AnimationState.Value)
-                                foreach (KeyValuePair<BlendMode, Texture2D> kvp in kvp_OverlapID.Value)
-                        {
-                            string path = Path.Combine(Path.GetTempPath(), "Fields", Memory.FieldHolder.FieldID.ToString());
-                            Directory.CreateDirectory(path);
-                            kvp.Value.SaveAsPng(
-                                new FileStream(Path.Combine(path,
-                                $"Field.{Memory.FieldHolder.FieldID}.{kvp_Z.Key.ToString("D4")}.{kvp_Layer.Key}.{kvp_AnimationID.Key}.{kvp_AnimationState.Key}.{kvp_OverlapID.Key}.{(int)kvp.Key}.png"),
-                                FileMode.Create, FileAccess.Write, FileShare.ReadWrite),
-                                kvp.Value.Width, kvp.Value.Height);
-                        }
+                foreach (KeyValuePair<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>> kvp_Z in Textures)
+                    foreach (KeyValuePair<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>> kvp_Layer in kvp_Z.Value)
+                        foreach (KeyValuePair<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>> kvp_AnimationID in kvp_Layer.Value)
+                            foreach (KeyValuePair<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>> kvp_AnimationState in kvp_AnimationID.Value)
+                                foreach (KeyValuePair<byte, ConcurrentDictionary<BlendMode, Texture2D>> kvp_OverlapID in kvp_AnimationState.Value)
+                                    foreach (KeyValuePair<BlendMode, Texture2D> kvp in kvp_OverlapID.Value)
+                                    {
+                                        string path = Path.Combine(Path.GetTempPath(), "Fields", Memory.FieldHolder.FieldID.ToString());
+                                        Directory.CreateDirectory(path);
+                                        kvp.Value.SaveAsPng(
+                                            new FileStream(Path.Combine(path,
+                                            $"Field.{Memory.FieldHolder.FieldID}.{kvp_Z.Key.ToString("D4")}.{kvp_Layer.Key}.{kvp_AnimationID.Key}.{kvp_AnimationState.Key}.{kvp_OverlapID.Key}.{(int)kvp.Key}.png"),
+                                            FileMode.Create, FileAccess.Write, FileShare.ReadWrite),
+                                            kvp.Value.Width, kvp.Value.Height);
+                                    }
             }
         }
 
