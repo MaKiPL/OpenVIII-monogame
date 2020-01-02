@@ -82,7 +82,7 @@ namespace OpenVIII
             public float Zfloat => Z / 4096f;
             public int TileID;
             public bool Is8Bit => Depth >= 4;
-            public bool Is4Bit => Depth < 4;
+            public bool Is4Bit => !Is8Bit;
             /// <summary>
             /// Gets +1 if Overlaps() == true;
             /// </summary>
@@ -203,7 +203,7 @@ namespace OpenVIII
             if (open)
                 Memory.SpriteBatchEnd();
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText($"FieldID: {Memory.FieldHolder.FieldID}", new Point(20, 20), new Vector2(3f));
+            Memory.font.RenderBasicText($"FieldID: {Memory.FieldHolder.FieldID}\nHas 4-Bit locations: {Is4Bit}", new Point(20, 20), new Vector2(3f));
             Memory.SpriteBatchEnd();
         }
 
@@ -398,13 +398,21 @@ namespace OpenVIII
                 }
             }
         }
-
+        /// <summary>
+        /// Width texture for type 1 and 4
+        /// </summary>
+        const int type1Width = 1664;
+        /// <summary>
+        /// Width texture for type 2 and 3.
+        /// </summary>
+        const int type2Width = 1536;
+        private static bool Is4Bit = false;
         private static bool ParseBackground(byte[] mimb, byte[] mapb)
         {
+            Is4Bit = false;
             if (mimb == null || mapb == null)
                 return false;
 
-            const int type1Width = 1664;
 
             tiles = new List<Tile>();
             int palettes = 24;
@@ -538,16 +546,18 @@ namespace OpenVIII
                 int realY = Math.Abs(lowestY) + tile.Y; //*width
                 int realDestinationPixel = ((realY * Width) + realX);
 
-                if (tile.Is8Bit)
-                {
                     Rectangle dst = new Rectangle(realX, realY, tilesize, tilesize);
                     const int texturewidth = 128;
                     int startPixel = sourceImagePointer + tile.SourceX + texturewidth * tile.TextureID + (type1Width * tile.SourceY);
+                if (tile.Is4Bit) {
+                    startPixel -= tile.SourceX / 2;
+                    Is4Bit = true;
+                }
                     for (int y = 0; y < tilesize; y++)
                         for (int x = 0; x < tilesize; x++)
                         {
-                            byte pixel = mimb[startPixel + x + (y * type1Width)];
-                            ushort color16bit = BitConverter.ToUInt16(mimb, 2 * pixel + palettePointer);
+                            byte colorKey = GetColorKey(mimb, type1Width, startPixel, x, y, tile.Is8Bit);
+                            ushort color16bit = BitConverter.ToUInt16(mimb, 2 * colorKey + palettePointer);
                             if (color16bit == 0) // 0 is Color.TransparentBlack So we skip it.
                                 continue;
                             Color color = Texture_Base.ABGR1555toRGBA32bit(color16bit);
@@ -582,64 +592,24 @@ namespace OpenVIII
                             texturebuffer[pos] = color;
                             hasColor = true;
                         }
-                }
-                else // 4 bit colors.
-                {
-                    //So there are tiles being skipped unsure why yet.
-                    //if(tile.blend2 !=2 && tile.blend2 != 1&& tile.blend2 != 0&& tile.blend2 !=3)
-                    //throw new Exception("this one is different!");
-                    //    int startPixel = sourceImagePointer + tile.srcx / 2 + 128 * tile.texID + (type1Width * tile.srcy);
-                    //    for (int y = 0; y < 16; y++)
-                    //        for (int x = 0; x < 16; x++)
-                    //        {
-                    //            byte index = mimb[startPixel + x + (y * 1664)];
-                    //            ushort pixels = BitConverter.ToUInt16(mimb, 2 * (index & 0xF) + palettePointer);
-                    //            byte red = (byte)((pixels) & 0x1F);
-                    //            byte green = (byte)((pixels >> 5) & 0x1F);
-                    //            byte blue = (byte)((pixels >> 10) & 0x1F);
-                    //            red = (byte)MathHelper.Clamp((red * 8), 0, 255);
-                    //            green = (byte)MathHelper.Clamp((green * 8), 0, 255);
-                    //            blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
-                    //            if (pixels != 0)
-                    //            {
-                    //                if (tile.blendType < 4)
-                    //                {
-                    //                    byte baseColorR = finalImage[realDestinationPixel + (x * 4) + (y * width * 4)];
-                    //                    byte baseColorG = finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1];
-                    //                    byte baseColorB = finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2];
-                    //                    Blend(baseColorR, baseColorG, baseColorB, red, green, blue, tile, finalImage, realDestinationPixel, x, y);
-                    //                }
-                    //            }
-                    //            pixels = BitConverter.ToUInt16(mimb, 2 * (index >> 4) + palettePointer);
-                    //            red = (byte)((pixels) & 0x1F);
-                    //            green = (byte)((pixels >> 5) & 0x1F);
-                    //            blue = (byte)((pixels >> 10) & 0x1F);
-                    //            red = (byte)MathHelper.Clamp((red * 8), 0, 255);
-                    //            green = (byte)MathHelper.Clamp((green * 8), 0, 255);
-                    //            blue = (byte)MathHelper.Clamp((blue * 8), 0, 255);
-                    //            if (pixels != 0)
-                    //            {
-                    //                if (tile.blendType < 4)
-                    //                {
-                    //                    byte baseColorR = finalImage[realDestinationPixel + (x * 4) + (y * width * 4)];
-                    //                    byte baseColorG = finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1];
-                    //                    byte baseColorB = finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2];
-                    //                    Blend(baseColorR, baseColorG, baseColorB, red, green, blue, tile, finalImage, realDestinationPixel, x, y);
-                    //                }
-                    //            }
-                    //            else
-                    //            {
-                    //                finalImage[realDestinationPixel + (x * 4) + (y * width * 4)] = red;
-                    //                finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 1] = green;
-                    //                finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 2] = blue;
-                    //                finalImage[realDestinationPixel + (x * 4) + (y * width * 4) + 3] = 0xFF;
-                    //            }
-                    //        }
-                }
             }
             convertColorToTexture2d(); // gets leftover colors from last batch and makes a texture.
             SaveTextures();
             return true;
+        }
+
+        private static byte GetColorKey(byte[] mimb, int textureWidth, int startPixel, int x, int y, bool is8Bit)
+        {
+            if(is8Bit)
+            return mimb[startPixel + x + (y * textureWidth)];
+            else 
+            {
+                byte tempKey = mimb[startPixel + x / 2 + (y * textureWidth)];
+                if (x % 2 == 1)
+                    return checked((byte)((tempKey & 0xf0) >> 4));
+                else
+                    return checked((byte)(tempKey & 0xf));
+            }
         }
 
         private static void SaveTextures()
