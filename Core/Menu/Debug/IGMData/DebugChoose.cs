@@ -293,7 +293,7 @@ namespace OpenVIII.IGMData
             dynamicDebugStrings = new Dictionary<Ditems, Func<FF8String>>
             {
                 { Ditems.Battle, ()=> {return strDebugLobby[Ditems.Battle].Clone().Append(Memory.battle_encounter.ToString("D4")); } },
-                { Ditems.Field, ()=> {return strDebugLobby[Ditems.Field].Clone().Append(Memory.FieldHolder.FieldID.ToString("D3")); } },
+                { Ditems.Field, ()=> {return strDebugLobby[Ditems.Field].Clone().Append($"{Memory.FieldHolder.FieldID.ToString("D3")} - {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToUpper()}"); } },
                 { Ditems.Movie, ()=> {
                     if (Movie.Files.Count<=Module_movie_test.Index)
                         Module_movie_test.Index=0;
