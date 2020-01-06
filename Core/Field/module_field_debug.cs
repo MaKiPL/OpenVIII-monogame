@@ -18,15 +18,6 @@ namespace OpenVIII
     //we are only using 1 so might be reading the wrong pixels somewhere.
     public static partial class Module_field_debug
     {
-        public enum BlendMode : byte
-        {
-            halfadd,
-            add,
-            subtract,
-            quarteradd,
-            none,
-        }
-
         private static Field_mods mod = 0;
 
         //private static Texture2D tex;
@@ -297,10 +288,9 @@ namespace OpenVIII
                 return false;
             }
             tiles = GetTiles(mapb, textureType);
-            FindOverlappingTiles();
-            FindOverlappingTilesSource();
+            //FindOverlappingTiles();
+            FindSameXYTilesSource();
             Dictionary<byte, Color[]> dictPalettes = GetPalettes(mimb, textureType);
-
 
             List<Tile> sortedtiles = (from tile in tiles
                                       orderby tile.TextureID, tile.Is4Bit, tile.TileID ascending
@@ -382,24 +372,6 @@ namespace OpenVIII
         private const int colorsPerPalette = 256;
         private const int bytesPerPalette = 2 * colorsPerPalette; //16 bit color (2 bytes) * 256 colors
 
-        //private static int palettes = 24; // or 16;
-
-        private class TextureType
-        {
-            public byte Type = 1;
-            public byte Palettes;
-            public ushort Width => checked((ushort)(TWidth * TexturePages));
-            public byte TexturePages;
-            public byte SkippedPalettes = 8;
-
-            private const ushort TWidth = 128;
-            private const ushort THeight = 256;
-            public uint PaletteSectionSize => checked((uint)(bytesPerPalette * Palettes));
-            public uint FileSize => checked((uint)(PaletteSectionSize + (Width * THeight)));
-
-            public int BytesSkippedPalettes => bytesPerPalette * SkippedPalettes; // first 8 are junk and are not used.
-        }
-
         private static bool ParseBackground2D(byte[] mimb, byte[] mapb)
         {
             Is4Bit = false;
@@ -407,9 +379,9 @@ namespace OpenVIII
                 return false;
 
             TextureType textureType = TextureTypes.First(x => x.FileSize == mimb.Length);
-            tiles = GetTiles(mapb,textureType);
+            tiles = GetTiles(mapb, textureType);
             FindOverlappingTiles();
-            FindOverlappingTilesSource();
+            //FindSameXYTilesSource();
             int lowestY = tiles.Min(x => x.Y);
             int maximumY = tiles.Max(x => x.Y);
             int lowestX = tiles.Min(x => x.X); //-160;
@@ -551,56 +523,23 @@ namespace OpenVIII
             return CLUT;
         }
 
-        private static void FindOverlappingTiles()
-        {
-            List<Tile[]> overlapIssues = (from t1 in tiles
-                                          from t2 in tiles
-                                          where t1.TileID < t2.TileID
-                                          where t1.BlendMode == BlendMode.none
-                                          where t1.Intersect(t2)
-                                          orderby t1.TileID, t2.TileID ascending
-                                          select new[] { t1, t2 }
-                                      ).Distinct().ToList();
-            foreach (Tile[] overlappingTiles in overlapIssues)
-            {
-                //if want pixel perfect test colors here.
-                //you can tell if the two layers are okay if one is transparent when other isn't.
-                overlappingTiles[1].OverLapID = checked((byte)(overlappingTiles[0].OverLapID + 1));
-            }
-        }
+        private static void FindOverlappingTiles() => (from t1 in tiles
+                                                       from t2 in tiles
+                                                       where t1.TileID < t2.TileID
+                                                       where t1.BlendMode == BlendMode.none
+                                                       where t1.Intersect(t2)
+                                                       orderby t1.TileID, t2.TileID ascending
+                                                       select new[] { t1, t2 }
+                                      ).ForEach(x => x[1].OverLapID = checked((byte)(x[0].OverLapID + 1)));
 
-        private static void FindOverlappingTilesSource()
-        {
-            List<Tile[]> overlapIssues = (from t1 in tiles
-                                          from t2 in tiles
-                                          where t1.TileID < t2.TileID
-                                          //where t1.BlendMode == BlendMode.none
-                                          where t1.SourceIntersect(t2)
-                                          orderby t1.TileID, t2.TileID ascending
-                                          select new[] { t1, t2 }
-                                      ).Distinct().ToList();
-            foreach (Tile[] overlappingTiles in overlapIssues)
-            {
-                if (overlappingTiles[0].SourceRectangle() == overlappingTiles[1].SourceRectangle())
-                {
-                    overlappingTiles[1].Skip = true;
-                }
-                else
-                {
-                    overlappingTiles[1].SourceX = checked((ushort)((int)Math.Round(overlappingTiles[1].SourceX / (float)Tile.size) * Tile.size));
-                    overlappingTiles[1].SourceY = checked((ushort)((int)Math.Round(overlappingTiles[1].SourceY / (float)Tile.size) * Tile.size));
-                    overlappingTiles[0].SourceX = checked((ushort)((int)Math.Round(overlappingTiles[0].SourceX / (float)Tile.size) * Tile.size));
-                    overlappingTiles[0].SourceY = checked((ushort)((int)Math.Round(overlappingTiles[0].SourceY / (float)Tile.size) * Tile.size));
-                    if (overlappingTiles[0].SourceRectangle() == overlappingTiles[1].SourceRectangle())
-                    {
-                        overlappingTiles[1].Skip = true;
-                    }
-                }
-                //if want pixel perfect test colors here.
-                //you can tell if the two layers are okay if one is transparent when other isn't.
-                //overlappingTiles[1].SourceOverLapID = checked((byte)(overlappingTiles[0].SourceOverLapID + 1));
-            }
-        }
+        private static void FindSameXYTilesSource() => (from t1 in tiles
+                                                             from t2 in tiles
+                                                             where t1.TileID < t2.TileID
+                                                             where t1.SourceX == t2.SourceX
+                                                             where t1.SourceY == t2.SourceY
+                                                             orderby t1.TileID, t2.TileID ascending
+                                                             select new[] { t1, t2 }
+                                      ).ForEach(x => x[1].Skip = true);
 
         private static List<Tile> GetTiles(byte[] mapb, TextureType textureType)
         {
@@ -632,7 +571,7 @@ namespace OpenVIII
                         tile.Depth = (byte)(texIdBuffer >> 5);
                         tile.TileID = tiles.Count;
                     }
-                    else if(textureType.Type == 2)
+                    else if (textureType.Type == 2)
                     {
                         tile.SourceX = pbsmap.ReadUInt16();
                         tile.SourceY = pbsmap.ReadUInt16();
@@ -648,7 +587,6 @@ namespace OpenVIII
                         tile.TileID = tiles.Count;
                     }
                     tiles.Add(tile);
-                    
                 }
             return tiles;
         }
