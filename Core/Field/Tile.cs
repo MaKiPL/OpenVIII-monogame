@@ -19,13 +19,13 @@ namespace OpenVIII
             /// </summary>
             public static readonly Vector2 TextureSize = new Vector2(128, 256);
 
-            public byte AnimationID;
+            public byte AnimationID =0xFF;
 
             public byte AnimationState;
 
             public byte blend1;
 
-            public BlendMode BlendMode;
+            public BlendMode BlendMode = BlendMode.none;
             /// <summary>
             /// for outputting the source tiles to texture pages. some tiles have the same source rectangle. So skip.
             /// </summary>
