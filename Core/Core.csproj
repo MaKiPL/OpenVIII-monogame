@@ -179,6 +179,7 @@
     <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
     <Compile Include="Field\BlendMode.cs" />
+    <Compile Include="Image\Cluts.cs" />
     <Compile Include="Field\TextureType.cs" />
     <Compile Include="Image\TextureBuffer.cs" />
     <Compile Include="Field\Tile.cs" />

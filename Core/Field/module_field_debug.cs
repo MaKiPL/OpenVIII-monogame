@@ -297,7 +297,7 @@ namespace OpenVIII
             }
             tiles = GetTiles(mapb, textureType);
             //FindOverlappingTiles();
-            Dictionary<byte, Color[]> dictPalettes = GetPalettes(mimb, textureType);
+            Cluts dictPalettes = GetPalettes(mimb, textureType);
             var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID }).Distinct().ToList();
             // Create a swizzeled Textures with one palette.
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
@@ -323,13 +323,13 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
                 {
-                    TextureBuffer tex = new TextureBuffer(kvp.Value.Width, kvp.Value.Height,true);
+                    TextureBuffer tex = new TextureBuffer(kvp.Value.Width, kvp.Value.Height, true);
 
                     //foreach (var textureID in UniqueSetOfTileData.GroupBy(x=>x.TextureID == kvp.Key))
                     foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == kvp.Key))
                     {
                         long startPixel = textureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturewidth * tile.TextureID) + (textureType.Width * tile.loc.Y);
-                        int readlength = Tile.size + (Tile.size * textureType.Width);
+                        //int readlength = Tile.size + (Tile.size * textureType.Width);
 
                         for (int y = 0; y < 16; y++)
                         {
@@ -362,7 +362,6 @@ namespace OpenVIII
                                 }
                                 if (color != Color.TransparentBlack)
                                 {
-
                                     if (tex[_x, _y] != Color.TransparentBlack)
                                     {
                                         if (tex[_x, _y] != color)
@@ -381,27 +380,32 @@ namespace OpenVIII
                     }
                     tex.SetData(kvp.Value);
                 }
-            SaveSwizzled(TextureIDs);
+            SaveSwizzled(TextureIDs,dictPalettes);
             TextureIDs.ForEach(x => x.Value.Dispose());
             return true;
         }
 
-        private static void SaveSwizzled(Dictionary<byte, Texture2D> TextureIDs)
+        private static void SaveSwizzled(Dictionary<byte, Texture2D> TextureIDs,Cluts cluts)
         {
+            string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
+            if (string.IsNullOrWhiteSpace(fieldname))
+                fieldname = $"unk{Memory.FieldHolder.FieldID}";
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
+            string path;
+            Directory.CreateDirectory(folder);
             foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
             {
-                string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
-                if (string.IsNullOrWhiteSpace(fieldname))
-                    fieldname = $"unk{Memory.FieldHolder.FieldID}";
-                string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
-                Directory.CreateDirectory(folder);
-                string path = Path.Combine(folder,
+                path = Path.Combine(folder,
                     $"{fieldname}_{kvp.Key}.png");
                 if (File.Exists(path))
                     continue;
                 using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                 { kvp.Value.SaveAsPng(fs, kvp.Value.Width, kvp.Value.Height); }
             }
+            path = Path.Combine(folder,
+                    $"{fieldname}_Clut.png");
+            cluts.Save(path);
+            
         }
 
         private const int texturewidth = 128;
@@ -422,7 +426,7 @@ namespace OpenVIII
             int maximumY = tiles.Max(x => x.Y);
             int lowestX = tiles.Min(x => x.X); //-160;
             int maximumX = tiles.Max(x => x.X);
-            Dictionary<byte, Color[]> dictPalettes = GetPalettes(mimb, textureType);
+            Cluts dictPalettes = GetPalettes(mimb, textureType);
             Height = Math.Abs(lowestY) + maximumY + Tile.size; //224
             Width = Math.Abs(lowestX) + maximumX + Tile.size; //320
                                                               //Color[] finalImage = new Color[height * width]; //ARGB;
@@ -545,9 +549,9 @@ namespace OpenVIII
             return true;
         }
 
-        private static Dictionary<byte, Color[]> GetPalettes(byte[] mimb, TextureType textureType)
+        private static Cluts GetPalettes(byte[] mimb, TextureType textureType)
         {
-            Dictionary<byte, Color[]> CLUT = tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]);
+            Cluts CLUT = new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]),false);
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 foreach (KeyValuePair<byte, Color[]> clut in CLUT)
                 {
@@ -576,6 +580,7 @@ namespace OpenVIII
             using (BinaryReader pbsmap = new BinaryReader(new MemoryStream(mapb)))
                 while (pbsmap.BaseStream.Position + 16 < pbsmap.BaseStream.Length)
                 {
+                    long p = pbsmap.BaseStream.Position;
                     Tile tile = new Tile { X = pbsmap.ReadInt16() };
                     if (tile.X == 0x7FFF)
                         break;
@@ -614,6 +619,7 @@ namespace OpenVIII
                         tile.TileID = tiles.Count;
                     }
                     tiles.Add(tile);
+                    Debug.Assert(p - pbsmap.BaseStream.Position == -16);
                 }
             return tiles;
         }
