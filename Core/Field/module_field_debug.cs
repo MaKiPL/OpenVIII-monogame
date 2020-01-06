@@ -34,7 +34,8 @@ namespace OpenVIII
         {
             INIT,
             DEBUGRENDER,
-            DISABLED
+            DISABLED,
+            NOJSM
         };
 
         public static void Draw()
@@ -43,8 +44,11 @@ namespace OpenVIII
             {
                 case Field_mods.INIT:
                     break; //null
-                case Field_mods.DEBUGRENDER:
+                default:
                     DrawDebug();
+                    break;
+
+                case Field_mods.DISABLED:
                     break;
             }
         }
@@ -151,6 +155,7 @@ namespace OpenVIII
                 case Field_mods.DEBUGRENDER:
                     UpdateScript();
                     break; //await events here
+                case Field_mods.NOJSM://no scripts but has background.
                 case Field_mods.DISABLED:
                     break;
             }
@@ -190,7 +195,10 @@ namespace OpenVIII
             string s_jsm = findstr(".jsm");
             string s_sy = findstr(".sy");
             if (!ParseBackgroundQuads(getfile(".mim"), getfile(".map")))
+            {
+                mod = Field_mods.DISABLED;
                 return;
+            }
             //let's start with scripts
             List<Jsm.GameObject> jsmObjects;
 
@@ -203,7 +211,7 @@ namespace OpenVIII
                 catch (Exception e)
                 {
                     Debug.WriteLine(e);
-                    mod = Field_mods.DISABLED;
+                    mod = Field_mods.NOJSM;
                     return;
                 }
 
@@ -230,7 +238,7 @@ namespace OpenVIII
             }
             else
             {
-                mod = Field_mods.DISABLED;
+                mod = Field_mods.NOJSM;
                 return;
             }
 
@@ -289,54 +297,82 @@ namespace OpenVIII
             }
             tiles = GetTiles(mapb, textureType);
             //FindOverlappingTiles();
-            FindSameXYTilesSource();
             Dictionary<byte, Color[]> dictPalettes = GetPalettes(mimb, textureType);
-
-            List<Tile> sortedtiles = (from tile in tiles
-                                      orderby tile.TextureID, tile.Is4Bit, tile.TileID ascending
-                                      select tile
-                                ).ToList();
+            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID }).Distinct().ToList();
             // Create a swizzeled Textures with one palette.
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
-            ushort X = sortedtiles.Min(x => x.SourceX);
-            Width = sortedtiles.Max(x => x.SourceX + Tile.size);
-            ushort Y = sortedtiles.Min(x => x.SourceX);
-            Height = sortedtiles.Max(x => x.SourceY + Tile.size);
-            Dictionary<byte, Texture2D> TextureIDs = sortedtiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256/*Math.Max(Width,Height), Height*/));
+            Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
+            Height = UniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
+            Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256/*Math.Max(Width,Height), Height*/));
+            //var dup = (from t1 in UniqueSetOfTileData
+            //           from t2 in UniqueSetOfTileData
+            //           where t1 != t2 && t1.TextureID == t1.TextureID && t1.loc == t2.loc
+            //           select new[] { t1, t2 }).ToList();
+            //foreach(var i in UniqueSetOfTileData.GroupBy(x => x.TextureID))
+            //{
+            //    foreach(var j in i.GroupBy(x=>x.loc))
+            //    {
+            //        var m = j.ToList();
+            //        if(m.Count>1 && m[0].loc.X == 240 && m[0].loc.Y == 192)
+            //        {
+            //            m[1].PaletteID = 5;
+            //        }
+            //    }
+            //}
+
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
                 {
-                    TextureBuffer tex = new TextureBuffer(kvp.Value.Width, kvp.Value.Height, true);
+                    TextureBuffer tex = new TextureBuffer(kvp.Value.Width, kvp.Value.Height,true);
 
-                    foreach (Tile tile in sortedtiles.Where(x => x.TextureID == kvp.Key))
+                    //foreach (var textureID in UniqueSetOfTileData.GroupBy(x=>x.TextureID == kvp.Key))
+                    foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == kvp.Key))
                     {
-                        if (tile.Skip) continue;
-                        long startPixel = textureType.PaletteSectionSize + (tile.SourceX / (tile.Is4Bit ? 2 : 1)) + (texturewidth * tile.TextureID) + (textureType.Width * tile.SourceY);
+                        long startPixel = textureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturewidth * tile.TextureID) + (textureType.Width * tile.loc.Y);
                         int readlength = Tile.size + (Tile.size * textureType.Width);
+
                         for (int y = 0; y < 16; y++)
                         {
                             br.BaseStream.Seek(startPixel + (y * textureType.Width), SeekOrigin.Begin);
 
                             byte Colorkey = 0;
-                            int _y = y + tile.SourceY;
+                            int _y = y + tile.loc.Y;
                             for (int x = 0; x < 16; x++)
                             {
-                                int _x = x + tile.SourceX;
-                                if (tile.Is8Bit)
+                                int _x = x + tile.loc.X;
+                                byte paletteID = tile.PaletteID;
+                                //if (tile.loc.X == 240 && tile.loc.Y == 192)
+                                //    paletteID = 9;
+                                Color color = default;
+                                if (!tile.Is4Bit)
                                 {
-                                    tex[_x, _y] = dictPalettes[tile.PaletteID][br.ReadByte()];
+                                    color = dictPalettes[paletteID][br.ReadByte()];
                                 }
                                 else
                                 {
                                     if (x % 2 == 0)
                                     {
                                         Colorkey = br.ReadByte();
-                                        tex[_x, _y] = dictPalettes[tile.PaletteID][Colorkey & 0xf];
+                                        color = dictPalettes[paletteID][Colorkey & 0xf];
                                     }
                                     else
                                     {
-                                        tex[_x, _y] = dictPalettes[tile.PaletteID][(Colorkey & 0xf0) >> 4];
+                                        color = dictPalettes[paletteID][(Colorkey & 0xf0) >> 4];
                                     }
+                                }
+                                if (color != Color.TransparentBlack)
+                                {
+
+                                    if (tex[_x, _y] != Color.TransparentBlack)
+                                    {
+                                        if (tex[_x, _y] != color)
+                                        {
+                                            Debug.WriteLine($"x={_x},y={_y} :: {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]} :: {tile} \n   existed_color {tex[_x, _y]} :: failed_color={color}");
+                                            break;
+                                        }
+                                    }
+                                    else
+                                        tex[_x, _y] = color;
                                 }
                             }
                         }
@@ -531,15 +567,6 @@ namespace OpenVIII
                                                        orderby t1.TileID, t2.TileID ascending
                                                        select new[] { t1, t2 }
                                       ).ForEach(x => x[1].OverLapID = checked((byte)(x[0].OverLapID + 1)));
-
-        private static void FindSameXYTilesSource() => (from t1 in tiles
-                                                             from t2 in tiles
-                                                             where t1.TileID < t2.TileID
-                                                             where t1.SourceX == t2.SourceX
-                                                             where t1.SourceY == t2.SourceY
-                                                             orderby t1.TileID, t2.TileID ascending
-                                                             select new[] { t1, t2 }
-                                      ).ForEach(x => x[1].Skip = true);
 
         private static List<Tile> GetTiles(byte[] mapb, TextureType textureType)
         {
