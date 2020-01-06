@@ -13,6 +13,7 @@ namespace OpenVIII
     //issues found.
     //558 //color looks off on glow. with purple around it.
     //267 //text showing with white background.
+    //132 missing lava.
     //pupu states that there is are 2 widths of the texture for Type1 and Type2
     //we are only using 1 so might be reading the wrong pixels somewhere.
     public static partial class Module_field_debug
@@ -60,7 +61,7 @@ namespace OpenVIII
         public static void ResetField() => mod = Field_mods.INIT;
 
         private static List<KeyValuePair<BlendMode, Texture2D>> drawtextures() =>
-            Textures.OrderByDescending(kvp_Z => kvp_Z.Key)
+            Textures?.OrderByDescending(kvp_Z => kvp_Z.Key)
             .SelectMany(kvp_LayerID => kvp_LayerID.Value.OrderBy(x => kvp_LayerID.Key)
             .SelectMany(kvp_AnimationID => kvp_AnimationID.Value.OrderBy(x => kvp_AnimationID.Key))
             .SelectMany(kvp_AnimationState => kvp_AnimationState.Value.OrderBy(x => kvp_AnimationState.Key))
@@ -75,54 +76,55 @@ namespace OpenVIII
             bool open = false;
             BlendMode lastbm = BlendMode.none;
             float alpha = 1f;
-            foreach (KeyValuePair<BlendMode, Texture2D> kvp in _drawtextures)
-            {
-                if (!open || lastbm != kvp.Key)
+            if (_drawtextures != null)
+                foreach (KeyValuePair<BlendMode, Texture2D> kvp in _drawtextures)
                 {
-                    if (open)
-                        Memory.SpriteBatchEnd();
-                    open = true;
-                    alpha = 1f;
-                    switch (kvp.Key)
+                    if (!open || lastbm != kvp.Key)
                     {
-                        default:
-                            Memory.SpriteBatchStartAlpha();
-                            break;
+                        if (open)
+                            Memory.SpriteBatchEnd();
+                        open = true;
+                        alpha = 1f;
+                        switch (kvp.Key)
+                        {
+                            default:
+                                Memory.SpriteBatchStartAlpha();
+                                break;
 
-                        case BlendMode.halfadd:
-                            Memory.SpriteBatchStart(bs: Memory.blendState_Add);
-                            break;
+                            case BlendMode.halfadd:
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add);
+                                break;
 
-                        case BlendMode.quarteradd:
-                            Memory.SpriteBatchStart(bs: Memory.blendState_Add);
-                            break;
+                            case BlendMode.quarteradd:
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add);
+                                break;
 
-                        case BlendMode.add:
-                            Memory.SpriteBatchStart(bs: Memory.blendState_Add);
-                            break;
+                            case BlendMode.add:
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add);
+                                break;
 
-                        case BlendMode.subtract:
-                            alpha = .9f;
-                            Memory.SpriteBatchStart(bs: Memory.blendState_Subtract);
-                            break;
+                            case BlendMode.subtract:
+                                alpha = .9f;
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Subtract);
+                                break;
+                        }
+                        lastbm = kvp.Key;
                     }
-                    lastbm = kvp.Key;
+                    Texture2D tex = kvp.Value;
+                    Rectangle src = new Rectangle(0, 0, tex.Width, tex.Height);
+                    Rectangle dst = src;
+                    dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height, Memory.ScaleMode.FitBoth)).ToPoint();
+                    //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
+                    //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
+                    dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
+                    Memory.spriteBatch.Draw(tex, dst, src, Color.White * alpha);
+                    //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
+                    //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
                 }
-                Texture2D tex = kvp.Value;
-                Rectangle src = new Rectangle(0, 0, tex.Width, tex.Height);
-                Rectangle dst = src;
-                dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height, Memory.ScaleMode.FitBoth)).ToPoint();
-                //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
-                //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
-                dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
-                Memory.spriteBatch.Draw(tex, dst, src, Color.White * alpha);
-                //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
-                //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
-            }
             if (open)
                 Memory.SpriteBatchEnd();
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText($"FieldID: {Memory.FieldHolder.FieldID}\nHas 4-Bit locations: {Is4Bit}", new Point(20, 20), new Vector2(3f));
+            Memory.font.RenderBasicText($"FieldID: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToUpper()}\nHas 4-Bit locations: {Is4Bit}", new Point(20, 20), new Vector2(3f));
             Memory.SpriteBatchEnd();
         }
 
@@ -180,6 +182,7 @@ namespace OpenVIII
                 return;
             string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0);
             if (string.IsNullOrWhiteSpace(fieldArchiveName)) return;
+
             ArchiveWorker fieldArchive = aw.GetArchive(fieldArchiveName);
             string[] filelist = fieldArchive.GetListOfFiles();
             string findstr(string s) =>
@@ -195,7 +198,7 @@ namespace OpenVIII
             }
             string s_jsm = findstr(".jsm");
             string s_sy = findstr(".sy");
-            if (!ParseBackground(getfile(".mim"), getfile(".map")))
+            if (!ParseBackgroundQuads(getfile(".mim"), getfile(".map")))
                 return;
             //let's start with scripts
             List<Jsm.GameObject> jsmObjects;
@@ -259,12 +262,14 @@ namespace OpenVIII
         public class TextureBuffer
         {
             private Color[] colors;
+            public bool Alert { get; set; }
 
-            public TextureBuffer(int width, int height)
+            public TextureBuffer(int width, int height, bool alert = true)
             {
                 Height = height;
                 Width = width;
                 colors = new Color[height * width];
+                Alert = alert;
             }
 
             public int Height { get; private set; }
@@ -272,8 +277,20 @@ namespace OpenVIII
             public Color[] Colors { get => colors; private set => colors = value; }
             public int Length => colors?.Length ?? 0;
 
-            public Color this[int i] { get => colors[i]; set => colors[i] = value; }
-            public Color this[int x, int y] { get => colors[x + y * Width]; set => colors[x + y * Width] = value; }
+            public Color this[int i]
+            {
+                get => colors[i]; set
+                {
+                    if (Alert && colors[i] != Color.TransparentBlack)
+                        throw new Exception("Color is set!");
+                    colors[i] = value;
+                }
+            }
+
+            public Color this[int x, int y]
+            {
+                get => colors[x + (y * Width)]; set => this[x + (y * Width)] = value;
+            }
 
             public static implicit operator Color[] (TextureBuffer @in) => @in.colors;
 
@@ -318,100 +335,176 @@ namespace OpenVIII
             }
         }
 
-        /// <summary>
-        /// Width texture for type 1 and 4
-        /// </summary>
-        private const int type1Width = 1664;
-
-        /// <summary>
-        /// Width texture for type 2 and 3.
-        /// </summary>
-        private const int type2Width = 1536;
+        private static TextureType[] TextureTypes = new TextureType[]
+        {
+            new TextureType {
+                Palettes =24,
+                TexturePages = 13
+            },
+            new TextureType {
+                Palettes =16,
+                TexturePages = 12,
+                SkippedPalettes =0,
+                Type = 2
+            },
+        };
 
         private static bool Is4Bit = false;
 
-        private static bool ParseBackground(byte[] mimb, byte[] mapb)
+        private static bool ParseBackgroundQuads(byte[] mimb, byte[] mapb)
+        {
+            Is4Bit = false;
+            if (mimb == null || mapb == null)
+                return false;
+            TextureType textureType = TextureTypes.FirstOrDefault(x => x.FileSize == mimb.Length);
+            if (textureType == default)
+            {//unsupported feild dump data so can check it.
+                string path = Path.Combine(Path.GetTempPath(), "Fields", $"{Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]}");
+                using (BinaryWriter bw = new BinaryWriter(new FileStream($"{path}.mim", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+                {
+                    bw.Write(mimb);
+                    Debug.WriteLine($"Saved {path}.mim");
+                }
+                using (BinaryWriter bw = new BinaryWriter(new FileStream($"{path}.map", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+                {
+                    bw.Write(mapb);
+                    Debug.WriteLine($"Saved {path}.map");
+                }
+                return false;
+            }
+            tiles = GetTiles(mapb, textureType);
+            FindOverlappingTiles();
+            FindOverlappingTilesSource();
+            Dictionary<byte, Color[]> dictPalettes = GetPalettes(mimb, textureType);
+
+
+            List<Tile> sortedtiles = (from tile in tiles
+                                      orderby tile.TextureID, tile.Is4Bit, tile.TileID ascending
+                                      select tile
+                                ).ToList();
+            // Create a swizzeled Textures with one palette.
+            // 4bit has 2 pixels per byte. So will need a seperate texture for those.
+            ushort X = sortedtiles.Min(x => x.SourceX);
+            Width = sortedtiles.Max(x => x.SourceX + Tile.size);
+            ushort Y = sortedtiles.Min(x => x.SourceX);
+            Height = sortedtiles.Max(x => x.SourceY + Tile.size);
+            Dictionary<byte, Texture2D> TextureIDs = sortedtiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256/*Math.Max(Width,Height), Height*/));
+            using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
+                foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
+                {
+                    TextureBuffer tex = new TextureBuffer(kvp.Value.Width, kvp.Value.Height, true);
+
+                    foreach (Tile tile in sortedtiles.Where(x => x.TextureID == kvp.Key))
+                    {
+                        if (tile.Skip) continue;
+                        long startPixel = textureType.PaletteSectionSize + (tile.SourceX / (tile.Is4Bit ? 2 : 1)) + (texturewidth * tile.TextureID) + (textureType.Width * tile.SourceY);
+                        int readlength = Tile.size + (Tile.size * textureType.Width);
+                        for (int y = 0; y < 16; y++)
+                        {
+                            br.BaseStream.Seek(startPixel + (y * textureType.Width), SeekOrigin.Begin);
+
+                            byte Colorkey = 0;
+                            int _y = y + tile.SourceY;
+                            for (int x = 0; x < 16; x++)
+                            {
+                                int _x = x + tile.SourceX;
+                                if (tile.Is8Bit)
+                                {
+                                    tex[_x, _y] = dictPalettes[tile.PaletteID][br.ReadByte()];
+                                }
+                                else
+                                {
+                                    if (x % 2 == 0)
+                                    {
+                                        Colorkey = br.ReadByte();
+                                        tex[_x, _y] = dictPalettes[tile.PaletteID][Colorkey & 0xf];
+                                    }
+                                    else
+                                    {
+                                        tex[_x, _y] = dictPalettes[tile.PaletteID][(Colorkey & 0xf0) >> 4];
+                                    }
+                                }
+                            }
+                        }
+                        //(from b in br.ReadBytes(readlength)
+                        // select dictPalettes[tile.PaletteID][b]).ToArray();
+                    }
+                    tex.SetData(kvp.Value);
+                }
+            SaveSwizzled(TextureIDs);
+            TextureIDs.ForEach(x => x.Value.Dispose());
+            return true;
+        }
+
+        private static void SaveSwizzled(Dictionary<byte, Texture2D> TextureIDs)
+        {
+            foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
+            {
+                string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
+                if (string.IsNullOrWhiteSpace(fieldname))
+                    fieldname = $"unk{Memory.FieldHolder.FieldID}";
+                string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
+                Directory.CreateDirectory(folder);
+                string path = Path.Combine(folder,
+                    $"{fieldname}_{kvp.Key}.png");
+                if (File.Exists(path))
+                    continue;
+                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                { kvp.Value.SaveAsPng(fs, kvp.Value.Width, kvp.Value.Height); }
+            }
+        }
+
+        private const int texturewidth = 128;
+        private const int colorsPerPalette = 256;
+        private const int bytesPerPalette = 2 * colorsPerPalette; //16 bit color (2 bytes) * 256 colors
+
+        //private static int palettes = 24; // or 16;
+
+        private class TextureType
+        {
+            public byte Type = 1;
+            public byte Palettes;
+            public ushort Width => checked((ushort)(TWidth * TexturePages));
+            public byte TexturePages;
+            public byte SkippedPalettes = 8;
+
+            private const ushort TWidth = 128;
+            private const ushort THeight = 256;
+            public uint PaletteSectionSize => checked((uint)(bytesPerPalette * Palettes));
+            public uint FileSize => checked((uint)(PaletteSectionSize + (Width * THeight)));
+
+            public int BytesSkippedPalettes => bytesPerPalette * SkippedPalettes; // first 8 are junk and are not used.
+        }
+
+        private static bool ParseBackground2D(byte[] mimb, byte[] mapb)
         {
             Is4Bit = false;
             if (mimb == null || mapb == null)
                 return false;
 
-            tiles = new List<Tile>();
-            int palettes = 24;
-            //128x256
-            //using (BinaryReader pbsmim = new BinaryReader(new MemoryStream(mimb))
-            const int tilesize = 16;
-            using (BinaryReader pbsmap = new BinaryReader(new MemoryStream(mapb)))
-                while (pbsmap.BaseStream.Position + 16 < pbsmap.BaseStream.Length)
-                {
-                    Tile tile = new Tile { X = pbsmap.ReadInt16() };
-                    if (tile.X == 0x7FFF)
-                        break;
-                    tile.Y = pbsmap.ReadInt16();
-                    tile.Z = pbsmap.ReadUInt16();// (ushort)(4096 - pbsmap.ReadUShort());
-                    byte texIdBuffer = pbsmap.ReadByte();
-                    tile.TextureID = (byte)(texIdBuffer & 0xF);
-                    // pbsmap.BaseStream.Seek(-1, SeekOrigin.Current);
-                    pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
-                    tile.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
-                    tile.SourceX = pbsmap.ReadByte();
-                    tile.SourceY = pbsmap.ReadByte();
-                    tile.LayerID = (byte)(pbsmap.ReadByte() >> 1/*& 0x7F*/);
-                    tile.BlendMode = (BlendMode)pbsmap.ReadByte();
-                    tile.AnimationID = pbsmap.ReadByte();
-                    tile.AnimationState = pbsmap.ReadByte();
-                    tile.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
-                    tile.Depth = (byte)(texIdBuffer >> 5);
-                    tile.TileID = tiles.Count;
-                    tiles.Add(tile);
-                    if ((Memory.EnableDumpingData) && tile.Depth < 4)
-                    {
-                        string path = Path.Combine(Path.GetTempPath(), "Fields", Memory.FieldHolder.FieldID.ToString());
-                        Directory.CreateDirectory(path);
-                        path = Path.Combine(path, $"SkipTile.{Memory.FieldHolder.FieldID}.{tiles.Count - 1}.{tile.Depth}.bin");
-                        if (!File.Exists(path))
-                            using (BinaryWriter bw = new BinaryWriter(new FileStream(
-                                path,
-                                FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
-                            {
-                                pbsmap.BaseStream.Seek(-16, SeekOrigin.Current);
-                                bw.Write(pbsmap.ReadBytes(16));
-                            }
-                    }
-                    //srcY = srcX == texID * 128 + srcX;
-                }
+            TextureType textureType = TextureTypes.First(x => x.FileSize == mimb.Length);
+            tiles = GetTiles(mapb,textureType);
+            FindOverlappingTiles();
+            FindOverlappingTilesSource();
             int lowestY = tiles.Min(x => x.Y);
             int maximumY = tiles.Max(x => x.Y);
             int lowestX = tiles.Min(x => x.X); //-160;
             int maximumX = tiles.Max(x => x.X);
-
-            Height = Math.Abs(lowestY) + maximumY + tilesize; //224
-            Width = Math.Abs(lowestX) + maximumX + tilesize; //320
-                                                             //Color[] finalImage = new Color[height * width]; //ARGB;
-                                                             //Color[] finalOverlapImage = new Color[height * width];
-                                                             //tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
-                                                             //texOverlap = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
+            Dictionary<byte, Color[]> dictPalettes = GetPalettes(mimb, textureType);
+            Height = Math.Abs(lowestY) + maximumY + Tile.size; //224
+            Width = Math.Abs(lowestX) + maximumX + Tile.size; //320
+                                                              //Color[] finalImage = new Color[height * width]; //ARGB;
+                                                              //Color[] finalOverlapImage = new Color[height * width];
+                                                              //tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
+                                                              //texOverlap = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
             IOrderedEnumerable<byte> layers = tiles.Select(x => x.LayerID).Distinct().OrderBy(x => x);
             Debug.WriteLine($"FieldID: {Memory.FieldHolder.FieldID}, Layers: {layers.Count()}, ({string.Join(",", layers.ToArray())}) ");
             byte MaximumLayer = layers.Max();
             byte MinimumLayer = layers.Min();
             IOrderedEnumerable<ushort> BufferDepth = tiles.Select(x => x.Z).Distinct().OrderByDescending(x => x); // larger number is farther away.
-            List<Tile[]> overlapIssues = (from t1 in tiles
-                                          from t2 in tiles
-                                          where t1 != t2
-                                          where t1.TileID < t2.TileID
-                                          where t1.BlendMode == BlendMode.none
-                                          where t1.Intersect(t2)
-                                          orderby t1.TileID, t2.TileID ascending
-                                          select new[] { t1, t2 }
-                          ).Distinct().ToList();
-            foreach (Tile[] overlappingTiles in overlapIssues)
-            {
-                //if want pixel perfect test colors here.
-                overlappingTiles[1].OverLapID = checked((byte)(overlappingTiles[0].OverLapID + 1));
-            }
+
             List<Tile> sortedtiles = tiles.OrderBy(x => x.OverLapID).ThenByDescending(x => x.Z).ThenBy(x => x.LayerID).ThenBy(x => x.AnimationID).ThenBy(x => x.AnimationState).ThenBy(x => x.BlendMode).ToList();
-            
+
             if (Textures != null)
             {
                 foreach (Texture2D tex in drawtextures().Select(x => x.Value))
@@ -460,27 +553,25 @@ namespace OpenVIII
                     overlapID = tile.OverLapID;
                 }
 
-                const int colorsPerPalette = 256;
-                const int bytesPerPalette = 2 * colorsPerPalette; //16 bit color (2 bytes) * 256 colors
-                int palettePointer = 4096 + ((tile.PaletteID) * bytesPerPalette);
-                int sourceImagePointer = bytesPerPalette * palettes;
+                int palettePointer = textureType.BytesSkippedPalettes + ((tile.PaletteID) * bytesPerPalette);
+                int sourceImagePointer = bytesPerPalette * textureType.Palettes;
+                const int texturewidth = 128;
+                int startPixel = sourceImagePointer + tile.SourceX + texturewidth * tile.TextureID + (textureType.Width * tile.SourceY);
 
                 int realX = Math.Abs(lowestX) + tile.X; //baseX
                 int realY = Math.Abs(lowestY) + tile.Y; //*width
                 int realDestinationPixel = ((realY * Width) + realX);
 
-                Rectangle dst = new Rectangle(realX, realY, tilesize, tilesize);
-                const int texturewidth = 128;
-                int startPixel = sourceImagePointer + tile.SourceX + texturewidth * tile.TextureID + (type1Width * tile.SourceY);
+                Rectangle dst = new Rectangle(realX, realY, Tile.size, Tile.size);
                 if (tile.Is4Bit)
                 {
                     startPixel -= tile.SourceX / 2;
                     Is4Bit = true;
                 }
-                for (int y = 0; y < tilesize; y++)
-                    for (int x = 0; x < tilesize; x++)
+                for (int y = 0; y < Tile.size; y++)
+                    for (int x = 0; x < Tile.size; x++)
                     {
-                        byte colorKey = GetColorKey(mimb, type1Width, startPixel, x, y, tile.Is8Bit);
+                        byte colorKey = GetColorKey(mimb, textureType.Width, startPixel, x, y, tile.Is8Bit);
                         ushort color16bit = BitConverter.ToUInt16(mimb, 2 * colorKey + palettePointer);
                         if (color16bit == 0) // 0 is Color.TransparentBlack So we skip it.
                             continue;
@@ -522,6 +613,122 @@ namespace OpenVIII
             return true;
         }
 
+        private static Dictionary<byte, Color[]> GetPalettes(byte[] mimb, TextureType textureType)
+        {
+            Dictionary<byte, Color[]> CLUT = tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]);
+            using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
+                foreach (KeyValuePair<byte, Color[]> clut in CLUT)
+                {
+                    int palettePointer = textureType.BytesSkippedPalettes + ((clut.Key) * bytesPerPalette);
+                    br.BaseStream.Seek(palettePointer, SeekOrigin.Begin);
+                    for (int i = 0; i < colorsPerPalette; i++)
+                        clut.Value[i] = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
+                }
+            return CLUT;
+        }
+
+        private static void FindOverlappingTiles()
+        {
+            List<Tile[]> overlapIssues = (from t1 in tiles
+                                          from t2 in tiles
+                                          where t1.TileID < t2.TileID
+                                          where t1.BlendMode == BlendMode.none
+                                          where t1.Intersect(t2)
+                                          orderby t1.TileID, t2.TileID ascending
+                                          select new[] { t1, t2 }
+                                      ).Distinct().ToList();
+            foreach (Tile[] overlappingTiles in overlapIssues)
+            {
+                //if want pixel perfect test colors here.
+                //you can tell if the two layers are okay if one is transparent when other isn't.
+                overlappingTiles[1].OverLapID = checked((byte)(overlappingTiles[0].OverLapID + 1));
+            }
+        }
+
+        private static void FindOverlappingTilesSource()
+        {
+            List<Tile[]> overlapIssues = (from t1 in tiles
+                                          from t2 in tiles
+                                          where t1.TileID < t2.TileID
+                                          //where t1.BlendMode == BlendMode.none
+                                          where t1.SourceIntersect(t2)
+                                          orderby t1.TileID, t2.TileID ascending
+                                          select new[] { t1, t2 }
+                                      ).Distinct().ToList();
+            foreach (Tile[] overlappingTiles in overlapIssues)
+            {
+                if (overlappingTiles[0].SourceRectangle() == overlappingTiles[1].SourceRectangle())
+                {
+                    overlappingTiles[1].Skip = true;
+                }
+                else
+                {
+                    overlappingTiles[1].SourceX = checked((ushort)((int)Math.Round(overlappingTiles[1].SourceX / (float)Tile.size) * Tile.size));
+                    overlappingTiles[1].SourceY = checked((ushort)((int)Math.Round(overlappingTiles[1].SourceY / (float)Tile.size) * Tile.size));
+                    overlappingTiles[0].SourceX = checked((ushort)((int)Math.Round(overlappingTiles[0].SourceX / (float)Tile.size) * Tile.size));
+                    overlappingTiles[0].SourceY = checked((ushort)((int)Math.Round(overlappingTiles[0].SourceY / (float)Tile.size) * Tile.size));
+                    if (overlappingTiles[0].SourceRectangle() == overlappingTiles[1].SourceRectangle())
+                    {
+                        overlappingTiles[1].Skip = true;
+                    }
+                }
+                //if want pixel perfect test colors here.
+                //you can tell if the two layers are okay if one is transparent when other isn't.
+                //overlappingTiles[1].SourceOverLapID = checked((byte)(overlappingTiles[0].SourceOverLapID + 1));
+            }
+        }
+
+        private static List<Tile> GetTiles(byte[] mapb, TextureType textureType)
+        {
+            tiles = new List<Tile>();
+            //128x256
+            //using (BinaryReader pbsmim = new BinaryReader(new MemoryStream(mimb))
+            using (BinaryReader pbsmap = new BinaryReader(new MemoryStream(mapb)))
+                while (pbsmap.BaseStream.Position + 16 < pbsmap.BaseStream.Length)
+                {
+                    Tile tile = new Tile { X = pbsmap.ReadInt16() };
+                    if (tile.X == 0x7FFF)
+                        break;
+                    tile.Y = pbsmap.ReadInt16();
+                    if (textureType.Type == 1)
+                    {
+                        tile.Z = pbsmap.ReadUInt16();// (ushort)(4096 - pbsmap.ReadUShort());
+                        byte texIdBuffer = pbsmap.ReadByte();
+                        tile.TextureID = (byte)(texIdBuffer & 0xF);
+                        // pbsmap.BaseStream.Seek(-1, SeekOrigin.Current);
+                        pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
+                        tile.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+                        tile.SourceX = pbsmap.ReadByte();
+                        tile.SourceY = pbsmap.ReadByte();
+                        tile.LayerID = (byte)(pbsmap.ReadByte() >> 1/*& 0x7F*/);
+                        tile.BlendMode = (BlendMode)pbsmap.ReadByte();
+                        tile.AnimationID = pbsmap.ReadByte();
+                        tile.AnimationState = pbsmap.ReadByte();
+                        tile.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
+                        tile.Depth = (byte)(texIdBuffer >> 5);
+                        tile.TileID = tiles.Count;
+                    }
+                    else if(textureType.Type == 2)
+                    {
+                        tile.SourceX = pbsmap.ReadUInt16();
+                        tile.SourceY = pbsmap.ReadUInt16();
+                        tile.Z = pbsmap.ReadUInt16();
+                        byte texIdBuffer = pbsmap.ReadByte();
+                        tile.TextureID = (byte)(texIdBuffer & 0xF);
+                        pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
+                        tile.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+                        tile.AnimationID = pbsmap.ReadByte();
+                        tile.AnimationState = pbsmap.ReadByte();
+                        tile.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
+                        tile.Depth = (byte)(texIdBuffer >> 5);
+                        tile.TileID = tiles.Count;
+                    }
+                    tiles.Add(tile);
+                    
+                }
+            return tiles;
+        }
+
         private static byte GetColorKey(byte[] mimb, int textureWidth, int startPixel, int x, int y, bool is8Bit)
         {
             if (is8Bit)
@@ -550,11 +757,12 @@ namespace OpenVIII
                                     {
                                         string path = Path.Combine(Path.GetTempPath(), "Fields", Memory.FieldHolder.FieldID.ToString());
                                         Directory.CreateDirectory(path);
-                                        kvp.Value.SaveAsPng(
-                                            new FileStream(Path.Combine(path,
+                                        using (FileStream fs = new FileStream(Path.Combine(path,
                                             $"Field.{Memory.FieldHolder.FieldID}.{kvp_Z.Key.ToString("D4")}.{kvp_Layer.Key}.{kvp_AnimationID.Key}.{kvp_AnimationState.Key}.{kvp_OverlapID.Key}.{(int)kvp.Key}.png"),
-                                            FileMode.Create, FileAccess.Write, FileShare.ReadWrite),
-                                            kvp.Value.Width, kvp.Value.Height);
+                                            FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                                            kvp.Value.SaveAsPng(
+                                                fs,
+                                                kvp.Value.Width, kvp.Value.Height);
                                     }
             }
         }
