@@ -1,13 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace OpenVIII
 {
-    public class TextureBuffer : Texture_Base
+    public class TextureBuffer : Texture_Base, ICloneable, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
     {
         #region Fields
 
@@ -50,6 +51,12 @@ namespace OpenVIII
         public override int GetOrigY => 0;
 
         public override int GetWidth => Width;
+
+        public int Count => ((ICollection)colors).Count;
+
+        public object SyncRoot => colors.SyncRoot;
+
+        public bool IsSynchronized => colors.IsSynchronized;
 
         #endregion Properties
 
@@ -163,6 +170,12 @@ namespace OpenVIII
         }
 
         public override void Load(byte[] buffer, uint offset = 0) => throw new NotImplementedException();
+        public bool Equals(object other, IEqualityComparer comparer) => ((IStructuralEquatable)colors).Equals(other, comparer);
+        public int GetHashCode(IEqualityComparer comparer) => ((IStructuralEquatable)colors).GetHashCode(comparer);
+        public int CompareTo(object other, IComparer comparer) => ((IStructuralComparable)colors).CompareTo(other, comparer);
+        public IEnumerator GetEnumerator() => colors.GetEnumerator();
+        public void CopyTo(Array array, int index) => colors.CopyTo(array, index);
+        public object Clone() => colors.Clone();
 
         #endregion Methods
     }
