@@ -341,10 +341,10 @@ namespace OpenVIII
         /// <remarks>
         /// This allows null palette but it doesn't seem to handle the palette being null
         /// </remarks>
-        protected Color[] CreateImageBuffer(BinaryReader br, Color[] palette = null)
+        protected TextureBuffer CreateImageBuffer(BinaryReader br, Color[] palette = null)
         {
             br.BaseStream.Seek(textureDataPointer, SeekOrigin.Begin);
-            Color[] buffer = new Color[texture.Width * texture.Height]; //ARGB
+            TextureBuffer buffer = new TextureBuffer(texture.Width, texture.Height); //ARGB
             if (Assert((buffer.Length / bpp) <= br.BaseStream.Length - br.BaseStream.Position)) //make sure the buffer is large enough
                 return null;
             if (bpp == 8)
@@ -354,8 +354,8 @@ namespace OpenVIII
                     byte colorkey = br.ReadByte();
                     if (colorkey < texture.NumOfColours)
                         buffer[i] = palette[colorkey]; //colorkey
-                    else
-                        buffer[i] = Color.TransparentBlack; // trying something out of oridinary.
+                    //else
+                    //    buffer[i] = Color.TransparentBlack; // trying something out of oridinary.
                 }
             }
             else if (bpp == 4)
@@ -415,12 +415,7 @@ namespace OpenVIII
             else throw new Exception($"TIM that has {bpp} bpp mode and has no clut data!");
         }
 
-        protected Texture2D GetTexture(BinaryReader br, Color[] colors)
-        {
-            Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
-            image.SetData(CreateImageBuffer(br, colors));
-            return image;
-        }
+        protected Texture2D GetTexture(BinaryReader br, Color[] colors) => CreateImageBuffer(br, colors).GetTexture();
 
         /// <summary>
         /// Populate Texture structure
