@@ -303,7 +303,8 @@ namespace OpenVIII
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
             Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
             Height = UniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
-            Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256/*Math.Max(Width,Height), Height*/));
+            Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+
             //var dup = (from t1 in UniqueSetOfTileData
             //           from t2 in UniqueSetOfTileData
             //           where t1 != t2 && t1.TextureID == t1.TextureID && t1.loc == t2.loc
@@ -319,14 +320,37 @@ namespace OpenVIII
             //        }
             //    }
             //}
-
+            bool overlap = false;
+            Is4Bit = false;
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
+            {
                 foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
                 {
-                    TextureBuffer tex = new TextureBuffer(kvp.Value.Width, kvp.Value.Height, true);
+                    GenTexture(kvp.Key, kvp.Value);
+                }
+                SaveSwizzled(TextureIDs, dictPalettes);
+                TextureIDs.ForEach(x => x.Value.Dispose());
+                if (overlap)
+                {
+                    var TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.Is4Bit).Select(x => new { x.TextureID, x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                    foreach (var kvp in TextureIDsPalettes)
+                    {
+                        GenTexture(kvp.Key.TextureID, kvp.Value, kvp.Key.PaletteID);
+                    }
+                    foreach (var groups in TextureIDsPalettes.GroupBy(x => x.Key.PaletteID))
+                        foreach (var kvp in groups)
+                        {
+                            SaveSwizzled(groups.ToDictionary(x => x.Key.TextureID, x => x.Value), null, $"_{kvp.Key.PaletteID}");
+                            break;
+                        }
+                    TextureIDsPalettes.ForEach(x => x.Value.Dispose());
+                }
+                void GenTexture(byte texID, Texture2D tex2d, byte? inpaletteID = null)
+                {
+                    TextureBuffer tex = new TextureBuffer(tex2d.Width, tex2d.Height, true);
 
                     //foreach (var textureID in UniqueSetOfTileData.GroupBy(x=>x.TextureID == kvp.Key))
-                    foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == kvp.Key))
+                    foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == texID && (!inpaletteID.HasValue || inpaletteID.Value == x.PaletteID)))
                     {
                         long startPixel = textureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturewidth * tile.TextureID) + (textureType.Width * tile.loc.Y);
                         //int readlength = Tile.size + (Tile.size * textureType.Width);
@@ -350,6 +374,7 @@ namespace OpenVIII
                                 }
                                 else
                                 {
+                                    Is4Bit = true;
                                     if (x % 2 == 0)
                                     {
                                         Colorkey = br.ReadByte();
@@ -364,6 +389,8 @@ namespace OpenVIII
                                 {
                                     if (tex[_x, _y] != Color.TransparentBlack)
                                     {
+                                        if (tile.Is4Bit)//excluding 8bit overlap for now.
+                                            overlap = true;
                                         if (tex[_x, _y] != color)
                                         {
                                             Debug.WriteLine($"x={_x},y={_y} :: {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]} :: {tile} \n   existed_color {tex[_x, _y]} :: failed_color={color}");
@@ -378,14 +405,13 @@ namespace OpenVIII
                         //(from b in br.ReadBytes(readlength)
                         // select dictPalettes[tile.PaletteID][b]).ToArray();
                     }
-                    tex.SetData(kvp.Value);
+                    tex.SetData(tex2d);
                 }
-            SaveSwizzled(TextureIDs,dictPalettes);
-            TextureIDs.ForEach(x => x.Value.Dispose());
+            }
             return true;
         }
 
-        private static void SaveSwizzled(Dictionary<byte, Texture2D> TextureIDs,Cluts cluts)
+        private static void SaveSwizzled(Dictionary<byte, Texture2D> TextureIDs, Cluts cluts, string suf = "")
         {
             string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
             if (string.IsNullOrWhiteSpace(fieldname))
@@ -396,16 +422,18 @@ namespace OpenVIII
             foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
             {
                 path = Path.Combine(folder,
-                    $"{fieldname}_{kvp.Key}.png");
+                    $"{fieldname}_{kvp.Key}{suf}.png");
                 if (File.Exists(path))
                     continue;
                 using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                 { kvp.Value.SaveAsPng(fs, kvp.Value.Width, kvp.Value.Height); }
             }
-            path = Path.Combine(folder,
-                    $"{fieldname}_Clut.png");
-            cluts.Save(path);
-            
+            if (cluts != null)
+            {
+                path = Path.Combine(folder,
+                        $"{fieldname}_Clut.png");
+                cluts.Save(path);
+            }
         }
 
         private const int texturewidth = 128;
@@ -551,7 +579,7 @@ namespace OpenVIII
 
         private static Cluts GetPalettes(byte[] mimb, TextureType textureType)
         {
-            Cluts CLUT = new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]),false);
+            Cluts CLUT = new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]), false);
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 foreach (KeyValuePair<byte, Color[]> clut in CLUT)
                 {
