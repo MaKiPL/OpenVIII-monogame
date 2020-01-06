@@ -78,7 +78,8 @@ namespace OpenVIII
 
         public override Color[] GetClutColors(ushort clut)
         {
-            if (!CLP) return null;
+            if (!CLP)
+                return null;
             else if (clut >= texture.NumOfCluts)
                 throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {texture.NumOfCluts}");
 
@@ -118,26 +119,13 @@ namespace OpenVIII
                     MemoryStream ms;
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
-                        try
+                        ms.Seek(TextureLocator, SeekOrigin.Begin);
+                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
+                        for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
                         {
-                            ms.Seek(TextureLocator, SeekOrigin.Begin);
-                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
-                            Color[] convertBuffer = new Color[texture.Width * texture.Height];
-                            for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
-                            {
-                                convertBuffer[i] = colors[br.ReadByte()]; //colorkey
-                            }
-                            bmp.SetData(convertBuffer);
-                            return bmp;
+                            convertBuffer[i] = colors[br.ReadByte()]; //colorkey
                         }
-                        catch (NullReferenceException)
-                        {
-                            return null;
-                        }
-                        catch (ArgumentNullException)
-                        {
-                            return null;
-                        }
+                        return convertBuffer.GetTexture();
                     }
                 }
                 else if (texture.bytesPerPixel == 2)
@@ -145,26 +133,13 @@ namespace OpenVIII
                     MemoryStream ms;
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
-                        try
+                        ms.Seek(TextureLocator, SeekOrigin.Begin);
+                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
+                        for (int i = 0; ms.Position + 2 < ms.Length; i++)
                         {
-                            ms.Seek(TextureLocator, SeekOrigin.Begin);
-                            Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
-                            colors = new Color[texture.Width * texture.Height];
-                            for (int i = 0; i < colors.Length && ms.Position + 2 < ms.Length; i++)
-                            {
-                                colors[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
-                            }
-                            bmp.SetData(colors);
-                            return bmp;
+                            convertBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
                         }
-                        catch (NullReferenceException)
-                        {
-                            return null;
-                        }
-                        catch (ArgumentNullException)
-                        {
-                            return null;
-                        }
+                        return convertBuffer.GetTexture();
                     }
                 }
                 else if (texture.bytesPerPixel == 3)
@@ -174,18 +149,18 @@ namespace OpenVIII
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
                         ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        Texture2D bmp = new Texture2D(Memory.graphics.GraphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
-                        colors = new Color[texture.Width * texture.Height];
-                        for (int i = 0; i < colors.Length && ms.Position + 3 < ms.Length; i++)
+                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
+                        Color color;
+                        color.A = 0xFF;
+                        for (int i = 0; ms.Position + 3 < ms.Length; i++)
                         {
                             //RGB or BGR so might need to reorder things to RGB
-                            colors[i].B = br.ReadByte();
-                            colors[i].G = br.ReadByte();
-                            colors[i].R = br.ReadByte();
-                            colors[i].A = 0xFF;
+                            color.B = br.ReadByte();
+                            color.G = br.ReadByte();
+                            color.R = br.ReadByte();
+                            convertBuffer[i] = color;
                         }
-                        bmp.SetData(colors);
-                        return bmp;
+                        return convertBuffer.GetTexture();
                     }
                 }
             }
