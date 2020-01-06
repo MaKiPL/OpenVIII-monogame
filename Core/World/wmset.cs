@@ -987,7 +987,7 @@ namespace OpenVIII.Core.World
                         waterTim3 = tim;
                     if (i == (int)Section38_textures.waterfall)
                         waterTim4 = tim;
-                    if (tim.GetBpp==4)
+                    if (tim.GetBytesPerPixel==4)
                         if(tim.GetClutSize != (tim.GetClutCount*tim.GetColorsCountPerPalette)) //broken header, force our own values
                         {
                             tim.ForceSetClutColors(16);

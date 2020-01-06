@@ -60,7 +60,7 @@ namespace OpenVIII
             //    Colors = colors;
             //}
 
-            Texture_Base.TextureType TextureType;
+            //Texture_Base.TextureType TextureType;
 
         }
 

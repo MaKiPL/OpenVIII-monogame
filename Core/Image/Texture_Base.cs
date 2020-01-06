@@ -6,17 +6,17 @@ namespace OpenVIII
 {
     public abstract class Texture_Base
     {
-        public enum TextureType : byte
-        {
-            TEX,
-            TIM,
-            Texture2D,
-            PNG
-        }
         #region Fields
 
         private const ushort blue_mask = 0x7C00;
+
         private const ushort green_mask = 0x3E0;
+
+        /// <summary>
+        /// all bits except the STP bit.
+        /// </summary>
+        private const ushort NotSTP_mask = 0x7FFF;
+
         private const ushort red_mask = 0x1F;
 
         /// <summary>
@@ -33,16 +33,24 @@ namespace OpenVIII
         /// <see cref="http://www.psxdev.net/forum/viewtopic.php?t=109"/>
         /// <seealso cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
         private const ushort STP_mask = 0x8000;
-        /// <summary>
-        /// all bits except the STP bit.
-        /// </summary>
-        private const ushort NotSTP_mask = 0x7FFF;
 
         #endregion Fields
 
+        //#region Enums
+
+        //public enum TextureType : byte
+        //{
+        //    TEX,
+        //    TIM,
+        //    Texture2D,
+        //    PNG
+        //}
+
+        //#endregion Enums
+
         #region Properties
 
-        public abstract byte GetBpp { get; }
+        public abstract byte GetBytesPerPixel { get; }
         public abstract int GetClutCount { get; }
         public abstract int GetClutSize { get; }
         public abstract int GetColorsCountPerPalette { get; }
@@ -109,6 +117,16 @@ namespace OpenVIII
             return ret;
         }
 
+        /// <summary>
+        /// Get Special Transparency Processing bit.
+        /// </summary>
+        /// <param name="pixel">16 bit color</param>
+        /// <returns>true if bit is set and not black, otherwise false.</returns>
+        public static bool GetSTP(ushort pixel) =>
+            // I set this to always return false for black. As it's transparency is handled in
+            // conversion method.
+            (pixel & NotSTP_mask) == 0 ? false : (pixel & STP_mask) != 0;
+
         public static Texture_Base Open(byte[] buffer, uint offset = 0)
         {
             switch (BitConverter.ToUInt32(buffer, (int)(0 + offset)))
@@ -137,9 +155,15 @@ namespace OpenVIII
 
         public abstract Texture2D GetTexture(ushort? clut = null);
 
+        //    public static byte GetAlpha => Modes[0];
+        //}
+        public abstract void Load(byte[] buffer, uint offset = 0);
+
         public abstract void Save(string path);
 
         public abstract void SaveCLUT(string path);
+
+        #endregion Methods
 
         //public static class Transparency
         //{
@@ -159,24 +183,6 @@ namespace OpenVIII
         //    /// <see cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
         //    //public static readonly byte[] Modes = { 0xFF 0x7F, 0xFF, 0x7F, 0x3F }; // if 100% before calculation
         //    public static readonly byte[] Modes = { 0xFF, 0x3F, 0x7F, 0x7F, 0x1F }; // if 50% before calculation
-
-        //    public static byte GetAlpha => Modes[0];
-        //}
-
-        /// <summary>
-        /// Get Special Transparency Processing bit.
-        /// </summary>
-        /// <param name="pixel">16 bit color</param>
-        /// <returns>true if bit is set and not black, otherwise false.</returns>
-        public static bool GetSTP(ushort pixel) =>
-            // I set this to always return false for black. As it's transparency is handled in
-            // conversion method.
-            (pixel & NotSTP_mask) == 0 ? false : (pixel & STP_mask) != 0;
-
-        public abstract void Load(byte[] buffer, uint offset = 0);
-
-        #endregion Methods
-
         //If color is not black and STP bit on, possible semi-transparency.
 
         //http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt

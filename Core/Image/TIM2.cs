@@ -132,7 +132,7 @@ namespace OpenVIII
         /// <summary>
         /// Gets Bits per pixel
         /// </summary>
-        public override byte GetBpp => (byte)bpp;
+        public override byte GetBytesPerPixel => (byte)bpp;
 
         /// <summary>
         /// Number of clut color palettes
@@ -275,6 +275,8 @@ namespace OpenVIII
             ReadParameters(br);
         }
 
+        public override void Load(byte[] buffer, uint offset = 0) => _Init(buffer, offset);
+
         /// <summary>
         /// Writes the Tim file to the hard drive.
         /// </summary>
@@ -288,6 +290,23 @@ namespace OpenVIII
                 else
                     bw.Write(buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer)).ToArray());
             }
+        }
+
+        public override void SaveCLUT(string path)
+        {
+            if (CLP)
+                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                {
+                    using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
+                    {
+                        for (ushort i = 0; i < texture.NumOfCluts; i++)
+                        {
+                            CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(br, i), 0, texture.NumOfColours);
+                        }
+                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                            CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
+                    }
+                }
         }
 
         protected void _Init(byte[] buffer, uint offset = 0)
@@ -374,23 +393,6 @@ namespace OpenVIII
             return buffer;
         }
 
-        public override void SaveCLUT(string path)
-        {
-            if (CLP)
-                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
-                {
-                    using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
-                    {
-                        for (ushort i = 0; i < texture.NumOfCluts; i++)
-                        {
-                            CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(br, i), 0, texture.NumOfColours);
-                        }
-                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
-                            CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
-                    }
-                }
-        }
-
         /// <summary>
         /// Get clut color palette
         /// </summary>
@@ -434,8 +436,6 @@ namespace OpenVIII
             if (trimExcess)
                 buffer = buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer - timOffset)).ToArray();
         }
-
-        public override void Load(byte[] buffer, uint offset = 0) => _Init(buffer, offset);
 
         #endregion Methods
 

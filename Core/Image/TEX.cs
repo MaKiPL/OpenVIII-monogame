@@ -44,9 +44,9 @@ namespace OpenVIII
         #region Properties
 
         public bool CLP => texture.PaletteFlag != 0;
+        public override byte GetBytesPerPixel => texture.bytesPerPixel;
         public override int GetClutCount => texture.NumOfCluts;
         public override int GetClutSize => (int)texture.PaletteSize;
-        public override byte GetBpp => texture.bytesPerPixel;
         public override int GetColorsCountPerPalette => texture.NumOfColours;
         public override int GetHeight => texture.Height;
         public override int GetOrigX => 0;
@@ -75,19 +75,6 @@ namespace OpenVIII
         public override void ForceSetClutColors(ushort newNumOfColours) => texture.NumOfColours = newNumOfColours;
 
         public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = (byte)newClut;
-
-        public override void SaveCLUT(string path)
-        {
-            using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
-            {
-                for (ushort i = 0; i < texture.NumOfCluts; i++)
-                {
-                    CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(i), 0, texture.NumOfColours);
-                }
-                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
-                    CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
-            }
-        }
 
         public override Color[] GetClutColors(ushort clut)
         {
@@ -209,6 +196,13 @@ namespace OpenVIII
 
         public override Texture2D GetTexture() => GetTexture(0);
 
+        public override void Load(byte[] buffer, uint offset = 0)
+        {
+            texture = new Texture();
+            this.buffer = buffer;
+            ReadParameters();
+        }
+
         /// <summary>
         /// Writes the Tim file to the hard drive.
         /// </summary>
@@ -218,6 +212,19 @@ namespace OpenVIII
             using (BinaryWriter bw = new BinaryWriter(File.Create(path)))
             {
                 bw.Write(buffer);
+            }
+        }
+
+        public override void SaveCLUT(string path)
+        {
+            using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
+            {
+                for (ushort i = 0; i < texture.NumOfCluts; i++)
+                {
+                    CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(i), 0, texture.NumOfColours);
+                }
+                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                    CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
             }
         }
 
@@ -242,13 +249,6 @@ namespace OpenVIII
                 texture.paletteData = new byte[PaletteSectionSize];
                 Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, PaletteSectionSize);
             }
-        }
-
-        public override void Load(byte[] buffer, uint offset = 0)
-        {
-            texture = new Texture();
-            this.buffer = buffer;
-            ReadParameters();
         }
 
         #endregion Methods
@@ -280,14 +280,14 @@ namespace OpenVIII
             public int Height;
 
             /// <summary>
-            /// 0x34
-            /// </summary>
-            public int NumOfColours;
-
-            /// <summary>
             /// 0x30
             /// </summary>
             public byte NumOfCluts;
+
+            /// <summary>
+            /// 0x34
+            /// </summary>
+            public int NumOfColours;
 
             /// <summary>
             /// 0xF0 for ff8;0xEC for ff7; size = PaletteSize * 4;

@@ -178,6 +178,7 @@
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
+    <Compile Include="Image\TextureBuffer.cs" />
     <Compile Include="Field\Tile.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
