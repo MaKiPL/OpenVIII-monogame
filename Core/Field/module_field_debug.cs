@@ -199,8 +199,10 @@ namespace OpenVIII
             return;
         }
 
-        public static string GetFolder(string fieldname)
+        public static string GetFolder(string fieldname=null)
         {
+            if (string.IsNullOrWhiteSpace(fieldname))
+                fieldname = GetFieldName();
             string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
             Directory.CreateDirectory(folder);
             return folder;

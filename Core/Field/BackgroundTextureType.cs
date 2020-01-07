@@ -4,31 +4,10 @@ namespace OpenVIII
 {
     public partial class Background
     {
-        //private static int palettes = 24; // or 16;
-
-        #region Fields
-
-        private static _TextureType[] TextureTypes = new _TextureType[]
-        {
-            new _TextureType {
-                Palettes =24,
-                TexturePages = 13
-            },
-            new _TextureType {
-                Palettes =16,
-                TexturePages = 12,
-                SkippedPalettes =0,
-                Type = 2
-            },
-        };
-
-        private _TextureType TextureType;
-
-        #endregion Fields
 
         #region Classes
 
-        private class _TextureType
+        private class BackgroundTextureType
         {
             #region Fields
 
@@ -53,8 +32,23 @@ namespace OpenVIII
             #region Methods
 
             // first 8 are junk and are not used.
-            public static _TextureType GetTextureType(byte[] mimb)
+            public static BackgroundTextureType GetTextureType(byte[] mimb)
                 => TextureTypes.First(x => x.FileSize == mimb.Length);
+
+
+            private static BackgroundTextureType[] TextureTypes = new BackgroundTextureType[]
+            {
+            new BackgroundTextureType {
+                Palettes =24,
+                TexturePages = 13
+            },
+            new BackgroundTextureType {
+                Palettes =16,
+                TexturePages = 12,
+                SkippedPalettes =0,
+                Type = 2
+            },
+            };
 
             #endregion Methods
         }

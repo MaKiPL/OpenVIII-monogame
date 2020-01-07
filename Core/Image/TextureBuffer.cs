@@ -114,9 +114,13 @@ namespace OpenVIII
 
         public static explicit operator Texture2D(TextureBuffer @in)
         {
-            Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, @in.Width, @in.Height);
-            @in.SetData(tex);
-            return tex;
+            if (Memory.graphics?.GraphicsDevice != null)
+            {
+                Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, @in.Width, @in.Height);
+                @in.SetData(tex);
+                return tex;
+            }
+            return null;
         }
         public static explicit operator Texture2DWrapper(TextureBuffer @in)
         {

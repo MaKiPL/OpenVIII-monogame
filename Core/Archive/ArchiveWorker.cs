@@ -250,10 +250,10 @@ namespace OpenVIII
         private string[] ProduceFileLists()
         {
             if (isDir)
-                return Directory.GetFiles(_path, "*", SearchOption.AllDirectories);
+                return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x=>x.Length).ThenBy(x=>x, StringComparer.OrdinalIgnoreCase).ToArray();
             if (FL != null && FL.Length > 0)
                 return GetListOfFiles(FL);
-            return ProduceFileLists(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            return ProduceFileLists(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         private string[] ProduceFileLists(Stream s)
