@@ -244,7 +244,7 @@ namespace OpenVIII
             ColorBlendFunction = BlendFunction.ReverseSubtract
         };
         /// <summary>
-        /// untested subtract.
+        /// untested add. seems to work if colors are preblended like if they overlap the colors combined ahead of time.
         /// </summary>
         /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
         public static readonly BlendState blendState_Add = new BlendState
@@ -253,6 +253,18 @@ namespace OpenVIII
             ColorSourceBlend = Blend.One,
             //AlphaSourceBlend = Blend.One,
             ColorDestinationBlend = Blend.One,
+            //AlphaDestinationBlend = Blend.One,
+            ColorBlendFunction = BlendFunction.Add
+        };
+        /// <summary>
+        /// untested add with blendfactor. You set the GraphicsDevice.BlendFactor before drawing.
+        /// </summary>
+        public static readonly BlendState blendState_Add_BlendFactor = new BlendState
+        {
+            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
+            ColorSourceBlend = Blend.One,
+            //AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.BlendFactor,
             //AlphaDestinationBlend = Blend.One,
             ColorBlendFunction = BlendFunction.Add
         };

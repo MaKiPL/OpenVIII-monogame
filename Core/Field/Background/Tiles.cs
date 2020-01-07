@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -26,9 +29,14 @@ namespace OpenVIII
 
             #region Properties
 
+            public Point BottomRight => new Point(tiles.Max(tile => tile.X) + Tile.size, tiles.Max(tile => tile.Y) + Tile.size);
             public int Count => ((IList<Tile>)tiles).Count;
 
+            public int Height => Math.Abs(TopLeft.Y) + BottomRight.Y;
             public bool IsReadOnly => ((IList<Tile>)tiles).IsReadOnly;
+
+            public Point TopLeft => new Point(tiles.Min(tile => tile.X), tiles.Min(tile => tile.Y));
+            public int Width => Math.Abs(TopLeft.X) + BottomRight.X;
 
             #endregion Properties
 

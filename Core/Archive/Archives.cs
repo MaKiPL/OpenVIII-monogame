@@ -5,7 +5,7 @@ namespace OpenVIII
 
     public static partial class Memory
     {
-        public static class Archives
+        public static class Archives 
         {
             public static Archive A_BATTLE = new Archive(FF8DIRdata_lang, "battle");
             public static Archive A_FIELD = new Archive(FF8DIRdata_lang, "field");

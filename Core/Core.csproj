@@ -178,12 +178,12 @@
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
-    <Compile Include="Field\Background.cs" />
-    <Compile Include="Field\BackgroundTextureType.cs" />
-    <Compile Include="Field\Tiles.cs" />
+    <Compile Include="Field\Background\Background.cs" />
+    <Compile Include="Field\Background\BackgroundTextureType.cs" />
+    <Compile Include="Field\Background\Tiles.cs" />
     <Compile Include="Image\Cluts.cs" />
     <Compile Include="Image\TextureBuffer.cs" />
-    <Compile Include="Field\Tile.cs" />
+    <Compile Include="Field\Background\Tile.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
     <Compile Include="Image\Texture_Base.cs" />
