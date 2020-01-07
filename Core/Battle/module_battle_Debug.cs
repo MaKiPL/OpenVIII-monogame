@@ -492,7 +492,7 @@ namespace OpenVIII
                          Vector3.Up);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                    MathHelper.ToRadians(fovDirector / 8),
-                   Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 1000f);
 
             //ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
@@ -1103,7 +1103,7 @@ namespace OpenVIII
             camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
-                               Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+                               Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
                 1f, 1000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
