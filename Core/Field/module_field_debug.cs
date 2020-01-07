@@ -199,6 +199,11 @@ namespace OpenVIII
                 mod = Field_mods.DISABLED;
                 return;
             }
+            if (!ParseBackground2D(getfile(".mim"), getfile(".map")))
+            {
+                mod = Field_mods.DISABLED;
+                return;
+            }
             //let's start with scripts
             List<Jsm.GameObject> jsmObjects;
 
@@ -413,12 +418,10 @@ namespace OpenVIII
 
         private static void SaveSwizzled(Dictionary<byte, Texture2D> TextureIDs, Cluts cluts, string suf = "")
         {
-            string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
-            if (string.IsNullOrWhiteSpace(fieldname))
-                fieldname = $"unk{Memory.FieldHolder.FieldID}";
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
+            //if (!Memory.EnableDumpingData) return;
+            string fieldname = GetFieldName();
+            string folder = GetFolder(fieldname);
             string path;
-            Directory.CreateDirectory(folder);
             foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
             {
                 path = Path.Combine(folder,
@@ -434,6 +437,21 @@ namespace OpenVIII
                         $"{fieldname}_Clut.png");
                 cluts.Save(path);
             }
+        }
+
+        private static string GetFolder(string fieldname)
+        {
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
+            Directory.CreateDirectory(folder);
+            return folder;
+        }
+
+        private static string GetFieldName()
+        {
+            string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
+            if (string.IsNullOrWhiteSpace(fieldname))
+                fieldname = $"unk{Memory.FieldHolder.FieldID}";
+            return fieldname;
         }
 
         private const int texturewidth = 128;
@@ -508,7 +526,7 @@ namespace OpenVIII
                     previousTile.OverLapID != tile.OverLapID))
                 {
                     convertColorToTexture2d();
-                    texturebuffer = new TextureBuffer(Width, Height);
+                    texturebuffer = new TextureBuffer(Width, Height, false);
                     z = tile.Z;
                     layerID = tile.LayerID;
                     blendmode = tile.BlendMode;
@@ -668,7 +686,11 @@ namespace OpenVIII
 
         private static void SaveTextures()
         {
-            if (Memory.EnableDumpingData)
+
+            string fieldname = GetFieldName();
+            string folder = GetFolder(fieldname);
+            string path;
+            if (Memory.EnableDumpingData || true)
             {
                 //List<KeyValuePair<BlendModes, Texture2D>> _drawtextures = drawtextures();
                 foreach (KeyValuePair<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>> kvp_Z in Textures)
@@ -678,10 +700,10 @@ namespace OpenVIII
                                 foreach (KeyValuePair<byte, ConcurrentDictionary<BlendMode, Texture2D>> kvp_OverlapID in kvp_AnimationState.Value)
                                     foreach (KeyValuePair<BlendMode, Texture2D> kvp in kvp_OverlapID.Value)
                                     {
-                                        string path = Path.Combine(Path.GetTempPath(), "Fields", Memory.FieldHolder.FieldID.ToString());
-                                        Directory.CreateDirectory(path);
-                                        using (FileStream fs = new FileStream(Path.Combine(path,
-                                            $"Field.{Memory.FieldHolder.FieldID}.{kvp_Z.Key.ToString("D4")}.{kvp_Layer.Key}.{kvp_AnimationID.Key}.{kvp_AnimationState.Key}.{kvp_OverlapID.Key}.{(int)kvp.Key}.png"),
+
+                                        path = Path.Combine(folder,
+                                            $"{fieldname}_{kvp_Z.Key.ToString("D4")}.{kvp_Layer.Key}.{kvp_AnimationID.Key}.{kvp_AnimationState.Key}.{kvp_OverlapID.Key}.{(int)kvp.Key}.png");
+                                        using (FileStream fs = new FileStream(path,
                                             FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                                             kvp.Value.SaveAsPng(
                                                 fs,
