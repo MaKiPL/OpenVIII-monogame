@@ -1,12 +1,34 @@
-﻿namespace OpenVIII
+﻿using System.Linq;
+
+namespace OpenVIII
 {
-    public static partial class Module_field_debug
+    public partial class Background
     {
         //private static int palettes = 24; // or 16;
 
+        #region Fields
+
+        private static _TextureType[] TextureTypes = new _TextureType[]
+        {
+            new _TextureType {
+                Palettes =24,
+                TexturePages = 13
+            },
+            new _TextureType {
+                Palettes =16,
+                TexturePages = 12,
+                SkippedPalettes =0,
+                Type = 2
+            },
+        };
+
+        private _TextureType TextureType;
+
+        #endregion Fields
+
         #region Classes
 
-        private class TextureType
+        private class _TextureType
         {
             #region Fields
 
@@ -28,7 +50,13 @@
 
             #endregion Properties
 
+            #region Methods
+
             // first 8 are junk and are not used.
+            public static _TextureType GetTextureType(byte[] mimb)
+                => TextureTypes.First(x => x.FileSize == mimb.Length);
+
+            #endregion Methods
         }
 
         #endregion Classes

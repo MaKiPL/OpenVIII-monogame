@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
 namespace OpenVIII
 {
-    public static partial class Module_field_debug
+    public partial class Background
     {
         #region Classes
 
@@ -19,17 +21,13 @@ namespace OpenVIII
             /// </summary>
             public static readonly Vector2 TextureSize = new Vector2(128, 256);
 
-            public byte AnimationID =0xFF;
+            public byte AnimationID = 0xFF;
 
             public byte AnimationState;
 
             public byte blend1;
 
             public BlendMode BlendMode = BlendMode.none;
-            /// <summary>
-            /// for outputting the source tiles to texture pages. some tiles have the same source rectangle. So skip.
-            /// </summary>
-            public bool Skip = false;
             public byte Depth;
 
             /// <summary>
@@ -43,6 +41,11 @@ namespace OpenVIII
             public byte OverLapID = 0;
 
             public byte PaletteID;
+
+            /// <summary>
+            /// for outputting the source tiles to texture pages. some tiles have the same source rectangle. So skip.
+            /// </summary>
+            public bool Skip = false;
 
             /// <summary>
             /// Source X from Texture Data
@@ -74,16 +77,12 @@ namespace OpenVIII
             /// </summary>
             public ushort Z;
 
-            
-
             //public byte[] PaletteID4Bit => new byte[] {  };
             private uint pupuID;
-
 
             #endregion Fields
 
             #region Properties
-
 
             public bool Is4Bit => !Is8Bit;
 
@@ -104,6 +103,7 @@ namespace OpenVIII
                 set => pupuID = value;
             }
 
+            public byte SourceOverLapID { get; internal set; }
 
             /// <summary>
             /// TopLeft UV
@@ -112,8 +112,6 @@ namespace OpenVIII
 
             // 4 bits
             public float Zfloat => Z / 4096f;
-
-            public byte SourceOverLapID { get; internal set; }
 
             #endregion Properties
 
@@ -127,9 +125,53 @@ namespace OpenVIII
 
             public static implicit operator Vector3(Tile @in) => new Vector3(@in.X, @in.Y, @in.Zfloat);
 
+            public static Tile Load(BinaryReader pbsmap, int id, byte type)
+            {
+                long p = pbsmap.BaseStream.Position;
+                Tile t = new Tile { X = pbsmap.ReadInt16() };
+                if (t.X == 0x7FFF)
+                    return null;
+                t.Y = pbsmap.ReadInt16();
+                if (type == 1)
+                {
+                    t.Z = pbsmap.ReadUInt16();// (ushort)(4096 - pbsmap.ReadUShort());
+                    byte texIdBuffer = pbsmap.ReadByte();
+                    t.TextureID = (byte)(texIdBuffer & 0xF);
+                    // pbsmap.BaseStream.Seek(-1, SeekOrigin.Current);
+                    pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
+                    t.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+                    t.SourceX = pbsmap.ReadByte();
+                    t.SourceY = pbsmap.ReadByte();
+                    t.LayerID = (byte)(pbsmap.ReadByte() >> 1/*& 0x7F*/);
+                    t.BlendMode = (BlendMode)pbsmap.ReadByte();
+                    t.AnimationID = pbsmap.ReadByte();
+                    t.AnimationState = pbsmap.ReadByte();
+                    t.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
+                    t.Depth = (byte)(texIdBuffer >> 5);
+                    t.TileID = id;
+                }
+                else if (type == 2)
+                {
+                    t.SourceX = pbsmap.ReadUInt16();
+                    t.SourceY = pbsmap.ReadUInt16();
+                    t.Z = pbsmap.ReadUInt16();
+                    byte texIdBuffer = pbsmap.ReadByte();
+                    t.TextureID = (byte)(texIdBuffer & 0xF);
+                    pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
+                    t.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+                    t.AnimationID = pbsmap.ReadByte();
+                    t.AnimationState = pbsmap.ReadByte();
+                    t.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
+                    t.Depth = (byte)(texIdBuffer >> 5);
+                    t.TileID = id;
+                }
+                Debug.Assert(p - pbsmap.BaseStream.Position == -16);
+                return t;
+            }
+
             public Rectangle GetRectangle() => new Rectangle(X, Y, size, size);
 
-             public bool Intersect(Tile tile, bool rev = false)
+            public bool Intersect(Tile tile, bool rev = false)
             {
                 bool flip = !rev && tile.Intersect(this, !rev);
                 bool ret = flip ||
@@ -144,7 +186,6 @@ namespace OpenVIII
                     AnimationState == tile.AnimationState;
                 return ret;
             }
-
 
             public bool SourceIntersect(Tile tile, bool rev = false)
             {
