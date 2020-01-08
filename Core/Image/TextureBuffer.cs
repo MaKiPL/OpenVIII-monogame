@@ -107,10 +107,10 @@ namespace OpenVIII
                     }
             }
         }
-
+        
         #endregion Indexers
 
-        #region Methods
+            #region Methods
 
         public static explicit operator Texture2D(TextureBuffer @in)
         {

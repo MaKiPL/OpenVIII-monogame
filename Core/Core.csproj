@@ -180,6 +180,9 @@
     <Compile Include="CountDown.cs" />
     <Compile Include="Field\Background\Background.cs" />
     <Compile Include="Field\Background\BackgroundTextureType.cs" />
+    <Compile Include="Field\Background\BlendMode.cs" />
+    <Compile Include="Field\Background\TextureIDPaletteID.cs" />
+    <Compile Include="Field\Background\TileQuadTexture.cs" />
     <Compile Include="Field\Background\Tiles.cs" />
     <Compile Include="Image\Cluts.cs" />
     <Compile Include="Image\TextureBuffer.cs" />

@@ -262,9 +262,9 @@ namespace OpenVIII
         public static readonly BlendState blendState_Add_BlendFactor = new BlendState
         {
             ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
-            ColorSourceBlend = Blend.One,
+            ColorSourceBlend = Blend.BlendFactor,
             //AlphaSourceBlend = Blend.One,
-            ColorDestinationBlend = Blend.BlendFactor,
+            ColorDestinationBlend = Blend.One,
             //AlphaDestinationBlend = Blend.One,
             ColorBlendFunction = BlendFunction.Add
         };

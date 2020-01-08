@@ -16,6 +16,13 @@ namespace OpenVIII
         private const int bytesPerPalette = 2 * colorsPerPalette;
         private const int colorsPerPalette = 256;
 
+        private const bool Disable2D = true;
+
+        /// <summary>
+        /// Force Images to export to temp directory.
+        /// </summary>
+        private const bool EnableDumpingData = true;
+
         /// <summary>
         /// 4 bit has 2 columns per every byte so it expands to twice the width.
         /// </summary>
@@ -26,36 +33,50 @@ namespace OpenVIII
         /// </summary>
         private const int texturePageWidth = 128;
 
+        private Dictionary<byte, List<TileQuadTexture>> Animations;
+
+        private AlphaTestEffect ate;
+
         /// <summary>
         /// Palettes/Color Lookup Tables
         /// </summary>
         private Cluts Cluts;
 
         private bool disposedValue = false;
+        private BasicEffect effect;
         private Rectangle OutputDims;
+        private Matrix projectionMatrix, viewMatrix, worldMatrix;
+        private List<TileQuadTexture> quads;
+        private Dictionary<byte, TextureHandler> TextureIDs;
+        private Dictionary<TextureIDPaletteID, TextureHandler> TextureIDsPalettes;
         private ConcurrentDictionary<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>> Textures;
         private BackgroundTextureType TextureType;
         private Tiles tiles;
 
         #endregion Fields
 
-        #region Enums
+        #region Destructors
 
-        public enum BlendMode : byte
+        // To detect redundant calls
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        ~Background()
         {
-            halfadd,
-            add,
-            subtract,
-            quarteradd,
-            none,
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
         }
 
-        #endregion Enums
+        #endregion Destructors
 
         #region Properties
 
+        public TimeSpan CurrentTime { get; private set; }
         public int Height { get => OutputDims.Height; private set => OutputDims.Height = value; }
         public bool Is4Bit => tiles?.Any(x => x.Is4Bit) ?? false;
+        public bool IsAddBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.add) ?? false;
+        public bool IsHalfBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.halfadd) ?? false;
+        public bool IsQuarterBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.quarteradd) ?? false;
+        public bool IsSubtractBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.subtract) ?? false;
+        public TimeSpan TotalTime { get; private set; }
         public int Width { get => OutputDims.Width; private set => OutputDims.Width = value; }
 
         #endregion Properties
@@ -64,9 +85,20 @@ namespace OpenVIII
 
         public static Background Load(byte[] mimb, byte[] mapb)
         {
+            if (mimb == null || mapb == null)
+                return null;
+            Vector3 camTarget = Vector3.Zero;
+
+            Vector3 camPosition = new Vector3(0f, 0f, -10f);
             Background r = new Background
             {
-                TextureType = BackgroundTextureType.GetTextureType(mimb)
+                TextureType = BackgroundTextureType.GetTextureType(mimb),
+                ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice),
+                effect = new BasicEffect(Memory.graphics.GraphicsDevice),
+                worldMatrix = Matrix.CreateWorld(camPosition, Vector3.
+                          Forward, Vector3.Up),
+                viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                         Vector3.Up)
             };
             r.GetTiles(mapb);
             r.GetPalettes(mimb);
@@ -105,6 +137,7 @@ namespace OpenVIII
 
         public void Draw()
         {
+            DrawGeometry();
             List<KeyValuePair<BlendMode, Texture2D>> _drawtextures = drawtextures();
             bool open = false;
             BlendMode lastbm = BlendMode.none;
@@ -125,20 +158,20 @@ namespace OpenVIII
                                 break;
 
                             case BlendMode.halfadd:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add);
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
                                 break;
 
                             case BlendMode.quarteradd:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add);
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
                                 break;
 
                             case BlendMode.add:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add);
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
                                 break;
 
                             case BlendMode.subtract:
                                 alpha = .9f;
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Subtract);
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Subtract, ss: SamplerState.AnisotropicClamp);
                                 break;
                         }
                         lastbm = kvp.Key;
@@ -159,6 +192,29 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
         }
 
+        public void Update()
+        {
+            if ((CurrentTime += Memory.gameTime.ElapsedGameTime) > TotalTime)
+            {
+                CurrentTime = TimeSpan.Zero;
+                foreach (KeyValuePair<byte, List<TileQuadTexture>> a in Animations)
+                {
+                    int i = a.Value.FirstOrDefault(x => x.Enabled)?.AnimationState ?? 0;
+                    int max = a.Value.Max(k => k.AnimationState);
+                    a.Value.Where(x => x.AnimationState == i).ForEach(x => x.Hide());
+                    if (++i >= max)
+                        i = 0;
+                    a.Value.Where(x => x.AnimationState == i).ForEach(x => x.Show());
+                }
+            }
+
+            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+            float Width = tiles.Width;
+            float Height = tiles.Height;
+            Vector2 scale = Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth);
+            projectionMatrix = Matrix.CreateOrthographic(vp.Width / scale.X, vp.Height / scale.Y, 0f, 100f);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -168,8 +224,8 @@ namespace OpenVIII
                     // TODO: dispose managed state (managed objects).
                 }
 
-                TextureIDs.ForEach(x => x.Value.Dispose());
-                TextureIDsPalettes.ForEach(x => x.Value.Dispose());
+                //TextureIDs?.ForEach(x => x.Value?.Dispose());
+                //TextureIDsPalettes?.ForEach(x => x.Value?.Dispose());
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
 
@@ -217,8 +273,72 @@ namespace OpenVIII
             return r;
         }
 
+        private void DrawGeometry()
+        {
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
+            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+            effect.TextureEnabled = true;
+            //seeing if sorting will matter.
+            IOrderedEnumerable<TileQuadTexture> sorted = quads.Where(x => x.Enabled).OrderByDescending(x => x.GetTile.Z).ThenBy(x => x.GetTile.LayerID).ThenBy(x => x.GetTile.AnimationID).ThenBy(x => x.GetTile.AnimationState).ThenBy(x => x.GetTile.BlendMode);
+            //foreach (IGrouping<BlendMode, TileQuadTexture> BlendModeGroup in quads.Where(x => x.Enabled).GroupBy(x => x.BlendMode))
+
+            foreach (TileQuadTexture quad in sorted)
+            {
+                Color half = new Color(.5f, .5f, .5f, 1f);
+                Color quarter = new Color(.25f, .25f, .25f, 1f);
+                Color full = Color.White;
+                Tile tile = (Tile)quad;
+                ate.Texture = quad;
+                switch (tile.BlendMode)
+                {
+                    case BlendMode.none:
+                    default:
+                        Memory.graphics.GraphicsDevice.BlendFactor = full;
+                        Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+                        Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                        break;
+
+                    case BlendMode.add:
+                        Memory.graphics.GraphicsDevice.BlendFactor = full;
+                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;
+                        Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                        break;
+
+                    case BlendMode.subtract:
+                        Memory.graphics.GraphicsDevice.BlendFactor = full;
+                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Subtract;
+                        Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                        break;
+
+                    case BlendMode.halfadd:
+                        Memory.graphics.GraphicsDevice.BlendFactor = half;
+                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
+                        Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                        break;
+
+                    case BlendMode.quarteradd:
+                        Memory.graphics.GraphicsDevice.BlendFactor = quarter;
+                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
+                        Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                        break;
+                }
+                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                    vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
+                }
+            }
+        }
+
         private List<KeyValuePair<BlendMode, Texture2D>> drawtextures() =>
-                                                    Textures?.OrderByDescending(kvp_Z => kvp_Z.Key)
+                                                            Textures?.OrderByDescending(kvp_Z => kvp_Z.Key)
             .SelectMany(kvp_LayerID => kvp_LayerID.Value.OrderBy(x => kvp_LayerID.Key)
             .SelectMany(kvp_AnimationID => kvp_AnimationID.Value.OrderBy(x => kvp_AnimationID.Key))
             .SelectMany(kvp_AnimationState => kvp_AnimationState.Value.OrderBy(x => kvp_AnimationState.Key))
@@ -251,8 +371,9 @@ namespace OpenVIII
 
         private void GetPalettes(byte[] mimb)
         {
-            int Offset = TextureType.BytesSkippedPalettes;
-            Cluts CLUT = new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]), false);
+            int Offset = TextureType?.BytesSkippedPalettes ?? 0;
+            Cluts CLUT = tiles != null ? new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]), false) :
+                new Cluts(Enumerable.Range(0, 15).Select(x => (byte)x).ToDictionary(x => x, x => new Color[colorsPerPalette]), false);
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 foreach (KeyValuePair<byte, Color[]> clut in CLUT)
                 {
@@ -263,6 +384,24 @@ namespace OpenVIII
                 }
 
             Cluts = CLUT;
+        }
+
+        private TextureHandler GetTexture(Tile tile)
+        {
+            if (TextureIDsPalettes != null)
+            {
+                TextureHandler tidp = TextureIDsPalettes.FirstOrDefault(x => x.Key.PaletteID == tile.PaletteID && x.Key.TextureID == tile.TextureID).Value;
+                if (tidp != default)
+                    return tidp;
+            }
+
+            if (TextureIDs != null)
+            {
+                TextureHandler tid = TextureIDs.FirstOrDefault(x => x.Key == tile.TextureID).Value;
+                if (tid != default)
+                    return tid;
+            }
+            return null;
         }
 
         private bool GetTextureType(byte[] mimb, byte[] mapb)
@@ -288,10 +427,11 @@ namespace OpenVIII
             return true;
         }
 
-        private void GetTiles(byte[] mapb) => tiles = Tiles.Load(mapb, TextureType.Type);
+        private void GetTiles(byte[] mapb) => tiles = mapb == null ? default : Tiles.Load(mapb, TextureType.Type);
 
         private bool ParseBackground2D(byte[] mimb, byte[] mapb)
         {
+            if (Disable2D) return true;
             if (mimb == null || mapb == null)
                 return false;
 
@@ -419,8 +559,6 @@ namespace OpenVIII
             return true;
         }
 
-        private Dictionary<byte, Texture2D> TextureIDs;
-
         private bool ParseBackgroundQuads(byte[] mimb, byte[] mapb)
         {
             if (mimb == null || mapb == null)
@@ -432,7 +570,7 @@ namespace OpenVIII
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
             Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
             Height = UniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
-            TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+            Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
 
             //var dup = (from t1 in UniqueSetOfTileData
             //           from t2 in UniqueSetOfTileData
@@ -457,19 +595,23 @@ namespace OpenVIII
                     GenTexture(kvp.Key, kvp.Value);
                 }
                 SaveSwizzled(TextureIDs);
-
+                string fieldname = Module_field_debug.GetFieldName();
+                this.TextureIDs = TextureIDs.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key}", new Texture2DWrapper(x.Value), ushort.MaxValue));
                 SaveCluts();
                 if (overlap)
                 {
-                    TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                    this.TextureIDsPalettes = TextureIDsPalettes.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key.TextureID}", new Texture2DWrapper(x.Value), x.Key.PaletteID));
                     foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp in TextureIDsPalettes)
                     {
                         GenTexture(kvp.Key.TextureID, kvp.Value, kvp.Key.PaletteID);
                     }
-                    foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in TextureIDsPalettes.GroupBy(x => x.Key.PaletteID))
-                        foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp in groups)
+                    foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
+
+                        foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp_group in groups)
                         {
-                            SaveSwizzled(groups.ToDictionary(x => x.Key.TextureID, x => x.Value), $"_{kvp.Key.PaletteID}");
+                            Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => x.Value);
+                            SaveSwizzled(_TextureIDs, $"_{kvp_group.Key.PaletteID}");
                             break;
                         }
                 }
@@ -535,45 +677,52 @@ namespace OpenVIII
                     tex.SetData(tex2d);
                 }
             }
+            //Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth).X
+            quads = tiles.Select(x => new TileQuadTexture(x, GetTexture(x), 1f)).ToList();
+            Animations = quads.Where(x => x.AnimationID != 0xFF).Select(x => x.AnimationID).Distinct().ToDictionary(x => x, x => quads.Where(y => y.AnimationID == x).OrderBy(y => y.AnimationState).ToList());
+            Animations.ForEach(x => x.Value.Where(y => y.AnimationState != x.Value.Max(k => k.AnimationState)).ForEach(y => y.Hide()));
+            TotalTime = TimeSpan.FromMilliseconds(1000f / 10f);
+            CurrentTime = TimeSpan.Zero;
             return true;
-        }
-        Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes;
-        private struct TextureIDPaletteID
-        {
-            public byte TextureID, PaletteID;
         }
 
         private void SaveCluts()
         {
-            string path = Path.Combine(Module_field_debug.GetFolder(),
-                    $"{Module_field_debug.GetFieldName()}_Clut.png");
-            Cluts.Save(path);
-        }
-
-        private void SaveSwizzled(Dictionary<byte, Texture2D> TextureIDs, string suf = "")
-        {
-            //if (!Memory.EnableDumpingData) return;
-            string fieldname = Module_field_debug.GetFieldName();
-            string folder = Module_field_debug.GetFolder(fieldname);
-            string path;
-            foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
+            if (Memory.EnableDumpingData || EnableDumpingData)
             {
-                path = Path.Combine(folder,
-                    $"{fieldname}_{kvp.Key}{suf}.png");
-                if (File.Exists(path))
-                    continue;
-                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                { kvp.Value.SaveAsPng(fs, kvp.Value.Width, kvp.Value.Height); }
+                string path = Path.Combine(Module_field_debug.GetFolder(),
+                    $"{Module_field_debug.GetFieldName()}_Clut.png");
+                Cluts.Save(path);
             }
         }
 
+        private void SaveSwizzled(Dictionary<byte, Texture2D> _TextureIDs, string suf = "")
+        {
+            if (Memory.EnableDumpingData || EnableDumpingData)
+            {
+                string fieldname = Module_field_debug.GetFieldName();
+                string folder = Module_field_debug.GetFolder(fieldname);
+                string path;
+                foreach (KeyValuePair<byte, Texture2D> kvp in _TextureIDs)
+                {
+                    path = Path.Combine(folder,
+                        $"{fieldname}_{kvp.Key}{suf}.png");
+                    if (File.Exists(path))
+                        continue;
+                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    { kvp.Value.SaveAsPng(fs, kvp.Value.Width, kvp.Value.Height); }
+                }
+            }
+        }
+
+        //private void SaveSwizzled(string suf = "") => SaveSwizzled(TextureIDs, suf);
         private void SaveTextures()
         {
-            string fieldname = Module_field_debug.GetFieldName();
-            string folder = Module_field_debug.GetFolder(fieldname);
-            string path;
-            if (Memory.EnableDumpingData || true)
+            if (Memory.EnableDumpingData /*|| EnableDumpingData*/)
             {
+                string fieldname = Module_field_debug.GetFieldName();
+                string folder = Module_field_debug.GetFolder(fieldname);
+                string path;
                 //List<KeyValuePair<BlendModes, Texture2D>> _drawtextures = drawtextures();
                 foreach (KeyValuePair<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>> kvp_Z in Textures)
                     foreach (KeyValuePair<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>> kvp_Layer in kvp_Z.Value)
@@ -594,14 +743,6 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
-        // To detect redundant calls
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        ~Background()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(false);
-        }
 
         // TODO: uncomment the following line if the finalizer is overridden above.// GC.SuppressFinalize(this);
     }

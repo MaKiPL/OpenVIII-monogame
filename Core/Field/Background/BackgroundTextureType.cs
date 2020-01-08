@@ -33,7 +33,7 @@ namespace OpenVIII
 
             // first 8 are junk and are not used.
             public static BackgroundTextureType GetTextureType(byte[] mimb)
-                => TextureTypes.First(x => x.FileSize == mimb.Length);
+                => mimb == null ? default: TextureTypes.First(x => x.FileSize == mimb.Length);
 
 
             private static BackgroundTextureType[] TextureTypes = new BackgroundTextureType[]

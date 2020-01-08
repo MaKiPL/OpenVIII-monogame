@@ -56,7 +56,12 @@ namespace OpenVIII
             Background.Draw();
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText($"FieldID: {GetFieldID()} - {GetFieldName().ToUpper()}\nHas 4-Bit locations: {Background.Is4Bit}", new Point(20, 20), new Vector2(3f));
+            Memory.font.RenderBasicText($"FieldID: {GetFieldID()} - {GetFieldName().ToUpper()}" +
+                $"\n4-Bit: {Background.Is4Bit}" +
+                $"\nadd: {Background.IsAddBlendMode}" +
+                $"\n1/2 add: {Background.IsHalfBlendMode}" +
+                $"\n1/4 add: {Background.IsQuarterBlendMode}" +
+                $"\nsubtract: {Background.IsSubtractBlendMode}", new Point(20, 20), new Vector2(3f));
             Memory.SpriteBatchEnd();
         }
 
@@ -75,7 +80,7 @@ namespace OpenVIII
                     Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
                 ResetField();
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Right))
+            else if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
@@ -84,20 +89,25 @@ namespace OpenVIII
                     Memory.FieldHolder.FieldID = 0;
                 ResetField();
             }
-#endif
-            switch (mod)
+            else
             {
-                case Field_mods.INIT:
-                    Init();
-                    break;
+#endif
+                switch (mod)
+                {
+                    case Field_mods.INIT:
+                        Init();
+                        break;
 
-                case Field_mods.DEBUGRENDER:
-                    UpdateScript();
-                    break; //await events here
-                case Field_mods.NOJSM://no scripts but has background.
-                case Field_mods.DISABLED:
-                    break;
+                    case Field_mods.DEBUGRENDER:
+                        UpdateScript();
+                        Background.Update();
+                        break; //await events here
+                    case Field_mods.NOJSM://no scripts but has background.
+                    case Field_mods.DISABLED:
+                        break;
+                }
             }
+            
         }
 
         private static void UpdateScript()

@@ -19,7 +19,7 @@ namespace OpenVIII
             /// <summary>
             /// Size of Texture Segment
             /// </summary>
-            public static readonly Vector2 TextureSize = new Vector2(128, 256);
+            public static readonly Vector2 TextureSize = new Vector2(fourBitTexturePageWidth, fourBitTexturePageWidth);
 
             public byte AnimationID = 0xFF;
 
@@ -108,7 +108,7 @@ namespace OpenVIII
             /// <summary>
             /// TopLeft UV
             /// </summary>
-            public Vector2 UV => (this) / TextureSize;
+            public Vector2 UV => new Vector2(SourceX, SourceY) / TextureSize;
 
             // 4 bits
             public float Zfloat => Z / 4096f;
@@ -199,19 +199,14 @@ namespace OpenVIII
 
             public Rectangle SourceRectangle() => new Rectangle(SourceX, SourceY, size, size);
 
-            private List<VertexPositionTexture> GetCorners()
+            private List<VertexPositionTexture> GetCorners(float scale)
             {
-                Vector2 sizeVertex = new Vector2(size);
+                Vector2 sizeVertex = new Vector2(size,size)/scale;
                 Vector2 sizeUV = new Vector2(size) / TextureSize;
-                List<VertexPositionTexture> r = new List<VertexPositionTexture>{
-                    new VertexPositionTexture(this,UV),
-                    new VertexPositionTexture(this,UV),
-                    new VertexPositionTexture(this,UV),
-                    new VertexPositionTexture(this,UV),
-                };
-                for (int i = 1; i < r.Count; i++)
+                List<VertexPositionTexture> r = new List<VertexPositionTexture>(4);
+                for (int i = 0; i < r.Capacity; i++)
                 {
-                    VertexPositionTexture vpt = r[0];
+                    VertexPositionTexture vpt = new VertexPositionTexture(((Vector3)this) / scale, UV);
                     switch (i)
                     {
                         case 0://top left
@@ -219,40 +214,58 @@ namespace OpenVIII
 
                         case 1://top right
                             vpt.Position.X += sizeVertex.X;
-                            vpt.TextureCoordinate.X += sizeUV.X;
                             break;
 
                         case 2://bottom right
                             vpt.Position.X += sizeVertex.X;
                             vpt.Position.Y += sizeVertex.Y;
+                            break;
+
+                        case 3://bottom left
+                            vpt.Position.Y += sizeVertex.Y;
+                            break;
+                    }
+                    switch (i)
+                    {
+                        case 0://top left
+                            break;
+
+                        case 1://top right
+                            vpt.TextureCoordinate.X += sizeUV.X;
+                            break;
+
+                        case 2://bottom right
                             vpt.TextureCoordinate.X += sizeUV.X;
                             vpt.TextureCoordinate.Y += sizeUV.Y;
                             break;
 
                         case 3://bottom left
-                            vpt.Position.Y += sizeVertex.Y;
                             vpt.TextureCoordinate.Y += sizeUV.Y;
                             break;
                     }
+                    Vector3 vectorflip = new Vector3(-1, -1, 1);
+                    vpt.Position *= vectorflip;
+                    r.Add(vpt);
                 }
+
                 return r;
             }
 
-            private List<VertexPositionTexture> GetQuad()
+            public VertexPositionTexture[] GetQuad(float scale)
             {
-                List<VertexPositionTexture> vpts = GetCorners(); // 4 unique corners.
+                List<VertexPositionTexture> vpts = GetCorners(scale); // 4 unique corners.
                 //create 2 triangles
                 List<VertexPositionTexture> r = new List<VertexPositionTexture>
                 {
+                    vpts[3],
+                    vpts[1],
                     vpts[0],
-                    vpts[1],
-                    vpts[3],
 
-                    vpts[1],
-                    vpts[2],
                     vpts[3],
+                    vpts[2],
+                    vpts[1],
                 };
-                return r;
+                return r.ToArray();
             }
 
             #endregion Methods
