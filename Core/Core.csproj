@@ -184,6 +184,9 @@
     <Compile Include="Field\Background\TextureIDPaletteID.cs" />
     <Compile Include="Field\Background\TileQuadTexture.cs" />
     <Compile Include="Field\Background\Tiles.cs" />
+    <Compile Include="Field\WalkMesh\Access.cs" />
+    <Compile Include="Field\WalkMesh\Vert.cs" />
+    <Compile Include="Field\WalkMesh\WalkMesh.cs" />
     <Compile Include="Image\Cluts.cs" />
     <Compile Include="Image\TextureBuffer.cs" />
     <Compile Include="Field\Background\Tile.cs" />

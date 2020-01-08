@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
+
 namespace OpenVIII
 {
     //issues found.
@@ -116,7 +117,8 @@ namespace OpenVIII
             //eventEngine.Update(services);
         }
 
-        private static Background Background;
+        public static Background Background;
+        public static WalkMesh WalkMesh;
 
         private static void Init()
         {
@@ -150,6 +152,7 @@ namespace OpenVIII
                 mod = Field_mods.DISABLED;
                 return;
             }
+            WalkMesh = WalkMesh.Load(getfile(".id"));
             //let's start with scripts
             List<Jsm.GameObject> jsmObjects;
 

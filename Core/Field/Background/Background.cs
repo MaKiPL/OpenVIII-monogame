@@ -280,13 +280,16 @@ namespace OpenVIII
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
+
+            effect.Projection = projectionMatrix; effect.View = viewMatrix; effect.World = worldMatrix;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             effect.TextureEnabled = true;
             //seeing if sorting will matter.
             IOrderedEnumerable<TileQuadTexture> sorted = quads.Where(x => x.Enabled).OrderByDescending(x => x.GetTile.Z).ThenBy(x => x.GetTile.LayerID).ThenBy(x => x.GetTile.AnimationID).ThenBy(x => x.GetTile.AnimationState).ThenBy(x => x.GetTile.BlendMode);
             //foreach (IGrouping<BlendMode, TileQuadTexture> BlendModeGroup in quads.Where(x => x.Enabled).GroupBy(x => x.BlendMode))
-
+            ate.VertexColorEnabled = false;
+            effect.VertexColorEnabled = false;
             foreach (TileQuadTexture quad in sorted)
             {
                 Color half = new Color(.5f, .5f, .5f, 1f);
@@ -334,6 +337,27 @@ namespace OpenVIII
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                     vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
                 }
+            }
+
+            //DrawWalkMesh();
+        }
+
+        private void DrawWalkMesh()
+        {
+            effect.TextureEnabled = false;
+            Memory.graphics.GraphicsDevice.BlendFactor = Color.White;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            ate.Texture = null;
+            ate.VertexColorEnabled = true;
+            effect.VertexColorEnabled = true;
+
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                vertexData: Module_field_debug.WalkMesh.Vertices.ToArray(), vertexOffset: 0, primitiveCount: Module_field_debug.WalkMesh.Count);
             }
         }
 
