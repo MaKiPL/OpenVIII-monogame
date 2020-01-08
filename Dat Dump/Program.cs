@@ -25,19 +25,30 @@ namespace OpenVIII.Dat_Dump
                 NewLineOnAttributes = true,
                 OmitXmlDeclaration = false,
             };
-            using (StreamWriter csvFile = new StreamWriter(new FileStream("SequenceDump.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+            using (StreamWriter csv2File = new StreamWriter(new FileStream("MonsterAttacks.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
             {
-                csvFile.WriteLine($"Type{ls}Type ID{ls}Name{ls}Animation Count{ls}Sequence Count{ls}Sequence ID{ls}Offset{ls}Bytes");
-                using (XmlWriter xmlWriter = XmlWriter.Create("SequenceDump.xml", xmlWriterSettings))
+                using (StreamWriter csvFile = new StreamWriter(new FileStream("SequenceDump.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                 {
-                    xmlWriter.WriteStartDocument();
-                    xmlWriter.WriteStartElement("dat");
+                    csv2File.WriteLine($"{nameof(Enemy)}{ls}" +
+                        $"{nameof(Enemy.EII.Data.fileName)}{ls}" +
+                        $"{nameof(Debug_battleDat.Abilities)}{ls}" +
+                        $"Number{ls}" +
+                        $"{nameof(Debug_battleDat.Abilities.animation)}{ls}" +
+                        $"Type{ls}" +
+                        $"ID{ls}" +
+                        $"Name{ls}");
+                    csvFile.WriteLine($"Type{ls}Type ID{ls}Name{ls}Animation Count{ls}Sequence Count{ls}Sequence ID{ls}Offset{ls}Bytes");
+                    using (XmlWriter xmlWriter = XmlWriter.Create("SequenceDump.xml", xmlWriterSettings))
+                    {
+                        xmlWriter.WriteStartDocument();
+                        xmlWriter.WriteStartElement("dat");
 
-                    XmlMonsterData(xmlWriter, csvFile);
-                    XmlCharacterData(xmlWriter, csvFile);
+                        XmlMonsterData(xmlWriter, csvFile, csv2File);
+                        XmlCharacterData(xmlWriter, csvFile);
 
-                    xmlWriter.WriteEndElement();
-                    xmlWriter.WriteEndDocument();
+                        xmlWriter.WriteEndElement();
+                        xmlWriter.WriteEndDocument();
+                    }
                 }
             }
 
@@ -46,7 +57,7 @@ namespace OpenVIII.Dat_Dump
             goto start;
         }
 
-        private static void XmlMonsterData(XmlWriter xmlWriter, StreamWriter csvFile)
+        private static void XmlMonsterData(XmlWriter xmlWriter, StreamWriter csvFile, StreamWriter csv2File)
         {
             xmlWriter.WriteStartElement("monsters");
             for (int i = 0; i <= 200; i++)
@@ -64,6 +75,30 @@ namespace OpenVIII.Dat_Dump
                     prefix += $"{ls}{XMLAnimations(xmlWriter, _BattleDat)}";
                     XMLSequences(xmlWriter, _BattleDat, csvFile, prefix);
                     xmlWriter.WriteEndElement();
+                    Enemy e = Enemy.Load(new Module_battle_debug.EnemyInstanceInformation { Data = _BattleDat });
+                    void addability(string fieldname, Debug_battleDat.Abilities a, int number)
+                    {
+                        csv2File.WriteLine($"{name}{ls}" +
+                            $"{_BattleDat.fileName}{ls}" +
+                            $"{fieldname}{ls}" +
+                            $"{number}{ls}" +
+                            $"{a.animation}{ls}" +
+                            $"{(a.ITEM != null ? nameof(a.ITEM) : a.MAGIC != null ? nameof(a.MAGIC) : a.MONSTER != null ? nameof(a.MONSTER) : "")}{ls}" +
+                            $"{(a.ITEM != null ? a.ITEM.Value.ID : a.MAGIC != null ? a.MAGIC.ID : a.MONSTER != null ? a.MONSTER.ID : 0)}{ls}" +
+                        $"{(a.ITEM != null ? a.ITEM.Value.Name : a.MAGIC != null ? a.MAGIC.Name : a.MONSTER != null ? a.MONSTER.Name : new FF8String(""))}{ls}");
+                    }
+                    void addabilities(string fieldname, Debug_battleDat.Abilities[] abilites)
+                    {
+                        if (abilites != null)
+                            for (int number = 0; number < e.Info.abilitiesLow.Length; number++)
+                            {
+                                Debug_battleDat.Abilities a = abilites[number];
+                                addability(fieldname, a, number);
+                            }
+                    }
+                    addabilities(nameof(e.Info.abilitiesLow), e.Info.abilitiesLow);
+                    addabilities(nameof(e.Info.abilitiesMed), e.Info.abilitiesMed);
+                    addabilities(nameof(e.Info.abilitiesHigh), e.Info.abilitiesHigh);
                 }
             }
             xmlWriter.WriteEndElement();
@@ -122,12 +157,17 @@ namespace OpenVIII.Dat_Dump
                     int index = Module_battle_debug.Weapons[(Characters)character_id].FindIndex(v => v == i);
                     Kernel_bin.Weapons_Data weapondata = Kernel_bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)character_id &&
                     v.AltID == index);
-                    xmlWriter.WriteAttributeString("name", weapondata.Name);
 
-                    string prefix = $"{type}{ls}{id}{ls}{weapondata.Name}/{prefix1}"; //bringing over name from character.
-                    //xmlWriter.WriteAttributeString("name", Memory.Strings.GetName((Characters)i));
-                    XMLAnimations(xmlWriter, _BattleDat);
-                    XMLSequences(xmlWriter, _BattleDat, csvFile, prefix);
+                    if (weapondata != default)
+                    {
+                        xmlWriter.WriteAttributeString("name", weapondata.Name);
+
+                        string prefix = $"{type}{ls}{id}{ls}{weapondata.Name}/{prefix1}"; //bringing over name from character.
+                                                                                          //xmlWriter.WriteAttributeString("name", Memory.Strings.GetName((Characters)i));
+
+                        XMLAnimations(xmlWriter, _BattleDat);
+                        XMLSequences(xmlWriter, _BattleDat, csvFile, prefix);
+                    }
                     xmlWriter.WriteEndElement();
                 }
             }

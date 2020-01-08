@@ -963,6 +963,8 @@ namespace OpenVIII
             if (entityType == EntityType.Character || entityType == EntityType.Monster)
             {
                 // Get baseline from running function on only Animation 0;
+                if (animHeader.animations == null)
+                    return;
                 List<Vector4> baseline = animHeader.animations[0].animationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
                 //X is lowY, Y is high Y, Z is mid x, W is mid z
                 float baselinelowY = baseline.Min(x => x.X);
