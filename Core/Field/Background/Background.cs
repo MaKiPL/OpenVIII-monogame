@@ -357,7 +357,7 @@ namespace OpenVIII.Fields
             effect.VertexColorEnabled = true;
             effect.World = Module.Cameras[0].CreateWorld();
             effect.View = Module.Cameras[0].CreateLookAt();
-            effect.Projection = projectionMatrix;
+            effect.Projection = projectionMatrix;//Module.Cameras[0].CreateProjection();
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
