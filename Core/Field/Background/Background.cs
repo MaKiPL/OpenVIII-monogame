@@ -212,6 +212,8 @@ namespace OpenVIII.Fields
             float Width = tiles.Width;
             float Height = tiles.Height;
             Vector2 scale = Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth);
+
+            //projectionMatrix = Matrix.CreatePerspective(vp.Width / scale.X, vp.Height / scale.Y, float.Epsilon, 1000f);
             projectionMatrix = Matrix.CreateOrthographic(vp.Width / scale.X, vp.Height / scale.Y, 0f, 100f);
         }
 

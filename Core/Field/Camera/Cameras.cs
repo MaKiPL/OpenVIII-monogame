@@ -88,7 +88,7 @@ namespace OpenVIII.Fields
 
             public Matrix CreateLookAt()
             {
-                return Matrix.CreateLookAt(Position, xyz[2]+Position, xyz[1]);
+                return Matrix.CreateLookAt(Position- xyz[2]*2, xyz[2]+Position, xyz[1]);
             }
 
             public Matrix CreateWorld() => Matrix.CreateWorld(Position, xyz[2], xyz[1]);
@@ -106,9 +106,9 @@ namespace OpenVIII.Fields
                         xyz[i].Z = br.ReadInt16() / multipleconstant;
                     }
                     Z = br.ReadInt16();
-                    space.Z = br.ReadInt32();
-                    space.Y = br.ReadInt32();
-                    space.Z = br.ReadInt32();
+                    space.Z = br.ReadInt32() / multipleconstant;
+                    space.Y = br.ReadInt32() / multipleconstant;
+                    space.Z = br.ReadInt32() / multipleconstant;
                     Blank = br.ReadUInt16();
                     Zoom = br.ReadUInt16();
                     Zoom2 = br.ReadUInt16();
