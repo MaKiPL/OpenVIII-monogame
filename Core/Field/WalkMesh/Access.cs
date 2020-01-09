@@ -7,37 +7,43 @@ namespace OpenVIII.Fields
 {
     public partial class WalkMesh
     {
-        public class Access : ICloneable, IList<ushort>
+        public class Access : ICloneable, IList<short>
         { 
-            private List<ushort> items;
+            private List<short> items;
 
-            public Access() => this.items = new List<ushort>(3);
+            public Access() => this.items = new List<short>(3);
 
-            public ushort this[int index] { get => ((IList<ushort>)items)[index]; set => ((IList<ushort>)items)[index] = value; }
+            public short this[int index] { get => ((IList<short>)items)[index]; set => ((IList<short>)items)[index] = value; }
 
-            public int Count => ((IList<ushort>)items).Count;
+            public int Count => ((IList<short>)items).Count;
 
-            public bool IsReadOnly => ((IList<ushort>)items).IsReadOnly;
+            public bool IsReadOnly => ((IList<short>)items).IsReadOnly;
 
-            public void Add(ushort item) => ((IList<ushort>)items).Add(item);
+            public void Add(short item) => ((IList<short>)items).Add(item);
 
-            public void Clear() => ((IList<ushort>)items).Clear();
+            public void Clear() => ((IList<short>)items).Clear();
 
-            public bool Contains(ushort item) => ((IList<ushort>)items).Contains(item);
+            public bool Contains(short item) => ((IList<short>)items).Contains(item);
 
-            public void CopyTo(ushort[] array, int arrayIndex) => ((IList<ushort>)items).CopyTo(array, arrayIndex);
+            public void CopyTo(short[] array, int arrayIndex) => ((IList<short>)items).CopyTo(array, arrayIndex);
 
-            public IEnumerator<ushort> GetEnumerator() => ((IList<ushort>)items).GetEnumerator();
+            public IEnumerator<short> GetEnumerator() => ((IList<short>)items).GetEnumerator();
 
-            public int IndexOf(ushort item) => ((IList<ushort>)items).IndexOf(item);
+            public int IndexOf(short item) => ((IList<short>)items).IndexOf(item);
 
-            public void Insert(int index, ushort item) => ((IList<ushort>)items).Insert(index, item);
+            public void Insert(int index, short item) => ((IList<short>)items).Insert(index, item);
 
-            public bool Remove(ushort item) => ((IList<ushort>)items).Remove(item);
+            public bool Remove(short item) => ((IList<short>)items).Remove(item);
 
-            public void RemoveAt(int index) => ((IList<ushort>)items).RemoveAt(index);
-            public bool IsWall(int index) => items[index] == 0xFFFF;
-            IEnumerator IEnumerable.GetEnumerator() => ((IList<ushort>)items).GetEnumerator();
+            public void RemoveAt(int index) => ((IList<short>)items).RemoveAt(index);
+            /// <summary>
+            /// Goal to label unpassable locations. Deling labeled as -1 unsure if it's -1 or lessthanequal
+            /// </summary>
+            /// <param name="index">Which side of triangle in clockwise order</param>
+            /// <returns></returns>
+            /// <see cref="https://github.com/myst6re/deling/blob/master/WalkmeshGLWidget.cpp"/>
+            public bool IsWall(int index) => items[index] <= -1;
+            IEnumerator IEnumerable.GetEnumerator() => ((IList<short>)items).GetEnumerator();
             public object Clone() => new Access { items = items.ToList()};
         }
     }
