@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Disables the payment of salaries.

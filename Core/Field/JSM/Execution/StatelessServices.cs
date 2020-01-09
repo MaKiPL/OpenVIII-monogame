@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts
 {
     public sealed class StatelessServices : IServices
     {

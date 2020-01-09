@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Make this entity walk/run to the given coordinates. 

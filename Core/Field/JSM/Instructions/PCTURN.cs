@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Make this entity face the PC. Speed is number of frames (larger = slower turn). 

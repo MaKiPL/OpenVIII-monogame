@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Close the last window created by AMES.

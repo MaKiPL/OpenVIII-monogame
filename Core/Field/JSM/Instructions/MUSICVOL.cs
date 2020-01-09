@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Set the volume of the music.

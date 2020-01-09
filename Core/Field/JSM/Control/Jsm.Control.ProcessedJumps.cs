@@ -1,8 +1,9 @@
-﻿using System;
+﻿using OpenVIII.Fields.Scripts.Instructions;
+using System;
 using System.Collections.Generic;
 
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {

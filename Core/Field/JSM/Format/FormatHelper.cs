@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts
 {
     public static class FormatHelper
     {

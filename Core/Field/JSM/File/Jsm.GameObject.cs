@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {

@@ -157,13 +157,13 @@ namespace OpenVIII.Fields
             WalkMesh = WalkMesh.Load(getfile(".id"));
             Cameras = Cameras.Load(getfile(".ca"));
             //let's start with scripts
-            List<Jsm.GameObject> jsmObjects;
+            List<Scripts.Jsm.GameObject> jsmObjects;
 
             if (!string.IsNullOrWhiteSpace(s_jsm))
             {
                 try
                 {
-                    jsmObjects = Jsm.File.Read(fieldArchive.GetBinaryFile(s_jsm));
+                    jsmObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(s_jsm));
                 }
                 catch (Exception e)
                 {
@@ -184,10 +184,10 @@ namespace OpenVIII.Fields
                 eventEngine.Reset();
                 for (int objIndex = 0; objIndex < jsmObjects.Count; objIndex++)
                 {
-                    Jsm.GameObject obj = jsmObjects[objIndex];
+                    Scripts.Jsm.GameObject obj = jsmObjects[objIndex];
                     FieldObject fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
 
-                    foreach (Jsm.GameScript script in obj.Scripts)
+                    foreach (Scripts.Jsm.GameScript script in obj.Scripts)
                         fieldObject.Scripts.Add(script.ScriptId, script.Segment.GetExecuter());
 
                     eventEngine.RegisterObject(fieldObject);

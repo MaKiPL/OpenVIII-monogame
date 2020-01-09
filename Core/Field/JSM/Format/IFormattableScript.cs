@@ -1,6 +1,6 @@
 ﻿
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts
 {
     public interface IFormattableScript
     {

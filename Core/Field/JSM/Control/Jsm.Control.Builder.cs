@@ -1,8 +1,9 @@
-﻿using System;
+﻿using OpenVIII.Fields.Scripts.Instructions;
+using System;
 using System.Collections.Generic;
 
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
@@ -81,12 +82,11 @@ namespace OpenVIII.Fields
                 private Boolean TryMakeIf()
                 {
                     JPF jpf = _begin;
-                    JMP jmp = _instructions[_begin.Index - 1] as JMP;
 
                     If control = new If(_instructions, _index, _begin.Index);
                     _result.Add(control);
 
-                    if (jmp == null)
+                    if (!(_instructions[_begin.Index - 1] is JMP jmp))
                     {
                         // There is no JMP instruction. Simple if {}
                         return true;
@@ -122,15 +122,13 @@ namespace OpenVIII.Fields
                     while (true)
                     {
                         Int32 newJpfIndex = jpf.Index;
-                        JPF newJpf = _instructions[newJpfIndex] as JPF;
-                        if (newJpf == null || newJpf.Index > endOfBlock)
+                        if (!(_instructions[newJpfIndex] is JPF newJpf) || newJpf.Index > endOfBlock)
                         {
                             control.AddElse(jpf.Index, endOfBlock);
                             return;
                         }
 
-                        JMP newJmp = _instructions[newJpf.Index - 1] as JMP;
-                        if (newJmp == null)
+                        if (!(_instructions[newJpf.Index - 1] is JMP newJmp))
                         {
                             if (newJpf.Index == endOfBlock)
                             {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace OpenVIII.Fields
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     public abstract class JsmInstruction : IJsmInstruction, IFormattableScript
     {
