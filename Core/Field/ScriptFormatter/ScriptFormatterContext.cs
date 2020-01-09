@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public sealed class ScriptFormatterContext : IScriptFormatterContext
     {

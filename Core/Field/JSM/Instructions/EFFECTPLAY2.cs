@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     internal sealed class EFFECTPLAY2 : JsmInstruction
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Disables this entity's "push" script. See PUSHON. 

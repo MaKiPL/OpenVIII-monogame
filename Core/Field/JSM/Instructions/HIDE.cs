@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Hides this entity's model on the field. See also SHOW. 

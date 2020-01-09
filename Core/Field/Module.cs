@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     //issues found.
     //558 //color looks off on glow. with purple around it.
@@ -15,7 +15,7 @@ namespace OpenVIII
     //132 missing lava.
     //pupu states that there is are 2 widths of the texture for Type1 and Type2
     //we are only using 1 so might be reading the wrong pixels somewhere.
-    public static partial class Module_field_debug
+    public static partial class Module
     {
         private static Field_mods mod = 0;
 
@@ -120,6 +120,8 @@ namespace OpenVIII
         public static Background Background;
         public static WalkMesh WalkMesh;
 
+        public static Cameras Cameras { get; private set; }
+
         private static void Init()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
@@ -153,6 +155,7 @@ namespace OpenVIII
                 return;
             }
             WalkMesh = WalkMesh.Load(getfile(".id"));
+            Cameras = Cameras.Load(getfile(".ca"));
             //let's start with scripts
             List<Jsm.GameObject> jsmObjects;
 
@@ -176,7 +179,7 @@ namespace OpenVIII
                 }
                 else
                     return;
-                services = FieldInitializer.GetServices();
+                services = Initializer.GetServices();
                 eventEngine = ServiceId.Field[services].Engine;
                 eventEngine.Reset();
                 for (int objIndex = 0; objIndex < jsmObjects.Count; objIndex++)

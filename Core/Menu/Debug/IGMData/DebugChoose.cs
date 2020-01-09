@@ -164,7 +164,7 @@ namespace OpenVIII.IGMData
                 } },
                 { Ditems.Field, ()=> {
                     Menu.FadeIn();
-                    Module_field_debug.ResetField();
+                    Fields.Module.ResetField();
                     Memory.module = MODULE.FIELD_DEBUG;
                     Memory.IsMouseVisible = false;
                     return true;
@@ -177,7 +177,7 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
                 { Ditems.Music, ()=> {
-                    Module_field_debug.ResetField();
+                    Fields.Module.ResetField();
                     init_debugger_Audio.PlayStopMusic();
                     return true;
                 }  },

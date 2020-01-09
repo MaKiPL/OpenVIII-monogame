@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Enables user control. See UCOFF for details. 

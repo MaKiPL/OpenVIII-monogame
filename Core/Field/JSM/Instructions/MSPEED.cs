@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Sets this entity's movement speed. 

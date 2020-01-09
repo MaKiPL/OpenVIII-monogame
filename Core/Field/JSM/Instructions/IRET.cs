@@ -2,7 +2,7 @@
 using System.ComponentModel;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// If the script was called by another script, return to the another script where the current script was requested. Else the script is halted. 

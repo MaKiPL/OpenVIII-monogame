@@ -36,7 +36,7 @@ namespace OpenVIII
             Memory.Init(graphics, spriteBatch, Content);
             init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
-            FieldInitializer.Init(); //this initializes the field module, it's worth to have this at the beginning
+            Fields.Initializer.Init(); //this initializes the field module, it's worth to have this at the beginning
             Init_debugger_battle.Init(); //this initializes the encounters
 
             base.Initialize();

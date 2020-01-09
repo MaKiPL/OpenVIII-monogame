@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Turns off the display of salary alerts.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Pauses this script for some number of frames. 

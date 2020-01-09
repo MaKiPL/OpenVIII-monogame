@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 { 
 /// <summary>
 /// Make this entity face the entity with the ID of the first parameter.

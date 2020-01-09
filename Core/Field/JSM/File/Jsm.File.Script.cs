@@ -2,7 +2,7 @@
 
 #pragma warning disable 649 // field is never assigned
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public static partial class Jsm
     {

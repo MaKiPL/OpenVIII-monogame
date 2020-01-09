@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Adds a PC to the available party (not to the active party). 

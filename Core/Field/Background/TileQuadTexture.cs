@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public partial class Background
     {

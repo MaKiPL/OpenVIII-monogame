@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     internal sealed class JPF : JsmInstruction, IJumpToOpcode, IFormattableScript
     {

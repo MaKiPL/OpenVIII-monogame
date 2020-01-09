@@ -1,10 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// WalkMesh
@@ -29,7 +30,8 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(new MemoryStream(idb)))
             {
                 int count = checked((int)br.ReadUInt32());
-                List<Vert> vs = new List<Vert>(count * 3);
+                const int sides = 3;
+                List<Vert> vs = new List<Vert>(count * sides);
                 List<Access> access = new List<Access>(count);
                 while (count-- > 0)
                 {
@@ -44,8 +46,16 @@ namespace OpenVIII
                         access.Add(new Access { br.ReadUInt16(), br.ReadUInt16(), br.ReadUInt16() });
                 }
                 Accesses = access;
-                Vertices = vs.Select((x, i) => new VertexPositionColor(new Vector3(-x.x, x.y, x.z/4096f)/4, i % 3 == 0 ? Color.Red : i % 3 == 1 ? Color.Green : Color.Blue)).ToList();
+                max = new Vector3(vs.Max(x => x.x), vs.Max(x => x.y), vs.Max(x => x.z));
+                min = new Vector3(vs.Min(x => x.x), vs.Min(x => x.y), vs.Min(x => x.z));
+                distance = max - min;
+                float maxvalue = Math.Max(Math.Max(distance.X, distance.Y), distance.Z);
+                float scale = 6f;
+                Vertices = vs.Select((x, i) => new VertexPositionColor(new Vector3(x.x, x.y, x.z)/ scale, i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
             }
         }
+        public Vector3 max { get; private set; }
+        public Vector3 min { get; private set; }
+        public Vector3 distance { get; private set; }
     }
 }

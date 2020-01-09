@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public partial class Background
     {

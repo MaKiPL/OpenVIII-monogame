@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public interface IRenderingService
     {

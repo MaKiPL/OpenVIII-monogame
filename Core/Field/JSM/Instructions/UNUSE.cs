@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// Disable this entity's scripts, hides its model, and makes it throughable. Call USE to re-enable. 

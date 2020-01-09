@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public partial class Background
     {

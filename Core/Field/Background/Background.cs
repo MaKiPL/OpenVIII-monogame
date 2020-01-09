@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public partial class Background : IDisposable
     {
@@ -276,7 +276,13 @@ namespace OpenVIII
         private void DrawGeometry()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            //DrawBackground();
 
+            DrawWalkMesh();
+        }
+
+        private void DrawBackground()
+        {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
@@ -338,8 +344,6 @@ namespace OpenVIII
                     vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
                 }
             }
-
-            //DrawWalkMesh();
         }
 
         private void DrawWalkMesh()
@@ -351,13 +355,15 @@ namespace OpenVIII
             ate.Texture = null;
             ate.VertexColorEnabled = true;
             effect.VertexColorEnabled = true;
-
+            effect.World = Module.Cameras[0].CreateWorld();
+            effect.View = Module.Cameras[0].CreateLookAt();
+            effect.Projection = projectionMatrix;
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
 
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                vertexData: Module_field_debug.WalkMesh.Vertices.ToArray(), vertexOffset: 0, primitiveCount: Module_field_debug.WalkMesh.Count);
+                vertexData: Module.WalkMesh.Vertices.ToArray(), vertexOffset: 0, primitiveCount: Module.WalkMesh.Count);
             }
         }
 
@@ -619,7 +625,7 @@ namespace OpenVIII
                     GenTexture(kvp.Key, kvp.Value);
                 }
                 SaveSwizzled(TextureIDs);
-                string fieldname = Module_field_debug.GetFieldName();
+                string fieldname = Module.GetFieldName();
                 this.TextureIDs = TextureIDs.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key}", new Texture2DWrapper(x.Value), ushort.MaxValue));
                 SaveCluts();
                 if (overlap)
@@ -714,8 +720,8 @@ namespace OpenVIII
         {
             if (Memory.EnableDumpingData || EnableDumpingData)
             {
-                string path = Path.Combine(Module_field_debug.GetFolder(),
-                    $"{Module_field_debug.GetFieldName()}_Clut.png");
+                string path = Path.Combine(Module.GetFolder(),
+                    $"{Module.GetFieldName()}_Clut.png");
                 Cluts.Save(path);
             }
         }
@@ -724,8 +730,8 @@ namespace OpenVIII
         {
             if (Memory.EnableDumpingData || EnableDumpingData)
             {
-                string fieldname = Module_field_debug.GetFieldName();
-                string folder = Module_field_debug.GetFolder(fieldname);
+                string fieldname = Module.GetFieldName();
+                string folder = Module.GetFolder(fieldname);
                 string path;
                 foreach (KeyValuePair<byte, Texture2D> kvp in _TextureIDs)
                 {
@@ -744,8 +750,8 @@ namespace OpenVIII
         {
             if (Memory.EnableDumpingData /*|| EnableDumpingData*/)
             {
-                string fieldname = Module_field_debug.GetFieldName();
-                string folder = Module_field_debug.GetFolder(fieldname);
+                string fieldname = Module.GetFieldName();
+                string folder = Module.GetFolder(fieldname);
                 string path;
                 //List<KeyValuePair<BlendModes, Texture2D>> _drawtextures = drawtextures();
                 foreach (KeyValuePair<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>> kvp_Z in Textures)

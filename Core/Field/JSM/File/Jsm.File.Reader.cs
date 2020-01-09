@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public static partial class Jsm
     {

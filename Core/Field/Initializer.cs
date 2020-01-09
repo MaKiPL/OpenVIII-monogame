@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
-    public static class FieldInitializer
+    public static class Initializer
     {
         /// <summary>
         /// Should be called only once

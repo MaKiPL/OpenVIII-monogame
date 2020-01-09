@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Threading;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public sealed class EventEngine
     {

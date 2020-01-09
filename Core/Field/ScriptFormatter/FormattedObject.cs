@@ -1,5 +1,5 @@
 ﻿using System;
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public sealed class FormattedObject
     {
