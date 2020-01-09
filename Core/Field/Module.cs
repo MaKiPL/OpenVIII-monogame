@@ -154,8 +154,8 @@ namespace OpenVIII.Fields
                 mod = Field_mods.DISABLED;
                 return;
             }
-            WalkMesh = WalkMesh.Load(getfile(".id"));
             Cameras = Cameras.Load(getfile(".ca"));
+            WalkMesh = WalkMesh.Load(getfile(".id"));
             //let's start with scripts
             List<Scripts.Jsm.GameObject> jsmObjects;
 
