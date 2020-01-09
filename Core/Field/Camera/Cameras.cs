@@ -88,11 +88,7 @@ namespace OpenVIII.Fields
 
             public Matrix CreateLookAt()
             {
-                Matrix r = new Matrix();
-                r.Right = xyz[0];
-                r.Down = xyz[1];
-                r.Forward = xyz[2];
-                return r;//Matrix.CreateLookAt(Position, Vector3.Zero, xyz[2]);
+                return Matrix.CreateLookAt(Position, xyz[2]+Position, xyz[1]);
             }
 
             public Matrix CreateWorld() => Matrix.CreateWorld(Position, xyz[2], xyz[1]);
@@ -114,8 +110,8 @@ namespace OpenVIII.Fields
                     space.Y = br.ReadInt32();
                     space.Z = br.ReadInt32();
                     Blank = br.ReadUInt16();
-                    Zoom = br.ReadUInt16() / 10f;
-                    Zoom2 = br.ReadUInt16() / 10f;
+                    Zoom = br.ReadUInt16();
+                    Zoom2 = br.ReadUInt16();
                     Zoom = Zoom2 = Math.Max(Zoom, Zoom2);
                     _position = -(space * xyz[0] + space * (-xyz[1]) + space * (-xyz[2]));
                 }
