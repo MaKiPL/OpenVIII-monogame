@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class ArchiveWorker
+    public class ArchiveWorker : IArchiveWorker
     {
         #region Fields
 
@@ -37,6 +37,7 @@ namespace OpenVIII
         private bool _compressed;
         private uint _locationInFs;
         private uint _unpackedFileSize;
+        private byte[] FI, FS, FL;
         private bool isDir = false;
 
         #endregion Fields
@@ -84,42 +85,7 @@ namespace OpenVIII
             return tmp.GetBinaryFile(fileName, cache);
         }
 
-        private byte[] FI, FS, FL;
-
-        /// <summary>
-        /// Give me three archives as bytes uncompressed please!
-        /// </summary>
-        /// <param name="FI">FileIndex</param>
-        /// <param name="FS">FileSystem</param>
-        /// <param name="FL">FileList</param>
-        /// <param name="filename">Filename of the file to get</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// Does the same thing as Get Binary file, but it reads from byte arrays in ram because the
-        /// data was already pulled from a file earlier.
-        /// </remarks>
-        private byte[] FileInTwoArchives(string filename)
-        {
-            int loc = FindFile(ref filename, new MemoryStream(FL, false));
-            if (loc == -1)
-            {
-                Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
-                return null;
-                //throw new Exception("ArchiveWorker: No such file!");
-            }
-
-            // get params from index
-            uint fsLen = BitConverter.ToUInt32(FI, loc * 12);
-            uint fSpos = BitConverter.ToUInt32(FI, (loc * 12) + 4);
-            bool compe = BitConverter.ToUInt32(FI, (loc * 12) + 8) != 0;
-
-            // copy binary data
-            byte[] file = new byte[fsLen];
-            Array.Copy(FS, fSpos, file, 0, file.Length);
-            return compe ? LZSS.DecompressAllNew(file) : file;
-        }
-
-        public ArchiveWorker GetArchive(Memory.Archive archive) => new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL)) { _path = archive };
+        public IArchiveWorker GetArchive(Memory.Archive archive) => new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL)) { _path = archive };
 
         /// <summary>
         /// GetBinary
@@ -153,11 +119,7 @@ namespace OpenVIII
             throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
         }
 
-        /// <summary>
-        /// Generate a file list from binary data.
-        /// </summary>
-        /// <param name="fl">raw File List</param>
-        private string[] GetListOfFiles(byte[] fl) => ProduceFileLists(new MemoryStream(fl));
+        public Stream GetBinaryFileStream(string fileName, bool cache = false) => throw new NotImplementedException();
 
         /// <summary>
         /// Get current file list for loaded archive.
@@ -175,6 +137,39 @@ namespace OpenVIII
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Give me three archives as bytes uncompressed please!
+        /// </summary>
+        /// <param name="FI">FileIndex</param>
+        /// <param name="FS">FileSystem</param>
+        /// <param name="FL">FileList</param>
+        /// <param name="filename">Filename of the file to get</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Does the same thing as Get Binary file, but it reads from byte arrays in ram because the
+        /// data was already pulled from a file earlier.
+        /// </remarks>
+        private byte[] FileInTwoArchives(string filename)
+        {
+            int loc = FindFile(ref filename, new MemoryStream(FL, false));
+            if (loc == -1)
+            {
+                Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
+                return null;
+                //throw new Exception("ArchiveWorker: No such file!");
+            }
+
+            // get params from index
+            uint fsLen = BitConverter.ToUInt32(FI, loc * 12);
+            uint fSpos = BitConverter.ToUInt32(FI, (loc * 12) + 4);
+            bool compe = BitConverter.ToUInt32(FI, (loc * 12) + 8) != 0;
+
+            // copy binary data
+            byte[] file = new byte[fsLen];
+            Array.Copy(FS, fSpos, file, 0, file.Length);
+            return compe ? LZSS.DecompressAllNew(file) : file;
         }
 
         /// <summary>
@@ -244,13 +239,19 @@ namespace OpenVIII
         }
 
         /// <summary>
+        /// Generate a file list from binary data.
+        /// </summary>
+        /// <param name="fl">raw File List</param>
+        private string[] GetListOfFiles(byte[] fl) => ProduceFileLists(new MemoryStream(fl));
+
+        /// <summary>
         /// Generate a file list from raw text file.
         /// </summary>
         /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
         private string[] ProduceFileLists()
         {
             if (isDir)
-                return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x=>x.Length).ThenBy(x=>x, StringComparer.OrdinalIgnoreCase).ToArray();
+                return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
             if (FL != null && FL.Length > 0)
                 return GetListOfFiles(FL);
             return ProduceFileLists(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
