@@ -166,6 +166,8 @@
     <Compile Include="CountDown.cs" />
     <Compile Include="FfAudio.cs" />
     <Compile Include="FfVideo.cs" />
+    <Compile Include="Field\module_field_object_test.cs" />
+    <Compile Include="Field\ONE\FieldCharaOne.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
     <Compile Include="Image\Texture_Base.cs" />

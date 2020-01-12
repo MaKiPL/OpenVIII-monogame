@@ -26,6 +26,7 @@ namespace OpenVIII.IGMData
             { Ditems.Faces, new FF8String("Test Faces") },
             { Ditems.Icons, new FF8String("Test Icons") },
             { Ditems.Cards, new FF8String("Test Cards") },
+            { Ditems.FieldModelTest, new FF8String("Test field models") },
         };
 
         private int debug_choosedAudio;
@@ -59,6 +60,7 @@ namespace OpenVIII.IGMData
             Faces,
             Icons,
             Cards,
+            FieldModelTest,
 
             /// <summary>
             /// Number of values. Make sure this is last.
@@ -207,6 +209,12 @@ namespace OpenVIII.IGMData
                 { Ditems.Cards, ()=> {
                     Menu.FadeIn();
                     Memory.module = MODULE.CARD_TEST;
+                    Module_card_test.Show();
+                    return true;
+                }  },
+                { Ditems.FieldModelTest, ()=> {
+                    Menu.FadeIn();
+                    Memory.module = MODULE.FIELD_MODEL_TEST;
                     Module_card_test.Show();
                     return true;
                 }  },
