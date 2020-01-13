@@ -926,6 +926,7 @@ namespace OpenVIII
 
             public static string[] fields;
             public static int[] FieldMemory;
+            public static string GetString() => fields?.ElementAtOrDefault(FieldID);
         }
     }
 }

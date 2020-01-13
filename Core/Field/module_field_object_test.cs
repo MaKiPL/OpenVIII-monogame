@@ -180,7 +180,7 @@ namespace OpenVIII.Fields
             if(charaOne.fieldModels == null)
             {
                 Memory.font.RenderBasicText(
-    $"FIELD AT: {Memory.FieldHolder.FieldID}\n" +
+    $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
     $"World Map Camera: ={camPosition}\n" +
     $"FPS camera degrees: ={degrees}°\n" +
     $"Current model is: =BROKEN\n" +
@@ -194,7 +194,7 @@ namespace OpenVIII.Fields
             }
             else
                 Memory.font.RenderBasicText(
-    $"FIELD AT: {Memory.FieldHolder.FieldID}\n" +
+    $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
     $"World Map Camera: ={camPosition}\n" +
     $"FPS camera degrees: ={degrees}°\n" +
     $"Current model is: ={debugModelId+1} of {charaOne.fieldModels.Length} which is {new string(charaOne.fieldModels[debugModelId].modelName,0,4)}\n" +
