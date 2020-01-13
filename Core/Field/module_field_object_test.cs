@@ -57,7 +57,7 @@ namespace OpenVIII.Fields
                 camPosition = new Vector3(0, 0f, 0f);
                 projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                    MathHelper.ToRadians(60),
-                                   Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+                                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
                     1f, 10000f);
                 viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                              new Vector3(0f, 1f, 0f));// Y up
@@ -77,7 +77,6 @@ namespace OpenVIII.Fields
                     FogStart = 9.75f,
                     FogEnd = renderCamDistance
                 };
-
                 bInitialized = true;
             }
             if (lastFieldId != Memory.FieldHolder.FieldID)
@@ -116,7 +115,8 @@ namespace OpenVIII.Fields
         public static void Draw()
         {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+            //Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             Memory.graphics.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Aqua);
