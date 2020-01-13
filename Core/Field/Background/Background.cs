@@ -14,14 +14,8 @@ namespace OpenVIII.Fields
         #region Fields
 
         private const int bytesPerPalette = 2 * colorsPerPalette;
+
         private const int colorsPerPalette = 256;
-
-        private const bool Disable2D = true;
-
-        /// <summary>
-        /// Force Images to export to temp directory.
-        /// </summary>
-        private const bool EnableDumpingData = true;
 
         /// <summary>
         /// 4 bit has 2 columns per every byte so it expands to twice the width.
@@ -43,14 +37,23 @@ namespace OpenVIII.Fields
         private Cluts Cluts;
 
         private bool disposedValue = false;
+
         private BasicEffect effect;
+
         private Rectangle OutputDims;
+
         private Matrix projectionMatrix, viewMatrix, worldMatrix;
+
         private List<TileQuadTexture> quads;
+
         private Dictionary<byte, TextureHandler> TextureIDs;
+
         private Dictionary<TextureIDPaletteID, TextureHandler> TextureIDsPalettes;
+
         private ConcurrentDictionary<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>> Textures;
+
         private BackgroundTextureType TextureType;
+
         private Tiles tiles;
 
         #endregion Fields
@@ -67,6 +70,20 @@ namespace OpenVIII.Fields
 
         #endregion Destructors
 
+        #region Enums
+
+        [Flags]
+        public enum _Toggles : byte
+        {
+            DumpingData = 0x1,
+            SpriteBatch = 0x2,
+            Quad = 0x4,
+            WalkMesh = 0x8,
+            Deswizzle = 0x10,
+        }
+
+        #endregion Enums
+
         #region Properties
 
         public TimeSpan CurrentTime { get; private set; }
@@ -76,6 +93,7 @@ namespace OpenVIII.Fields
         public bool IsHalfBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.halfadd) ?? false;
         public bool IsQuarterBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.quarteradd) ?? false;
         public bool IsSubtractBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.subtract) ?? false;
+        public _Toggles Toggles { get; set; } = _Toggles.Quad | _Toggles.DumpingData;
         public TimeSpan TotalTime { get; private set; }
         public int Width { get => OutputDims.Width; private set => OutputDims.Width = value; }
 
@@ -275,16 +293,9 @@ namespace OpenVIII.Fields
             return r;
         }
 
-        private void DrawGeometry()
-        {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            //DrawBackground();
-
-            DrawWalkMesh();
-        }
-
         private void DrawBackground()
         {
+            if (!Toggles.HasFlag(_Toggles.Quad)) return;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
@@ -348,8 +359,26 @@ namespace OpenVIII.Fields
             }
         }
 
+        private void DrawGeometry()
+        {
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            DrawBackground();
+
+            DrawWalkMesh();
+        }
+
+        private List<KeyValuePair<BlendMode, Texture2D>> drawtextures() =>
+                                                            Textures?.OrderByDescending(kvp_Z => kvp_Z.Key)
+            .SelectMany(kvp_LayerID => kvp_LayerID.Value.OrderBy(x => kvp_LayerID.Key)
+            .SelectMany(kvp_AnimationID => kvp_AnimationID.Value.OrderBy(x => kvp_AnimationID.Key))
+            .SelectMany(kvp_AnimationState => kvp_AnimationState.Value.OrderBy(x => kvp_AnimationState.Key))
+            .SelectMany(kvp_OverlapID => kvp_OverlapID.Value.OrderBy(x => kvp_OverlapID.Key))
+            .SelectMany(kvp_BlendMode => kvp_BlendMode.Value)).ToList();
+
         private void DrawWalkMesh()
         {
+            if (!Toggles.HasFlag(_Toggles.WalkMesh)) return;
+
             effect.TextureEnabled = false;
             Memory.graphics.GraphicsDevice.BlendFactor = Color.White;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
@@ -368,14 +397,6 @@ namespace OpenVIII.Fields
                 vertexData: Module.WalkMesh.Vertices.ToArray(), vertexOffset: 0, primitiveCount: Module.WalkMesh.Count);
             }
         }
-
-        private List<KeyValuePair<BlendMode, Texture2D>> drawtextures() =>
-                                                            Textures?.OrderByDescending(kvp_Z => kvp_Z.Key)
-            .SelectMany(kvp_LayerID => kvp_LayerID.Value.OrderBy(x => kvp_LayerID.Key)
-            .SelectMany(kvp_AnimationID => kvp_AnimationID.Value.OrderBy(x => kvp_AnimationID.Key))
-            .SelectMany(kvp_AnimationState => kvp_AnimationState.Value.OrderBy(x => kvp_AnimationState.Key))
-            .SelectMany(kvp_OverlapID => kvp_OverlapID.Value.OrderBy(x => kvp_OverlapID.Key))
-            .SelectMany(kvp_BlendMode => kvp_BlendMode.Value)).ToList();
 
         private void FindOverlappingTiles() => (from t1 in tiles
                                                 from t2 in tiles
@@ -463,7 +484,7 @@ namespace OpenVIII.Fields
 
         private bool ParseBackground2D(byte[] mimb, byte[] mapb)
         {
-            if (Disable2D) return true;
+            if (!Toggles.HasFlag(_Toggles.SpriteBatch)) return true;
             if (mimb == null || mapb == null)
                 return false;
 
@@ -597,7 +618,7 @@ namespace OpenVIII.Fields
                 return false;
             //FindOverlappingTiles();
 
-            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID }).Distinct().ToList();
+            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID}).Distinct().ToList();
             // Create a swizzeled Textures with one palette.
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
             Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
@@ -632,7 +653,7 @@ namespace OpenVIII.Fields
                 SaveCluts();
                 if (overlap)
                 {
-                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.AnimationID != 0xFF || x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
                     this.TextureIDsPalettes = TextureIDsPalettes.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key.TextureID}", new Texture2DWrapper(x.Value), x.Key.PaletteID));
                     foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp in TextureIDsPalettes)
                     {
@@ -690,7 +711,7 @@ namespace OpenVIII.Fields
                                 {
                                     if (tex[_x, _y] != Color.TransparentBlack)
                                     {
-                                        if (tile.Is4Bit)//excluding 8bit overlap for now.
+                                        //if ()//excluding 8bit overlap for now.
                                             overlap = true;
                                         if (tex[_x, _y] != color)
                                         {
@@ -720,7 +741,7 @@ namespace OpenVIII.Fields
 
         private void SaveCluts()
         {
-            if (Memory.EnableDumpingData || EnableDumpingData)
+            if (Memory.EnableDumpingData || Toggles.HasFlag(_Toggles.DumpingData))
             {
                 string path = Path.Combine(Module.GetFolder(),
                     $"{Module.GetFieldName()}_Clut.png");
@@ -730,7 +751,7 @@ namespace OpenVIII.Fields
 
         private void SaveSwizzled(Dictionary<byte, Texture2D> _TextureIDs, string suf = "")
         {
-            if (Memory.EnableDumpingData || EnableDumpingData)
+            if (Memory.EnableDumpingData || Toggles.HasFlag(_Toggles.DumpingData))
             {
                 string fieldname = Module.GetFieldName();
                 string folder = Module.GetFolder(fieldname);
@@ -750,7 +771,7 @@ namespace OpenVIII.Fields
         //private void SaveSwizzled(string suf = "") => SaveSwizzled(TextureIDs, suf);
         private void SaveTextures()
         {
-            if (Memory.EnableDumpingData /*|| EnableDumpingData*/)
+            if (Memory.EnableDumpingData || (Toggles.HasFlag(_Toggles.DumpingData) && Toggles.HasFlag(_Toggles.Deswizzle)))
             {
                 string fieldname = Module.GetFieldName();
                 string folder = Module.GetFolder(fieldname);
