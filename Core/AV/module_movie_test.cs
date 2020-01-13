@@ -26,7 +26,7 @@ namespace OpenVIII
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop
             // when it runs out.
-            if (Input2.DelayedButton(FF8TextTagKey.Left))
+            else if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Module_movie_test.Index > 0)
@@ -35,7 +35,7 @@ namespace OpenVIII
                     Module_movie_test.Index = Movie.Files.Count - 1;
                 Reset();
             }
-            if (Input2.DelayedButton(FF8TextTagKey.Right))
+            else if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Module_movie_test.Index < Movie.Files.Count - 1)
@@ -67,13 +67,13 @@ namespace OpenVIII
 
         public static void Update()
         {
-            Inputs();
             if (Player == null || Player.IsDisposed)
                 Play();
             Player.Update();
+            Inputs();
         }
 
-        public static void Draw() => Player.Draw();
+        public static void Draw() => Player?.Draw();
 
         public static void Reset()
         {
