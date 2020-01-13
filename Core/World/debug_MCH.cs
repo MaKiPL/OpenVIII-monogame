@@ -12,9 +12,9 @@ namespace OpenVIII
 {
     public class Debug_MCH
     {
-        const float MODEL_SCALE = 20f;
-        private const float TEX_SIZEW = 256.0f;
-        private const float TEX_SIZEH = 256.0f;
+        static float MODEL_SCALE = 20f;
+        private const float TEX_SIZEW = 256f;
+        private const float TEX_SIZEH = 256f;
         private Vector2[] textureSizes;
         private uint pBase;
         private MemoryStream ms;
@@ -144,10 +144,20 @@ namespace OpenVIII
         private Vector4[] vertices;
         private GroupedVertices[] gVertices;
 
-        public Debug_MCH(MemoryStream ms, BinaryReader br)
+        public enum mchMode
+        {
+            World,
+            FieldMain,
+            FieldNPC
+        }
+
+        mchMode currentMchMode;
+        public Debug_MCH(MemoryStream ms, BinaryReader br,mchMode mchMode = mchMode.World,float modelScale = 20f)
         {
             this.ms = ms;
             this.br = br;
+            this.currentMchMode = mchMode;
+            MODEL_SCALE = modelScale;
             pBase = (uint)ms.Position;
             header = Extended.ByteArrayToStructure<Header>(br.ReadBytes(64));
             if (header.Unk != 0)
@@ -245,8 +255,8 @@ namespace OpenVIII
             if (ms.Position > ms.Length || header.pVertices+ms.Position > ms.Length) //pvert error handler
                 return; //error handler
             vertices = new Vector4[header.cVertices];
-            for(int i = 0; i<vertices.Length; i++)
-                vertices[i] = new Vector4(br.ReadInt16(), br.ReadInt16(), br.ReadInt16(), br.ReadInt16());
+            for (int i = 0; i < vertices.Length; i++)
+              vertices[i] = new Vector4(br.ReadInt16(), -br.ReadInt16(), br.ReadInt16(), br.ReadInt16()); //change second to -Y because of warped geom
 
             ms.Seek(pBase + header.pFaces, SeekOrigin.Begin);
             List<Face> face = new List<Face>();
@@ -258,10 +268,13 @@ namespace OpenVIII
 
         /// <summary>
         /// Method to parse available binary data to "animation" structure and calculates the final Matrix
+        /// <paramref name="bIndependentStream">if true- then ms and br are custom/modified externally</paramref>
         /// </summary>
-        private void ReadAnimation()
+        private void ReadAnimation(bool bIndependentStream = false)
         {
-            ms.Seek(pBase + header.pAnimation, SeekOrigin.Begin);
+            if(!bIndependentStream) //if normal parsing, then jump to animation pointer
+                ms.Seek(pBase + header.pAnimation, SeekOrigin.Begin);
+            //if not, then do nothing- ms will point to animation buffer
 
             if (ms.Position > ms.Length)
                 return; //error handler
@@ -272,6 +285,11 @@ namespace OpenVIII
             {
                 ushort animationFramesCount = br.ReadUInt16();
                 ushort cBones = br.ReadUInt16();
+                if (animationFramesCount * cBones >= ms.Length || cBones == 0 || cBones>100)
+                {
+                    Console.WriteLine($"Debug_MCH: Error at ReadAnimation()- animFrameCount was {animationFramesCount} and cBones were {cBones}, but that's more than file size!");
+                    break;
+                }
                 animation.animations[innerIndex] = new AnimationEntry() { cAnimFrames = animationFramesCount, animationFrames = new AnimFrame[animationFramesCount] };
                 List<AnimFrame> animKeypoints = new List<AnimFrame>();
                 while (animationFramesCount > 0)
@@ -280,11 +298,24 @@ namespace OpenVIII
                     Vector3[] vetRot = new Vector3[cBones];
                     Matrix[] matrixRot = new Matrix[cBones];
                     for (int i = 0; i < cBones; i++)
-                    {
-                        short x = br.ReadInt16();
-                        short y = br.ReadInt16();
-                        short z = br.ReadInt16();
-
+                        {
+                        short x, y, z;
+                        if (currentMchMode == mchMode.World)
+                        {
+                            x = br.ReadInt16();
+                            y = br.ReadInt16();
+                            z = br.ReadInt16();
+                        }
+                        else //Field NPC dataset - s16 4bytes simplified
+                        {
+                            byte rot1 = br.ReadByte();
+                            byte rot2 = br.ReadByte();
+                            byte rot3 = br.ReadByte();
+                            byte rot4 = br.ReadByte();
+                            x = (short)(rot1 << 2 | (rot4 >> 2 * 0 & 3) << 10);
+                            y = (short)(rot2 << 2 | (rot4 >> 2 * 1 & 3) << 10);
+                            z = (short)(rot3 << 2 | (rot4 >> 2 * 2 & 3) << 10);
+                        }
                         Vector3 shortVector = new Vector3()
                         {
                             X = -y,
@@ -450,6 +481,19 @@ namespace OpenVIII
                 );
 
             return face;
+        }
+
+
+        /// <summary>
+        /// This function takes animations data as input and merges it to current Mch instance.
+        /// This is mandatory for main characters in fields, as their base does not contain animations
+        /// </summary>
+        /// <param name="animationsBuffer"></param>
+        public void MergeAnimations(MemoryStream ms, BinaryReader br)
+        {
+            this.ms = ms;
+            this.br = br;
+            ReadAnimation(true);
         }
     }
 }

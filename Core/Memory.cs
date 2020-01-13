@@ -27,6 +27,7 @@ namespace OpenVIII
         FACE_TEST = -20,
         ICON_TEST = -21,
         CARD_TEST = -22,
+        FIELD_MODEL_TEST = -51,
     }
 
     /// <summary>

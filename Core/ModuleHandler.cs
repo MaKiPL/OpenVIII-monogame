@@ -97,6 +97,10 @@ namespace OpenVIII
                 case MODULE.CARD_TEST:
                     Module_card_test.Update();
                     break;
+
+                case MODULE.FIELD_MODEL_TEST:
+                    module_field_object_test.Update();
+                    break;
             }
         }
 
@@ -166,6 +170,10 @@ namespace OpenVIII
 
                 case MODULE.BATTLE_SWIRL:
                     BattleSwirl.Draw();
+                    break;
+
+                case MODULE.FIELD_MODEL_TEST:
+                    module_field_object_test.Draw();
                     break;
             }
         }
