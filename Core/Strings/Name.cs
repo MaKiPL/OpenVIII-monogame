@@ -7,7 +7,8 @@
         public static class Name
         {
             #region Properties
-
+            public static FF8StringReference New_Game => Memory.Strings.Read(Strings.FileID.MNGRP, 1, 105);
+            public static FF8StringReference Load_Game => Memory.Strings.Read(Strings.FileID.MNGRP, 1, 106);
             public static FF8StringReference _ => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 266);
             public static FF8StringReference Ability => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 223);
             public static FF8StringReference Auto => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 221);

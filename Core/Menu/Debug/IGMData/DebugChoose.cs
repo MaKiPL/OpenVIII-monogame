@@ -86,7 +86,7 @@ namespace OpenVIII.IGMData
         {
             base.Inputs_CANCEL();
             CURSOR_SELECT = 0;
-            Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+            Menu.Module.State = MenuModule.Mode.MainLobby;
             Menu.FadeIn();
             return true;
         }
@@ -147,9 +147,9 @@ namespace OpenVIII.IGMData
                 } },
                 { Ditems.Overture, ()=> {
                     Menu.FadeIn();
-                    Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+                    Menu.Module.State = MenuModule.Mode.MainLobby;
                     Module_overture_debug.ResetModule();
-                    Memory.module = MODULE.OVERTURE_DEBUG;
+                    Memory.Module = MODULE.OVERTURE_DEBUG;
                     Memory.IsMouseVisible = false;
                     init_debugger_Audio.StopMusic();
                     return true;
@@ -158,7 +158,7 @@ namespace OpenVIII.IGMData
                     Menu.FadeIn();
                     Module_battle_debug.ResetState();
                     Menu.BattleMenus.CameFrom();
-                    Memory.module = MODULE.BATTLE_DEBUG;
+                    Memory.Module = MODULE.BATTLE_DEBUG;
                     //Extended.postBackBufferDelegate = BattleSwirl.Init;
                     //Extended.RequestBackBuffer();
                     Memory.IsMouseVisible = false;
@@ -167,13 +167,13 @@ namespace OpenVIII.IGMData
                 { Ditems.Field, ()=> {
                     Menu.FadeIn();
                     Fields.Module.ResetField();
-                    Memory.module = MODULE.FIELD_DEBUG;
+                    Memory.Module = MODULE.FIELD_DEBUG;
                     Memory.IsMouseVisible = false;
                     return true;
                 }  },
                 { Ditems.Movie, ()=> {
                     Menu.FadeIn();
-                    Memory.module = MODULE.MOVIETEST;
+                    Memory.Module = MODULE.MOVIETEST;
                     Module_movie_test.Play();
                     Memory.IsMouseVisible = false;
                     return true;
@@ -190,31 +190,31 @@ namespace OpenVIII.IGMData
                 }  },
                 { Ditems.World, ()=> {
                     Menu.FadeIn();
-                    Memory.module = MODULE.WORLD_DEBUG;
+                    Memory.Module = MODULE.WORLD_DEBUG;
                     Memory.IsMouseVisible = false;
                     return true;
                 }  },
                 { Ditems.Faces, ()=> {
                     Menu.FadeIn();
-                    Memory.module = MODULE.FACE_TEST;
+                    Memory.Module = MODULE.FACE_TEST;
                     Module_face_test.Show();
                     return true;
                 }  },
                 { Ditems.Icons, ()=> {
                     Menu.FadeIn();
-                    Memory.module = MODULE.ICON_TEST;
+                    Memory.Module = MODULE.ICON_TEST;
                     Module_icon_test.Show();
                     return true;
                 }  },
                 { Ditems.Cards, ()=> {
                     Menu.FadeIn();
-                    Memory.module = MODULE.CARD_TEST;
+                    Memory.Module = MODULE.CARD_TEST;
                     Module_card_test.Show();
                     return true;
                 }  },
                 { Ditems.FieldModelTest, ()=> {
                     Menu.FadeIn();
-                    Memory.module = MODULE.FIELD_MODEL_TEST;
+                    Memory.Module = MODULE.FIELD_MODEL_TEST;
                     Module_card_test.Show();
                     return true;
                 }  },

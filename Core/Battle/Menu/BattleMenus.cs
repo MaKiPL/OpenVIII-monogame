@@ -18,7 +18,7 @@ namespace OpenVIII
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
         private MODULE lastgamestate;
-        private Module_main_menu_debug.MainMenuStates lastmenu;
+        private MenuModule.Mode lastmenu;
         private ushort lastmusic;
         private bool lastmusicplaying;
         private Dictionary<Mode, Action> ReturnAction;
@@ -152,8 +152,8 @@ namespace OpenVIII
         /// </summary>
         public void CameFrom()
         {
-            lastmenu = Module_main_menu_debug.State;
-            lastgamestate = Memory.module;
+            lastmenu = Menu.Module.State;
+            lastgamestate = Memory.Module;
             lastmusic = Memory.MusicIndex;
             lastmusicplaying = init_debugger_Audio.MusicPlaying;
         }
@@ -288,8 +288,8 @@ namespace OpenVIII
         /// </summary>
         public void ReturnTo()
         {
-            Module_main_menu_debug.State = lastmenu;
-            Memory.module = lastgamestate;
+            Menu.Module.State = lastmenu;
+            Memory.Module = lastgamestate;
             Menu.IGM.Refresh(); // else the menu stats won't update.
             Module_battle_debug.ResetState();
             if (lastmusicplaying)
@@ -507,10 +507,10 @@ namespace OpenVIII
 
         private bool UpdateGameOverFunction()
         {
-            Memory.module = MODULE.FIELD_DEBUG;
+            Memory.Module = MODULE.FIELD_DEBUG;
             Memory.FieldHolder.FieldID = 75; //gover
             init_debugger_Audio.PlayMusic(0);
-            Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+            Menu.Module.State = MenuModule.Mode.MainLobby;
             return true;
         }
 

@@ -28,7 +28,7 @@ namespace OpenVIII
         {
             bInitialized = false;
             //Memory.encounters[Memory.battle_encounter].BattleFlags. //which flags is about the boss or normal swirl?
-            Memory.module = MODULE.BATTLE_SWIRL;
+            Memory.Module = MODULE.BATTLE_SWIRL;
             backBufferTexture = Extended.BackBufferTexture;
             bInitialized = true;
             bFirstClear = true;
@@ -143,7 +143,7 @@ namespace OpenVIII
                 Color.White * 1f);
             Memory.spriteBatch.End();
             if (x > Memory.graphics.GraphicsDevice.Viewport.Width+blackLines.Width+0xff)
-                Memory.module = MODULE.BATTLE_DEBUG;
+                Memory.Module = MODULE.BATTLE_DEBUG;
         }
 
         private static void BossSwirlDraw()

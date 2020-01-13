@@ -55,6 +55,7 @@ namespace OpenVIII
         private bool _backup = false;
 
         private Vector2 _size;
+        private static MenuModule _module;
 
         #endregion Fields
 
@@ -168,6 +169,8 @@ namespace OpenVIII
         /// if canceled don't init menu.
         /// </summary>
         private bool cancel => Memory.Token.IsCancellationRequested;
+
+        public static MenuModule Module { get => _module; set => _module = value; }
 
         #endregion Properties
 
@@ -310,10 +313,11 @@ namespace OpenVIII
                     _igm_lgsg = IGM_LGSG.Create();
                 if (_debug_menu == null)
                     _debug_menu = Debug_Menu.Create();
-                Fade = 0;
+                if (_module == null)
+                    _module = MenuModule.Create();
+                FadeIn();
             }
         }
-
         public static void UpdateOnce() => UpdateFade(null);
 
         public override void Draw()
@@ -388,7 +392,8 @@ namespace OpenVIII
             bool ret = false;
             if (!SkipFocus)
                 GenerateFocus();
-            StaticSize = Size;
+            if(Size != Vector2.Zero)
+                StaticSize = Size;
             if (Enabled)
             {
                 //todo detect when there is no saves detected.

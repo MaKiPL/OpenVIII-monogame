@@ -272,6 +272,7 @@
     <Compile Include="Extended.cs" />
     <Compile Include="Menu\Images\Box_Options.cs" />
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
+    <Compile Include="Menu\MenuModule.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
     <Compile Include="Menu\Debug\IGMData\DebugChoose.cs" />
     <Compile Include="Saves\Angelo.cs" />
@@ -890,9 +891,7 @@
     <Compile Include="Menu\Debug\Module_card_test.cs" />
     <Compile Include="Menu\Debug\Module_face_test.cs" />
     <Compile Include="Menu\Debug\Module_icon_test.cs" />
-    <Compile Include="Menu\module_main_menu_debug.cs" />
     <Compile Include="Menu\Cursor_Status.cs" />
-    <Compile Include="Menu\Item.cs" />
     <Compile Include="Menu\Table_Options.cs" />
     <Compile Include="PointEx.cs" />
     <Compile Include="Strings\Name.cs" />

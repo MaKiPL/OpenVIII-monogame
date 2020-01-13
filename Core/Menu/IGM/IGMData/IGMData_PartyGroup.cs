@@ -57,7 +57,7 @@ namespace OpenVIII
                 switch (Choice)
                 {
                     case Items.Junction:
-                        Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Junction;
+                        Menu.Module.State = MenuModule.Mode.IGM_Junction;
                         IGM_Junction.Refresh(Contents[CURSOR_SELECT], true);
                         return true;
                 }

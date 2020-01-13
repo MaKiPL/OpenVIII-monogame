@@ -49,7 +49,7 @@ namespace OpenVIII
 
         private static void Return()
         {
-            Memory.module = ReturnState;
+            Memory.Module = ReturnState;
             Reset();
         }
 
