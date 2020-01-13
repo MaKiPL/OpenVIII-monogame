@@ -94,7 +94,7 @@ namespace OpenVIII.Fields
         public bool IsHalfBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.halfadd) ?? false;
         public bool IsQuarterBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.quarteradd) ?? false;
         public bool IsSubtractBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.subtract) ?? false;
-        public _Toggles Toggles { get; set; } = _Toggles.Quad | _Toggles.DumpingData;
+        public _Toggles Toggles { get; set; } = _Toggles.WalkMesh;
         public TimeSpan TotalTime { get; private set; }
         public int Width { get => OutputDims.Width; private set => OutputDims.Width = value; }
 
@@ -411,18 +411,26 @@ namespace OpenVIII.Fields
             Memory.graphics.GraphicsDevice.BlendFactor = Color.White;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            ate.Texture = null;
-            ate.VertexColorEnabled = true;
-            effect.VertexColorEnabled = true;
-            effect.World = Module.Cameras[0].CreateWorld();
-            effect.View = Module.Cameras[0].CreateLookAt();
-            effect.Projection = projectionMatrix;//Module.Cameras[0].CreateProjection();
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            using (RasterizerState rasterizerState = new RasterizerState() { CullMode = CullMode.None })
             {
-                pass.Apply();
+                Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
+                ate.Texture = null;
+                ate.VertexColorEnabled = true;
+                effect.VertexColorEnabled = true;
+                effect.World = Module.Cameras[0].CreateWorld();
+                float fieldOfView = MathHelper.ToRadians(70);
+                //effect.View = //Module.Cameras[0].CreateLookAt();
+                //effect.Projection = Module.Cameras[0].CreateProjection();
 
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                vertexData: Module.WalkMesh.Vertices.ToArray(), vertexOffset: 0, primitiveCount: Module.WalkMesh.Count);
+                effect.Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView, Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
+                effect.View = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+                foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                    vertexData: Module.WalkMesh.Vertices.ToArray(), vertexOffset: 0, primitiveCount: Module.WalkMesh.Count);
+                }
             }
         }
 
