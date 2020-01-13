@@ -7,8 +7,8 @@ namespace OpenVIII
 {
     public static class ModuleHandler
     {
-        private static MODULE module = Memory.module;
-        private static MODULE lastModule = Memory.module;
+        private static MODULE module = Memory.Module;
+        private static MODULE lastModule = Memory.Module;
 
         public static async void Update(GameTime gameTime)
         {
@@ -18,14 +18,14 @@ namespace OpenVIII
                 GC.WaitForPendingFinalizers();
                 lastModule = module;
             }
-            module = Memory.module;
+            module = Memory.Module;
 
 #if DEBUG
             if (Input2.DelayedButton(FF8TextTagKey.Reset) || Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                if (Memory.module != MODULE.MAINMENU_DEBUG && Memory.module != MODULE.BATTLE_DEBUG)
+                if (Memory.Module != MODULE.MAINMENU_DEBUG && Memory.Module != MODULE.BATTLE_DEBUG)
                 {
-                    Memory.module = MODULE.MAINMENU_DEBUG;
+                    Memory.Module = MODULE.MAINMENU_DEBUG;
                     InputMouse.Mode = MouseLockMode.Screen;
                 }
             }
@@ -79,7 +79,7 @@ namespace OpenVIII
 
                 case MODULE.MAINMENU_DEBUG:
                     Menu.UpdateOnce();
-                    Module_main_menu_debug.Update();
+                    Menu.Module.Update();
                     break;
 
                 case MODULE.WORLD_DEBUG:
@@ -149,7 +149,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.MAINMENU_DEBUG:
-                    Module_main_menu_debug.Draw();
+                    Menu.Module.Draw();
                     break;
 
                 case MODULE.WORLD_DEBUG:

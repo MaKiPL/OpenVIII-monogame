@@ -44,7 +44,7 @@ namespace OpenVIII
             public override bool Inputs_CANCEL()
             {
                 base.Inputs_CANCEL();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
+                Menu.Module.State = MenuModule.Mode.IGM;
                 IGM.Refresh();
                 FadeIn();
                 return true;

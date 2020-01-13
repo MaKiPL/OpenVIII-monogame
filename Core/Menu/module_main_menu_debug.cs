@@ -60,7 +60,7 @@ namespace OpenVIII
         }
 
         private static Dictionary<Enum, Item> strLoadScreen { get; set; }
-
+        public static event EventHandler<MainMenuStates> MainMenuStateChangedEvent;
         public static MainMenuStates State
         {
             get => state; set
@@ -68,11 +68,26 @@ namespace OpenVIII
                 // Draw will call before the next update(). This prevents that.
                 Memory.SuppressDraw = true;
                 state = value;
+                MainMenuStateChangedEvent?.Invoke(null, value);
+
             }
+        }
+
+        public static void MainMenuStateChanged(object sender, MainMenuStates e)
+        {
+            if(Memory.Module == MODULE.MAINMENU_DEBUG)
+                ModuleChanged(null, MODULE.MAINMENU_DEBUG);
         }
 
         #endregion Properties
 
+        public static void ModuleChanged(object sender, MODULE e)
+        {
+            if (e == MODULE.MAINMENU_DEBUG)
+            {
+                
+            }
+        }
         #region Methods
 
         /// <summary>
@@ -132,8 +147,6 @@ namespace OpenVIII
         private static Vector2 scale;
         private static Vector2 lastscale;
         private static Matrix IGM_focus;
-        private static TimeSpan time => TimeSpan.FromMilliseconds(1000d);
-        public static Slide<Vector2> OffsetSlide = new Slide<Vector2>(new Vector2(-1000, 0), Vector2.Zero, time, Vector2.SmoothStep);
         //public static Slide<float> BlinkSlide = new Slide<float>(1f, 0f, 300d, MathHelper.Lerp);
         //public static Slide<float> FadeSlide = new Slide<float>(0f, 1f, 500d, MathHelper.Lerp);
 
@@ -198,8 +211,8 @@ namespace OpenVIII
                 //    break;
 
                 case MainMenuStates.MainLobby:
-                    Memory.IsMouseVisible = true;
-                    OffsetSlide.Restart();
+                    //Memory.IsMouseVisible = true;
+                    //OffsetSlide.Restart();
                     //if (UpdateMainLobby() || (lastfade != fade))
                     //{
                     //    forceupdate = true;
@@ -210,7 +223,7 @@ namespace OpenVIII
 
                 case MainMenuStates.DebugScreen:
                     //Menu.UpdateFade();
-                    Memory.IsMouseVisible = true;
+                    //Memory.IsMouseVisible = true;
                     //if (UpdateDebugLobby() || /*(lastfade != fade) ||*/ Offset != Vector2.Zero)
                     //{
                     //    forceupdate = true;
@@ -239,22 +252,22 @@ namespace OpenVIII
                 case MainMenuStates.SaveGameSaving:
                     //Menu.UpdateFade();
                     //UpdateLGSG();
-                    Menu.IGM_LGSG.Update();
+                    forceupdate = Menu.IGM_LGSG.Update();
                     break;
 
                 case MainMenuStates.IGM:
-                    Memory.IsMouseVisible = true;
-                    Menu.IGM.Update();
+                    //Memory.IsMouseVisible = true;
+                    forceupdate = Menu.IGM.Update();
                     break;
 
                 case MainMenuStates.IGM_Junction:
-                    Memory.IsMouseVisible = true;
-                    Menu.IGM_Junction.Update();
+                    //Memory.IsMouseVisible = true;
+                    forceupdate = Menu.IGM_Junction.Update();
                     break;
 
                 case MainMenuStates.IGM_Items:
-                    Memory.IsMouseVisible = true;
-                    Menu.IGM_Items.Update();
+                    //Memory.IsMouseVisible = true;
+                    forceupdate = Menu.IGM_Items.Update();
                     break;
 
                 //case MainMenuStates.BattleMenu:

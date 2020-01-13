@@ -281,7 +281,7 @@ namespace OpenVIII
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        public static MODULE module = MODULE.OVERTURE_DEBUG;
+        private static MODULE module = MODULE.OVERTURE_DEBUG;
 
         public static string FF8DIR { get; private set; }
         public static string FF8DIRdata { get; private set; }
@@ -333,7 +333,7 @@ namespace OpenVIII
                     //// requires font, faces, and icons. currently cards only used in debug menu. will
                     //// have support for cards when added to menu.
                     //if (!token.IsCancellationRequested)
-                    //    Module_main_menu_debug.Init();
+                    //    Menu.Module.Init();
 
                     // requires font, faces, and icons. currently cards only used in debug menu. will
                     // have support for cards when added to menu.
@@ -396,6 +396,18 @@ namespace OpenVIII
         public static Items_In_Menu MItems { get; private set; }
         public static Magazine Magazines { get; private set; }
         public static Saves.Data InitState { get; private set; }
+        public static event EventHandler<MODULE> ModuleChangeEvent;
+        public static MODULE Module
+        {
+            get => module; set
+            {
+                if (module != value)
+                {
+                    module = value;
+                    ModuleChangeEvent?.Invoke(null, value);
+                }
+            }
+        }
 
         #region battleProvider
 

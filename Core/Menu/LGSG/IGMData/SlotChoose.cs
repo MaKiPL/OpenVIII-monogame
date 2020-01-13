@@ -37,7 +37,7 @@ namespace OpenVIII
                 if (!Save)
                     init_debugger_Audio.StopMusic();
                 Menu.FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+                Menu.Module.State = MenuModule.Mode.MainLobby;
 
                 return true;
             }

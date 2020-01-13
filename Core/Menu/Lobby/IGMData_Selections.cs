@@ -65,9 +65,11 @@ namespace OpenVIII
 
                 Module_movie_test.Index = 30;
                 Module_movie_test.ReturnState = MODULE.FIELD_DEBUG;
-                Memory.module = MODULE.MOVIETEST;
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.MainLobby;
+                Memory.Module = MODULE.MOVIETEST;
+                Menu.Module.State = MenuModule.Mode.MainLobby;
                 Memory.IsMouseVisible = false;
+                //wait till next update to start drawing.
+                Memory.SuppressDraw = true;
             }
 
             public override void Refresh()
@@ -83,10 +85,10 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                ITEM[0, 0] = new IGMDataItem.Text() { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 1, 105), Pos = SIZE[0] };
-                ITEM[1, 0] = new IGMDataItem.Text() { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 1, 106), Pos = SIZE[1] };
+                ITEM[0, 0] = new IGMDataItem.Text() { Data = Strings.Name.New_Game, Pos = SIZE[0] };
+                ITEM[1, 0] = new IGMDataItem.Text() { Data = Strings.Name.Load_Game, Pos = SIZE[1] };
                 ITEM[2, 0] = new IGMDataItem.Text() { Data = "OpenVIII debug tools", Pos = SIZE[2] };
-                Cursor_Status |= Cursor_Status.Enabled;
+                Cursor_Status = Cursor_Status.Enabled | Cursor_Status.Vertical | Cursor_Status.Horizontal;
                 OkayActions = new Dictionary<int, Action>()
                 {
                     {0, NewGameOkayAction },
@@ -105,12 +107,12 @@ namespace OpenVIII
             {
                 base.Inputs_OKAY();
                 FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.DebugScreen;
+                Menu.Module.State = MenuModule.Mode.DebugScreen;
             }
 
             private void FadedOutEvent(object sender, EventArgs e)
             {
-                if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.MainLobby &&
+                if (Menu.Module.State == MenuModule.Mode.MainLobby &&
                     FadeOutActions.ContainsKey(CURSOR_SELECT))
                     FadeOutActions[CURSOR_SELECT]();
             }
@@ -119,7 +121,7 @@ namespace OpenVIII
             {
                 base.Inputs_OKAY();
                 FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseSlot;
+                Menu.Module.State = MenuModule.Mode.LoadGameChooseSlot;
             }
 
             private void NewGameOkayAction()

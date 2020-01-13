@@ -33,7 +33,7 @@ namespace OpenVIII.IGMData
             else
             {
                 Menu.FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
+                Menu.Module.State = MenuModule.Mode.IGM;
                 Menu.IGM.Refresh();
 
                 //TODO if save ask if you are sure if you are replacing an existing save.

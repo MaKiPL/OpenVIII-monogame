@@ -73,7 +73,7 @@ namespace OpenVIII
                     publicModule = OverturepublicModule._0InitSound;
                     Module_movie_test.Index = 104;//104 is SE logo in steam release.
                     Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
-                    Memory.module = MODULE.MOVIETEST;
+                    Memory.Module = MODULE.MOVIETEST;
                     break;
             }
         }
@@ -90,7 +90,7 @@ namespace OpenVIII
             splashIndex = 0;
             splashName = splashLoop = 1;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            Memory.module = MODULE.OVERTURE_DEBUG;
+            Memory.Module = MODULE.OVERTURE_DEBUG;
             publicModule = OverturepublicModule._4Squaresoft;
             Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
         }
@@ -180,7 +180,7 @@ namespace OpenVIII
             if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
                 init_debugger_Audio.StopMusic();
-                Memory.module = MODULE.MAINMENU_DEBUG;
+                Memory.Module = MODULE.MAINMENU_DEBUG;
             }
             switch (publicModule)
             {
@@ -245,7 +245,7 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
                 if (bWaitingSplash && Fade < 0.0f)
                 {
-                    Memory.module = MODULE.MAINMENU_DEBUG;
+                    Memory.Module = MODULE.MAINMENU_DEBUG;
                 }
             }
         }

@@ -42,9 +42,9 @@ namespace OpenVIII
                         Memory.State = Memory.PrevState.Clone();
                         break;
                 }
-                if (Module_main_menu_debug.State == Module_main_menu_debug.MainMenuStates.IGM_Junction)
+                if (Menu.Module.State == MenuModule.Mode.IGM_Junction)
                 {
-                    Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM;
+                    Menu.Module.State = MenuModule.Mode.IGM;
                     IGM.Refresh();
                     FadeIn();
                     return true;

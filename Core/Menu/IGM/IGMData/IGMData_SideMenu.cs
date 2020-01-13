@@ -74,7 +74,7 @@ namespace OpenVIII
             {
                 base.Inputs_CANCEL();
                 FadeIn();
-                Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.LoadGameChooseGame;
+                Menu.Module.State = MenuModule.Mode.LoadGameChooseGame;
                 return true;
             }
 
@@ -90,14 +90,14 @@ namespace OpenVIII
                         return true;
 
                     case Items.Item:
-                        Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.IGM_Items;
+                        Menu.Module.State = MenuModule.Mode.IGM_Items;
                         IGM_Items.Refresh();
                         return true;
 
                     case Items.Battle:
                         BattleMenus.CameFrom();
-                        //Module_main_menu_debug.State = Module_main_menu_debug.MainMenuStates.BattleMenu;
-                        Memory.module = MODULE.BATTLE_DEBUG;
+                        //Menu.Module.State = MenuModule.MainMenuStates.BattleMenu;
+                        Memory.Module = MODULE.BATTLE_DEBUG;
                         BattleMenus.Refresh();
                         FadeIn();
                         return true;
