@@ -99,7 +99,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.FIELD_MODEL_TEST:
-                    module_field_object_test.Update();
+                    Fields.Module_field_object_test.Update();
                     break;
             }
         }
@@ -173,7 +173,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.FIELD_MODEL_TEST:
-                    module_field_object_test.Draw();
+                    Fields.Module_field_object_test.Draw();
                     break;
             }
         }

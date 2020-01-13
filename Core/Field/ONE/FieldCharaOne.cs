@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     class FieldCharaOne
     {
@@ -34,31 +34,27 @@ namespace OpenVIII
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] test = aw.GetListOfFiles();
 
-            var CollectionEntry = test.Where(x => x.ToLower().Contains(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]));
+            var CollectionEntry = test.Where(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID],StringComparison.OrdinalIgnoreCase)>=0);
             if (!CollectionEntry.Any()) return;
-            string fieldArchive = CollectionEntry.First();
-            int fieldLen = fieldArchive.Length - 3;
-            fieldArchive = fieldArchive.Substring(0, fieldLen);
+            string fieldArchivename = CollectionEntry.First();
+            var fieldArchive = aw.GetArchive(fieldArchivename);
+            
 
-
-            byte[] fs = aw.GetBinaryFile($"{fieldArchive}{Memory.Archive.B_FileArchive}");
-            byte[] fi = aw.GetBinaryFile($"{fieldArchive}{Memory.Archive.B_FileIndex}");
-            byte[] fl = aw.GetBinaryFile($"{fieldArchive}{Memory.Archive.B_FileList}");
-            string[] test_ = aw.GetBinaryFileList(fl);
+            string[] test_ = fieldArchive.GetListOfFiles();
 
 
             string one;
             string main_chr;
             try
             {
-                one = test_.First(x => x.ToLower().Contains(".one"));
+                one = test_.First(x => x.EndsWith(".one",StringComparison.OrdinalIgnoreCase));
             }
             catch
             {
                 return;
             }
 
-            byte[] oneb = aw.FileInTwoArchives(fi, fs, fl, one);
+            byte[] oneb = fieldArchive.GetBinaryFile(one);
             if (oneb.Length == 0)
                 return;
             ReadBuffer(oneb);
@@ -75,11 +71,13 @@ namespace OpenVIII
                 for (int i = 0; i < nModels; i++)
                 {
 
-                    CharaModelHeaders localCmh = new CharaModelHeaders();
-                    localCmh.offset = br.ReadUInt32() + 4;
-                    localCmh.size = br.ReadUInt32();
-                    localCmh.size2 = br.ReadUInt32();
-                    localCmh.flagDWORD = br.ReadUInt32();
+                    CharaModelHeaders localCmh = new CharaModelHeaders
+                    {
+                        offset = br.ReadUInt32() + 4,
+                        size = br.ReadUInt32(),
+                        size2 = br.ReadUInt32(),
+                        flagDWORD = br.ReadUInt32()
+                    };
                     bool bIgnorePadding = false;
                     bool bMainChara = false;
                     if (localCmh.flagDWORD >> 24 == 0xD0) //main character file
@@ -178,14 +176,9 @@ namespace OpenVIII
 
             var CollectionEntry = test.Where(x => x.ToLower().Contains("main_chr"));
             if (!CollectionEntry.Any()) return;
-            string fieldArchive = CollectionEntry.First();
-            int fieldLen = fieldArchive.Length - 3;
-            fieldArchive = fieldArchive.Substring(0, fieldLen);
-
-            byte[] fs = aw.GetBinaryFile($"{fieldArchive}{Memory.Archive.B_FileArchive}");
-            byte[] fi = aw.GetBinaryFile($"{fieldArchive}{Memory.Archive.B_FileIndex}");
-            byte[] fl = aw.GetBinaryFile($"{fieldArchive}{Memory.Archive.B_FileList}");
-            string[] test_ = aw.GetBinaryFileList(fl);
+            string fieldArchiveName = CollectionEntry.First();
+            var fieldArchive = aw.GetArchive(fieldArchiveName);
+            string[] test_ = fieldArchive.GetListOfFiles() ;
 
             for(int i = 0; i<test_.Length; i++)
             {
@@ -193,7 +186,7 @@ namespace OpenVIII
                 //    continue;
                 if (string.IsNullOrWhiteSpace(test_[i]))
                     continue;
-                byte[] oneb = aw.FileInTwoArchives(fi, fs, fl, test_[i]);
+                byte[] oneb = fieldArchive.GetBinaryFile(test_[i]);
 
                 if (oneb.Length < 64) //Hello Kazuo Suzuki! I will skip your dummy files
                     continue;

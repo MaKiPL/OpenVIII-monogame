@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     /// <summary>
     /// this works only as a preview for field models and proof-of-concept
     /// </summary>
-    public class module_field_object_test
+    public class Module_field_object_test
     {
         private static int lastFieldId = -1;
 

@@ -108,7 +108,7 @@ namespace OpenVIII.Fields
                         break;
                 }
             }
-            
+
         }
 
         private static void UpdateScript()
@@ -215,7 +215,7 @@ namespace OpenVIII.Fields
             return;
         }
 
-        public static string GetFolder(string fieldname=null)
+        public static string GetFolder(string fieldname = null)
         {
             if (string.IsNullOrWhiteSpace(fieldname))
                 fieldname = GetFieldName();
@@ -295,5 +295,6 @@ namespace OpenVIII.Fields
         //    }
         //    throw new Exception($"Blendtype is {tile.BlendMode}: There are only 4 blend modes, 0-3, 4+ are drawn directly.");
         //}
+
     }
 }
