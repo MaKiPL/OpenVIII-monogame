@@ -175,7 +175,7 @@
     <Compile Include="Battle\Menu\IGMData\Target\Party.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
     <Compile Include="Battle\RegularPyramid.cs" />
-    <Compile Include="Buffer_Data.cs" />
+    <Compile Include="AV\Buffer_Data.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
     <Compile Include="Card_Game\Faces.cs" />
