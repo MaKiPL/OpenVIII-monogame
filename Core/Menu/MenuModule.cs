@@ -132,20 +132,7 @@ namespace OpenVIII
 
         public override void Refresh()
         {
-            switch (State)
-            {
-                case Mode.NewGameChoosed:
-                case Mode.LoadGameCheckingSlot:
-                case Mode.LoadGameLoading:
-                case Mode.SaveGameCheckingSlot:
-                case Mode.SaveGameSaving:
-                    Memory.IsMouseVisible = false;
-                    break;
 
-                default:
-                    Memory.IsMouseVisible = true;
-                    break;
-            }
             switch (State)
             {
                 case Mode.MainLobby:
@@ -191,6 +178,20 @@ namespace OpenVIII
 
         public override bool Update()
         {
+            switch (State)
+            {
+                case Mode.NewGameChoosed:
+                case Mode.LoadGameCheckingSlot:
+                case Mode.LoadGameLoading:
+                case Mode.SaveGameCheckingSlot:
+                case Mode.SaveGameSaving:
+                    Memory.IsMouseVisible = false;
+                    break;
+
+                default:
+                    Memory.IsMouseVisible = true;
+                    break;
+            }
             bool forceupdate = false;
             switch (State)
             {

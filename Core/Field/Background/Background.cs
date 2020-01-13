@@ -80,6 +80,7 @@ namespace OpenVIII.Fields
             Quad = 0x4,
             WalkMesh = 0x8,
             Deswizzle = 0x10,
+            Perspective = 0x20,
         }
 
         #endregion Enums
@@ -105,19 +106,20 @@ namespace OpenVIII.Fields
         {
             if (mimb == null || mapb == null)
                 return null;
-            Vector3 camTarget = Vector3.Zero;
-
-            Vector3 camPosition = new Vector3(0f, 0f, -10f);
             Background r = new Background
             {
                 TextureType = BackgroundTextureType.GetTextureType(mimb),
                 ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice),
                 effect = new BasicEffect(Memory.graphics.GraphicsDevice),
-                worldMatrix = Matrix.CreateWorld(camPosition, Vector3.
-                          Forward, Vector3.Up),
-                viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                         Vector3.Up)
+                camTarget = Vector3.Zero,
+                camPosition = new Vector3(0f, 0f, -10f),
+                fps_camera = new FPS_Camera(),
+                degrees = 90f
             };
+            r.worldMatrix = Matrix.CreateWorld(r.camPosition, Vector3.
+                          Forward, Vector3.Up);
+            r.viewMatrix = Matrix.CreateLookAt(r.camPosition, r.camTarget,
+                     Vector3.Up);
             r.GetTiles(mapb);
             r.GetPalettes(mimb);
             Stopwatch watch = Stopwatch.StartNew();
@@ -197,6 +199,7 @@ namespace OpenVIII.Fields
                     Texture2D tex = kvp.Value;
                     Rectangle src = new Rectangle(0, 0, tex.Width, tex.Height);
                     Rectangle dst = src;
+
                     dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height, Memory.ScaleMode.FitBoth)).ToPoint();
                     //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
                     //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
@@ -226,14 +229,39 @@ namespace OpenVIII.Fields
                 }
             }
 
-            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
             float Width = tiles.Width;
             float Height = tiles.Height;
-            Vector2 scale = Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth);
+            if (Toggles.HasFlag(_Toggles.Perspective)) //perspective mode shows gabs in the tiles.
+            {
+                //finds the min zoom out to fit the entire image in frame.
+                Vector2 half = new Vector2(Width / 2f, Height / 2f);
+                float fieldOfView = MathHelper.ToRadians(70);
+                float getOppositeSide(float side, float angle)
+                {
+                    return (float)(Math.Tan(angle) * side);
+                }
+                half.X = getOppositeSide(half.X, MathHelper.ToRadians(45));
+                half.Y = getOppositeSide(half.Y, MathHelper.ToRadians(45));
+                float minDistancefromBG = -Math.Max(half.X, half.Y);
+                if (camPosition.Z > minDistancefromBG)
+                    camPosition.Z = minDistancefromBG;
 
-            //projectionMatrix = Matrix.CreatePerspective(vp.Width / scale.X, vp.Height / scale.Y, float.Epsilon, 1000f);
-            projectionMatrix = Matrix.CreateOrthographic(vp.Width / scale.X, vp.Height / scale.Y, 0f, 100f);
+                projectionMatrix = Matrix.CreatePerspectiveFieldOfView(fieldOfView, Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
+                viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+            }
+            else
+            {
+                Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+                Vector2 scale = Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth);
+                projectionMatrix = Matrix.CreateOrthographic(vp.Width / scale.X, vp.Height / scale.Y, 0f, 100f);
+                viewMatrix = Matrix.CreateLookAt(Vector3.Forward * 10f, Vector3.Zero, Vector3.Up);
+            }
         }
+
+        private float degrees;
+        private FPS_Camera fps_camera;
+        private Vector3 camTarget;
+        private Vector3 camPosition;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -618,7 +646,7 @@ namespace OpenVIII.Fields
                 return false;
             //FindOverlappingTiles();
 
-            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID}).Distinct().ToList();
+            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID }).Distinct().ToList();
             // Create a swizzeled Textures with one palette.
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
             Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
@@ -712,7 +740,7 @@ namespace OpenVIII.Fields
                                     if (tex[_x, _y] != Color.TransparentBlack)
                                     {
                                         //if ()//excluding 8bit overlap for now.
-                                            overlap = true;
+                                        overlap = true;
                                         if (tex[_x, _y] != color)
                                         {
                                             Debug.WriteLine($"x={_x},y={_y} :: {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]} :: {tile} \n   existed_color {tex[_x, _y]} :: failed_color={color}");

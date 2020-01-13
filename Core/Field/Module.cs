@@ -72,7 +72,7 @@ namespace OpenVIII.Fields
         {
 #if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
-            if (Input2.DelayedButton(FF8TextTagKey.Left))
+            if (false && Input2.DelayedButton(FF8TextTagKey.Left))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Memory.FieldHolder.FieldID > 0)
@@ -81,7 +81,7 @@ namespace OpenVIII.Fields
                     Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
                 ResetField();
             }
-            else if (Input2.DelayedButton(FF8TextTagKey.Right))
+            else if (false &&Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
