@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class BLINKEYES : JsmInstruction
     {

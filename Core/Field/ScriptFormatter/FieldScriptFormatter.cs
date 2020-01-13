@@ -1,7 +1,7 @@
 ﻿using OpenVIII.Encoding;
 using System;
 using System.Collections.Generic;
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts
 {
     public static class FieldScriptFormatter
     {

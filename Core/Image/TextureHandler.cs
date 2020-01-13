@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -336,7 +337,6 @@ namespace OpenVIII
                 else
                 {
                     Memory.MainThreadOnlyActions.Enqueue(this.Merge);
-                    //Memory.MainThreadOnlyActions.Enqueue(this.Save);
                 }
             }
         }
@@ -345,8 +345,11 @@ namespace OpenVIII
         {
             string clean = Path.GetFileNameWithoutExtension(Regex.Replace(Filename, @"{[^}]+}", ""));
             string outpath = Path.Combine(Path.GetTempPath(), Path.GetFileName(clean) + $"_{(Palette + 1).ToString("D2")}.png");
-            using (FileStream fs = File.Create(outpath))
-                Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
+            if (Textures != null && Textures.Length > 0 && Textures[0, 0] != null)
+                using (FileStream fs = File.Create(outpath))
+                    Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
+            else
+                Debug.WriteLine($"{this} :: Textures is null or empty! :: {Filename}");
         }
 
         /// <summary>
@@ -559,8 +562,8 @@ namespace OpenVIII
             Classic = null;
             //Merge the texture pieces into one.
             Merge();
-            //if (!Modded)
-            //    Memory.MainThreadOnlyActions.Enqueue(this.Save);
+            if (!Modded && Memory.EnableDumpingData)
+                Memory.MainThreadOnlyActions.Enqueue(this.Save);
             //if(ScaleFactor.X > ScaleFactor.Y && ScaleFactor.X/ScaleFactor.Y == 2f)
             //{
             //    var t = new Texture2D(Memory.graphics.GraphicsDevice, (int)(ClassicWidth * ScaleFactor.Y), Height);

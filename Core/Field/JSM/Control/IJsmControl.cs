@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {

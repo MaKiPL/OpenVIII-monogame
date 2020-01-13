@@ -44,6 +44,12 @@ namespace OpenVIII
         /// <summary>
         /// For scrolling only
         /// </summary>
-        Scrolling = 0x30
+        Scrolling = 0x40,
+
+        /// <summary>
+        /// Force ignores default trigger.
+        /// </summary>
+        Force = 0x80
+        
     }
 }

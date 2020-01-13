@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts
 {
     public sealed class DummyFormatterContext : IScriptFormatterContext
     {

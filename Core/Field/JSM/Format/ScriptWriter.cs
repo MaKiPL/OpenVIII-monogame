@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts
 {
     public sealed class ScriptWriter
     {

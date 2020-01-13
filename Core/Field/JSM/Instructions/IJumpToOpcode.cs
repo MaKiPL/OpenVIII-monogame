@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     public interface IJumpToOpcode : IJumpToInstruction
     {

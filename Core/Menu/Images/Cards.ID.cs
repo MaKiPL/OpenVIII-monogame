@@ -8,7 +8,6 @@
         {
             //Level 1
             Geezard,
-
             Funguar,
             Bite_Bug,
             Red_Bat,
@@ -22,7 +21,6 @@
 
             //Level 2
             Grat,
-
             Buel,
             Mesmerize,
             Glacial_Eye,
@@ -36,7 +34,6 @@
 
             //Level 3
             Forbidden,
-
             Armadodo,
             Tri_Face,
             Fastitocalon,
@@ -50,7 +47,6 @@
 
             //Level 4
             Turtapod,
-
             Vysage,
             T_Rexaur,
             Bomb,
@@ -64,7 +60,6 @@
 
             //Level 5
             Iron_Giant,
-
             Behemoth,
             Chimera,
             PuPu,
@@ -79,7 +74,6 @@
             //Boss Cards
             //Level 6
             Fujin__Raijin,
-
             Elvoret,
             X_ATM092,
             Granaldo,
@@ -92,8 +86,7 @@
             Krysta,
 
             //Level 7
-            Propagator,
-
+            Propagator ,
             Jumbo_Cactuar,
             Tri_Point,
             Gargantua,
@@ -107,8 +100,7 @@
 
             //Guardian Force cards
             //Level 8
-            Chubby_Chocobo,
-
+            Chubby_Chocobo ,
             Angelo,
             Gilgamesh,
             MiniMog,
@@ -121,8 +113,7 @@
             Minotaur,
 
             //Level 9
-            Carbuncle,
-
+            Carbuncle ,
             Diablos,
             Leviathan,
             Odin,
@@ -137,7 +128,6 @@
             //Player cards
             //Level 10
             Ward,
-
             Kiros,
             Laguna,
             Selphie,
@@ -149,14 +139,11 @@
             Seifer,
             Squall,
 
-            //Custom Entry
             Card_Back,
-
             /// <summary>
             /// for using in battle if a enemy is immune the value will be 0xff
             /// </summary>
             Immune = 0xff,
-
             Fail = 0xfe
         }
 

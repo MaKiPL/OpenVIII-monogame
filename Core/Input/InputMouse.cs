@@ -135,7 +135,7 @@ namespace OpenVIII
                     }
                     combotest = true;
                 }
-                ButtonTrigger triggertest = test.Trigger | trigger;
+                ButtonTrigger triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
                 return ((test.Combo == null || combotest) &&
                     ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.MouseButton)) ||
                     ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.MouseButton)) ||

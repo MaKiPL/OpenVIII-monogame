@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class DCOLSUB : JsmInstruction
     {
@@ -43,7 +44,7 @@ namespace OpenVIII
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Rendering[services].SubScreenColor(
-                new RGBColor(
+                new Color(
                     _r.Int32(services),
                     _g.Int32(services),
                     _b.Int32(services)));

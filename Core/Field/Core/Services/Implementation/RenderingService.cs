@@ -1,33 +1,34 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public sealed class RenderingService : IRenderingService
     {
         public Boolean IsSupported => true;
 
-        public void AddScreenColor(RGBColor rgbColor)
+        public void AddScreenColor(Color Color)
         {
             // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AddScreenColor)}({nameof(rgbColor)}: {rgbColor})");
+            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AddScreenColor)}({nameof(Color)}: {Color})");
         }
 
-        public void SubScreenColor(RGBColor rgbColor)
+        public void SubScreenColor(Color Color)
         {
             // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(SubScreenColor)}({nameof(rgbColor)}: {rgbColor})");
+            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(SubScreenColor)}({nameof(Color)}: {Color})");
         }
 
-        public void AddScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration)
+        public void AddScreenColorTransition(Color Color, Color offset, Int32 transitionDuration)
         {
             // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AddScreenColorTransition)}({nameof(rgbColor)}: {rgbColor}, {nameof(offset)}: {offset}, {nameof(transitionDuration)}: {transitionDuration})");
+            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AddScreenColorTransition)}({nameof(Color)}: {Color}, {nameof(offset)}: {offset}, {nameof(transitionDuration)}: {transitionDuration})");
         }
 
-        public void SubScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration)
+        public void SubScreenColorTransition(Color Color, Color offset, Int32 transitionDuration)
         {
             // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(SubScreenColorTransition)}({nameof(rgbColor)}: {rgbColor}, {nameof(offset)}: {offset}, {nameof(transitionDuration)}: {transitionDuration})");
+            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(SubScreenColorTransition)}({nameof(Color)}: {Color}, {nameof(offset)}: {offset}, {nameof(transitionDuration)}: {transitionDuration})");
         }
 
         public IAwaitable Wait()

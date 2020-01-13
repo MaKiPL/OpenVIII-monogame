@@ -132,7 +132,7 @@ namespace OpenVIII
         /// <summary>
         /// Gets Bits per pixel
         /// </summary>
-        public override byte GetBpp => (byte)bpp;
+        public override byte GetBytesPerPixel => (byte)bpp;
 
         /// <summary>
         /// Number of clut color palettes
@@ -275,6 +275,8 @@ namespace OpenVIII
             ReadParameters(br);
         }
 
+        public override void Load(byte[] buffer, uint offset = 0) => _Init(buffer, offset);
+
         /// <summary>
         /// Writes the Tim file to the hard drive.
         /// </summary>
@@ -288,6 +290,23 @@ namespace OpenVIII
                 else
                     bw.Write(buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer)).ToArray());
             }
+        }
+
+        public override void SaveCLUT(string path)
+        {
+            if (CLP)
+                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                {
+                    using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
+                    {
+                        for (ushort i = 0; i < texture.NumOfCluts; i++)
+                        {
+                            CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(br, i), 0, texture.NumOfColours);
+                        }
+                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                            CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
+                    }
+                }
         }
 
         protected void _Init(byte[] buffer, uint offset = 0)
@@ -322,16 +341,22 @@ namespace OpenVIII
         /// <remarks>
         /// This allows null palette but it doesn't seem to handle the palette being null
         /// </remarks>
-        protected Color[] CreateImageBuffer(BinaryReader br, Color[] palette = null)
+        protected TextureBuffer CreateImageBuffer(BinaryReader br, Color[] palette = null)
         {
             br.BaseStream.Seek(textureDataPointer, SeekOrigin.Begin);
-            Color[] buffer = new Color[texture.Width * texture.Height]; //ARGB
+            TextureBuffer buffer = new TextureBuffer(texture.Width, texture.Height); //ARGB
             if (Assert((buffer.Length / bpp) <= br.BaseStream.Length - br.BaseStream.Position)) //make sure the buffer is large enough
                 return null;
             if (bpp == 8)
             {
                 for (int i = 0; i < buffer.Length; i++)
-                    buffer[i] = palette[br.ReadByte()]; //colorkey
+                {
+                    byte colorkey = br.ReadByte();
+                    if (colorkey < texture.NumOfColours)
+                        buffer[i] = palette[colorkey]; //colorkey
+                    //else
+                    //    buffer[i] = Color.TransparentBlack; // trying something out of oridinary.
+                }
             }
             else if (bpp == 4)
             {
@@ -376,27 +401,21 @@ namespace OpenVIII
         /// <returns>Color[]</returns>
         protected Color[] GetClutColors(BinaryReader br, ushort clut)
         {
-            if (clut > texture.NumOfCluts)
-                throw new Exception("TIM_v2::GetClutColors::given clut is bigger than texture number of cluts");
+            if (clut >= texture.NumOfCluts)
+                throw new Exception($"TIM_v2::GetClutColors::given clut {clut} is >= texture number of cluts {texture.NumOfCluts}");
 
-            Color[] colorPixels = new Color[texture.NumOfColours];
             if (CLP)
             {
+                Color[] colorPixels = new Color[texture.NumOfColours];
                 br.BaseStream.Seek(timOffset + 20 + (texture.NumOfColours * 2 * clut), SeekOrigin.Begin);
                 for (int i = 0; i < texture.NumOfColours; i++)
                     colorPixels[i] = ABGR1555toRGBA32bit(br.ReadUInt16(), ignorealpha);
+                return colorPixels;
             }
-            else if (bpp > 8) throw new Exception("TIM that has bpp mode higher than 8 has no clut data!");
-
-            return colorPixels;
+            else throw new Exception($"TIM that has {bpp} bpp mode and has no clut data!");
         }
 
-        protected Texture2D GetTexture(BinaryReader br, Color[] colors)
-        {
-            Texture2D image = new Texture2D(Memory.graphics.GraphicsDevice, GetWidth, GetHeight, false, SurfaceFormat.Color);
-            image.SetData(CreateImageBuffer(br, colors));
-            return image;
-        }
+        protected Texture2D GetTexture(BinaryReader br, Color[] colors) => CreateImageBuffer(br, colors).GetTexture();
 
         /// <summary>
         /// Populate Texture structure
@@ -482,13 +501,22 @@ namespace OpenVIII
                     clutSize = br.ReadUInt32();
                     PaletteX = br.ReadUInt16();
                     PaletteY = br.ReadUInt16();
-                    NumOfColours = br.ReadUInt16();
-                    NumOfCluts = br.ReadUInt16();
+                    NumOfColours = br.ReadUInt16(); //width of clut
+                    NumOfCluts = br.ReadUInt16(); //height of clut
                     clutdataSize = (int)(clutSize - 12);//(NumOfColours * NumOfCluts*2);
                     if (Assert(clutdataSize == NumOfColours * NumOfCluts * 2 || clutdataSize == NumOfColours * NumOfCluts) ||
                     Assert(PaletteX % 16 == 0) ||
                     Assert(PaletteY >= 0 && PaletteY <= 511))
                         return;
+                    if (_bpp == 4 && NumOfColours > 16)
+                    {
+                        // timviewer was overriding the read number of colors per pixel to 16
+                        // and this makes sense because you cannot read more than 16 colors with only a 4 bit value.
+                        // though this might break stuff.
+                        NumOfColours = 16;
+                        NumOfCluts = checked((ushort)(clutdataSize / (NumOfColours * 2)));
+                    }
+                    Assert(_bpp == 8 && NumOfColours <= 256 || _bpp != 8);
                     ClutData = br.ReadBytes(clutdataSize);
                     //br.BaseStream.Seek(start+clutSize, SeekOrigin.Begin);
                 }

@@ -21,7 +21,7 @@ namespace OpenVIII
             #region Methods
 
             public static IGMData_Selections Create() =>
-                Create<IGMData_Selections>(count: 3, depth: 1, container: new IGMDataItem.Empty(new Rectangle(320, 445, 250, 170)), cols: 1, rows: 3);
+                Create<IGMData_Selections>(count: 3, depth: 1, container: new IGMDataItem.Empty { Pos = new Rectangle(320, 445, 250, 170) }, cols: 1, rows: 3);
 
             public override void Draw() => base.Draw();
 
@@ -61,7 +61,7 @@ namespace OpenVIII
                 */
                 Memory.FieldHolder.FieldID = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
                                                  //the module changes to 1 now
-                Module_field_debug.ResetField();
+                Fields.Module.ResetField();
 
                 Module_movie_test.Index = 30;
                 Module_movie_test.ReturnState = MODULE.FIELD_DEBUG;

@@ -1,4 +1,4 @@
-﻿namespace OpenVIII
+﻿namespace OpenVIII.Fields
 {
     public sealed class BreakAwaitable : IAwaitable
     {

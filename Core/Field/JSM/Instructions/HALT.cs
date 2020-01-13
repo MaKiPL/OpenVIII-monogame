@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Exits the current script and all scripts that are waiting on it. To end only the current script, use RET instead. 

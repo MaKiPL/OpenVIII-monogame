@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public static partial class Sym
     {

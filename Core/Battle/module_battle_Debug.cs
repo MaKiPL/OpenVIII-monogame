@@ -33,7 +33,7 @@ namespace OpenVIII
 
         private static float localRotator = 0.0f; //a rotator is a float that holds current axis rotation for sky. May be malformed by skyRotators or TimeCompression magic
 
-        public static BasicEffect effect;
+        private static BasicEffect effect;
         public static AlphaTestEffect ate;
 
         private static string battlename = "a0stg000.x";
@@ -55,6 +55,7 @@ namespace OpenVIII
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
         /// </summary>
         private const int BATTLECAMERA_FRAMETIME = 3;
+
         public const int Yoffset = 0;//-10;
 
         /// <summary>
@@ -411,6 +412,8 @@ namespace OpenVIII
 
         private static byte SID = 0;
 
+        private static IGMDataItem.Icon CROSSHAIR { get; set; }
+
         public static void Draw()
         {
             switch (battleModule)
@@ -420,9 +423,41 @@ namespace OpenVIII
                     DrawMonsters();
                     DrawCharactersWeapons();
                     RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
+                    //var v = Enemy.Party[0].EII.Data.VertexPositionTexturePointersGroup.VPT.Select(x => x.Position).OrderBy(x => Vector3.Distance(x, CenterOfScreen)).First();
+                    Vector3 v = GetIndicatorPoint(-1);
+                    v.Y -= 5f;
+                    //testQuad.Draw(v);
                     if (!bUseFPSCamera)
                         Menu.BattleMenus.Draw();
                     break;
+            }
+        }
+
+        public static void DrawCrosshair(Enemy enemy)
+        {
+            IGMData.Limit.Shot shot = Menu.BattleMenus.GetCurrentBattleMenu()?.Shot;
+            if (shot != null && shot.Enabled)
+            {
+                Damageable[] targets = shot?.Targets;
+                if (targets != null)
+                    foreach (Damageable d in targets)
+                    {
+                        if (d.GetEnemy(out Enemy e) && e.Equals(enemy))
+                        {
+                            Vector3 posIn3DSpace = e.EII.Data.IndicatorPoint;
+                            posIn3DSpace.Y -= 1f;
+                            Vector3 ScreenPos = Memory.graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
+                            Memory.SpriteBatchStartAlpha();
+                            CROSSHAIR.Pos = new Rectangle(new Vector2(ScreenPos.X, ScreenPos.Y).ToPoint(), Point.Zero);
+                            EntryGroup icons = Memory.Icons[CROSSHAIR.Data];
+                            TextureHandler texture = Memory.Icons.GetTexture(Icons.ID.Cross_Hair1);
+                            Vector2 s = texture.ScaleFactor;
+                            CROSSHAIR.Pos.Offset(-icons.Width * s.X / 2f, -icons.Height * s.Y / 2f);
+                            CROSSHAIR.Draw();
+                            Memory.SpriteBatchEnd();
+                            break;
+                        }
+                    }
             }
         }
 
@@ -431,9 +466,8 @@ namespace OpenVIII
             //const float V = 100f;
             //battleCamera.cam.startingTime = 64;
             float step = battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks;
-            camTarget = Vector3.SmoothStep(battleCamera.cam.Camera_Lookat(0),battleCamera.cam.Camera_Lookat(1),step);
+            camTarget = Vector3.SmoothStep(battleCamera.cam.Camera_Lookat(0), battleCamera.cam.Camera_Lookat(1), step);
             camPosition = Vector3.SmoothStep(battleCamera.cam.Camera_World(0), battleCamera.cam.Camera_World(1), step);
-
 
             //            float camWorldX = MathHelper.Lerp(battleCamera.cam.Camera_World_X_s16[0] / V,
             //                battleCamera.cam.Camera_World_X_s16[1] / V, step) + 30;
@@ -458,7 +492,7 @@ namespace OpenVIII
                          Vector3.Up);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                    MathHelper.ToRadians(fovDirector / 8),
-                   Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 1000f);
 
             //ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
@@ -513,21 +547,21 @@ namespace OpenVIII
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
                 Vector3 charaPosition = GetCharPos(n);
-                UpdatePos(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
+                DrawBattleDat(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
 
                 //WEAPON
                 if (CharacterInstances[n].Data.weapon != null)
                 {
                     CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
-                    UpdatePos(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
+                    DrawBattleDat(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 }
             }
         }
 
         private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
 
-        private static void UpdatePos(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
+        private static void DrawBattleDat(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
         {
             for (int i = 0; /*i<1 &&*/ i < battledat.geometry.cObjects; i++)
             {
@@ -684,12 +718,13 @@ namespace OpenVIII
                 CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
                 Vector3 enemyPosition = GetEnemyPos(n);
                 enemyPosition.Y += Yoffset;
-                UpdatePos(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
+                DrawBattleDat(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
                 DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
+                DrawCrosshair(Enemy.Party[n]);
             }
         }
 
-        private static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint : 
+        public static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
             Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
 
         private static Vector3 GetEnemyPos(int n) =>
@@ -1037,9 +1072,12 @@ namespace OpenVIII
         }
 
         private static Vector3 PyramidOffset = new Vector3(0, 3f, 0);
+        //private static Icons.VertexPositionTexture_Texture2D testQuad;
 
         private static void InitBattle()
         {
+            CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
+            //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             InputMouse.Mode = MouseLockMode.Center;
@@ -1065,7 +1103,7 @@ namespace OpenVIII
             camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
-                               Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+                               Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
                 1f, 1000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
@@ -1218,10 +1256,13 @@ namespace OpenVIII
 
         private static List<Battle.Mag> MagALL;
 
-        static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
-        static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
-        static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count??0) >0) ?? null;
-        static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType >0).Select(x=>x.UnknownType) ?? null;
+        private static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
+
+        private static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
+
+        private static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count ?? 0) > 0) ?? null;
+
+        private static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType > 0).Select(x => x.UnknownType) ?? null;
 
         private static void ReadData()
         {
@@ -1236,10 +1277,10 @@ namespace OpenVIII
                     MagALL.Add(mag);
                 }
             }
-            var _MagGeo = MagGeometries.ToList();
-            var _MagPack = MagPacked.ToList();
-            var _MagTIM = MagTIMs.ToList();
-            var _MagUNKID = MagUNKID.ToList();
+            List<Battle.Mag> _MagGeo = MagGeometries.ToList();
+            List<Battle.Mag> _MagPack = MagPacked.ToList();
+            List<Battle.Mag> _MagTIM = MagTIMs.ToList();
+            List<int> _MagUNKID = MagUNKID.ToList();
             battlename = test.First(x => x.ToLower().Contains(battlename));
             string fileName = Path.GetFileNameWithoutExtension(battlename);
             stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
@@ -1327,6 +1368,20 @@ namespace OpenVIII
             }
             private set => s_weapons = value;
         }
+
+        public static Matrix ProjectionMatrix { get => projectionMatrix; private set => projectionMatrix = value; }
+        public static Matrix ViewMatrix { get => viewMatrix; private set => viewMatrix = value; }
+        public static Matrix WorldMatrix { get => worldMatrix; private set => worldMatrix = value; }
+
+        public static BasicEffect Effect { get => effect; private set => effect = value; }
+        public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
+        public static Vector3 CamTarget { get => camTarget; private set => camTarget = value; }
+
+        public static Matrix CreateBillboard(Vector3 pos) => Matrix.CreateBillboard(pos, CenterOfScreen, Vector3.Up, null);
+
+        public static Matrix CreateConstrainedBillboard(Vector3 pos, Vector3 rotateAxis) => Matrix.CreateConstrainedBillboard(pos, CenterOfScreen, rotateAxis, null, null);
+
+        private static Vector3 CenterOfScreen => Memory.graphics.GraphicsDevice.Viewport.Unproject(new Vector3(Memory.graphics.GraphicsDevice.Viewport.Width / 2f, Memory.graphics.GraphicsDevice.Viewport.Height / 2f, 0f), ProjectionMatrix, ViewMatrix, WorldMatrix);
 
         private static void FillWeapons()
         {
@@ -1838,25 +1893,30 @@ namespace OpenVIII
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
             public byte[] unkbyte4A4; //4A4
+
             private const float V = 100f;
-            Vector3 offset => new Vector3(30, +40, 0);
+
+            private Vector3 offset => new Vector3(30, +40, 0);
 
             public Vector3 Camera_World(int i) => new Vector3(
-                Camera_World_X_s16[i] / V, 
+                Camera_World_X_s16[i] / V,
                 -(Camera_World_Y_s16[i] / V),
-                -(Camera_World_Z_s16[i] / V))+offset;
+                -(Camera_World_Z_s16[i] / V)) + offset;
+
             public Vector3 Camera_Lookat(int i) => new Vector3(
-                Camera_Lookat_X_s16[i] / V, 
-                -(Camera_Lookat_Y_s16[i] / V), 
-                -(Camera_Lookat_Z_s16[i] / V))+offset;
+                Camera_Lookat_X_s16[i] / V,
+                -(Camera_Lookat_Y_s16[i] / V),
+                -(Camera_Lookat_Z_s16[i] / V)) + offset;
+
             public void UpdateTime() => CurrentTime += Memory.gameTime.ElapsedGameTime;
+
             public TimeSpan CurrentTime;
             public TimeSpan TotalTime => TimeSpan.FromTicks(TotalTimePerFrame.Ticks * time);
+
             /// <summary>
             /// (1000) milliseconds / frames per second
             /// </summary>
             public TimeSpan TotalTimePerFrame => TimeSpan.FromMilliseconds(1000d / 240d);
-            
         };
 
         /// <summary>
@@ -2017,9 +2077,10 @@ namespace OpenVIII
             }
             else
             {
-                Debug.WriteLine($"ReadAnimationById::{battleCameraSetArray.Length} < {tpGetter.Set}" +
-                    $"\nor\n" +
-                    $"{battleCameraSetArray[tpGetter.Set].animPointers.Length} < {tpGetter.Anim}");
+                Debug.WriteLine($"ReadAnimationById::{battleCameraSetArray.Length} < {tpGetter.Set}");
+
+                if (battleCameraSetArray.Length > tpGetter.Set)
+                    Debug.WriteLine($" or \n{battleCameraSetArray[tpGetter.Set].animPointers.Length} < {tpGetter.Anim}");
             }
             return 0;
         }

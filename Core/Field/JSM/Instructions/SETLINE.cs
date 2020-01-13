@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Sets the bounds of this line object (for its touchOn, touchOff, and across scripts).

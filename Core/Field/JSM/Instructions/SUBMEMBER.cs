@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Removes a PC from the available party and the active party. 

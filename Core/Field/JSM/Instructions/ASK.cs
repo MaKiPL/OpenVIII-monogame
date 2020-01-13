@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Opens a field message window and lets player choose a single line.

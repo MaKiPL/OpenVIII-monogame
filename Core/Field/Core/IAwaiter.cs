@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public interface IAwaiter : INotifyCompletion
     {

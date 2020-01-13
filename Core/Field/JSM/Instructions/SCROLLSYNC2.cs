@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class SCROLLSYNC2 : JsmInstruction
     {

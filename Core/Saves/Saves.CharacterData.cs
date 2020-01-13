@@ -266,7 +266,7 @@ namespace OpenVIII
                 }
             }
 
-            public bool IsCritical => CurrentHP() <= CriticalHP();
+            public override bool IsCritical => CurrentHP() <= CriticalHP();
 
             public override byte Level
             {

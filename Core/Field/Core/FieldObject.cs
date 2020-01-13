@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public sealed class FieldObject
     {

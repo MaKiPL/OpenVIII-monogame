@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class FCOLSUB : JsmInstruction
     {
@@ -59,11 +60,11 @@ namespace OpenVIII
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Rendering[services].SubScreenColorTransition(
-                new RGBColor(
+                new Color(
                     _r1.Int32(services),
                     _g1.Int32(services),
                     _b1.Int32(services)),
-                new RGBColor(
+                new Color(
                     _r2.Int32(services),
                     _g2.Int32(services),
                     _b2.Int32(services)),

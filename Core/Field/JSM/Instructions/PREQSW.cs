@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Requests that the entity associated with a character in the current party executes one of its member functions at a specified priority.

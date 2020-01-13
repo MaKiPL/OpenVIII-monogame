@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using OpenVIII.Encoding.Tags;
 using System;
 
-namespace OpenVIII.IGMData
+namespace OpenVIII.IGMData.Limit
 {
     public class Renzokeken : IGMData.Base
     {
@@ -31,6 +30,10 @@ namespace OpenVIII.IGMData
         #endregion Properties
 
         #region Methods
+        public override bool Inputs()
+        {
+            return base.Inputs() || true;
+        }
 
         public static Renzokeken Create(Rectangle? pos = null) => Create<Renzokeken>(15, 1, new IGMDataItem.Box { Pos = pos ?? new Rectangle(24, 501, 912, 123), Title = Icons.ID.SPECIAL }, 0, 0, Memory.State?[Characters.Squall_Leonhart]);
 
@@ -48,21 +51,11 @@ namespace OpenVIII.IGMData
             }
         }
 
-        public override bool Inputs()
-        {
-            skipsnd = true;
-            if (Input2.DelayedButton(FF8TextTagKey.RotateRight))
-            {
-                Inputs_OKAY();
-                return true;
-            }
-            return base.Inputs();
-        }
-
         public override bool Inputs_CANCEL() => base.Inputs_OKAY();
 
         public override bool Inputs_OKAY()
         {
+            skipsnd = true;
             foreach (Menu_Base i in ITEM)
             {
                 if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
@@ -81,6 +74,8 @@ namespace OpenVIII.IGMData
 
             return true;
         }
+
+        public override bool Inputs_RotateRight() => Inputs_OKAY();
 
         public override void Reset()
         {

@@ -150,6 +150,7 @@ namespace OpenVIII
             /// Battle: dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
             /// </summary>
             public MiscIndicator BattleMISCIndicator { get; set; }
+
             [Flags]
             public enum MiscIndicator : byte
             {
@@ -162,6 +163,7 @@ namespace OpenVIII
                 UNK40 = 0x40,
                 UNK80 = 0x80
             }
+
             /// <summary>
             /// 0x0CEC 4 bytes Battle: victory count
             /// </summary>
@@ -279,7 +281,7 @@ namespace OpenVIII
             /// The order of items out of battle and Each item uses 2 bytes 1 for ID and 1 for Quantity
             /// </para>
             /// </summary>
-            public IReadOnlyList<Item> Items => _items;
+            public List<Item> Items => _items;
 
             /// <summary>
             /// <para>0x0B34 32 bytes Items battle order</para>
@@ -298,6 +300,7 @@ namespace OpenVIII
             /// <para>Each bit is a completely learned ability</para>
             /// </summary>
             public Angelo LimitBreakAngelocompleted { get; set; }
+
             /// <summary>
             /// <para>0x0B2B 1 byte Limit Break Angelo known</para>
             /// <para>Each bit is an ability is known about/able to be learned</para>
@@ -308,7 +311,7 @@ namespace OpenVIII
             /// <para>0x0B2C 8 bytes Limit Break Angelo points</para>
             /// <para>Each byte is progress to learing an ability</para>
             /// </summary>
-            public Dictionary<Angelo,byte> LimitBreakAngelopoints { get; set; }
+            public Dictionary<Angelo, byte> LimitBreakAngelopoints { get; set; }
 
             public BitArray LimitBreakIrvine_Unlocked_Shot { get; set; }
 
@@ -620,24 +623,25 @@ namespace OpenVIII
 
             public bool EarnItem(KeyValuePair<Cards.ID, byte> keyValuePair, byte location = 0) => EarnItem(keyValuePair.Key, keyValuePair.Value, location);
 
-            public bool EarnItem(Item item)
+            public Item EarnItem(byte iD, int qty)
             {
-                Item f;
-                IEnumerable<Item> tmp = Items.Where(i => i.ID == item.ID);
-                IEnumerable<Item> tmp2 = Items.Where(i => i.ID == 0);
-                if (tmp.Count() > 0)
+                if (Items.Any(i => i.ID == iD) && qty != 0)
                 {
-                    f = tmp.First();
-                    return f.Add(item.QTY);
+                    int k = Items.FindIndex(item => item.ID == iD);
+                    if (qty < 0)
+                        return Items[k] = Items[k].Add(checked((sbyte)qty));
+                    else if (qty > 0)
+                        return Items[k] = Items[k].Add(checked((byte)qty));
                 }
-                else if (tmp2.Count() > 0)
+                else if (Items.Any(i => i.ID == 0) && qty > 0)
                 {
-                    f = tmp2.First();
-                    return f.Add(item.QTY, item.ID);
+                    int k = Items.FindIndex(item => item.ID == 0);
+                    return Items[k] = Items[k].Add(checked((byte)qty), iD);
                 }
-
-                return false;
+                return default;
             }
+
+            public Item EarnItem(Item item) => EarnItem(item.ID, item.QTY);
 
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
@@ -646,7 +650,7 @@ namespace OpenVIII
                 {
                     foreach (KeyValuePair<Characters, CharacterData> c in Characters)
                     {
-                        foreach (var gf in c.Value.JunctionedGFs)
+                        foreach (GFs gf in c.Value.JunctionedGFs)
                             r.Add(gf, c.Key);
 
                         //if (c.Value.JunctionedGFs != GFflags.None)
@@ -812,7 +816,7 @@ namespace OpenVIII
                 LimitBreakSelphie_Used_RareSpells = new BitArray(br.ReadBytes(1));//0x0B29
                 LimitBreakAngelocompleted = (Angelo)br.ReadByte();//0x0B2A
                 LimitBreakAngeloknown = (Angelo)br.ReadByte();//0x0B2B
-                LimitBreakAngelopoints = br.ReadBytes(8).Select((value,key) => new {key,value}).ToDictionary(x=>(Angelo)(x.key+1),x=> checked((byte)x.value));//0x0B2C
+                LimitBreakAngelopoints = br.ReadBytes(8).Select((value, key) => new { key, value }).ToDictionary(x => (Angelo)(x.key + 1), x => checked(x.value));//0x0B2C
                 Itemsbattleorder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
                 for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < _items.Capacity; i++)

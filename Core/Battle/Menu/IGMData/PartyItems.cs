@@ -65,7 +65,7 @@ namespace OpenVIII.IGMData
             }
             else if (Items != null && Items.Count > 0)
             {
-                if (Items.TryDequeue(out Saves.Item item) && Memory.State.EarnItem(item))
+                if (Items.TryDequeue(out Saves.Item item) && Memory.State.Items.FirstOrDefault(x=>x.ID == item.ID).QTY < Memory.State.EarnItem(item).QTY)
                 {
                     ITEM?[0, 6]?.Show();
                     Earn();

@@ -49,7 +49,7 @@ namespace OpenVIII.IGMData.Group
         /// <summary>
         /// The looping exp sound. Need to track the object here to stop the loop.
         /// </summary>
-        private Ffcc EXPsnd = null;
+        private AV.Audio EXPsnd = null;
 
         private Box header;
 

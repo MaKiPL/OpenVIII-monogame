@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public interface IServices
     {
@@ -150,10 +151,10 @@ namespace OpenVIII
                 set => throw new NotSupportedException();
             }
 
-            public void AddScreenColor(RGBColor rgbColor) => throw new NotSupportedException();
-            public void SubScreenColor(RGBColor rgbColor) => throw new NotSupportedException();
-            public void AddScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration) => throw new NotSupportedException();
-            public void SubScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration) => throw new NotSupportedException();
+            public void AddScreenColor(Color Color) => throw new NotSupportedException();
+            public void SubScreenColor(Color Color) => throw new NotSupportedException();
+            public void AddScreenColorTransition(Color Color, Color offset, Int32 transitionDuration) => throw new NotSupportedException();
+            public void SubScreenColorTransition(Color Color, Color offset, Int32 transitionDuration) => throw new NotSupportedException();
             public IAwaitable Wait() => throw new NotSupportedException();
             public void AnimateBackground(Int32 firstFrame, Int32 lastFrame) => throw new NotSupportedException();
             public void DrawBackground() => throw new NotSupportedException();

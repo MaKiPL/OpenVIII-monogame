@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Pop up a message window and wait for the player to hit "ok." Unlike AMESW, RAMESW will let the script continue running. 

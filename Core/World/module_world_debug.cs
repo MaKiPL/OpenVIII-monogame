@@ -246,7 +246,7 @@ namespace OpenVIII
             camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(60),
-                               Memory.graphics.GraphicsDevice.DisplayMode.AspectRatio,
+                               Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
                 1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up

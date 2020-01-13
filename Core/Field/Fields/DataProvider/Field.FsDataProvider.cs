@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public static partial class Field
     {

@@ -71,7 +71,7 @@ namespace OpenVIII
 
                 case OverturepublicModule._4Squaresoft:
                     publicModule = OverturepublicModule._0InitSound;
-                    Module_movie_test.Index = 103;//103;
+                    Module_movie_test.Index = 104;//104 is SE logo in steam release.
                     Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
                     Memory.module = MODULE.MOVIETEST;
                     break;

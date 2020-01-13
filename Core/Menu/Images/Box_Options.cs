@@ -13,5 +13,7 @@ namespace OpenVIII
         Middle = 0x10,
         Top = 0x20,
         Right = 0x40,
+        Left = Default,
+        UseOffset = 0x80,
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public static partial class Msd
     {

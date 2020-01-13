@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
-    public static class FieldInitializer
+    public static class Initializer
     {
         /// <summary>
         /// Should be called only once
@@ -13,13 +13,11 @@ namespace OpenVIII
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] lists = aw.GetListOfFiles();
             string maplist = lists.First(x => x.ToLower().Contains("mapdata.fs"));
-            maplist = maplist.Substring(0,maplist.Length - 3);
-            byte[] fs = aw.GetBinaryFile($"{maplist}{Memory.Archive.B_FileArchive}");
-            byte[] fl = aw.GetBinaryFile($"{maplist}{Memory.Archive.B_FileList}");
-            byte[] fi = aw.GetBinaryFile($"{maplist}{Memory.Archive.B_FileIndex}");
-            string map = System.Text.Encoding.UTF8.GetString(fl).TrimEnd();
-            string[] maplistb = System.Text.Encoding.UTF8.GetString(
-                aw.FileInTwoArchives(fi, fs, fl, map))
+            ArchiveBase mapdata = aw.GetArchive(maplist);
+            string map = mapdata.GetListOfFiles()[0];
+            string[] maplistb = System.Text.Encoding.UTF8.GetString(mapdata.GetBinaryFile(map))
+                
+                
                 .Replace("\r", "")
                 .Split('\n');
             Memory.FieldHolder.fields = maplistb;

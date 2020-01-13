@@ -1,4 +1,4 @@
-﻿namespace OpenVIII
+﻿namespace OpenVIII.AV
 {
     using FFmpeg.AutoGen;
     using Microsoft.Xna.Framework.Audio;
@@ -21,12 +21,12 @@
     /// Code bits mostly converted to c# from c++ It uses bits of code from FFmpeg examples, Aforge,
     /// FFmpeg.autogen, stackoverflow
     /// </remarks>
-    public abstract class Ffcc : IDisposable
+    public abstract partial class Ffcc : IDisposable
     {
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        protected static T Create<T>(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1) where T : Ffcc, new()
+        protected static T Load<T>(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1) where T : Ffcc, new()
         {
             T r = new T();
             r.Init(filename, mediatype, mode, loopstart);
@@ -58,6 +58,7 @@
         /// on exception this is turned to true and will force fallback to naudio when monogame isn't working.
         /// </summary>
         private static bool useNaudio = false;
+
         private object DynamicSoundEffectLock = new object();
         private readonly unsafe AVDictionary* _dict;
         private unsafe AVIOContext* _avio_ctx;
@@ -202,7 +203,6 @@
 
         #region Properties
 
-        public static string DataFileName { get; set; }
 
         /// <summary>
         /// Are you ahead of target frame
@@ -290,8 +290,8 @@
         {
             get => _dynamicSound; private set
             {
-                lock(DynamicSoundEffectLock)
-                _dynamicSound = value;
+                lock (DynamicSoundEffectLock)
+                    _dynamicSound = value;
             }
         }
 
@@ -340,7 +340,7 @@
         /// <summary>
         /// Is the class disposed of. If true calling Dispose() does nothing.
         /// </summary>
-        public bool isDisposed { get; private set; } = false;
+        public bool IsDisposed { get; private set; } = false;
 
         /// <summary>
         /// Sample count that loop starts from.
@@ -528,7 +528,6 @@
                 {
                     if (DynamicSound != null && !DynamicSound.IsDisposed && AudioEnabled)
                     {
-
                         lock (DynamicSoundEffectLock)
                         {
                             DynamicSound.Volume = volume;
@@ -614,18 +613,16 @@
             {
                 if (DynamicSound != null && !DynamicSound.IsDisposed)
                 {
-
                     lock (DynamicSoundEffectLock)
                     {
                         if (AudioEnabled)
                         {
                             try
                             {
-                                    DynamicSound?.Stop();
+                                DynamicSound?.Stop();
                             }
                             catch (NullReferenceException)
                             {
-
                             }
                         }
 
@@ -706,7 +703,7 @@
                 {
                     Stop();
                 }
-                if (!isDisposed)
+                if (!IsDisposed)
                 {
                     if (task != null)
                     {
@@ -754,7 +751,7 @@
                     //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
 
                     // set to true to prevent multiple disposings
-                    isDisposed = true;
+                    IsDisposed = true;
                     //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
                 }
                 else
@@ -802,13 +799,6 @@
         /// <param name="v">string of message</param>
         private static void die(string v) => throw new Exception(v.Trim('\0'));
 
-        /// <summary>
-        /// Compairs two numbers and returns the smallest
-        /// </summary>
-        /// <param name="a">number a</param>
-        /// <param name="b">number b</param>
-        /// <returns>smaller of two numbers</returns>
-        private static int FFMIN(int a, int b) => a < b ? a : b;
 
         /// <summary>
         /// For reading data from a memory pointer as if it's a file.
@@ -819,7 +809,7 @@
         /// <returns>Total bytes read, or EOF</returns>
         private static unsafe int Read_packet(void* opaque, byte* buf, int buf_size)
         {
-            Buffer_Data* bd = (Buffer_Data*)opaque;
+            BufferData* bd = (BufferData*)opaque;
 
             return bd->Read(buf, buf_size);
         }
@@ -963,8 +953,8 @@
                         _looplength = _loopend - _loopstart;
                     else
                         Debug.WriteLine($"Failed Parse {key} = {val}");
-                }   
-                else if (key.Trim().IndexOf("LOOPLENGTH", StringComparison.OrdinalIgnoreCase) >=0)
+                }
+                else if (key.Trim().IndexOf("LOOPLENGTH", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     if (int.TryParse(val, out _looplength))
                         _loopend = _loopend + _loopstart;
@@ -1019,7 +1009,7 @@
         /// <summary>
         /// Sets up AVFormatContext to be able from the memory buffer.
         /// </summary>
-        protected unsafe void LoadFromRAM(Buffer_Data* bd)
+        protected unsafe void LoadFromRAM(BufferData* bd)
         {
             _avio_ctx = null;
 
@@ -1102,7 +1092,6 @@
                     }
                     try
                     {
-
                         lock (DynamicSoundEffectLock)
                             DynamicSound.SubmitBuffer(buffer, start, length);
                     }
@@ -1175,11 +1164,11 @@
         {
             try
             {
-                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE && !isDisposed)
+                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE && !IsDisposed)
                 {
                     lock (Decoder) //make the main thread wait if it accesses this class.
                     {
-                        while (!isDisposed && !Ahead)
+                        while (!IsDisposed && !Ahead)
                         {
                             if (Next() < 0)
                                 break;
@@ -1616,97 +1605,7 @@
             }
         }
 
-        #endregion Methods
+#endregion Methods
 
-        #region Structs
-
-        /// <summary>
-        /// Used only when reading ADPCM data from memory.
-        /// </summary>
-        public struct Buffer_Data
-        {
-            #region Fields
-
-            public UInt32 DataSeekLoc;
-            public UInt32 DataSize;
-            private IntPtr Header;
-            public UInt32 HeaderSize;
-
-            #endregion Fields
-
-            #region Methods
-
-            public unsafe int Read(byte* buf, int buf_size)
-            {
-                int ret;
-                if ((ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
-                    return ret;
-                else
-                    return ReadData(buf, buf_size);
-            }
-
-            public void SetHeader(IntPtr value) => Header = value;
-
-            public unsafe void SetHeader(byte* value) => Header = (IntPtr)value;
-
-            private unsafe int ReadData(byte* buf, int buf_size)
-            {
-                buf_size = FFMIN(buf_size, (int)DataSize);
-
-                if (buf_size == 0)
-                {
-                    return ffmpeg.AVERROR_EOF;
-                }
-                FileStream fs = null;
-
-                // binaryReader disposes of fs
-                using (BinaryReader br = new BinaryReader(fs = File.Open(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
-                {
-                    fs.Seek(DataSeekLoc, SeekOrigin.Begin);
-                    using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
-                    {
-                        // copy public buffer data to buf
-                        ums.Write(br.ReadBytes(buf_size), 0, buf_size);
-                        DataSeekLoc += (uint)buf_size;
-                        DataSize -= (uint)buf_size;
-
-                        fs = null;
-                        return buf_size;
-                    }
-                }
-            }
-
-            private unsafe int ReadHeader(byte* buf, int buf_size)
-            {
-                buf_size = FFMIN(buf_size, (int)HeaderSize);
-
-                if (buf_size == 0)
-                {
-                    return ffmpeg.AVERROR_EOF;
-                }
-
-                // copy public buffer data to buf
-                Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
-                Header += buf_size;
-                HeaderSize -= (uint)buf_size;
-
-                return buf_size;
-            }
-
-            #endregion Methods
-
-            //can't do this because soon as fixed block ends the pointer is no good.
-            //private void SetHeader(byte[] value)
-            //{
-            //    fixed (byte* tmp = &value[0])
-            //    {
-            //        Header = (IntPtr)tmp;
-            //    }
-            //}
-
-            //< size left in the buffer
-        };
-
-        #endregion Structs
     }
 }

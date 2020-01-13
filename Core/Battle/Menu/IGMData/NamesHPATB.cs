@@ -83,7 +83,7 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty(pos), 1, 3, damageable);
+        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty { Pos = pos }, 1, 3, damageable);
 
         public static Texture2D ThreadUnsafeOperations()
         {
@@ -131,7 +131,7 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            if(Damageable!=null) 
+            if (Damageable != null)
             {
                 if (Memory.State?.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
@@ -140,7 +140,6 @@ namespace OpenVIII.IGMData
                 }
                 else
                 {
-
                 }
                 sbyte pos = PartyPos;
                 Rectangle rectangle = SIZE[0];
@@ -152,7 +151,7 @@ namespace OpenVIII.IGMData
                 ((IGMDataItem.Icon)ITEM[0, (byte)DepthID.ATBBorder]).Pos = atbbarpos;
                 ((IGMDataItem.Gradient.GF)ITEM[0, (byte)DepthID.GFCharging]).Pos = atbbarpos;
                 ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Data = Damageable.Name;
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(rectangle.X-60, rectangle.Y, 0, 0);
+                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(rectangle.X - 60, rectangle.Y, 0, 0);
                 ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Pos = new Rectangle(rectangle.X + 128, rectangle.Y, 0, 0);
 
                 ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Draw(true);
@@ -214,7 +213,6 @@ namespace OpenVIII.IGMData
                     ITEM[0, (byte)DepthID.GFHPBox].Show();
                     ITEM[0, (int)DepthID.GFCharging].Show();
                     ITEM[0, (int)DepthID.GFCharging].Refresh(Damageable.SummonedGF);
-
                 }
                 if (!charging)
                 {

@@ -11,7 +11,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        private static readonly int msDelayLimit = 100;
+        private static readonly TimeSpan msDelayLimit = TimeSpan.FromMilliseconds(100);
         private static Input2 main;
 
         #endregion Fields
@@ -28,13 +28,13 @@ namespace OpenVIII
         {
             //issue here if CheckInputLimit is checked more than once per update cycle this will be wrong.
             if (Memory.gameTime != null)
-                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) < msDelayLimit;
+                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime) < msDelayLimit;
         }
 
         #endregion Methods
 
         protected static bool bLimitInput;
-        protected static double msDelay;
+        protected static TimeSpan msDelay;
 
         protected bool ButtonTriggered(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
         {
@@ -232,7 +232,7 @@ namespace OpenVIII
 
         public static void ResetInputLimit()
         {
-            msDelay = 0;
+            msDelay = TimeSpan.Zero;
             bLimitInput = false;
         }
 
@@ -248,7 +248,7 @@ namespace OpenVIII
         public virtual bool ButtonTriggered(InputButton test, ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (Memory.IsActive)
-                if (!bLimitInput || ((test.Trigger | trigger) & ButtonTrigger.IgnoreDelay) != 0)
+                if (!bLimitInput || (trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger)).HasFlag(ButtonTrigger.IgnoreDelay))
                 {
                     if (Keyboard.ButtonTriggered(test, trigger))
                         return true;

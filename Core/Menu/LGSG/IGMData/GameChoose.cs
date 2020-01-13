@@ -32,7 +32,7 @@ namespace OpenVIII
 
             public static GameChoose Create(Rectangle pos)
             {
-                GameChoose r = Create<GameChoose>(30, 1, new IGMDataItem.Empty(pos), 3, 10);
+                GameChoose r = Create<GameChoose>(30, 1, new IGMDataItem.Empty { Pos = pos }, 3, 10);
                 return r;
             }
 

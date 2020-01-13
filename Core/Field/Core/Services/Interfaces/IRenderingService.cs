@@ -1,16 +1,17 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public interface IRenderingService
     {
         Boolean IsSupported { get; }
         
-        void AddScreenColor(RGBColor rgbColor);
-        void SubScreenColor(RGBColor rgbColor);
+        void AddScreenColor(Color Color);
+        void SubScreenColor(Color Color);
 
-        void AddScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration);
-        void SubScreenColorTransition(RGBColor rgbColor, RGBColor offset, Int32 transitionDuration);
+        void AddScreenColorTransition(Color Color, Color offset, Int32 transitionDuration);
+        void SubScreenColorTransition(Color Color, Color offset, Int32 transitionDuration);
         IAwaitable Wait();
         
         Int32 BackgroundFPS { get; set; }

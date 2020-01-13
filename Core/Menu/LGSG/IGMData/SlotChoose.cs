@@ -25,7 +25,7 @@ namespace OpenVIII
             public static SlotChoose Create(Rectangle pos)
             {
                 SlotChoose r = new SlotChoose();
-                r.Init(2, 2, new IGMDataItem.Empty(pos), 1, 2);
+                r.Init(2, 2, new IGMDataItem.Empty { Pos = pos }, 1, 2);
                 return r;
             }
 

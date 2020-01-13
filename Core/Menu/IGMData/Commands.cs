@@ -23,13 +23,16 @@ namespace OpenVIII.IGMData
         #endregion Fields
 
         #region Properties
+
         //Selphie_Slots
         private Selphie_Slots Selphie_Slots { get => (Selphie_Slots)ITEM[Offsets.Selphie_Slots, 0]; set => ITEM[Offsets.Selphie_Slots, 0] = value; }
+
         private Pool.GF GFPool { get => (Pool.GF)ITEM[Offsets.GF_Pool, 0]; set => ITEM[Offsets.GF_Pool, 0] = value; }
         private Pool.Item ItemPool { get => (Pool.Item)ITEM[Offsets.Item_Pool, 0]; set => ITEM[Offsets.Item_Pool, 0] = value; }
         private Pool.Magic MagPool { get => (Pool.Magic)ITEM[Offsets.Mag_Pool, 0]; set => ITEM[Offsets.Mag_Pool, 0] = value; }
         private Pool.BlueMagic BluePool { get => (Pool.BlueMagic)ITEM[Offsets.Blue_Pool, 0]; set => ITEM[Offsets.Blue_Pool, 0] = value; }
         private Pool.Combine CombinePool { get => (Pool.Combine)ITEM[Offsets.Combine_Pool, 0]; set => ITEM[Offsets.Combine_Pool, 0] = value; }
+        private Pool.Bullet BulletPool { get => (Pool.Bullet)ITEM[Offsets.Bullet_Pool, 0]; set => ITEM[Offsets.Bullet_Pool, 0] = value; }
         private IGMDataItem.Icon LimitArrow { get => (IGMDataItem.Icon)ITEM[Offsets.Limit_Arrow, 0]; set => ITEM[Offsets.Limit_Arrow, 0] = value; }
 
         public IGMData.Target.Group TargetGroup
@@ -57,7 +60,8 @@ namespace OpenVIII.IGMData
                 Targets_Window = 10,
                 Combine_Pool = 11,
                 Selphie_Slots = 12,
-                Count = 13;
+                Bullet_Pool = 13,
+                Count = 14;
         }
 
         //base.Inputs_CANCEL();
@@ -117,18 +121,18 @@ namespace OpenVIII.IGMData
         public override bool Inputs()
         {
             bool ret = false;
-            var found = false;
+            bool found = false;
             //loop through Start to Count
             //This is to only check for input from the dialogs that popup.
-            for(int i = Offsets.Start;i<Offsets.Count;i++)
+            for (int i = Offsets.Start; i < Offsets.Count; i++)
             {
-                if (InputITEM(ITEM[i,0], ref ret))
+                if (InputITEM(ITEM[i, 0], ref ret))
                 {
                     found = true;
                     break;
                 }
             }
-            if(!found)
+            if (!found)
             {
                 Cursor_Status |= Cursor_Status.Enabled;
                 Cursor_Status &= ~Cursor_Status.Blinking;
@@ -182,7 +186,6 @@ namespace OpenVIII.IGMData
                         // ITEM[Targets_Window, 0].Show();
                         throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.ID}) doesn't have explict operation defined!");
                     case 1: //ATTACK
-                    case 14: //SHOT
                     case 5: //Renzokuken
                     case 12: //MUG
                     case 6: //DRAW
@@ -212,6 +215,11 @@ namespace OpenVIII.IGMData
                              //TODO add slot menu to randomly choose spell to cast.
                         Selphie_Slots.Show();
                         Selphie_Slots.Refresh();
+                        return true;
+
+                    case 14: //SHOT
+                        BulletPool.Show();
+                        BulletPool.Refresh();
                         return true;
 
                     case 19: //COMBINE (ANGELO or ANGEL WING)
@@ -406,7 +414,7 @@ namespace OpenVIII.IGMData
                             }
                         }
                         const int crisiswidth = 294;
-                        if (Battle && CrisisLevel>-1)
+                        if (Battle && CrisisLevel > -1)
                         {
                             CONTAINER.Width = crisiswidth;
                             LimitArrow.Show();
@@ -456,11 +464,13 @@ namespace OpenVIII.IGMData
             EnemyAttacks.Hide();
             CombinePool = Pool.Combine.Create(new Rectangle(X + 50, Y - 22, 300, 112), Damageable, true);
             CombinePool.Hide();
-            Selphie_Slots = IGMData.Selphie_Slots.Create(new Rectangle(X + 50, Y - 22, 300, 168), Damageable, true);
+            BulletPool = Pool.Bullet.Create(new Rectangle(X + 50, Y - 22, 400, 168), Damageable, true);
+            BulletPool.Hide();
+            Selphie_Slots = Selphie_Slots.Create(new Rectangle(X + 50, Y - 22, 300, 168), Damageable, true);
             Selphie_Slots.Hide();
             LimitArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
             LimitArrow.Hide();
-            TargetGroup = IGMData.Target.Group.Create(Damageable);
+            TargetGroup = Target.Group.Create(Damageable);
             TargetGroup.Hide();
             commands = new Kernel_bin.Battle_Commands[Rows];
             enemycommands = null;
@@ -506,7 +516,7 @@ namespace OpenVIII.IGMData
             }
         }
 
-        public sbyte CrisisLevel { get => Damageable!= null && Damageable.GetCharacterData(out Saves.CharacterData c) ? c.CurrentCrisisLevel : (sbyte)-1; }
+        public sbyte CrisisLevel => Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) ? c.CurrentCrisisLevel : (sbyte)-1;
 
         private void SubscribeEvents()
         {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public sealed class GameplayService : IGameplayService
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 // ReSharper disable StringLiteralTypo
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public static class MovieName
     {

@@ -143,7 +143,7 @@ namespace OpenVIII
             return eg.MostSaturated(Textures[pal], pal);
         }
 
-        public new void Trim(Enum ic, byte pal)
+        public override void Trim(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];
             eg.Trim(Textures[pal]);
@@ -164,9 +164,9 @@ namespace OpenVIII
             //FORCE_ORIGINAL = true;
             Props = new List<TexProps>()
             {
-                new TexProps("icon.tex",1,new BigTexProps("iconfl{0:00}.TEX",4)), //0-15 palette
-                new TexProps("icon.tex",1,red, new BigTexProps("iconfl{0:00}.TEX",4,red)),//16 palette
-                new TexProps("icon.tex",1,yellow, new BigTexProps("iconfl{0:00}.TEX",4,yellow))//17 palette
+                new TexProps{Filename = "icon.tex",Count = 1,Big = new List<BigTexProps>{ new BigTexProps{Filename = "iconfl{0:00}.TEX",Split = 4} } }, //0-15 palette
+                new TexProps{Filename = "icon.tex",Count = 1,Colors = red,Big = new List<BigTexProps>{ new BigTexProps{Filename = "iconfl{0:00}.TEX",Split = 4,Colors = red } } },//16 palette
+                new TexProps{Filename = "icon.tex",Count = 1,Colors = yellow,Big = new List<BigTexProps>{ new BigTexProps { Filename = "iconfl{0:00}.TEX", Split = 4, Colors = yellow } } }//17 palette
             };
             IndexFilename = "icon.sp1";
         }
@@ -208,13 +208,13 @@ namespace OpenVIII
             }
         }
 
-        protected override void InitTextures(ArchiveWorker aw = null)
+        protected override void InitTextures<T>(ArchiveWorker aw = null)
         {
             Textures = new List<TextureHandler>();
             for (int t = 0; t < Props.Count; t++)
             {
-                TEX tex;
-                tex = new TEX(ArchiveWorker.GetBinaryFile(ArchiveString,
+                T tex = new T();
+                tex.Load(ArchiveWorker.GetBinaryFile(ArchiveString,
                     aw.GetListOfFiles().First(x => x.IndexOf(Props[t].Filename, StringComparison.OrdinalIgnoreCase) >= 0)));
                 if (Props[t].Colors == null || Props[t].Colors.Length == 0)
                 {
@@ -236,6 +236,23 @@ namespace OpenVIII
             }
         }
 
+        protected override VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = 0.25F, Box_Options options = Box_Options.Center | Box_Options.Middle, float z = 0f)
+        {
+            Trim(ic, pal);
+            EntryGroup eg = this[(ID)ic];
+            VertexPositionTexture_Texture2D r = Quad(eg[0], Textures[pal], scale, eg.Count == 1 ? options : options | Box_Options.UseOffset);
+
+            if (eg.Count > 1)
+            {
+                List<VertexPositionTexture> tmp = new List<VertexPositionTexture>(r.VPT.Length * eg.Count);
+                tmp.AddRange(r.VPT);
+                for (int i = 1; i < eg.Count; i++)
+                    tmp.AddRange(Quad(eg[0], Textures[pal], scale, options | Box_Options.UseOffset, i * 0.001f).VPT);
+                return new VertexPositionTexture_Texture2D(tmp.ToArray(), r.Texture);
+            }
+            return r;
+        }
+
         private void Trim()
         {
             Trim(ID.Bar_Fill, 5);
@@ -249,6 +266,8 @@ namespace OpenVIII
             Trim(ID.Perfect__, 2);
             Trim(ID.Renzokeken_Seperator, 6);
         }
+
+        #endregion Methods
 
         //public VertexPositionTexture[] GenerateVPT(Vector3 v, float width, float height)
         //{
@@ -272,7 +291,5 @@ namespace OpenVIII
         //    TempVPT[4] = GetVPT(ref this, this[4]);
         //    TempVPT[2] = TempVPT[5] = GetVPT(ref this, this[2]);
         //}
-
-        #endregion Methods
     }
 }

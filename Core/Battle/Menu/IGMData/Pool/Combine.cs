@@ -95,6 +95,7 @@ namespace OpenVIII.IGMData.Pool
                 BLANKS[i] = true;
                 ITEM[i, 0].Hide();
             }
+            UpdateTitle();
             base.Refresh();
         }
 
@@ -135,6 +136,38 @@ namespace OpenVIII.IGMData.Pool
         {
             base.PAGE_PREV();
             Refresh();
+        }
+
+        public override void UpdateTitle()
+        {
+            base.UpdateTitle();
+            if (Pages == 1)
+            {
+                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+            }
+            else
+                switch (Page)
+                {
+                    case 0:
+                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG1;
+                        break;
+
+                    case 1:
+                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG2;
+                        break;
+
+                    case 2:
+                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG3;
+                        break;
+
+                    case 3:
+                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
+                        break;
+
+                    default:
+                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                        break;
+                }
         }
 
         #endregion Methods

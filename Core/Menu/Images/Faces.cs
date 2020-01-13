@@ -24,7 +24,7 @@ namespace OpenVIII
             base.DefaultValues();
             Props = new List<TexProps>()
             {
-                new TexProps("face{0:0}.tex",2,new BigTexProps("Face_b{0:00}.TEX",2),new BigTexProps("Gf_big{0:00}.TEX",2)),
+                new TexProps{Filename = "face{0:0}.tex",Count = 2,Big = new List<BigTexProps>{ new BigTexProps{Filename="Face_b{0:00}.TEX",Split =2 },new BigTexProps{Filename="Gf_big{0:00}.TEX",Split = 2 } } },
             };
             TextureStartOffset = 1;
             IndexFilename = "face.sp2";

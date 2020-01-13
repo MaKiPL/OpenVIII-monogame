@@ -12,8 +12,8 @@ namespace OpenVIII
         private static Mode currentMode;
         private static int pointer = -1;
 
-        private static double time;
-
+        private static TimeSpan time;
+        private static TimeSpan totaltime = TimeSpan.FromMilliseconds(2000);
         #endregion Fields
 
         #region Enums
@@ -63,19 +63,30 @@ namespace OpenVIII
                     break;
 
                 case Mode.Draw:
-                    pointer++;
-                    if (pointer >= CardValue.Length) pointer = 0;
                     currentMode++;
                     break;
 
                 case Mode.Wait:
-                    time += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-                    if (time > 2000)
+                    //time += Memory.gameTime.ElapsedGameTime;
+                    //if (time > totaltime)
+                    //{
+                    //    currentMode--;
+                    //    time = TimeSpan.Zero;
+                    //}
+                    //else
+                    if (pointer<0 || Input2.DelayedButton(Button_Flags.Right,ButtonTrigger.OnPress|ButtonTrigger.Force))
                     {
+                        pointer++;
+                        if (pointer >= CardValue.Length) pointer = 0;
                         currentMode--;
-                        time = 0;
                     }
-                    else
+                    else if (Input2.DelayedButton(Button_Flags.Left, ButtonTrigger.OnPress | ButtonTrigger.Force))
+                    {
+                        pointer--;
+                        if (pointer <0) pointer = CardValue.Length-1;
+                        currentMode--;
+                    }
+                    else 
                         Memory.SuppressDraw = true;
                     break;
             }
@@ -88,26 +99,31 @@ namespace OpenVIII
                 Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
 
                 Cards.ID id = CardValue[pointer];
-                uint pos = (uint)id;
+                uint pos = (uint)((uint)id % Memory.Cards.EntriesPerTexture);
+                if (id >= Cards.ID.Card_Back)
+                    pos = Memory.Cards.Count-1;
                 //int i = cards.GetEntry(id).File;
-                uint col = (uint)(Memory.Cards.GetEntry(id).X / Memory.Cards.GetEntry(id).Width) + 1;
-                uint row = (uint)(Memory.Cards.GetEntry(id).Y / Memory.Cards.GetEntry(id).Width) + 1;
+                Entry entry = Memory.Cards.GetEntry(pos);
+                uint col = (uint)(entry.X / entry.Width) + 1;
+                uint row = (uint)(entry.Y / entry.Width) + 1;
+                Rectangle dst = new Rectangle(new Point(0), entry.Size.ToPoint());
+                dst.Height = (int)Math.Round(dst.Width * (1+Cards.AspectRatio));
 
-                float scale = vp.Height / Memory.Cards.GetEntry(id).Height;
-                Rectangle dst = new Rectangle(new Point(0), (Memory.Cards.GetEntry(id).Size * scale).ToPoint());
-                dst.Offset(vp.Width / 2 - dst.Center.X, 0);
+                float scale = vp.Height / dst.Height;
+                dst = dst.Scale(new Vector2(scale));
+                dst.Offset(vp.Width / 2 - dst.Center.X, vp.Height / 2 - dst.Center.Y);
                 Memory.SpriteBatchStartAlpha();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Cards.Draw(id, dst);
                 Memory.font.RenderBasicText(
                     $"{CardValue[pointer].ToString().Replace('_', ' ')}\n" +
-                    $"pos: {pos}\n" +
+                    $"pos: {(uint)id}\n" +
                     $"col: {col}\n" +
                     $"row: {row}\n" +
-                    $"x: {Memory.Cards.GetEntry(id).X}\n" +
-                    $"y: {Memory.Cards.GetEntry(id).Y}\n" +
-                    $"width: {Memory.Cards.GetEntry(id).Width}\n" +
-                    $"height: {Memory.Cards.GetEntry(id).Height}",
+                    $"x: {entry.X}\n" +
+                    $"y: {entry.Y}\n" +
+                    $"width: {entry.Width}\n" +
+                    $"height: {entry.Height}",
                     (int)(vp.Width * 0.10f), (int)(vp.Height * 0.05f), lineSpacing: 1);
                 Memory.SpriteBatchEnd();
             }

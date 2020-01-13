@@ -78,7 +78,9 @@ namespace OpenVIII
         public virtual int ATBBarSize => (int)Memory.CurrentBattleSpeed * 4000;
 
         public float ATBPercent => ATBTimer.Percent;
+
         public bool Charging() => SetBattleMode(BattleMode.ATB_Charging);
+
         public IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> DamageActions
         {
             get
@@ -495,6 +497,7 @@ namespace OpenVIII
             r.Init();
             return r;
         }
+
         protected Saves.Data Data { get; set; }
 
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
@@ -630,7 +633,7 @@ namespace OpenVIII
 
         public virtual bool EndTurn(bool force = false)
         {
-            if ( force ||
+            if (force ||
                 GetBattleMode().Equals(BattleMode.YourTurn) ||
                 GetBattleMode().Equals(BattleMode.GF_Charging)
                )
@@ -695,10 +698,7 @@ namespace OpenVIII
 
         public virtual float PercentFullHP() => (float)CurrentHP() / MaxHP();
 
-        public virtual void Refresh()
-        {
-            ATBTimer.Refresh(this);            
-        }
+        public virtual void Refresh() => ATBTimer.Refresh(this);
 
         public virtual void Reset()
         {
@@ -797,7 +797,7 @@ namespace OpenVIII
         {
             if (GetBattleMode().Equals(BattleMode.ATB_Charging) || force)
             {
-                if(!Module_battle_debug.PauseATB)
+                if (!Module_battle_debug.PauseATB)
                     ATBTimer.Update();
                 if (ATBTimer.Done && ATBCharged())
                 {
@@ -808,14 +808,14 @@ namespace OpenVIII
             else if (GetBattleMode().Equals(BattleMode.GF_Charging))
             {
                 SummonedGF.Update();
-                if(SummonedGF.IsGameOver || (SummonedGF.ATBTimer.Done && EndTurn()))
+                if (SummonedGF.IsGameOver || (SummonedGF.ATBTimer.Done && EndTurn()))
                 {
                     //Summon GF end turn.
                     //SetSummon(null);
                 }
                 return true;
             }
-                    return false;
+            return false;
         }
 
         protected virtual void Init()

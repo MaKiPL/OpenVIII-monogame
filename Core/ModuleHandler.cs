@@ -70,7 +70,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.FIELD_DEBUG:
-                    Module_field_debug.Update();
+                    Fields.Module.Update();
                     break;
 
                 case MODULE.OVERTURE_DEBUG:
@@ -99,7 +99,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.FIELD_MODEL_TEST:
-                    module_field_object_test.Update();
+                    Fields.Module_field_object_test.Update();
                     break;
             }
         }
@@ -141,7 +141,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.FIELD_DEBUG:
-                    Module_field_debug.Draw();
+                    Fields.Module.Draw();
                     break;
 
                 case MODULE.OVERTURE_DEBUG:
@@ -173,7 +173,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.FIELD_MODEL_TEST:
-                    module_field_object_test.Draw();
+                    Fields.Module_field_object_test.Draw();
                     break;
             }
         }

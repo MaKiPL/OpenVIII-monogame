@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Sets whether the PC character can be moved/selected in the switch menu. 

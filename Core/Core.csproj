@@ -30,7 +30,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugWindows|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;_WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;_WINDOWS;_X86</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -133,7 +133,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArchiveWorker.cs" />
+    <Compile Include="Archive\Archive.cs" />
+    <Compile Include="Archive\ArchiveBase.cs" />
+    <Compile Include="Archive\Archives.cs" />
+    <Compile Include="Archive\ArchiveWorker.cs" />
+    <Compile Include="Archive\ArchiveZZZ.cs" />
+    <Compile Include="AV\Audio.cs" />
+    <Compile Include="AV\Movie\Directories.cs" />
+    <Compile Include="AV\Movie\Files.cs" />
+    <Compile Include="AV\Midi\Fluid.cs" />
+    <Compile Include="AV\Midi\DirectMedia.cs" />
+    <Compile Include="AV\Movie\Player.cs" />
+    <Compile Include="AV\Movie\STATE.cs" />
+    <Compile Include="AV\Video.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
     <Compile Include="Battle\DeadTime.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
@@ -153,23 +165,40 @@
     <Compile Include="Battle\Menu\IGMData\PartyAP.cs" />
     <Compile Include="Battle\Menu\IGMData\PartyItems.cs" />
     <Compile Include="Battle\Menu\IGMData\PlayerEXP.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\Bullet.cs" />
     <Compile Include="Battle\Menu\IGMData\Pool\Combine.cs" />
     <Compile Include="Battle\Menu\IGMData\Selphie_Slots.cs" />
+    <Compile Include="Battle\Menu\IGMData\Limit\Shot.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
-    <Compile Include="Battle\Menu\IGMData\Renzokeken.cs" />
+    <Compile Include="Battle\Menu\IGMData\Limit\Renzokeken.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Party.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
     <Compile Include="Battle\RegularPyramid.cs" />
+    <Compile Include="Buffer_Data.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />
     <Compile Include="Card_Game\EXE_Offsets.cs" />
+    <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
-    <Compile Include="FfAudio.cs" />
-    <Compile Include="FfVideo.cs" />
+    <Compile Include="Field\Camera\Cameras.cs" />
+    <Compile Include="Field\WalkMesh\Access.cs" />
+    <Compile Include="Field\Background\Background.cs" />
+    <Compile Include="Field\Background\BackgroundTextureType.cs" />
+    <Compile Include="Field\Background\BlendMode.cs" />
+    <Compile Include="Field\Initializer.cs" />
+    <Compile Include="Field\Module.cs" />
     <Compile Include="Field\module_field_object_test.cs" />
     <Compile Include="Field\ONE\FieldCharaOne.cs" />
+    <Compile Include="Field\Background\TextureIDPaletteID.cs" />
+    <Compile Include="Field\Background\Tile.cs" />
+    <Compile Include="Field\Background\TileQuadTexture.cs" />
+    <Compile Include="Field\Background\Tiles.cs" />
+    <Compile Include="Field\WalkMesh\Vert.cs" />
+    <Compile Include="Field\WalkMesh\WalkMesh.cs" />
+    <Compile Include="Image\Cluts.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
+    <Compile Include="Image\TextureBuffer.cs" />
     <Compile Include="Image\Texture_Base.cs" />
     <Compile Include="Image\TIM_OVERTURE.cs" />
     <Compile Include="Input\Buttons.cs" />
@@ -221,7 +250,10 @@
     <Compile Include="Menu\IGMData\Pool\BlueMagic.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Abilities.cs" />
     <Compile Include="Menu\IGM_Junction\IGMData\Slots\Command.cs" />
+    <Compile Include="Menu\Images\BigTexProps.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
+    <Compile Include="Menu\Images\TexProps.cs" />
+    <Compile Include="Menu\Images\VertexPositionTexture_Texture2D.cs" />
     <Compile Include="Menu\LGSG\IGMData\GameBlock.cs" />
     <Compile Include="Menu\LGSG\IGMData\GameChoose.cs" />
     <Compile Include="Menu\LGSG\IGMData\SlotChoose.cs" />
@@ -234,12 +266,10 @@
     <Compile Include="Battle\module_battle_Debug.cs" />
     <Compile Include="Characters.cs" />
     <Compile Include="DictionaryEx.cs" />
-    <Compile Include="DM_Midi.cs" />
     <Compile Include="Image\Entry.cs" />
     <Compile Include="Image\EntryGroup.cs" />
     <Compile Include="ExtapathyExtended.cs" />
     <Compile Include="Extended.cs" />
-    <Compile Include="Fluid_Midi.cs" />
     <Compile Include="Menu\Images\Box_Options.cs" />
     <Compile Include="Menu\Lobby\IGM_Lobby.cs" />
     <Compile Include="Menu\Menu_Base.cs" />
@@ -256,8 +286,8 @@
     <Compile Include="Strings\Description.cs" />
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
-    <Compile Include="Ffcc.cs" />
-    <Compile Include="FfccVaribleGroup.cs" />
+    <Compile Include="AV\Ffcc.cs" />
+    <Compile Include="AV\FfccVaribleGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />
     <Compile Include="Field\Core\AreaName.cs" />
     <Compile Include="Field\Core\BreakAwaitable.cs" />
@@ -281,7 +311,6 @@
     <Compile Include="Field\Core\MusicId.cs" />
     <Compile Include="Field\Core\MusicName.cs" />
     <Compile Include="Field\Core\NamedEntity.cs" />
-    <Compile Include="Field\Core\RGBColor.cs" />
     <Compile Include="Field\Core\ScriptResultId.cs" />
     <Compile Include="Field\Core\Services\Implementation\FieldService.cs" />
     <Compile Include="Field\Core\Services\Implementation\GameplayService.cs" />
@@ -313,18 +342,17 @@
     <Compile Include="Field\Core\SoundEffectName.cs" />
     <Compile Include="Field\Core\SpinAwaitable.cs" />
     <Compile Include="Field\Core\WalkmeshCoords.cs" />
-    <Compile Include="Field\FieldInitializer.cs" />
     <Compile Include="Field\Fields\DataProvider\Field.FsDataProvider.cs" />
     <Compile Include="Field\Fields\DataProvider\Field.IDataProvider.cs" />
     <Compile Include="Field\Fields\Field.FieldPart.cs" />
     <Compile Include="Field\Fields\Field.Info.cs" />
     <Compile Include="Field\Fields\LookupService\Field.FSLookupService.cs" />
     <Compile Include="Field\Fields\LookupService\Field.ILookupService.cs" />
-    <Compile Include="Field\Framework\ExceptionExtensionMethods.cs" />
+    <Compile Include="ExceptionExtensionMethods.cs" />
     <Compile Include="Field\Framework\IEnumerableExtensionMethods.cs" />
-    <Compile Include="Field\Framework\IListExtensionMethods.cs" />
+    <Compile Include="IListExtensionMethods.cs" />
     <Compile Include="Field\Framework\IStack.cs" />
-    <Compile Include="Field\Framework\OrderedDictionary.cs" />
+    <Compile Include="OrderedDictionary.cs" />
     <Compile Include="Field\Framework\PriorityQueue.cs" />
     <Compile Include="Field\Framework\Rnd.cs" />
     <Compile Include="Field\JSM\Control\IJsmControl.cs" />
@@ -744,7 +772,6 @@
     <Compile Include="Field\JSM\Types\Jsm.Character.cs" />
     <Compile Include="Field\JSM\Types\Jsm.Global.cs" />
     <Compile Include="Field\JSM\Types\Jsm.Opcode.cs" />
-    <Compile Include="Field\module_field_debug.cs" />
     <Compile Include="Field\MSD\Msd.Reader.cs" />
     <Compile Include="Field\ScriptFormatter\FieldScriptFormatter.cs" />
     <Compile Include="Field\ScriptFormatter\FormattedObject.cs" />
@@ -755,7 +782,7 @@
     <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GFs.cs" />
-    <Compile Include="init_debugger_Audio.cs" />
+    <Compile Include="AV\init_debugger_Audio.cs" />
     <Compile Include="Kernel\Kernel_bin.Abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Ability.cs" />
     <Compile Include="Kernel\Kernel_bin.AbilityFlags2.cs" />
@@ -809,7 +836,7 @@
     <Compile Include="Kernel\Kernel_bin.Weapons_Data.cs" />
     <Compile Include="Kernel\Kernel_bin.Zell_limit_break_parameters.cs" />
     <Compile Include="Loc.cs" />
-    <Compile Include="LZSS.cs" />
+    <Compile Include="Archive\LZSS.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="Menu\Images\Cards.cs" />
     <Compile Include="Menu\Images\Cards.ID.cs" />
@@ -873,7 +900,7 @@
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
-    <Compile Include="module_movie_test.cs" />
+    <Compile Include="AV\module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Saves\Saves.CharacterData.cs" />

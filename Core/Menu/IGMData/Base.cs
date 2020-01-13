@@ -303,6 +303,11 @@ namespace OpenVIII.IGMData
                     {
                         return Inputs_CANCEL();
                     }
+                    else if (Input2.DelayedButton(FF8TextTagKey.RotateRight))
+                    {
+                        Inputs_RotateRight();
+                        return true;
+                    }
                     else if (Input2.DelayedButton(FF8TextTagKey.Cards))
                     {
                         Inputs_Cards();
@@ -362,6 +367,12 @@ namespace OpenVIII.IGMData
                 init_debugger_Audio.PlaySound(31);
         }
 
+        public virtual bool Inputs_RotateRight()
+        {
+            if (!skipsnd)
+                init_debugger_Audio.PlaySound(0);
+            return false;
+        }
         public virtual bool Inputs_OKAY()
         {
             if (!skipsnd)

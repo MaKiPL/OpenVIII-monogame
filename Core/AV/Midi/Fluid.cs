@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace OpenVIII
+namespace OpenVIII.AV.Midi
 {
     /// <summary>
     /// FluidSynth 2.0.5 + libinstpatch DLS support implementation for playing DirectMusic without
     /// DirectX for Linux, Windows64 and other platforms
     /// </summary>
-    public sealed class Fluid_Midi : IDisposable
+    public sealed class Fluid : IDisposable
     {
         private static bool bValid = true;
 
@@ -835,7 +835,7 @@ namespace OpenVIII
 
         #endregion DMUS structures
 
-        public Fluid_Midi()
+        public Fluid()
         {
             try
             {
@@ -1219,7 +1219,7 @@ namespace OpenVIII
         }
 
         // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        ~Fluid_Midi()
+        ~Fluid()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(false);

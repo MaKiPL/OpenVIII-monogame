@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OpenVIII
+namespace OpenVIII.Fields
 {
     public struct GlobalVariableId<T> where T : unmanaged
     {
