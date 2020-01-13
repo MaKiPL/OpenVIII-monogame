@@ -92,7 +92,7 @@ namespace OpenVIII.Fields
             }
 
             public Matrix CreateWorld() => Matrix.CreateWorld(Position, xyz[2], xyz[1]);
-
+            public Matrix RotationMatrix => new Matrix { Left = xyz[0], Up = xyz[1], Forward = xyz[2] };
             private void ReadData(byte[] cab, long offset)
             {
                 using (BinaryReader br = new BinaryReader(new MemoryStream(cab)))
@@ -113,7 +113,7 @@ namespace OpenVIII.Fields
                     Zoom = br.ReadUInt16();
                     Zoom2 = br.ReadUInt16();
                     Zoom = Zoom2 = Math.Max(Zoom, Zoom2);
-                    _position = -(space * xyz[0] + space * (-xyz[1]) + space * (-xyz[2]));
+                    _position = -(space * xyz[0] + space * xyz[1] + space * xyz[2]);
                 }
             }
         }
