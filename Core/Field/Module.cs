@@ -134,7 +134,7 @@ namespace OpenVIII.Fields
             string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0);
             if (string.IsNullOrWhiteSpace(fieldArchiveName)) return;
 
-            IArchiveWorker fieldArchive = aw.GetArchive(fieldArchiveName);
+            ArchiveBase fieldArchive = aw.GetArchive(fieldArchiveName);
             string[] filelist = fieldArchive.GetListOfFiles();
             string findstr(string s) =>
                 filelist.FirstOrDefault(x => x.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);

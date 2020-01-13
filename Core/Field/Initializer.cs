@@ -13,7 +13,7 @@ namespace OpenVIII.Fields
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] lists = aw.GetListOfFiles();
             string maplist = lists.First(x => x.ToLower().Contains("mapdata.fs"));
-            IArchiveWorker mapdata = aw.GetArchive(maplist);
+            ArchiveBase mapdata = aw.GetArchive(maplist);
             string map = mapdata.GetListOfFiles()[0];
             string[] maplistb = System.Text.Encoding.UTF8.GetString(mapdata.GetBinaryFile(map))
                 

@@ -6,17 +6,35 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class ArchiveZZZ : IArchiveWorker
+    public class ArchiveZZZ : ArchiveBase
     {
-        public IArchiveWorker GetArchive(Memory.Archive archive) => throw new NotImplementedException();
+        public override ArchiveBase GetArchive(Memory.Archive archive)
+        {
+            return new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));
+        }
 
-        public byte[] GetBinaryFile(string fileName, bool cache = false) => throw new NotImplementedException();
+        public override byte[] GetBinaryFile(string fileName, bool cache = false)
+        {
+            fileName = headerData.GetFilenames().FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (string.IsNullOrWhiteSpace(fileName)) return null;
+            FileData filedata = headerData.First(x => x.Filename == fileName);
+            using (BinaryReader br = new BinaryReader(new FileStream(archive.ZZZ, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            {
+                br.BaseStream.Seek(filedata.Offset, SeekOrigin.Begin);
+                return br.ReadBytes(checked((int)filedata.Size));
+            }
+        }
 
-        public Stream GetBinaryFileStream(string fileName, bool cache = false) => throw new NotImplementedException();
+        //public Stream GetBinaryFileStream(string fileName, bool cache = false)
+        //{
+        //}
 
-        public string[] GetListOfFiles() => throw new NotImplementedException();
+        public override string[] GetListOfFiles() => headerData?.GetFilenames().ToArray();
 
-        public Memory.Archive GetPath() => throw new NotImplementedException();
+        public override Memory.Archive GetPath() => archive;
+
+        private Memory.Archive archive;
+        private Header headerData;
 
         private struct FileData
         {
@@ -84,17 +102,12 @@ namespace OpenVIII
                 for (int i = 0; i < r.Data.Capacity; i++)
                     r.Data.Add(FileData.Load(br));
                 return r;
-                
             }
 
             public IOrderedEnumerable<string> GetFilenames()
-                =>  Data.Select(x => x.Filename).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase);
+                => Data.Select(x => x.Filename).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase);
 
-
-            private Header()
-            {
-                Data = new List<FileData>();
-            }
+            private Header() => Data = new List<FileData>();
         }
     }
 }

@@ -59,6 +59,8 @@ namespace OpenVIII
             /// </summary>
             public const string B_FileArchive = ".fs";
 
+            public const string B_ZZZ = ".zzz";
+
             /// <summary>
             /// File Index
             /// </summary>
@@ -73,6 +75,11 @@ namespace OpenVIII
             /// File Archive
             /// </summary>
             public string FS => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_FileArchive}"));
+
+            /// <summary>
+            /// ZZZ File
+            /// </summary>
+            public string ZZZ => Test(Extended.GetUnixFullPath($"{Path.Combine(_Root, _Filename)}{B_ZZZ}"));
 
             public bool FileExistsInFolder { get; private set; }
 

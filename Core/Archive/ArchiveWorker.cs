@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class ArchiveWorker : IArchiveWorker
+    public class ArchiveWorker : ArchiveBase
     {
         #region Fields
 
@@ -85,14 +85,14 @@ namespace OpenVIII
             return tmp.GetBinaryFile(fileName, cache);
         }
 
-        public IArchiveWorker GetArchive(Memory.Archive archive) => new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL)) { _path = archive };
+        public override ArchiveBase GetArchive(Memory.Archive archive) => new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL)) { _path = archive };
 
         /// <summary>
         /// GetBinary
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public byte[] GetBinaryFile(string fileName, bool cache = false)
+        public override byte[] GetBinaryFile(string fileName, bool cache = false)
         {
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new FileNotFoundException("NO FILENAME");
@@ -119,14 +119,14 @@ namespace OpenVIII
             throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
         }
 
-        public Stream GetBinaryFileStream(string fileName, bool cache = false) => throw new NotImplementedException();
+        //public Stream GetBinaryFileStream(string fileName, bool cache = false) => throw new NotImplementedException();
 
         /// <summary>
         /// Get current file list for loaded archive.
         /// </summary>
-        public string[] GetListOfFiles() => FileList;
+        public override string[] GetListOfFiles() => FileList;
 
-        public Memory.Archive GetPath() => _path;
+        public override Memory.Archive GetPath() => _path;
 
         private static bool GetLine(TextReader tr, out string line)
         {
