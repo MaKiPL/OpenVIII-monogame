@@ -409,15 +409,18 @@ namespace OpenVIII.Fields
 
             effect.TextureEnabled = false;
             Memory.graphics.GraphicsDevice.BlendFactor = Color.White;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.Opaque;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            //using (DepthStencilState depthStencilState = new DepthStencilState() { DepthBufferEnable = true })
             using (RasterizerState rasterizerState = new RasterizerState() { CullMode = CullMode.None })
             {
+                Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;//depthStencilState;
                 Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
                 ate.Texture = null;
                 ate.VertexColorEnabled = true;
                 effect.VertexColorEnabled = true;
-                effect.World = Module.Cameras[0].CreateWorld();
+                //camPosition = Module.Cameras[0].Position;
+                effect.World = Matrix.CreateWorld(Vector3.Zero, Vector3.Forward, Vector3.Up);// Module.Cameras[0].CreateWorld();
                 float fieldOfView = MathHelper.ToRadians(70);
                 //effect.View = //Module.Cameras[0].CreateLookAt();
                 //effect.Projection = Module.Cameras[0].CreateProjection();

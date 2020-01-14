@@ -45,6 +45,7 @@ namespace OpenVIII.Fields
                 float maxvalue = Math.Max(Math.Max(distance.X, distance.Y), distance.Z);
                 //Matrix scale = Matrix.CreateTranslation(0, 0, -Module.Cameras[0].Zoom);
 
+                //Matrix scale = Matrix.CreateScale(1f / 1f);
                 Matrix scale = Matrix.CreateScale(Module.Cameras[0].Zoom / 4096f);
 
                 Vertices = vs.Select((x, i) => new VertexPositionColor(Vector3.Transform(Vector3.Transform(new Vector3(x.x, x.y , x.z),scale), Module.Cameras[0].RotationMatrix), i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
