@@ -152,7 +152,15 @@ namespace OpenVIII.Fields
 
         public void Draw()
         {
-            DrawGeometry();
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            DrawBackground();
+            DrawWalkMesh();
+            DrawSpriteBatch();
+        }
+
+        private void DrawSpriteBatch()
+        {
+            if (!Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)) return;
             List<KeyValuePair<BlendMode, Texture2D>> _drawtextures = drawtextures();
             bool open = false;
             BlendMode lastbm = BlendMode.none;
@@ -317,6 +325,7 @@ namespace OpenVIII.Fields
             r.A = 0xFF;
             return r;
         }
+        public bool HasSpriteBatchTexturesLoaded { get => drawtextures()?.Count > 0; }
 
         private void DrawBackground()
         {
@@ -327,7 +336,7 @@ namespace OpenVIII.Fields
 
             effect.Projection = projectionMatrix; effect.View = viewMatrix; effect.World = worldMatrix;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-
+            
             effect.TextureEnabled = true;
             //seeing if sorting will matter.
             IOrderedEnumerable<TileQuadTexture> sorted = quads.Where(x => x.Enabled).OrderByDescending(x => x.GetTile.Z).ThenBy(x => x.GetTile.LayerID).ThenBy(x => x.GetTile.AnimationID).ThenBy(x => x.GetTile.AnimationState).ThenBy(x => x.GetTile.BlendMode);
@@ -382,14 +391,6 @@ namespace OpenVIII.Fields
                     vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
                 }
             }
-        }
-
-        private void DrawGeometry()
-        {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            DrawBackground();
-
-            DrawWalkMesh();
         }
 
         private List<KeyValuePair<BlendMode, Texture2D>> drawtextures() =>
