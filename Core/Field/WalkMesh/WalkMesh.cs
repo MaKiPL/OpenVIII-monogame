@@ -47,8 +47,8 @@ namespace OpenVIII.Fields
 
                 //Matrix scale = Matrix.CreateScale(1f / 1f);
                 Matrix scale = Matrix.CreateScale(Module.Cameras[0].Zoom / 4096f);
-
-                Vertices = vs.Select((x, i) => new VertexPositionColor(Vector3.Transform(Vector3.Transform(new Vector3(x.x, x.y , x.z),scale), Module.Cameras[0].RotationMatrix), i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
+                Matrix move = Matrix.CreateTranslation(Module.Cameras[0].Position*4096f);
+                Vertices = vs.Select((x, i) => new VertexPositionColor(Vector3.Transform(Vector3.Transform(Vector3.Transform(new Vector3(x.x, x.y , x.z), Module.Cameras[0].RotationMatrix),move), scale), i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
             }
         }
         public Vector3 max { get; private set; }
