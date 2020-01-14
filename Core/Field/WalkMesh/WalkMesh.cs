@@ -12,6 +12,11 @@ namespace OpenVIII.Fields
     /// WalkMesh
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF7/Field/Walkmesh"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/WalkmeshGLWidget.cpp"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/WalkmeshGLWidget.h"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/files/InfFile.cpp"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/files/IdFile.h"/>
+    /// <seealso cref="https://github.com/q-gears/q-gears/blob/master/utilities/ffvii_field_model_exporter/src/MeshFile.cpp"/>
     public partial class WalkMesh
     {
         public static WalkMesh Load(byte[] idb)

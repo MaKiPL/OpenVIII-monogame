@@ -9,6 +9,15 @@ using System.Linq;
 
 namespace OpenVIII.Fields
 {
+    /// <summary>
+    /// Background Tiles for field
+    /// </summary>
+    /// <see cref="https://github.com/myst6re/deling/blob/master/files/BackgroundFile.cpp"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/files/BackgroundFile.h"/>
+    /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_MAP"/>
+    /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_MIM"/>
+    /// <seealso cref="http://forums.qhimm.com/index.php?topic=13444.msg264595#msg264595"/>
+    /// <seealso cref="http://forums.qhimm.com/index.php?topic=13444.0"/>
     public partial class Background : IDisposable
     {
         #region Fields
@@ -70,20 +79,7 @@ namespace OpenVIII.Fields
 
         #endregion Destructors
 
-        #region Enums
-
-        [Flags]
-        public enum _Toggles : byte
-        {
-            DumpingData = 0x1,
-            SpriteBatch = 0x2,
-            Quad = 0x4,
-            WalkMesh = 0x8,
-            Deswizzle = 0x10,
-            Perspective = 0x20,
-        }
-
-        #endregion Enums
+        
 
         #region Properties
 
@@ -94,7 +90,6 @@ namespace OpenVIII.Fields
         public bool IsHalfBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.halfadd) ?? false;
         public bool IsQuarterBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.quarteradd) ?? false;
         public bool IsSubtractBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.subtract) ?? false;
-        public _Toggles Toggles { get; set; } = _Toggles.WalkMesh;
         public TimeSpan TotalTime { get; private set; }
         public int Width { get => OutputDims.Width; private set => OutputDims.Width = value; }
 
@@ -231,7 +226,7 @@ namespace OpenVIII.Fields
 
             float Width = tiles.Width;
             float Height = tiles.Height;
-            if (Toggles.HasFlag(_Toggles.Perspective)) //perspective mode shows gabs in the tiles.
+            if (Module.Toggles.HasFlag(Module._Toggles.Perspective)) //perspective mode shows gabs in the tiles.
             {
                 //finds the min zoom out to fit the entire image in frame.
                 Vector2 half = new Vector2(Width / 2f, Height / 2f);
@@ -247,7 +242,9 @@ namespace OpenVIII.Fields
                     camPosition.Z = minDistancefromBG;
 
                 projectionMatrix = Matrix.CreatePerspectiveFieldOfView(fieldOfView, Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
-                viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+                if (!Module.Toggles.HasFlag(Module._Toggles.Menu))
+                    viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+                else viewMatrix = Matrix.CreateLookAt(camPosition, camTarget, Vector3.Up);
             }
             else
             {
@@ -323,7 +320,7 @@ namespace OpenVIII.Fields
 
         private void DrawBackground()
         {
-            if (!Toggles.HasFlag(_Toggles.Quad)) return;
+            if (!Module.Toggles.HasFlag(Module._Toggles.Quad)) return;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
@@ -405,7 +402,7 @@ namespace OpenVIII.Fields
 
         private void DrawWalkMesh()
         {
-            if (!Toggles.HasFlag(_Toggles.WalkMesh)) return;
+            if (!Module.Toggles.HasFlag(Module._Toggles.WalkMesh)) return;
 
             effect.TextureEnabled = false;
             Memory.graphics.GraphicsDevice.BlendFactor = Color.White;
@@ -426,7 +423,10 @@ namespace OpenVIII.Fields
                 //effect.Projection = Module.Cameras[0].CreateProjection();
 
                 effect.Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView, Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
-                effect.View = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+                if (!Module.Toggles.HasFlag(Module._Toggles.Menu))
+                    effect.View = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+                else
+                    effect.View = Matrix.CreateLookAt(camPosition, camTarget, Vector3.Up);
                 foreach (EffectPass pass in effect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
@@ -523,7 +523,7 @@ namespace OpenVIII.Fields
 
         private bool ParseBackground2D(byte[] mimb, byte[] mapb)
         {
-            if (!Toggles.HasFlag(_Toggles.SpriteBatch)) return true;
+            if (!Module.Toggles.HasFlag(Module._Toggles.SpriteBatch)) return true;
             if (mimb == null || mapb == null)
                 return false;
 
@@ -780,7 +780,7 @@ namespace OpenVIII.Fields
 
         private void SaveCluts()
         {
-            if (Memory.EnableDumpingData || Toggles.HasFlag(_Toggles.DumpingData))
+            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Module._Toggles.DumpingData))
             {
                 string path = Path.Combine(Module.GetFolder(),
                     $"{Module.GetFieldName()}_Clut.png");
@@ -790,7 +790,7 @@ namespace OpenVIII.Fields
 
         private void SaveSwizzled(Dictionary<byte, Texture2D> _TextureIDs, string suf = "")
         {
-            if (Memory.EnableDumpingData || Toggles.HasFlag(_Toggles.DumpingData))
+            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Module._Toggles.DumpingData))
             {
                 string fieldname = Module.GetFieldName();
                 string folder = Module.GetFolder(fieldname);
@@ -810,7 +810,7 @@ namespace OpenVIII.Fields
         //private void SaveSwizzled(string suf = "") => SaveSwizzled(TextureIDs, suf);
         private void SaveTextures()
         {
-            if (Memory.EnableDumpingData || (Toggles.HasFlag(_Toggles.DumpingData) && Toggles.HasFlag(_Toggles.Deswizzle)))
+            if (Memory.EnableDumpingData || (Module.Toggles.HasFlag(Module._Toggles.DumpingData) && Module.Toggles.HasFlag(Module._Toggles.Deswizzle)))
             {
                 string fieldname = Module.GetFieldName();
                 string folder = Module.GetFolder(fieldname);

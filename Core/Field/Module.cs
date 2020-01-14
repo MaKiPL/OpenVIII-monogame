@@ -1,11 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-
 
 namespace OpenVIII.Fields
 {
@@ -17,13 +17,32 @@ namespace OpenVIII.Fields
     //we are only using 1 so might be reading the wrong pixels somewhere.
     public static partial class Module
     {
+        #region Fields
+
+        public static Background Background;
+        public static WalkMesh WalkMesh;
+        private static EventEngine eventEngine;
         private static Field_mods mod = 0;
 
         //private static Texture2D tex;
         //private static Texture2D texOverlap;
-
-        private static EventEngine eventEngine;
         private static IServices services;
+
+        #endregion Fields
+
+        #region Enums
+
+        [Flags]
+        public enum _Toggles : byte
+        {
+            DumpingData = 0x1,
+            SpriteBatch = 0x2,
+            Quad = 0x4,
+            WalkMesh = 0x8,
+            Deswizzle = 0x10,
+            Perspective = 0x20,
+            Menu = 0x40,
+        }
 
         private enum Field_mods
         {
@@ -32,6 +51,20 @@ namespace OpenVIII.Fields
             DISABLED,
             NOJSM
         };
+        
+        public static _Toggles Flip(this _Toggles flagged, _Toggles flag)
+            => flagged ^= flag;
+        #endregion Enums
+
+        #region Properties
+
+        public static Cameras Cameras { get; private set; }
+        public static FieldMenu FieldMenu { get; private set; }
+        public static _Toggles Toggles { get; set; } = _Toggles.WalkMesh | _Toggles.Menu;
+
+        #endregion Properties
+
+        #region Methods
 
         public static void Draw()
         {
@@ -48,29 +81,27 @@ namespace OpenVIII.Fields
             }
         }
 
-        public static void ResetField() => mod = Field_mods.INIT;
-
-        private static void DrawDebug()
+        public static string GetFieldName()
         {
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
-
-            Background.Draw();
-
-            Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText($"FieldID: {GetFieldID()} - {GetFieldName().ToUpper()}" +
-                $"\n4-Bit: {Background.Is4Bit}" +
-                $"\nadd: {Background.IsAddBlendMode}" +
-                $"\n1/2 add: {Background.IsHalfBlendMode}" +
-                $"\n1/4 add: {Background.IsQuarterBlendMode}" +
-                $"\nsubtract: {Background.IsSubtractBlendMode}", new Point(20, 20), new Vector2(3f));
-            Memory.SpriteBatchEnd();
+            string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
+            if (string.IsNullOrWhiteSpace(fieldname))
+                fieldname = $"unk{Memory.FieldHolder.FieldID}";
+            return fieldname;
         }
 
-        private static ushort GetFieldID() => Memory.FieldHolder.FieldID;
+        public static string GetFolder(string fieldname = null)
+        {
+            if (string.IsNullOrWhiteSpace(fieldname))
+                fieldname = GetFieldName();
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
+            Directory.CreateDirectory(folder);
+            return folder;
+        }
+
+        public static void ResetField() => mod = Field_mods.INIT;
 
         public static void Update()
         {
-#if DEBUG
             // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
             if (false && Input2.DelayedButton(FF8TextTagKey.Left))
             {
@@ -81,7 +112,7 @@ namespace OpenVIII.Fields
                     Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
                 ResetField();
             }
-            else if (false &&Input2.DelayedButton(FF8TextTagKey.Right))
+            else if (false && Input2.DelayedButton(FF8TextTagKey.Right))
             {
                 init_debugger_Audio.PlaySound(0);
                 if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
@@ -90,9 +121,10 @@ namespace OpenVIII.Fields
                     Memory.FieldHolder.FieldID = 0;
                 ResetField();
             }
+            if (Input2.DelayedButton(Keys.D0))
+                Toggles = Toggles.Flip(_Toggles.Menu);
             else
             {
-#endif
                 switch (mod)
                 {
                     case Field_mods.INIT:
@@ -102,31 +134,43 @@ namespace OpenVIII.Fields
                     case Field_mods.DEBUGRENDER:
                         UpdateScript();
                         Background.Update();
+                        if (Toggles.HasFlag(_Toggles.Menu))
+                            FieldMenu.Update();
                         break; //await events here
                     case Field_mods.NOJSM://no scripts but has background.
                     case Field_mods.DISABLED:
                         break;
                 }
             }
-
         }
 
-        private static void UpdateScript()
+        private static void DrawDebug()
         {
-            //We do not know every instruction and it's not possible for now to play field with unknown instruction
-            //eventEngine.Update(services);
+            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+
+            Background.Draw();
+
+            //Memory.SpriteBatchStartAlpha();
+            //Memory.font.RenderBasicText($"FieldID: {GetFieldID()} - {GetFieldName().ToUpper()}" +
+            //    $"\n4-Bit: {Background.Is4Bit}" +
+            //    $"\nadd: {Background.IsAddBlendMode}" +
+            //    $"\n1/2 add: {Background.IsHalfBlendMode}" +
+            //    $"\n1/4 add: {Background.IsQuarterBlendMode}" +
+            //    $"\nsubtract: {Background.IsSubtractBlendMode}", new Point(20, 20), new Vector2(3f));
+            //Memory.SpriteBatchEnd();
+            if(Toggles.HasFlag(_Toggles.Menu))
+            FieldMenu.Draw();
         }
 
-        public static Background Background;
-        public static WalkMesh WalkMesh;
+        private static void DrawEntities() => throw new NotImplementedException();
 
-        public static Cameras Cameras { get; private set; }
+        private static ushort GetFieldID() => Memory.FieldHolder.FieldID;
 
         private static void Init()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] test = aw.GetListOfFiles();
-
+            FieldMenu = FieldMenu.Create();
             //TODO fix endless look on FieldID 50.
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
@@ -215,24 +259,13 @@ namespace OpenVIII.Fields
             return;
         }
 
-        public static string GetFolder(string fieldname = null)
+        private static void UpdateScript()
         {
-            if (string.IsNullOrWhiteSpace(fieldname))
-                fieldname = GetFieldName();
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
-            Directory.CreateDirectory(folder);
-            return folder;
+            //We do not know every instruction and it's not possible for now to play field with unknown instruction
+            //eventEngine.Update(services);
         }
 
-        public static string GetFieldName()
-        {
-            string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
-            if (string.IsNullOrWhiteSpace(fieldname))
-                fieldname = $"unk{Memory.FieldHolder.FieldID}";
-            return fieldname;
-        }
-
-        private static void DrawEntities() => throw new NotImplementedException();
+        #endregion Methods
 
         ///// <summary>
         ///// Blend the colors depending on tile.blendmode
@@ -295,6 +328,5 @@ namespace OpenVIII.Fields
         //    }
         //    throw new Exception($"Blendtype is {tile.BlendMode}: There are only 4 blend modes, 0-3, 4+ are drawn directly.");
         //}
-
     }
 }

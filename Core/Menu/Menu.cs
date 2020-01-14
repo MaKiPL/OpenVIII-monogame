@@ -329,8 +329,8 @@ namespace OpenVIII
 
         public virtual void DrawData()
         {
-            if (!skipdata && Enabled)
-                foreach (Menu_Base i in Data.OrderBy(x => x.Key).Select(x => x.Value).Where(x => x != null && x.Enabled))
+            if (!skipdata && Enabled && Data != null)
+                foreach (Menu_Base i in Data.Where(x => x.Value != null && x.Value.Enabled).OrderBy(x => x.Key).Select(x => x.Value))
                     i?.Draw();
         }
 
@@ -398,11 +398,16 @@ namespace OpenVIII
             {
                 //todo detect when there is no saves detected.
                 //check for null
-                if (!skipdata)
-                    foreach (KeyValuePair<Enum, Menu_Base> i in Data)
-                    {
-                        ret = (i.Value?.Update() ?? false) || ret;
-                    }
+                if (!skipdata && Data != null)
+                {
+                    ret = ((from i in Data
+                           where i.Value != null && i.Value.Update()
+                           select new { isTrue = true }).SingleOrDefault()?.isTrue ?? false) || ret;
+                }
+                    //foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x=>x.Value!=null))
+                    //{
+                    //    ret = (i?.Value.Update() ?? false) || ret;
+                    //}
             }
             if (!NoInputOnUpdate)
                 return Inputs() || ret;

@@ -7,6 +7,14 @@ using System.IO;
 
 namespace OpenVIII.Fields
 {
+    /// <summary>
+    /// Cameras
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF7/Field/Camera_Matrix"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/files/CaFile.cpp"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/files/CaFile.h"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/WalkmeshGLWidget.cpp"/>
+    /// <seealso cref="https://github.com/myst6re/deling/blob/master/WalkmeshGLWidget.h"/>
     public class Cameras : IList<Cameras.Camera>
     {
         #region Fields
@@ -84,7 +92,6 @@ namespace OpenVIII.Fields
         /// <summary>
         /// Camera
         /// </summary>
-        /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF7/Field/Camera_Matrix"/>
         public class Camera
         {
             #region Fields
@@ -103,7 +110,7 @@ namespace OpenVIII.Fields
 
             #region Properties
 
-            public uint Blank { get; private set; }
+            private uint Blank { get; set; }
 
             public Vector3 Position { get => _position; private set => _position = value; }
 
@@ -111,11 +118,12 @@ namespace OpenVIII.Fields
 
             public Vector3[] XYZ { get => xyz; private set => xyz = value; }
 
-            public short Z { get; private set; }
+            private short Z { get; set; }
 
             public float Zoom { get; private set; }
 
-            public float Zoom2 { get; private set; }
+            private float Zoom2 { get; set; }
+            public Vector3 Space { get => space; private set => space = value; }
 
             #endregion Properties
 
@@ -145,14 +153,24 @@ namespace OpenVIII.Fields
                         xyz[i].Z = br.ReadInt16() / multipleconstant;
                     }
                     Z = br.ReadInt16();
-                    space.Z = br.ReadInt32() / multipleconstant;
-                    space.Y = br.ReadInt32() / multipleconstant;
-                    space.Z = br.ReadInt32() / multipleconstant;
+                    space.X = br.ReadInt32();
+                    space.Y = br.ReadInt32();
+                    space.Z = br.ReadInt32();
                     Blank = br.ReadUInt16();
                     Zoom = br.ReadUInt16();
                     Zoom2 = br.ReadUInt16();
                     Zoom = Zoom2 = Math.Max(Zoom, Zoom2);
+                    var r = RotationMatrix;
+                    space /= 4096f;
                     _position = -(space * xyz[0] + space * xyz[1] + space * xyz[2]);
+                    //_position = -(space * r.Right + space * r.Up + space * r.Backward);
+                    //_position = Vector3.Transform(space/4096f, r);
+                    //_position = new Vector3
+                    //{
+                    //    X = -(space.X * xyz[0].X + space.X * xyz[1].X + space.X * xyz[2].X),
+                    //    Y = -(space.Y * xyz[0].Y + space.Y * xyz[1].Y + space.Y * xyz[2].Y),
+                    //    Z = -(space.Z * xyz[0].Z + space.Z * xyz[1].Z + space.Z * xyz[2].Z),
+                    //};
                 }
             }
 
