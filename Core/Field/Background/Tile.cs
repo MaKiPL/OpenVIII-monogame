@@ -10,7 +10,7 @@ namespace OpenVIII.Fields
     {
         #region Classes
 
-        private class Tile
+        public class Tile
         {
             #region Fields
 
@@ -267,6 +267,10 @@ namespace OpenVIII.Fields
                 };
                 return r.ToArray();
             }
+
+            public override string ToString() =>
+                $"Tile: {TileID}" +
+                $"Loc: {X},{Y},{Z}";
 
             #endregion Methods
         }

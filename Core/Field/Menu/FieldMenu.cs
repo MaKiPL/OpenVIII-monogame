@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Diagnostics;
 using System.Linq;
 
 namespace OpenVIII.Fields
@@ -68,17 +69,26 @@ namespace OpenVIII.Fields.IGMData
         public IGMDataItem.Text QuadBG { get => (IGMDataItem.Text)ITEM[2, 0]; protected set => ITEM[2, 0] = value; }
         public IGMDataItem.Text WalkMesh { get => (IGMDataItem.Text)ITEM[1, 0]; protected set => ITEM[1, 0] = value; }
 
-        public IGMDataItem.Text MouseLocationIn3D { get => (IGMDataItem.Text)ITEM[Count-1, 0]; protected set => ITEM[Count-1, 0] = value; }
+        public IGMDataItem.Text MouseLocationIn3D { get => (IGMDataItem.Text)ITEM[Count - 1, 0]; protected set => ITEM[Count - 1, 0] = value; }
 
         #endregion Properties
 
         #region Methods
 
-        public static FieldDebugControls Create(Rectangle pos) => Create<FieldDebugControls>(totalrows+1, 1, new IGMDataItem.Box { Pos = pos }, 1, totalrows);
+        public static FieldDebugControls Create(Rectangle pos) => Create<FieldDebugControls>(totalrows + 1, 1, new IGMDataItem.Box { Pos = pos }, 1, totalrows);
 
         public override bool Inputs()
         {
             Memory.IsMouseVisible = true;
+            if (Input2.DelayedButton(MouseButtons.MiddleButton))
+            {
+                Debug.WriteLine($"=== Tiles Under MouseLocation: {Module.Background.MouseLocation} ===");
+                foreach (Background.Tile tile in Module.Background.TilesUnderMouse())
+                {
+                    Debug.WriteLine(tile);
+                }
+                return true;
+            }
             return base.Inputs();
         }
 
@@ -194,6 +204,7 @@ namespace OpenVIII.Fields.IGMData
             BLANKS[Count - 1] = true;
             base.Refresh();
         }
+
         public override bool Update()
         {
             if ((Module.Background?.MouseLocation ?? Vector3.Zero) != Vector3.Zero)
@@ -212,7 +223,7 @@ namespace OpenVIII.Fields.IGMData
             }
             Cursor_Status = Cursor_Status.Enabled;
             MouseLocationIn3D = new IGMDataItem.Text { Pos = SIZE[Rows - 1], Scale = new Vector2(1.5f) };
-            MouseLocationIn3D.Y = Y + Height+10;
+            MouseLocationIn3D.Y = Y + Height + 10;
         }
 
         protected override void InitShift(int i, int col, int row)
