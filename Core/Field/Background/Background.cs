@@ -523,7 +523,7 @@ namespace OpenVIII.Fields
 
         private bool ParseBackground2D(byte[] mimb, byte[] mapb)
         {
-            if (!Module.Toggles.HasFlag(Module._Toggles.SpriteBatch)) return true;
+            if (!Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)) return true;
             if (mimb == null || mapb == null)
                 return false;
 

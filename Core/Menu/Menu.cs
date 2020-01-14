@@ -402,7 +402,7 @@ namespace OpenVIII
                 {
                     ret = ((from i in Data
                            where i.Value != null && i.Value.Update()
-                           select new { isTrue = true }).SingleOrDefault()?.isTrue ?? false) || ret;
+                           select new { isTrue = true }).FirstOrDefault()?.isTrue ?? false) || ret;
                 }
                     //foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x=>x.Value!=null))
                     //{

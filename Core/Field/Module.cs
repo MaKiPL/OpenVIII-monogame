@@ -36,7 +36,7 @@ namespace OpenVIII.Fields
         public enum _Toggles : byte
         {
             DumpingData = 0x1,
-            SpriteBatch = 0x2,
+            ClassicSpriteBatch = 0x2,
             Quad = 0x4,
             WalkMesh = 0x8,
             Deswizzle = 0x10,
@@ -44,7 +44,7 @@ namespace OpenVIII.Fields
             Menu = 0x40,
         }
 
-        private enum Field_mods
+        public enum Field_mods
         {
             INIT,
             DEBUGRENDER,
@@ -60,7 +60,8 @@ namespace OpenVIII.Fields
 
         public static Cameras Cameras { get; private set; }
         public static FieldMenu FieldMenu { get; private set; }
-        public static _Toggles Toggles { get; set; } = _Toggles.WalkMesh | _Toggles.Menu;
+        public static _Toggles Toggles { get; set; } = _Toggles.Quad | _Toggles.Menu;
+        public static Field_mods Mod { get => mod; }
 
         #endregion Properties
 
@@ -68,6 +69,7 @@ namespace OpenVIII.Fields
 
         public static void Draw()
         {
+            Memory.graphics.GraphicsDevice.Clear(Color.Black);
             switch (mod)
             {
                 case Field_mods.INIT:
@@ -77,6 +79,7 @@ namespace OpenVIII.Fields
                     break;
 
                 case Field_mods.DISABLED:
+                    FieldMenu.Draw();
                     break;
             }
         }
@@ -98,29 +101,33 @@ namespace OpenVIII.Fields
             return folder;
         }
 
-        public static void ResetField() => mod = Field_mods.INIT;
+        public static void ResetField()
+        {
+            Memory.SuppressDraw = true;
+            mod = Field_mods.INIT;
+        }
 
         public static void Update()
         {
             // lets you move through all the feilds just holding left or right. it will just loop when it runs out.
-            if (false && Input2.DelayedButton(FF8TextTagKey.Left))
-            {
-                init_debugger_Audio.PlaySound(0);
-                if (Memory.FieldHolder.FieldID > 0)
-                    Memory.FieldHolder.FieldID--;
-                else
-                    Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
-                ResetField();
-            }
-            else if (false && Input2.DelayedButton(FF8TextTagKey.Right))
-            {
-                init_debugger_Audio.PlaySound(0);
-                if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
-                    Memory.FieldHolder.FieldID++;
-                else
-                    Memory.FieldHolder.FieldID = 0;
-                ResetField();
-            }
+            //if (false && Input2.DelayedButton(FF8TextTagKey.Left))
+            //{
+            //    init_debugger_Audio.PlaySound(0);
+            //    if (Memory.FieldHolder.FieldID > 0)
+            //        Memory.FieldHolder.FieldID--;
+            //    else
+            //        Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
+            //    ResetField();
+            //}
+            //else if (false && Input2.DelayedButton(FF8TextTagKey.Right))
+            //{
+            //    init_debugger_Audio.PlaySound(0);
+            //    if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
+            //        Memory.FieldHolder.FieldID++;
+            //    else
+            //        Memory.FieldHolder.FieldID = 0;
+            //    ResetField();
+            //}
             if (Input2.DelayedButton(Keys.D0))
                 Toggles = Toggles.Flip(_Toggles.Menu);
             else
@@ -138,7 +145,12 @@ namespace OpenVIII.Fields
                             FieldMenu.Update();
                         break; //await events here
                     case Field_mods.NOJSM://no scripts but has background.
+                        Background.Update();
+                        if (Toggles.HasFlag(_Toggles.Menu))
+                            FieldMenu.Update();
+                        break; //await events here
                     case Field_mods.DISABLED:
+                        FieldMenu.Update();
                         break;
                 }
             }
@@ -146,7 +158,6 @@ namespace OpenVIII.Fields
 
         private static void DrawDebug()
         {
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
 
             Background.Draw();
 
@@ -168,6 +179,7 @@ namespace OpenVIII.Fields
 
         private static void Init()
         {
+            Memory.SuppressDraw = true;
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
             string[] test = aw.GetListOfFiles();
             FieldMenu = FieldMenu.Create();
@@ -175,8 +187,13 @@ namespace OpenVIII.Fields
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
                 return;
-            string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0);
-            if (string.IsNullOrWhiteSpace(fieldArchiveName)) return;
+            string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.GetString(), StringComparison.OrdinalIgnoreCase) >= 0);
+            if (string.IsNullOrWhiteSpace(fieldArchiveName))
+            {
+                Debug.WriteLine($"FileNotFound :: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString().ToUpper()}");
+                mod = Field_mods.DISABLED;
+                return;
+            }
 
             ArchiveBase fieldArchive = aw.GetArchive(fieldArchiveName);
             string[] filelist = fieldArchive.GetListOfFiles();
@@ -222,7 +239,11 @@ namespace OpenVIII.Fields
                     symObjects = Sym.Reader.FromBytes(fieldArchive.GetBinaryFile(s_sy));
                 }
                 else
+                {
+                    Debug.WriteLine($"FileNotFound :: {Memory.FieldHolder.GetString().ToUpper()}.sy");
+                    mod = Field_mods.NOJSM;
                     return;
+                }
                 services = Initializer.GetServices();
                 eventEngine = ServiceId.Field[services].Engine;
                 eventEngine.Reset();
