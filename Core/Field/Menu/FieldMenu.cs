@@ -60,7 +60,7 @@ namespace OpenVIII.Fields.IGMData
         public IGMDataItem.Text QuadBG { get => (IGMDataItem.Text)ITEM[2, 0]; protected set => ITEM[2, 0] = value; }
         public IGMDataItem.Text PerspectiveQuadMode { get => (IGMDataItem.Text)ITEM[3, 0]; protected set => ITEM[3, 0] = value; }
         public IGMDataItem.Text ClassicSpriteBatchMode { get => (IGMDataItem.Text)ITEM[4, 0]; protected set => ITEM[4, 0] = value; }
-        //public IGMDataItem.Text SpriteBatchMode { get => (IGMDataItem.Text)ITEM[5, 0]; protected set => ITEM[5, 0] = value; }
+        public IGMDataItem.Text FourceDump { get => (IGMDataItem.Text)ITEM[5, 0]; protected set => ITEM[5, 0] = value; }
 
         const int totalrows = 6;
 
@@ -91,21 +91,22 @@ namespace OpenVIII.Fields.IGMData
 
         public override bool Inputs_OKAY()
         {
-            if (CURSOR_SELECT == 0)
+            int i = 0;
+            if (CURSOR_SELECT == i++)
                 Module.ResetField();
-            else if(CURSOR_SELECT == 1)
+            else if(CURSOR_SELECT == i++)
             {
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.WalkMesh);
                 Refresh();
             }
-            else if (CURSOR_SELECT == 2)
+            else if (CURSOR_SELECT == i++)
             {
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.Quad);
                 if(Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch))
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.ClassicSpriteBatch);
                 Refresh();
             }
-            else if (CURSOR_SELECT == 3)
+            else if (CURSOR_SELECT == i++)
             {
                 if (Module.Toggles.HasFlag(Module._Toggles.Quad))
                 {
@@ -114,11 +115,19 @@ namespace OpenVIII.Fields.IGMData
                 }
                 else skipsnd = true;
             }
-            else if (CURSOR_SELECT ==4)
+            else if (CURSOR_SELECT == i++)
             {
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.ClassicSpriteBatch);
                 if (Module.Toggles.HasFlag(Module._Toggles.Quad))
                     Module.Toggles = Module.Toggles.Flip(Module._Toggles.Quad);
+                if (Module.Background.HasSpriteBatchTexturesLoaded)
+                    Refresh();
+                else
+                    Module.ResetField();
+            }
+            else if (CURSOR_SELECT == i++)
+            {
+                Module.Toggles = Module.Toggles.Flip(Module._Toggles.DumpingData);
                 Refresh();
             }
 
@@ -161,10 +170,12 @@ namespace OpenVIII.Fields.IGMData
                 else
                 {
                     BLANKS[3] = true;
-                    PerspectiveQuadMode.FontColor = Font.ColorID.Dark_Grey;
+                    PerspectiveQuadMode.FontColor = Font.ColorID.Grey;
                 }
                 ClassicSpriteBatchMode.Data = $"Classic SpriteBatch: {Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)}";
                 BLANKS[4] = false;
+                FourceDump.Data = $"Onload Dump Textures: {Module.Toggles.HasFlag(Module._Toggles.DumpingData)}";
+                BLANKS[5] = false;
             }
             else
             {
@@ -172,6 +183,7 @@ namespace OpenVIII.Fields.IGMData
                 BLANKS[2] = true;
                 BLANKS[3] = true;
                 BLANKS[4] = true;
+                BLANKS[5] = true;
             }
             base.Refresh();
         }
