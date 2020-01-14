@@ -290,7 +290,13 @@ namespace OpenVIII.Fields
 
             effect.TextureEnabled = true;
             //seeing if sorting will matter.
-            IOrderedEnumerable<TileQuadTexture> sorted = quads.Where(x => x.Enabled).OrderByDescending(x => x.GetTile.Z).ThenBy(x => x.GetTile.LayerID).ThenBy(x => x.GetTile.AnimationID).ThenBy(x => x.GetTile.AnimationState).ThenBy(x => x.GetTile.BlendMode);
+            IOrderedEnumerable<TileQuadTexture> sorted = quads.Where(x => x.Enabled)
+                .OrderByDescending(x => x.GetTile.Z)
+                .ThenByDescending(x=>x.GetTile.TileID)
+                .ThenBy(x => x.GetTile.LayerID)
+                .ThenBy(x => x.GetTile.AnimationID)
+                .ThenBy(x => x.GetTile.AnimationState)
+                .ThenBy(x => x.GetTile.BlendMode);
             //foreach (IGrouping<BlendMode, TileQuadTexture> BlendModeGroup in quads.Where(x => x.Enabled).GroupBy(x => x.BlendMode))
             ate.VertexColorEnabled = false;
             effect.VertexColorEnabled = false;
@@ -820,7 +826,7 @@ namespace OpenVIII.Fields
         //private void SaveSwizzled(string suf = "") => SaveSwizzled(TextureIDs, suf);
         private void SaveTextures()
         {
-            if (Memory.EnableDumpingData || (Module.Toggles.HasFlag(Module._Toggles.DumpingData) && Module.Toggles.HasFlag(Module._Toggles.Deswizzle)))
+            if (Memory.EnableDumpingData || (Module.Toggles.HasFlag(Module._Toggles.DumpingData) && Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)))
             {
                 string fieldname = Module.GetFieldName();
                 string folder = Module.GetFolder(fieldname);
