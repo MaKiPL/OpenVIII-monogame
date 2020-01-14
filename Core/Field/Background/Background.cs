@@ -40,15 +40,21 @@ namespace OpenVIII.Fields
 
         private AlphaTestEffect ate;
 
+        private Vector3 camPosition;
+
+        private Vector3 camTarget;
+
         /// <summary>
         /// Palettes/Color Lookup Tables
         /// </summary>
         private Cluts Cluts;
 
+        private float degrees;
         private bool disposedValue = false;
 
         private BasicEffect effect;
 
+        private FPS_Camera fps_camera;
         private Rectangle OutputDims;
 
         private Matrix projectionMatrix, viewMatrix, worldMatrix;
@@ -79,17 +85,17 @@ namespace OpenVIII.Fields
 
         #endregion Destructors
 
-        
-
         #region Properties
 
         public TimeSpan CurrentTime { get; private set; }
+        public bool HasSpriteBatchTexturesLoaded => drawtextures()?.Count > 0;
         public int Height { get => OutputDims.Height; private set => OutputDims.Height = value; }
         public bool Is4Bit => tiles?.Any(x => x.Is4Bit) ?? false;
         public bool IsAddBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.add) ?? false;
         public bool IsHalfBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.halfadd) ?? false;
         public bool IsQuarterBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.quarteradd) ?? false;
         public bool IsSubtractBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.subtract) ?? false;
+        public Vector3 MouseLocation { get; private set; }
         public TimeSpan TotalTime { get; private set; }
         public int Width { get => OutputDims.Width; private set => OutputDims.Width = value; }
 
@@ -158,63 +164,9 @@ namespace OpenVIII.Fields
             DrawSpriteBatch();
         }
 
-        private void DrawSpriteBatch()
-        {
-            if (!Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)) return;
-            List<KeyValuePair<BlendMode, Texture2D>> _drawtextures = drawtextures();
-            bool open = false;
-            BlendMode lastbm = BlendMode.none;
-            float alpha = 1f;
-            if (_drawtextures != null)
-                foreach (KeyValuePair<BlendMode, Texture2D> kvp in _drawtextures)
-                {
-                    if (!open || lastbm != kvp.Key)
-                    {
-                        if (open)
-                            Memory.SpriteBatchEnd();
-                        open = true;
-                        alpha = 1f;
-                        switch (kvp.Key)
-                        {
-                            default:
-                                Memory.SpriteBatchStartAlpha();
-                                break;
-
-                            case BlendMode.halfadd:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
-                                break;
-
-                            case BlendMode.quarteradd:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
-                                break;
-
-                            case BlendMode.add:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
-                                break;
-
-                            case BlendMode.subtract:
-                                alpha = .9f;
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Subtract, ss: SamplerState.AnisotropicClamp);
-                                break;
-                        }
-                        lastbm = kvp.Key;
-                    }
-                    Texture2D tex = kvp.Value;
-                    Rectangle src = new Rectangle(0, 0, tex.Width, tex.Height);
-                    Rectangle dst = src;
-
-                    dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height, Memory.ScaleMode.FitBoth)).ToPoint();
-                    //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
-                    //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
-                    dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
-                    Memory.spriteBatch.Draw(tex, dst, src, Color.White * alpha);
-                    //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
-                    //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
-                }
-
-            if (open)
-                Memory.SpriteBatchEnd();
-        }
+        public Tiles TilesUnderMouse() => new Tiles(tiles.Where(x =>
+        x.X < MouseLocation.X && x.X + 16 > MouseLocation.X &&
+        x.Y < MouseLocation.Y && x.Y + 16 > MouseLocation.Y).ToList());
 
         public void Update()
         {
@@ -234,6 +186,7 @@ namespace OpenVIII.Fields
 
             float Width = tiles.Width;
             float Height = tiles.Height;
+
             if (Module.Toggles.HasFlag(Module._Toggles.Perspective)) //perspective mode shows gabs in the tiles.
             {
                 //finds the min zoom out to fit the entire image in frame.
@@ -261,12 +214,9 @@ namespace OpenVIII.Fields
                 projectionMatrix = Matrix.CreateOrthographic(vp.Width / scale.X, vp.Height / scale.Y, 0f, 100f);
                 viewMatrix = Matrix.CreateLookAt(Vector3.Forward * 10f, Vector3.Zero, Vector3.Up);
             }
+            Vector2 ml = InputMouse.Location.ToVector2();
+            MouseLocation = Memory.graphics.GraphicsDevice.Viewport.Unproject(ml.ToVector3(), projectionMatrix, viewMatrix, worldMatrix);
         }
-
-        private float degrees;
-        private FPS_Camera fps_camera;
-        private Vector3 camTarget;
-        private Vector3 camPosition;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -325,7 +275,6 @@ namespace OpenVIII.Fields
             r.A = 0xFF;
             return r;
         }
-        public bool HasSpriteBatchTexturesLoaded { get => drawtextures()?.Count > 0; }
 
         private void DrawBackground()
         {
@@ -336,7 +285,7 @@ namespace OpenVIII.Fields
 
             effect.Projection = projectionMatrix; effect.View = viewMatrix; effect.World = worldMatrix;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            
+
             effect.TextureEnabled = true;
             //seeing if sorting will matter.
             IOrderedEnumerable<TileQuadTexture> sorted = quads.Where(x => x.Enabled).OrderByDescending(x => x.GetTile.Z).ThenBy(x => x.GetTile.LayerID).ThenBy(x => x.GetTile.AnimationID).ThenBy(x => x.GetTile.AnimationState).ThenBy(x => x.GetTile.BlendMode);
@@ -391,6 +340,64 @@ namespace OpenVIII.Fields
                     vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
                 }
             }
+        }
+
+        private void DrawSpriteBatch()
+        {
+            if (!Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)) return;
+            List<KeyValuePair<BlendMode, Texture2D>> _drawtextures = drawtextures();
+            bool open = false;
+            BlendMode lastbm = BlendMode.none;
+            float alpha = 1f;
+            if (_drawtextures != null)
+                foreach (KeyValuePair<BlendMode, Texture2D> kvp in _drawtextures)
+                {
+                    if (!open || lastbm != kvp.Key)
+                    {
+                        if (open)
+                            Memory.SpriteBatchEnd();
+                        open = true;
+                        alpha = 1f;
+                        switch (kvp.Key)
+                        {
+                            default:
+                                Memory.SpriteBatchStartAlpha();
+                                break;
+
+                            case BlendMode.halfadd:
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
+                                break;
+
+                            case BlendMode.quarteradd:
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
+                                break;
+
+                            case BlendMode.add:
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
+                                break;
+
+                            case BlendMode.subtract:
+                                alpha = .9f;
+                                Memory.SpriteBatchStart(bs: Memory.blendState_Subtract, ss: SamplerState.AnisotropicClamp);
+                                break;
+                        }
+                        lastbm = kvp.Key;
+                    }
+                    Texture2D tex = kvp.Value;
+                    Rectangle src = new Rectangle(0, 0, tex.Width, tex.Height);
+                    Rectangle dst = src;
+
+                    dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height, Memory.ScaleMode.FitBoth)).ToPoint();
+                    //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
+                    //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
+                    dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
+                    Memory.spriteBatch.Draw(tex, dst, src, Color.White * alpha);
+                    //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
+                    //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
+                }
+
+            if (open)
+                Memory.SpriteBatchEnd();
         }
 
         private List<KeyValuePair<BlendMode, Texture2D>> drawtextures() =>

@@ -11,7 +11,7 @@ namespace OpenVIII.Fields
     {
         #region Classes
 
-        private class Tiles : IList<Tile>
+        public class Tiles : IList<Tile>
         {
             #region Fields
 

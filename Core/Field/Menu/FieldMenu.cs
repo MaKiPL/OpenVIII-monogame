@@ -53,22 +53,34 @@ namespace OpenVIII.Fields.IGMData
 {
     public class FieldDebugControls : OpenVIII.IGMData.Base
     {
+        #region Fields
+
+        private const int totalrows = 6;
+
+        #endregion Fields
+
         #region Properties
 
-        public IGMDataItem.Text FieldName { get => (IGMDataItem.Text)ITEM[0, 0]; protected set => ITEM[0, 0] = value; }
-        public IGMDataItem.Text WalkMesh { get => (IGMDataItem.Text)ITEM[1, 0]; protected set => ITEM[1, 0] = value; }
-        public IGMDataItem.Text QuadBG { get => (IGMDataItem.Text)ITEM[2, 0]; protected set => ITEM[2, 0] = value; }
-        public IGMDataItem.Text PerspectiveQuadMode { get => (IGMDataItem.Text)ITEM[3, 0]; protected set => ITEM[3, 0] = value; }
         public IGMDataItem.Text ClassicSpriteBatchMode { get => (IGMDataItem.Text)ITEM[4, 0]; protected set => ITEM[4, 0] = value; }
+        public IGMDataItem.Text FieldName { get => (IGMDataItem.Text)ITEM[0, 0]; protected set => ITEM[0, 0] = value; }
         public IGMDataItem.Text FourceDump { get => (IGMDataItem.Text)ITEM[5, 0]; protected set => ITEM[5, 0] = value; }
+        public IGMDataItem.Text PerspectiveQuadMode { get => (IGMDataItem.Text)ITEM[3, 0]; protected set => ITEM[3, 0] = value; }
+        public IGMDataItem.Text QuadBG { get => (IGMDataItem.Text)ITEM[2, 0]; protected set => ITEM[2, 0] = value; }
+        public IGMDataItem.Text WalkMesh { get => (IGMDataItem.Text)ITEM[1, 0]; protected set => ITEM[1, 0] = value; }
 
-        const int totalrows = 6;
+        public IGMDataItem.Text MouseLocationIn3D { get => (IGMDataItem.Text)ITEM[Count-1, 0]; protected set => ITEM[Count-1, 0] = value; }
 
         #endregion Properties
 
         #region Methods
 
-        public static FieldDebugControls Create(Rectangle pos) => Create<FieldDebugControls>(totalrows, 1, new IGMDataItem.Box { Pos = pos }, 1, totalrows);
+        public static FieldDebugControls Create(Rectangle pos) => Create<FieldDebugControls>(totalrows+1, 1, new IGMDataItem.Box { Pos = pos }, 1, totalrows);
+
+        public override bool Inputs()
+        {
+            Memory.IsMouseVisible = true;
+            return base.Inputs();
+        }
 
         public override void Inputs_Left()
         {
@@ -83,18 +95,13 @@ namespace OpenVIII.Fields.IGMData
             else skipsnd = true;
             base.Inputs_Left();
         }
-        public override bool Inputs()
-        {
-            Memory.IsMouseVisible = true;
-            return base.Inputs();
-        }
 
         public override bool Inputs_OKAY()
         {
             int i = 0;
             if (CURSOR_SELECT == i++)
                 Module.ResetField();
-            else if(CURSOR_SELECT == i++)
+            else if (CURSOR_SELECT == i++)
             {
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.WalkMesh);
                 Refresh();
@@ -102,8 +109,8 @@ namespace OpenVIII.Fields.IGMData
             else if (CURSOR_SELECT == i++)
             {
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.Quad);
-                if(Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch))
-                Module.Toggles = Module.Toggles.Flip(Module._Toggles.ClassicSpriteBatch);
+                if (Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch))
+                    Module.Toggles = Module.Toggles.Flip(Module._Toggles.ClassicSpriteBatch);
                 Refresh();
             }
             else if (CURSOR_SELECT == i++)
@@ -130,9 +137,8 @@ namespace OpenVIII.Fields.IGMData
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.DumpingData);
                 Refresh();
             }
-
             else skipsnd = true;
-            return base.Inputs_OKAY()||true;
+            return base.Inputs_OKAY() || true;
         }
 
         public override void Inputs_Right()
@@ -152,7 +158,7 @@ namespace OpenVIII.Fields.IGMData
         public override void Refresh()
         {
             FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString().ToUpper()}";
-            
+
             BLANKS[0] = false;
             if (Module.Mod != Module.Field_mods.DISABLED)
             {
@@ -160,7 +166,7 @@ namespace OpenVIII.Fields.IGMData
                 BLANKS[1] = false;
                 QuadBG.Data = $"Draw Quad BG: {Module.Toggles.HasFlag(Module._Toggles.Quad)}";
                 BLANKS[2] = false;
-                
+
                 PerspectiveQuadMode.Data = $"Perspective for Quads: {Module.Toggles.HasFlag(Module._Toggles.Quad) && Module.Toggles.HasFlag(Module._Toggles.Perspective)}";
                 if (Module.Toggles.HasFlag(Module._Toggles.Quad))
                 {
@@ -185,7 +191,16 @@ namespace OpenVIII.Fields.IGMData
                 BLANKS[4] = true;
                 BLANKS[5] = true;
             }
+            BLANKS[Count - 1] = true;
             base.Refresh();
+        }
+        public override bool Update()
+        {
+            if ((Module.Background?.MouseLocation ?? Vector3.Zero) != Vector3.Zero)
+                MouseLocationIn3D.Data = $"Mouse Cords: {Module.Background?.MouseLocation}";
+            else
+                MouseLocationIn3D.Data = null;
+            return base.Update();
         }
 
         protected override void Init()
@@ -196,6 +211,8 @@ namespace OpenVIII.Fields.IGMData
                 ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }
             Cursor_Status = Cursor_Status.Enabled;
+            MouseLocationIn3D = new IGMDataItem.Text { Pos = SIZE[Rows - 1], Scale = new Vector2(1.5f) };
+            MouseLocationIn3D.Y = Y + Height+10;
         }
 
         protected override void InitShift(int i, int col, int row)

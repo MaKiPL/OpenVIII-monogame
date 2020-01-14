@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -111,6 +112,8 @@ namespace OpenVIII
             return dictionary;
         }
 
+        public static Vector3 ToVector3(this Vector2 v, float z = 0f)
+        => new Vector3(v.X, v.Y, z);
         #endregion Methods
     }
 
