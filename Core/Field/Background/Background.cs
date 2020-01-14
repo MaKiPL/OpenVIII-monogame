@@ -215,7 +215,9 @@ namespace OpenVIII.Fields
                 viewMatrix = Matrix.CreateLookAt(Vector3.Forward * 10f, Vector3.Zero, Vector3.Up);
             }
             Vector2 ml = InputMouse.Location.ToVector2();
-            MouseLocation = Memory.graphics.GraphicsDevice.Viewport.Unproject(ml.ToVector3(), projectionMatrix, viewMatrix, worldMatrix);
+            var ml3d = Memory.graphics.GraphicsDevice.Viewport.Unproject(ml.ToVector3(), projectionMatrix, viewMatrix, worldMatrix);
+            ml3d.Y *= -1;
+            MouseLocation = ml3d;
         }
 
         protected virtual void Dispose(bool disposing)

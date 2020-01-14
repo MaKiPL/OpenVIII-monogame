@@ -269,8 +269,16 @@ namespace OpenVIII.Fields
             }
 
             public override string ToString() =>
-                $"Tile: {TileID}" +
-                $"Loc: {X},{Y},{Z}";
+                $"Tile: {TileID}; " +
+                $"Loc: {X},{Y},{Z}; " +
+                $"Source: {SourceX},{SourceY}; " +
+                $"TextureID: {TextureID}; " +
+                $"PaletteID: {PaletteID}; " +
+                $"LayerID: {LayerID}; " +
+                $"BlendMode: {BlendMode}; " +
+                $"AnimationID: {AnimationID}; " +
+                $"AnimationState: {AnimationState}; " +
+                $"4 bit? {Is4Bit}";
 
             #endregion Methods
         }
