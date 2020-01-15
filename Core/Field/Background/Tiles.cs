@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -14,6 +15,23 @@ namespace OpenVIII.Fields
         public class Tiles : IList<Tile>
         {
             #region Fields
+            /// <summary>
+            /// Use before deswizzling.
+            /// </summary>
+            public void UniquePupuIDs()
+            {
+                var duplicateids = GetOverLapTiles().ToList();
+                foreach (var i in duplicateids)
+                {
+                    i[1].PupuID = i[0].PupuID + 1;
+                }
+                Debug.Assert(GetOverLapTiles().Count() == 0);
+            }
+
+            private IOrderedEnumerable<Tile[]> GetOverLapTiles() => (from t1 in tiles
+                                                        from t2 in tiles
+                                                        where t1.PupuID == t2.PupuID && t1.TileID < t2.TileID && t1.Intersect(t2)
+                                                        select new[] { t1, t2 }).OrderBy(x=>x[0].TileID);
 
             private List<Tile> tiles;
 

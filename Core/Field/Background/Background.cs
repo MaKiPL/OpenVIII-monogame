@@ -278,10 +278,112 @@ namespace OpenVIII.Fields
             r.A = 0xFF;
             return r;
         }
+        public Tiles GetTiles => tiles;
+        public void Deswizzle()
+        {
+            Width = tiles.Width;
+            Height = tiles.Height;
+            tiles.UniquePupuIDs();// make sure each layer has it's own id.
+            foreach(var pupuIDgroup in quads.GroupBy(x=>x.GetTile.PupuID)) //group the quads by their pupu id.
+            {
+                using (RenderTarget2D outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, Width, Height))
+                {
+                    //start drawing
+                    Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
+                    Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                    foreach (var quad in pupuIDgroup)
+                    {
+                        DrawBackgroundQuadsStart();
+                        DrawBackgroundQuad(quad, true);
+                    }
+                    //end drawing
+                    Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                    //set path
+                    string fieldname = Module.GetFieldName();
+                    string folder = Module.GetFolder(fieldname,"deswizzle");
+                    string path;
+                        path = Path.Combine(folder,
+                            $"{fieldname}_{pupuIDgroup.Key.ToString("X8")}.png");
+                    //save image.
+                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    {
+                        outTex.SaveAsPng(fs, Width, Height);
+                    }
+                }
+            }
+        }
 
         private void DrawBackgroundQuads()
         {
             if (!Module.Toggles.HasFlag(Module._Toggles.Quad)) return;
+            DrawBackgroundQuadsStart();
+            foreach (TileQuadTexture quad in quads.Where(x => x.Enabled))
+            {
+                DrawBackgroundQuad(quad);
+            }
+        }
+
+        private void DrawBackgroundQuad(TileQuadTexture quad,bool forceBlendModeNone = false)
+        {
+            Tile tile = (Tile)quad;
+            ate.Texture = quad;
+            DrawBackgroundQuadsSetBendMode(forceBlendModeNone?BlendMode.none: tile.BlendMode);
+            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
+            }
+        }
+
+        private void DrawBackgroundQuadsSetBendMode(BlendMode bm)
+        {
+            ate.Alpha = 1f;
+            Color half = new Color(.5f, .5f, .5f, 1f);
+            Color quarter = new Color(.25f, .25f, .25f, 1f);
+            Color full = Color.White;
+            switch (bm)
+            {
+                //If we deswizzled and merged the (BlendModes != BlendMode.none) tiles
+                // we can change SamplerState to Anisotropic.
+                //But swizzled textures are a Texture Atlas so it will draw bad pixels from near by.
+                case BlendMode.none:
+                default:
+                    Memory.graphics.GraphicsDevice.BlendFactor = full;
+                    Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+                    //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                    break;
+
+                case BlendMode.add:
+                    Memory.graphics.GraphicsDevice.BlendFactor = full;
+                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;
+                    //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                    break;
+
+                case BlendMode.subtract:
+                    Memory.graphics.GraphicsDevice.BlendFactor = full;
+                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Subtract;
+                    ate.Alpha = .85f; //doesn't darken so much.
+                                      //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                    break;
+
+                case BlendMode.halfadd:
+                    Memory.graphics.GraphicsDevice.BlendFactor = half;
+                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
+                    //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                    break;
+
+                case BlendMode.quarteradd:
+                    Memory.graphics.GraphicsDevice.BlendFactor = quarter;
+                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
+                    //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+                    break;
+            }
+        }
+
+        private void DrawBackgroundQuadsStart()
+        {
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
@@ -292,59 +394,6 @@ namespace OpenVIII.Fields
             effect.TextureEnabled = true;
             ate.VertexColorEnabled = false;
             effect.VertexColorEnabled = false;
-            foreach (TileQuadTexture quad in quads.Where(x=>x.Enabled))
-            {
-                Color half = new Color(.5f, .5f, .5f, 1f);
-                Color quarter = new Color(.25f, .25f, .25f, 1f);
-                Color full = Color.White;
-                Tile tile = (Tile)quad;
-                ate.Texture = quad;
-                ate.Alpha = 1f;
-                switch (tile.BlendMode)
-                {
-                    //If we deswizzled and merged the (BlendModes != BlendMode.none) tiles
-                    // we can change SamplerState to Anisotropic.
-                    //But swizzled textures are a Texture Atlas so it will draw bad pixels from near by.
-                    case BlendMode.none:
-                    default:
-                        Memory.graphics.GraphicsDevice.BlendFactor = full;
-                        Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-                        //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-                        break;
-
-                    case BlendMode.add:
-                        Memory.graphics.GraphicsDevice.BlendFactor = full;
-                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;
-                        //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-                        break;
-
-                    case BlendMode.subtract:
-                        Memory.graphics.GraphicsDevice.BlendFactor = full;
-                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Subtract;
-                        ate.Alpha = .85f; //doesn't darken so much.
-                        //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-                        break;
-
-                    case BlendMode.halfadd:
-                        Memory.graphics.GraphicsDevice.BlendFactor = half;
-                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
-                        //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-                        break;
-
-                    case BlendMode.quarteradd:
-                        Memory.graphics.GraphicsDevice.BlendFactor = quarter;
-                        Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
-                        //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-                        break;
-                }
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                    vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
-                }
-            }
         }
 
         private void DrawSpriteBatch()

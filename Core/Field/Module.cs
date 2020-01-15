@@ -18,7 +18,6 @@ namespace OpenVIII.Fields
     public static partial class Module
     {
         #region Fields
-
         public static Background Background;
         public static WalkMesh WalkMesh;
         private static EventEngine eventEngine;
@@ -92,11 +91,11 @@ namespace OpenVIII.Fields
             return fieldname;
         }
 
-        public static string GetFolder(string fieldname = null)
+        public static string GetFolder(string fieldname = null,string subfolder = "")
         {
             if (string.IsNullOrWhiteSpace(fieldname))
                 fieldname = GetFieldName();
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname);
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname,subfolder);
             Directory.CreateDirectory(folder);
             return folder;
         }

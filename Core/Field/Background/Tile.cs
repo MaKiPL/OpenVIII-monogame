@@ -94,12 +94,7 @@ namespace OpenVIII.Fields
             /// </summary>
             public uint PupuID
             {
-                get
-                {
-                    if (pupuID == 0)
-                        pupuID = ((uint)(LayerID) << 24) + (((uint)BlendMode & 0x2) << 20) + ((uint)AnimationID << 12) + ((uint)(AnimationState & 0xF) << 4);
-                    return pupuID;
-                }
+                get => pupuID;
                 set => pupuID = value;
             }
 
@@ -165,8 +160,26 @@ namespace OpenVIII.Fields
                     t.Depth = (byte)(texIdBuffer >> 5);
                     t.TileID = id;
                 }
+                t.GeneratePupu();
                 Debug.Assert(p - pbsmap.BaseStream.Position == -16);
                 return t;
+            }
+
+            public VertexPositionTexture[] GetQuad(float scale)
+            {
+                List<VertexPositionTexture> vpts = GetCorners(scale); // 4 unique corners.
+                //create 2 triangles
+                List<VertexPositionTexture> r = new List<VertexPositionTexture>
+                {
+                    vpts[3],
+                    vpts[1],
+                    vpts[0],
+
+                    vpts[3],
+                    vpts[2],
+                    vpts[1],
+                };
+                return r.ToArray();
             }
 
             public Rectangle GetRectangle() => new Rectangle(X, Y, size, size);
@@ -178,12 +191,12 @@ namespace OpenVIII.Fields
                     X >= tile.X &&
                     X < tile.X + size &&
                     Y >= tile.Y &&
-                    Y < tile.Y + size &&
-                    Z == tile.Z &&
-                    LayerID == tile.LayerID &&
-                    BlendMode == tile.BlendMode &&
-                    AnimationID == tile.AnimationID &&
-                    AnimationState == tile.AnimationState;
+                    Y < tile.Y + size;// &&
+                    //Z == tile.Z &&
+                    //LayerID == tile.LayerID &&
+                    //BlendMode == tile.BlendMode &&
+                    //AnimationID == tile.AnimationID &&
+                    //AnimationState == tile.AnimationState;
                 return ret;
             }
 
@@ -199,9 +212,41 @@ namespace OpenVIII.Fields
 
             public Rectangle SourceRectangle() => new Rectangle(SourceX, SourceY, size, size);
 
+            public override string ToString() =>
+                $"Tile: {TileID}; " +
+                $"Loc: {X},{Y},{Z}; " +
+                $"Source: {SourceX},{SourceY}; " +
+                $"TextureID: {TextureID}; " +
+                $"PaletteID: {PaletteID}; " +
+                $"LayerID: {LayerID}; " +
+                $"BlendMode: {BlendMode}; " +
+                $"AnimationID: {AnimationID}; " +
+                $"AnimationState: {AnimationState}; " +
+                $"4 bit? {Is4Bit}";
+
+            private void GeneratePupu()
+            {
+                const int BitsPerLong = sizeof(ulong) * 8;
+                const int BitsPerByte = sizeof(byte) * 8;
+                const int BitsPerNibble = BitsPerByte /2 ;
+                int bits = BitsPerLong;
+                bits -= BitsPerNibble;
+                pupuID = (((uint)LayerID &0xF) << bits);
+                bits -= BitsPerNibble;
+                pupuID += (((uint)BlendMode & 0xF) << bits);
+                bits -= BitsPerByte;
+                pupuID += ((uint)AnimationID << bits);
+                bits -= BitsPerByte;
+                pupuID += ((uint)(AnimationState) << bits);
+                bits = BitsPerLong;
+                Debug.Assert(((pupuID & 0xF0000000) >> 28) == LayerID);
+                Debug.Assert((BlendMode)((pupuID & 0x0F000000) >> 24) == BlendMode);
+                Debug.Assert(((pupuID & 0x00FF0000) >> 16) == AnimationID);
+                Debug.Assert(((pupuID & 0x0000FF00) >> 8) == AnimationState);
+            }
             private List<VertexPositionTexture> GetCorners(float scale)
             {
-                Vector2 sizeVertex = new Vector2(size,size)/scale;
+                Vector2 sizeVertex = new Vector2(size, size) / scale;
                 Vector2 sizeUV = new Vector2(size) / TextureSize;
                 List<VertexPositionTexture> r = new List<VertexPositionTexture>(4);
                 for (int i = 0; i < r.Capacity; i++)
@@ -250,35 +295,6 @@ namespace OpenVIII.Fields
 
                 return r;
             }
-
-            public VertexPositionTexture[] GetQuad(float scale)
-            {
-                List<VertexPositionTexture> vpts = GetCorners(scale); // 4 unique corners.
-                //create 2 triangles
-                List<VertexPositionTexture> r = new List<VertexPositionTexture>
-                {
-                    vpts[3],
-                    vpts[1],
-                    vpts[0],
-
-                    vpts[3],
-                    vpts[2],
-                    vpts[1],
-                };
-                return r.ToArray();
-            }
-
-            public override string ToString() =>
-                $"Tile: {TileID}; " +
-                $"Loc: {X},{Y},{Z}; " +
-                $"Source: {SourceX},{SourceY}; " +
-                $"TextureID: {TextureID}; " +
-                $"PaletteID: {PaletteID}; " +
-                $"LayerID: {LayerID}; " +
-                $"BlendMode: {BlendMode}; " +
-                $"AnimationID: {AnimationID}; " +
-                $"AnimationState: {AnimationState}; " +
-                $"4 bit? {Is4Bit}";
 
             #endregion Methods
         }

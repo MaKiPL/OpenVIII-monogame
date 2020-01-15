@@ -56,7 +56,7 @@ namespace OpenVIII.Fields.IGMData
     {
         #region Fields
 
-        private const int totalrows = 6;
+        private const int totalrows = 7;
         private bool skiprefresh;
 
         #endregion Fields
@@ -69,7 +69,7 @@ namespace OpenVIII.Fields.IGMData
         public IGMDataItem.Text PerspectiveQuadMode { get => (IGMDataItem.Text)ITEM[3, 0]; protected set => ITEM[3, 0] = value; }
         public IGMDataItem.Text QuadBG { get => (IGMDataItem.Text)ITEM[2, 0]; protected set => ITEM[2, 0] = value; }
         public IGMDataItem.Text WalkMesh { get => (IGMDataItem.Text)ITEM[1, 0]; protected set => ITEM[1, 0] = value; }
-
+        public IGMDataItem.Text Deswizzle { get => (IGMDataItem.Text)ITEM[6, 0]; protected set => ITEM[6, 0] = value; }
         public IGMDataItem.Text MouseLocationIn3D { get => (IGMDataItem.Text)ITEM[Count - 1, 0]; protected set => ITEM[Count - 1, 0] = value; }
 
         #endregion Properties
@@ -148,6 +148,11 @@ namespace OpenVIII.Fields.IGMData
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.DumpingData);
                 Refresh();
             }
+            else if (CURSOR_SELECT == i++)
+            {
+                Module.Background.Deswizzle();
+                Refresh();
+            }
             else skipsnd = true;
             return base.Inputs_OKAY() || true;
         }
@@ -198,8 +203,9 @@ namespace OpenVIII.Fields.IGMData
                 BLANKS[4] = false;
                 FourceDump.Data = $"Onload Dump Textures: {Module.Toggles.HasFlag(Module._Toggles.DumpingData)}";
                 BLANKS[5] = false;
-
-                foreach (int i in Enumerable.Range(6, Rows-6))
+                Deswizzle.Data = $"Deswizzle Tiles";
+                BLANKS[6] = false;
+                foreach (int i in Enumerable.Range(7, Rows-7))
                 {
                     ITEM[i, 0].Hide();
                     BLANKS[i] = true;
@@ -243,7 +249,7 @@ namespace OpenVIII.Fields.IGMData
         {
             base.InitShift(i, col, row);
             SIZE[i].Inflate(-22, -8);
-            SIZE[i].Offset(0, 12 + (-8 * row));
+            //SIZE[i].Offset(0, 12 + (-8 * row));
         }
 
         #endregion Methods
