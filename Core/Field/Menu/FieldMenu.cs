@@ -57,6 +57,7 @@ namespace OpenVIII.Fields.IGMData
         #region Fields
 
         private const int totalrows = 6;
+        private bool skiprefresh;
 
         #endregion Fields
 
@@ -167,7 +168,12 @@ namespace OpenVIII.Fields.IGMData
 
         public override void Refresh()
         {
-            FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString().ToUpper()}";
+            if (skiprefresh)
+            {
+                skiprefresh = false;
+                return;
+            }
+                FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString().ToUpper()}";
 
             BLANKS[0] = false;
             if (Module.Mod != Module.Field_mods.DISABLED)
@@ -192,14 +198,20 @@ namespace OpenVIII.Fields.IGMData
                 BLANKS[4] = false;
                 FourceDump.Data = $"Onload Dump Textures: {Module.Toggles.HasFlag(Module._Toggles.DumpingData)}";
                 BLANKS[5] = false;
+
+                foreach (int i in Enumerable.Range(6, Rows-6))
+                {
+                    ITEM[i, 0].Hide();
+                    BLANKS[i] = true;
+                }
             }
             else
             {
-                BLANKS[1] = true;
-                BLANKS[2] = true;
-                BLANKS[3] = true;
-                BLANKS[4] = true;
-                BLANKS[5] = true;
+                foreach (int i in Enumerable.Range(1, Rows))
+                {
+                    ITEM[i,0].Hide();
+                    BLANKS[i] = true;
+                }
             }
             BLANKS[Count - 1] = true;
             base.Refresh();
@@ -224,6 +236,7 @@ namespace OpenVIII.Fields.IGMData
             Cursor_Status = Cursor_Status.Enabled;
             MouseLocationIn3D = new IGMDataItem.Text { Pos = SIZE[Rows - 1], Scale = new Vector2(1.5f) };
             MouseLocationIn3D.Y = Y + Height + 10;
+            skiprefresh = true;
         }
 
         protected override void InitShift(int i, int col, int row)

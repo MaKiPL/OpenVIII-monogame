@@ -289,8 +289,17 @@ namespace OpenVIII.Fields
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             effect.TextureEnabled = true;
-            //seeing if sorting will matter.
-            IOrderedEnumerable<TileQuadTexture> sorted = quads.Where(x => x.Enabled)
+            IOrderedEnumerable<TileQuadTexture> sorted;
+            //if(Memory.FieldHolder.FieldID == 756)
+            //    sorted = quads.Where(x => x.Enabled)
+            //     .OrderByDescending(x => x.GetTile.Z)
+            //     .ThenBy(x => x.GetTile.LayerID)
+            //     .ThenByDescending(x => x.GetTile.TileID)
+            //     .ThenBy(x => x.GetTile.AnimationID)
+            //     .ThenBy(x => x.GetTile.AnimationState)
+            //     .ThenBy(x => x.GetTile.BlendMode);
+            //else
+            sorted = quads.Where(x => x.Enabled)
                 .OrderByDescending(x => x.GetTile.Z)
                 .ThenByDescending(x=>x.GetTile.TileID)
                 .ThenBy(x => x.GetTile.LayerID)
@@ -673,7 +682,7 @@ namespace OpenVIII.Fields
                 return false;
             //FindOverlappingTiles();
 
-            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID }).Distinct().ToList();
+            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID }).Distinct().ToList();
             // Create a swizzeled Textures with one palette.
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
             Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
@@ -708,7 +717,7 @@ namespace OpenVIII.Fields
                 SaveCluts();
                 if (overlap)
                 {
-                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.AnimationID != 0xFF || x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.BlendMode == BlendMode.none || x.AnimationID != 0xFF || x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
                     this.TextureIDsPalettes = TextureIDsPalettes.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key.TextureID}", new Texture2DWrapper(x.Value), x.Key.PaletteID));
                     foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp in TextureIDsPalettes)
                     {

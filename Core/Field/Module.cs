@@ -186,13 +186,13 @@ namespace OpenVIII.Fields
             //TODO fix endless look on FieldID 50.
             if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
                 Memory.FieldHolder.FieldID < 0)
-                return;
+                goto end;
             string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.GetString(), StringComparison.OrdinalIgnoreCase) >= 0);
             if (string.IsNullOrWhiteSpace(fieldArchiveName))
             {
                 Debug.WriteLine($"FileNotFound :: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString().ToUpper()}");
                 mod = Field_mods.DISABLED;
-                return;
+                goto end;
             }
 
             ArchiveBase fieldArchive = aw.GetArchive(fieldArchiveName);
@@ -213,7 +213,7 @@ namespace OpenVIII.Fields
             if ((Background = Background.Load(getfile(".mim"), getfile(".map"))) == null)
             {
                 mod = Field_mods.DISABLED;
-                return;
+                goto end;
             }
             Cameras = Cameras.Load(getfile(".ca"));
             WalkMesh = WalkMesh.Load(getfile(".id"));
@@ -230,7 +230,7 @@ namespace OpenVIII.Fields
                 {
                     Debug.WriteLine(e);
                     mod = Field_mods.NOJSM;
-                    return;
+                    goto end;
                 }
 
                 Sym.GameObjects symObjects;
@@ -242,7 +242,7 @@ namespace OpenVIII.Fields
                 {
                     Debug.WriteLine($"FileNotFound :: {Memory.FieldHolder.GetString().ToUpper()}.sy");
                     mod = Field_mods.NOJSM;
-                    return;
+                    goto end;
                 }
                 services = Initializer.GetServices();
                 eventEngine = ServiceId.Field[services].Engine;
@@ -261,7 +261,7 @@ namespace OpenVIII.Fields
             else
             {
                 mod = Field_mods.NOJSM;
-                return;
+                goto end;
             }
 
             //byte[] mchb = getfile(".mch");//Field character models
@@ -277,6 +277,8 @@ namespace OpenVIII.Fields
             //byte[] sfxb = getfile(".sfx");//sound effects
 
             mod++;
+            end:
+            FieldMenu.Refresh();
             return;
         }
 
