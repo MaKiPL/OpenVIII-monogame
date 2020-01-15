@@ -315,6 +315,7 @@ namespace OpenVIII.Fields
                     {
                         outTex.SaveAsPng(fs, Width, Height);
                     }
+                    Process.Start(folder);
                 }
             }
             projectionMatrix = backup;
@@ -427,6 +428,7 @@ namespace OpenVIII.Fields
                             outTex.SaveAsPng(fs, Width, Height);
                     }
                 }
+                Process.Start(folder);
             }
         }
 
