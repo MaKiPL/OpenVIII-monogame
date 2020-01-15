@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace OpenVIII.Fields
 {
@@ -215,7 +216,7 @@ namespace OpenVIII.Fields
                 viewMatrix = Matrix.CreateLookAt(Vector3.Forward * 10f, Vector3.Zero, Vector3.Up);
             }
             Vector2 ml = InputMouse.Location.ToVector2();
-            var ml3d = Memory.graphics.GraphicsDevice.Viewport.Unproject(ml.ToVector3(), projectionMatrix, viewMatrix, worldMatrix);
+            Vector3 ml3d = Memory.graphics.GraphicsDevice.Viewport.Unproject(ml.ToVector3(), projectionMatrix, viewMatrix, worldMatrix);
             ml3d.Y *= -1;
             MouseLocation = ml3d;
         }
@@ -301,7 +302,7 @@ namespace OpenVIII.Fields
             //else
             sorted = quads.Where(x => x.Enabled)
                 .OrderByDescending(x => x.GetTile.Z)
-                .ThenByDescending(x=>x.GetTile.TileID)
+                .ThenByDescending(x => x.GetTile.TileID)
                 .ThenBy(x => x.GetTile.LayerID)
                 .ThenBy(x => x.GetTile.AnimationID)
                 .ThenBy(x => x.GetTile.AnimationState)
@@ -681,7 +682,39 @@ namespace OpenVIII.Fields
             if (mimb == null || mapb == null)
                 return false;
             //FindOverlappingTiles();
-
+            string path = Path.Combine(Memory.FF8DIR, "textures");
+            if (Directory.Exists(path))
+            {
+                List<string> files = Directory.EnumerateFiles(path, $"*{Module.GetFieldName()}*.png", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+                if (files.Count > 0)
+                {
+                    this.TextureIDs = new Dictionary<byte, TextureHandler>();
+                    Regex regex = new Regex(@".+_(\d+)\.png");
+                    foreach (Match file in files.Select(x => regex.Match(x)))
+                    {
+                        if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && !this.TextureIDs.ContainsKey(b))
+                        {
+                            this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(file.Value, 256, 256, 0));
+                        }
+                    }
+                    this.TextureIDsPalettes = new Dictionary<TextureIDPaletteID, TextureHandler>();
+                    Regex regex2 = new Regex(@".+_(\d+)_(\d+)\.png");
+                    foreach (Match file in files.Select(x => regex2.Match(x)))
+                    {
+                        TextureIDPaletteID tipi;
+                        if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && byte.TryParse(file.Groups[2].Value, out byte b2) && !this.TextureIDsPalettes.ContainsKey(tipi = new TextureIDPaletteID { PaletteID = b2, TextureID = b }))
+                        {
+                            this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(file.Value, 256, 256, b2));
+                        }
+                    }
+                    int count = this.TextureIDs.Count + this.TextureIDsPalettes.Count;
+                    if (count > 0)
+                    {
+                        Debug.WriteLine($"Loaded {count} Textures from {path}");
+                    }
+                    goto end;
+                }
+            }
             var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID }).Distinct().ToList();
             // Create a swizzeled Textures with one palette.
             // 4bit has 2 pixels per byte. So will need a seperate texture for those.
@@ -732,12 +765,12 @@ namespace OpenVIII.Fields
                             break;
                         }
                 }
-                void GenTexture(byte texID, Texture2D tex2d, byte? inpaletteID = null)
+                void GenTexture(byte texID, Texture2D tex2d, byte? inPaletteID = null)
                 {
                     TextureBuffer tex = new TextureBuffer(tex2d.Width, tex2d.Height, true);
 
                     //foreach (var textureID in UniqueSetOfTileData.GroupBy(x=>x.TextureID == kvp.Key))
-                    foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == texID && (!inpaletteID.HasValue || inpaletteID.Value == x.PaletteID)))
+                    foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == texID && (!inPaletteID.HasValue || inPaletteID.Value == x.PaletteID)))
                     {
                         long startPixel = TextureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturePageWidth * tile.TextureID) + (TextureType.Width * tile.loc.Y);
                         //int readlength = Tile.size + (Tile.size * TextureType.Width);
@@ -794,7 +827,8 @@ namespace OpenVIII.Fields
                     tex.SetData(tex2d);
                 }
             }
-            //Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth).X
+        //Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth).X
+        end:
             quads = tiles.Select(x => new TileQuadTexture(x, GetTexture(x), 1f)).ToList();
             Animations = quads.Where(x => x.AnimationID != 0xFF).Select(x => x.AnimationID).Distinct().ToDictionary(x => x, x => quads.Where(y => y.AnimationID == x).OrderBy(y => y.AnimationState).ToList());
             Animations.ForEach(x => x.Value.Where(y => y.AnimationState != x.Value.Max(k => k.AnimationState)).ForEach(y => y.Hide()));
