@@ -56,7 +56,7 @@ namespace OpenVIII.Fields.IGMData
     {
         #region Fields
 
-        private const int totalrows = 7;
+        private const int totalrows = 8;
         private bool skiprefresh;
 
         #endregion Fields
@@ -70,6 +70,7 @@ namespace OpenVIII.Fields.IGMData
         public IGMDataItem.Text QuadBG { get => (IGMDataItem.Text)ITEM[2, 0]; protected set => ITEM[2, 0] = value; }
         public IGMDataItem.Text WalkMesh { get => (IGMDataItem.Text)ITEM[1, 0]; protected set => ITEM[1, 0] = value; }
         public IGMDataItem.Text Deswizzle { get => (IGMDataItem.Text)ITEM[6, 0]; protected set => ITEM[6, 0] = value; }
+        public IGMDataItem.Text Reswizzle { get => (IGMDataItem.Text)ITEM[7, 0]; protected set => ITEM[7, 0] = value; }
         public IGMDataItem.Text MouseLocationIn3D { get => (IGMDataItem.Text)ITEM[Count - 1, 0]; protected set => ITEM[Count - 1, 0] = value; }
 
         #endregion Properties
@@ -153,6 +154,11 @@ namespace OpenVIII.Fields.IGMData
                 Module.Background.Deswizzle();
                 Refresh();
             }
+            else if (CURSOR_SELECT == i++)
+            {
+                Module.Background.Reswizzle();
+                Refresh();
+            }
             else skipsnd = true;
             return base.Inputs_OKAY() || true;
         }
@@ -205,7 +211,9 @@ namespace OpenVIII.Fields.IGMData
                 BLANKS[5] = false;
                 Deswizzle.Data = $"Deswizzle Tiles";
                 BLANKS[6] = false;
-                foreach (int i in Enumerable.Range(7, Rows-7))
+                Reswizzle.Data = $"Reswizzle Tiles";
+                BLANKS[7] = false;
+                foreach (int i in Enumerable.Range(8, Rows-8))
                 {
                     ITEM[i, 0].Hide();
                     BLANKS[i] = true;

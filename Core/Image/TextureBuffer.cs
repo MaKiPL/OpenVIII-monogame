@@ -145,6 +145,7 @@ namespace OpenVIII
         public static implicit operator Color[] (TextureBuffer @in) => @in.colors;
 
         public void SetData(Texture2D tex) => tex.SetData(colors);
+        public void GetData(Texture2D tex) => tex.GetData(colors);
 
         public override void ForceSetClutColors(ushort newNumOfColours)
         {

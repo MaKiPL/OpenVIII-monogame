@@ -41,6 +41,8 @@ namespace OpenVIII.Fields
 
             public Tile GetTile => tile;
 
+            public TextureHandler Texture { get => texture; set => texture = value; }
+
             #endregion Properties
 
             #region Methods
