@@ -121,14 +121,19 @@ namespace OpenVIII
             }
             return ret;
         }
+        /// <summary>
+        /// If i'm expecting a 256x256 and get a 128x256 pad the pixels with transparent ones.
+        /// </summary>
+        bool EnforceSquare = false;
 
-        public static TextureHandler CreateFromPNG(string filename, int classic_width, int classic_height, ushort palette)
+        public static TextureHandler CreateFromPNG(string filename, int classic_width, int classic_height, ushort palette,bool enforceSquare)
         {
             string s = FindPNG(filename, palette);
             if (string.IsNullOrWhiteSpace(s) || !_ths.TryGetValue(s, out TextureHandler ret))
             {
                 ret = new TextureHandler
                 {
+                    EnforceSquare = enforceSquare,
                     ModdedFilename = filename,
                     //Modded = string.IsNullOrWhiteSpace(s),
                     Filename = filename,
@@ -407,6 +412,23 @@ namespace OpenVIII
                     else
                     {
                         pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette) : LoadPNG(Filename, Palette);
+                    }
+                    if (pngTex != null && EnforceSquare && pngTex.Width != pngTex.Height)
+                    {
+                        int s = Math.Max(pngTex.Width, pngTex.Height);
+                        RenderTarget2D tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, s, s);
+                        using (pngTex)
+                        {   
+                                Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
+                                Memory.SpriteBatchStartAlpha();
+                                Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                                Memory.spriteBatch.Draw(pngTex, new Rectangle(0, 0, pngTex.Width, pngTex.Height), Color.White);
+                                Memory.SpriteBatchEnd();
+                                Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                            
+                        }
+                        pngTex = tmp;
+
                     }
                     if (tex == null) tex = Classic;
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));

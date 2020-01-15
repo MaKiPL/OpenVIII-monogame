@@ -300,7 +300,7 @@ namespace OpenVIII.Fields
                     foreach (TileQuadTexture quad in pupuIDgroup)
                     {
                         DrawBackgroundQuadsStart();
-                        DrawBackgroundQuad(quad, true);
+                        DrawBackgroundQuad(quad, true, scale);
                     }
                     //end drawing
                     Memory.graphics.GraphicsDevice.SetRenderTarget(null);
@@ -322,7 +322,8 @@ namespace OpenVIII.Fields
         }
 
         public void Reswizzle()
-        {;
+        {
+            ;
             tiles.UniquePupuIDs();// make sure each layer has it's own id.
 
             string fieldname = Module.GetFieldName();
@@ -332,12 +333,12 @@ namespace OpenVIII.Fields
                 IEnumerable<string> files = Directory.EnumerateFiles(folder, "*.png");
                 folder = Module.GetFolder(fieldname, "reswizzle");
 
-                Dictionary<byte, bool> overlap = tiles.Select(x=>x.TextureID).Distinct().ToDictionary(x => x, x => false);
+                Dictionary<byte, bool> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => false);
                 ConcurrentDictionary<byte, TextureBuffer> texids = new ConcurrentDictionary<byte, TextureBuffer>();
                 ConcurrentDictionary<TextureIDPaletteID, TextureBuffer> texidspalette = new ConcurrentDictionary<TextureIDPaletteID, TextureBuffer>();
                 int Width = 0; int Height = 0;
                 process();
-                if(overlap.Any(x=>x.Value))
+                if (overlap.Any(x => x.Value))
                     process(true);
                 void process(bool dooverlap = false)
                 {
@@ -365,7 +366,7 @@ namespace OpenVIII.Fields
                                     texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height));
                                     Point src = (new Point(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y).ToVector2() * scale).ToPoint();
                                     Point dst = (new Point(tile.SourceX, tile.SourceY).ToVector2() * scale).ToPoint();
-                                    if (!dooverlap)                                    
+                                    if (!dooverlap)
                                         foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
                                                              from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
                                                              select new Point(x, y)))
@@ -442,17 +443,29 @@ namespace OpenVIII.Fields
             }
         }
 
-        private void DrawBackgroundQuad(TileQuadTexture quad, bool forceBlendModeNone = false)
+        private void DrawBackgroundQuad(TileQuadTexture quad, bool forceBlendModeNone = false, Vector2 scale2 = default)
         {
+            VertexPositionTexture[] temp = quad;
             Tile tile = (Tile)quad;
             ate.Texture = quad;
+            if (scale2 != default)
+            {
+                temp = (VertexPositionTexture[])temp.Clone();
+                Matrix scale = Matrix.CreateScale(scale2.ToVector3());
+                for (int i = 0; i < temp.Length; i++)
+                {
+                    VertexPositionTexture t = temp[i];
+                    t.Position = Vector3.Transform(temp[i].Position, scale);
+                    temp[i] = t;
+                }
+            }
             DrawBackgroundQuadsSetBendMode(forceBlendModeNone ? BlendMode.none : tile.BlendMode);
             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
 
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                vertexData: (VertexPositionTexture[])quad, vertexOffset: 0, primitiveCount: 2);
+                vertexData: temp, vertexOffset: 0, primitiveCount: 2);
             }
         }
 
@@ -874,6 +887,7 @@ namespace OpenVIII.Fields
         {
             if (mimb == null || (tiles?.Count ?? 0) == 0)
                 return false;
+            SaveCluts();
             //FindOverlappingTiles();
             string path = Path.Combine(Memory.FF8DIR, "textures");
             if (Directory.Exists(path))
@@ -887,9 +901,10 @@ namespace OpenVIII.Fields
                     {
                         if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && !this.TextureIDs.ContainsKey(b))
                         {
-                            this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(file.Value, 256, 256, 0));
+                            this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(file.Value, 256, 256, 0, true));
                         }
                     }
+                    SaveSwizzled(this.TextureIDs.ToDictionary(x => x.Key, x => (Texture2D)x.Value));
                     this.TextureIDsPalettes = new Dictionary<TextureIDPaletteID, TextureHandler>();
                     Regex regex2 = new Regex(@".+" + Module.GetFieldName() + @"_(\d+)_(\d+)\.png", RegexOptions.IgnoreCase);
                     foreach (Match file in files.Select(x => regex2.Match(x)))
@@ -897,8 +912,16 @@ namespace OpenVIII.Fields
                         TextureIDPaletteID tipi;
                         if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && byte.TryParse(file.Groups[2].Value, out byte b2) && !this.TextureIDsPalettes.ContainsKey(tipi = new TextureIDPaletteID { PaletteID = b2, TextureID = b }))
                         {
-                            this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(file.Value, 256, 256, b2));
+                            this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(file.Value, 256, 256, b2, true));
                         }
+                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
+
+                            foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp_group in groups)
+                            {
+                                Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => x.Value);
+                                SaveSwizzled(_TextureIDs, $"_{kvp_group.Key.PaletteID}");
+                                break;
+                            }
                     }
                     int count = this.TextureIDs.Count + this.TextureIDsPalettes.Count;
                     if (count > 0)
@@ -938,7 +961,7 @@ namespace OpenVIII.Fields
                 SaveSwizzled(TextureIDs);
                 string fieldname = Module.GetFieldName();
                 this.TextureIDs = TextureIDs.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key}", new Texture2DWrapper(x.Value), ushort.MaxValue));
-                SaveCluts();
+
                 if (overlap)
                 {
                     Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.BlendMode == BlendMode.none || x.AnimationID != 0xFF || x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
