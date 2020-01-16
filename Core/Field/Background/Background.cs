@@ -332,12 +332,12 @@ namespace OpenVIII.Fields
                 IEnumerable<string> files = Directory.EnumerateFiles(folder, "*.png");
                 folder = Module.GetFolder(fieldname, "reswizzle");
 
-                Dictionary<byte, bool> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => false);
+                Dictionary<byte, HashSet<byte>> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new HashSet<byte>());
                 ConcurrentDictionary<byte, TextureBuffer> texids = new ConcurrentDictionary<byte, TextureBuffer>();
                 ConcurrentDictionary<TextureIDPaletteID, TextureBuffer> texidspalette = new ConcurrentDictionary<TextureIDPaletteID, TextureBuffer>();
                 int Width = 0; int Height = 0;
                 process();
-                if (overlap.Any(x => x.Value))
+                if (overlap.Any(x => x.Value.Count>0))
                     process(true);
                 void process(bool dooverlap = false)
                 {
@@ -359,7 +359,9 @@ namespace OpenVIII.Fields
                                 TextureBuffer inTex = new TextureBuffer(tex.Width, tex.Height);
                                 inTex.GetData(tex);
 
-                                foreach (TileQuadTexture quad in quads.Where(x => x.GetTile.PupuID == pupuid))
+                                foreach (TileQuadTexture quad in quads.Where(x => 
+                                x.GetTile.PupuID == pupuid && 
+                                (!dooverlap || overlap[x.GetTile.TextureID].Contains(x.GetTile.PaletteID))))
                                 {
                                     Tile tile = (Tile)quad;
                                     texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height));
@@ -378,12 +380,16 @@ namespace OpenVIII.Fields
                                                     texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
                                                 else
                                                 {
-                                                    overlap[tile.TextureID] = true;
+                                                    (from t1 in tiles.Where(x=>x.TextureID == tile.TextureID)
+                                                     from t2 in tiles.Where(x=>x.TextureID == tile.TextureID)
+                                                     where t1.TileID < t2.TileID && t1.SourceIntersect(t2)
+                                                     select new[] { t1.PaletteID, t2.PaletteID }).Distinct().
+                                                     ForEach(x => { overlap[tile.TextureID].Add(x[0]); overlap[tile.TextureID].Add(x[1]); });
                                                     break;
                                                 }
                                             }
                                         }
-                                    else if (overlap[tile.TextureID] && dooverlap)
+                                    else if (overlap[tile.TextureID].Count>0 && dooverlap)
                                     {
                                         TextureIDPaletteID key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
                                         texidspalette.TryAdd(key, new TextureBuffer(Width, Height));

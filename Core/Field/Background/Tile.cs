@@ -84,6 +84,11 @@ namespace OpenVIII.Fields
 
             #region Properties
 
+            public Rectangle ExpandedSource => new Rectangle(ExpandedSourceX, SourceY, size, size);
+
+            public int ExpandedSourceX => Is4Bit ? SourceX * 2 : SourceX;
+            public Rectangle GetRectangle => new Rectangle(X, Y, size, size);
+            public int Height => size;
             public bool Is4Bit => !Is8Bit;
 
             public bool Is8Bit => Depth >= 4;
@@ -98,12 +103,15 @@ namespace OpenVIII.Fields
                 set => pupuID = value;
             }
 
+            public Rectangle Source => new Rectangle(SourceX, SourceY, size, size);
             public byte SourceOverLapID { get; internal set; }
 
             /// <summary>
             /// TopLeft UV
             /// </summary>
             public Vector2 UV => new Vector2(SourceX, SourceY) / TextureSize;
+
+            public int Width => size;
 
             // 4 bits
             public float Zfloat => Z / 4096f;
@@ -182,8 +190,6 @@ namespace OpenVIII.Fields
                 return r.ToArray();
             }
 
-            public Rectangle GetRectangle() => new Rectangle(X, Y, size, size);
-
             public bool Intersect(Tile tile, bool rev = false)
             {
                 bool flip = !rev && tile.Intersect(this, !rev);
@@ -192,30 +198,23 @@ namespace OpenVIII.Fields
                     X < tile.X + size &&
                     Y >= tile.Y &&
                     Y < tile.Y + size;// &&
-                    //Z == tile.Z &&
-                    //LayerID == tile.LayerID &&
-                    //BlendMode == tile.BlendMode &&
-                    //AnimationID == tile.AnimationID &&
-                    //AnimationState == tile.AnimationState;
+                                      //Z == tile.Z &&
+                                      //LayerID == tile.LayerID &&
+                                      //BlendMode == tile.BlendMode &&
+                                      //AnimationID == tile.AnimationID &&
+                                      //AnimationState == tile.AnimationState;
                 return ret;
             }
 
-            public bool SourceIntersect(Tile tile, bool rev = false)
-            {
-                bool flip = !rev && tile.SourceIntersect(this, !rev);
-                if (!flip && tile.TextureID == TextureID)
-                {
-                    return Rectangle.Intersect(SourceRectangle(), tile.SourceRectangle()) != Rectangle.Empty;
-                }
-                return flip;
-            }
-
-            public Rectangle SourceRectangle() => new Rectangle(SourceX, SourceY, size, size);
+            public bool SourceIntersect(Tile tile)
+=>
+                    Rectangle.Intersect(ExpandedSource, tile.ExpandedSource) != Rectangle.Empty;
 
             public override string ToString() =>
                 $"Tile: {TileID}; " +
-                $"Loc: {X},{Y},{Z}; " +
-                $"Source: {SourceX},{SourceY}; " +
+                $"Loc: {GetRectangle}; " +
+                $"Z: {Z}; " +
+                $"Source: {ExpandedSource}; " +
                 $"TextureID: {TextureID}; " +
                 $"PaletteID: {PaletteID}; " +
                 $"LayerID: {LayerID}; " +
@@ -228,10 +227,10 @@ namespace OpenVIII.Fields
             {
                 const int BitsPerLong = sizeof(ulong) * 8;
                 const int BitsPerByte = sizeof(byte) * 8;
-                const int BitsPerNibble = BitsPerByte /2 ;
+                const int BitsPerNibble = BitsPerByte / 2;
                 int bits = BitsPerLong;
                 bits -= BitsPerNibble;
-                pupuID = (((uint)LayerID &0xF) << bits);
+                pupuID = (((uint)LayerID & 0xF) << bits);
                 bits -= BitsPerNibble;
                 pupuID += (((uint)BlendMode & 0xF) << bits);
                 bits -= BitsPerByte;
@@ -244,6 +243,7 @@ namespace OpenVIII.Fields
                 Debug.Assert(((pupuID & 0x00FF0000) >> 16) == AnimationID);
                 Debug.Assert(((pupuID & 0x0000FF00) >> 8) == AnimationState);
             }
+
             private List<VertexPositionTexture> GetCorners(float scale)
             {
                 Vector2 sizeVertex = new Vector2(size, size) / scale;
