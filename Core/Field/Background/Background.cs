@@ -930,11 +930,11 @@ namespace OpenVIII.Fields
                         {
                             this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(file.Value, 256, 256, b2, true, true));
                         }
-                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
+                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, TextureHandler>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
 
-                            foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp_group in groups)
+                            foreach (KeyValuePair<TextureIDPaletteID, TextureHandler> kvp_group in groups)
                             {
-                                Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => x.Value);
+                                Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => (Texture2D)x.Value);
                                 SaveSwizzled(_TextureIDs, $"_{kvp_group.Key.PaletteID}");
                                 break;
                             }
