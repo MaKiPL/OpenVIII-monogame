@@ -337,7 +337,7 @@ namespace OpenVIII.Fields
                 ConcurrentDictionary<TextureIDPaletteID, TextureBuffer> texidspalette = new ConcurrentDictionary<TextureIDPaletteID, TextureBuffer>();
                 int Width = 0; int Height = 0;
                 process();
-                if (overlap.Any(x => x.Value.Count > 0))
+                if (overlap.Any(x => x.Value.Count > 1))
                     process(true);
                 void process(bool dooverlap = false)
                 {
@@ -364,7 +364,7 @@ namespace OpenVIII.Fields
                                 (!dooverlap || overlap[x.GetTile.TextureID].Contains(x.GetTile.PaletteID))))
                                 {
                                     Tile tile = (Tile)quad;
-                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height));
+                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height,false));
                                     Point src = (new Point(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y).ToVector2() * scale).ToPoint();
                                     Point dst = (new Point(tile.SourceX, tile.SourceY).ToVector2() * scale).ToPoint();
                                     if (!dooverlap)
@@ -388,14 +388,19 @@ namespace OpenVIII.Fields
                                                     Point unscaledLocation = tile.Source.Location;
                                                     unscaledLocation.Offset(p.ToVector2() / scale);
 
-                                                    (from t1 in tiles
-                                                     where t1.TextureID == tile.TextureID && t1.ExpandedSource.Contains(unscaledLocation)
-                                                     select t1.PaletteID).Distinct().ForEach(x => overlap[tile.TextureID].Add(x));
-                                                    break;
+                                                    var o = (from t1 in tiles
+                                                             where t1.TextureID == tile.TextureID && t1.ExpandedSource.Contains(unscaledLocation)
+                                                             select t1.PaletteID).Distinct();
+                                                    if (o.Count() > 1)
+                                                    {
+                                                        o.ForEach(x => overlap[tile.TextureID].Add(x));
+                                                        break;
+                                                    }
+                                                    else texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
                                                 }
                                             }
                                         }
-                                    else if (overlap[tile.TextureID].Count > 0 && dooverlap)
+                                    else if (overlap[tile.TextureID].Count > 1 && dooverlap)
                                     {
                                         TextureIDPaletteID key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
                                         texidspalette.TryAdd(key, new TextureBuffer(Width, Height));
