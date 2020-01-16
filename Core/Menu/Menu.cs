@@ -398,16 +398,16 @@ namespace OpenVIII
             {
                 //todo detect when there is no saves detected.
                 //check for null
-                if (!skipdata && Data != null)
+                //if (!skipdata && Data != null)
+                //{
+                //    ret = ((from i in Data
+                //           where i.Value != null && i.Value.Update()
+                //           select new { isTrue = true }).FirstOrDefault()?.isTrue ?? false) || ret;
+                //}
+                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x => x.Value != null))
                 {
-                    ret = ((from i in Data
-                           where i.Value != null && i.Value.Update()
-                           select new { isTrue = true }).FirstOrDefault()?.isTrue ?? false) || ret;
+                    ret = (i.Value.Update()) || ret;
                 }
-                    //foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x=>x.Value!=null))
-                    //{
-                    //    ret = (i?.Value.Update() ?? false) || ret;
-                    //}
             }
             if (!NoInputOnUpdate)
                 return Inputs() || ret;
