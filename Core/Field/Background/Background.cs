@@ -1033,9 +1033,11 @@ namespace OpenVIII.Fields
                                 }
                                 if (color.A != 0)
                                 {
-                                    if (tex[_x, _y].A != 0)
+                                    if (tex[_x, _y] == color)
+                                        continue; // same color might be two+ tiles with same source locations.
+                                    else if (tex[_x, _y].A != 0)
                                     {
-                                        //if ()//excluding 8bit overlap for now.
+                                        //TODO maybe copy some code from reswizzle where i find all the palettes that conflict only.
                                         overlap = true;
                                         if (tex[_x, _y] != color)
                                         {
@@ -1048,13 +1050,10 @@ namespace OpenVIII.Fields
                                 }
                             }
                         }
-                        //(from b in br.ReadBytes(readlength)
-                        // select dictPalettes[tile.PaletteID][b]).ToArray();
                     }
                     tex.SetData(tex2d);
                 }
             }
-        //Memory.Scale(Width, Height, Memory.ScaleMode.FitBoth).X
         end:
             //the sort here should be the default draw order. May need changed.
             quads = tiles.Select(x => new TileQuadTexture(x, GetTextureUsedByTile(x), 1f)).Where(x => x.Enabled)
