@@ -377,14 +377,11 @@ namespace OpenVIII.Fields
                                             {
                                                 Color current = texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y];
                                                 if (current.A == 0)
-                                                    texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
+                                                    texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = input;
+                                                else if (current == input)
+                                                    continue; // colors are same don't fret.
                                                 else
                                                 {
-                                                    //(from t1 in tiles.Where(x=>x.TextureID == tile.TextureID)
-                                                    // from t2 in tiles.Where(x=>x.TextureID == tile.TextureID)
-                                                    // where t1.TileID < t2.TileID && t1.SourceIntersect(t2)
-                                                    // select new[] { t1.PaletteID, t2.PaletteID }).Distinct().
-                                                    // ForEach(x => { overlap[tile.TextureID].Add(x[0]); overlap[tile.TextureID].Add(x[1]); });
                                                     Point unscaledLocation = tile.Source.Location;
                                                     unscaledLocation.Offset(p.ToVector2() / scale);
 
@@ -396,7 +393,7 @@ namespace OpenVIII.Fields
                                                         o.ForEach(x => overlap[tile.TextureID].Add(x));
                                                         break;
                                                     }
-                                                    else texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
+                                                    else texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = input;
                                                 }
                                             }
                                         }
