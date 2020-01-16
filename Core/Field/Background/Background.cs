@@ -284,11 +284,13 @@ namespace OpenVIII.Fields
 
         public void Deswizzle()
         {
+            string fieldname = Module.GetFieldName();
+            string folder = Module.GetFolder(fieldname, "deswizzle");
             Vector2 scale = quads[0].Texture.ScaleFactor;
             int Width = (int)(tiles.Width * scale.X);
             int Height = (int)(tiles.Height * scale.Y);
             Matrix backup = projectionMatrix;
-            projectionMatrix = Matrix.CreateOrthographic(Width, Height, 0f, 100f);
+            projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
             tiles.UniquePupuIDs();// make sure each layer has it's own id.
             foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu id.
             {
@@ -300,24 +302,21 @@ namespace OpenVIII.Fields
                     foreach (TileQuadTexture quad in pupuIDgroup)
                     {
                         DrawBackgroundQuadsStart();
-                        DrawBackgroundQuad(quad, true, scale);
+                        DrawBackgroundQuad(quad, true);
                     }
                     //end drawing
                     Memory.graphics.GraphicsDevice.SetRenderTarget(null);
                     //set path
-                    string fieldname = Module.GetFieldName();
-                    string folder = Module.GetFolder(fieldname, "deswizzle");
-                    string path;
-                    path = Path.Combine(folder,
+                    string path = Path.Combine(folder,
                         $"{fieldname}_{pupuIDgroup.Key.ToString("X8")}.png");
                     //save image.
                     using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                     {
                         outTex.SaveAsPng(fs, Width, Height);
                     }
-                    Process.Start(folder);
                 }
             }
+            Process.Start(folder);
             projectionMatrix = backup;
         }
 
@@ -374,7 +373,7 @@ namespace OpenVIII.Fields
                                             Color input = inTex[src.X + p.X, src.Y + p.Y];
                                             if (input.A != 0)
                                             {
-                                                Color current = texids[tile.TextureID][tile.SourceX + p.X, tile.SourceY + p.Y];
+                                                Color current = texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y];
                                                 if (current.A == 0)
                                                     texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
                                                 else
