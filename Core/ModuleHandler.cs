@@ -14,8 +14,9 @@ namespace OpenVIII
         {
             if (lastModule != module)
             {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
+                //got stuck on this once had to force close.
+                //GC.Collect();
+                //GC.WaitForPendingFinalizers();
                 lastModule = module;
             }
             module = Memory.Module;
