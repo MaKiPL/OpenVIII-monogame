@@ -47,8 +47,7 @@ namespace OpenVIII
 
         public static Point Offset(this ref Point source, Vector2 offset)
         {
-            source = (source.ToVector2() + offset).ToPoint();
-            return source;
+            return source = (source.ToVector2() + offset).ToPoint();
         }
 
         public static Point Transform(this Point point, Matrix matrix)
