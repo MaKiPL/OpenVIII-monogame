@@ -651,7 +651,25 @@ namespace OpenVIII
                 {
                     // TODO: dispose managed state (managed objects).
                 }
-
+                if(!string.IsNullOrWhiteSpace(ModdedFilename) && _pngs.TryRemove(ModdedFilename,out Texture2D tex))
+                {
+                    if (!tex.IsDisposed)
+                    {
+                        tex.Dispose();
+                        tex = null;
+                    }
+                }
+                if(!string.IsNullOrWhiteSpace(Filename) && _ths.TryRemove(Filename,out TextureHandler texh))
+                {
+                    foreach(var t in texh.Textures)
+                    {
+                        if (!t.IsDisposed)
+                        {
+                            t.Dispose();
+                        }
+                    }
+                    texh = null;
+                }
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
 
