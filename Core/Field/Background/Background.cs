@@ -900,7 +900,7 @@ namespace OpenVIII.Fields
                     {
                         if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && !this.TextureIDs.ContainsKey(b))
                         {
-                            this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(file.Value, 256, 256, 0, true));
+                            this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(file.Value, 256, 256, 0, true,true));
                         }
                     }
                     SaveSwizzled(this.TextureIDs.ToDictionary(x => x.Key, x => (Texture2D)x.Value));
@@ -911,7 +911,7 @@ namespace OpenVIII.Fields
                         TextureIDPaletteID tipi;
                         if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && byte.TryParse(file.Groups[2].Value, out byte b2) && !this.TextureIDsPalettes.ContainsKey(tipi = new TextureIDPaletteID { PaletteID = b2, TextureID = b }))
                         {
-                            this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(file.Value, 256, 256, b2, true));
+                            this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(file.Value, 256, 256, b2, true,true));
                         }
                         foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
 

@@ -12,7 +12,7 @@ namespace OpenVIII
     /// <summary>
     /// This contains functions to Load Highres mod versions of textures and get scale vector.
     /// </summary>
-    public class TextureHandler
+    public class TextureHandler : IDisposable
     {
         #region Fields
 
@@ -121,12 +121,13 @@ namespace OpenVIII
             }
             return ret;
         }
+
         /// <summary>
         /// If i'm expecting a 256x256 and get a 128x256 pad the pixels with transparent ones.
         /// </summary>
-        bool EnforceSquare = false;
+        private bool EnforceSquare = false;
 
-        public static TextureHandler CreateFromPNG(string filename, int classic_width, int classic_height, ushort palette,bool enforceSquare)
+        public static TextureHandler CreateFromPNG(string filename, int classic_width, int classic_height, ushort palette, bool enforceSquare, bool ForceReload = false)
         {
             string s = FindPNG(filename, palette);
             if (string.IsNullOrWhiteSpace(s) || !_ths.TryGetValue(s, out TextureHandler ret))
@@ -150,7 +151,25 @@ namespace OpenVIII
                     //    _pngs.TryRemove(ret.ModdedFilename,out Texture2D none);
                 }
             }
+            else if (ForceReload && ret.Modded)
+            {
+                ret.Reload();
+            }
+
             return ret;
+        }
+
+        private void Reload()
+        {
+            if (Rows * Cols == 1)
+            {
+                Textures[0, 0].Dispose();
+                if (_pngs.TryRemove(ModdedFilename, out Texture2D value) && !value.IsDisposed)
+                    value.Dispose();
+                Textures[0, 0] = LoadPNG(ModdedFilename, Palette, EnforceSquare);
+            }
+            else
+                throw new Exception("too many textures reload not setup for >1 texture");
         }
 
         public static explicit operator Texture2D(TextureHandler t)
@@ -216,7 +235,7 @@ namespace OpenVIII
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static Texture2D LoadPNG(string path, int palette = -1)
+        public static Texture2D LoadPNG(string path, int palette = -1, bool forceSquare = false)
         {
             string pngpath = File.Exists(path) ? path : FindPNG(path, palette);
             Texture2D tex = null;
@@ -227,6 +246,21 @@ namespace OpenVIII
                     tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
                     _pngs.TryAdd(pngpath, tex);
                 }
+            }
+            if (tex != null && forceSquare && tex.Width != tex.Height)
+            {
+                int s = Math.Max(tex.Width, tex.Height);
+                RenderTarget2D tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, s, s);
+                using (tex)
+                {
+                    Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
+                    Memory.SpriteBatchStartAlpha();
+                    Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                    Memory.spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
+                    Memory.SpriteBatchEnd();
+                    Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                }
+                tex = tmp;
             }
             return tex;
         }
@@ -407,29 +441,13 @@ namespace OpenVIII
                     {
                         tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
                         if (Classic == null && c2 < Cols) oldsize.X += tex?.GetWidth ?? ClassicWidth;
-                        pngTex = LoadPNG(path, Palette);
+                        pngTex = LoadPNG(path, Palette, EnforceSquare);
                     }
                     else
                     {
-                        pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette) : LoadPNG(Filename, Palette);
+                        pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette, EnforceSquare) : LoadPNG(Filename, Palette, EnforceSquare);
                     }
-                    if (pngTex != null && EnforceSquare && pngTex.Width != pngTex.Height)
-                    {
-                        int s = Math.Max(pngTex.Width, pngTex.Height);
-                        RenderTarget2D tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, s, s);
-                        using (pngTex)
-                        {   
-                                Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
-                                Memory.SpriteBatchStartAlpha();
-                                Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
-                                Memory.spriteBatch.Draw(pngTex, new Rectangle(0, 0, pngTex.Width, pngTex.Height), Color.White);
-                                Memory.SpriteBatchEnd();
-                                Memory.graphics.GraphicsDevice.SetRenderTarget(null);
-                            
-                        }
-                        pngTex = tmp;
 
-                    }
                     if (tex == null) tex = Classic;
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
                     if (pngTex != null) Modded = true;
@@ -621,6 +639,44 @@ namespace OpenVIII
             //    Memory.MainThreadOnlyActions.Enqueue(this.Save);
             //}
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                // TODO need an easy way to remove old textures from cache.
+                    
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~TextureHandler() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
 
         #endregion Methods
     }
