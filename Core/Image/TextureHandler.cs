@@ -241,7 +241,7 @@ namespace OpenVIII
             Texture2D tex = null;
             if (!string.IsNullOrWhiteSpace(pngpath) && !_pngs.TryGetValue(pngpath, out tex))
             {
-                using (FileStream fs = File.OpenRead(pngpath))
+                using (FileStream fs = new FileStream(pngpath,FileMode.Open,FileAccess.Read,FileShare.ReadWrite))
                 {
                     tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
                     _pngs.TryAdd(pngpath, tex);
