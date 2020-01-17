@@ -231,8 +231,8 @@ namespace OpenVIII.Fields
                     // TODO: dispose managed state (managed objects).
                 }
 
-                //TextureIDs?.ForEach(x => x.Value?.Dispose());
-                //TextureIDsPalettes?.ForEach(x => x.Value?.Dispose());
+                TextureIDs?.ForEach(x => x.Value?.Dispose());
+                TextureIDsPalettes?.ForEach(x => x.Value?.Dispose());
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
 

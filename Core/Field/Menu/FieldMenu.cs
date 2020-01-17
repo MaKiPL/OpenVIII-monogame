@@ -112,7 +112,10 @@ namespace OpenVIII.Fields.IGMData
         {
             int i = 0;
             if (CURSOR_SELECT == i++)
+            {
+                Module.Background.Dispose();//force all textures to reload.
                 Module.ResetField();
+            }
             else if (CURSOR_SELECT == i++)
             {
                 Module.Toggles = Module.Toggles.Flip(Module._Toggles.WalkMesh);
