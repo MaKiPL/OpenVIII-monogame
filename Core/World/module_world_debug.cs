@@ -1190,7 +1190,6 @@ namespace OpenVIII
                 playerPosition.Z + relativeTranslation.Z);
         }
 
-#if DEBUG
 
         private static byte bSelectedWalkable = 0;
         private static Point countofDebugFaces = Point.Zero;
@@ -1282,8 +1281,6 @@ namespace OpenVIII
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
             }
         }
-
-#endif
 
         /// <summary>
         /// translates the world map model so it's vertices are drawn as close to playerPosition
