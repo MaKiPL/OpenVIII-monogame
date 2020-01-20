@@ -23,13 +23,16 @@ namespace OpenVIII
             #endregion Fields
 
             #region Constructors
-            public Mngrp() { }
-            static public Mngrp Load() => Load<Mngrp>();
-            protected override void DefaultValues()
+
+            public Mngrp()
             {
-                SetValues(Memory.Archives.A_MENU, "mngrp.bin", "mngrphd.bin");
             }
-            #endregion Constructors-
+
+            public static Mngrp Load() => Load<Mngrp>();
+
+            protected override void DefaultValues() => SetValues(Memory.Archives.A_MENU, "mngrp.bin", "mngrphd.bin");
+
+            #endregion Constructors
 
             #region Enums
 
@@ -48,11 +51,13 @@ namespace OpenVIII
             {
                 ArchiveWorker aw = new ArchiveWorker(Archive, true);
                 MemoryStream ms = null;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(aw.GetBinaryFile(Filenames[1], true))))
-                {
-                    GetFileLocations(br);
-                    ms = null;
-                }
+                byte[] buffer = aw.GetBinaryFile(Filenames[1], true);
+                if (buffer != null)
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                    {
+                        GetFileLocations(br);
+                        ms = null;
+                    }
             }
 
             protected override void GetFileLocations(BinaryReader br)
@@ -74,41 +79,43 @@ namespace OpenVIII
                 GetFileLocations();
                 ArchiveWorker aw = new ArchiveWorker(Archive, true);
                 MemoryStream ms = null;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true))))
-                {
-                    //string contain padding values at start of file
-                    //then location data before strings
-                    StringsPadLoc = new uint[] { (uint)SectionID.tkmnmes1, (uint)SectionID.tkmnmes2, (uint)SectionID.tkmnmes3 };
-                    //only location data before strings
-                    StringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
+                byte[] buffer = aw.GetBinaryFile(Filenames[0], true);
+                if (buffer != null)
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                    {
+                        //string contain padding values at start of file
+                        //then location data before strings
+                        StringsPadLoc = new uint[] { (uint)SectionID.tkmnmes1, (uint)SectionID.tkmnmes2, (uint)SectionID.tkmnmes3 };
+                        //only location data before strings
+                        StringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
                             55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
                             71, 72, 73, 81, 82, 83, 84, 85, 86, 87, 88, 116};
-                    //complexstr has locations in first file,
-                    //and they have 8 bytes of stuff at the start of each entry, 6 bytes UNK and ushort length?
-                    //also can have multiple null ending strings per entry.
-                    ComplexStr = new Dictionary<uint, List<uint>> { { 74, new List<uint> { 75, 76, 77, 78, 79, 80 } } };
-                    //these files come in pairs. the bin has string offsets and 6 bytes of other data
-                    //msg is where the strings are.
-                    BinMSG = new Dictionary<uint, uint>
+                        //complexstr has locations in first file,
+                        //and they have 8 bytes of stuff at the start of each entry, 6 bytes UNK and ushort length?
+                        //also can have multiple null ending strings per entry.
+                        ComplexStr = new Dictionary<uint, List<uint>> { { 74, new List<uint> { 75, 76, 77, 78, 79, 80 } } };
+                        //these files come in pairs. the bin has string offsets and 6 bytes of other data
+                        //msg is where the strings are.
+                        BinMSG = new Dictionary<uint, uint>
                             {{106,111},{107,112},{108,113},{109,114},{110,115}};
 
-                    for (uint key = 0; key < Files.subPositions.Count; key++)
-                    {
-                        Loc fpos = Files.subPositions[(int)key];
-                        bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
-                        if (pad || Array.IndexOf(StringsLoc, key) >= 0)
-                            Get_Strings_Offsets(br, Filenames[0], key, pad);
-                        else if (BinMSG.ContainsKey(key))
+                        for (uint key = 0; key < Files.subPositions.Count; key++)
                         {
-                            Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)BinMSG[key]].seek, 1, 6);
+                            Loc fpos = Files.subPositions[(int)key];
+                            bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
+                            if (pad || Array.IndexOf(StringsLoc, key) >= 0)
+                                Get_Strings_Offsets(br, Filenames[0], key, pad);
+                            else if (BinMSG.ContainsKey(key))
+                            {
+                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)BinMSG[key]].seek, 1, 6);
+                            }
+                            else if (ComplexStr.ContainsKey(key))
+                            {
+                                Get_Strings_ComplexStr(br, Filenames[0], key, ComplexStr[key]);
+                            }
                         }
-                        else if (ComplexStr.ContainsKey(key))
-                        {
-                            Get_Strings_ComplexStr(br, Filenames[0], key, ComplexStr[key]);
-                        }
+                        ms = null;
                     }
-                    ms = null;
-                }
             }
 
             #endregion Methods

@@ -27,11 +27,10 @@ namespace OpenVIII
 
             public Kernel()
             { }
-            static public Kernel Load() => Load<Kernel>();
-            protected override void DefaultValues()
-            {
-                SetValues(Memory.Archives.A_MAIN, "kernel.bin");
-            }
+
+            public static Kernel Load() => Load<Kernel>();
+
+            protected override void DefaultValues() => SetValues(Memory.Archives.A_MAIN, "kernel.bin");
 
             #endregion Constructors
 
@@ -83,12 +82,13 @@ namespace OpenVIII
                 ArchiveWorker aw = new ArchiveWorker(Archive);
                 Files = new StringFile(56);
                 MemoryStream ms = null;
-
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true))))
-                {
-                    GetFileLocations(br);
-                    //index, grab, skip
-                    StringLocations = new Dictionary<uint, Tuple<uint, uint, uint>> {
+                byte[] buffer = aw.GetBinaryFile(Filenames[0], true);
+                if (buffer != null)
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                    {
+                        GetFileLocations(br);
+                        //index, grab, skip
+                        StringLocations = new Dictionary<uint, Tuple<uint, uint, uint>> {
                         //working
                         {0, new Tuple<uint, uint, uint>(31,2,4) },
                         {1, new Tuple<uint, uint, uint>(32,2,56) },
@@ -117,16 +117,16 @@ namespace OpenVIII
                         {30, new Tuple<uint, uint, uint>(55,1,0) },
                     };
 
-                    for (uint key = 0; key < Files.subPositions.Count; key++)
-                    {
-                        Loc fpos = Files.subPositions[(int)key];
-                        if (StringLocations.ContainsKey(key))
+                        for (uint key = 0; key < Files.subPositions.Count; key++)
                         {
-                            Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)(StringLocations[key].Item1)].seek, StringLocations[key].Item2, StringLocations[key].Item3);
+                            Loc fpos = Files.subPositions[(int)key];
+                            if (StringLocations.ContainsKey(key))
+                            {
+                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)(StringLocations[key].Item1)].seek, StringLocations[key].Item2, StringLocations[key].Item3);
+                            }
                         }
+                        ms = null;
                     }
-                    ms = null;
-                }
             }
 
             #endregion Methods

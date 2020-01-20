@@ -113,15 +113,16 @@ namespace OpenVIII
 
         public static void Init()
         {
+            Memory.Log.WriteLine($"{nameof(Init_debugger_battle)} :: {nameof(Init)}");
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            string[] test = aw.GetListOfFiles();
-            string sEncounter = test.First(x => x.ToLower().Contains("scene.out"));
-            byte[] sceneOut = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, sEncounter);
+            byte[] sceneOut = aw.GetBinaryFile("scene.out");
             ReadEncounter(sceneOut);
         }
 
         private static void ReadEncounter(byte[] enc)
         {
+            Memory.Log.WriteLine($"{nameof(Init_debugger_battle)} :: {nameof(ReadEncounter)}");
+            if (enc == null || enc.Length == 0) return;
             int encounterCount = enc.Length / 128;
             Memory.encounters = new Encounter[encounterCount];
 

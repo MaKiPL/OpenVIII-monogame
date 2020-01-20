@@ -10,6 +10,7 @@ namespace FFmpeg.AutoGen.Example
 
         public static void RegisterFFmpegBinaries()
         {
+            OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)}::{nameof(RegisterFFmpegBinaries)}");
             string libraryPath = "";
             switch (Environment.OSVersion.Platform)
             {

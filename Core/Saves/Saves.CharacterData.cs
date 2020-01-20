@@ -381,15 +381,15 @@ namespace OpenVIII
                 //Shadowcopy
                 CharacterData c = (CharacterData)MemberwiseClone();
                 //Deepcopy
-                c.Name = Name.Clone();
-                c.CompatibilitywithGFs = CompatibilitywithGFs.ToDictionary(e => e.Key, e => e.Value);
-                c.Stat_J = Stat_J.ToDictionary(e => e.Key, e => e.Value);
-                c.Magics = new OrderedDictionary<byte, byte>(Magics.Count);
+                c.Name = Name?.Clone();
+                c.CompatibilitywithGFs = CompatibilitywithGFs?.ToDictionary(e => e.Key, e => e.Value);
+                c.Stat_J = Stat_J?.ToDictionary(e => e.Key, e => e.Value);
+                c.Magics = new OrderedDictionary<byte, byte>(Magics?.Count??0);
                 foreach (KeyValuePair<byte, byte> magic in Magics)
                     c.Magics.Add(magic.Key, magic.Value);
-                c.RawStats = RawStats.ToDictionary(e => e.Key, e => e.Value);
-                c.Commands = Commands.ConvertAll(Item => Item);
-                c.Abilities = Abilities.ConvertAll(Item => Item);
+                c.RawStats = RawStats?.ToDictionary(e => e.Key, e => e.Value);
+                c.Commands = Commands?.ConvertAll(Item => Item);
+                c.Abilities = Abilities?.ConvertAll(Item => Item);
                 return c;
             }
 

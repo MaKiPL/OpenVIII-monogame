@@ -160,6 +160,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override void Refresh()
         {
+            if (Memory.State == null) return;
             Source = Memory.State;
             JunctionedGFs = Source.JunctionedGFs();
             UnlockedGFs = Source.UnlockedGFs;

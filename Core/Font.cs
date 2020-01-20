@@ -76,15 +76,19 @@ namespace OpenVIII
         public void LoadFonts()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-            string sysfntTdwFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tdw"));
-            string sysfntFilepath = aw.GetListOfFiles().First(x => x.ToLower().Contains("sysfnt.tex"));
-            TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntFilepath));
-            sysfnt = tex.GetTexture((int)ColorID.White);
-            sysfntbig = TextureHandler.Create("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
+            string[] filelist = aw.GetListOfFiles();
+            if (filelist != null)
+            {
+                string sysfntTdwFilepath = filelist.First(x => x.ToLower().Contains("sysfnt.tdw"));
+                string sysfntFilepath = filelist.First(x => x.ToLower().Contains("sysfnt.tex"));
+                TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntFilepath));
+                sysfnt = tex.GetTexture((int)ColorID.White);
+                sysfntbig = TextureHandler.Create("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
 
-            TDW tim = new TDW(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath), 0);
-            charWidths = tim.CharWidths;
-            menuFont = tim.GetTexture((ushort)ColorID.White);
+                TDW tim = new TDW(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath), 0);
+                charWidths = tim.CharWidths;
+                menuFont = tim.GetTexture((ushort)ColorID.White);
+            }
         }
 
         public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color_ = ColorID.White, bool blink = false)
@@ -162,7 +166,7 @@ namespace OpenVIII
                 if (!skipletter)
                 {
                     int deltaChar = GetDeltaChar(c);
-                    if (deltaChar >= 0 && deltaChar < charWidths.Length)
+                    if (deltaChar >= 0 && charWidths != null && deltaChar < charWidths.Length)
                     {
                         width = charWidths[deltaChar];
                         size.X = (int)(charWidths[deltaChar] * zoom.X);
@@ -321,13 +325,16 @@ namespace OpenVIII
                     break;
 
                 case Type.sysFntBig:
-                    if (!sysfntbig.Modded)
+                    if (sysfntbig != null)
                     {
-                        Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
-                        ShadowdestRect.Offset(2, 2);
-                        sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
+                        if (!sysfntbig.Modded)
+                        {
+                            Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
+                            ShadowdestRect.Offset(2, 2);
+                            sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
+                        }
+                        sysfntbig.Draw(destRect, sourceRect, color * Fade);
                     }
-                    sysfntbig.Draw(destRect, sourceRect, color * Fade);
                     break;
             }
         }

@@ -58,6 +58,7 @@ namespace OpenVIII
 
     public static partial class Memory
     {
+        internal static Log Log;
         public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
         public static List<Task> LeftOverTask = new List<Task>();
@@ -231,19 +232,21 @@ namespace OpenVIII
             AlphaDestinationBlend = Blend.DestinationAlpha,
             AlphaBlendFunction = BlendFunction.Add
         };
+
         /// <summary>
         /// subtract. Used for windows/glass makes color darker of things behind this layer.
         /// </summary>
         /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
         public static readonly BlendState blendState_Subtract = new BlendState
         {
-            ColorWriteChannels = ColorWriteChannels.Blue|ColorWriteChannels.Green|ColorWriteChannels.Red,
+            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
             ColorSourceBlend = Blend.One,
             //AlphaSourceBlend = Blend.One,
             ColorDestinationBlend = Blend.One,
             //AlphaDestinationBlend = Blend.One,
             ColorBlendFunction = BlendFunction.ReverseSubtract
         };
+
         /// <summary>
         /// add. seems to work if colors are preblended like if they overlap the colors combined ahead of time. Used for light.
         /// </summary>
@@ -257,6 +260,7 @@ namespace OpenVIII
             //AlphaDestinationBlend = Blend.One,
             ColorBlendFunction = BlendFunction.Add
         };
+
         /// <summary>
         /// untested add with blendfactor. You set the GraphicsDevice.BlendFactor before drawing.
         /// </summary>
@@ -310,6 +314,11 @@ namespace OpenVIII
                 tasks.Add(Task.Run(Saves.Init, token));
                 //tasks.Add(Task.Run(() => InitState = Saves.Data.LoadInitOut(), token));
                 tasks.Add(Task.Run(InitStrings, token));
+                //this initializes the field module, it's worth to have this at the beginning            
+                tasks.Add(Task.Run(Fields.Initializer.Init,token));
+                //this initializes the encounters
+                tasks.Add(Task.Run(Init_debugger_battle.Init));
+
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
                     //this initializes the fonts and drawing system- holds fonts in-memory
@@ -327,7 +336,7 @@ namespace OpenVIII
                 }
                 Task.WaitAll(tasks.ToArray());
                 InitState = Saves.Data.LoadInitOut();
-                State = InitState.Clone();
+                State = InitState?.Clone();
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
                     //// requires font, faces, and icons. currently cards only used in debug menu. will
@@ -352,6 +361,11 @@ namespace OpenVIII
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
+
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)})");
+            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics})");
+            Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch})");
+            Log.WriteLine($"{nameof(ContentManager)} :: {content})");
             Random = new Random((int)DateTime.Now.Ticks);
             mainThreadID = Thread.CurrentThread.ManagedThreadId;
             MainThreadOnlyActions = new ConcurrentQueue<Action>();
@@ -387,7 +401,8 @@ namespace OpenVIII
             get => _state; set
             {
                 _state = value;
-                _state.Loadtime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
+                if (_state != null)
+                    _state.Loadtime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
             }
         }
 
@@ -396,7 +411,9 @@ namespace OpenVIII
         public static Items_In_Menu MItems { get; private set; }
         public static Magazine Magazines { get; private set; }
         public static Saves.Data InitState { get; private set; }
+
         public static event EventHandler<MODULE> ModuleChangeEvent;
+
         public static MODULE Module
         {
             get => module; set
@@ -926,6 +943,7 @@ namespace OpenVIII
 
             public static string[] fields;
             public static int[] FieldMemory;
+
             public static string GetString() => fields?.ElementAtOrDefault(FieldID);
         }
     }

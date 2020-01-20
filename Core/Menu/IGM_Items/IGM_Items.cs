@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OpenVIII
@@ -84,25 +86,41 @@ namespace OpenVIII
             List<Task> tasks = new List<Task>
             {
                 Task.Run(() => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle})),
-                Task.Run(() => Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create(new Dictionary<FF8String, FF8String>() {
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203)},
-                    { Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181),Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182)}}))),
+                Task.Run(() => {
+                    FF8String[] keys = new FF8String[]{
+                        Strings.Name.Use, //todo add to Strings.Name
+                        Strings.Name.Rearrange,
+                        Strings.Name.Sort,
+                        Strings.Name.Battle };
+                    FF8String[] values = new FF8String[]{
+                        Strings.Description.Use, //todo add to Strings.Description
+                        Strings.Description.Rearrange,
+                        Strings.Description.Sort,
+                        Strings.Description.Battle};
+                    if(keys.Distinct().Count() == keys.Length && keys.Length == values.Length)
+                    Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create((from i in Enumerable.Range(0,keys.Length) select i).ToDictionary(x=>keys[x],x=>values[x])));
+                    else Data.TryAdd(SectionName.TopMenu, null);
+                }),
                 Task.Run(() => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Pos = new Rectangle(615, 0, 225, 66)})),
                 Task.Run(() => Data.TryAdd(SectionName.UseItemGroup, IGMData.Group.Base.Create(IGMData_Statuses.Create(),IGMData.Pool.Item.Create(),IGMData_TargetPool.Create())))
+                
             };
             Task.WaitAll(tasks.ToArray());
             ChoiceChangeHandler = help.TextChangeEvent;
             ItemPool.ItemChangeHandler += help.TextChangeEvent;
             ModeChangeHandler += help.ModeChangeEvent;
+            Func<bool> TopMenuInputs = null;
+            if (Data[SectionName.TopMenu] != null)
+                TopMenuInputs = Data[SectionName.TopMenu].Inputs;
             InputsDict = new Dictionary<Mode, Func<bool>>() {
-                {Mode.TopMenu, Data[SectionName.TopMenu].Inputs},
-                {Mode.SelectItem, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[1,0]).Inputs},
-                {Mode.UseItemOnTarget, ((IGMData.Base)((IGMData.Group.Base)Data[SectionName.UseItemGroup]).ITEM[2,0]).Inputs}
+                {Mode.TopMenu, TopMenuInputs},
+                {Mode.SelectItem, UseItemGroup.ITEM[1, 0].Inputs},
+                {Mode.UseItemOnTarget, UseItemGroup.ITEM[2, 0].Inputs}
                 };
             SetMode(Mode.SelectItem);
         }
+
+        private IGMData.Base UseItemGroup=> (IGMData.Group.Base)Data[SectionName.UseItemGroup];
 
         #endregion Methods
     }

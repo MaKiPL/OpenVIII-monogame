@@ -25,10 +25,11 @@ namespace OpenVIII
             #endregion Fields
 
             #region Constructors
+
             protected StringsBase()
             {
-
             }
+
             protected void SetValues(Memory.Archive archive, params string[] filenames)
             {
                 Debug.WriteLine("Task={0}, Thread={2}, [Files={1}]",
@@ -43,7 +44,7 @@ namespace OpenVIII
 
             #region Indexers
 
-            public FF8StringReference this[uint sectionid, int stringid] => Files[sectionid, stringid];
+            public FF8StringReference this[uint sectionid, int stringid] => Files?[sectionid, stringid];
 
             #endregion Indexers
 
@@ -191,25 +192,30 @@ namespace OpenVIII
                 }
                 return fPaddings;
             }
+
             protected abstract void DefaultValues();
-            static public T Load<T>() where T : StringsBase,new()
+
+            public static T Load<T>() where T : StringsBase, new()
             {
                 T r = new T();
                 r.DefaultValues();
                 r.LoadArchiveFiles();
                 return r;
             }
+
             protected void LoadArchiveFiles_Simple()
             {
                 ArchiveWorker aw = new ArchiveWorker(Archive, true);
                 MemoryStream ms;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(aw.GetBinaryFile(Filenames[0], true))))
-                {
-                    Files = new StringFile(1);
-                    Files.subPositions.Add(new Loc { seek = 0, length = uint.MaxValue });
-                    Get_Strings_Offsets(br, Filenames[0], 0);
-                    ms = null;
-                }
+                byte[] buffer = aw.GetBinaryFile(Filenames[0]);
+                if (buffer != null)
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer, true)))
+                    {
+                        Files = new StringFile(1);
+                        Files.subPositions.Add(new Loc { seek = 0, length = uint.MaxValue });
+                        Get_Strings_Offsets(br, Filenames[0], 0);
+                        ms = null;
+                    }
             }
         }
 

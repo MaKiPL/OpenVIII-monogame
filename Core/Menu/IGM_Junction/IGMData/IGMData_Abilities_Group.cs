@@ -97,7 +97,7 @@ namespace OpenVIII
                 base.Refresh();
 
                 int total_Count = (Commands?.Count ?? 0) + (Ability?.Count ?? 0);
-                if (Memory.State.Characters != null)
+                if (Memory.State?.Characters != null)
                 {//TODO fix this. these values should be set in init() not refresh...
                     SIZE = new Rectangle[total_Count];
                     CURSOR = new Point[total_Count];

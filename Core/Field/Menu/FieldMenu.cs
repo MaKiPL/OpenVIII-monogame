@@ -187,7 +187,7 @@ namespace OpenVIII.Fields.IGMData
                 skiprefresh = false;
                 return;
             }
-                FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString().ToUpper()}";
+                FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString()?.ToUpper()}";
 
             BLANKS[0] = false;
             if (Module.Mod != Module.Field_mods.DISABLED)

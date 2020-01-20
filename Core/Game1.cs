@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.IO;
 using System.Reflection;
 
 namespace OpenVIII
@@ -27,18 +28,16 @@ namespace OpenVIII
             IsFixedTimeStep = false;
             graphics.SynchronizeWithVerticalRetrace = false;
         }
-
         protected override void Initialize()
         {
+            Memory.Log = new Log();
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
             //Input.Init();
             Memory.Input2 = new Input2();
             Memory.Init(graphics, spriteBatch, Content);
             init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
-            Fields.Initializer.Init(); //this initializes the field module, it's worth to have this at the beginning
-            Init_debugger_battle.Init(); //this initializes the encounters
-
+            Memory.Log.WriteLine($"{nameof(Game)} :: {nameof(base.Initialize)}");
             base.Initialize();
         }
 

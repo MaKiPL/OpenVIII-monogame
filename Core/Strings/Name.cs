@@ -74,12 +74,18 @@
             public static FF8StringReference To_confirm => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 22);
             public static FF8StringReference Vit => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 229);
             public static FF8StringReference Yes => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
+            public static FF8String Use => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179);
 
-            #endregion Properties
+            public static FF8String Rearrange => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183);
 
-            #region Classes
+            public static FF8String Sort => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202);
 
-            public static class SideMenu
+            public static FF8String Battle => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181);
+        #endregion Properties
+
+        #region Classes
+
+        public static class SideMenu
             {
                 #region Properties
 

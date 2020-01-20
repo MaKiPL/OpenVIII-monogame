@@ -388,7 +388,7 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            int count = Memory.State.PartyData.Count;
+            int count = Memory.State?.PartyData.Count ?? 0;
             if (Memory.State?.PartyData != null &&
                 Damageable == null &&
                 PartyPos >= 0 &&

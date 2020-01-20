@@ -1,10 +1,8 @@
 ﻿using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
-using System.Linq;
 
 namespace OpenVIII
 {
-
     public static class Module_movie_test
     {
         private const MODULE defaultReturnState = MODULE.MAINMENU_DEBUG;
@@ -56,7 +54,8 @@ namespace OpenVIII
         public static void Play()
         {
             Player = Movie.Player.Load(Index);
-            Player.StateChanged += Player_StateChanged;
+            if (Player != null)
+                Player.StateChanged += Player_StateChanged;
         }
 
         private static void Player_StateChanged(object sender, Movie.STATE e)
@@ -69,7 +68,7 @@ namespace OpenVIII
         {
             if (Player == null || Player.IsDisposed)
                 Play();
-            Player.Update();
+            Player?.Update();
             Inputs();
         }
 
@@ -78,7 +77,7 @@ namespace OpenVIII
         public static void Reset()
         {
             Player = null;
-            ReturnState= defaultReturnState;
+            ReturnState = defaultReturnState;
         }
     }
 }

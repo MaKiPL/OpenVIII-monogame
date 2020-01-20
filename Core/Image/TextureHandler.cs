@@ -241,7 +241,7 @@ namespace OpenVIII
             Texture2D tex = null;
             if (!string.IsNullOrWhiteSpace(pngpath) && !_pngs.TryGetValue(pngpath, out tex))
             {
-                using (FileStream fs = new FileStream(pngpath,FileMode.Open,FileAccess.Read,FileShare.ReadWrite))
+                using (FileStream fs = new FileStream(pngpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
                     _pngs.TryAdd(pngpath, tex);
@@ -278,7 +278,7 @@ namespace OpenVIII
 
         public static Rectangle ToRectangle(Vector2 loc, Vector2 size) => new Rectangle(loc.ToPoint(), size.ToPoint());
 
-        public static Vector2 ToVector2(Texture2D t) => new Vector2(t.Width, t.Height);
+        public static Vector2 ToVector2(Texture2D t) => t!=null?new Vector2(t.Width, t.Height):Vector2.Zero;
 
         public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
 
@@ -304,7 +304,8 @@ namespace OpenVIII
         public static Texture2D UseBest(Texture_Base _old, Texture2D _new, out Vector2 scale, ushort palette = 0, Color[] colors = null)
         {
             Texture2D tex;
-            if (_new == null)
+
+            if (_new == null && _old != null)
             {
                 scale = Vector2.One;
                 if (_old.GetClutCount <= 1)
@@ -352,7 +353,7 @@ namespace OpenVIII
 
         public void Merge()
         {
-            if (Rows * Cols > 1)
+            if (Rows * Cols > 1 && Textures != null && Textures.Length >= Rows * Cols)
             {
                 if (Memory.IsMainThread)
                 {
@@ -362,7 +363,7 @@ namespace OpenVIII
                     {
                         int rowwidth = 0;
                         int rowheight = 0;
-                        for (int c = 0; c < (int)Cols; c++)
+                        for (int c = 0; c < (int)Cols && Textures[c, r] != null; c++)
                         {
                             rowwidth += Textures[c, r].Width;
                             if (rowheight < Textures[c, r].Height)
@@ -372,7 +373,7 @@ namespace OpenVIII
                             width = rowwidth;
                         height += rowheight;
                     }
-
+                    if (width == 0 || height == 0) return;
                     Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
                     Rectangle dst = new Rectangle();
                     for (int r = 0; r < (int)Rows; r++)
@@ -436,7 +437,14 @@ namespace OpenVIII
                 {
                     Texture2D pngTex;
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-                    string path = aw.GetListOfFiles().FirstOrDefault(x => (x.IndexOf(string.Format(Filename, c + r * Cols + StartOffset), StringComparison.OrdinalIgnoreCase) >= 0));
+                    string[] filelist = aw.GetListOfFiles();
+                    string path = "";
+                    if (filelist != null)
+                    {
+                        string value = string.Format(Filename, c + r * Cols + StartOffset);
+                        path = filelist.FirstOrDefault(x => (x.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0));
+                    }
+
                     if (!string.IsNullOrWhiteSpace(path))
                     {
                         tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
@@ -485,8 +493,12 @@ namespace OpenVIII
                     for (uint c = 0; c < Cols; c++)
                     {
                         Vector2 scale = GetScale(Size, dst.Size.ToVector2());
-                        dstV = ToVector2(Textures[c, r]) * scale;
-                        Memory.spriteBatch.Draw(Textures[c, r], dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+                        Texture2D texture = Textures[c, r];
+                        if (texture != null)
+                        {
+                            dstV = ToVector2(texture) * scale;
+                            Memory.spriteBatch.Draw(texture, dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+                        }
 
                         dstOffset.X += dstV.X;
                     }
@@ -641,6 +653,7 @@ namespace OpenVIII
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -651,7 +664,7 @@ namespace OpenVIII
                 {
                     // TODO: dispose managed state (managed objects).
                 }
-                if(!string.IsNullOrWhiteSpace(ModdedFilename) && _pngs.TryRemove(ModdedFilename,out Texture2D tex))
+                if (!string.IsNullOrWhiteSpace(ModdedFilename) && _pngs.TryRemove(ModdedFilename, out Texture2D tex))
                 {
                     if (!tex.IsDisposed)
                     {
@@ -659,9 +672,9 @@ namespace OpenVIII
                         tex = null;
                     }
                 }
-                if(!string.IsNullOrWhiteSpace(Filename) && _ths.TryRemove(Filename,out TextureHandler texh))
+                if (!string.IsNullOrWhiteSpace(Filename) && _ths.TryRemove(Filename, out TextureHandler texh))
                 {
-                    foreach(var t in texh.Textures)
+                    foreach (Texture2D t in texh.Textures)
                     {
                         if (!t.IsDisposed)
                         {
@@ -674,7 +687,6 @@ namespace OpenVIII
                 // TODO: set large fields to null.
 
                 // TODO need an easy way to remove old textures from cache.
-                    
 
                 disposedValue = true;
             }
@@ -687,14 +699,11 @@ namespace OpenVIII
         // }
 
         // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
+        public void Dispose() =>
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
+            Dispose(true);// TODO: uncomment the following line if the finalizer is overridden above.// GC.SuppressFinalize(this);
+
+        #endregion IDisposable Support
 
         #endregion Methods
     }

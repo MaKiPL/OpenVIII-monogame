@@ -51,6 +51,7 @@ namespace OpenVIII
 
         public Input2(bool skip = false)
         {
+            Memory.Log.WriteLine($"{nameof(Input2)} :: {this}");
             if (!skip)
             {
                 if (Keyboard == null)

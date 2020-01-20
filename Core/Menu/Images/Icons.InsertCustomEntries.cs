@@ -12,6 +12,7 @@ namespace OpenVIII
         /// <remarks>Maybe one day we can export these to an xml file and read it in on launch.</remarks>
         protected override void InsertCustomEntries()
         {
+            if (Entries == null) return;
             Entry BG = new Entry
             {
                 X = 0,

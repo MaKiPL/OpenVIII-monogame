@@ -9,7 +9,6 @@ namespace OpenVIII
     /// </summary>
     public class FF8String : IEnumerator, IEnumerable
     {
-
         #region Fields
 
         protected byte[] value;
@@ -25,6 +24,7 @@ namespace OpenVIII
         }
 
         public FF8String(byte[] @value) => this.value = @value;
+
         public FF8String(string @value) => this.value = @value != null ? encoding.GetBytes(@value) : null;
 
         #endregion Constructors
@@ -38,7 +38,8 @@ namespace OpenVIII
         /// This is incorrect as null can be in the beginning of strings as a marker or tag.
         /// But I can't figure out how to make his code leave null as null.
         /// </summary>
-        public string Value_str => encoding.GetString(Value??new byte[]{ }).TrimEnd('\0').Replace("{End}","");
+        public string Value_str => encoding.GetString(Value ?? new byte[] { }).TrimEnd('\0').Replace("{End}", "");
+
         public virtual int Length => value == null ? 0 : value.Length;
 
         #endregion Properties
@@ -74,19 +75,38 @@ namespace OpenVIII
 
         public static FF8String operator +(FF8String a, FF8String b)
         {
-            FF8String s = a.Clone();
-            return s.Append(b);
+            if (a != null && a.Length >0)
+            {
+                FF8String s = a.Clone();
+                if (b != null && b.Length > 0)
+                    return s.Append(b);
+                else
+                    return a;
+            }
+            return b;
         }
+
         public static FF8String operator +(FF8String a, string b)
         {
-            FF8String s = a.Clone();
-            return s.Append(b);
+            if (a != null && a.Length > 0)
+            {
+                if (!string.IsNullOrWhiteSpace(b))
+                {
+                    FF8String s = a.Clone();
+                    return s.Append(b);
+                }
+                else
+                    return a;
+            }
+            return b;
         }
+
         public static FF8String operator +(string a, FF8String b)
         {
             FF8String s = new FF8String(a);
             return s.Append(b);
         }
+
         public FF8String Append(FF8String end)
         {
             if (Value != null && Value.Length > 0)
@@ -116,7 +136,8 @@ namespace OpenVIII
                 };
             else return new FF8String();
         }
-        public FF8String Replace(FF8String a,FF8String b)
+
+        public FF8String Replace(FF8String a, FF8String b)
         {
             if (Length > 0)
             {
@@ -147,6 +168,7 @@ namespace OpenVIII
             }
             return this;
         }
+
         public IEnumerator GetEnumerator()
         {
             if (Value != null && Value.Length > 0)

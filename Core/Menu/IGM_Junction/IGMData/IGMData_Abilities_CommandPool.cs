@@ -13,8 +13,12 @@ namespace OpenVIII
 
             public static IGMData_Abilities_CommandPool Create()
             {
-                IGMData_Abilities_CommandPool r = Create<IGMData_Abilities_CommandPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.COMMAND }, 11, Kernel_bin.Commandabilities.Count / 11 + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0));
-                r.Source = Kernel_bin.Commandabilities;
+                IGMData_Abilities_CommandPool r = null;
+                if (Kernel_bin.Commandabilities != null)
+                {
+                    r = Create<IGMData_Abilities_CommandPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.COMMAND }, 11, (Kernel_bin.Commandabilities.Count / 11) + (Kernel_bin.Commandabilities.Count % 11 > 0 ? 1 : 0));
+                    r.Source = Kernel_bin.Commandabilities;
+                }
                 return r;
             }
 

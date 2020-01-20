@@ -405,8 +405,9 @@ namespace OpenVIII
                 if (!@enum.GetType().Equals(typeof(GFs))) throw new ArgumentException($"Enum {@enum} is not GFs");
                 StatusImmune = true;
                 ID = (GFs)@enum;
-                Name = br.ReadBytes(12);//0x00 (0x00 terminated)
-                if (string.IsNullOrWhiteSpace(Name)) Name = Memory.Strings.GetName((GFs)@enum);
+                base.Name = br.ReadBytes(12);//0x00 (0x00 terminated)
+                if (string.IsNullOrWhiteSpace(Name))
+                    Name = Memory.Strings.GetName((GFs)@enum);
                 Experience = br.ReadUInt32();//0x0C
                 Unknown = br.ReadByte();//0x10
                 Exists = br.ReadByte() == 1 ? true : false;//0x11 //1 unlocked //0 locked

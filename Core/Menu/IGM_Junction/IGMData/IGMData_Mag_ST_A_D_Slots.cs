@@ -65,7 +65,7 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State.Characters != null && Damageable != null)
+                if (Memory.State?.Characters != null && Damageable != null)
                 {
                     base.Refresh();
                     FillData(Icons.ID.Icon_Status_Attack, Kernel_bin.Stat.ST_Atk, Kernel_bin.Stat.ST_Def_1);

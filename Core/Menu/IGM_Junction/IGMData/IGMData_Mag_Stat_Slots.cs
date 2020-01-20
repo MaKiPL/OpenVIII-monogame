@@ -123,12 +123,12 @@ namespace OpenVIII
             /// </summary>
             public override void Refresh()
             {
-                if (Memory.State.Characters != null)
+                if (Memory.State?.Characters != null)
                 {
                     Contents = Array.ConvertAll(Contents, c => c = default);
                     base.Refresh();
 
-                    if (Memory.State.Characters != null && unlocked != null)
+                    if (unlocked != null)
                     {
                         ((IGMDataItem.Icon)ITEM[5, 0]).Palette =
                             (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7);

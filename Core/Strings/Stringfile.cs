@@ -18,7 +18,16 @@ namespace OpenVIII
             sPositions = new Dictionary<uint, List<FF8StringReference>>(count);
             subPositions = new List<Loc>(count);
         }
-        public FF8StringReference this[uint i,int j] => sPositions[i][j];
+        public FF8StringReference this[uint i, int j]
+        {
+            get
+            {
+                if (sPositions != null && sPositions.TryGetValue(i, out List<FF8StringReference> listofstrings) && listofstrings.Count > j)
+                    return sPositions[i][j];
+                else return null;
+            }
+        }
+
         public Loc this[int i] => subPositions[i];
 
 

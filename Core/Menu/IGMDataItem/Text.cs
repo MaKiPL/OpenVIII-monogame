@@ -93,7 +93,11 @@ namespace OpenVIII.IGMDataItem
         private void OffsetIcon()
         {
             if (_icon != Icons.ID.None)
-                DataSize.Offset(Memory.Icons.GetEntryGroup(_icon).Width * Scale.X, 0);
+            {
+                EntryGroup entryGroup = Memory.Icons.GetEntryGroup(_icon);
+                if (entryGroup != null)
+                    DataSize.Offset(entryGroup.Width * Scale.X, 0);
+            }
         }
 
         #endregion Methods

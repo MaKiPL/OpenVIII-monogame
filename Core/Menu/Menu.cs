@@ -260,17 +260,21 @@ namespace OpenVIII
             if (offset == null)
                 offset = new Vector2(-1.15f, -.3f);
             Vector2 scale = new Vector2(_menuitemscale);
-            Vector2 size = Memory.Icons.GetEntry(Icons.ID.Finger_Right, 0).Size * scale;
-            Rectangle dst = new Rectangle(cursor, Point.Zero);
-            byte pallet = 2;
-            byte fadedpallet = 7;
-            dst.Offset(size * offset.Value);
-            Memory.Icons.Trim(Icons.ID.Finger_Right, pallet);
-            if (blink)
+            Entry Finger_Right = Memory.Icons.GetEntry(Icons.ID.Finger_Right, 0);
+            if (Finger_Right != null)
             {
-                Memory.Icons.Draw(Icons.ID.Finger_Right, fadedpallet, dst, scale, Fade);
+                Vector2 size = Finger_Right.Size * scale;
+                Rectangle dst = new Rectangle(cursor, Point.Zero);
+                byte pallet = 2;
+                byte fadedpallet = 7;
+                dst.Offset(size * offset.Value);
+                Memory.Icons.Trim(Icons.ID.Finger_Right, pallet);
+                if (blink)
+                {
+                    Memory.Icons.Draw(Icons.ID.Finger_Right, fadedpallet, dst, scale, Fade);
+                }
+                Memory.Icons.Draw(Icons.ID.Finger_Right, pallet, dst, scale, blink ? Fade * Blink_Amount : Fade);
             }
-            Memory.Icons.Draw(Icons.ID.Finger_Right, pallet, dst, scale, blink ? Fade * Blink_Amount : Fade);
         }
 
         public static void FadeIn()
@@ -442,7 +446,7 @@ namespace OpenVIII
         protected override void RefreshChild()
         {
             if (!skipdata)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data)
+                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x=>x.Value !=null))
                 // children might have a damageable set.
                 // if parents may not always have one set.
                 {

@@ -12,8 +12,7 @@ namespace OpenVIII
         {
             #region Fields
 
-            private bool skipReInit = false;
-            private Dictionary<Enum, FF8String> strings;
+            private bool skipRefresh = false;
             private int vSpace;
 
             #endregion Fields
@@ -30,7 +29,7 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State.Characters != null && !skipReInit)
+                if (Memory.State?.Characters != null && !skipRefresh)
                 {
                     //skipReInit = true;
                     //IGMDataItem.Empty c;
@@ -58,7 +57,7 @@ namespace OpenVIII
                                 BlankArea(i);
                         }
                     }
-                    skipReInit = false;
+                    skipRefresh = false;
                 }
             }
 

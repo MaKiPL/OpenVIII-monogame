@@ -107,6 +107,7 @@ namespace OpenVIII
 
         public static void Init()
         {
+            Memory.Log.WriteLine($"{nameof(init_debugger_Audio)} :: {nameof(Init)}");
             // PC 2000 version has an CD audio track for eyes on me. I don't think we can play that.
             const int unkPrefix = 999;
             const int altLoserPrefix = 512;
@@ -174,6 +175,7 @@ namespace OpenVIII
         //I messed around here as figuring out how things worked probably didn't need to mess with this.
         public static void Init_SoundAudio()
         {
+            Memory.Log.WriteLine($"{nameof(init_debugger_Audio)} :: {nameof(Init_SoundAudio)}");
             string path = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.fmt");
             if (File.Exists(path))
             {

@@ -58,7 +58,7 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State.Characters != null)
+                if (Memory.State?.Characters != null)
                 {
                     sbyte pos = 0;
                     bool ret = base.Update();

@@ -84,8 +84,35 @@ namespace OpenVIII
             ArchiveWorker tmp = new ArchiveWorker(archive, true);
             return tmp.GetBinaryFile(fileName, cache);
         }
+        public override ArchiveBase GetArchive(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new FileNotFoundException("NO FILENAME");
+            if (FL != null && FL.Length > 0 && FI != null && FL.Length > 0 && FI != null && FL.Length > 0)
+                FindFile(ref fileName, new MemoryStream(FL, false));
+            if (isDir)
+            {
+                if (FileList == null || FileList.Length == 0)
+                    ProduceFileLists();
+                fileName = FileList.FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+            else
+            if (File.Exists(_path.FL))
+                using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    FindFile(ref fileName, fs);
+            return GetArchive((Memory.Archive)fileName);
+        }
 
-        public override ArchiveBase GetArchive(Memory.Archive archive) => new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL)) { _path = archive };
+        public override ArchiveBase GetArchive(Memory.Archive archive)
+        {
+            byte[] fI = GetBinaryFile(archive.FI);
+            byte[] fS = GetBinaryFile(archive.FS);
+            byte[] fL = GetBinaryFile(archive.FL);
+            if (fI == null || fS == null || fL == null ||
+                fI.Length == 0 || fS.Length == 0 || fL.Length == 0)
+                return null;
+            return new ArchiveWorker(fI, fS, fL) { _path = archive };
+        }
 
         /// <summary>
         /// GetBinary
@@ -102,13 +129,17 @@ namespace OpenVIII
             else
             if (!isDir)
             {
-                int loc = FindFile(ref fileName, new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)); //File.OpenRead(_path.FL));
+                int loc = -1;
+                if (File.Exists(_path.FL))
+                    using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        loc = FindFile(ref fileName, fs); //File.OpenRead(_path.FL));
+              
 
-                // read file list
+                    // read file list
 
-                if (loc == -1)
+                    if (loc == -1)
                 {
-                    Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");
+                    Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: {_path.FL}");
                     //throw new Exception("ArchiveWorker: No such file!");
                 }
                 else
@@ -116,7 +147,9 @@ namespace OpenVIII
             }
             else
                 return GetBinaryFile(fileName, 0, cache);
-            throw new FileNotFoundException($"Searched {_path} and could not find {fileName}.", fileName);
+
+            Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: Searched {_path} and could not find {fileName}");
+            return null;
         }
 
         //public Stream GetBinaryFileStream(string fileName, bool cache = false) => throw new NotImplementedException();
@@ -124,7 +157,11 @@ namespace OpenVIII
         /// <summary>
         /// Get current file list for loaded archive.
         /// </summary>
-        public override string[] GetListOfFiles() => FileList;
+        public override string[] GetListOfFiles()
+        {
+            if (FileList == null) FileList = ProduceFileLists();
+            return FileList;
+        }
 
         public override Memory.Archive GetPath() => _path;
 
@@ -250,11 +287,17 @@ namespace OpenVIII
         /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
         private string[] ProduceFileLists()
         {
-            if (isDir)
-                return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
-            if (FL != null && FL.Length > 0)
-                return GetListOfFiles(FL);
-            return ProduceFileLists(new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+            if (_path != null)
+            {
+                if (isDir)
+                    return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+                if (FL != null && FL.Length > 0)
+                    return GetListOfFiles(FL);
+                if (File.Exists(_path.FL))
+                    using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+            }
+            return null;
         }
 
         private string[] ProduceFileLists(Stream s)

@@ -104,6 +104,7 @@ namespace OpenVIII
             IEnumerable<int> intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
             Rectangle dst = new Rectangle { Location = location.ToPoint() };
             DataSize = dst;
+            if(Entries!=null)
             foreach (int i in intList)
             {
                 if (!skipdraw)
@@ -120,33 +121,42 @@ namespace OpenVIII
 
         public void Draw(Enum id, int palette, Rectangle dst, Vector2 scale, float fade = 1f, Color? color = null)
         {
-            if ((ID)id != ID.None)
-                Entries[(ID)id].Draw(Textures, palette, dst, scale, fade, color);
+            if ((ID)id != ID.None && Textures.Count>0)
+                Entries?[(ID)id].Draw(Textures, palette, dst, scale, fade, color);
         }
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1) => Draw((ID)id, 2, dst, Vector2.One, fade);
 
-        public Entry GetEntry(Enum id, int index) => Entries[(ID)id][index] ?? null;
+        public Entry GetEntry(Enum id, int index) => Entries?[(ID)id]?[index] ?? null;
 
         public override Entry GetEntry(Enum id) => Entries[(ID)id][0] ?? null;
 
         public EntryGroup GetEntryGroup(Enum id)
         {
             if ((ID)id != ID.None)
-                return Entries[(ID)id] ?? null;
+                return Entries?[(ID)id];
             return null;
         }
 
         public Color MostSaturated(Enum ic, byte pal)
         {
-            EntryGroup eg = this[(ID)ic];
-            return eg.MostSaturated(Textures[pal], pal);
+            if (Textures.Count > pal)
+            {
+                EntryGroup eg = this[(ID)ic];
+                if (eg != null)
+                {
+                    TextureHandler tex = Textures[pal];
+                    return eg.MostSaturated(tex, pal);
+                }
+            }
+            return default;
         }
 
         public override void Trim(Enum ic, byte pal)
         {
             EntryGroup eg = this[(ID)ic];
-            eg.Trim(Textures[pal]);
+            if (Textures != null && Textures.Count > pal)
+                eg.Trim(Textures[pal]);
         }
 
         protected override void DefaultValues()
@@ -177,34 +187,33 @@ namespace OpenVIII
             {
                 //read from icon.sp1
                 MemoryStream ms = null;
-
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(
-                    ArchiveWorker.GetBinaryFile(ArchiveString,
-                    aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0)))))
-                {
-                    Loc[] locs = new Loc[br.ReadUInt32()];
-                    for (int i = 0; i < locs.Length; i++)
+                byte[] buffer = aw.GetBinaryFile(IndexFilename);
+                if (buffer != null)
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
-                        locs[i].seek = br.ReadUInt16();
-                        locs[i].length = br.ReadUInt16();
-                    }
-                    Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
-                    for (int i = 0; i < locs.Length; i++)
-                    {
-                        ms.Seek(locs[i].seek, SeekOrigin.Begin);
-                        byte c = (byte)locs[i].length;
-                        Entries[(ID)i] = new EntryGroup(c);
-                        for (int e = 0; e < c; e++)
+                        Loc[] locs = new Loc[br.ReadUInt32()];
+                        for (int i = 0; i < locs.Length; i++)
                         {
-                            Entry tmp = new Entry();
-                            tmp.LoadfromStreamSP1(br);
-                            tmp.Part = (byte)e;
-                            tmp.SetLoc(locs[i]);
-                            Entries[(ID)i].Add(tmp);
+                            locs[i].seek = br.ReadUInt16();
+                            locs[i].length = br.ReadUInt16();
                         }
+                        Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
+                        for (int i = 0; i < locs.Length; i++)
+                        {
+                            ms.Seek(locs[i].seek, SeekOrigin.Begin);
+                            byte c = (byte)locs[i].length;
+                            Entries[(ID)i] = new EntryGroup(c);
+                            for (int e = 0; e < c; e++)
+                            {
+                                Entry tmp = new Entry();
+                                tmp.LoadfromStreamSP1(br);
+                                tmp.Part = (byte)e;
+                                tmp.SetLoc(locs[i]);
+                                Entries[(ID)i].Add(tmp);
+                            }
+                        }
+                        ms = null;
                     }
-                    ms = null;
-                }
             }
         }
 
@@ -213,25 +222,28 @@ namespace OpenVIII
             Textures = new List<TextureHandler>();
             for (int t = 0; t < Props.Count; t++)
             {
-                T tex = new T();
-                tex.Load(ArchiveWorker.GetBinaryFile(ArchiveString,
-                    aw.GetListOfFiles().First(x => x.IndexOf(Props[t].Filename, StringComparison.OrdinalIgnoreCase) >= 0)));
-                if (Props[t].Colors == null || Props[t].Colors.Length == 0)
+                byte[] buffer = aw.GetBinaryFile(Props[t].Filename);
+                if (buffer != null)
                 {
-                    for (ushort i = 0; i < tex.GetClutCount; i++)
+                    T tex = new T();
+                    tex.Load(buffer);
+                    if (Props[t].Colors == null || Props[t].Colors.Length == 0)
+                    {
+                        for (ushort i = 0; i < tex.GetClutCount; i++)
+                        {
+                            if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
+                                Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, i));
+                            else
+                                Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, i));
+                        }
+                    }
+                    else
                     {
                         if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
-                            Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, i));
+                            Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, (ushort)Textures.Count, colors: Props[t].Big[0].Colors ?? Props[t].Colors));
                         else
-                            Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, i));
+                            Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, (ushort)Textures.Count, colors: Props[t].Colors));
                     }
-                }
-                else
-                {
-                    if (FORCE_ORIGINAL == false && Props[t].Big != null && Props[t].Big.Count > 0)
-                        Textures.Add(TextureHandler.Create(Props[t].Big[0].Filename, tex, 2, Props[t].Big[0].Split / 2, (ushort)Textures.Count, colors: Props[t].Big[0].Colors ?? Props[t].Colors));
-                    else
-                        Textures.Add(TextureHandler.Create(Props[t].Filename, tex, 1, 1, (ushort)Textures.Count, colors: Props[t].Colors));
                 }
             }
         }

@@ -18,7 +18,7 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     int pos = 0;
                     foreach (var gf in c.JunctionedGFs)

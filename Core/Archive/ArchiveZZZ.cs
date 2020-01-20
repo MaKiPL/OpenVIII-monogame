@@ -8,6 +8,12 @@ namespace OpenVIII
 {
     public class ArchiveZZZ : ArchiveBase
     {
+        public override ArchiveBase GetArchive(string fileName)
+        {
+            fileName = headerData.GetFilenames().FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (string.IsNullOrWhiteSpace(fileName)) return null;
+            return GetArchive((Memory.Archive)fileName);
+        }
         public override ArchiveBase GetArchive(Memory.Archive archive)
         {
             return new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));

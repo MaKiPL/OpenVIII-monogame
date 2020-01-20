@@ -32,25 +32,42 @@ namespace OpenVIII.Card
             Memory.MainThreadOnlyActions.Enqueue(() =>
             {
                 //Memory.EnableDumpingData = true;
-                using (BinaryReader br = new BinaryReader(FileStreamOpen()))
-                    ReadSymbolsNumbers(0, br);
+                FileStream input = FileStreamOpen();
+                if (input != null)
+                {
+                    using (BinaryReader br = new BinaryReader(input))
+                        ReadSymbolsNumbers(0, br);
+                }
                 //Memory.EnableDumpingData = false;
             });
 
             Memory.MainThreadOnlyActions.Enqueue(() =>
             {
-                using (BinaryReader br = new BinaryReader(FileStreamOpen()))
-                    ReadCardFaces(2, br);
+                FileStream input = FileStreamOpen();
+                if (input != null)
+                    using (BinaryReader br = new BinaryReader(input))
+                        ReadCardFaces(2, br);
             });
-            using (BinaryReader br = new BinaryReader(FileStreamOpen()))
+
+            Memory.MainThreadOnlyActions.Enqueue(() =>
             {
-                //ReadTIM(1, br,out Other);
-                ReadTIM(50, br, out _cardGameBG);
-                ReadTIM(51, br, out _cardOtherBG);
-            }
+                FileStream input = FileStreamOpen();
+                if (input != null)
+                    using (BinaryReader br = new BinaryReader(input))
+                {
+                    //ReadTIM(1, br,out Other);
+                    ReadTIM(50, br, out _cardGameBG);
+                    ReadTIM(51, br, out _cardOtherBG);
+                }
+            });
         }
 
-        private FileStream FileStreamOpen() => new FileStream(EXE_Offsets.FileName[year], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        private FileStream FileStreamOpen()
+        {
+            if (File.Exists(EXE_Offsets.FileName[year]))
+                return new FileStream(EXE_Offsets.FileName[year], FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return null;
+        }
 
         private void ReadCardFaces(int id, BinaryReader br)
         {

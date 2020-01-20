@@ -15,7 +15,7 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                if (CONTAINER != null)
+                if (CONTAINER != null && Memory.State != null)
                     ((IGMDataItem.Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID);
             }
 

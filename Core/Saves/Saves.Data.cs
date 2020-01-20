@@ -524,13 +524,18 @@ namespace OpenVIII
 
             public static Data LoadInitOut()
             {
-                Data r = new Data();
                 ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MAIN, true);
-                using (BinaryReader br = new BinaryReader(new MemoryStream(aw.GetBinaryFile("init.out"))))
+                byte[] buffer = aw.GetBinaryFile("init.out");
+                if (buffer != null && buffer.Length >0)
                 {
-                    r.ReadInitOut(br);
+                    using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                    {
+                        Data data = new Data();
+                        data.ReadInitOut(br);
+                        return data;
+                    }
                 }
-                return r;
+                return null;
             }
 
             /// <summary>

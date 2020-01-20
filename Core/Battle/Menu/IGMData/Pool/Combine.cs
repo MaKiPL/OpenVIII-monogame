@@ -71,25 +71,27 @@ namespace OpenVIII.IGMData.Pool
                 }
                 return true;
             }
-            foreach (Kernel_bin.Rinoa_limit_breaks_part_1 lb in Kernel_bin.Rinoalimitbreakspart1)
-                if (!AddAngelo(new KernelItem
-                {
-                    rinoa_Limit_Breaks_Part_1 = lb,
-                    rinoa_Limit_Breaks_Part_2 = lb.Angelo == Angelo.Angel_Wing ?
-                    Kernel_bin.Rinoalimitbreakspart2.First(x => x.Angelo == lb.Angelo) : null
-                })) break;
-            foreach (Kernel_bin.Rinoa_limit_breaks_part_2 lb in Kernel_bin.Rinoalimitbreakspart2)
-                if (lb.Angelo != Angelo.Angel_Wing && !AddAngelo(
-                    new KernelItem { rinoa_Limit_Breaks_Part_2 = lb })) break;
+            if (Kernel_bin.Rinoalimitbreakspart1 != null)
+                foreach (Kernel_bin.Rinoa_limit_breaks_part_1 lb in Kernel_bin.Rinoalimitbreakspart1)
+                    if (!AddAngelo(new KernelItem
+                    {
+                        rinoa_Limit_Breaks_Part_1 = lb,
+                        rinoa_Limit_Breaks_Part_2 = lb.Angelo == Angelo.Angel_Wing ?
+                        Kernel_bin.Rinoalimitbreakspart2.First(x => x.Angelo == lb.Angelo) : null
+                    })) break;
+            if (Kernel_bin.Rinoalimitbreakspart2 != null)
+                foreach (Kernel_bin.Rinoa_limit_breaks_part_2 lb in Kernel_bin.Rinoalimitbreakspart2)
+                    if (lb.Angelo != Angelo.Angel_Wing && !AddAngelo(
+                        new KernelItem { rinoa_Limit_Breaks_Part_2 = lb })) break;
             IEnumerable<Kernel_bin.Non_Junctionable_GFs_Attacks_Data> non_Junctionable_GFs_Attacks_Datas =
-                Kernel_bin.NonJunctionableGFsAttacksData.Where(x => !x.Angelo.Equals(Angelo.None));
-            List<Kernel_bin.Non_Junctionable_GFs_Attacks_Data> tmp = non_Junctionable_GFs_Attacks_Datas.ToList();
-            foreach (Kernel_bin.Non_Junctionable_GFs_Attacks_Data lb in non_Junctionable_GFs_Attacks_Datas)
-                if (!AddAngelo(
-                    new KernelItem { non_Junctionable_GFs_Attacks_Data = lb })) break;
-            DefaultPages = (Kernel_bin.Rinoalimitbreakspart1.Count +
-                Kernel_bin.Rinoalimitbreakspart2.Count +
-                non_Junctionable_GFs_Attacks_Datas.Count() - 1) / Rows;
+                Kernel_bin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
+            if (non_Junctionable_GFs_Attacks_Datas != null)
+                foreach (Kernel_bin.Non_Junctionable_GFs_Attacks_Data lb in non_Junctionable_GFs_Attacks_Datas)
+                    if (!AddAngelo(
+                        new KernelItem { non_Junctionable_GFs_Attacks_Data = lb })) break;
+            DefaultPages = ((Kernel_bin.Rinoalimitbreakspart1?.Count ?? 0) +
+                (Kernel_bin.Rinoalimitbreakspart2?.Count ?? 0) +
+                (non_Junctionable_GFs_Attacks_Datas?.Count() ?? 1) - 1) / Rows;
             for (; i < Rows; i++)
             {
                 BLANKS[i] = true;

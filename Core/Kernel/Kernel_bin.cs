@@ -64,6 +64,7 @@ namespace OpenVIII
         public static IReadOnlyDictionary<Abilities, Menu_abilities> Menuabilities => s_menuabilities;  //17
         public static IReadOnlyList<Temporary_character_limit_breaks> Temporarycharacterlimitbreaks => s_temporarycharacterlimitbreaks;  //18
         public static IReadOnlyDictionary<Blue_Magic, Blue_magic_Quistis_limit_break> BluemagicQuistislimitbreak => s_bluemagicQuistislimitbreak;  //19
+
         //public static List<Quistis_limit_break_parameters> Quistislimitbreakparameters { get; private set; }//20
         public static IReadOnlyList<Shot_Irvine_limit_break> ShotIrvinelimitbreak => s_shotIrvinelimitbreak;  //21
 
@@ -93,118 +94,118 @@ namespace OpenVIII
             List<Loc> subPositions = Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions;
 
             MemoryStream ms = null;
-
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
-            {
-                ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
-                s_battleCommands = Battle_Commands.Read(br);
-                ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
-                s_magicData = Magic_Data.Read(br);
-                ms.Seek(subPositions[Junctionable_GFs_Data.id], SeekOrigin.Begin);
-                s_junctionableGFsData = Junctionable_GFs_Data.Read(br);
-                ms.Seek(subPositions[Enemy_Attacks_Data.id], SeekOrigin.Begin);
-                s_enemyAttacksData = Enemy_Attacks_Data.Read(br);
-                ms.Seek(subPositions[Weapons_Data.id], SeekOrigin.Begin);
-                s_weaponsData = Weapons_Data.Read(br);
-                ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
-                s_renzokukenFinishersData = Renzokuken_Finishers_Data.Read(br);
-                ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
-                s_characterStats = Character_Stats.Read(br);
-                ms.Seek(subPositions[Battle_Items_Data.id], SeekOrigin.Begin);
-                s_battleItemsData = Battle_Items_Data.Read(br);
-                s_nonbattleItemsData = Non_battle_Items_Data.Read();
-                ms.Seek(subPositions[Non_Junctionable_GFs_Attacks_Data.id], SeekOrigin.Begin);
-                s_nonJunctionableGFsAttacksData = Non_Junctionable_GFs_Attacks_Data.Read(br);
-                ms.Seek(subPositions[Command_ability_data.id], SeekOrigin.Begin);
-                s_commandabilitydata = Command_ability_data.Read(br);
-                ms.Seek(subPositions[Junction_abilities.id], SeekOrigin.Begin);
-                s_junctionabilities = Junction_abilities.Read(br);
-                ms.Seek(subPositions[Command_abilities.id], SeekOrigin.Begin);
-                s_commandabilities = Command_abilities.Read(br);
-                ms.Seek(subPositions[Stat_percent_abilities.id], SeekOrigin.Begin);
-                s_statpercentabilities = Stat_percent_abilities.Read(br);
-                ms.Seek(subPositions[Character_abilities.id], SeekOrigin.Begin);
-                s_characterabilities = Character_abilities.Read(br);
-                ms.Seek(subPositions[Party_abilities.id], SeekOrigin.Begin);
-                s_partyabilities = Party_abilities.Read(br);
-                ms.Seek(subPositions[GF_abilities.id], SeekOrigin.Begin);
-                s_gFabilities = GF_abilities.Read(br);
-                ms.Seek(subPositions[Menu_abilities.id], SeekOrigin.Begin);
-                s_menuabilities = Menu_abilities.Read(br);
-                ms.Seek(subPositions[Temporary_character_limit_breaks.id], SeekOrigin.Begin);
-                s_temporarycharacterlimitbreaks = Temporary_character_limit_breaks.Read(br);
-                ms.Seek(subPositions[Blue_magic_Quistis_limit_break.id], SeekOrigin.Begin);
-                s_bluemagicQuistislimitbreak = Blue_magic_Quistis_limit_break.Read(br);
-                //ms.Seek(subPositions[Quistis_limit_break_parameters.id], SeekOrigin.Begin);
-                //Quistislimitbreakparameters = Quistis_limit_break_parameters.Read(br);
-                ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
-                s_shotIrvinelimitbreak = Shot_Irvine_limit_break.Read(br);
-                ms.Seek(subPositions[Duel_Zell_limit_break.id], SeekOrigin.Begin);
-                s_duelZelllimitbreak = Duel_Zell_limit_break.Read(br);
-                ms.Seek(subPositions[Zell_limit_break_parameters.id], SeekOrigin.Begin);
-                s_zelllimitbreakparameters = Zell_limit_break_parameters.Read(br);
-                ms.Seek(subPositions[Rinoa_limit_breaks_part_1.id], SeekOrigin.Begin);
-                s_rinoalimitbreakspart1 = Rinoa_limit_breaks_part_1.Read(br);
-                ms.Seek(subPositions[Rinoa_limit_breaks_part_2.id], SeekOrigin.Begin);
-                s_rinoalimitbreakspart2 = Rinoa_limit_breaks_part_2.Read(br);
-                ms.Seek(subPositions[Slot_array.id], SeekOrigin.Begin);
-                s_slotarray = Slot_array.Read(br);
-                ms.Seek(subPositions[Selphie_limit_break_sets.id], SeekOrigin.Begin);
-                s_selphielimitbreaksets = Selphie_limit_break_sets.Read(br);
-                ms.Seek(subPositions[Devour.id], SeekOrigin.Begin);
-                s_devour_ = Devour.Read(br);
-                s_devour_.Add(new Devour { Description = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 112) });
-                ms.Seek(subPositions[Misc_section.id], SeekOrigin.Begin);
-                s_miscsection = Misc_section.Read(br);
-                s_misctextpointers = Misc_text_pointers.Read();
-
-                s_allAbilities = new Dictionary<Abilities, Ability>(
-                    Menu_abilities.count +
-                    Junction_abilities.count +
-                    Command_abilities.count +
-                    Stat_percent_abilities.count +
-                    Character_abilities.count +
-                    Party_abilities.count +
-                    GF_abilities.count);
-                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
+            if (buffer != null)
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                 {
-                    combine(Menuabilities);
-                    combine(Statpercentabilities);
-                    combine(Junctionabilities);
-                    combine(Commandabilities);
-                    combine(Characterabilities);
-                    combine(Partyabilities);
-                    combine(GFabilities);
-                    bool combine<T>(IReadOnlyDictionary<Abilities, T> dict)
-                        where T:Ability
+                    ms.Seek(subPositions[Battle_Commands.id], SeekOrigin.Begin);
+                    s_battleCommands = Battle_Commands.Read(br);
+                    ms.Seek(subPositions[Magic_Data.id], SeekOrigin.Begin);
+                    s_magicData = Magic_Data.Read(br);
+                    ms.Seek(subPositions[Junctionable_GFs_Data.id], SeekOrigin.Begin);
+                    s_junctionableGFsData = Junctionable_GFs_Data.Read(br);
+                    ms.Seek(subPositions[Enemy_Attacks_Data.id], SeekOrigin.Begin);
+                    s_enemyAttacksData = Enemy_Attacks_Data.Read(br);
+                    ms.Seek(subPositions[Weapons_Data.id], SeekOrigin.Begin);
+                    s_weaponsData = Weapons_Data.Read(br);
+                    ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
+                    s_renzokukenFinishersData = Renzokuken_Finishers_Data.Read(br);
+                    ms.Seek(subPositions[Character_Stats.id], SeekOrigin.Begin);
+                    s_characterStats = Character_Stats.Read(br);
+                    ms.Seek(subPositions[Battle_Items_Data.id], SeekOrigin.Begin);
+                    s_battleItemsData = Battle_Items_Data.Read(br);
+                    s_nonbattleItemsData = Non_battle_Items_Data.Read();
+                    ms.Seek(subPositions[Non_Junctionable_GFs_Attacks_Data.id], SeekOrigin.Begin);
+                    s_nonJunctionableGFsAttacksData = Non_Junctionable_GFs_Attacks_Data.Read(br);
+                    ms.Seek(subPositions[Command_ability_data.id], SeekOrigin.Begin);
+                    s_commandabilitydata = Command_ability_data.Read(br);
+                    ms.Seek(subPositions[Junction_abilities.id], SeekOrigin.Begin);
+                    s_junctionabilities = Junction_abilities.Read(br);
+                    ms.Seek(subPositions[Command_abilities.id], SeekOrigin.Begin);
+                    s_commandabilities = Command_abilities.Read(br);
+                    ms.Seek(subPositions[Stat_percent_abilities.id], SeekOrigin.Begin);
+                    s_statpercentabilities = Stat_percent_abilities.Read(br);
+                    ms.Seek(subPositions[Character_abilities.id], SeekOrigin.Begin);
+                    s_characterabilities = Character_abilities.Read(br);
+                    ms.Seek(subPositions[Party_abilities.id], SeekOrigin.Begin);
+                    s_partyabilities = Party_abilities.Read(br);
+                    ms.Seek(subPositions[GF_abilities.id], SeekOrigin.Begin);
+                    s_gFabilities = GF_abilities.Read(br);
+                    ms.Seek(subPositions[Menu_abilities.id], SeekOrigin.Begin);
+                    s_menuabilities = Menu_abilities.Read(br);
+                    ms.Seek(subPositions[Temporary_character_limit_breaks.id], SeekOrigin.Begin);
+                    s_temporarycharacterlimitbreaks = Temporary_character_limit_breaks.Read(br);
+                    ms.Seek(subPositions[Blue_magic_Quistis_limit_break.id], SeekOrigin.Begin);
+                    s_bluemagicQuistislimitbreak = Blue_magic_Quistis_limit_break.Read(br);
+                    //ms.Seek(subPositions[Quistis_limit_break_parameters.id], SeekOrigin.Begin);
+                    //Quistislimitbreakparameters = Quistis_limit_break_parameters.Read(br);
+                    ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
+                    s_shotIrvinelimitbreak = Shot_Irvine_limit_break.Read(br);
+                    ms.Seek(subPositions[Duel_Zell_limit_break.id], SeekOrigin.Begin);
+                    s_duelZelllimitbreak = Duel_Zell_limit_break.Read(br);
+                    ms.Seek(subPositions[Zell_limit_break_parameters.id], SeekOrigin.Begin);
+                    s_zelllimitbreakparameters = Zell_limit_break_parameters.Read(br);
+                    ms.Seek(subPositions[Rinoa_limit_breaks_part_1.id], SeekOrigin.Begin);
+                    s_rinoalimitbreakspart1 = Rinoa_limit_breaks_part_1.Read(br);
+                    ms.Seek(subPositions[Rinoa_limit_breaks_part_2.id], SeekOrigin.Begin);
+                    s_rinoalimitbreakspart2 = Rinoa_limit_breaks_part_2.Read(br);
+                    ms.Seek(subPositions[Slot_array.id], SeekOrigin.Begin);
+                    s_slotarray = Slot_array.Read(br);
+                    ms.Seek(subPositions[Selphie_limit_break_sets.id], SeekOrigin.Begin);
+                    s_selphielimitbreaksets = Selphie_limit_break_sets.Read(br);
+                    ms.Seek(subPositions[Devour.id], SeekOrigin.Begin);
+                    s_devour_ = Devour.Read(br);
+                    s_devour_.Add(new Devour { Description = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 112) });
+                    ms.Seek(subPositions[Misc_section.id], SeekOrigin.Begin);
+                    s_miscsection = Misc_section.Read(br);
+                    s_misctextpointers = Misc_text_pointers.Read();
+
+                    s_allAbilities = new Dictionary<Abilities, Ability>(
+                        Menu_abilities.count +
+                        Junction_abilities.count +
+                        Command_abilities.count +
+                        Stat_percent_abilities.count +
+                        Character_abilities.count +
+                        Party_abilities.count +
+                        GF_abilities.count);
+                    foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
+                    {
+                        combine(Menuabilities);
+                        combine(Statpercentabilities);
+                        combine(Junctionabilities);
+                        combine(Commandabilities);
+                        combine(Characterabilities);
+                        combine(Partyabilities);
+                        combine(GFabilities);
+                        bool combine<T>(IReadOnlyDictionary<Abilities, T> dict)
+                            where T : Ability
                         {
-                        if (dict.TryGetValue(ability, out T a))
-                        {
-                            s_allAbilities.Add(ability, a);
-                            return true;
+                            if (dict.TryGetValue(ability, out T a))
+                            {
+                                s_allAbilities.Add(ability, a);
+                                return true;
+                            }
+                            return false;
                         }
-                        return false;
                     }
-                }
 
-                s_equipableAbilities = new Dictionary<Abilities, Equipable_Ability>(
-                    Stat_percent_abilities.count +
-                    Character_abilities.count +
-                    Party_abilities.count +
-                    GF_abilities.count);
-                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
-                {
-                    if (Statpercentabilities.ContainsKey(ability))
-                        s_equipableAbilities[ability] = Statpercentabilities[ability];
-                    else if (Characterabilities.ContainsKey(ability))
-                        s_equipableAbilities[ability] = Characterabilities[ability];
-                    else if (Partyabilities.ContainsKey(ability))
-                        s_equipableAbilities[ability] = Partyabilities[ability];
-                    else if (Characterabilities.ContainsKey(ability))
-                        s_equipableAbilities[ability] = Characterabilities[ability];
+                    s_equipableAbilities = new Dictionary<Abilities, Equipable_Ability>(
+                        Stat_percent_abilities.count +
+                        Character_abilities.count +
+                        Party_abilities.count +
+                        GF_abilities.count);
+                    foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
+                    {
+                        if (Statpercentabilities.ContainsKey(ability))
+                            s_equipableAbilities[ability] = Statpercentabilities[ability];
+                        else if (Characterabilities.ContainsKey(ability))
+                            s_equipableAbilities[ability] = Characterabilities[ability];
+                        else if (Partyabilities.ContainsKey(ability))
+                            s_equipableAbilities[ability] = Partyabilities[ability];
+                        else if (Characterabilities.ContainsKey(ability))
+                            s_equipableAbilities[ability] = Characterabilities[ability];
+                    }
+                    ms = null;
                 }
-                ms = null;
-            }
         }
     }
 }

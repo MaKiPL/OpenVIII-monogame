@@ -12,7 +12,7 @@ namespace OpenVIII.IGMData.Slots
         {
             base.Refresh();
 
-            if (Memory.State.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
             {
                 for (int i = 0; i < Count; i++)
                 {

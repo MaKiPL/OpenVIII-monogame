@@ -114,29 +114,32 @@ namespace OpenVIII
 
         public virtual void Draw(Enum id, Rectangle dst, Vector2 fill, float fade = 1)
         {
-            Rectangle src = GetEntry(id).GetRectangle;
-            if (fill == Vector2.UnitX)
+            Entry entry = GetEntry(id);
+            if (entry != null)
             {
-                float r = (float)dst.Height / dst.Width;
-                src.Height = (int)Math.Round(src.Height * r);
+                Rectangle src = entry.GetRectangle;
+                if (fill == Vector2.UnitX)
+                {
+                    float r = (float)dst.Height / dst.Width;
+                    src.Height = (int)Math.Round(src.Height * r);
+                }
+                else if (fill == Vector2.UnitY)
+                {
+                    float r = (float)dst.Width / dst.Height;
+                    src.Width = (int)Math.Round(src.Width * r);
+                }
+                TextureHandler tex = GetTexture(id);
+                tex?.Draw(dst, src, Color.White * fade);
             }
-            else if (fill == Vector2.UnitY)
-            {
-                float r = (float)dst.Width / dst.Height;
-                src.Width = (int)Math.Round(src.Width * r);
-            }
-            TextureHandler tex = GetTexture(id);
-            tex.Draw(dst, src, Color.White * fade);
         }
-        public virtual Entry GetEntry(Enum id)
-        {
-            return GetEntry(Convert.ToUInt32(id));
-        }
+
+        public virtual Entry GetEntry(Enum id) => GetEntry(Convert.ToUInt32(id));
+
         public virtual Entry GetEntry(UInt32 id)
         {
             if (EntriesPerTexture <= 0 && Entries.ContainsKey(id))
                 return Entries[id];
-            else if (Entries.ContainsKey((uint)(id % EntriesPerTexture)))
+            else if (Entries?.ContainsKey((uint)(id % EntriesPerTexture))??false)
                 return Entries[(uint)(id % EntriesPerTexture)];
             return null;
         }
@@ -159,7 +162,9 @@ namespace OpenVIII
                     File %= j;
                 }
             }
-            return Textures[(int)File];
+            if(Textures.Count>File)
+                return Textures[File];
+            return null;
         }
 
         public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
@@ -268,37 +273,37 @@ namespace OpenVIII
                 MemoryStream ms = null;
 
                 ushort[] locs;
-                using (BinaryReader br = new BinaryReader(
-                    ms = new MemoryStream(ArchiveWorker.GetBinaryFile(ArchiveString,
-                aw.GetListOfFiles().First(x => x.IndexOf(IndexFilename, StringComparison.OrdinalIgnoreCase) >= 0)))))
-                {
-                    Count = br.ReadUInt32();
-                    locs = new ushort[Count];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
-                    Entries = new Dictionary<uint, Entry>((int)Count);
-                    for (uint i = 0; i < Count; i++)
+                byte[] buffer = aw.GetBinaryFile(IndexFilename);
+                if (buffer != null)
+                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
-                        locs[i] = br.ReadUInt16();
-                        ms.Seek(2, SeekOrigin.Current);
-                    }
-                    byte fid = 0;
-                    Entry Last = null;
-                    for (uint i = 0; i < Count; i++)
-                    {
-                        ms.Seek(locs[i] + 6, SeekOrigin.Begin);
-                        byte t = br.ReadByte();
-                        if (t == 0 || t == 96) // known invalid entries in sp2 files have this value. there might be more to it.
+                        Count = br.ReadUInt32();
+                        locs = new ushort[Count];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
+                        Entries = new Dictionary<uint, Entry>((int)Count);
+                        for (uint i = 0; i < Count; i++)
                         {
-                            Count = i;
-                            break;
+                            locs[i] = br.ReadUInt16();
+                            ms.Seek(2, SeekOrigin.Current);
                         }
+                        byte fid = 0;
+                        Entry Last = null;
+                        for (uint i = 0; i < Count; i++)
+                        {
+                            ms.Seek(locs[i] + 6, SeekOrigin.Begin);
+                            byte t = br.ReadByte();
+                            if (t == 0 || t == 96) // known invalid entries in sp2 files have this value. there might be more to it.
+                            {
+                                Count = i;
+                                break;
+                            }
 
-                        Entries[i] = new Entry();
-                        Entries[i].LoadfromStreamSP2(br, locs[i], Last, ref fid);
+                            Entries[i] = new Entry();
+                            Entries[i].LoadfromStreamSP2(br, locs[i], Last, ref fid);
 
-                        Last = Entries[i];
+                            Last = Entries[i];
+                        }
+                        ms = null;
                     }
-                    ms = null;
-                }
             }
         }
 
@@ -317,22 +322,25 @@ namespace OpenVIII
                 for (int j = 0; j < Props.Count; j++)
                     for (uint i = 0; i < Props[j].Count; i++)
                     {
-                        string path = aw.GetListOfFiles().First(x => x.IndexOf(string.Format(Props[j].Filename, i + TextureStartOffset), StringComparison.OrdinalIgnoreCase) > -1);
                         tex = new T();
-                        tex.Load(aw.GetBinaryFile(path));
-
-                        if (Props[j].Big != null && FORCE_ORIGINAL == false && b < Props[j].Big.Count)
+                        byte[] buffer = aw.GetBinaryFile(string.Format(Props[j].Filename, i + TextureStartOffset));
+                        if (buffer != null)
                         {
-                            TextureHandler th = TextureHandler.Create(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
+                            tex.Load(buffer);
 
-                            Textures.Add(th);
-                            Scale[i] = Vector2.One;
-                        }
-                        else
-                        {
-                            TextureHandler th = TextureHandler.Create(path, tex);
-                            Textures.Add(th);
-                            Scale[i] = th.GetScale(); //scale might not be used outside of texturehandler.
+                            if (Props[j].Big != null && FORCE_ORIGINAL == false && b < Props[j].Big.Count)
+                            {
+                                TextureHandler th = TextureHandler.Create(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
+
+                                Textures.Add(th);
+                                Scale[i] = Vector2.One;
+                            }
+                            else
+                            {
+                                TextureHandler th = TextureHandler.Create(Props[j].Filename, tex);
+                                Textures.Add(th);
+                                Scale[i] = th.GetScale(); //scale might not be used outside of texturehandler.
+                            }
                         }
                     }
             }
@@ -341,6 +349,7 @@ namespace OpenVIII
         protected virtual void InsertCustomEntries()
         {
         }
+
         #endregion Methods
     }
 }

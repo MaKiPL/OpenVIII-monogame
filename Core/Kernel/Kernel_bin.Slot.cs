@@ -12,8 +12,9 @@ namespace OpenVIII
         {
             private byte _count;
             private byte _magicID;
-            public Magic_Data Magic_Data => _magicID<MagicData.Count ? MagicData[_magicID]:null;
-            public byte Casts { get => checked((byte)(Memory.Random.Next(_count)+1));}
+            public Magic_Data Magic_Data => MagicData != null && _magicID < MagicData.Count ? MagicData[_magicID] : null;
+
+            public byte Casts => checked((byte)(Memory.Random.Next(_count) + 1));
 
             public void Read(BinaryReader br, int i = 0)
             {

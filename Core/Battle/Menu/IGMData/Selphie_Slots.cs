@@ -20,7 +20,7 @@ namespace OpenVIII.IGMData
             get => _magicData; private set
             {
                 _magicData = value;
-                Name = value.Name;
+                Name = value?.Name;
             }
         }
 
@@ -38,20 +38,40 @@ namespace OpenVIII.IGMData
         {
             get
             {
-                IReadOnlyList<Kernel_bin.Slot> spells = Spells;
-                return spells[Memory.Random.Next(spells.Count)];
+                if (Spells != null)
+                {
+                    IReadOnlyList<Kernel_bin.Slot> spells = Spells;
+                    return spells[Memory.Random.Next(spells.Count)];
+                }
+                return default;
             }
         }
 
         /// <summary>
         /// List of Spells
         /// </summary>
-        private IReadOnlyList<Kernel_bin.Slot> Spells => Kernel_bin.Selphielimitbreaksets[SpellSet.SlotID].Slots;
+        private IReadOnlyList<Kernel_bin.Slot> Spells
+        {
+            get
+            {
+                if ((SpellSet?.SlotID ?? -1) != -1)
+                    return Kernel_bin.Selphielimitbreaksets[SpellSet.SlotID]?.Slots;
+                return null;
+            }
+        }
 
         /// <summary>
         /// Spell set
         /// </summary>
-        private Kernel_bin.Slot_array SpellSet => Kernel_bin.Slotarray[MathHelper.Clamp(TombolaLevel * 12 + TombolaLevel, 0, Kernel_bin.Slotarray.Count-1)];
+        private Kernel_bin.Slot_array SpellSet
+        {
+            get
+            {
+                if (Kernel_bin.Slotarray != null)
+                    return Kernel_bin.Slotarray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Kernel_bin.Slotarray.Count - 1)];
+                return null;
+            }
+        }
 
         private Target.Group TargetGroup { get => (Target.Group)ITEM[8, 0]; set => ITEM[8, 0] = value; }
 
@@ -161,7 +181,7 @@ namespace OpenVIII.IGMData
             if (row > 0) SIZE[i].Offset(20, 0);
         }
 
-        static public Selphie_Slots Create(Rectangle pos, Damageable damageable = null, bool battle =true) => Create<Selphie_Slots>(9, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 3, 3,damageable,battle: battle);
+        public static Selphie_Slots Create(Rectangle pos, Damageable damageable = null, bool battle = true) => Create<Selphie_Slots>(9, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 3, 3, damageable, battle: battle);
 
         #endregion Methods
     }

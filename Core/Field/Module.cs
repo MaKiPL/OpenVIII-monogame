@@ -183,7 +183,7 @@ namespace OpenVIII.Fields
             string[] test = aw.GetListOfFiles();
             FieldMenu = FieldMenu.Create();
             //TODO fix endless look on FieldID 50.
-            if (Memory.FieldHolder.FieldID >= Memory.FieldHolder.fields.Length ||
+            if (Memory.FieldHolder.FieldID >= (Memory.FieldHolder.fields?.Length ?? 0)||
                 Memory.FieldHolder.FieldID < 0)
                 goto end;
             string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.GetString(), StringComparison.OrdinalIgnoreCase) >= 0);
