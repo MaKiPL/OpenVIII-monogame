@@ -71,7 +71,7 @@ namespace OpenVIII
         public void DrawData(SectionName v)
         {
             if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(a => a.Key.Equals(v)))
+                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(a => a.Value != null && a.Key.Equals(v)))
                     i.Value.Draw();
         }
 
