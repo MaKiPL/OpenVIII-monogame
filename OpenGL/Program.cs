@@ -13,8 +13,16 @@ namespace OpenVIII.OpenGL
         [STAThread]
         static void Main()
         {
-            using (var game = new OpenVIII.Game1())
-                game.Run();
+            start:
+            try
+            {
+                using (var game = new OpenVIII.Game1())
+                    game.Run();
+            }
+            catch(InvalidOperationException e)
+            {
+                goto start;
+            }
         }
     }
 }
