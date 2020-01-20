@@ -47,24 +47,25 @@ namespace OpenVIII
             Title,
 
             /// <summary>
+            /// Portrait Name HP EXP Rank?
+            /// </summary>
+            CharacterInfo,
+
+            /// <summary>
             /// Description Help
             /// </summary>
             Help,
-
-            /// <summary>
-            /// Character Stats
-            /// </summary>
-            Mag_Group,
 
             /// <summary>
             /// 4 Commands you can use in battle
             /// </summary>
             Commands,
 
+
             /// <summary>
-            /// Portrait Name HP EXP Rank?
+            /// Character Stats Magic Junctions
             /// </summary>
-            CharacterInfo,
+            Mag_Group,
 
             /// <summary>
             /// Top menu where you select junction GF or Magic
