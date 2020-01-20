@@ -422,21 +422,21 @@ namespace OpenVIII
         {
             Vector2 size = inputsize ?? Size;
             Vector2 Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
-            size /= 2;
-            Vector2 t = new Vector2(vp.X / 2, vp.Y / 2);
+            Vector2 OffsetScreen = size/2f;
+            Vector2 CenterOfScreen = new Vector2(vp.X, vp.Y ) / 2f;
             if ((options & Box_Options.Top) != 0)
             {
-                t.Y = 0;
-                size.Y = 0;
+                CenterOfScreen.Y = 0;
+                OffsetScreen.Y = 0;
             }
             else if ((options & Box_Options.Buttom) != 0)
             {
-                t.Y = vp.Y - (size.Y * 2 * Zoom.Y);
-                size.Y = 0;
+                CenterOfScreen.Y = vp.Y - (OffsetScreen.Y * 2 * Zoom.Y);
+                OffsetScreen.Y = 0;
             }
-            Focus = Matrix.CreateTranslation(-size.X, -size.Y, 0) *
+            Focus = Matrix.CreateTranslation(-OffsetScreen.X, -OffsetScreen.Y, 0) *
                 Matrix.CreateScale(new Vector3(Zoom.X, Zoom.Y, 1)) *
-                Matrix.CreateTranslation(t.X, t.Y, 0);
+                Matrix.CreateTranslation(CenterOfScreen.X, CenterOfScreen.Y, 0);
         }
 
         protected override void Init()
