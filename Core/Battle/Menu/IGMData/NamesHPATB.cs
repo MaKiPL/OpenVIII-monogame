@@ -83,7 +83,7 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty { Pos = pos }, 1, 3, damageable);
+        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty { Pos = pos }, 1, 1, damageable);
 
         public static Texture2D ThreadUnsafeOperations()
         {
@@ -143,8 +143,7 @@ namespace OpenVIII.IGMData
                 }
                 sbyte pos = PartyPos;
                 Rectangle rectangle = SIZE[0];
-                Vector2 vector = SIZE[1].Location.ToVector2() - SIZE[0].Location.ToVector2();
-                rectangle.Offset(vector * pos);
+                rectangle.Offset(0f,SIZE[0].Height * pos);
                 Rectangle atbbarpos = new Rectangle(rectangle.X + 230, rectangle.Y + 12, ATBWidth, 15);
                 ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Pos = atbbarpos;
                 ((IGMDataItem.Texture)ITEM[0, (byte)DepthID.ATBCharged]).Pos = atbbarpos;

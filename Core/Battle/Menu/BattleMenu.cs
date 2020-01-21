@@ -85,6 +85,11 @@ namespace OpenVIII
                 return Data[SectionName.Shot].Inputs();
             return Data[SectionName.Commands].Inputs();
         }
+        public override bool Update()
+        {
+            //SkipFocus = true;
+            return base.Update();
+        }
 
         public override void ModeChangeEvent(object sender, Enum e)
         {
@@ -137,8 +142,8 @@ namespace OpenVIII
 
             List<Task> tasks = new List<Task>
             {
-                Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 204), 210, 192), Damageable, true))),
-                Task.Run(() => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable))),
+                Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 224), 210, 186), Damageable, true))),
+                Task.Run(() => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), (int)(Size.Y - 164), 389, 40), Damageable))),
             };
             //Some code that cannot be threaded on init.
             //Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
