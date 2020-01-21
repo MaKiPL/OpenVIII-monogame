@@ -11,15 +11,15 @@ namespace OpenVIII.OpenGL
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
-            start:
+        start:
             try
             {
-                using (var game = new OpenVIII.Game1())
+                using (Game1 game = new OpenVIII.Game1())
                     game.Run();
             }
-            catch(InvalidOperationException e)
+            catch (InvalidOperationException e)
             {
                 goto start;
             }
