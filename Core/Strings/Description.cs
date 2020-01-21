@@ -35,13 +35,13 @@
             public static FF8StringReference Vit => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 230);
             public static FF8StringReference Str => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 228);
 
-            public static FF8String Use => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180);
+            public static FF8StringReference Use => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 180);
 
-            public static FF8String Rearrange => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184);
+            public static FF8StringReference Rearrange => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 184);
 
-            public static FF8String Sort => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203);
+            public static FF8StringReference Sort => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 203);
 
-            public static FF8String Battle => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182);
+            public static FF8StringReference Battle => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 182);
 
             #endregion Properties
             public static class SideMenu

@@ -20,6 +20,7 @@
             public static FF8StringReference Changes_current_HP_OK => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73);
             public static FF8StringReference CheckGameFolder => Memory.Strings.Read(Strings.FileID.MNGRP, 1, 110);
             public static FF8StringReference CurrentEXP => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 23);
+            public static FF8StringReference CurrentEXP2 => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30);
             public static FF8StringReference EL_A => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 247);
             public static FF8StringReference EL_A_D => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 253);
             public static FF8StringReference EL_D => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 249);
@@ -50,6 +51,7 @@
             public static FF8StringReference Mag => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 231);
             public static FF8StringReference Magic => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 264);
             public static FF8StringReference NextLEVEL => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 24);
+            public static FF8StringReference NextLEVEL2 => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 31);
             public static FF8StringReference No => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 58);
             public static FF8StringReference Nothing_happened => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 81);
             public static FF8StringReference Off => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 219);
@@ -74,18 +76,41 @@
             public static FF8StringReference To_confirm => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 22);
             public static FF8StringReference Vit => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 229);
             public static FF8StringReference Yes => Memory.Strings.Read(Strings.FileID.MNGRP, 0, 57);
-            public static FF8String Use => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179);
+            public static FF8StringReference Use => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 179);
 
-            public static FF8String Rearrange => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183);
+            public static FF8StringReference Rearrange => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 183);
 
-            public static FF8String Sort => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202);
+            public static FF8StringReference Sort => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 202);
 
-            public static FF8String Battle => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181);
-        #endregion Properties
+            public static FF8StringReference Battle => Memory.Strings.Read(Strings.FileID.MNGRP, 2, 181);
 
-        #region Classes
+            public static FF8StringReference EXP_received => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23);
 
-        public static class SideMenu
+            public static FF8StringReference EXP_Acquired => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29);
+
+            public static FF8StringReference Items_NotFound => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28);
+
+            public static FF8StringReference Items_Over100 => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24);
+
+            public static FF8StringReference Items_Recieved => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 6);
+            public static FF8StringReference Items_Recieved2 => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21);
+
+            public static FF8StringReference GF2 => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 121);
+
+            public static FF8StringReference LevelUP_ => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32);
+
+            public static FF8StringReference Learned => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 120);
+
+            public static FF8StringReference ExclamationPoint => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 118);
+
+            public static FF8StringReference GF_Received_X_AP_ => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 109);
+
+            public static FF8StringReference Raising_GF => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 111);
+            #endregion Properties
+
+            #region Classes
+
+            public static class SideMenu
             {
                 #region Properties
 

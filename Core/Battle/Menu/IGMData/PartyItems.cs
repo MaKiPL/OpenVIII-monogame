@@ -24,9 +24,9 @@ namespace OpenVIII.IGMData
 
         public PartyItems() : base()
         {
-            str_NotFound = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 28);
-            str_Over100 = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 24);
-            str_Recieved = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 6);
+            str_NotFound = Strings.Name.Items_NotFound;
+            str_Over100 = Strings.Name.Items_Over100;
+            str_Recieved = Strings.Name.Items_Recieved;
             DialogSelectedItem = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedItem };
         }
 
@@ -172,7 +172,7 @@ namespace OpenVIII.IGMData
         {
             base.Init();
             Hide();
-            ITEM[0, 0] = new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 21), Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
+            ITEM[0, 0] = new IGMDataItem.Box { Data = Strings.Name.Items_Recieved, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
             ITEM[0, 1] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Title = Icons.ID.ITEM, Options = Box_Options.Middle }; // item name
             ITEM[0, 2] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Title = Icons.ID.NUM_, Options = Box_Options.Middle | Box_Options.Center }; // item count
             ITEM[0, 3] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle }; // item description

@@ -189,7 +189,7 @@ namespace OpenVIII.IGMData.Group
         {
             base.Init();
             Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
-            header = new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 23), Pos = new Rectangle(0, 0, CONTAINER.Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
+            header = new IGMDataItem.Box { Data = Strings.Name.EXP_received, Pos = new Rectangle(0, 0, CONTAINER.Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
         }
 
         private void RefreshEXP()

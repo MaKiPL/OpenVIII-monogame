@@ -90,7 +90,7 @@ namespace OpenVIII
         {
             if (a != null && a.Length > 0)
             {
-                if (!string.IsNullOrWhiteSpace(b))
+                if (!string.IsNullOrEmpty(b))
                 {
                     FF8String s = a.Clone();
                     return s.Append(b);

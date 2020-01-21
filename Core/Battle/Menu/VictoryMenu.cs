@@ -139,7 +139,7 @@ namespace OpenVIII
                         new IGMDataItem.Box{ Data = new FF8String(new byte[] {
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm})+
-                            " "+
+                            "  "+
                             (Strings.Name.To_confirm),
                             Pos = new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),Options= Box_Options.Center | Box_Options.Middle }))),
 

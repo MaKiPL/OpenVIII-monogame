@@ -31,17 +31,17 @@ namespace OpenVIII.IGMData
             DialogSelectedAbility = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGFAbility };
             DialogSelectedIcon = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.CustomICON };
             str_Levelup =
-                Memory.Strings.Read(Strings.FileID.KERNEL, 30, 121) +
+                Strings.Name.GF2 +
                 DialogSelectedGF + " " +
-                Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32);
+                Strings.Name.LevelUP_;
             str_Learn =
-                Memory.Strings.Read(Strings.FileID.KERNEL, 30, 121) +
+                Strings.Name.GF2 +
                 DialogSelectedGF + "\n  " +
-                Memory.Strings.Read(Strings.FileID.KERNEL, 30, 120) + "\n     " +
+                Strings.Name.Learned + "\n     " +
                 DialogSelectedIcon + " " +
                 DialogSelectedAbility +
-                Memory.Strings.Read(Strings.FileID.KERNEL, 30, 118);
-            str_GF_AP = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 109);
+                Strings.Name.ExclamationPoint;
+            str_GF_AP = Strings.Name.GF_Received_X_AP_;
             Leveled = new ConcurrentQueue<GFs>();
         }
 
@@ -163,7 +163,7 @@ namespace OpenVIII.IGMData
         {
             base.Init();
             Hide();
-            ITEM[0, 0] = new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 111), Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
+            ITEM[0, 0] = new IGMDataItem.Box { Data = Strings.Name.Raising_GF, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
             ITEM[0, 1] = IGMData.Dialog.Small.Create(str_GF_AP, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF recieved ### AP!
             ITEM[0, 2] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
             ITEM[0, 3] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!

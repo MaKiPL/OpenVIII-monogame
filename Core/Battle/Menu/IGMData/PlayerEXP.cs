@@ -107,9 +107,9 @@ namespace OpenVIII.IGMData
             if (Damageable != null && Damageable.GetCharacterData(out c))
                 _lvl = Damageable.Level;
             if (ECN == null)
-                ECN = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 29) + "\n" +
-                    Memory.Strings.Read(Strings.FileID.KERNEL, 30, 30) + "\n" +
-                    Memory.Strings.Read(Strings.FileID.KERNEL, 30, 31);
+                ECN = Strings.Name.EXP_Acquired + "\n" +
+                    Strings.Name.CurrentEXP + "\n" +
+                    Strings.Name.NextLEVEL;
 
             ITEM[0, 0] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0) };
             ITEM[0, 1] = new IGMDataItem.Icon { Data = Icons.ID.Size_16x16_Lv_, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y + 34, 0, 0), Palette = 13 };
