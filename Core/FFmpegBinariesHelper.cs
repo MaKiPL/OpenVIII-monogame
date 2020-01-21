@@ -10,7 +10,7 @@ namespace FFmpeg.AutoGen.Example
 
         public static void RegisterFFmpegBinaries()
         {
-            OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)}::{nameof(RegisterFFmpegBinaries)}");
+            OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)} :: {nameof(RegisterFFmpegBinaries)}");
             string libraryPath = "";
             switch (Environment.OSVersion.Platform)
             {
@@ -24,6 +24,7 @@ namespace FFmpeg.AutoGen.Example
                         string ffmpegDirectory = Path.Combine(current, probe);
                         if (Directory.Exists(ffmpegDirectory))
                         {
+                            OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)} :: {nameof(ffmpegDirectory)} :: {ffmpegDirectory}");
                             Console.WriteLine($"FFmpeg binaries found in: {ffmpegDirectory}");
                             RegisterLibrariesSearchPath(ffmpegDirectory);
                             return;
@@ -34,11 +35,13 @@ namespace FFmpeg.AutoGen.Example
 
                 case PlatformID.Unix:
                     libraryPath = "/usr/lib/x86_64-linux-gnu";
+                    OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)} :: {nameof(libraryPath)} :: {libraryPath}");
                     RegisterLibrariesSearchPath(libraryPath);
                     break;
 
                 case PlatformID.MacOSX:
                     libraryPath = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
+                    OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)} :: {nameof(libraryPath)} :: {libraryPath}");
                     RegisterLibrariesSearchPath(libraryPath);
                     break;
             }

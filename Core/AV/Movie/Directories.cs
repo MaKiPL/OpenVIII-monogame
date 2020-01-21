@@ -37,6 +37,8 @@ namespace OpenVIII
                         Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
                         Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
                     };
+                    foreach (var s in s_directories)
+                        Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Directories)} :: {s} ");
                 }
             }
 

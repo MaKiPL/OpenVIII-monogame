@@ -56,6 +56,9 @@ namespace OpenVIII
                      where Path.GetFileNameWithoutExtension(s1.Value).Equals(Path.GetFileNameWithoutExtension(s2.Value), StringComparison.OrdinalIgnoreCase)
                      orderby s2.Key descending
                      select s2.Key).ForEach(Key => s_files.RemoveAt(Key));
+
+                    foreach (var s in s_files)
+                        Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Files)} :: {s} ");
                 }
             }
 

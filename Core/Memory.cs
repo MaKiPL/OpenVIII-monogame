@@ -315,8 +315,8 @@ namespace OpenVIII
                 tasks.Add(Task.Run(Saves.Init, token));
                 //tasks.Add(Task.Run(() => InitState = Saves.Data.LoadInitOut(), token));
                 tasks.Add(Task.Run(InitStrings, token));
-                //this initializes the field module, it's worth to have this at the beginning            
-                tasks.Add(Task.Run(Fields.Initializer.Init,token));
+                //this initializes the field module, it's worth to have this at the beginning
+                tasks.Add(Task.Run(Fields.Initializer.Init, token));
                 //this initializes the encounters
                 tasks.Add(Task.Run(Init_debugger_battle.Init));
 
@@ -362,11 +362,14 @@ namespace OpenVIII
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
-
-            Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)})");
-            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics})");
-            Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch})");
-            Log.WriteLine($"{nameof(ContentManager)} :: {content})");
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)}");
+            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics}");
+            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics.GraphicsDevice.Adapter.CurrentDisplayMode}");
+            foreach (DisplayMode i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
+                Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
+            //Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics.GraphicsDevice.Adapter.DeviceName}");
+            //Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch}");
+            Log.WriteLine($"{nameof(ContentManager)} :: {content}");
 
             Memory.Log.WriteLine($"{nameof(Random)} :: new");
             Random = new Random((int)DateTime.Now.Ticks);
