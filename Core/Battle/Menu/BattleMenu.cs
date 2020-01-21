@@ -136,9 +136,9 @@ namespace OpenVIII
             //IGMData.NamesHPATB.ThreadUnsafeOperations(); //seems to work fine in init thread.
 
             //Memory.MainThreadOnlyActions.Enqueue(IGMData.Renzokeken.ThreadUnsafeOperations); //only works in main thread.
-            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Limit.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124))));
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Limit.Renzokeken.Create(new Rectangle(0, (int)Size.Y - 164, (int)Size.X, 124))));
             int width = 100, height = 100;
-            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, IGMData.Limit.Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 20 - height - 20, width, height))));
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, IGMData.Limit.Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 164, width, height))));
 
             List<Task> tasks = new List<Task>
             {
