@@ -48,12 +48,12 @@ namespace OpenVIII.IGMData.Target
             const int Height = 140;
             const int X2 = X1 + Width1;
             const int Width2 = 180;
-            const int Y = 632 - Height;
+            const int Y = 464;
 
             Group r = Create<Group>(
                 Enemies.Create(new Rectangle(X1, Y, Width1, Height)),
                 Party.Create(new Rectangle(X2, Y, Width2, Height)),
-                makesubs ? IGMData.Pool.Draw.Create(new Rectangle(X1 + 50, Y - 50, 300, 192), damageable, true) : null);
+                makesubs ? IGMData.Pool.Draw.Create(new Rectangle(X1 + 50, Y - 50, 300, 40*3), damageable, true) : null);
             r.SetDamageable(damageable, null);
             r.CONTAINER.Pos = new Rectangle(X1, Y, Width1 + Width2, Height);
             r.after();
