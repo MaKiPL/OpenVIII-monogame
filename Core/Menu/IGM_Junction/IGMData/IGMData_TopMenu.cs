@@ -76,12 +76,12 @@ namespace OpenVIII
             {
                 if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Font.ColorID color = (c.JunctionedGFs?.Any() ?? false) ? Font.ColorID.Grey : Font.ColorID.White;
-                    for (int i = 1; i <= 3; i++)
+                    (from i in Enumerable.Range(1, 3)
+                             select new { Key = i, Junctioned = c.JunctionedGFs?.Any() ?? false }).ForEach(x =>
                     {
-                        ((IGMDataItem.Text)ITEM[i, 0]).FontColor = color;
-                        BLANKS[i] = c.JunctionedGFs?.Any() ?? false;
-                    }
+                        BLANKS[x.Key] = !x.Junctioned;
+                        ((IGMDataItem.Text)ITEM[x.Key, 0]).FontColor = x.Junctioned ? Font.ColorID.White : Font.ColorID.Grey;
+                    });
                 }
                 base.Refresh();
             }
