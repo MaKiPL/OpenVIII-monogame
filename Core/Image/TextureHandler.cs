@@ -406,10 +406,12 @@ namespace OpenVIII
             }
         }
 
-        public void Save()
+        public void Save() => Save("");
+        public void Save(string _outpath)
         {
             string clean = Path.GetFileNameWithoutExtension(Regex.Replace(Filename, @"{[^}]+}", ""));
-            string outpath = Path.Combine(Path.GetTempPath(), Path.GetFileName(clean) + $"_{(Palette + 1).ToString("D2")}.png");
+            clean = $"{Path.GetFileName(clean)}_{(Palette).ToString()}.png";
+            string outpath = Path.Combine(string.IsNullOrWhiteSpace(_outpath)?Path.GetTempPath():_outpath, clean);
             if (Textures != null && Textures.Length > 0 && Textures[0, 0] != null)
                 using (FileStream fs = File.Create(outpath))
                     Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);

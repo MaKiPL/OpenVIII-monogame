@@ -1083,7 +1083,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Field\INF\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Encoding\Encoding.csproj">
       <Project>{a9b33bf4-9b03-4e3d-bf6a-181521046ee8}</Project>

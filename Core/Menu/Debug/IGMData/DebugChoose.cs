@@ -223,10 +223,7 @@ namespace OpenVIII.IGMData
             inputsLeft = new Dictionary<Ditems, Func<bool>>()
             {
                 { Ditems.Battle, ()=> {
-                    if(Memory.battle_encounter >0)
-                        Memory.battle_encounter--;
-                    else
-                        Memory.battle_encounter = Memory.encounters.Length - 1;
+                    Memory.Encounters.Previous();
                     return true;
                 } },
                 { Ditems.Field, ()=> {
@@ -262,10 +259,7 @@ namespace OpenVIII.IGMData
             inputsRight = new Dictionary<Ditems, Func<bool>>()
             {
                 { Ditems.Battle, ()=> {
-                    if(Memory.battle_encounter < Memory.encounters.Length - 1)
-                        Memory.battle_encounter++;
-                    else
-                        Memory.battle_encounter = 0;
+                    Memory.Encounters.Next();
                     return true;
                 } },
                 { Ditems.Field, ()=> {
@@ -301,7 +295,7 @@ namespace OpenVIII.IGMData
             dynamicDebugStrings = new Dictionary<Ditems, Func<FF8String>>
             {
                 { Ditems.Battle, ()=> {
-                    string end=Memory.battle_encounter.ToString("D4");
+                    string end=$"{Memory.Encounters.CurrentIndex.ToString("D4")} - {Memory.Encounters.Current().Filename.ToUpper()}";
                     if(strDebugLobby[Ditems.Battle]!=null)
                         return strDebugLobby[Ditems.Battle].Clone().Append(end);
                     else

@@ -622,23 +622,23 @@ namespace OpenVIII
             int encounterRoll = Memory.Random.Next(16 + 4 + 2);
             //casual
             if (encounterRoll < 4) //0123
-                Memory.battle_encounter = AvailableEncounters[0];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[0];
             else if (encounterRoll >= 4 && encounterRoll < 8) //4567
-                Memory.battle_encounter = AvailableEncounters[1];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[1];
             else if (encounterRoll >= 8 && encounterRoll < 12) //891011
-                Memory.battle_encounter = AvailableEncounters[2];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[2];
             else if (encounterRoll >= 12 && encounterRoll < 16) //12131415
-                Memory.battle_encounter = AvailableEncounters[3];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[3];
             else if (encounterRoll >= 16 && encounterRoll < 18) //1617
-                Memory.battle_encounter = AvailableEncounters[4];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[4];
             else if (encounterRoll >= 18 && encounterRoll < 20) //1819
-                Memory.battle_encounter = AvailableEncounters[5];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[5];
             else if (encounterRoll == 20) //20
-                Memory.battle_encounter = AvailableEncounters[6];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[6];
             else if (encounterRoll == 21) //21
-                Memory.battle_encounter = AvailableEncounters[7];
+                Memory.Encounters.CurrentIndex = AvailableEncounters[7];
 
-            debugEncounter = Memory.battle_encounter;
+            debugEncounter = Memory.Encounters.CurrentIndex;
             //TODO random + enc.half/none junction + warping to battle
             var state = Memory.State;
         }

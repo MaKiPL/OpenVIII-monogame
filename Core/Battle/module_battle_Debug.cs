@@ -36,7 +36,6 @@ namespace OpenVIII
         private static BasicEffect effect;
         public static AlphaTestEffect ate;
 
-        private static string battlename = "a0stg000.x";
         private static byte[] stageBuffer;
 
         private static int battleModule = 0;
@@ -287,56 +286,67 @@ namespace OpenVIII
             UpdateFrames();
         }
 
+
         public static void Inputs()
         {
 #if DEBUG
 
             if (Input2.Button(Keys.D0))
                 bUseFPSCamera = !bUseFPSCamera;
-            if (Input2.Button(Keys.D1))
+            else if (Input2.Button(Keys.D1))
                 if ((DEBUGframe & 0b1111) >= 7)
                 {
                     DEBUGframe += 0b00010000;
                     DEBUGframe -= 7;
                 }
                 else DEBUGframe += 1;
-            if (Input2.Button(Keys.D2))
+            else if (Input2.Button(Keys.D2))
                 if ((DEBUGframe & 0b1111) == 0)
                 {
                     DEBUGframe -= 0b00010000;
                     DEBUGframe += 7;
                 }
                 else DEBUGframe--;
-            if (Input2.Button(Keys.D3))
-                battleModule = BATTLEMODULE_INIT;
-            if (Input2.Button(Keys.D4))
+            else if (Input2.Button(Keys.F5))
             {
                 battleModule = BATTLEMODULE_INIT;
-                Memory.battle_encounter++;
+                Memory.SuppressDraw = true;
             }
-            if (Input2.Button(Keys.D5))
+            else if (Input2.Button(Keys.D3))
+            {
+                battleModule = BATTLEMODULE_INIT;
+                Memory.Encounters.Previous();
+                Memory.SuppressDraw = true;
+            }
+            else if (Input2.Button(Keys.D4))
+            {
+                battleModule = BATTLEMODULE_INIT;
+                Memory.Encounters.Next();
+                Memory.SuppressDraw = true;
+            }
+            else if (Input2.Button(Keys.D5))
             {
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 3);
                 AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 0);
             }
-            if (Input2.Button(Keys.F12))
+            else if (Input2.Button(Keys.F12))
             {
                 if (SID < 255)
                     SID++;
                 else SID = 0;
             }
 
-            if (Input2.Button(Keys.F11))
+            else if (Input2.Button(Keys.F11))
             {
                 if (SID <= 0)
                     SID = 255;
                 else SID--;
             }
-            if (Input2.Button(Keys.F10))
+            else if (Input2.Button(Keys.F10))
             {
                 AddSequenceToAllQueues(SID);
             }
-            if (Input2.Button(Keys.F9))
+            else if (Input2.Button(Keys.F9))
             {
                 AddSequenceToAllQueues(new Debug_battleDat.AnimationSequence
                 {
@@ -356,11 +366,11 @@ namespace OpenVIII
                 });
             }
 
-            if (Input2.Button(Keys.F8))
+            else if (Input2.Button(Keys.F8))
             {
                 StopAnimations();
             }
-            if (Input2.Button(Keys.F7))
+            else if (Input2.Button(Keys.F7))
             {
                 StartAnimations();
             }
@@ -730,7 +740,7 @@ namespace OpenVIII
             Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
 
         private static Vector3 GetEnemyPos(int n) =>
-                        Memory.encounters[Memory.battle_encounter].enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();
+                        Memory.Encounters.Current().enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();
 
         private static bool EnemyInstanceAnimationStopped(int n) =>
             Enemy.Party[n].EII.animationSystem.AnimationStopped ||
@@ -945,7 +955,7 @@ namespace OpenVIII
                 foreach (Model b in modelGroups[n].models)
                 {
                     Tuple<Stage_GeometryInfoSupplier[], VertexPositionTexture[]> vpt = GetVertexBuffer(b);
-                    if (n == 3 && skyRotators[Memory.encounters[Memory.battle_encounter].Scenario] != 0)
+                    if (n == 3 && skyRotators[Memory.Encounters.Current().Scenario] != 0)
                         CreateRotation(vpt);
                     if (vpt == null) continue;
                     int localVertexIndex = 0;
@@ -972,7 +982,7 @@ namespace OpenVIII
                 }
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.battle_encounter}"), 0, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.CurrentIndex} - {Memory.Encounters.Current().Filename}"), 20, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
             if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
                 Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
@@ -993,7 +1003,7 @@ namespace OpenVIII
         /// <param name="vpt"></param>
         private static void CreateRotation(Tuple<Stage_GeometryInfoSupplier[], VertexPositionTexture[]> vpt)
         {
-            localRotator += (short)skyRotators[Memory.encounters[Memory.battle_encounter].Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
+            localRotator += (short)skyRotators[Memory.Encounters.Current().Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
             if (localRotator <= 0)
                 return;
             for (int i = 0; i < vpt.Item2.Length; i++)
@@ -1090,11 +1100,8 @@ namespace OpenVIII
             }
             DeadTime.Restart();
             fps_camera = new FPS_Camera();
-            Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
-            int stage = enc.Scenario;
-            battlename = $"a0stg{stage.ToString("000")}.x";
-            Console.WriteLine($"BS_DEBUG: Loading stage {battlename}");
-            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.battle_encounter}\t cEnemies: {enc.EnabledEnemy}\t Enemies: {string.Join(",", enc.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
+            Console.WriteLine($"BS_DEBUG: Loading stage {Memory.Encounters.Current().Filename}");
+            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.Encounters.CurrentIndex}\t cEnemies: {Memory.Encounters.Current().EnabledEnemy}\t Enemies: {string.Join(",", Memory.Encounters.Current().BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
             RegularPyramid = new Battle.RegularPyramid();
             RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
             //RegularPyramid.Set(PyramidOffset);
@@ -1283,9 +1290,7 @@ namespace OpenVIII
             List<Battle.Mag> _MagPack = MagPacked.ToList();
             List<Battle.Mag> _MagTIM = MagTIMs.ToList();
             List<int> _MagUNKID = MagUNKID.ToList();
-            battlename = test.First(x => x.ToLower().Contains(battlename));
-            string fileName = Path.GetFileNameWithoutExtension(battlename);
-            stageBuffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, battlename);
+            stageBuffer = aw.GetBinaryFile(Memory.Encounters.Current().Filename);
             ms = new MemoryStream(stageBuffer);
             br = new BinaryReader(ms);
             bs_cameraPointer = GetCameraPointer();
@@ -1315,7 +1320,7 @@ namespace OpenVIII
                 ReadModelGroup(objectsGroups[3].objectListPointer)
             };
 
-            ReadTexture(MainSection.TexturePointer, fileName);
+            ReadTexture(MainSection.TexturePointer);
             br.Close();
             ms.Close();
             ms.Dispose();
@@ -1542,7 +1547,7 @@ namespace OpenVIII
         /// </summary>
         private static void ReadMonster()
         {
-            Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
+            Init_debugger_battle.Encounter enc = Memory.Encounters.Current();
             if (enc.EnabledEnemy == 0)
             {
                 monstersData = new Debug_battleDat[0];
@@ -1581,12 +1586,18 @@ namespace OpenVIII
         /// Method designed for Stage texture loading.
         /// </summary>
         /// <param name="texturePointer">Absolute pointer to TIM texture header in stageBuffer</param>
-        private static void ReadTexture(uint texturePointer, string fileName)
+        private static void ReadTexture(uint texturePointer)
         {
             textureInterface = new TIM2(stageBuffer, texturePointer);
+            var path = Path.Combine(Path.GetTempPath(), "Battle Stages");
+            Directory.CreateDirectory(path);
+            textureInterface.SaveCLUT(Path.Combine(path,$"{Path.GetFileNameWithoutExtension(Memory.Encounters.Current().Filename)}_Clut.png"));
             textures = new TextureHandler[textureInterface.GetClutCount];
             for (ushort i = 0; i < textureInterface.GetClutCount; i++)
-                textures[i] = TextureHandler.Create(fileName, textureInterface, i);
+            {
+                textures[i] = TextureHandler.Create(Memory.Encounters.Current().Filename, textureInterface, i);
+                textures[i].Save(path);
+            }
         }
 
         /// <summary>
@@ -1631,7 +1642,7 @@ namespace OpenVIII
             Vertex[] vertices = new Vertex[verticesCount];
             for (int i = 0; i < verticesCount; i++)
                 vertices[i] = ReadVertex();
-            if (bSpecial && Memory.encounters[Memory.battle_encounter].Scenario == 20)
+            if (bSpecial && Memory.Encounters.Current().Scenario == 20)
                 return new Model();
             ms.Seek((ms.Position % 4) + 4, SeekOrigin.Current);
             ushort trianglesCount = br.ReadUInt16();
@@ -1766,11 +1777,11 @@ namespace OpenVIII
 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
 155,156,159,161,162};
 
-            int _5d4 = _x5D4.Count(x => x == Memory.encounters[Memory.battle_encounter].Scenario);
-            int _5d8 = _x5D8.Count(x => x == Memory.encounters[Memory.battle_encounter].Scenario);
+            int _5d4 = _x5D4.Count(x => x == Memory.Encounters.Current().Scenario);
+            int _5d8 = _x5D8.Count(x => x == Memory.Encounters.Current().Scenario);
             if (_5d4 > 0) return 0x5D4;
             if (_5d8 > 0) return 0x5D8;
-            switch (Memory.encounters[Memory.battle_encounter].Scenario)
+            switch (Memory.Encounters.Current().Scenario)
             {
                 case 8:
                 case 48:
@@ -2008,7 +2019,7 @@ namespace OpenVIII
             CameraStruct cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays?
             battleCamera = new BattleCamera() { battleCameraCollection = bcc, battleCameraSettings = bcs, cam = cam };
 
-            ReadAnimationById(GetRandomCameraN(Memory.encounters[Memory.battle_encounter]));
+            ReadAnimationById(GetRandomCameraN(Memory.Encounters.Current()));
             ms.Seek(bs_cameraPointer + sCameraDataSize, 0); //step out
         }
 
@@ -2052,7 +2063,7 @@ namespace OpenVIII
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
         private static CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
         {
-            Init_debugger_battle.Encounter enc = Memory.encounters[Memory.battle_encounter];
+            Init_debugger_battle.Encounter enc = Memory.Encounters.Current();
             int pSet = enc.ResolveCameraSet(animId);
             int pAnim = enc.ResolveCameraAnimation(animId);
             return new CameraSetAnimGRP(pSet, pAnim);

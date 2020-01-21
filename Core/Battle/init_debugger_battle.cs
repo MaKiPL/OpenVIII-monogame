@@ -1,4 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -32,7 +35,69 @@ namespace OpenVIII
             }
         }
 
-        public struct Encounter
+        public class Encounters : IList
+        {
+            private List<Encounter> encounters;
+
+            public Encounters(int count = 0) => encounters = new List<Encounter>(count);
+
+            public object this[int index] { get => ((IList)encounters)[index]; set => ((IList)encounters)[index] = value; }
+
+            public bool IsReadOnly => ((IList)encounters).IsReadOnly;
+
+            public bool IsFixedSize => ((IList)encounters).IsFixedSize;
+
+            public int Count => ((IList)encounters).Count;
+
+            public object SyncRoot => ((IList)encounters).SyncRoot;
+
+            public bool IsSynchronized => ((IList)encounters).IsSynchronized;
+
+            public int Add(object value) => ((IList)encounters).Add(value);
+
+            public void Clear() => ((IList)encounters).Clear();
+
+            public bool Contains(object value) => ((IList)encounters).Contains(value);
+
+            public void CopyTo(Array array, int index) => ((IList)encounters).CopyTo(array, index);
+
+            public IEnumerator GetEnumerator() => ((IList)encounters).GetEnumerator();
+
+            public int IndexOf(object value) => ((IList)encounters).IndexOf(value);
+
+            public void Insert(int index, object value) => ((IList)encounters).Insert(index, value);
+
+            public void Remove(object value) => ((IList)encounters).Remove(value);
+
+            public void RemoveAt(int index) => ((IList)encounters).RemoveAt(index);
+
+            public int CurrentIndex { get; set; }
+
+            public Encounter Current(int? index = null)
+            {
+                if (index.HasValue)
+                    CurrentIndex = index.Value;
+                return encounters[CurrentIndex];
+            }
+
+            public Encounter Previous()
+            {
+                CurrentIndex--;
+                if (CurrentIndex < 0)
+                    CurrentIndex = encounters.Count - 1;
+                return Current();
+            }
+
+            public Encounter Next()
+            {
+                CurrentIndex++;
+                if (CurrentIndex >= encounters.Count)
+                    CurrentIndex = 0;
+                return Current();
+            }
+        }
+
+        public class Encounter
         {
             public byte Scenario;
             public EncounterFlag BattleFlags;
@@ -52,6 +117,7 @@ namespace OpenVIII
             public int ResolveCameraAnimation(byte cameraPointerValue) => cameraPointerValue & 0b1111;
 
             public int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
+            public string Filename => $"a0stg{Scenario.ToString("000")}.x";
         }
 
         public struct EnemyCoordinates
@@ -117,6 +183,7 @@ namespace OpenVIII
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             byte[] sceneOut = aw.GetBinaryFile("scene.out");
             ReadEncounter(sceneOut);
+            Memory.Encounters.CurrentIndex = 87;
         }
 
         private static void ReadEncounter(byte[] enc)
@@ -124,14 +191,14 @@ namespace OpenVIII
             Memory.Log.WriteLine($"{nameof(Init_debugger_battle)} :: {nameof(ReadEncounter)}");
             if (enc == null || enc.Length == 0) return;
             int encounterCount = enc.Length / 128;
-            Memory.encounters = new Encounter[encounterCount];
+            Memory.Encounters = new Encounters(encounterCount);
 
             MemoryStream ms = null;
 
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(enc)))
             {
                 for (int i = 0; i < encounterCount; i++)
-                    Memory.encounters[i] = new Encounter()
+                    Memory.Encounters.Add(new Encounter()
                     {
                         Scenario = br.ReadByte(),
                         BattleFlags = new EncounterFlag() { Switch = br.ReadByte() },
@@ -195,9 +262,9 @@ namespace OpenVIII
                         BEnemies = br.ReadBytes(8),
                         bUnk2 = br.ReadBytes(16 * 3 + 8),
                         bLevels = br.ReadBytes(8)
-                    };
-                ms = null;
-            }
+                    });
+            ms = null;
         }
     }
+}
 }

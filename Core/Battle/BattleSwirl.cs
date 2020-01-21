@@ -27,7 +27,7 @@ namespace OpenVIII
         public static void Init()
         {
             bInitialized = false;
-            //Memory.encounters[Memory.battle_encounter].BattleFlags. //which flags is about the boss or normal swirl?
+            //Memory.Encounters.Current().BattleFlags. //which flags is about the boss or normal swirl?
             Memory.Module = MODULE.BATTLE_SWIRL;
             backBufferTexture = Extended.BackBufferTexture;
             bInitialized = true;
