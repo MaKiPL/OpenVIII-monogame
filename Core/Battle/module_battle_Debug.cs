@@ -246,10 +246,12 @@ namespace OpenVIII
             switch (battleModule)
             {
                 case BATTLEMODULE_INIT:
+                    Memory.SuppressDraw = true;
                     InitBattle();
                     break;
 
                 case BATTLEMODULE_READDATA:
+                    Memory.SuppressDraw = true;
                     ReadData();
                     Menu.BattleMenus.Refresh();
                     Menu.FadeIn();
