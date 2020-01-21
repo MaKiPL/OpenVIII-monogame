@@ -29,6 +29,7 @@ namespace OpenVIII.Card
 
         public Game()
         {
+            Memory.Log.WriteLine($"{nameof(Card)} :: {nameof(Game)} :: new ");
             Memory.MainThreadOnlyActions.Enqueue(() =>
             {
                 //Memory.EnableDumpingData = true;

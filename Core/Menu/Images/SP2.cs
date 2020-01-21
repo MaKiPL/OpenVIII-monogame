@@ -93,6 +93,7 @@ namespace OpenVIII
 
         public static T Load<T>() where T : SP2, new()
         {
+            Memory.Log.WriteLine($"{nameof(SP2)} :: {nameof(Load)} :: {typeof(T)} ");
             T r = new T();
             r.DefaultValues();
             r.Init();

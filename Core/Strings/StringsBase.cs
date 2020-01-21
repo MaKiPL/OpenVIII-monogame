@@ -197,6 +197,7 @@ namespace OpenVIII
 
             public static T Load<T>() where T : StringsBase, new()
             {
+                Memory.Log.WriteLine($"{nameof(StringsBase)} :: {nameof(Load)} :: {typeof(T)}");
                 T r = new T();
                 r.DefaultValues();
                 r.LoadArchiveFiles();

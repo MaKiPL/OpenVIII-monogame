@@ -75,6 +75,7 @@ namespace OpenVIII
 
         public void LoadFonts()
         {
+            Memory.Log.WriteLine($"{nameof(Font)} :: {nameof(LoadFonts)} ");
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
             string[] filelist = aw.GetListOfFiles();
             if (filelist != null)

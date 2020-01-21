@@ -119,6 +119,7 @@ namespace OpenVIII
             lock (Filesloc)
                 if (Files == null)
                 {
+                    Memory.Log.WriteLine($"{nameof(Strings)} :: {nameof(Init)}");
                     var tasks = new List<Task<bool>>();
                     Files = new ConcurrentDictionary<FileID, StringsBase>();
                     tasks.Add(Task.Run(() => Files.TryAdd(FileID.NAMEDIC, Namedic.Load()))); // areames and kernel require namedic

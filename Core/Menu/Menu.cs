@@ -179,6 +179,7 @@ namespace OpenVIII
         //public Menu() => InitConstructor();
         public static T Create<T>(Damageable damageable = null) where T : Menu, new()
         {
+            Memory.Log.WriteLine($"{nameof(Menu)} :: {nameof(Create)} :: {typeof(T)} :: {nameof(Damageable)} :: {damageable}");
             T r = new T
             {
                 Damageable = damageable,
@@ -301,6 +302,7 @@ namespace OpenVIII
 
         public static void InitStaticMembers()
         {
+            Memory.Log.WriteLine($"{nameof(Menu)} :: {nameof(InitStaticMembers)}");
             lock (_igm_lock)
             {
                 if (_igm_lobby == null)

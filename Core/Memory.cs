@@ -293,6 +293,7 @@ namespace OpenVIII
 
         public static int InitTaskMethod(object obj)
         {
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(Memory)} :: {nameof(Init)}");
             CancellationToken token = (CancellationToken)obj;
 
             if (!token.IsCancellationRequested)
@@ -366,14 +367,22 @@ namespace OpenVIII
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics})");
             Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch})");
             Log.WriteLine($"{nameof(ContentManager)} :: {content})");
+
+            Memory.Log.WriteLine($"{nameof(Random)} :: new");
             Random = new Random((int)DateTime.Now.Ticks);
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(mainThreadID)} = {nameof(Thread)} :: {nameof(Thread.CurrentThread)} :: {nameof(Thread.ManagedThreadId)} = {Thread.CurrentThread.ManagedThreadId}");
             mainThreadID = Thread.CurrentThread.ManagedThreadId;
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(MainThreadOnlyActions)}");
             MainThreadOnlyActions = new ConcurrentQueue<Action>();
 
             FF8DIR = GameLocation.Current.DataPath;
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIR)} = {FF8DIR}");
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata)} = {FF8DIRdata}");
             string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
+            Memory.Log.WriteLine($"{nameof(Extended)} :: {nameof(Extended.GetLanguageShort)} = {Extended.GetLanguageShort()}");
             FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata_lang)} = {FF8DIRdata_lang}");
 
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
@@ -553,7 +562,8 @@ namespace OpenVIII
         public static Dictionary<ushort, FF8String> Songsogg;
 
         private static void InitStrings()
-        {
+        {//is there Songogg being used for anything?
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(InitStrings)} :: {nameof(Songsogg)} ");
             Songsogg = new Dictionary<ushort, FF8String>()
             {
                 {0,"Lose" },

@@ -89,6 +89,8 @@ namespace OpenVIII
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Kernel.bin"/>
         public Kernel_bin()
         {
+
+            Memory.Log.WriteLine($"{nameof(Kernel_bin)} :: new ");
             aw = new ArchiveWorker(ArchiveString);
             byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0]);
             List<Loc> subPositions = Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions;

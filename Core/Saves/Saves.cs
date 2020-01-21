@@ -42,11 +42,14 @@ namespace OpenVIII
 
         public static void Init()
         {
+            Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Init)}");
             FileList = new Data[2, 30];
             CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");
+            Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(CD2000Folder)} :: {CD2000Folder}");
             Steam2013Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
-            //C:\Users\pcvii\OneDrive\Documents\My Games\FINAL FANTASY VIII Remastered\Steam\76561198027029474\game_data\user\saves
+            Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Steam2013Folder)} :: {Steam2013Folder}");
             Steam2019Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games", "FINAL FANTASY VIII Remastered", "Steam");
+            Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Steam2019Folder)} :: {Steam2019Folder}");
 
             if (Directory.Exists(Steam2013Folder))
             {

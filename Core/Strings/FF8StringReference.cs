@@ -93,8 +93,10 @@ namespace OpenVIII
 
         public static void Init()
         {
+            Memory.Log.WriteLine($"{nameof(FF8StringReference)} :: {nameof(Init)}");
             if (ByteToString == null)
             {
+                Memory.Log.WriteLine($"{nameof(FF8StringReference)} :: {nameof(ByteToString)}");
                 ByteToString = new Dictionary<byte, FF8String>
                 {
                     //{0x01, "" },

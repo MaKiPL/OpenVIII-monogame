@@ -227,6 +227,7 @@ namespace OpenVIII
 
         public static Item_In_Menu Read(BinaryReader br, byte i)
         {
+            Memory.Log.WriteLine($"{nameof(Item_In_Menu)} :: {nameof(Read)} :: {i}");
             Item_In_Menu tmp = new Item_In_Menu
             {
                 Type = (_Type)br.ReadByte(),
@@ -563,7 +564,11 @@ namespace OpenVIII
 
         #region Constructors
 
-        private Items_In_Menu() => _items = new List<Item_In_Menu>();
+        private Items_In_Menu()
+        {
+            Memory.Log.WriteLine($"{nameof(Items_In_Menu)} :: new ");
+            _items = new List<Item_In_Menu>();
+        }
 
         #endregion Constructors
 
@@ -596,6 +601,7 @@ namespace OpenVIII
 
         private static Items_In_Menu Read(BinaryReader br)
         {
+            Memory.Log.WriteLine($"{nameof(Items_In_Menu)} :: {nameof(Read)} ");
             Items_In_Menu ret = new Items_In_Menu();
             for (byte i = 0; br.BaseStream.Position + 4 <= br.BaseStream.Length; i++)
             {
