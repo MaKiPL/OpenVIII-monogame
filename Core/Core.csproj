@@ -180,6 +180,8 @@
     <Compile Include="Battle\Stage\Camera\Camera.cs" />
     <Compile Include="Battle\Stage\Camera\CameraSetAnimGRP.cs" />
     <Compile Include="Battle\Stage\Camera\CameraStruct.cs" />
+    <Compile Include="Battle\Stage\GeometryInfoSupplier.cs" />
+    <Compile Include="Battle\Stage\GeometryVertexPosition.cs" />
     <Compile Include="Battle\Stage\MainGeometrySection.cs" />
     <Compile Include="Battle\Stage\Model.cs" />
     <Compile Include="Battle\Stage\ModelGroup.cs" />
@@ -188,7 +190,6 @@
     <Compile Include="Battle\Stage\ObjectsGroup.cs" />
     <Compile Include="Battle\Stage\Quad.cs" />
     <Compile Include="Battle\Stage\Stage.cs" />
-    <Compile Include="Battle\Stage\Stage_GeometryInfoSupplier.cs" />
     <Compile Include="Battle\Stage\Triangle.cs" />
     <Compile Include="Battle\Stage\Vertex.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />

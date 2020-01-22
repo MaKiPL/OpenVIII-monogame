@@ -23,7 +23,9 @@ namespace OpenVIII.Battle
         private float localRotator = 0.0f;
 
         private ModelGroup[] modelGroups;
-        private Matrix projectionMatrix, viewMatrix, worldMatrix;
+        private Matrix projectionMatrix => Camera.projectionMatrix;
+        private Matrix viewMatrix => Camera.viewMatrix;
+        private Matrix worldMatrix => Camera.worldMatrix;
 
         #endregion Fields
 
@@ -62,6 +64,7 @@ namespace OpenVIII.Battle
                 ModelGroup.Read(objectsGroups[2].objectListPointer,br),
                 ModelGroup.Read(objectsGroups[3].objectListPointer,br)
                 };
+                Camera = new Camera(br);
             }
         }
 
@@ -72,10 +75,13 @@ namespace OpenVIII.Battle
         public static int Height { get; private set; }
         public static TextureHandler[] textures { get; private set; }
         public static int Width { get; private set; }
+        public Battle.Camera Camera { get; set; }
 
         #endregion Properties
 
         #region Methods
+
+        public void Update() => Camera.Update();
 
         private static Vector2 CalculateUV(byte U, byte V, byte texPage, int texWidth)
         {
@@ -249,29 +255,5 @@ namespace OpenVIII.Battle
         }
 
         #endregion Methods
-
-        #region Classes
-
-        public class GeometryVertexPosition
-        {
-            #region Fields
-
-            public GeometryInfoSupplier[] GeometryInfoSupplier;
-            public VertexPositionTexture[] VertexPositionTexture;
-
-            #endregion Fields
-
-            #region Constructors
-
-            public GeometryVertexPosition(GeometryInfoSupplier[] gis, VertexPositionTexture[] vpt)
-            {
-                this.GeometryInfoSupplier = gis;
-                this.VertexPositionTexture = vpt;
-            }
-
-            #endregion Constructors
-        }
-
-        #endregion Classes
     }
 }

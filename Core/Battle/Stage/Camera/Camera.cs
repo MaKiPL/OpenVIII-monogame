@@ -51,6 +51,7 @@ namespace OpenVIII.Battle
         public Vector3 camPosition { get; private set; }
         public Vector3 camTarget { get; private set; }
         public Matrix projectionMatrix { get; private set; }
+        public Matrix worldMatrix { get; private set; }
         public Matrix viewMatrix { get; private set; }
 
         #endregion Properties
@@ -90,6 +91,8 @@ namespace OpenVIII.Battle
                    MathHelper.ToRadians(fovDirector / 8),
                    Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 1000f);
+            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
+                          Forward, Vector3.Up);
 
             //ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
             //{
