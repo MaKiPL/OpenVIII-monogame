@@ -38,7 +38,7 @@ namespace OpenVIII.Battle
                 Vertex[] vertices = new Vertex[verticesCount];
                 for (int i = 0; i < verticesCount; i++)
                     vertices[i] = Vertex.Read(br);
-                if (bSpecial && Memory.Encounters.Current().Scenario == 20)
+                if (bSpecial && Memory.Encounters.Scenario == 20)
                     return new Model();
                 br.BaseStream.Seek((br.BaseStream.Position % 4) + 4, SeekOrigin.Current);
                 ushort trianglesCount = br.ReadUInt16();

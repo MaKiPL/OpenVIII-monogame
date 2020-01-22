@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII.Battle
 {
@@ -10,6 +11,7 @@ namespace OpenVIII.Battle
         #region Fields
 
         private List<Encounter> encounters;
+        private int _currentIndex;
 
         #endregion Fields
 
@@ -22,7 +24,6 @@ namespace OpenVIII.Battle
         #region Properties
 
         public int Count => ((IList)encounters).Count;
-        public int CurrentIndex { get; set; }
         public bool IsFixedSize => ((IList)encounters).IsFixedSize;
         public bool IsReadOnly => ((IList)encounters).IsReadOnly;
         public bool IsSynchronized => ((IList)encounters).IsSynchronized;
@@ -58,17 +59,19 @@ namespace OpenVIII.Battle
                         BattleFlags = (EncounterFlag)br.ReadByte(),
                         PrimaryCamera = br.ReadByte(),
                         AlternativeCamera = br.ReadByte(),
-                        HiddenEnemies = br.ReadByte(),
-                        UnloadedEnemy = br.ReadByte(),
-                        UntargetableEnemy = br.ReadByte(),
-                        EnabledEnemy = br.ReadByte(),
+                        HiddenEnemies = (EnemyFlags) br.ReadByte(),
+                        UnloadedEnemy = (EnemyFlags) br.ReadByte(),
+                        UntargetableEnemy = (EnemyFlags) br.ReadByte(),
+                        EnabledEnemy = (EnemyFlags)br.ReadByte(),
                         enemyCoordinates = EnemyCoordinates.Read(br),
                         BEnemies = br.ReadBytes(8),
                         bUnk2 = br.ReadBytes(16 * 3 + 8),
-                        bLevels = br.ReadBytes(8)
+                        bLevels = br.ReadBytes(8),
+                        ID = encounters.Count
                     });
                 ms = null;
             }
+            encounters.encounters = encounters.OrderBy(x => x.Scenario).ThenBy(x => x.ID).ToList();
             return encounters;
         }
 
@@ -82,12 +85,7 @@ namespace OpenVIII.Battle
 
         public void CopyTo(Encounter[] array, int arrayIndex) => ((IList<Encounter>)encounters).CopyTo(array, arrayIndex);
 
-        public Encounter Current(int? index = null)
-        {
-            if (index.HasValue)
-                CurrentIndex = index.Value;
-            return encounters[CurrentIndex];
-        }
+        public Encounter Current => encounters[_currentIndex];
 
         public IEnumerator GetEnumerator() => ((IList)encounters).GetEnumerator();
 
@@ -99,20 +97,33 @@ namespace OpenVIII.Battle
 
         public Encounter Next()
         {
-            CurrentIndex++;
-            if (CurrentIndex >= encounters.Count)
-                CurrentIndex = 0;
-            return Current();
+            _currentIndex++;
+            if (_currentIndex >= encounters.Count)
+                _currentIndex = 0;
+            return Current;
         }
 
         public Encounter Previous()
         {
-            CurrentIndex--;
-            if (CurrentIndex < 0)
-                CurrentIndex = encounters.Count - 1;
-            return Current();
+            _currentIndex--;
+            if (_currentIndex < 0)
+                _currentIndex = encounters.Count - 1;
+            return Current;
         }
-
+        public int ID { get => Current.ID; set => _currentIndex = encounters.FindIndex(x => x.ID == value); }
+        public byte AlternativeCamera => Current.AlternativeCamera;
+        public EncounterFlag BattleFlags => Current.BattleFlags;
+        public EnemyFlags EnabledEnemy => Current.EnabledEnemy;
+        public EnemyCoordinates enemyCoordinates => Current.enemyCoordinates;
+        public EnemyFlags HiddenEnemies => Current.HiddenEnemies;
+        public byte PrimaryCamera => Current.PrimaryCamera;
+        public byte Scenario => Current.Scenario;
+        public EnemyFlags UnloadedEnemy => Current.UnloadedEnemy;
+        public EnemyFlags UntargetableEnemy => Current.UntargetableEnemy;
+        public byte[] BEnemies => Current.BEnemies;
+        public string Filename => Current.Filename;
+        public int ResolveCameraAnimation(byte cameraPointerValue) => Current.ResolveCameraAnimation(cameraPointerValue);
+        public int ResolveCameraSet(byte cameraPointerValue) => Current.ResolveCameraSet(cameraPointerValue);
         public bool Remove(Encounter item) => ((IList<Encounter>)encounters).Remove(item);
 
         public void RemoveAt(int index) => ((IList)encounters).RemoveAt(index);

@@ -11,7 +11,7 @@ namespace OpenVIII
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             byte[] sceneOut = aw.GetBinaryFile("scene.out");
             Memory.Encounters = Battle.Encounters.Read(sceneOut);
-            Memory.Encounters.CurrentIndex = 87;
+            //Memory.Encounters.CurrentIndex = 87;
         }
     }
 }

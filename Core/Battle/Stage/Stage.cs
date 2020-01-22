@@ -51,7 +51,7 @@ namespace OpenVIII.Battle
         public static BinaryReader Open()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            string filename = Memory.Encounters.Current().Filename;
+            string filename = Memory.Encounters.Filename;
             Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Camera)} :: {filename}");
             byte[] stageBuffer = aw.GetBinaryFile(filename);
 
@@ -115,7 +115,7 @@ namespace OpenVIII.Battle
                     foreach (Model b in modelGroups[n])
                     {
                         GeometryVertexPosition vpt = GetVertexBuffer(b);
-                        if (n == 3 && skyRotators[Memory.Encounters.Current().Scenario] != 0)
+                        if (n == 3 && skyRotators[Memory.Encounters.Scenario] != 0)
                             CreateRotation(vpt);
                         if (vpt == null) continue;
                         int localVertexIndex = 0;
@@ -169,7 +169,7 @@ namespace OpenVIII.Battle
         /// <param name="vpt"></param>
         private void CreateRotation(GeometryVertexPosition vpt)
         {
-            localRotator += (short)skyRotators[Memory.Encounters.Current().Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
+            localRotator += (short)skyRotators[Memory.Encounters.Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
             if (localRotator <= 0)
                 return;
             for (int i = 0; i < vpt.VertexPositionTexture.Length; i++)
@@ -250,12 +250,14 @@ namespace OpenVIII.Battle
             Height = textureInterface.GetHeight;
             string path = Path.Combine(Path.GetTempPath(), "Battle Stages");
             Directory.CreateDirectory(path);
-            textureInterface.SaveCLUT(Path.Combine(path, $"{Path.GetFileNameWithoutExtension(Memory.Encounters.Current().Filename)}_Clut.png"));
+            string fullpath = Path.Combine(path, $"{Path.GetFileNameWithoutExtension(Memory.Encounters.Filename)}_Clut.png");
+            if(!File.Exists(fullpath))
+            textureInterface.SaveCLUT(fullpath);
             textures = new TextureHandler[textureInterface.GetClutCount];
             for (ushort i = 0; i < textureInterface.GetClutCount; i++)
             {
-                textures[i] = TextureHandler.Create(Memory.Encounters.Current().Filename, textureInterface, i);
-                textures[i].Save(path);
+                textures[i] = TextureHandler.Create(Memory.Encounters.Filename, textureInterface, i);
+                textures[i].Save(path, false);
             }
         }
 

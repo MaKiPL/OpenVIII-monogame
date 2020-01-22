@@ -120,7 +120,7 @@ namespace OpenVIII.Battle
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
         private CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
         {
-            Battle.Encounter enc = Memory.Encounters.Current();
+            Battle.Encounter enc = Memory.Encounters.Current;
             int pSet = enc.ResolveCameraSet(animId);
             int pAnim = enc.ResolveCameraAnimation(animId);
             return new CameraSetAnimGRP(pSet, pAnim);
@@ -135,11 +135,12 @@ namespace OpenVIII.Battle
         /// <returns>Camera pointer (data after PlayStation MIPS)</returns>
         private uint GetCameraPointer()
         {
-            bool _5d4 = _x5D4.Any(x => x == Memory.Encounters.Current().Scenario);
-            bool _5d8 = _x5D8.Any(x => x == Memory.Encounters.Current().Scenario);
+            byte scenario = Memory.Encounters.Current.Scenario;
+            bool _5d4 = _x5D4.Any(x => x == scenario);
+            bool _5d8 = _x5D8.Any(x => x == scenario);
             if (_5d4) return 0x5D4;
             if (_5d8) return 0x5D8;
-            switch (Memory.Encounters.Current().Scenario)
+            switch (scenario)
             {
                 case 8:
                 case 48:
@@ -394,6 +395,7 @@ namespace OpenVIII.Battle
         /// <returns></returns>
         private uint ReadAnimationById(byte animId, BinaryReader br)
         {
+            cam.animationId = animId;
             CameraSetAnimGRP tpGetter = GetCameraCollectionPointers(animId);
             BattleCameraSet[] battleCameraSetArray = battleCameraCollection.battleCameraSet;
             if (battleCameraSetArray.Length > tpGetter.Set && battleCameraSetArray[tpGetter.Set].animPointers.Length > tpGetter.Anim)
@@ -452,7 +454,7 @@ namespace OpenVIII.Battle
             c.battleCameraSettings = bcs;
             c.cam = cam;
 
-            c.ReadAnimationById(c.GetRandomCameraN(Memory.Encounters.Current()), br);
+            c.ReadAnimationById(c.GetRandomCameraN(Memory.Encounters.Current), br);
             c.EndOffset = c.bs_cameraPointer + sCameraDataSize;
             //br.BaseStream.Seek(c.EndOffset, 0); //step out
             return c;

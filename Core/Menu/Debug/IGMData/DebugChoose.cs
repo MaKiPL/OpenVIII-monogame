@@ -295,7 +295,7 @@ namespace OpenVIII.IGMData
             dynamicDebugStrings = new Dictionary<Ditems, Func<FF8String>>
             {
                 { Ditems.Battle, ()=> {
-                    string end=$"{Memory.Encounters.CurrentIndex.ToString("D4")} - {Memory.Encounters.Current().Filename.ToUpper()}";
+                    string end=$"{Memory.Encounters.ID.ToString("D4")} - {Memory.Encounters.Filename.ToUpper()}";
                     if(strDebugLobby[Ditems.Battle]!=null)
                         return strDebugLobby[Ditems.Battle].Clone().Append(end);
                     else

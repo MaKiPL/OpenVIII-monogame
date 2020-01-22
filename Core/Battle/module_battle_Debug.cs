@@ -213,7 +213,7 @@ namespace OpenVIII
 
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.CurrentIndex} - {Memory.Encounters.Current().Filename}"), 20, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}"), 20, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
             if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
                 Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
@@ -828,14 +828,18 @@ namespace OpenVIII
 
         private static Vector3 GetEnemyPos(int n)
         {
-            var v = Memory.Encounters.Current().enemyCoordinates[Enemy.Party[n].EII.index];
+            var v = Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
             return v.GetVector();
         }
 
         private static void InitBattle()
         {
-            Camera = Battle.Camera.Read();
-            Stage = new Battle.Stage(Camera.EndOffset);
+            using (BinaryReader br = Stage.Open())
+            {
+                //Camera and stage are in the same file.
+                Camera = Camera.Read(br);
+                Stage = Stage.Read(Camera.EndOffset,br);
+            }
             CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
             //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
@@ -847,7 +851,7 @@ namespace OpenVIII
                 DeadTime.DoneEvent += DeadTime_DoneEvent;
             }
             DeadTime.Restart();
-            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.Encounters.CurrentIndex}\t cEnemies: {Memory.Encounters.Current().EnabledEnemy}\t Enemies: {string.Join(",", Memory.Encounters.Current().BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
+            Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.Encounters.ID}\t cEnemies: {Memory.Encounters.EnabledEnemy}\t Enemies: {string.Join(",", Memory.Encounters.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
             fps_camera = new FPS_Camera();
             RegularPyramid = new Battle.RegularPyramid();
             RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
@@ -972,7 +976,7 @@ namespace OpenVIII
         /// </summary>
         private static void ReadMonster()
         {
-            Battle.Encounter encounter = Memory.Encounters.Current();
+            Battle.Encounter encounter = Memory.Encounters.Current;
             if (encounter.EnabledEnemy == 0)
             {
                 monstersData = new Debug_battleDat[0];
@@ -981,7 +985,7 @@ namespace OpenVIII
             List<byte> monstersList = encounter.BEnemies.ToList();
             for (int i = 7; i > 0; i--)
             {
-                bool bEnabled = Extended.GetBit(encounter.EnabledEnemy, 7 - i);
+                bool bEnabled = Extended.GetBit((byte)encounter.EnabledEnemy, 7 - i);
                 if (!bEnabled)
                     monstersList.RemoveLast();
             }
@@ -993,14 +997,14 @@ namespace OpenVIII
                 monstersData = new Debug_battleDat[0];
             Enemy.Party = new List<Enemy>(8);
             for (int i = 0; i < 8; i++)
-                if (Extended.GetBit(encounter.EnabledEnemy, 7 - i))
+                if (Extended.GetBit((byte)encounter.EnabledEnemy, 7 - i))
                     Enemy.Party.Add(new EnemyInstanceInformation()
                     {
                         Data = monstersData.Where(x => x.GetId == encounter.BEnemies[i]).First(),
-                        bIsHidden = Extended.GetBit(encounter.HiddenEnemies, 7 - i),
+                        bIsHidden = Extended.GetBit((byte)encounter.HiddenEnemies, 7 - i),
                         bIsActive = true,
                         index = (byte)(7 - i),
-                        bIsUntargetable = Extended.GetBit(encounter.UntargetableEnemy, 7 - i),
+                        bIsUntargetable = Extended.GetBit((byte)encounter.UntargetableEnemy, 7 - i),
                         animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
                     }
                         );

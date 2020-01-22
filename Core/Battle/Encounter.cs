@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace OpenVIII.Battle
 {
@@ -10,14 +11,15 @@ namespace OpenVIII.Battle
         public EncounterFlag BattleFlags;
         public byte[] bLevels;
         public byte[] bUnk2;
-        public byte EnabledEnemy;
+        public EnemyFlags EnabledEnemy;
         public EnemyCoordinates enemyCoordinates;
-        public byte HiddenEnemies;
+        public EnemyFlags HiddenEnemies;
         public byte PrimaryCamera;
         public byte Scenario;
-        public byte UnloadedEnemy;
-        public byte UntargetableEnemy;
+        public EnemyFlags UnloadedEnemy;
+        public EnemyFlags UntargetableEnemy;
         private byte[] Enemies;
+        public int ID;
 
         #endregion Fields
 
@@ -37,5 +39,21 @@ namespace OpenVIII.Battle
         public int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
 
         #endregion Methods
+    }
+    /// <summary>
+    /// 8 possible enemies. so theres 1 bit per enemy here.
+    /// </summary>
+    [Flags]
+    public enum EnemyFlags : byte
+    {
+        None,
+        Enemy1 = 0x1,
+        Enemy2 = 0x2,
+        Enemy3 = 0x4,
+        Enemy4 = 0x8,
+        Enemy5 = 0x10,
+        Enemy6 = 0x20,
+        Enemy7 = 0x40,
+        Enemy8 = 0x80,
     }
 }
