@@ -192,10 +192,12 @@ namespace OpenVIII
 
         public static void Draw()
         {
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
             switch (battleModule)
             {
                 case BATTLEMODULE_DRAWGEOMETRY:
                     //DrawGeometry();
+                    Stage.Draw();
                     DrawMonsters();
                     DrawCharactersWeapons();
                     RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
@@ -235,8 +237,14 @@ namespace OpenVIII
             }
         }
 
-        public static Vector3 GetIndicatorPoint(int n) => (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
-            Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
+        public static Vector3 GetIndicatorPoint(int n)
+        {
+            if ((CharacterInstances == null && n >= 0) || (Enemy.Party == null && n < 0))
+                return Vector3.Zero;
+            else
+                return (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
+                    Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
+        }
 
         public static void Inputs()
         {
@@ -358,7 +366,7 @@ namespace OpenVIII
 
         public static void Update()
         {
-            Stage.Update();
+            Stage?.Update();
             DeadTime?.Update();
             if (CharacterInstances != null)
                 foreach (CharacterInstanceInformation cii in CharacterInstances)

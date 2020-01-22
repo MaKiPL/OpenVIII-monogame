@@ -14,18 +14,12 @@ namespace OpenVIII.Battle
         /// </summary>
         private static readonly float[] skyRotators = { 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x2, 0x0, 0x0, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x4, 0x0, 0x8, 0x0, 0x4, 0x4, 0x0, 0x4, 0x0, 0x4, 0xfffc, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x8, 0xfffc, 0x4, 0x4, 0x4, 0x4, 0x8, 0x8, 0x4, 0xfffc, 0xfffc, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x8, 0x8, 0x0, 0x8, 0xfffc, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x8, 0x0, 0x8, 0x8 };
 
-        private AlphaTestEffect ate;
-        private BasicEffect effect;
-
         /// <summary>
         /// a rotator is a float that holds current axis rotation for sky. May be malformed by skyRotators or TimeCompression magic
         /// </summary>
         private float localRotator = 0.0f;
 
         private ModelGroup[] modelGroups;
-        private Matrix projectionMatrix => Camera.projectionMatrix;
-        private Matrix viewMatrix => Camera.viewMatrix;
-        private Matrix worldMatrix => Camera.worldMatrix;
 
         #endregion Fields
 
@@ -41,6 +35,7 @@ namespace OpenVIII.Battle
             MemoryStream ms;
             using (br = new BinaryReader(ms = new MemoryStream(stageBuffer)))
             {
+                Camera = new Camera(br);
                 uint sectionCounter = br.ReadUInt32();
                 if (sectionCounter != 6)
                 {
@@ -51,20 +46,20 @@ namespace OpenVIII.Battle
                 MainGeometrySection MainSection = MainGeometrySection.Read(br);
                 ObjectsGroup[] objectsGroups = new ObjectsGroup[4]
                 {
-                ObjectsGroup.Read(MainSection.Group1Pointer,br),
-                ObjectsGroup.Read(MainSection.Group2Pointer,br),
-                ObjectsGroup.Read(MainSection.Group3Pointer,br),
-                ObjectsGroup.Read(MainSection.Group4Pointer,br)
+                    ObjectsGroup.Read(MainSection.Group1Pointer,br),
+                    ObjectsGroup.Read(MainSection.Group2Pointer,br),
+                    ObjectsGroup.Read(MainSection.Group3Pointer,br),
+                    ObjectsGroup.Read(MainSection.Group4Pointer,br)
                 };
 
                 modelGroups = new ModelGroup[4]
                 {
-                ModelGroup.Read(objectsGroups[0].objectListPointer,br),
-                ModelGroup.Read(objectsGroups[1].objectListPointer,br),
-                ModelGroup.Read(objectsGroups[2].objectListPointer,br),
-                ModelGroup.Read(objectsGroups[3].objectListPointer,br)
+                    ModelGroup.Read(objectsGroups[0].objectListPointer,br),
+                    ModelGroup.Read(objectsGroups[1].objectListPointer,br),
+                    ModelGroup.Read(objectsGroups[2].objectListPointer,br),
+                    ModelGroup.Read(objectsGroups[3].objectListPointer,br)
                 };
-                Camera = new Camera(br);
+                ReadTexture()
             }
         }
 
@@ -76,12 +71,79 @@ namespace OpenVIII.Battle
         public static TextureHandler[] textures { get; private set; }
         public static int Width { get; private set; }
         public Battle.Camera Camera { get; set; }
+        private Matrix projectionMatrix => Camera?.projectionMatrix ?? Matrix.Identity;
+        private Matrix viewMatrix => Camera?.viewMatrix ?? Matrix.Identity;
+        private Matrix worldMatrix => Camera?.worldMatrix ?? Matrix.Identity;
 
         #endregion Properties
 
         #region Methods
 
-        public void Update() => Camera.Update();
+        public void Draw()
+        {
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+
+            using (AlphaTestEffect ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            {
+                Projection = projectionMatrix,
+                View = viewMatrix,
+                World = worldMatrix
+            })
+            using (BasicEffect effect = new BasicEffect(Memory.graphics.GraphicsDevice)
+            {
+                TextureEnabled = true
+            })
+            {
+                for (int n = 0; n < (modelGroups?.Length??0); n++)
+                    foreach (Model b in modelGroups[n])
+                    {
+                        GeometryVertexPosition vpt = GetVertexBuffer(b);
+                        if (n == 3 && skyRotators[Memory.Encounters.Current().Scenario] != 0)
+                            CreateRotation(vpt);
+                        if (vpt == null) continue;
+                        int localVertexIndex = 0;
+                        for (int i = 0; i < vpt.GeometryInfoSupplier.Length; i++)
+                        {
+                            ate.Texture = (Texture2D)textures[vpt.GeometryInfoSupplier[i].clut]; //provide texture per-face
+                            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                            {
+                                pass.Apply();
+                                if (vpt.GeometryInfoSupplier[i].bQuad)
+                                {
+                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                                    vertexData: vpt.VertexPositionTexture, vertexOffset: localVertexIndex, primitiveCount: 2);
+                                    localVertexIndex += 6;
+                                }
+                                else
+                                {
+                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                                    vertexData: vpt.VertexPositionTexture, vertexOffset: localVertexIndex, primitiveCount: 1);
+                                    localVertexIndex += 3;
+                                }
+                            }
+                        }
+                    }
+            }
+            Memory.SpriteBatchStartAlpha();
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.CurrentIndex} - {Memory.Encounters.Current().Filename}"), 20, 0, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
+            if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
+                Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            // Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.CurrentTime}/{battleCamera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
+            //Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
+
+            Memory.SpriteBatchEnd();
+        }
+
+        public void Update() => Camera?.Update();
 
         private static Vector2 CalculateUV(byte U, byte V, byte texPage, int texWidth)
         {
@@ -194,64 +256,6 @@ namespace OpenVIII.Battle
                 return;
             for (int i = 0; i < vpt.VertexPositionTexture.Length; i++)
                 vpt.VertexPositionTexture[i].Position = Vector3.Transform(vpt.VertexPositionTexture[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator)));
-        }
-
-        private void Draw()
-        {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
-
-            effect.TextureEnabled = true;
-
-            for (int n = 0; n < modelGroups.Length; n++)
-                foreach (Model b in modelGroups[n])
-                {
-                    GeometryVertexPosition vpt = GetVertexBuffer(b);
-                    if (n == 3 && skyRotators[Memory.Encounters.Current().Scenario] != 0)
-                        CreateRotation(vpt);
-                    if (vpt == null) continue;
-                    int localVertexIndex = 0;
-                    for (int i = 0; i < vpt.GeometryInfoSupplier.Length; i++)
-                    {
-                        ate.Texture = (Texture2D)textures[vpt.GeometryInfoSupplier[i].clut]; //provide texture per-face
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            if (vpt.GeometryInfoSupplier[i].bQuad)
-                            {
-                                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                                vertexData: vpt.VertexPositionTexture, vertexOffset: localVertexIndex, primitiveCount: 2);
-                                localVertexIndex += 6;
-                            }
-                            else
-                            {
-                                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                                vertexData: vpt.VertexPositionTexture, vertexOffset: localVertexIndex, primitiveCount: 1);
-                                localVertexIndex += 3;
-                            }
-                        }
-                    }
-                }
-
-            Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.CurrentIndex} - {Memory.Encounters.Current().Filename}"), 20, 0, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
-            if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
-                Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
-            // Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.CurrentTime}/{battleCamera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
-
-            Memory.SpriteBatchEnd();
         }
 
         #endregion Methods
