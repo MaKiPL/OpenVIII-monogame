@@ -28,8 +28,9 @@ namespace OpenVIII.Battle
         public Stage()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Stage)} :: {Memory.Encounters.Current().Filename}");
-            byte[] stageBuffer = aw.GetBinaryFile(Memory.Encounters.Current().Filename);
+            string filename = Memory.Encounters.Current().Filename;
+            Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Stage)} :: {filename}");
+            byte[] stageBuffer = aw.GetBinaryFile(filename);
 
             BinaryReader br;
             MemoryStream ms;
@@ -59,7 +60,7 @@ namespace OpenVIII.Battle
                     ModelGroup.Read(objectsGroups[2].objectListPointer,br),
                     ModelGroup.Read(objectsGroups[3].objectListPointer,br)
                 };
-                ReadTexture()
+                ReadTexture(MainSection.TexturePointer,br);
             }
         }
 
