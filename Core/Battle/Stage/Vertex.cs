@@ -10,7 +10,6 @@ namespace OpenVIII.Battle
             public short Y;
             public short Z;
 
-
             public static Vertex Read(BinaryReader br)
             => new Vertex()
             {
@@ -19,6 +18,5 @@ namespace OpenVIII.Battle
                 Z = br.ReadInt16(),
             };
         }
-
     }
 }

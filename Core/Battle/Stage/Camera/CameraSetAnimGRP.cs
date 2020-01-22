@@ -2,10 +2,9 @@
 {
     public partial class Camera
     {
-        #endregion Methods
         #region Structs
 
-        private struct CameraSetAnimGRP
+        public struct CameraSetAnimGRP
         {
             #region Constructors
 

@@ -28,17 +28,13 @@ namespace OpenVIII
         //private static List<EnemyInstanceInformation> EnemyInstances;
         private static List<CharacterInstanceInformation> CharacterInstances;
 
-        //skyRotating floats are hardcoded
-        private static readonly ushort[] skyRotators = { 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x10, 0x10, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x2, 0x0, 0x0, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x4, 0x0, 0x8, 0x0, 0x4, 0x4, 0x0, 0x4, 0x0, 0x4, 0xfffc, 0x8, 0xfffc, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x0, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x4, 0x4, 0x8, 0xfffc, 0x4, 0x4, 0x4, 0x4, 0x8, 0x8, 0x4, 0xfffc, 0xfffc, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0xfffc, 0x0, 0x0, 0x0, 0x0, 0x8, 0x8, 0x0, 0x8, 0xfffc, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4, 0x4, 0x4, 0x0, 0x0, 0x8, 0x0, 0x8, 0x8 };
-
-        private static float localRotator = 0.0f; //a rotator is a float that holds current axis rotation for sky. May be malformed by skyRotators or TimeCompression magic
 
         private static BasicEffect effect;
         public static AlphaTestEffect ate;
 
         private static byte[] stageBuffer;
 
-        private static int battleModule = 0;
+        public static int battleModule { get; set; }=0;
 
         private static FPS_Camera fps_camera;
 
@@ -100,7 +96,6 @@ namespace OpenVIII
             }
         }
 
-        private static ModelGroup[] modelGroups;
 
         private static Debug_battleDat[] monstersData;
 
@@ -331,7 +326,7 @@ namespace OpenVIII
             switch (battleModule)
             {
                 case BATTLEMODULE_DRAWGEOMETRY:
-                    DrawGeometry();
+                    //DrawGeometry();
                     DrawMonsters();
                     DrawCharactersWeapons();
                     RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
@@ -779,75 +774,9 @@ namespace OpenVIII
         //}
 
          
-        private static void DrawGeometry()
-        {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+      
 
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            ate.Projection = projectionMatrix; ate.View = viewMatrix; ate.World = worldMatrix;
 
-            effect.TextureEnabled = true;
-            for (int n = 0; n < modelGroups.Length; n++)
-                foreach (Model b in modelGroups[n].models)
-                {
-                    GeometryVertexPosition vpt = GetVertexBuffer(b);
-                    if (n == 3 && skyRotators[Memory.Encounters.Current().Scenario] != 0)
-                        CreateRotation(vpt);
-                    if (vpt == null) continue;
-                    int localVertexIndex = 0;
-                    for (int i = 0; i < vpt.Item1.Length; i++)
-                    {
-                        ate.Texture = (Texture2D)textures[vpt.Item1[i].clut]; //provide texture per-face
-                        foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                        {
-                            pass.Apply();
-                            if (vpt.Item1[i].bQuad)
-                            {
-                                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                                vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 2);
-                                localVertexIndex += 6;
-                            }
-                            else
-                            {
-                                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                                vertexData: vpt.Item2, vertexOffset: localVertexIndex, primitiveCount: 1);
-                                localVertexIndex += 3;
-                            }
-                        }
-                    }
-                }
-
-            Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.CurrentIndex} - {Memory.Encounters.Current().Filename}"), 20, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
-            if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
-                Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
-           // Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.CurrentTime}/{battleCamera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
-
-            Memory.SpriteBatchEnd();
-        }
-
-        /// <summary>
-        /// Moves sky
-        /// </summary>
-        /// <param name="vpt"></param>
-        private static void CreateRotation(Tuple<Stage_GeometryInfoSupplier[], VertexPositionTexture[]> vpt)
-        {
-            localRotator += (short)skyRotators[Memory.Encounters.Current().Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
-            if (localRotator <= 0)
-                return;
-            for (int i = 0; i < vpt.Item2.Length; i++)
-                vpt.Item2[i].Position = Vector3.Transform(vpt.Item2[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator)));
-        }
 
         
 
@@ -1057,15 +986,7 @@ namespace OpenVIII
             
 
 
-            uint sectionCounter = br.ReadUInt32();
-            if (sectionCounter != 6)
-            {
-                Console.WriteLine($"BS_PARSER_PRE_OBJECTSECTION: Main geometry section has no 6 pointers at: {ms.Position}");
-                battleModule++;
-                return;
-            }
 
-            ReadTexture(MainSection.TexturePointer);
 
             ReadCharacters();
             ReadMonster();
@@ -1265,6 +1186,48 @@ namespace OpenVIII
             };
         }
 
+        /// <summary>
+        /// This method is responsible to read/parse the enemy data. It holds the result in
+        /// monstersData[] This method was designed to read only one instance of enemy. A list called
+        /// EnemyInstance holds data information for each enemy
+        /// </summary>
+        private static void ReadMonster()
+        {
+            Init_debugger_battle.Encounter encounter = Memory.Encounters.Current();
+            if (encounter.EnabledEnemy == 0)
+            {
+                monstersData = new Debug_battleDat[0];
+                return;
+            }
+            List<byte> monstersList = encounter.BEnemies.ToList();
+            for (int i = 7; i > 0; i--)
+            {
+                bool bEnabled = Extended.GetBit(encounter.EnabledEnemy, 7 - i);
+                if (!bEnabled)
+                    monstersList.RemoveLast();
+            }
+            IGrouping<byte, byte>[] DistinctMonsterPointers = monstersList.GroupBy(x => x).ToArray();
+            monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
+            for (int n = 0; n < monstersData.Length; n++)
+                monstersData[n] = Debug_battleDat.Load(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
+            if (monstersData == null)
+                monstersData = new Debug_battleDat[0];
+            Enemy.Party = new List<Enemy>(8);
+            //EnemyInstances = new List<EnemyInstanceInformation>();
+            for (int i = 0; i < 8; i++)
+                if (Extended.GetBit(encounter.EnabledEnemy, 7 - i))
+                    Enemy.Party.Add(new EnemyInstanceInformation()
+                    {
+                        Data = monstersData.Where(x => x.GetId == encounter.BEnemies[i]).First(),
+                        bIsHidden = Extended.GetBit(encounter.HiddenEnemies, 7 - i),
+                        bIsActive = true,
+                        index = (byte)(7 - i),
+                        bIsUntargetable = Extended.GetBit(encounter.UntargetableEnemy, 7 - i),
+                        animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
+                    }
+                        );
+        }
+
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
         {
             Debug_battleDat character = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
@@ -1282,65 +1245,7 @@ namespace OpenVIII
             };
         }
 
-        /// <summary>
-        /// This method is responsible to read/parse the enemy data. It holds the result in
-        /// monstersData[] This method was designed to read only one instance of enemy. A list called
-        /// EnemyInstance holds data information for each enemy
-        /// </summary>
-        private static void ReadMonster()
-        {
-            Init_debugger_battle.Encounter enc = Memory.Encounters.Current();
-            if (enc.EnabledEnemy == 0)
-            {
-                monstersData = new Debug_battleDat[0];
-                return;
-            }
-            List<byte> monstersList = enc.BEnemies.ToList();
-            for (int i = 7; i > 0; i--)
-            {
-                bool bEnabled = Extended.GetBit(enc.EnabledEnemy, 7 - i);
-                if (!bEnabled)
-                    monstersList.RemoveLast();
-            }
-            IGrouping<byte, byte>[] DistinctMonsterPointers = monstersList.GroupBy(x => x).ToArray();
-            monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
-            for (int n = 0; n < monstersData.Length; n++)
-                monstersData[n] = Debug_battleDat.Load(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
-            if (monstersData == null)
-                monstersData = new Debug_battleDat[0];
-            Enemy.Party = new List<Enemy>(8);
-            //EnemyInstances = new List<EnemyInstanceInformation>();
-            for (int i = 0; i < 8; i++)
-                if (Extended.GetBit(enc.EnabledEnemy, 7 - i))
-                    Enemy.Party.Add(new EnemyInstanceInformation()
-                    {
-                        Data = monstersData.Where(x => x.GetId == enc.BEnemies[i]).First(),
-                        bIsHidden = Extended.GetBit(enc.HiddenEnemies, 7 - i),
-                        bIsActive = true,
-                        index = (byte)(7 - i),
-                        bIsUntargetable = Extended.GetBit(enc.UntargetableEnemy, 7 - i),
-                        animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
-                    }
-                        );
-        }
-
-        /// <summary>
-        /// Method designed for Stage texture loading.
-        /// </summary>
-        /// <param name="texturePointer">Absolute pointer to TIM texture header in stageBuffer</param>
-        private static void ReadTexture(uint texturePointer)
-        {
-            textureInterface = new TIM2(stageBuffer, texturePointer);
-            var path = Path.Combine(Path.GetTempPath(), "Battle Stages");
-            Directory.CreateDirectory(path);
-            textureInterface.SaveCLUT(Path.Combine(path,$"{Path.GetFileNameWithoutExtension(Memory.Encounters.Current().Filename)}_Clut.png"));
-            textures = new TextureHandler[textureInterface.GetClutCount];
-            for (ushort i = 0; i < textureInterface.GetClutCount; i++)
-            {
-                textures[i] = TextureHandler.Create(Memory.Encounters.Current().Filename, textureInterface, i);
-                textures[i].Save(path);
-            }
-        }
+       
 
 
        

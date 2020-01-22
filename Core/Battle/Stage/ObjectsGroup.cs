@@ -17,6 +17,7 @@ namespace OpenVIII.Battle
             public uint settings2Pointer;
 
             #endregion Fields
+
             public static ObjectsGroup Read(uint pointer, BinaryReader br)
             {
                 br.BaseStream.Seek(pointer, System.IO.SeekOrigin.Begin);

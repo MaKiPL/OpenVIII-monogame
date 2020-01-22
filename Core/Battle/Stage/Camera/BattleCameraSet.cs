@@ -2,7 +2,6 @@
 {
     public partial class Camera
     {
-        #endregion Methods
         #region Structs
 
         /// <summary>
@@ -13,7 +12,7 @@
         /// reading again and again not including the battle stage. Also reading all camera
         /// animations is waste of time and resources
         /// </summary>
-        private struct BattleCameraSet
+        public struct BattleCameraSet
         {
             #region Fields
 

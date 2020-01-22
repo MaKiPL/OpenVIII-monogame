@@ -6,8 +6,6 @@ namespace OpenVIII.Battle
 {
     public partial class Camera
     {
-        #endregion Methods
-
         #region Structs
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 1092)]

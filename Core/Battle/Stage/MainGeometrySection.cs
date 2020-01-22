@@ -15,7 +15,6 @@ namespace OpenVIII.Battle
             public uint TexturePointer;
             public uint EOF;
 
-
             public static MainGeometrySection Read(BinaryReader br)
             {
                 int basePointer = (int)br.BaseStream.Position - 4;

@@ -2,7 +2,6 @@
 {
     public partial class Camera
     {
-        #endregion Methods
         #region Structs
 
         /// <summary>
