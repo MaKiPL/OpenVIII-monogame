@@ -108,7 +108,7 @@ namespace OpenVIII.Battle
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
                     byte[] bStage = aw.GetBinaryFile(Memory.Encounters.Current().Filename);
                     if (bStage != null && bStage.Length > 0)
-                        using (BinaryReader br = new BinaryReader(new MemoryStream()))
+                        using (BinaryReader br = new BinaryReader(new MemoryStream(bStage)))
                             ReadAnimation(lastCameraPointer - 2, br);
                 }
             }
