@@ -104,7 +104,7 @@ namespace OpenVIII.Battle
             {
                 if (bMultiShotAnimation && cam.time != 0)
                 {
-                    using (BinaryReader br = Open())
+                    using (BinaryReader br = Stage.Open())
                         if (br != null)
                             ReadAnimation(lastCameraPointer - 2, br);
                 }
@@ -376,7 +376,7 @@ namespace OpenVIII.Battle
 
         public void ChangeAnimation(byte animId)
         {
-            using (BinaryReader br = Open())
+            using (BinaryReader br = Stage.Open())
                 if (br != null)
                 {
                     cam.ResetTime();
@@ -412,27 +412,6 @@ namespace OpenVIII.Battle
             return 0;
         }
 
-        public static Camera Read()
-        {
-            using (BinaryReader br = Open())
-                if (br != null)
-                    return Read(br);
-            return null;
-        }
-
-        private static BinaryReader Open()
-        {
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            string filename = Memory.Encounters.Current().Filename;
-            Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Camera)} :: {filename}");
-            byte[] stageBuffer = aw.GetBinaryFile(filename);
-
-            BinaryReader br;
-            MemoryStream ms;
-            if (stageBuffer == null)
-                return null;
-            return br = new BinaryReader(ms = new MemoryStream(stageBuffer));
-        }
 
         /// <summary>
         /// Parses camera data into BattleCamera struct. Main purpouse of this function is to

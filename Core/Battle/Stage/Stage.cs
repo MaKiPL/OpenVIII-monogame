@@ -25,59 +25,73 @@ namespace OpenVIII.Battle
 
         #region Constructors
 
-        public Stage(uint offset)
-        {
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-            string filename = Memory.Encounters.Current().Filename;
-            Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Stage)} :: {filename}");
-            byte[] stageBuffer = aw.GetBinaryFile(filename);
-
-            BinaryReader br;
-            MemoryStream ms;
-            using (br = new BinaryReader(ms = new MemoryStream(stageBuffer)))
-            {
-                ms.Seek(offset, SeekOrigin.Begin);
-                uint sectionCounter = br.ReadUInt32();
-                if (sectionCounter != 6)
-                {
-                    Memory.Log.WriteLine($"BS_PARSER_PRE_OBJECTSECTION: Main geometry section has no 6 pointers at: {ms.Position}");
-                    Module_battle_debug.battleModule++;
-                    return;
-                }
-                MainGeometrySection MainSection = MainGeometrySection.Read(br);
-                ObjectsGroup[] objectsGroups = new ObjectsGroup[4]
-                {
-                    ObjectsGroup.Read(MainSection.Group1Pointer,br),
-                    ObjectsGroup.Read(MainSection.Group2Pointer,br),
-                    ObjectsGroup.Read(MainSection.Group3Pointer,br),
-                    ObjectsGroup.Read(MainSection.Group4Pointer,br)
-                };
-
-                modelGroups = new ModelGroup[4]
-                {
-                    ModelGroup.Read(objectsGroups[0].objectListPointer,br),
-                    ModelGroup.Read(objectsGroups[1].objectListPointer,br),
-                    ModelGroup.Read(objectsGroups[2].objectListPointer,br),
-                    ModelGroup.Read(objectsGroups[3].objectListPointer,br)
-                };
-                ReadTexture(MainSection.TexturePointer,br);
-            }
-        }
+        public Stage()
+        { }
 
         #endregion Constructors
 
         #region Properties
 
-        public static int Height { get; private set; }
-        public static TextureHandler[] textures { get; private set; }
-        public static int Width { get; private set; }
+        public int Height { get; private set; }
+
+        public TextureHandler[] textures { get; private set; }
+
+        public int Width { get; private set; }
+
         private Matrix projectionMatrix => Module_battle_debug.ProjectionMatrix;
+
         private Matrix viewMatrix => Module_battle_debug.ViewMatrix;
+
         private Matrix worldMatrix => Module_battle_debug.WorldMatrix;
 
         #endregion Properties
 
         #region Methods
+
+        public static BinaryReader Open()
+        {
+            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+            string filename = Memory.Encounters.Current().Filename;
+            Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Camera)} :: {filename}");
+            byte[] stageBuffer = aw.GetBinaryFile(filename);
+
+            BinaryReader br;
+            MemoryStream ms;
+            if (stageBuffer == null)
+                return null;
+            return br = new BinaryReader(ms = new MemoryStream(stageBuffer));
+        }
+
+        public static Stage Read(uint offset, BinaryReader br)
+        {
+            Stage s = new Stage();
+            br.BaseStream.Seek(offset, SeekOrigin.Begin);
+            uint sectionCounter = br.ReadUInt32();
+            if (sectionCounter != 6)
+            {
+                Memory.Log.WriteLine($"BS_PARSER_PRE_OBJECTSECTION: Main geometry section has no 6 pointers at: {br.BaseStream.Position}");
+                Module_battle_debug.battleModule++;
+                return null;
+            }
+            MainGeometrySection MainSection = MainGeometrySection.Read(br);
+            ObjectsGroup[] objectsGroups = new ObjectsGroup[4]
+            {
+                    ObjectsGroup.Read(MainSection.Group1Pointer,br),
+                    ObjectsGroup.Read(MainSection.Group2Pointer,br),
+                    ObjectsGroup.Read(MainSection.Group3Pointer,br),
+                    ObjectsGroup.Read(MainSection.Group4Pointer,br)
+            };
+
+            s.modelGroups = new ModelGroup[4]
+            {
+                    ModelGroup.Read(objectsGroups[0].objectListPointer,br),
+                    ModelGroup.Read(objectsGroups[1].objectListPointer,br),
+                    ModelGroup.Read(objectsGroups[2].objectListPointer,br),
+                    ModelGroup.Read(objectsGroups[3].objectListPointer,br)
+            };
+            s.ReadTexture(MainSection.TexturePointer, br);
+            return s;
+        }
 
         public void Draw()
         {
@@ -97,7 +111,7 @@ namespace OpenVIII.Battle
                 TextureEnabled = true
             })
             {
-                for (int n = 0; n < (modelGroups?.Length??0); n++)
+                for (int n = 0; n < (modelGroups?.Length ?? 0); n++)
                     foreach (Model b in modelGroups[n])
                     {
                         GeometryVertexPosition vpt = GetVertexBuffer(b);
@@ -150,11 +164,24 @@ namespace OpenVIII.Battle
         private static byte GetTexturePage(byte texturepage) => (byte)(texturepage & 0x0F);
 
         /// <summary>
+        /// Moves sky
+        /// </summary>
+        /// <param name="vpt"></param>
+        private void CreateRotation(GeometryVertexPosition vpt)
+        {
+            localRotator += (short)skyRotators[Memory.Encounters.Current().Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
+            if (localRotator <= 0)
+                return;
+            for (int i = 0; i < vpt.VertexPositionTexture.Length; i++)
+                vpt.VertexPositionTexture[i].Position = Vector3.Transform(vpt.VertexPositionTexture[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator)));
+        }
+
+        /// <summary>
         /// Converts requested Model data (Stage group geometry) into MonoGame VertexPositionTexture
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        private static GeometryVertexPosition GetVertexBuffer(Model model)
+        private GeometryVertexPosition GetVertexBuffer(Model model)
         {
             List<VertexPositionTexture> vptDynamic = new List<VertexPositionTexture>();
             List<GeometryInfoSupplier> bs_renderer_supplier = new List<GeometryInfoSupplier>();
@@ -216,7 +243,7 @@ namespace OpenVIII.Battle
         /// Method designed for Stage texture loading.
         /// </summary>
         /// <param name="texturePointer">Absolute pointer to TIM texture header in stageBuffer</param>
-        private static void ReadTexture(uint texturePointer, BinaryReader br)
+        private void ReadTexture(uint texturePointer, BinaryReader br)
         {
             TIM2 textureInterface = new TIM2(br, texturePointer);
             Width = textureInterface.GetWidth;
@@ -230,19 +257,6 @@ namespace OpenVIII.Battle
                 textures[i] = TextureHandler.Create(Memory.Encounters.Current().Filename, textureInterface, i);
                 textures[i].Save(path);
             }
-        }
-
-        /// <summary>
-        /// Moves sky
-        /// </summary>
-        /// <param name="vpt"></param>
-        private void CreateRotation(GeometryVertexPosition vpt)
-        {
-            localRotator += (short)skyRotators[Memory.Encounters.Current().Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
-            if (localRotator <= 0)
-                return;
-            for (int i = 0; i < vpt.VertexPositionTexture.Length; i++)
-                vpt.VertexPositionTexture[i].Position = Vector3.Transform(vpt.VertexPositionTexture[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(localRotator)));
         }
 
         #endregion Methods
