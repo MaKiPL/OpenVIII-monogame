@@ -98,6 +98,8 @@ namespace OpenVIII.Battle
             /// (1000) milliseconds / frames per second
             /// </summary>
             public TimeSpan TotalTimePerFrame => TimeSpan.FromMilliseconds(1000d / 240d);
+
+            public void ResetTime() => CurrentTime = TimeSpan.Zero;
         };
 
         #endregion Structs

@@ -25,7 +25,7 @@ namespace OpenVIII.Battle
 
         #region Constructors
 
-        public Stage()
+        public Stage(uint offset)
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
             string filename = Memory.Encounters.Current().Filename;
@@ -36,7 +36,7 @@ namespace OpenVIII.Battle
             MemoryStream ms;
             using (br = new BinaryReader(ms = new MemoryStream(stageBuffer)))
             {
-                Camera = new Camera(br);
+                ms.Seek(offset, SeekOrigin.Begin);
                 uint sectionCounter = br.ReadUInt32();
                 if (sectionCounter != 6)
                 {
@@ -71,10 +71,9 @@ namespace OpenVIII.Battle
         public static int Height { get; private set; }
         public static TextureHandler[] textures { get; private set; }
         public static int Width { get; private set; }
-        public Battle.Camera Camera { get; set; }
-        private Matrix projectionMatrix => Camera?.projectionMatrix ?? Matrix.Identity;
-        private Matrix viewMatrix => Camera?.viewMatrix ?? Matrix.Identity;
-        private Matrix worldMatrix => Camera?.worldMatrix ?? Matrix.Identity;
+        private Matrix projectionMatrix => Module_battle_debug.ProjectionMatrix;
+        private Matrix viewMatrix => Module_battle_debug.ViewMatrix;
+        private Matrix worldMatrix => Module_battle_debug.WorldMatrix;
 
         #endregion Properties
 
@@ -128,23 +127,10 @@ namespace OpenVIII.Battle
                         }
                     }
             }
-            Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.CurrentIndex} - {Memory.Encounters.Current().Filename}"), 20, 0, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
-            if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
-                Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
-            // Memory.font.RenderBasicText(new FF8String($"camera frame: {battleCamera.cam.CurrentTime}/{battleCamera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(battleCamera.cam.startingFOV, battleCamera.cam.endingFOV, battleCamera.cam.CurrentTime.Ticks / (float)battleCamera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {battleCamera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
-            //Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
-
-            Memory.SpriteBatchEnd();
         }
 
-        public void Update() => Camera?.Update();
+        public void Update()
+        { }
 
         private static Vector2 CalculateUV(byte U, byte V, byte texPage, int texWidth)
         {

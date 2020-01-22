@@ -450,7 +450,7 @@ namespace OpenVIII
         /// </summary>
         public static int SetBattleMusic = 6;
 
-        public static Init_debugger_battle.Encounters Encounters { get; set; }
+        public static Battle.Encounters Encounters { get; set; }
 
         #endregion battleProvider
 

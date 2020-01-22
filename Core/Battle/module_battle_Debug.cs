@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenVIII.Battle;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -18,8 +19,10 @@ namespace OpenVIII
         public const int Yoffset = 0;
         public static AlphaTestEffect ate;
         public static int DEBUG = 0;
-        public static int DEBUGframe = 0;
+        public static int DEBUGframe { get; private set; } = 0;
         public static bool PauseATB = false;
+
+        public static Camera Camera { get; private set; }
         public static Battle.Stage Stage { get; set; }
 
         /// <summary>
@@ -207,6 +210,22 @@ namespace OpenVIII
                         Menu.BattleMenus.Draw();
                     break;
             }
+
+
+            Memory.SpriteBatchStartAlpha();
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.CurrentIndex} - {Memory.Encounters.Current().Filename}"), 20, 0, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
+            if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
+                Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+             Memory.font.RenderBasicText(new FF8String($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {Camera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
+
+            Memory.SpriteBatchEnd();
         }
 
         public static void DrawCrosshair(Enemy enemy)
@@ -251,19 +270,25 @@ namespace OpenVIII
             if (Input2.Button(Keys.D0))
                 bUseFPSCamera = !bUseFPSCamera;
             else if (Input2.Button(Keys.D1))
+            {
                 if ((DEBUGframe & 0b1111) >= 7)
                 {
                     DEBUGframe += 0b00010000;
                     DEBUGframe -= 7;
                 }
                 else DEBUGframe += 1;
+                Camera.ChangeAnimation((byte)DEBUGframe);
+            }
             else if (Input2.Button(Keys.D2))
+            {
                 if ((DEBUGframe & 0b1111) == 0)
                 {
                     DEBUGframe -= 0b00010000;
                     DEBUGframe += 7;
                 }
                 else DEBUGframe--;
+                Camera.ChangeAnimation((byte)DEBUGframe);
+            }
             else if (Input2.Button(Keys.F5))
             {
                 battleModule = BATTLEMODULE_INIT;
@@ -366,8 +391,6 @@ namespace OpenVIII
 
         public static void Update()
         {
-            Stage?.Update();
-            DeadTime?.Update();
             if (CharacterInstances != null)
                 foreach (CharacterInstanceInformation cii in CharacterInstances)
                 {
@@ -401,6 +424,8 @@ namespace OpenVIII
                     break;
 
                 case BATTLEMODULE_DRAWGEOMETRY:
+                    Stage?.Update();
+                    DeadTime?.Update();
                     Menu.BattleMenus.Update();
                     sbyte? partypos = Menu.BattleMenus.PartyPos;
                     RegularPyramid.Set(GetIndicatorPoint(partypos ?? 0));
@@ -417,10 +442,15 @@ namespace OpenVIII
                         Module_battle_debug.partypos = partypos;
                     }
                     if (bUseFPSCamera)
+                    {
                         viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+                        projectionMatrix = Camera.projectionMatrix;
+                    }
                     else
                     {
-                        //UpdateCamera();
+                        Camera?.Update();
+                        viewMatrix = Camera.viewMatrix;
+                        projectionMatrix = Camera.projectionMatrix;
                         ret = Menu.BattleMenus.Inputs();
                     }
                     break;
@@ -573,9 +603,9 @@ namespace OpenVIII
                     // more items are possible. might need to tweak this.
 
                     //these are added in remaster as possible items.
-                    const byte Ribbon = 100;
-                    const byte Friendship = 32;
-                    const byte Mogs_Amulet = 65;
+                    //const byte Ribbon = 100;
+                    //const byte Friendship = 32;
+                    //const byte Mogs_Amulet = 65;
 
                     Saves.Item item = new Saves.Item { QTY = 1 };
                     rnd = checked((byte)Memory.Random.Next(256));
@@ -796,19 +826,16 @@ namespace OpenVIII
 
         private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
 
-        private static Vector3 GetEnemyPos(int n) =>
-                        Memory.Encounters.Current().enemyCoordinates.GetEnemyCoordinateByIndex(Enemy.Party[n].EII.index).GetVector();
+        private static Vector3 GetEnemyPos(int n)
+        {
+            var v = Memory.Encounters.Current().enemyCoordinates[Enemy.Party[n].EII.index];
+            return v.GetVector();
+        }
 
-        //    camTarget.X = camPosition.X + (float)Math.Cos(MathHelper.ToRadians(degrees)) * camDistance;
-        //    camTarget.Z = camPosition.Z + (float)Math.Sin(MathHelper.ToRadians(degrees)) * camDistance;
-        //    camTarget.Y = camPosition.Y - Yshift / 5;
-        //    viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-        //                 Vector3.Up);
-        //    #endregion
-        //}
         private static void InitBattle()
         {
-            Stage = new Battle.Stage();
+            Camera = Battle.Camera.Read();
+            Stage = new Battle.Stage(Camera.EndOffset);
             CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
             //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
@@ -932,8 +959,6 @@ namespace OpenVIII
 
         private static void ReadData()
         {
-
-
             ReadCharacters();
             ReadMonster();
 
@@ -947,7 +972,7 @@ namespace OpenVIII
         /// </summary>
         private static void ReadMonster()
         {
-            Init_debugger_battle.Encounter encounter = Memory.Encounters.Current();
+            Battle.Encounter encounter = Memory.Encounters.Current();
             if (encounter.EnabledEnemy == 0)
             {
                 monstersData = new Debug_battleDat[0];
@@ -998,6 +1023,7 @@ namespace OpenVIII
             foreach (Enemy e in Enemy.Party)
                 e.EII.animationSystem.StopAnimation();
         }
+
         private static bool TestAngelo(Angelo ability)
         {
             //else if (8 >= [0..255] Angelo Recover is used (3.3 %)
@@ -1030,13 +1056,14 @@ namespace OpenVIII
                 }
             return false;
         }
+
         /// <summary>
         /// if (12 >= [0..255]) Gilgamesh is summoned (5.1 %)
         /// </summary>
         /// <returns>bool</returns>
         private static bool TestGilgamesh() =>
 
-            Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) < 12;
+            Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) <= 12;
 
         /// <summary>
         /// Increments animation frames by N, where N is equal to int(deltaTime/FPS). 15FPS is one
@@ -1137,7 +1164,6 @@ namespace OpenVIII
             }
 
             #endregion Methods
-
         }
 
         public struct CharacterData

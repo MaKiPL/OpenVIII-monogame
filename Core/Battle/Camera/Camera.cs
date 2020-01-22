@@ -38,11 +38,7 @@ namespace OpenVIII.Battle
 
         #region Constructors
 
-        public Camera(BinaryReader br)
-        {
-            bs_cameraPointer = GetCameraPointer();
-            ReadCamera(br);
-        }
+        public Camera() => bs_cameraPointer = GetCameraPointer();
 
         #endregion Constructors
 
@@ -51,8 +47,11 @@ namespace OpenVIII.Battle
         public Vector3 camPosition { get; private set; }
         public Vector3 camTarget { get; private set; }
         public Matrix projectionMatrix { get; private set; }
-        public Matrix worldMatrix { get; private set; }
+
+        //public Matrix worldMatrix { get; private set; }
         public Matrix viewMatrix { get; private set; }
+
+        public uint EndOffset { get; private set; }
 
         #endregion Properties
 
@@ -91,8 +90,8 @@ namespace OpenVIII.Battle
                    MathHelper.ToRadians(fovDirector / 8),
                    Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 1000f);
-            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
-                          Forward, Vector3.Up);
+            //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
+            //              Forward, Vector3.Up);
 
             //ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
             //{
@@ -105,10 +104,8 @@ namespace OpenVIII.Battle
             {
                 if (bMultiShotAnimation && cam.time != 0)
                 {
-                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-                    byte[] bStage = aw.GetBinaryFile(Memory.Encounters.Current().Filename);
-                    if (bStage != null && bStage.Length > 0)
-                        using (BinaryReader br = new BinaryReader(new MemoryStream(bStage)))
+                    using (BinaryReader br = Open())
+                        if (br != null)
                             ReadAnimation(lastCameraPointer - 2, br);
                 }
             }
@@ -123,7 +120,7 @@ namespace OpenVIII.Battle
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
         private CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
         {
-            Init_debugger_battle.Encounter enc = Memory.Encounters.Current();
+            Battle.Encounter enc = Memory.Encounters.Current();
             int pSet = enc.ResolveCameraSet(animId);
             int pAnim = enc.ResolveCameraAnimation(animId);
             return new CameraSetAnimGRP(pSet, pAnim);
@@ -206,7 +203,7 @@ namespace OpenVIII.Battle
         /// </summary>
         /// <param name="encounter">instance of current encounter</param>
         /// <returns>Either primary or alternative camera from encounter</returns>
-        private byte GetRandomCameraN(Init_debugger_battle.Encounter encounter)
+        private byte GetRandomCameraN(Battle.Encounter encounter)
         {
             int camToss = Memory.Random.Next(3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
             switch (camToss)
@@ -377,6 +374,16 @@ namespace OpenVIII.Battle
             return (uint)(br.BaseStream.Position);
         }
 
+        public void ChangeAnimation(byte animId)
+        {
+            using (BinaryReader br = Open())
+                if (br != null)
+                {
+                    cam.ResetTime();
+                    ReadAnimationById(animId, br);
+                }
+        }
+
         /// <summary>
         /// This method resolves the correct camera pointer and runs ReadAnimation(uint,ms,br) method
         /// and returns the final pointer
@@ -387,7 +394,6 @@ namespace OpenVIII.Battle
         /// <returns></returns>
         private uint ReadAnimationById(byte animId, BinaryReader br)
         {
-            //animId = (byte)DEBUGframe; //DEBUG
             CameraSetAnimGRP tpGetter = GetCameraCollectionPointers(animId);
             BattleCameraSet[] battleCameraSetArray = battleCameraCollection.battleCameraSet;
             if (battleCameraSetArray.Length > tpGetter.Set && battleCameraSetArray[tpGetter.Set].animPointers.Length > tpGetter.Anim)
@@ -406,15 +412,38 @@ namespace OpenVIII.Battle
             return 0;
         }
 
+        public static Camera Read()
+        {
+            using (BinaryReader br = Open())
+                if (br != null)
+                    return Read(br);
+            return null;
+        }
+
+        private static BinaryReader Open()
+        {
+            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+            string filename = Memory.Encounters.Current().Filename;
+            Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Camera)} :: {filename}");
+            byte[] stageBuffer = aw.GetBinaryFile(filename);
+
+            BinaryReader br;
+            MemoryStream ms;
+            if (stageBuffer == null)
+                return null;
+            return br = new BinaryReader(ms = new MemoryStream(stageBuffer));
+        }
+
         /// <summary>
         /// Parses camera data into BattleCamera struct. Main purpouse of this function is to
         /// actually read all the offsets and pointers to human readable form of struct. This
         /// function later calls ReadAnimation(n) where n is animation Id (i.e. 9 is camCollection=1
         /// and cameraAnim=0)
         /// </summary>
-        private void ReadCamera(BinaryReader br)
+        public static Camera Read(BinaryReader br)
         {
-            br.BaseStream.Seek(bs_cameraPointer, 0);
+            Camera c = new Camera();
+            br.BaseStream.Seek(c.bs_cameraPointer, 0);
             uint cCameraHeaderSector = br.ReadUInt16();
             uint pCameraSetting = br.ReadUInt16();
             uint pCameraAnimationCollection = br.ReadUInt16();
@@ -424,7 +453,7 @@ namespace OpenVIII.Battle
             BattleCameraSettings bcs = new BattleCameraSettings() { unk = br.ReadBytes(24) };
             //end of camera settings parsing
 
-            br.BaseStream.Seek(pCameraAnimationCollection + bs_cameraPointer, SeekOrigin.Begin);
+            br.BaseStream.Seek(pCameraAnimationCollection + c.bs_cameraPointer, SeekOrigin.Begin);
             BattleCameraCollection bcc = new BattleCameraCollection { cAnimCollectionCount = br.ReadUInt16() };
             BattleCameraSet[] bcset = new BattleCameraSet[bcc.cAnimCollectionCount];
             bcc.battleCameraSet = bcset;
@@ -440,10 +469,14 @@ namespace OpenVIII.Battle
                     bcc.battleCameraSet[i].animPointers[n] = (uint)(br.BaseStream.Position + br.ReadUInt16() * 2 - n * 2);
             }
             CameraStruct cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays?
-            battleCameraCollection = bcc; battleCameraSettings = bcs; this.cam = cam;
+            c.battleCameraCollection = bcc;
+            c.battleCameraSettings = bcs;
+            c.cam = cam;
 
-            ReadAnimationById(GetRandomCameraN(Memory.Encounters.Current()), br);
-            br.BaseStream.Seek(bs_cameraPointer + sCameraDataSize, 0); //step out
+            c.ReadAnimationById(c.GetRandomCameraN(Memory.Encounters.Current()), br);
+            c.EndOffset = c.bs_cameraPointer + sCameraDataSize;
+            //br.BaseStream.Seek(c.EndOffset, 0); //step out
+            return c;
         }
 
         #endregion Methods
