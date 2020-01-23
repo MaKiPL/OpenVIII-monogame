@@ -8,6 +8,7 @@ namespace OpenVIII.IGMData
 {
     public class DebugChoose : Base
     {
+
         #region Fields
 
         /// <summary>
@@ -65,22 +66,30 @@ namespace OpenVIII.IGMData
             /// <summary>
             /// Number of values. Make sure this is last.
             /// </summary>
-            Count
+            Count,
+
+            BattlePool = Count,
+            FieldPool = Count + 1,
         }
 
         #endregion Enums
 
         #region Methods
 
-        public static DebugChoose Create(Rectangle pos) => Create<DebugChoose>((int)Ditems.Count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.DEBUG }, 1, (int)Ditems.Count);
+        public static DebugChoose Create(Rectangle pos) => Create<DebugChoose>((int)Ditems.Count + 2, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.DEBUG }, 1, (int)Ditems.Count);
 
         public override bool Inputs()
         {
             Cursor_Status |= Cursor_Status.Enabled; //Cursor_Status |= Cursor_Status.Horizontal;
-            if (ITEM[Count - 1, 0].Enabled)
+            if (ITEM[(int)Ditems.BattlePool, 0].Enabled)
             {
                 Cursor_Status |= Cursor_Status.Blinking;
-                return ITEM[Count - 1, 0].Inputs();
+                return ITEM[(int)Ditems.BattlePool, 0].Inputs();
+            }
+            else if (ITEM[(int)Ditems.FieldPool, 0].Enabled)
+            {
+                Cursor_Status |= Cursor_Status.Blinking;
+                return ITEM[(int)Ditems.FieldPool, 0].Inputs();
             }
             else
             {
@@ -147,11 +156,13 @@ namespace OpenVIII.IGMData
                     ITEM[i, 0] = new IGMDataItem.Text { Data = str, Pos = SIZE[i] };
                 }
             }
-            var rect = CONTAINER.Pos;
+            Rectangle rect = CONTAINER.Pos;
             rect.Inflate(-12, -60);
             rect.Offset(12, 60);
-            ITEM[Count - 1, 0] = DebugSelectPool<Battle.Encounter>.Create(rect, Memory.Encounters, SetEncounterOKAYBattle, FilterEncounters);
-            ITEM[Count - 1, 0].Refresh();
+            ITEM[(int)Ditems.BattlePool, 0] = DebugSelectPool<Battle.Encounter>.Create(rect, Memory.Encounters, SetEncounterOKAYBattle, FilterEncounters);
+            ITEM[(int)Ditems.BattlePool, 0].Refresh();
+            ITEM[(int)Ditems.FieldPool, 0] = DebugSelectPool<string>.Create(rect, Memory.FieldHolder.fields, SetFieldsOKAYBattle, FilterFields);
+            ITEM[(int)Ditems.FieldPool, 0].Refresh();
             PointerZIndex = Count - 1;
             inputsOKAY = new Dictionary<Ditems, Func<bool>>()
             {
@@ -175,14 +186,15 @@ namespace OpenVIII.IGMData
                     ////Extended.postBackBufferDelegate = BattleSwirl.Init;
                     ////Extended.RequestBackBuffer();
                     //Memory.IsMouseVisible = false;
-                    ITEM[Count-1,0].Show();
+                    ITEM[(int)Ditems.BattlePool,0].Show();
                     return true;
                 } },
                 { Ditems.Field, ()=> {
-                    Menu.FadeIn();
-                    Fields.Module.ResetField();
-                    Memory.Module = MODULE.FIELD_DEBUG;
-                    Memory.IsMouseVisible = false;
+                    //Menu.FadeIn();
+                    //Fields.Module.ResetField();
+                    //Memory.Module = MODULE.FIELD_DEBUG;
+                    //Memory.IsMouseVisible = false;
+                    ITEM[(int)Ditems.FieldPool,0].Show();
                     return true;
                 }  },
                 { Ditems.Movie, ()=> {
@@ -233,18 +245,6 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
             };
-            bool SetEncounterOKAYBattle(Battle.Encounter encounter)
-            {
-                Memory.Encounters.ID = encounter.ID;
-                Menu.FadeIn();
-                Module_battle_debug.ResetState();
-                Menu.BattleMenus.CameFrom();
-                Memory.Module = MODULE.BATTLE_DEBUG;
-                //Extended.postBackBufferDelegate = BattleSwirl.Init;
-                //Extended.RequestBackBuffer();
-                Memory.IsMouseVisible = false;
-                return true;
-            }
             inputsLeft = new Dictionary<Ditems, Func<bool>>()
             {
                 { Ditems.Battle, ()=> {
@@ -361,11 +361,6 @@ namespace OpenVIII.IGMData
             };
         }
 
-        private void FilterEncounters(string filter)
-        {
-            ((DebugSelectPool<Battle.Encounter>)ITEM[Count - 1, 0]).Refresh(Memory.Encounters.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase)>=0));
-        }
-
         protected override void InitShift(int i, int col, int row)
         {
             base.InitShift(i, col, row);
@@ -373,6 +368,34 @@ namespace OpenVIII.IGMData
             SIZE[i].Offset(0, 12 + (-8 * row));
         }
 
+        private void FilterEncounters(string filter) => ((DebugSelectPool<Battle.Encounter>)ITEM[(int)Ditems.BattlePool, 0]).Refresh(Memory.Encounters.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
+
+        private void FilterFields(string filter) => ((DebugSelectPool<string>)ITEM[(int)Ditems.FieldPool, 0]).Refresh(Memory.FieldHolder.fields.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
+
+        private bool SetEncounterOKAYBattle(Battle.Encounter encounter)
+        {
+            Memory.Encounters.ID = encounter.ID;
+            Menu.FadeIn();
+            Module_battle_debug.ResetState();
+            Menu.BattleMenus.CameFrom();
+            Memory.Module = MODULE.BATTLE_DEBUG;
+            //Extended.postBackBufferDelegate = BattleSwirl.Init;
+            //Extended.RequestBackBuffer();
+            Memory.IsMouseVisible = false;
+            return true;
+        }
+        private bool SetFieldsOKAYBattle(string arg)
+        {
+            Memory.FieldHolder.FieldID = (ushort)Memory.FieldHolder.fields.ToList().FindIndex(x => x == arg);
+
+            Menu.FadeIn();
+            Fields.Module.ResetField();
+            Memory.Module = MODULE.FIELD_DEBUG;
+            Memory.IsMouseVisible = false;
+            return true;
+        }
+
         #endregion Methods
+
     }
 }
