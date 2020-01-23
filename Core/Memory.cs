@@ -362,9 +362,11 @@ namespace OpenVIII
 
         public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
         {
+            if (Log == null) Log = new Log();
             Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)}");
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics}");
-            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics.GraphicsDevice.Adapter.CurrentDisplayMode}");
+            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics?.GraphicsDevice.Adapter.CurrentDisplayMode}");
+            if(graphics!=null)
             foreach (DisplayMode i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
                 Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
             //Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics.GraphicsDevice.Adapter.DeviceName}");
