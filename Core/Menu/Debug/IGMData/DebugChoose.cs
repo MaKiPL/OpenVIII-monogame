@@ -147,7 +147,7 @@ namespace OpenVIII.IGMData
                     ITEM[i, 0] = new IGMDataItem.Text { Data = str, Pos = SIZE[i] };
                 }
             }
-            ITEM[Count - 1, 0] = DebugSelectPool<Battle.Encounter>.Create(CONTAINER.Pos, Memory.Encounters, SetEncounterOKAYBattle);
+            ITEM[Count - 1, 0] = DebugSelectPool<Battle.Encounter>.Create(CONTAINER.Pos, Memory.Encounters, SetEncounterOKAYBattle, FilterEncounters);
             ITEM[Count - 1, 0].Refresh();
             PointerZIndex = Count - 1;
             inputsOKAY = new Dictionary<Ditems, Func<bool>>()
@@ -356,6 +356,11 @@ namespace OpenVIII.IGMData
                 } },
                 { Ditems.Sounds, ()=> {return strDebugLobby[Ditems.Sounds].Clone().Append(debug_choosedAudio.ToString("D4")); } }
             };
+        }
+
+        private void FilterEncounters(string filter)
+        {
+            ((DebugSelectPool<Battle.Encounter>)ITEM[Count - 1, 0]).Refresh(Memory.Encounters.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase)>=0));
         }
 
         protected override void InitShift(int i, int col, int row)

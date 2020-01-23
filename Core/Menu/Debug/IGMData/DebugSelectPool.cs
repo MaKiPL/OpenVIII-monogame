@@ -27,11 +27,12 @@ namespace OpenVIII.IGMData
             //SIZE[i].Offset(0, 12 + (-8 * row));
         }
 
-        public static DebugSelectPool<inDataType> Create<inDataType>(Rectangle pos, IEnumerable<inDataType> source, Func<inDataType, bool>  OkayFunc)
+        public static DebugSelectPool<inDataType> Create<inDataType>(Rectangle pos, IEnumerable<inDataType> source, Func<inDataType, bool>  OkayFunc, Action<string> FilterAction)
         {
             DebugSelectPool<inDataType> r = Base.Create<DebugSelectPool<inDataType>>(45, 1, new IGMDataItem.Box { Pos = pos }, 3, 15);
             r.Source = source;
             r.OkayFunc = OkayFunc;
+            r.FilterAction = FilterAction;
             return r;
         }
         public override bool Inputs_OKAY()
@@ -99,6 +100,8 @@ namespace OpenVIII.IGMData
             base.Inputs_Left();
         }
         string filter;
+        private Action<string> FilterAction;
+
         public override bool Inputs()
         {
             if (InputKeyboard.State.GetPressedKeys().Any(x=>(int)x >= (int)Keys.D0 && (int)x <= (int)Keys.Z ))
@@ -130,7 +133,9 @@ namespace OpenVIII.IGMData
                 filter = filter.Substring(0, filter.Length - 1).Trim();
             else
                 filter = "";
-            Debug.WriteLine(filter);
+            if (!string.IsNullOrWhiteSpace(filter))
+                FilterAction?.Invoke(filter);
+            //Debug.WriteLine(filter);
             return false;
         }
         ~DebugSelectPool()
@@ -148,14 +153,20 @@ namespace OpenVIII.IGMData
             Cursor_Status |= Cursor_Status.Horizontal;
             Hide();
         }
-
+        public void Refresh(IEnumerable<DataType> src)
+        {
+            Source = src;
+            Refresh();
+        }
         private void Game1_onTextEntered(object sender, TextInputEventArgs e)
         {
             if (filter != null && filter.Length < 10 && Enabled)
             {
                 filter += e.Character;
                 filter=filter.Trim().TrimEnd('\b');
-                Debug.WriteLine(filter);
+                if (!string.IsNullOrWhiteSpace(filter))
+                    FilterAction?.Invoke(filter);
+                //Debug.WriteLine(filter);
             }
         }
 
