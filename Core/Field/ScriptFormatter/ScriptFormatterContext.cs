@@ -5,7 +5,7 @@ namespace OpenVIII.Fields.Scripts
     public sealed class ScriptFormatterContext : IScriptFormatterContext
     {
         private Sym.GameObjects _symbols;
-        private IReadOnlyList<String> _messages;
+        private IReadOnlyList<FF8String> _messages;
 
         public void GetObjectScriptNamesById(Int32 id, out String objectName, out String scriptName)
         {
@@ -44,7 +44,7 @@ namespace OpenVIII.Fields.Scripts
             _symbols = symbols;
         }
 
-        public void SetMessages(IReadOnlyList<String> messages)
+        public void SetMessages(IReadOnlyList<FF8String> messages)
         {
             _messages = messages;
         }

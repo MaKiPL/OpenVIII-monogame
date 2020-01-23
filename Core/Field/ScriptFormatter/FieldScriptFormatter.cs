@@ -42,7 +42,7 @@ namespace OpenVIII.Fields.Scripts
                 context.SetSymbols(Sym.Reader.FromBytes(symData));
 
             if (field.TryReadData(Field.Part.Msd, out var msdData))
-                context.SetMessages(Msd.Reader.FromBytes(msdData, FF8TextEncoding.Default));
+                context.SetMessages(Msd.Reader.FromBytes(msdData));
             return context;
         }
 
