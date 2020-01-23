@@ -27,6 +27,7 @@ namespace OpenVIII.Fields
         //private static Texture2D texOverlap;
         private static IServices services;
         private static INF inf;
+        private static TDW tdw;
 
         #endregion Fields
 
@@ -271,7 +272,8 @@ namespace OpenVIII.Fields
             inf = INF.Load(infb);
             //byte[] idb = getfile(".id");//walkmesh
             //byte[] cab = getfile(".ca");//camera
-            //byte[] tdwb = getfile(".tdw");//extra font
+            byte[] tdwb = getfile(".tdw");//extra font
+            tdw = new TDW(tdwb);
             //byte[] mskb = getfile(".msk");//movie cam
             //byte[] ratb = getfile(".rat");//battle on field
             //byte[] pmdb = getfile(".pmd");//particle info
