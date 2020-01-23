@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
-using System.IO;
 using System.Reflection;
 
 namespace OpenVIII
@@ -20,7 +19,7 @@ namespace OpenVIII
                 graphics.GraphicsProfile = GraphicsProfile.HiDef;
                 Memory.currentGraphicMode = Memory.GraphicModes.DirectX;
             }
-                else Memory.currentGraphicMode = Memory.GraphicModes.OpenGL;
+            else Memory.currentGraphicMode = Memory.GraphicModes.OpenGL;
             Content.RootDirectory = "Content";
             graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
@@ -28,8 +27,10 @@ namespace OpenVIII
             IsFixedTimeStep = false;
             graphics.SynchronizeWithVerticalRetrace = false;
         }
+
         protected override void Initialize()
         {
+            Window.TextInput += TextEntered;
             Memory.Log = new Log();
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
             //Input.Init();
@@ -40,6 +41,10 @@ namespace OpenVIII
             Memory.Log.WriteLine($"{nameof(Game)} :: {nameof(base.Initialize)}");
             base.Initialize();
         }
+
+        static public event EventHandler<TextInputEventArgs> onTextEntered;
+
+        private void TextEntered(object sender, TextInputEventArgs e) => onTextEntered?.Invoke(sender, e);
 
         protected override void LoadContent()
         {
@@ -160,7 +165,7 @@ namespace OpenVIII
         {
             ModuleHandler.Draw(gameTime);
             base.Draw(gameTime);
-            if(Extended.bRequestedBackBuffer)
+            if (Extended.bRequestedBackBuffer)
             {
                 Texture2D tex = new Texture2D(graphics.GraphicsDevice, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
                 byte[] b = new byte[tex.Width * tex.Height * 4];

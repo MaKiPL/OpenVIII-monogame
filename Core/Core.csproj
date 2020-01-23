@@ -241,6 +241,7 @@
     <Compile Include="Input\MouseLockMode.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Menu\Debug\Debug_Menu.cs" />
+    <Compile Include="Menu\Debug\IGMData\DebugSelectPool.cs" />
     <Compile Include="Menu\IGMDataItem\Base.cs" />
     <Compile Include="Menu\IGMDataItem\Box.cs" />
     <Compile Include="Menu\IGMDataItem\Empty.cs" />

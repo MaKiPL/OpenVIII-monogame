@@ -1,6 +1,6 @@
 ﻿namespace OpenVIII.IGMData.Pool
 {
-    public abstract class Base<T, T2> : IGMData.Base
+    public abstract class Base<SourceType, ContentsType> : IGMData.Base
     {
         private int _defaultPages;
         #region Constructors
@@ -11,7 +11,7 @@
 
         #region Properties
 
-        public T2[] Contents { get; set; }
+        public ContentsType[] Contents { get; set; }
 
         /// <summary>
         /// Sets the Pages on refresh to this.
@@ -43,14 +43,14 @@
             private set => SIZE[Count - 1] = ITEM[Count - 1, 0] = value;
         }
 
-        protected T Source { get; set; }
+        protected SourceType Source { get; set; }
 
         #endregion Properties
 
         #region Methods
 
         public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null, bool battle = false)
-                                                                    where J : Base<T, T2>, new()
+                                                                    where J : Base<SourceType, ContentsType>, new()
         {
             J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable, battle: battle);
             r.DefaultPages = pages ?? 1;
@@ -132,7 +132,7 @@
             base.Init();
             Cursor_Status |= (Cursor_Status.Enabled | Cursor_Status.Vertical);
             Page = 0;
-            Contents = new T2[Rows];
+            Contents = new ContentsType[Rows];
             LeftArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Left, X = X + 6, Y = Y + Height - 28, Palette = 2, Faded_Palette = 7, Blink = true };
             RightArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right2, X = X + Width - 24, Y = Y + Height - 28, Palette = 2, Faded_Palette = 7, Blink = true };
         }

@@ -24,9 +24,9 @@ namespace OpenVIII
 
         protected static KeyboardState Last_State => last_state;
 
-        protected static KeyboardState State
+        public static KeyboardState State
         {
-            get => state; set
+            get => state; protected set
             {
                 last_state = state;
                 state = value;

@@ -36,8 +36,8 @@ namespace OpenVIII.IGMData
         /// </summary>
         private Dictionary<Ditems, Func<FF8String>> dynamicDebugStrings;
 
-        private Dictionary<Ditems, Func<bool>> inputsOKAY;
         private Dictionary<Ditems, Func<bool>> inputsLeft;
+        private Dictionary<Ditems, Func<bool>> inputsOKAY;
         private Dictionary<Ditems, Func<bool>> inputsRight;
 
         #endregion Fields
@@ -72,14 +72,21 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static DebugChoose Create(Rectangle pos) => Create<DebugChoose>((int)Ditems.Count, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.DEBUG }, 1, (int)Ditems.Count);
+        public static DebugChoose Create(Rectangle pos) => Create<DebugChoose>((int)Ditems.Count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.DEBUG }, 1, (int)Ditems.Count);
 
         public override bool Inputs()
         {
             Cursor_Status |= Cursor_Status.Enabled; //Cursor_Status |= Cursor_Status.Horizontal;
-            Cursor_Status &= ~Cursor_Status.Blinking;
-
-            return base.Inputs();
+            if (ITEM[Count - 1, 0].Enabled)
+            {
+                Cursor_Status |= Cursor_Status.Blinking;
+                return ITEM[Count - 1, 0].Inputs();
+            }
+            else
+            {
+                Cursor_Status &= ~Cursor_Status.Blinking;
+                return base.Inputs();
+            }
         }
 
         public override bool Inputs_CANCEL()
@@ -91,15 +98,6 @@ namespace OpenVIII.IGMData
             return true;
         }
 
-        public override bool Inputs_OKAY()
-        {
-            if (inputsOKAY.TryGetValue((Ditems)CURSOR_SELECT, out Func<bool> f))
-            {
-                return f.Invoke() && base.Inputs_OKAY();
-            }
-            return false;
-        }
-
         public override void Inputs_Left()
         {
             if (inputsLeft.TryGetValue((Ditems)CURSOR_SELECT, out Func<bool> f) && f.Invoke())
@@ -107,6 +105,15 @@ namespace OpenVIII.IGMData
                 base.Inputs_Left();
                 Refresh();
             }
+        }
+
+        public override bool Inputs_OKAY()
+        {
+            if (inputsOKAY.TryGetValue((Ditems)CURSOR_SELECT, out Func<bool> f))
+            {
+                return f.Invoke() && base.Inputs_OKAY();
+            }
+            return false;
         }
 
         public override void Inputs_Right()
@@ -133,13 +140,16 @@ namespace OpenVIII.IGMData
         protected override void Init()
         {
             base.Init();
-            for (int i = 0; i < Count; i++)
+            foreach (int i in Enumerable.Range(0, (int)Ditems.Count))
             {
                 if (strDebugLobby.TryGetValue((Ditems)i, out FF8String str))
                 {
                     ITEM[i, 0] = new IGMDataItem.Text { Data = str, Pos = SIZE[i] };
                 }
             }
+            ITEM[Count - 1, 0] = DebugSelectPool<Battle.Encounter>.Create(CONTAINER.Pos, Memory.Encounters, SetEncounterOKAYBattle);
+            ITEM[Count - 1, 0].Refresh();
+            PointerZIndex = Count - 1;
             inputsOKAY = new Dictionary<Ditems, Func<bool>>()
             {
                 { Ditems.Reset, ()=> {
@@ -155,13 +165,14 @@ namespace OpenVIII.IGMData
                     return true;
                 } },
                 { Ditems.Battle, ()=> {
-                    Menu.FadeIn();
-                    Module_battle_debug.ResetState();
-                    Menu.BattleMenus.CameFrom();
-                    Memory.Module = MODULE.BATTLE_DEBUG;
-                    //Extended.postBackBufferDelegate = BattleSwirl.Init;
-                    //Extended.RequestBackBuffer();
-                    Memory.IsMouseVisible = false;
+                    //Menu.FadeIn();
+                    //Module_battle_debug.ResetState();
+                    //Menu.BattleMenus.CameFrom();
+                    //Memory.Module = MODULE.BATTLE_DEBUG;
+                    ////Extended.postBackBufferDelegate = BattleSwirl.Init;
+                    ////Extended.RequestBackBuffer();
+                    //Memory.IsMouseVisible = false;
+                    ITEM[Count-1,0].Show();
                     return true;
                 } },
                 { Ditems.Field, ()=> {
@@ -219,7 +230,18 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
             };
-
+            bool SetEncounterOKAYBattle(Battle.Encounter encounter)
+            {
+                Memory.Encounters.ID = encounter.ID;
+                Menu.FadeIn();
+                Module_battle_debug.ResetState();
+                Menu.BattleMenus.CameFrom();
+                Memory.Module = MODULE.BATTLE_DEBUG;
+                //Extended.postBackBufferDelegate = BattleSwirl.Init;
+                //Extended.RequestBackBuffer();
+                Memory.IsMouseVisible = false;
+                return true;
+            }
             inputsLeft = new Dictionary<Ditems, Func<bool>>()
             {
                 { Ditems.Battle, ()=> {

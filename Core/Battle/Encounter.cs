@@ -37,7 +37,7 @@ namespace OpenVIII.Battle
         public int ResolveCameraAnimation(byte cameraPointerValue) => cameraPointerValue & 0b1111;
 
         public int ResolveCameraSet(byte cameraPointerValue) => (cameraPointerValue >> 4) & 0b1111;
-
+        public override string ToString() => $"{ID} - {Filename}";
         #endregion Methods
     }
     /// <summary>

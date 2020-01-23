@@ -263,4 +263,5 @@ namespace OpenVIII.Battle
 
         #endregion Methods
     }
+
 }
