@@ -147,7 +147,10 @@ namespace OpenVIII.IGMData
                     ITEM[i, 0] = new IGMDataItem.Text { Data = str, Pos = SIZE[i] };
                 }
             }
-            ITEM[Count - 1, 0] = DebugSelectPool<Battle.Encounter>.Create(CONTAINER.Pos, Memory.Encounters, SetEncounterOKAYBattle, FilterEncounters);
+            var rect = CONTAINER.Pos;
+            rect.Inflate(-12, -60);
+            rect.Offset(12, 60);
+            ITEM[Count - 1, 0] = DebugSelectPool<Battle.Encounter>.Create(rect, Memory.Encounters, SetEncounterOKAYBattle, FilterEncounters);
             ITEM[Count - 1, 0].Refresh();
             PointerZIndex = Count - 1;
             inputsOKAY = new Dictionary<Ditems, Func<bool>>()
