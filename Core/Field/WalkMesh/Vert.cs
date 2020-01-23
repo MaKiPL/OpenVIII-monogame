@@ -2,7 +2,7 @@
 {
     public partial class WalkMesh
     {
-        private struct Vert
+        public struct Vert
         {
             public short x, y, z, res;
 

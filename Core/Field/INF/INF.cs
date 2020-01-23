@@ -1,9 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
 namespace OpenVIII.Fields
 {
+
     /// <summary>
     /// Gateways, Triggers, Camera Limits
     /// </summary>
@@ -15,9 +18,12 @@ namespace OpenVIII.Fields
         public short CameraHeight { get; private set; }
         public Rectangle[] CamerasRanges { get; private set; }
         public byte ControlDirection { get; private set; }
+        public Gateways Gateways { get; set; }
         public ushort LikePVP { get; private set; }
         public FF8String Name { get; private set; }
         public Rectangle[] ScreenRanges { get; private set; }
+        public Triggers Triggers { get; set; }
+        public int Type { get; private set; }
         public byte[] Unknown { get; private set; }
 
         #endregion Properties
@@ -37,27 +43,66 @@ namespace OpenVIII.Fields
         {
             using (BinaryReader br = new BinaryReader(new MemoryStream(infb)))
             {
+                switch (infb.Length)
+                {
+                    case 676:
+                        Type = 0;
+                        break;
+
+                    case 672:
+                        Type = 1;
+                        break;
+
+                    case 576:
+                        Type = 2;
+                        break;
+
+                    case 504:
+                        Type = 3;
+                        break;
+
+                    default:
+                        throw new Exception("unknown format INF");
+                }
                 Name = new FF8String(br.ReadBytes(9));
                 ControlDirection = br.ReadByte();
-                Unknown = br.ReadBytes(6);
-                LikePVP = br.ReadUInt16();
+                if (Type == 0)
+                {
+                    Unknown = br.ReadBytes(6);
+                    LikePVP = br.ReadUInt16();
+                }
+                else if (Type >= 1)
+                {
+                    Unknown = br.ReadBytes(4);
+                }
                 CameraHeight = br.ReadInt16();
-                CamerasRanges = new Rectangle[8];
-                ScreenRanges = new Rectangle[2];
-                foreach (int i in Enumerable.Range(0, 8))
+                CamerasRanges = new Rectangle[Type <= 2 ? 8 : 1];
+                foreach (int i in Enumerable.Range(0, CamerasRanges.Length))
                 {
                     CamerasRanges[i].Y = br.ReadInt16();
                     CamerasRanges[i].Height = br.ReadInt16();
                     CamerasRanges[i].Width = br.ReadInt16();
                     CamerasRanges[i].X = br.ReadInt16();
+                    CamerasRanges[i].Height -= CamerasRanges[i].Y;
+                    CamerasRanges[i].Width -= CamerasRanges[i].X;
                 }
-                foreach (int i in Enumerable.Range(0, 2))
+                if (Type <= 2)
                 {
-                    ScreenRanges[i].Y = br.ReadInt16();
-                    ScreenRanges[i].Height = br.ReadInt16();
-                    ScreenRanges[i].Width = br.ReadInt16();
-                    ScreenRanges[i].X = br.ReadInt16();
+                    ScreenRanges = new Rectangle[2];
+                    foreach (int i in Enumerable.Range(0, ScreenRanges.Length))
+                    {
+                        ScreenRanges[i].Y = br.ReadInt16();
+                        ScreenRanges[i].Height = br.ReadInt16();
+                        ScreenRanges[i].Width = br.ReadInt16();
+                        ScreenRanges[i].X = br.ReadInt16();
+
+                        ScreenRanges[i].Height -= ScreenRanges[i].Y;
+                        ScreenRanges[i].Width -= ScreenRanges[i].X;
+                    }
                 }
+                Gateways = Gateways.Read(br, Type);
+                Triggers = Triggers.Read(br);
+                Debug.Assert(br.BaseStream.Length == br.BaseStream.Position);
             }
         }
 

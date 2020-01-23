@@ -202,7 +202,11 @@
     <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
     <Compile Include="Field\Camera\Cameras.cs" />
+    <Compile Include="Field\INF\Gateway.cs" />
+    <Compile Include="Field\INF\Gateways.cs" />
     <Compile Include="Field\INF\INF.cs" />
+    <Compile Include="Field\INF\Trigger.cs" />
+    <Compile Include="Field\INF\Triggers.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
     <Compile Include="Field\WalkMesh\Access.cs" />
     <Compile Include="Field\Background\Background.cs" />
