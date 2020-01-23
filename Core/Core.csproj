@@ -202,6 +202,7 @@
     <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
     <Compile Include="Field\Camera\Cameras.cs" />
+    <Compile Include="Field\INF\INF.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
     <Compile Include="Field\WalkMesh\Access.cs" />
     <Compile Include="Field\Background\Background.cs" />
@@ -1105,9 +1106,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Field\INF\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Encoding\Encoding.csproj">
       <Project>{a9b33bf4-9b03-4e3d-bf6a-181521046ee8}</Project>
