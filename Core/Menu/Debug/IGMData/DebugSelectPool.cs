@@ -184,7 +184,7 @@ namespace OpenVIII.IGMData
 
         private void Game1_onTextEntered(object sender, TextInputEventArgs e)
         {
-            if (filter != null && filter.Length < 10 && Enabled)
+            if (filter != null && filter.Length < 10 && Enabled && Memory.Module == MODULE.MAINMENU_DEBUG)
             {
                 filter += e.Character;
                 filter = filter.Trim().TrimEnd('\b');
