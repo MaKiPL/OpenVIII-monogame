@@ -18,8 +18,8 @@ namespace OpenVIII.IGMData
         {
             { Ditems.Reset, new FF8String("Reset Main Menu state") },
             { Ditems.Overture, new FF8String("Play Overture") },
-            { Ditems.Battle, new FF8String("Battle encounter: ") },
-            { Ditems.Field, new FF8String("Field debug render: ") },
+            { Ditems.Battle, new FF8String("Battle encounter") },
+            { Ditems.Field, new FF8String("Field debug render") },
             { Ditems.Movie, new FF8String("Movie debug render: ") },
             { Ditems.Music, new FF8String("Play/Stop music: ") },
             { Ditems.Sounds, new FF8String("Play audio.dat: ") },
@@ -161,7 +161,7 @@ namespace OpenVIII.IGMData
             rect.Offset(12, 60);
             ITEM[(int)Ditems.BattlePool, 0] = DebugSelectPool<Battle.Encounter>.Create(rect, Memory.Encounters, SetEncounterOKAYBattle, FilterEncounters);
             ITEM[(int)Ditems.BattlePool, 0].Refresh();
-            ITEM[(int)Ditems.FieldPool, 0] = DebugSelectPool<string>.Create(rect, Memory.FieldHolder.fields, SetFieldsOKAYBattle, FilterFields);
+            ITEM[(int)Ditems.FieldPool, 0] = DebugSelectPool<string>.Create(rect, Memory.FieldHolder.fields, SetFieldsOKAYBattle, FilterFields,4);
             ITEM[(int)Ditems.FieldPool, 0].Refresh();
             PointerZIndex = Count - 1;
             inputsOKAY = new Dictionary<Ditems, Func<bool>>()
@@ -247,17 +247,17 @@ namespace OpenVIII.IGMData
             };
             inputsLeft = new Dictionary<Ditems, Func<bool>>()
             {
-                { Ditems.Battle, ()=> {
-                    Memory.Encounters.Previous();
-                    return true;
-                } },
-                { Ditems.Field, ()=> {
-                    if( Memory.FieldHolder.FieldID>0)
-                         Memory.FieldHolder.FieldID--;
-                    else
-                        Memory.FieldHolder.FieldID = checked((ushort)((Memory.FieldHolder.fields?.Length??1) - 1));
-                    return true;
-                }  },
+                //{ Ditems.Battle, ()=> {
+                //    Memory.Encounters.Previous();
+                //    return true;
+                //} },
+                //{ Ditems.Field, ()=> {
+                //    if( Memory.FieldHolder.FieldID>0)
+                //         Memory.FieldHolder.FieldID--;
+                //    else
+                //        Memory.FieldHolder.FieldID = checked((ushort)((Memory.FieldHolder.fields?.Length??1) - 1));
+                //    return true;
+                //}  },
                 { Ditems.Movie, ()=> {
                     if(Module_movie_test.Index>0)
                         Module_movie_test.Index--;
@@ -283,17 +283,17 @@ namespace OpenVIII.IGMData
 
             inputsRight = new Dictionary<Ditems, Func<bool>>()
             {
-                { Ditems.Battle, ()=> {
-                    Memory.Encounters.Next();
-                    return true;
-                } },
-                { Ditems.Field, ()=> {
-                    if( Memory.FieldHolder.FieldID<checked((ushort)((Memory.FieldHolder.fields?.Length??1) - 1)))
-                         Memory.FieldHolder.FieldID++;
-                    else
-                        Memory.FieldHolder.FieldID = 0;
-                    return true;
-                }  },
+                //{ Ditems.Battle, ()=> {
+                //    Memory.Encounters.Next();
+                //    return true;
+                //} },
+                //{ Ditems.Field, ()=> {
+                //    if( Memory.FieldHolder.FieldID<checked((ushort)((Memory.FieldHolder.fields?.Length??1) - 1)))
+                //         Memory.FieldHolder.FieldID++;
+                //    else
+                //        Memory.FieldHolder.FieldID = 0;
+                //    return true;
+                //}  },
                 { Ditems.Movie, ()=> {
                     if(Module_movie_test.Index<Movie.Files.Count - 1)
                         Module_movie_test.Index++;
@@ -319,18 +319,18 @@ namespace OpenVIII.IGMData
 
             dynamicDebugStrings = new Dictionary<Ditems, Func<FF8String>>
             {
-                { Ditems.Battle, ()=> {
-                    string end=$"{Memory.Encounters.ID.ToString("D4")} - {Memory.Encounters.Filename.ToUpper()}";
-                    if(strDebugLobby[Ditems.Battle]!=null)
-                        return strDebugLobby[Ditems.Battle].Clone().Append(end);
-                    else
-                        return end; } },
-                { Ditems.Field, ()=> {
-                    string end=$"{Memory.FieldHolder.FieldID.ToString("D3")} - {Memory.FieldHolder.GetString()?.ToUpper()}";
-                    if(strDebugLobby[Ditems.Field]!= null)
-                        return strDebugLobby[Ditems.Field].Clone().Append(end);
-                    else
-                        return end; } },
+                //{ Ditems.Battle, ()=> {
+                //    string end=$"{Memory.Encounters.ID.ToString("D4")} - {Memory.Encounters.Filename.ToUpper()}";
+                //    if(strDebugLobby[Ditems.Battle]!=null)
+                //        return strDebugLobby[Ditems.Battle].Clone().Append(end);
+                //    else
+                //        return end; } },
+                //{ Ditems.Field, ()=> {
+                //    string end=$"{Memory.FieldHolder.FieldID.ToString("D3")} - {Memory.FieldHolder.GetString()?.ToUpper()}";
+                //    if(strDebugLobby[Ditems.Field]!= null)
+                //        return strDebugLobby[Ditems.Field].Clone().Append(end);
+                //    else
+                //        return end; } },
                 { Ditems.Movie, ()=> {
                     if (Movie.Files.Count<=Module_movie_test.Index)
                         Module_movie_test.Index=0;

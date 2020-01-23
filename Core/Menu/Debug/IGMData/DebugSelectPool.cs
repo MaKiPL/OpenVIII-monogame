@@ -35,9 +35,9 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static DebugSelectPool<inDataType> Create<inDataType>(Rectangle pos, IEnumerable<inDataType> source, Func<inDataType, bool> OkayFunc, Action<string> FilterAction)
+        public static DebugSelectPool<inDataType> Create<inDataType>(Rectangle pos, IEnumerable<inDataType> source, Func<inDataType, bool> OkayFunc, Action<string> FilterAction, int Cols = 3, int Rows = 12)
         {
-            DebugSelectPool<inDataType> r = Base.Create<DebugSelectPool<inDataType>>(37, 1, new IGMDataItem.Box { Pos = pos }, 3, 12);
+            DebugSelectPool<inDataType> r = Base.Create<DebugSelectPool<inDataType>>(Rows*Cols+1, 1, new IGMDataItem.Box { Pos = pos }, Cols, Rows);
             r.Source = source;
             r.OkayFunc = OkayFunc;
             r.FilterAction = FilterAction;
@@ -122,6 +122,8 @@ namespace OpenVIII.IGMData
             }
             int total = Rows * Cols;
             DefaultPages = Source.Count() / total;
+            if (DefaultPages <= Page)
+                Page = DefaultPages - 1;
             int skip = Page * total;
             int p = 0;
             foreach (DataType i in Source)
