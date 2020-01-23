@@ -19,11 +19,7 @@ namespace OpenVIII
         public const int Yoffset = 0;
         public static AlphaTestEffect ate;
         public static int DEBUG = 0;
-        public static int DEBUGframe { get; private set; } = 0;
         public static bool PauseATB = false;
-
-        public static Camera Camera { get; private set; }
-        public static Battle.Stage Stage { get; set; }
 
         /// <summary>
         /// controls the amount of battlecamera.time incrementation- lower value means longer camera animation
@@ -118,21 +114,20 @@ namespace OpenVIII
         #region Properties
 
         public static int battleModule { get; set; } = 0;
-        //basic init stuff; renderer; core
+        public static Camera Camera { get; private set; }
+        public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
 
         //Natively the game we are rewritting works in 15 FPS per second
         //-10;
-
-        public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
-
         public static Vector3 CamTarget { get => camTarget; private set => camTarget = value; }
 
+        //basic init stuff; renderer; core
         public static ConcurrentDictionary<Characters, SortedSet<byte>> Costumes { get; private set; }
 
+        public static int DEBUGframe { get; private set; } = 0;
         public static BasicEffect Effect { get => effect; private set => effect = value; }
-
         public static Matrix ProjectionMatrix { get => projectionMatrix; private set => projectionMatrix = value; }
-
+        public static Battle.Stage Stage { get; set; }
         public static Matrix ViewMatrix { get => viewMatrix; private set => viewMatrix = value; }
 
         public static ConcurrentDictionary<Characters, List<byte>> Weapons
@@ -211,13 +206,12 @@ namespace OpenVIII
                     break;
             }
 
-
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}"), 20, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
             if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
                 Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
-             Memory.font.RenderBasicText(new FF8String($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
@@ -828,7 +822,7 @@ namespace OpenVIII
 
         private static Vector3 GetEnemyPos(int n)
         {
-            var v = Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
+            Coordinate v = Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
             return v.GetVector();
         }
 
@@ -838,7 +832,7 @@ namespace OpenVIII
             {
                 //Camera and stage are in the same file.
                 Camera = Camera.Read(br);
-                Stage = Stage.Read(Camera.EndOffset,br);
+                Stage = Stage.Read(Camera.EndOffset, br);
             }
             CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
             //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);

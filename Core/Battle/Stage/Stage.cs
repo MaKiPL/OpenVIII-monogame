@@ -9,6 +9,8 @@ namespace OpenVIII.Battle
     {
         #region Fields
 
+        private const bool EnableDumpingData = false;
+
         /// <summary>
         /// skyRotating floats are hardcoded
         /// </summary>
@@ -250,18 +252,22 @@ namespace OpenVIII.Battle
             Height = textureInterface.GetHeight;
             string path = Path.Combine(Path.GetTempPath(), "Battle Stages");
             Directory.CreateDirectory(path);
-            string fullpath = Path.Combine(path, $"{Path.GetFileNameWithoutExtension(Memory.Encounters.Filename)}_Clut.png");
-            if(!File.Exists(fullpath))
-            textureInterface.SaveCLUT(fullpath);
+
+            if (Memory.EnableDumpingData || EnableDumpingData)
+            {
+                string fullpath = Path.Combine(path, $"{Path.GetFileNameWithoutExtension(Memory.Encounters.Filename)}_Clut.png");
+                if (!File.Exists(fullpath))
+                    textureInterface.SaveCLUT(fullpath);
+            }
             textures = new TextureHandler[textureInterface.GetClutCount];
             for (ushort i = 0; i < textureInterface.GetClutCount; i++)
             {
                 textures[i] = TextureHandler.Create(Memory.Encounters.Filename, textureInterface, i);
-                textures[i].Save(path, false);
+                if (Memory.EnableDumpingData || EnableDumpingData)
+                    textures[i].Save(path, false);
             }
         }
 
         #endregion Methods
     }
-
 }
