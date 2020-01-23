@@ -828,14 +828,15 @@ namespace OpenVIII
 
         private static void InitBattle()
         {
-            if(Stage==null || Stage.Scenario != Memory.Encounters.Scenario)
-            using (BinaryReader br = Stage.Open())
-            {
-                //Camera and stage are in the same file.
-                Camera = Camera.Read(br);
-                Stage = Stage.Read(Camera.EndOffset, br);
-            }
-            CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
+            if (Stage == null || Stage.Scenario != Memory.Encounters.Scenario)
+                using (BinaryReader br = Stage.Open())
+                {
+                    //Camera and stage are in the same file.
+                    Camera = Camera.Read(br);
+                    Stage = Stage.Read(Camera.EndOffset, br);
+                }
+            if (CROSSHAIR == null)
+                CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
             //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
@@ -847,22 +848,21 @@ namespace OpenVIII
             }
             DeadTime.Restart();
             Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.Encounters.ID}\t cEnemies: {Memory.Encounters.EnabledEnemy}\t Enemies: {string.Join(",", Memory.Encounters.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
-            if(fps_camera == null)
-            fps_camera = new FPS_Camera();
+            if (fps_camera == null)
+                fps_camera = new FPS_Camera();
             if (RegularPyramid == null)
             {
                 RegularPyramid = new Battle.RegularPyramid();
                 RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
             }
-            //RegularPyramid.Set(PyramidOffset);
             RegularPyramid.Hide();
             //init renderer
-            if(effect == null)
-            effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            if (effect == null)
+                effect = new BasicEffect(Memory.graphics.GraphicsDevice);
 
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
             camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
-            
+
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
@@ -872,13 +872,13 @@ namespace OpenVIII
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
                           Forward, Vector3.Up);
             battleModule++;
-            if(ate == null)
-            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
-            {
-                Projection = projectionMatrix,
-                View = viewMatrix,
-                World = worldMatrix
-            };
+            if (ate == null)
+                ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+                {
+                    Projection = projectionMatrix,
+                    View = viewMatrix,
+                    World = worldMatrix
+                };
             return;
         }
 
@@ -907,32 +907,31 @@ namespace OpenVIII
             {
                 FillCostumes();
                 FillWeapons();
+                if (CharacterInstances != null)
+                {
+                    var test = CharacterInstances.Select((x, i) => new { cii = x, index = i, id = (Characters)x.Data.character.id, alt = x.Data.character.altid, weapon = x.Data.weapon.altid });
+                    //where characters haven't changed
+                    foreach (var x in test.Where(x => Memory.State.Party[x.index] == x.id && (GetCostume(x.id) == x.alt) && x.weapon == GetWeaponID(x.id)))
+                    {
+                        Memory.State[x.id].BattleStart(x.cii);
+                        return;
+                    }
+                    //where character, weapon, or costume has changed
+                    foreach (var x in test.Where(x => !(Memory.State.Party[x.index] == x.id && (GetCostume(x.id) == x.alt) && x.weapon == GetWeaponID(x.id))))
+                    {
+                        int _cid = x.index;
+                        CharacterInstances[x.index] = ReadCharacter(ref _cid, x.id);
+                        return;
+                    }
+                }
+
                 CharacterInstances = new List<CharacterInstanceInformation>(3);
                 int cid = 0;
                 foreach (Characters c in Memory.State.Party)
                 {
                     if (c != Characters.Blank)
                     {
-                        byte weaponId = 0;
-                        if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
-                            characterData.WeaponID < Kernel_bin.WeaponsData.Count)
-                        {
-                            byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
-                            if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
-                                weaponId = weapons[altID];
-                        }
-
-                        CharacterInstanceInformation cii = new CharacterInstanceInformation
-                        {
-                            Data = ReadCharacterData((int)c,
-                                Memory.State[c].Alternativemodel == 0 ? Costumes[c].First() : Costumes[c].Last(),
-                                weaponId),
-                            animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
-                            characterId = cid++,
-                        };
-                        //cii.animationSystem.animationId = 4;
-                        Memory.State[c].BattleStart(cii);
-                        CharacterInstances.Add(cii);
+                        CharacterInstances.Add(ReadCharacter(ref cid, c));
                     }
                 }
             }
@@ -958,6 +957,35 @@ namespace OpenVIII
                     characterId = 2
                 }
             };
+        }
+
+        private static byte GetCostume(Characters c) => Memory.State[c].Alternativemodel != 0 ? Costumes[c].First() : Costumes[c].Last();
+
+        private static CharacterInstanceInformation ReadCharacter(ref int cid, Characters c)
+        {
+            CharacterInstanceInformation cii = new CharacterInstanceInformation
+            {
+                Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
+                animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
+                characterId = cid++,
+            };
+            //cii.animationSystem.animationId = 4;
+            Memory.State[c].BattleStart(cii);
+            return cii;
+        }
+
+        private static byte GetWeaponID(Characters c)
+        {
+            byte weaponId = 0;
+            if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
+                characterData.WeaponID < Kernel_bin.WeaponsData.Count)
+            {
+                byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
+                if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
+                    weaponId = weapons[altID];
+            }
+
+            return weaponId;
         }
 
         private static void ReadData()
