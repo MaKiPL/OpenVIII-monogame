@@ -114,6 +114,9 @@ namespace OpenVIII
         #region Properties
 
         public static int battleModule { get; set; } = 0;
+
+        private static bool ForceReload = false;
+
         public static Camera Camera { get; private set; }
         public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
 
@@ -285,7 +288,9 @@ namespace OpenVIII
             }
             else if (Input2.Button(Keys.F5))
             {
+                //reload
                 battleModule = BATTLEMODULE_INIT;
+                ForceReload = true;
                 Memory.SuppressDraw = true;
             }
             else if (Input2.Button(Keys.D3))
@@ -415,6 +420,7 @@ namespace OpenVIII
                     ReadData();
                     Menu.BattleMenus.Refresh();
                     Menu.FadeIn();
+                    ForceReload = false;
                     break;
 
                 case BATTLEMODULE_DRAWGEOMETRY:
@@ -828,14 +834,14 @@ namespace OpenVIII
 
         private static void InitBattle()
         {
-            if (Stage == null || Stage.Scenario != Memory.Encounters.Scenario)
+            if (Stage == null || Stage.Scenario != Memory.Encounters.Scenario || ForceReload)
                 using (BinaryReader br = Stage.Open())
                 {
                     //Camera and stage are in the same file.
                     Camera = Camera.Read(br);
                     Stage = Stage.Read(Camera.EndOffset, br);
                 }
-            if (CROSSHAIR == null)
+            if (CROSSHAIR == null || ForceReload)
                 CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
             //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
@@ -907,7 +913,7 @@ namespace OpenVIII
             {
                 FillCostumes();
                 FillWeapons();
-                if (CharacterInstances != null)
+                if (CharacterInstances != null && !ForceReload)
                 {
                     var test = CharacterInstances.Select((x, i) => new { cii = x, index = i, id = (Characters)x.Data.character.id, alt = x.Data.character.altid, weapon = x.Data.weapon.altid });
                     //where characters haven't changed

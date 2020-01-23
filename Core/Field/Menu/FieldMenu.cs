@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System.Diagnostics;
 using System.Linq;
 
@@ -89,6 +90,12 @@ namespace OpenVIII.Fields.IGMData
                 {
                     Debug.WriteLine(tile);
                 }
+                return true;
+            }
+            else if (Input2.DelayedButton(Keys.F5))
+            {
+                SetCursor_select(0);
+                Inputs_OKAY();
                 return true;
             }
             return base.Inputs();
@@ -187,7 +194,7 @@ namespace OpenVIII.Fields.IGMData
                 skiprefresh = false;
                 return;
             }
-                FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString()?.ToUpper()}";
+            FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString()?.ToUpper()}";
 
             BLANKS[0] = false;
             if (Module.Mod != Module.Field_mods.DISABLED)
@@ -216,7 +223,7 @@ namespace OpenVIII.Fields.IGMData
                 BLANKS[6] = false;
                 Reswizzle.Data = $"Reswizzle Tiles";
                 BLANKS[7] = false;
-                foreach (int i in Enumerable.Range(8, Rows-8))
+                foreach (int i in Enumerable.Range(8, Rows - 8))
                 {
                     ITEM[i, 0].Hide();
                     BLANKS[i] = true;
@@ -226,7 +233,7 @@ namespace OpenVIII.Fields.IGMData
             {
                 foreach (int i in Enumerable.Range(1, Rows))
                 {
-                    ITEM[i,0].Hide();
+                    ITEM[i, 0].Hide();
                     BLANKS[i] = true;
                 }
             }
