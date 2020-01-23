@@ -828,6 +828,7 @@ namespace OpenVIII
 
         private static void InitBattle()
         {
+            if(Stage==null || Stage.Scenario != Memory.Encounters.Scenario)
             using (BinaryReader br = Stage.Open())
             {
                 //Camera and stage are in the same file.
@@ -838,7 +839,7 @@ namespace OpenVIII
             //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            InputMouse.Mode = MouseLockMode.Center;
+            //InputMouse.Mode = MouseLockMode.Center;
             if (DeadTime == null)
             {
                 DeadTime = new DeadTime();
@@ -846,15 +847,22 @@ namespace OpenVIII
             }
             DeadTime.Restart();
             Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.Encounters.ID}\t cEnemies: {Memory.Encounters.EnabledEnemy}\t Enemies: {string.Join(",", Memory.Encounters.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
+            if(fps_camera == null)
             fps_camera = new FPS_Camera();
-            RegularPyramid = new Battle.RegularPyramid();
-            RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
+            if (RegularPyramid == null)
+            {
+                RegularPyramid = new Battle.RegularPyramid();
+                RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
+            }
             //RegularPyramid.Set(PyramidOffset);
             RegularPyramid.Hide();
             //init renderer
+            if(effect == null)
             effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+
             camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
             camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
+            
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
                                Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
@@ -864,10 +872,7 @@ namespace OpenVIII
             worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
                           Forward, Vector3.Up);
             battleModule++;
-            RasterizerState rasterizerState = new RasterizerState
-            {
-                CullMode = CullMode.None
-            };
+            if(ate == null)
             ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
             {
                 Projection = projectionMatrix,

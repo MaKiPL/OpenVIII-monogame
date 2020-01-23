@@ -46,6 +46,8 @@ namespace OpenVIII.Battle
 
         private Matrix worldMatrix => Module_battle_debug.WorldMatrix;
 
+        public static byte Scenario { get; private set; }
+
         #endregion Properties
 
         #region Methods
@@ -66,6 +68,7 @@ namespace OpenVIII.Battle
 
         public static Stage Read(uint offset, BinaryReader br)
         {
+            Scenario = Memory.Encounters.Scenario;
             Stage s = new Stage();
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
             uint sectionCounter = br.ReadUInt32();
