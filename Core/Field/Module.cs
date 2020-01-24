@@ -28,6 +28,7 @@ namespace OpenVIII.Fields
         private static IServices services;
         private static INF inf;
         private static TDW tdw;
+        private static MSK msk;
 
         #endregion Fields
 
@@ -274,11 +275,12 @@ namespace OpenVIII.Fields
             //byte[] cab = getfile(".ca");//camera
             byte[] tdwb = getfile(".tdw");//extra font
             tdw = new TDW(tdwb);
-            //byte[] mskb = getfile(".msk");//movie cam
+            byte[] mskb = getfile(".msk");//movie cam
+            msk = new MSK(mskb);
             //byte[] ratb = getfile(".rat");//battle on field
             //byte[] pmdb = getfile(".pmd");//particle info
             //byte[] sfxb = getfile(".sfx");//sound effects
-
+            
             mod++;
             end:
             FieldMenu.Refresh();
@@ -353,5 +355,12 @@ namespace OpenVIII.Fields
         //    }
         //    throw new Exception($"Blendtype is {tile.BlendMode}: There are only 4 blend modes, 0-3, 4+ are drawn directly.");
         //}
+    }
+
+    internal class MSK
+    {
+        private byte[] mskb;
+
+        public MSK(byte[] mskb) => this.mskb = mskb;
     }
 }
