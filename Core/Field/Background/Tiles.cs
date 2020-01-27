@@ -50,11 +50,13 @@ namespace OpenVIII.Fields
             public Point BottomRight => new Point(tiles.Max(tile => tile.X) + Tile.size, tiles.Max(tile => tile.Y) + Tile.size);
             public int Count => ((IList<Tile>)tiles).Count;
 
-            public int Height => Math.Abs(TopLeft.Y) + BottomRight.Y;
+            public int Height => Math.Abs(TopLeft.Y) + BottomRight.Y;// + (int)Origin.Y;
             public bool IsReadOnly => ((IList<Tile>)tiles).IsReadOnly;
 
             public Point TopLeft => new Point(tiles.Min(tile => tile.X), tiles.Min(tile => tile.Y));
-            public int Width => Math.Abs(TopLeft.X) + BottomRight.X;
+            public int Width => Math.Abs(TopLeft.X) + BottomRight.X;//+ (int)Origin.X;
+            public Point Size => new Point(Width, Height);
+            public Vector2 Origin => BottomRight.ToVector2() + TopLeft.ToVector2();
 
             #endregion Properties
 

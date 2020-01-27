@@ -161,8 +161,8 @@ namespace OpenVIII.Fields
             Vector2 scale = quads[0].Texture.ScaleFactor;
             int Width = (int)(tiles.Width * scale.X);
             int Height = (int)(tiles.Height * scale.Y);
-            Matrix backup = projectionMatrix;
-            projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
+            //Matrix backup = projectionMatrix;
+            //projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
             tiles.UniquePupuIDs();// make sure each layer has it's own id.
             foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu id.
             {
@@ -171,11 +171,20 @@ namespace OpenVIII.Fields
                     //start drawing
                     Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
                     Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                    Memory.SpriteBatchStartAlpha();
                     foreach (TileQuadTexture quad in pupuIDgroup)
                     {
-                        DrawBackgroundQuadsStart();
-                        DrawBackgroundQuad(quad, true);
+                        Tile tile = (Tile)quad;
+                        //DrawBackgroundQuadsStart();
+                        //DrawBackgroundQuad(quad, true);
+                        Rectangle dst = tile.GetRectangle;
+                        dst.Offset(Math.Abs(tiles.TopLeft.X), Math.Abs(tiles.TopLeft.Y));
+                        Rectangle src = tile.Source;
+                        //src = src.Scale(scale);
+                        dst = dst.Scale(scale);
+                        quad.Texture.Draw(dst, src, Color.White);
                     }
+                    Memory.SpriteBatchEnd();
                     //end drawing
                     Memory.graphics.GraphicsDevice.SetRenderTarget(null);
                     //set path
@@ -189,7 +198,7 @@ namespace OpenVIII.Fields
                 }
             }
             Process.Start(folder);
-            projectionMatrix = backup;
+            //projectionMatrix = backup;
         }
 
         // This code added to correctly implement the disposable pattern.
@@ -220,6 +229,12 @@ namespace OpenVIII.Fields
                 ConcurrentDictionary<byte, TextureBuffer> texids = new ConcurrentDictionary<byte, TextureBuffer>();
                 ConcurrentDictionary<TextureIDPaletteID, TextureBuffer> texidspalette = new ConcurrentDictionary<TextureIDPaletteID, TextureBuffer>();
                 int Width = 0; int Height = 0;
+
+
+                //Vector2 origin = tiles.Origin;
+                Point lowest = tiles.TopLeft;
+                Vector2 size = new Vector2(tiles.Width, tiles.Height);//new Point(Math.Abs(lowest.X) + highest.X + Tile.size, Math.Abs(lowest.Y) + highest.Y + Tile.size);
+                Regex re = new Regex(@".+_([0-9A-F]+).png", RegexOptions.IgnoreCase);
                 process();
                 if (overlap.Any(x => x.Value.Count > 1))
                     process(true);
@@ -227,17 +242,15 @@ namespace OpenVIII.Fields
                 {
                     foreach (string file in files)
                     {
-                        Point lowest = new Point(tiles.Min(x => x.X), tiles.Min(x => x.Y));
                         //Point highest = new Point(tiles.Max(x => x.X), tiles.Max(x => x.Y));
-                        Point size = new Point(tiles.Width, tiles.Height);//new Point(Math.Abs(lowest.X) + highest.X + Tile.size, Math.Abs(lowest.Y) + highest.Y + Tile.size);
-                        Regex re = new Regex(@".+_([0-9A-F]+).png", RegexOptions.IgnoreCase);
+                        
                         Match match = re.Match(file);
                         if (match.Groups.Count > 1 && UInt32.TryParse(match.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint pupuid))
                         {
                             using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             using (Texture2D tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs))
                             {
-                                Vector2 scale = new Vector2(tex.Width, tex.Height) / size.ToVector2();
+                                Vector2 scale = new Vector2(tex.Width, tex.Height) / size;
                                 Width = (int)(256 * scale.X);
                                 Height = (int)(256 * scale.Y);
                                 TextureBuffer inTex = new TextureBuffer(tex.Width, tex.Height);
@@ -248,12 +261,15 @@ namespace OpenVIII.Fields
                                 (!dooverlap || overlap[x.GetTile.TextureID].Contains(x.GetTile.PaletteID))))
                                 {
                                     Tile tile = (Tile)quad;
-                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height, false));
-                                    Point src = (new Point(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y).ToVector2() * scale).ToPoint();
-                                    Point dst = (new Point(tile.SourceX, tile.SourceY).ToVector2() * scale).ToPoint();
+
+                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height,false));
+                                    Point src = (new Vector2(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y) * scale).ToPoint();
+                                    Point dst = (new Vector2(tile.SourceX, tile.SourceY) * scale).ToPoint();
+
                                     if (!dooverlap)
                                         foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
                                                              from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
+                                                             orderby y,x ascending
                                                              select new Point(x, y)))
                                         {
                                             Color input = inTex[src.X + p.X, src.Y + p.Y];

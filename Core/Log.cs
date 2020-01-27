@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -29,21 +31,25 @@ namespace OpenVIII
         public override void Write(char value)
         {
             if (Enabled) log.Write(value);
+            Debug.Write(value);
         }
 
         public override void Write(char[] buffer, int index, int count)
         {
             if (Enabled) log.Write(buffer, index, count);
+            Debug.Write(new string(buffer.Skip(index).Take(count).ToArray()));
         }
 
         public override void Write(string value)
         {
             if (Enabled) log.Write(value);
+            Debug.Write(value);
         }
 
         public override void Write(char[] buffer)
         {
             if (Enabled) log.Write(buffer);
+            Debug.Write(buffer);
         }
 
         [ComVisible(false)]

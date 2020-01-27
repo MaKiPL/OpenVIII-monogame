@@ -74,7 +74,22 @@ namespace OpenVIII
 
         public Color this[int x, int y]
         {
-            get => colors[x + (y * Width)]; set => this[x + (y * Width)] = value;
+            get
+            {
+                int i = x + (y * Width);
+                if (i < Count && i >= 0)
+                    return colors[i];
+                Memory.Log.WriteLine($"{nameof(TextureBuffer)} :: this[int x, int y] => get :: {nameof(IndexOutOfRangeException)} :: {new Point(x, y)} = {i}");
+                return Color.TransparentBlack; // fail silent...
+            }
+            set
+            {
+                int i = x + (y * Width);
+                if (i < Count && i >= 0)
+                    this[i] = value;
+                else
+                    Memory.Log.WriteLine($"{nameof(TextureBuffer)} :: this[int x, int y] => set :: {nameof(IndexOutOfRangeException)} :: {new Point(x, y)} = {i} :: {nameof(value)} :: {value}");
+            }
         }
 
         public Color[] this[Rectangle rectangle]
