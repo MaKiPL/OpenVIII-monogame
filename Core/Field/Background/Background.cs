@@ -90,6 +90,7 @@ namespace OpenVIII.Fields
         #region Properties
 
         public TimeSpan CurrentTime { get; private set; }
+        public Tiles GetTiles => tiles;
         public bool HasSpriteBatchTexturesLoaded => GetTexturesReadyToDrawClassicSpriteBatch()?.Count > 0;
         public int Height { get => OutputDims.Height; private set => OutputDims.Height = value; }
         public bool Is4Bit => tiles?.Any(x => x.Is4Bit) ?? false;
@@ -153,6 +154,44 @@ namespace OpenVIII.Fields
             return r;
         }
 
+        public void Deswizzle()
+        {
+            string fieldname = Module.GetFieldName();
+            string folder = Module.GetFolder(fieldname, "deswizzle");
+            Vector2 scale = quads[0].Texture.ScaleFactor;
+            int Width = (int)(tiles.Width * scale.X);
+            int Height = (int)(tiles.Height * scale.Y);
+            Matrix backup = projectionMatrix;
+            projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
+            tiles.UniquePupuIDs();// make sure each layer has it's own id.
+            foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu id.
+            {
+                using (RenderTarget2D outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, Width, Height))
+                {
+                    //start drawing
+                    Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
+                    Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                    foreach (TileQuadTexture quad in pupuIDgroup)
+                    {
+                        DrawBackgroundQuadsStart();
+                        DrawBackgroundQuad(quad, true);
+                    }
+                    //end drawing
+                    Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                    //set path
+                    string path = Path.Combine(folder,
+                        $"{fieldname}_{pupuIDgroup.Key.ToString("X8")}.png");
+                    //save image.
+                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    {
+                        outTex.SaveAsPng(fs, Width, Height);
+                    }
+                }
+            }
+            Process.Start(folder);
+            projectionMatrix = backup;
+        }
+
         // This code added to correctly implement the disposable pattern.
         public void Dispose() =>
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
@@ -164,6 +203,141 @@ namespace OpenVIII.Fields
             DrawBackgroundQuads();
             DrawWalkMesh();
             DrawSpriteBatch();
+        }
+
+        public void Reswizzle()
+        {
+            tiles.UniquePupuIDs();// make sure each layer has it's own id.
+
+            string fieldname = Module.GetFieldName();
+            string folder = Module.GetFolder(fieldname, "deswizzle"); //goes from deswizzle folder
+            if (Directory.Exists(folder))
+            {
+                IEnumerable<string> files = Directory.EnumerateFiles(folder, "*.png");
+                folder = Module.GetFolder(fieldname, "reswizzle");
+
+                Dictionary<byte, HashSet<byte>> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new HashSet<byte>());
+                ConcurrentDictionary<byte, TextureBuffer> texids = new ConcurrentDictionary<byte, TextureBuffer>();
+                ConcurrentDictionary<TextureIDPaletteID, TextureBuffer> texidspalette = new ConcurrentDictionary<TextureIDPaletteID, TextureBuffer>();
+                int Width = 0; int Height = 0;
+                process();
+                if (overlap.Any(x => x.Value.Count > 1))
+                    process(true);
+                void process(bool dooverlap = false)
+                {
+                    foreach (string file in files)
+                    {
+                        Point lowest = new Point(tiles.Min(x => x.X), tiles.Min(x => x.Y));
+                        //Point highest = new Point(tiles.Max(x => x.X), tiles.Max(x => x.Y));
+                        Point size = new Point(tiles.Width, tiles.Height);//new Point(Math.Abs(lowest.X) + highest.X + Tile.size, Math.Abs(lowest.Y) + highest.Y + Tile.size);
+                        Regex re = new Regex(@".+_([0-9A-F]+).png", RegexOptions.IgnoreCase);
+                        Match match = re.Match(file);
+                        if (match.Groups.Count > 1 && UInt32.TryParse(match.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint pupuid))
+                        {
+                            using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            using (Texture2D tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs))
+                            {
+                                Vector2 scale = new Vector2(tex.Width, tex.Height) / size.ToVector2();
+                                Width = (int)(256 * scale.X);
+                                Height = (int)(256 * scale.Y);
+                                TextureBuffer inTex = new TextureBuffer(tex.Width, tex.Height);
+                                inTex.GetData(tex);
+
+                                foreach (TileQuadTexture quad in quads.Where(x =>
+                                x.GetTile.PupuID == pupuid &&
+                                (!dooverlap || overlap[x.GetTile.TextureID].Contains(x.GetTile.PaletteID))))
+                                {
+                                    Tile tile = (Tile)quad;
+                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height, false));
+                                    Point src = (new Point(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y).ToVector2() * scale).ToPoint();
+                                    Point dst = (new Point(tile.SourceX, tile.SourceY).ToVector2() * scale).ToPoint();
+                                    if (!dooverlap)
+                                        foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
+                                                             from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
+                                                             select new Point(x, y)))
+                                        {
+                                            Color input = inTex[src.X + p.X, src.Y + p.Y];
+                                            Color current = texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y];
+
+                                            Point unscaledLocation = tile.Source.Location;
+                                            unscaledLocation.Offset(p.ToVector2() / scale);
+                                            Color? output = ChangeColor(current, input, unscaledLocation, tile.TextureID, overlap);
+                                            if (output.HasValue)
+                                                if (output.Value.A != 0)
+                                                    texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = output.Value;
+                                                else continue;
+                                            else break;
+
+                                            //if (input.A != 0)
+                                            //{
+                                            //    if (current.A == 0)
+                                            //        texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = input;
+                                            //    else if (current == input)
+                                            //        continue; // colors are same don't fret.
+                                            //    else
+                                            //    {
+                                            //        Point unscaledLocation = tile.Source.Location;
+                                            //        unscaledLocation.Offset(p.ToVector2() / scale);
+
+                                            //        IEnumerable<byte> o = (from t1 in tiles
+                                            //                               where t1.TextureID == tile.TextureID && t1.ExpandedSource.Contains(unscaledLocation)
+                                            //                               select t1.PaletteID).Distinct();
+                                            //        if (o.Count() > 1)
+                                            //        {
+                                            //            o.ForEach(x => overlap[tile.TextureID].Add(x));
+                                            //            break;
+                                            //        }
+                                            //        else texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = input;
+                                            //    }
+                                            //}
+                                        }
+                                    else if (overlap[tile.TextureID].Count > 1 && dooverlap)
+                                    {
+                                        TextureIDPaletteID key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
+                                        texidspalette.TryAdd(key, new TextureBuffer(Width, Height));
+
+                                        foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
+                                                             from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
+                                                             select new Point(x, y)))
+                                        {
+                                            Color input = inTex[src.X + p.X, src.Y + p.Y];
+                                            if (input.A != 0)
+                                            {
+                                                texidspalette[key][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
+                                            }
+                                        }
+                                    }
+                                    else continue;
+                                }
+                            }
+                        }
+                    }
+                }
+                //save new reswizzles
+                foreach (KeyValuePair<byte, TextureBuffer> tid in texids)
+                {
+                    string path = Path.Combine(folder,
+                        $"{fieldname}_{tid.Key}.png");
+                    //save image.
+                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    {
+                        using (Texture2D outTex = (Texture2D)tid.Value)
+                            outTex.SaveAsPng(fs, Width, Height);
+                    }
+                }
+                foreach (KeyValuePair<TextureIDPaletteID, TextureBuffer> tid in texidspalette)
+                {
+                    string path = Path.Combine(folder,
+                        $"{fieldname}_{tid.Key.TextureID}_{tid.Key.PaletteID}.png");
+                    //save image.
+                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    {
+                        using (Texture2D outTex = (Texture2D)tid.Value)
+                            outTex.SaveAsPng(fs, Width, Height);
+                    }
+                }
+                Process.Start(folder);
+            }
         }
 
         public Tiles TilesUnderMouse() => new Tiles(tiles.Where(x =>
@@ -280,180 +454,26 @@ namespace OpenVIII.Fields
             return r;
         }
 
-        public Tiles GetTiles => tiles;
-
-        public void Deswizzle()
+        private Color? ChangeColor(Color current, Color input, Point _p, byte TextureID, Dictionary<byte, HashSet<byte>> overlap)
         {
-            string fieldname = Module.GetFieldName();
-            string folder = Module.GetFolder(fieldname, "deswizzle");
-            Vector2 scale = quads[0].Texture.ScaleFactor;
-            int Width = (int)(tiles.Width * scale.X);
-            int Height = (int)(tiles.Height * scale.Y);
-            Matrix backup = projectionMatrix;
-            projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
-            tiles.UniquePupuIDs();// make sure each layer has it's own id.
-            foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu id.
+            if (input.A != 0)
             {
-                using (RenderTarget2D outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, Width, Height))
+                if (current.A == 0 || current == input)
+                    return input;
+                else
                 {
-                    //start drawing
-                    Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
-                    Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
-                    foreach (TileQuadTexture quad in pupuIDgroup)
+                    IEnumerable<byte> o = (from t1 in tiles
+                                           where t1.TextureID == TextureID && t1.ExpandedSource.Contains(_p)
+                                           select t1.PaletteID).Distinct();
+                    if (o.Count() > 1)
                     {
-                        DrawBackgroundQuadsStart();
-                        DrawBackgroundQuad(quad, true);
+                        o.ForEach(x => overlap[TextureID].Add(x));
+                        return null;
                     }
-                    //end drawing
-                    Memory.graphics.GraphicsDevice.SetRenderTarget(null);
-                    //set path
-                    string path = Path.Combine(folder,
-                        $"{fieldname}_{pupuIDgroup.Key.ToString("X8")}.png");
-                    //save image.
-                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                    {
-                        outTex.SaveAsPng(fs, Width, Height);
-                    }
+                    else return input; // two tiles same palette is drawing to same place
                 }
             }
-            Process.Start(folder);
-            projectionMatrix = backup;
-        }
-
-        public void Reswizzle()
-        {
-            ;
-            tiles.UniquePupuIDs();// make sure each layer has it's own id.
-
-            string fieldname = Module.GetFieldName();
-            string folder = Module.GetFolder(fieldname, "deswizzle"); //goes from deswizzle folder
-            if (Directory.Exists(folder))
-            {
-                IEnumerable<string> files = Directory.EnumerateFiles(folder, "*.png");
-                folder = Module.GetFolder(fieldname, "reswizzle");
-
-                Dictionary<byte, HashSet<byte>> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new HashSet<byte>());
-                ConcurrentDictionary<byte, TextureBuffer> texids = new ConcurrentDictionary<byte, TextureBuffer>();
-                ConcurrentDictionary<TextureIDPaletteID, TextureBuffer> texidspalette = new ConcurrentDictionary<TextureIDPaletteID, TextureBuffer>();
-                int Width = 0; int Height = 0;
-                process();
-                if (overlap.Any(x => x.Value.Count > 1))
-                    process(true);
-                void process(bool dooverlap = false)
-                {
-                    foreach (string file in files)
-                    {
-                        Point lowest = new Point(tiles.Min(x => x.X), tiles.Min(x => x.Y));
-                        //Point highest = new Point(tiles.Max(x => x.X), tiles.Max(x => x.Y));
-                        Point size = new Point(tiles.Width, tiles.Height);//new Point(Math.Abs(lowest.X) + highest.X + Tile.size, Math.Abs(lowest.Y) + highest.Y + Tile.size);
-                        Regex re = new Regex(@".+_([0-9A-F]+).png", RegexOptions.IgnoreCase);
-                        Match match = re.Match(file);
-                        if (match.Groups.Count > 1 && UInt32.TryParse(match.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint pupuid))
-                        {
-                            using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            using (Texture2D tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs))
-                            {
-                                Vector2 scale = new Vector2(tex.Width, tex.Height) / size.ToVector2();
-                                Width = (int)(256 * scale.X);
-                                Height = (int)(256 * scale.Y);
-                                TextureBuffer inTex = new TextureBuffer(tex.Width, tex.Height);
-                                inTex.GetData(tex);
-
-                                foreach (TileQuadTexture quad in quads.Where(x =>
-                                x.GetTile.PupuID == pupuid &&
-                                (!dooverlap || overlap[x.GetTile.TextureID].Contains(x.GetTile.PaletteID))))
-                                {
-                                    Tile tile = (Tile)quad;
-                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height, false));
-                                    Point src = (new Point(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y).ToVector2() * scale).ToPoint();
-                                    Point dst = (new Point(tile.SourceX, tile.SourceY).ToVector2() * scale).ToPoint();
-                                    if (!dooverlap)
-                                        foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
-                                                             from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
-                                                             select new Point(x, y)))
-                                        {
-                                            Color input = inTex[src.X + p.X, src.Y + p.Y];
-                                            if (input.A != 0)
-                                            {
-                                                Color current = texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y];
-                                                if (current.A == 0)
-                                                    texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = input;
-                                                else if (current == input)
-                                                    continue; // colors are same don't fret.
-                                                else
-                                                {
-                                                    Point unscaledLocation = tile.Source.Location;
-                                                    unscaledLocation.Offset(p.ToVector2() / scale);
-
-                                                    IEnumerable<byte> o = (from t1 in tiles
-                                                                           where t1.TextureID == tile.TextureID && t1.ExpandedSource.Contains(unscaledLocation)
-                                                                           select t1.PaletteID).Distinct();
-                                                    if (o.Count() > 1)
-                                                    {
-                                                        o.ForEach(x => overlap[tile.TextureID].Add(x));
-                                                        break;
-                                                    }
-                                                    else texids[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = input;
-                                                }
-                                            }
-                                        }
-                                    else if (overlap[tile.TextureID].Count > 1 && dooverlap)
-                                    {
-                                        TextureIDPaletteID key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
-                                        texidspalette.TryAdd(key, new TextureBuffer(Width, Height));
-
-                                        foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
-                                                             from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
-                                                             select new Point(x, y)))
-                                        {
-                                            Color input = inTex[src.X + p.X, src.Y + p.Y];
-                                            if (input.A != 0)
-                                            {
-                                                texidspalette[key][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
-                                            }
-                                        }
-                                    }
-                                    else continue;
-                                }
-                            }
-                        }
-                    }
-                }
-                //save new reswizzles
-                foreach (KeyValuePair<byte, TextureBuffer> tid in texids)
-                {
-                    string path = Path.Combine(folder,
-                        $"{fieldname}_{tid.Key}.png");
-                    //save image.
-                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                    {
-                        using (Texture2D outTex = (Texture2D)tid.Value)
-                            outTex.SaveAsPng(fs, Width, Height);
-                    }
-                }
-                foreach (KeyValuePair<TextureIDPaletteID, TextureBuffer> tid in texidspalette)
-                {
-                    string path = Path.Combine(folder,
-                        $"{fieldname}_{tid.Key.TextureID}_{tid.Key.PaletteID}.png");
-                    //save image.
-                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                    {
-                        using (Texture2D outTex = (Texture2D)tid.Value)
-                            outTex.SaveAsPng(fs, Width, Height);
-                    }
-                }
-                Process.Start(folder);
-            }
-        }
-
-        private void DrawBackgroundQuads()
-        {
-            if (!Module.Toggles.HasFlag(Module._Toggles.Quad)) return;
-            DrawBackgroundQuadsStart();
-            foreach (TileQuadTexture quad in quads.Where(x => x.Enabled))
-            {
-                DrawBackgroundQuad(quad);
-            }
+            return Color.TransparentBlack;
         }
 
         private void DrawBackgroundQuad(TileQuadTexture quad, bool forceBlendModeNone = false, Vector2 scale2 = default)
@@ -479,6 +499,16 @@ namespace OpenVIII.Fields
 
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                 vertexData: temp, vertexOffset: 0, primitiveCount: 2);
+            }
+        }
+
+        private void DrawBackgroundQuads()
+        {
+            if (!Module.Toggles.HasFlag(Module._Toggles.Quad)) return;
+            DrawBackgroundQuadsStart();
+            foreach (TileQuadTexture quad in quads.Where(x => x.Enabled))
+            {
+                DrawBackgroundQuad(quad);
             }
         }
 
@@ -989,7 +1019,7 @@ namespace OpenVIII.Fields
                 if (overlap.Any(x => x.Value.Count > 1))
                 //process(true);
                 {
-                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => x.BlendMode == BlendMode.none || x.AnimationID != 0xFF || x.Is4Bit).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => overlap[x.TextureID].Contains(x.PaletteID)).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
                     this.TextureIDsPalettes = TextureIDsPalettes.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key.TextureID}", new Texture2DWrapper(x.Value), x.Key.PaletteID));
                     foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp in TextureIDsPalettes)
                     {
@@ -1017,11 +1047,11 @@ namespace OpenVIII.Fields
                         byte Colorkey = 0;
                         foreach (Point p in (from x in Enumerable.Range(0, Tile.size)
                                              from y in Enumerable.Range(0, Tile.size)
-                                             orderby y,x ascending
+                                             orderby y, x ascending
                                              select new Point(x, y)))
                         //for (int y = 0; y < 16; y++)
                         {
-                            br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width)+ (p.X / (tile.Is4Bit ? 2 : 1)), SeekOrigin.Begin);
+                            br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width) + (p.X / (tile.Is4Bit ? 2 : 1)), SeekOrigin.Begin);
 
                             Point _p = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
                             //int _y = y + tile.loc.Y;
@@ -1046,37 +1076,52 @@ namespace OpenVIII.Fields
                                     input = Cluts[paletteID][(Colorkey & 0xf0) >> 4];
                                 }
                             }
-                            if (input.A != 0)
+
+
+                            if (!inPaletteID.HasValue) // forcing a palette happens post overlap test. So shouldn't need to rerun test.
                             {
                                 Color current = tex[_p.X, _p.Y];
-                                if (current.A == 0)
-                                    tex[_p.X, _p.Y] = input;
-                                else if (current == input)
-                                    continue; // same color might be two+ tiles with same source locations.
-                                else 
-                                {
-
-                                    //Point unscaledLocation = tile.Source.Location;
-                                    //unscaledLocation.Offset(p.ToVector2() / scale);
-
-                                    IEnumerable<byte> o = (from t1 in tiles
-                                                           where t1.TextureID == tile.TextureID && t1.ExpandedSource.Contains(_p)
-                                                           select t1.PaletteID).Distinct();
-                                    if (o.Count() > 1)
-                                    {
-                                        o.ForEach(x => overlap[tile.TextureID].Add(x));
-                                        break;
-                                    }
-                                    else tex[_p.X, _p.Y] = input; // two tiles same palette is drawing to same place
-                                    //TODO maybe copy some code from reswizzle where i find all the palettes that conflict only.
-                                    //overlap = true;
-                                    //if (current != input)
-                                    //{
-                                    //    Debug.WriteLine($"{_p} :: {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]} :: {tile} \n   existed_color {tex[_x, _y]} :: failed_color={input}");
-                                    //    break;
-                                    //}
-                                }
+                                Color? output = ChangeColor(current, input, _p, tile.TextureID, overlap);
+                                if (output.HasValue)
+                                    if (output.Value.A != 0)
+                                        tex[_p.X, _p.Y] = output.Value;
+                                    else continue;
+                                else break;
                             }
+                            else
+                            {
+                                if (input.A != 0)
+                                    tex[_p.X, _p.Y] = input;
+                            }
+                            //if (input.A != 0)
+                            //{
+                            //    if (current.A == 0)
+                            //        output = input;
+                            //    else if (current == input)
+                            //        output = input; // same color might be two+ tiles with same source locations.
+                            //    else
+                            //    {
+                            //        //Point unscaledLocation = tile.Source.Location;
+                            //        //unscaledLocation.Offset(p.ToVector2() / scale);
+
+                            //        IEnumerable<byte> o = (from t1 in tiles
+                            //                               where t1.TextureID == tile.TextureID && t1.ExpandedSource.Contains(_p)
+                            //                               select t1.PaletteID).Distinct();
+                            //        if (o.Count() > 1)
+                            //        {
+                            //            o.ForEach(x => overlap[tile.TextureID].Add(x));
+                            //            output = null;
+                            //        }
+                            //        else output = input; // two tiles same palette is drawing to same place
+                            //        //TODO maybe copy some code from reswizzle where i find all the palettes that conflict only.
+                            //        //overlap = true;
+                            //        //if (current != input)
+                            //        //{
+                            //        //    Debug.WriteLine($"{_p} :: {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]} :: {tile} \n   existed_color {tex[_x, _y]} :: failed_color={input}");
+                            //        //    break;
+                            //        //}
+                            //    }
+                            //}
                             //}
                         }
                     }

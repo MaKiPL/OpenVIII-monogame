@@ -168,9 +168,6 @@ namespace OpenVIII.Fields
                     t.Depth = (byte)(texIdBuffer >> 5);
                     t.TileID = id;
                 }
-
-                if (t.SourceX == 240 && t.SourceY == 192)
-                    t.PaletteID = 9;
                 t.GeneratePupu();
                 Debug.Assert(p - pbsmap.BaseStream.Position == -16);
                 return t;
