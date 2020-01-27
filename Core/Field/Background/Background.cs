@@ -1014,15 +1014,16 @@ namespace OpenVIII.Fields
                         long startPixel = TextureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturePageWidth * tile.TextureID) + (TextureType.Width * tile.loc.Y);
                         //int readlength = Tile.size + (Tile.size * TextureType.Width);
 
+                        byte Colorkey = 0;
                         foreach (Point p in (from x in Enumerable.Range(0, Tile.size)
                                              from y in Enumerable.Range(0, Tile.size)
+                                             orderby y,x ascending
                                              select new Point(x, y)))
                         //for (int y = 0; y < 16; y++)
                         {
-                            br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width)+p.X, SeekOrigin.Begin);
+                            br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width)+ (p.X / (tile.Is4Bit ? 2 : 1)), SeekOrigin.Begin);
 
                             Point _p = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
-                            byte Colorkey = 0;
                             //int _y = y + tile.loc.Y;
                             //  for (int x = 0; x < 16; x++)
                             //  {
