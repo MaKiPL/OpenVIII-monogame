@@ -31,25 +31,25 @@ namespace OpenVIII
         public override void Write(char value)
         {
             if (Enabled) log.Write(value);
-            Debug.Write(value);
+            else Debug.Write(value);
         }
 
         public override void Write(char[] buffer, int index, int count)
         {
             if (Enabled) log.Write(buffer, index, count);
-            Debug.Write(new string(buffer.Skip(index).Take(count).ToArray()));
+            else Debug.Write(new string(buffer.Skip(index).Take(count).ToArray()));
         }
 
         public override void Write(string value)
         {
             if (Enabled) log.Write(value);
-            Debug.Write(value);
+            else Debug.Write(value);
         }
 
         public override void Write(char[] buffer)
         {
             if (Enabled) log.Write(buffer);
-            Debug.Write(buffer);
+            else Debug.Write(buffer);
         }
 
         [ComVisible(false)]
