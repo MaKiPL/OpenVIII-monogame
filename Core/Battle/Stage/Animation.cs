@@ -28,12 +28,13 @@ namespace OpenVIII.Battle
 
             private List<Triangle> ts;
             private int Width = 64;
+            private int skip;
 
             #endregion Fields
 
             #region Constructors
 
-            public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, int texWidth, ModelGroups _mg, int count = 0, int x = 0, int y =0)
+            public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y =0, int skip =1)
             {
                 Width = width;
                 Height = height;
@@ -42,7 +43,7 @@ namespace OpenVIII.Battle
                 Cols = cols;
                 Rows = rows;
                 Frames = count > 0  && count <= Cols * Rows ? count: Cols * Rows;
-                //start = CalculateUV(Vector2.Zero, texturePage);
+                this.skip = skip;
                 Rectangle = new Rectangle(x, y, width, height);
                 IEnumerable<Model> temp = (from modelgroups in _mg
                                            from model in modelgroups
@@ -75,7 +76,7 @@ namespace OpenVIII.Battle
                     int Last = FrameNumber;
                     FrameNumber += 1;
                     if (FrameNumber >= Frames)
-                        FrameNumber = 0;
+                        FrameNumber = skip;
                     int lastrow, lastcol, col, row;
                     if (true)
                     {
