@@ -22,7 +22,7 @@ namespace OpenVIII.Battle
             private List<Quad> qs;
             private Rectangle Rectangle;
             private byte Rows = 2;
-            private Vector2 start;
+            //private Vector2 start;
             private byte TexturePage = 4;
             private List<Triangle> ts;
             private int Width = 64;
@@ -39,7 +39,7 @@ namespace OpenVIII.Battle
                 TexturePage = texturePage;
                 Cols = cols;
                 Rows = rows;
-                start = CalculateUV(Vector2.Zero, texturePage, texWidth);
+                //start = CalculateUV(Vector2.Zero, texturePage);
                 Rectangle = new Rectangle(0, 0, width, height);
 
                 qs = (from modelgroups in _mg
@@ -72,11 +72,22 @@ namespace OpenVIII.Battle
                     FrameNumber += 1;
                     if (FrameNumber >= Frames)
                         FrameNumber = 0;
+                    int lastrow, lastcol, col, row;
+                    if (true)
+                    {
+                        lastcol = Last % Cols;
+                        lastrow = (Last / Cols)%Rows;
+                        col = FrameNumber % Cols;
+                        row = (FrameNumber / Cols)%Rows;
+                    }
+                    else
+                    {
 
-                    int lastcol = Last % Cols;
-                    int lastrow = Last / Cols;
-                    int col = FrameNumber % Cols;
-                    int row = FrameNumber / Cols;
+                        lastcol = (Last /Rows) % Cols;
+                        lastrow = Last % Rows;
+                        col = (FrameNumber / Rows) % Cols;
+                        row = FrameNumber % Rows;
+                    }
 
                     foreach (Quad q in qs)
                     {

@@ -10,7 +10,7 @@ namespace OpenVIII.Battle
     {
         #region Fields
 
-        private const bool EnableDumpingData = false;
+        private const bool EnableDumpingData = true;
 
         /// <summary>
         /// skyRotating floats are hardcoded
@@ -54,12 +54,12 @@ namespace OpenVIII.Battle
 
         #region Methods
 
-        public static Vector2 CalculateUV(Vector2 UV, byte texPage, int texWidth)
+        public Vector2 CalculateUV(Vector2 UV, byte texPage)
         {
             //old code from my wiki page
             //Float U = (float)U_Byte / (float)(TIM_Texture_Width * 2) + ((float)Texture_Page / (TIM_Texture_Width * 2));
-            float fU = (UV.X + texPage * 128f) / texWidth;
-            float fV = UV.Y / 256.0f;
+            float fU = (UV.X + texPage * 128f) / Width;
+            float fV = UV.Y / Height;
             return new Vector2(fU, fV);
         }
 
@@ -162,7 +162,7 @@ namespace OpenVIII.Battle
 
         public void Update()
         {
-            if (Scenario == 31)
+            if (Scenario == 31 || Scenario == 30)
             {
                 if (Animations == null)
                 {
@@ -209,11 +209,11 @@ namespace OpenVIII.Battle
                 Vertex B = model.vertices[model.triangles[i].B];
                 Vertex C = model.vertices[model.triangles[i].C];
                 vptDynamic.Add(new VertexPositionTexture(A,
-                    CalculateUV(model.triangles[i].UVs[1], model.triangles[i].TexturePage, Width)));
+                    CalculateUV(model.triangles[i].UVs[1], model.triangles[i].TexturePage)));
                 vptDynamic.Add(new VertexPositionTexture(B,
-                    CalculateUV(model.triangles[i].UVs[2], model.triangles[i].TexturePage, Width)));
+                    CalculateUV(model.triangles[i].UVs[2], model.triangles[i].TexturePage)));
                 vptDynamic.Add(new VertexPositionTexture(C,
-                    CalculateUV(model.triangles[i].UVs[0], model.triangles[i].TexturePage, Width)));
+                    CalculateUV(model.triangles[i].UVs[0], model.triangles[i].TexturePage)));
                 bs_renderer_supplier.Add(new GeometryInfoSupplier()
                 {
                     bQuad = false,
@@ -232,19 +232,19 @@ namespace OpenVIII.Battle
                 //triangluation wing-reorder
                 //1 2 4
                 vptDynamic.Add(new VertexPositionTexture(A,
-                    CalculateUV(model.quads[i].UVs[0], model.quads[i].TexturePage, Width)));
+                    CalculateUV(model.quads[i].UVs[0], model.quads[i].TexturePage)));
                 vptDynamic.Add(new VertexPositionTexture(B,
-                    CalculateUV(model.quads[i].UVs[1], model.quads[i].TexturePage, Width)));
+                    CalculateUV(model.quads[i].UVs[1], model.quads[i].TexturePage)));
                 vptDynamic.Add(new VertexPositionTexture(D,
-                    CalculateUV(model.quads[i].UVs[3], model.quads[i].TexturePage, Width)));
+                    CalculateUV(model.quads[i].UVs[3], model.quads[i].TexturePage)));
 
                 //1 3 4
                 vptDynamic.Add(new VertexPositionTexture(D,
-                    CalculateUV(model.quads[i].UVs[3], model.quads[i].TexturePage, Width)));
+                    CalculateUV(model.quads[i].UVs[3], model.quads[i].TexturePage)));
                 vptDynamic.Add(new VertexPositionTexture(C,
-                    CalculateUV(model.quads[i].UVs[2], model.quads[i].TexturePage, Width)));
+                    CalculateUV(model.quads[i].UVs[2], model.quads[i].TexturePage)));
                 vptDynamic.Add(new VertexPositionTexture(A,
-                    CalculateUV(model.quads[i].UVs[0], model.quads[i].TexturePage, Width)));
+                    CalculateUV(model.quads[i].UVs[0], model.quads[i].TexturePage)));
 
                 bs_renderer_supplier.Add(new GeometryInfoSupplier()
                 {
