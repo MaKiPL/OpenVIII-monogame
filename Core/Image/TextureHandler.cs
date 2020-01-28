@@ -184,23 +184,34 @@ namespace OpenVIII
         {
             if (File.Exists(path))
                 return path;
-            string bn = Path.GetFileNameWithoutExtension(path);
+            
+            string bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path,@"\{[\d\.\:]+\}","",RegexOptions.IgnoreCase)));
             string textures = Path.Combine(Memory.FF8DIR, "textures");
             if (Directory.Exists(textures))
             {
                 if (pngs == null)
                     pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
-                string tex;
-                if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette + 1).ToString("D2")}")) == null)
-                    tex = _findPNG(bn);
-                if (tex != null)
+                
+                Regex re = new Regex(@".+[\\/]+"+bn+@"_(\d+)\.png",RegexOptions.IgnoreCase);
+                Match t;
+                string tex = pngs.FirstOrDefault(x => (t = re.Match(x)).Success && t.Groups.Count>1 && int.TryParse(t.Groups[1].Value,out int p) && p == palette);
+                //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
+                //    tex = _findPNG(bn);
+                //if (tex != null)
+                if (string.IsNullOrWhiteSpace(tex))
+                {
+                    re = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase);
+                    tex = pngs.FirstOrDefault(x => (t = re.Match(x)).Success);
+                }
+
+                if (!string.IsNullOrWhiteSpace(tex))
                     return tex;
             }
             return null;
-            string _findPNG(string testname)
-            {
-                return pngs.Where(x => x.IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x).FirstOrDefault();
-            }
+            //string _findPNG(string testname)
+            //{
+            //    return pngs.Where(x => x.IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x).FirstOrDefault();
+            //}
         }
 
         public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());

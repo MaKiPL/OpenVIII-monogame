@@ -955,7 +955,8 @@ namespace OpenVIII.Fields
                 if (files.Count > 0)
                 {
                     this.TextureIDs = new Dictionary<byte, TextureHandler>();
-                    Regex regex = new Regex(@".+" + Module.GetFieldName() + @"_(\d+)\.png", RegexOptions.IgnoreCase);
+                    string escapedname = Regex.Escape(Module.GetFieldName());
+                    Regex regex = new Regex(@".+" + escapedname + @"_(\d+)\.png", RegexOptions.IgnoreCase);
                     foreach (Match file in files.Select(x => regex.Match(x)))
                     {
                         if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b))
@@ -970,7 +971,7 @@ namespace OpenVIII.Fields
                     }
                     SaveSwizzled(this.TextureIDs.ToDictionary(x => x.Key, x => (Texture2D)x.Value));
                     this.TextureIDsPalettes = new Dictionary<TextureIDPaletteID, TextureHandler>();
-                    Regex regex2 = new Regex(@".+" + Module.GetFieldName() + @"_(\d+)_(\d+)\.png", RegexOptions.IgnoreCase);
+                    Regex regex2 = new Regex(@".+" + escapedname + @"_(\d+)_(\d+)\.png", RegexOptions.IgnoreCase);
                     foreach (Match file in files.Select(x => regex2.Match(x)))
                     {
                         TextureIDPaletteID tipi;
