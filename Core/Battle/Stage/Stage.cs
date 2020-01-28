@@ -162,14 +162,17 @@ namespace OpenVIII.Battle
 
         public void Update()
         {
-            if (Scenario == 31 || Scenario == 30)
+            if (Animations == null)
             {
-                if (Animations == null)
-                {
+                if (Scenario == 31 || Scenario == 30)
                     Animations = new List<Animation> { new Animation(64, 64, 4, 4, 4, 2, Width, modelGroups) };
-                }
-                Animations.ForEach(x => x.Update());
+                // seems to hitch...
+                else if (Scenario == 20)
+                    Animations = new List<Animation> { new Animation(64, 128, 3, 2, 4, 2, Width, modelGroups) };
+                else if (Scenario == 48)
+                    Animations = new List<Animation> { new Animation(84, 32, 3, 4, 3, 3, Width, modelGroups,8,0,32) };
             }
+            Animations?.ForEach(x => x.Update());
         }
 
         private static byte GetClutId(ushort clut)

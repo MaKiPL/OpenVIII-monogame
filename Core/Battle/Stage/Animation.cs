@@ -22,8 +22,10 @@ namespace OpenVIII.Battle
             private List<Quad> qs;
             private Rectangle Rectangle;
             private byte Rows = 2;
+
             //private Vector2 start;
             private byte TexturePage = 4;
+
             private List<Triangle> ts;
             private int Width = 64;
 
@@ -31,7 +33,7 @@ namespace OpenVIII.Battle
 
             #region Constructors
 
-            public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, int texWidth, ModelGroups _mg)
+            public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, int texWidth, ModelGroups _mg, int count = 0, int x = 0, int y =0)
             {
                 Width = width;
                 Height = height;
@@ -39,16 +41,18 @@ namespace OpenVIII.Battle
                 TexturePage = texturePage;
                 Cols = cols;
                 Rows = rows;
+                Frames = count > 0  && count <= Cols * Rows ? count: Cols * Rows;
                 //start = CalculateUV(Vector2.Zero, texturePage);
-                Rectangle = new Rectangle(0, 0, width, height);
+                Rectangle = new Rectangle(x, y, width, height);
+                IEnumerable<Model> temp = (from modelgroups in _mg
+                                           from model in modelgroups
+                                           select model).Where(i => i.quads != null && i.triangles != null && i.vertices != null);
 
-                qs = (from modelgroups in _mg
-                      from mg in modelgroups
-                      from q in mg.quads
+                qs = (from model in temp
+                      from q in model.quads
                       select q).Where(q => Rectangle.Contains(q.Rectangle) && q.TexturePage == texturePage).ToList();
-                ts = (from modelgroups in _mg
-                      from mg in modelgroups
-                      from q in mg.triangles
+                ts = (from model in temp
+                      from q in model.triangles
                       select q).Where(q => Rectangle.Contains(q.Rectangle) && q.TexturePage == texturePage).ToList();
             }
 
@@ -56,7 +60,7 @@ namespace OpenVIII.Battle
 
             #region Properties
 
-            public int Frames => Rows * Cols;
+            public int Frames { get; private set; }
 
             #endregion Properties
 
@@ -76,14 +80,13 @@ namespace OpenVIII.Battle
                     if (true)
                     {
                         lastcol = Last % Cols;
-                        lastrow = (Last / Cols)%Rows;
+                        lastrow = (Last / Cols) % Rows;
                         col = FrameNumber % Cols;
-                        row = (FrameNumber / Cols)%Rows;
+                        row = (FrameNumber / Cols) % Rows;
                     }
                     else
                     {
-
-                        lastcol = (Last /Rows) % Cols;
+                        lastcol = (Last / Rows) % Cols;
                         lastrow = Last % Rows;
                         col = (FrameNumber / Rows) % Cols;
                         row = FrameNumber % Rows;
