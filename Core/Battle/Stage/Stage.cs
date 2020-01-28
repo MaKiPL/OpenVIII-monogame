@@ -138,6 +138,10 @@ namespace OpenVIII.Battle
                         int localVertexIndex = 0;
                         for (int i = 0; i < vpt.GeometryInfoSupplier.Length; i++)
                         {
+                            if (vpt.GeometryInfoSupplier[i].GPU.HasFlag(GPU.v2_add))
+                                Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;
+                            else
+                                Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
                             ate.Texture = (Texture2D)textures[vpt.GeometryInfoSupplier[i].clut]; //provide texture per-face
                             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                             {
@@ -229,7 +233,8 @@ namespace OpenVIII.Battle
                 {
                     bQuad = false,
                     clut = model.triangles[i].clut,
-                    texPage = model.triangles[i].TexturePage
+                    texPage = model.triangles[i].TexturePage,
+                    GPU = model.triangles[i].GPU
                 });
             }
             for (int i = 0; i < model.quads.Length; i++)
@@ -261,7 +266,8 @@ namespace OpenVIII.Battle
                 {
                     bQuad = true,
                     clut = model.quads[i].clut,
-                    texPage = model.quads[i].TexturePage
+                    texPage = model.quads[i].TexturePage,
+                    GPU = model.quads[i].GPU
                 });
             }
             return new GeometryVertexPosition(bs_renderer_supplier.ToArray(), vptDynamic.ToArray());

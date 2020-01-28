@@ -11,6 +11,7 @@
             public bool bQuad;
             public byte clut;
             public byte texPage;
+            public GPU GPU;
         }
     }
 }

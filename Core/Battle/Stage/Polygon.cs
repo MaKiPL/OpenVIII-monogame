@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace OpenVIII.Battle
@@ -6,6 +7,23 @@ namespace OpenVIII.Battle
     public partial class Stage
     {
         #region Classes
+
+        /// <summary>
+        /// Just a guess.
+        /// </summary>
+        [Flags]
+        public enum GPU : byte
+        {
+            v0 = 0x0,
+            v1 = 0x1,
+            v2_add = 0x2,
+            v3 = 0x4,
+            v4 = 0x8,
+            v5 = 0x10,
+            v6 = 0x20,
+            v7 = 0x40,
+            v8 = 0x80,
+        }
 
         private abstract class Polygon
         {
@@ -16,7 +34,7 @@ namespace OpenVIII.Battle
             public byte bHide;
             public ushort C;
             public byte clut;
-            public byte GPU;
+            public GPU GPU;
             public byte TexturePage;
             protected byte Blue;
             protected byte Green;

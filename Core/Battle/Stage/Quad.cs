@@ -43,7 +43,7 @@ namespace OpenVIII.Battle
                     Red = br.ReadByte(),
                     Green = br.ReadByte(),
                     Blue = br.ReadByte(),
-                    GPU = br.ReadByte()
+                    GPU = (GPU)br.ReadByte()
                 };
                 q.UNK = (byte)((tmp & 0xF0) >> 1);
                 q.UVs = new List<Vector2> { new Vector2(q.U1, q.V1), new Vector2(q.U2, q.V2), new Vector2(q.U3, q.V3), new Vector2(q.U4, q.V4) };
