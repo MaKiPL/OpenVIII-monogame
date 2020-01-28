@@ -54,15 +54,6 @@ namespace OpenVIII.Battle
 
         #region Methods
 
-        public Vector2 CalculateUV(Vector2 UV, byte texPage)
-        {
-            //old code from my wiki page
-            //Float U = (float)U_Byte / (float)(TIM_Texture_Width * 2) + ((float)Texture_Page / (TIM_Texture_Width * 2));
-            float fU = (UV.X + texPage * 128f) / Width;
-            float fV = UV.Y / Height;
-            return new Vector2(fU, fV);
-        }
-
         public static BinaryReader Open()
         {
             ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
@@ -108,6 +99,15 @@ namespace OpenVIII.Battle
             s.ReadTexture(MainSection.TexturePointer, br);
 
             return s;
+        }
+
+        public Vector2 CalculateUV(Vector2 UV, byte texPage)
+        {
+            //old code from my wiki page
+            //Float U = (float)U_Byte / (float)(TIM_Texture_Width * 2) + ((float)Texture_Page / (TIM_Texture_Width * 2));
+            float fU = (UV.X + texPage * 128f) / Width;
+            float fV = UV.Y / Height;
+            return new Vector2(fU, fV);
         }
 
         public void Draw()
@@ -267,17 +267,21 @@ namespace OpenVIII.Battle
             {
                 IEnumerable<Model> temp = (from mg in modelGroups
                                            from m in mg
-                                           select m);
+                                           select m).Where(x => x.vertices != null && x.triangles != null && x.quads != null);
                 //IOrderedEnumerable<byte> cluts = temp.SelectMany(x => x.quads.Select(y => y.clut)).Union(temp.SelectMany(x => x.triangles.Select(y => y.clut))).Distinct().OrderBy(x => x);
                 //IOrderedEnumerable<byte> unks = temp.SelectMany(x => x.quads.Select(y => y.UNK)).Union(temp.SelectMany(x => x.triangles.Select(y => y.UNK))).Distinct().OrderBy(x => x);
                 //IOrderedEnumerable<byte> hides = temp.SelectMany(x => x.quads.Select(y => y.bHide)).Union(temp.SelectMany(x => x.triangles.Select(y => y.bHide))).Distinct().OrderBy(x => x);
                 //IOrderedEnumerable<byte> gpu = temp.SelectMany(x => x.quads.Select(y => y.GPU)).Union(temp.SelectMany(x => x.triangles.Select(y => y.GPU))).Distinct().OrderBy(x => x);
                 //IOrderedEnumerable<Color> color = temp.SelectMany(x => x.quads.Select(y => y.Color)).Union(temp.SelectMany(x => x.triangles.Select(y => y.Color))).Distinct().OrderBy(x => x.R).ThenBy(x => x.G).ThenBy(x => x.B);
                 var tuv = (from m in temp
+                           where m.triangles != null && m.triangles.Length > 0
                            from t in m.triangles
-                           select new { t.clut, t.TexturePage, t.MinUV, t.MaxUV, t.Rectangle }).Distinct().OrderBy(x => x.TexturePage).ThenBy(x => x.clut)/*.Where(x => x.Rectangle.Height > 0 && x.Rectangle.Width > 0)*/.ToList();
+                           where t != null
+                           select new { t.clut, t.TexturePage, t.MinUV, t.MaxUV, t.Rectangle }).Distinct().OrderBy(x => x.TexturePage).ThenBy(x => x.clut).ToList();
                 var quv = (from m in temp
+                           where m.quads != null && m.quads.Length > 0
                            from q in m.quads
+                           where q != null
                            select new { q.clut, q.TexturePage, q.MinUV, q.MaxUV, q.Rectangle }).Distinct().OrderBy(x => x.TexturePage).ThenBy(x => x.clut)/*.Where(x => x.Rectangle.Height > 0 && x.Rectangle.Width > 0)*/.ToList();
                 var all = tuv.Union(quv);
                 foreach (var tpGroup in all.GroupBy(x => x.TexturePage))
