@@ -185,6 +185,7 @@
     <Compile Include="Battle\Camera\Camera.cs" />
     <Compile Include="Battle\Camera\CameraSetAnimGRP.cs" />
     <Compile Include="Battle\Camera\CameraStruct.cs" />
+    <Compile Include="Battle\Stage\Animation.cs" />
     <Compile Include="Battle\Stage\GeometryInfoSupplier.cs" />
     <Compile Include="Battle\Stage\GeometryVertexPosition.cs" />
     <Compile Include="Battle\Stage\MainGeometrySection.cs" />
