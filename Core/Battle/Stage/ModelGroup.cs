@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -9,7 +8,22 @@ namespace OpenVIII.Battle
     {
         #region Classes
 
-        private class ModelGroup : IList
+        private class ModelGroups : IEnumerable<ModelGroup>, IReadOnlyList<ModelGroup>, IEnumerable
+        {
+            private List<ModelGroup> modelgroups;
+
+            public ModelGroups(params ModelGroup[] modelgroups) => this.modelgroups = new List<ModelGroup>(modelgroups);
+
+            public ModelGroup this[int index] => ((IReadOnlyList<ModelGroup>)modelgroups)[index];
+
+            public int Count => ((IReadOnlyList<ModelGroup>)modelgroups).Count;
+
+            public IEnumerator<ModelGroup> GetEnumerator() => ((IEnumerable<ModelGroup>)modelgroups).GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<ModelGroup>)modelgroups).GetEnumerator();
+        }
+
+        private class ModelGroup : IEnumerable<Model>, IReadOnlyList<Model>
         {
             #region Fields
 
@@ -25,39 +39,17 @@ namespace OpenVIII.Battle
 
             #region Properties
 
-            public int Count => ((IList)models).Count;
-            public bool IsFixedSize => ((IList)models).IsFixedSize;
-            public bool IsReadOnly => ((IList)models).IsReadOnly;
-            public bool IsSynchronized => ((IList)models).IsSynchronized;
-            public object SyncRoot => ((IList)models).SyncRoot;
+            public int Count => ((IReadOnlyList<Model>)models).Count;
 
             #endregion Properties
 
             #region Indexers
 
-            public object this[int index] { get => ((IList)models)[index]; set => ((IList)models)[index] = value; }
+            public Model this[int index] => ((IReadOnlyList<Model>)models)[index];
 
             #endregion Indexers
 
             #region Methods
-
-            public int Add(object value) => ((IList)models).Add(value);
-
-            public void Clear() => ((IList)models).Clear();
-
-            public bool Contains(object value) => ((IList)models).Contains(value);
-
-            public void CopyTo(Array array, int index) => ((IList)models).CopyTo(array, index);
-
-            public IEnumerator GetEnumerator() => ((IList)models).GetEnumerator();
-
-            public int IndexOf(object value) => ((IList)models).IndexOf(value);
-
-            public void Insert(int index, object value) => ((IList)models).Insert(index, value);
-
-            public void Remove(object value) => ((IList)models).Remove(value);
-
-            public void RemoveAt(int index) => ((IList)models).RemoveAt(index);
 
             /// <summary>
             /// Reads Stage model groups pointers and reads/parses them individually. Group0 is stage
@@ -77,9 +69,13 @@ namespace OpenVIII.Battle
                 for (int i = 0; i < modelsCount; i++)
                     modelPointers[i] = pointer + br.ReadUInt32();
                 for (int i = 0; i < modelsCount; i++)
-                    models.Add(Model.Read(modelPointers[i], br));
+                    models.models.Add(Model.Read(modelPointers[i], br));
                 return models;
             }
+
+            public IEnumerator<Model> GetEnumerator() => ((IEnumerable<Model>)models).GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<Model>)models).GetEnumerator();
 
             #endregion Methods
         }
