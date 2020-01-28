@@ -162,18 +162,23 @@ namespace OpenVIII.Battle
 
         public void Update()
         {
-            if (Animations == null)
+            if (Animations == null || Animations.Count == 0)
             {
                 //Seems most animations skip the first frame. Can override with skip:0
                 //count defaults to rows * cols. Can override this to be less than that.
                 //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y =0, int skip =1)
                 if (Scenario == 31 || Scenario == 30)
                     Animations = new List<Animation> { new Animation(64, 64, 4, 4, 4, 2, modelGroups, skip: 0)};
-                
                 else if (Scenario == 20)
                     Animations = new List<Animation> { new Animation(64, 128, 3, 2, 4, 2, modelGroups) };
                 else if (Scenario == 48)
                     Animations = new List<Animation> { new Animation(84, 32, 3, 4, 3, 3, modelGroups,8,0,32) };
+                else if (Scenario == 51)
+                    Animations = new List<Animation> { new Animation(64, 64, 0, 0, 4, 2, modelGroups, skip: 0) };
+                else if (Scenario == 52)
+                    Animations = new List<Animation> { new Animation(64, 64, 2, 0, 4, 1, modelGroups,skip: 0)};
+                else if (Scenario == 79)
+                    Animations = new List<Animation> { new Animation(32, 64, 5, 4, 8, 1, modelGroups,y:192, skip: 0) };
             }
             Animations?.ForEach(x => x.Update());
         }

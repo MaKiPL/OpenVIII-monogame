@@ -49,6 +49,7 @@ namespace OpenVIII.Battle
                                            from model in modelgroups
                                            select model).Where(i => i.quads != null && i.triangles != null && i.vertices != null);
 
+
                 qs = (from model in temp
                       from q in model.quads
                       select q).Where(q => Rectangle.Contains(q.Rectangle) && q.TexturePage == texturePage).ToList();
