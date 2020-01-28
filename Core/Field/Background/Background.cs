@@ -234,7 +234,7 @@ namespace OpenVIII.Fields
                 //Vector2 origin = tiles.Origin;
                 Point lowest = tiles.TopLeft;
                 Vector2 size = new Vector2(tiles.Width, tiles.Height);//new Point(Math.Abs(lowest.X) + highest.X + Tile.size, Math.Abs(lowest.Y) + highest.Y + Tile.size);
-                Regex re = new Regex(@".+_([0-9A-F]+).png", RegexOptions.IgnoreCase);
+                Regex re = new Regex(@".+_([0-9A-F]{8}).png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 process();
                 if (overlap.Any(x => x.Value.Count > 1))
                     process(true);
@@ -956,7 +956,7 @@ namespace OpenVIII.Fields
                 {
                     this.TextureIDs = new Dictionary<byte, TextureHandler>();
                     string escapedname = Regex.Escape(Module.GetFieldName());
-                    Regex regex = new Regex(@".+" + escapedname + @"_(\d+)\.png", RegexOptions.IgnoreCase);
+                    Regex regex = new Regex(@".+" + escapedname + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                     foreach (Match file in files.Select(x => regex.Match(x)))
                     {
                         if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b))
@@ -971,7 +971,7 @@ namespace OpenVIII.Fields
                     }
                     SaveSwizzled(this.TextureIDs.ToDictionary(x => x.Key, x => (Texture2D)x.Value));
                     this.TextureIDsPalettes = new Dictionary<TextureIDPaletteID, TextureHandler>();
-                    Regex regex2 = new Regex(@".+" + escapedname + @"_(\d+)_(\d+)\.png", RegexOptions.IgnoreCase);
+                    Regex regex2 = new Regex(@".+" + escapedname + @"_(\d{1,2})_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                     foreach (Match file in files.Select(x => regex2.Match(x)))
                     {
                         TextureIDPaletteID tipi;

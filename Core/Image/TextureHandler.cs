@@ -185,27 +185,31 @@ namespace OpenVIII
             if (File.Exists(path))
                 return path;
             
-            string bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path,@"\{[\d\.\:]+\}","",RegexOptions.IgnoreCase)));
+            string bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path,@"\{[\d\.\:]+\}","",RegexOptions.IgnoreCase | RegexOptions.Compiled)));
             string textures = Path.Combine(Memory.FF8DIR, "textures");
             if (Directory.Exists(textures))
             {
                 if (pngs == null)
                     pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
-                
-                Regex re = new Regex(@".+[\\/]+"+bn+@"_(\d+)\.png",RegexOptions.IgnoreCase);
-                Match t;
-                string tex = pngs.FirstOrDefault(x => (t = re.Match(x)).Success && t.Groups.Count>1 && int.TryParse(t.Groups[1].Value,out int p) && p == palette);
-                //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
-                //    tex = _findPNG(bn);
-                //if (tex != null)
-                if (string.IsNullOrWhiteSpace(tex))
-                {
-                    re = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase);
-                    tex = pngs.FirstOrDefault(x => (t = re.Match(x)).Success);
-                }
 
-                if (!string.IsNullOrWhiteSpace(tex))
-                    return tex;
+                var limited = pngs.Where(x => x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
+                if (limited.Count() > 0)
+                {
+                    Regex re = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    Match t;
+                    string tex = limited.FirstOrDefault(x => (t = re.Match(x)).Success && t.Groups.Count > 1 && int.TryParse(t.Groups[1].Value, out int p) && p == palette);
+                    //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
+                    //    tex = _findPNG(bn);
+                    //if (tex != null)
+                    if (string.IsNullOrWhiteSpace(tex))
+                    {
+                        re = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                        tex = limited.FirstOrDefault(x => (t = re.Match(x)).Success);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(tex))
+                        return tex;
+                }
             }
             return null;
             //string _findPNG(string testname)

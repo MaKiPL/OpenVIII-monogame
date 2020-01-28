@@ -767,7 +767,7 @@ namespace OpenVIII
             if (Costumes == null)
             {
                 Costumes = new ConcurrentDictionary<Characters, SortedSet<byte>>();
-                Regex r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase);
+                Regex r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
                 foreach (string s in aw.FileList)
                 {
@@ -798,7 +798,7 @@ namespace OpenVIII
                 for (int i = 0; i <= (int)Characters.Ward_Zabac; i++)
                 {
                     SortedSet<byte> _weapons = new SortedSet<byte>();
-                    Regex r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase);
+                    Regex r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                     ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
 
                     foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))

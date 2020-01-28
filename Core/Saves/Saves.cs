@@ -91,7 +91,7 @@ namespace OpenVIII
             List<Task> tasks = new List<Task>();
             foreach (string file in files)
             {
-                Match match = Regex.Match(file, regex, RegexOptions.IgnoreCase);
+                Match match = Regex.Match(file, regex, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
                 if (match.Success && match.Groups.Count > 0)
                     tasks.Add(Task.Run(() => Read(file, out FileList[int.Parse(match.Groups[1].Value) - 1, int.Parse(match.Groups[2].Value) - 1])));
