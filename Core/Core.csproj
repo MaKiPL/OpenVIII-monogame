@@ -147,14 +147,14 @@
     <Compile Include="AV\Movie\STATE.cs" />
     <Compile Include="AV\Video.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
-    <Compile Include="Battle\Coordinate.cs" />
+    <Compile Include="Battle\Encounters\Coordinate.cs" />
     <Compile Include="Battle\DeadTime.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
-    <Compile Include="Battle\Encounter.cs" />
-    <Compile Include="Battle\EncounterFlag.cs" />
-    <Compile Include="Battle\Encounters.cs" />
+    <Compile Include="Battle\Encounters\Encounter.cs" />
+    <Compile Include="Battle\Encounters\EncounterFlag.cs" />
+    <Compile Include="Battle\Encounters\Encounters.cs" />
     <Compile Include="Battle\Enemy.cs" />
-    <Compile Include="Battle\EnemyCoordinates.cs" />
+    <Compile Include="Battle\Encounters\EnemyCoordinates.cs" />
     <Compile Include="Battle\FPS_Camera.cs" />
     <Compile Include="Battle\IEnemy.cs" />
     <Compile Include="Battle\Information.cs" />
@@ -197,6 +197,7 @@
     <Compile Include="Battle\Stage\Polygon.cs" />
     <Compile Include="Battle\Stage\Quad.cs" />
     <Compile Include="Battle\Stage\Stage.cs" />
+    <Compile Include="Battle\Stage\TextureAnimation.cs" />
     <Compile Include="Battle\Stage\Triangle.cs" />
     <Compile Include="Battle\Stage\Vertex.cs" />
     <Compile Include="Card_Game\Card_Game.cs" />

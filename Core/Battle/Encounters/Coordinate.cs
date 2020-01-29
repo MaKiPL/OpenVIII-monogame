@@ -25,8 +25,12 @@ namespace OpenVIII.Battle
         public Vector3 GetVector() => new Vector3(
             x,
             y,
-            -z) /50f; /// 100f;
+            -z) /100f; /// 100f;
 
+        public override string ToString()
+        {
+            return $"{x} {y} {z}";
+        }
         #endregion Methods
     }
 }

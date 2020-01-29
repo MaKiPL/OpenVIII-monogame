@@ -29,6 +29,9 @@ namespace OpenVIII.Battle
         public object SyncRoot => ((ICollection)enemies).SyncRoot;
 
         public Vector3 AverageVector { get; private set; }
+        public Vector3 MinVector { get; private set; }
+        public Vector3 MaxVector { get; private set; }
+        public Vector3 MidVector { get; private set; }
 
         #endregion Properties
 
@@ -54,6 +57,9 @@ namespace OpenVIII.Battle
             }
             total /= ec.enemies.Capacity;
             ec.AverageVector = total;
+            ec.MinVector = new Vector3(ec.Min(x => x.x), ec.Min(x => x.y), ec.Min(x => x.z));
+            ec.MaxVector = new Vector3(ec.Max(x => x.x), ec.Max(x => x.y), ec.Max(x => x.z));
+            ec.MidVector = (ec.MinVector + ec.MaxVector) / 2f;
             return ec;
         }
 
