@@ -7,25 +7,33 @@ namespace OpenVIII.Battle
 {
     public partial class Stage
     {
+        #region Classes
+
         private class Animation
         {
-            public int FrameNumber = 0;
+            #region Fields
+
+            public int FrameNumber;
+            public TimeSpan PauseAtStart;
+            public bool Reverseable;
+            public TimeSpan time;
+            public bool TopDown;
             public TimeSpan TotalFrameTime = TimeSpan.FromMilliseconds(1000 / 10);
-            public TimeSpan PauseAtStart = TimeSpan.Zero;
-            public TimeSpan time = TimeSpan.Zero;
-            private byte Clut = 4;
-            private byte Cols = 4;
-            private int Height = 64;
+            private byte Clut;
+            private byte Cols;
+            private int Height;
             private List<Quad> qs;
             private Rectangle Rectangle;
-            private byte Rows = 2;
-
-            //private Vector2 start;
-            private byte TexturePage = 4;
-
-            private List<Triangle> ts;
-            private int Width = 64;
+            private byte Rows;
             private int skip;
+            private sbyte step = 1;
+            private byte TexturePage;
+            private List<Triangle> ts;
+            private int Width;
+
+            #endregion Fields
+
+            #region Constructors
 
             public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y = 0, int skip = 1)
             {
@@ -50,11 +58,15 @@ namespace OpenVIII.Battle
                       select q).Where(q => Rectangle.Contains(q.Rectangle) && q.TexturePage == texturePage).ToList();
             }
 
+            #endregion Constructors
+
+            #region Properties
+
             public int Frames { get; private set; }
 
-            private sbyte step = 1;
-            public bool TopDown;
-            public bool Reverseable;
+            #endregion Properties
+
+            #region Methods
 
             public void Update()
             {
@@ -78,8 +90,7 @@ namespace OpenVIII.Battle
                             step *= -1;
                         }
                     }
-                    else
-                        if (FrameNumber >= Frames)
+                    else if (FrameNumber >= Frames)
                     {
                         FrameNumber = skip;
                     }
@@ -121,6 +132,10 @@ namespace OpenVIII.Battle
                     }
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }
