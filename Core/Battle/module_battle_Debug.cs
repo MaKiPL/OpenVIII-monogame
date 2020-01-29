@@ -830,7 +830,10 @@ namespace OpenVIII
         {
             Coordinate v = Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
             Vector3 a = Memory.Encounters.enemyCoordinates.AverageVector;
-            v.x -= (short)a.X;
+            Vector3 m = Memory.Encounters.enemyCoordinates.MidVector;
+
+            v.x -= (short)m.X;
+
             v.z -= (short)a.Z;
             return v.GetVector();
         }
