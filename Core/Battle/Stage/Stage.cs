@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -116,19 +117,26 @@ namespace OpenVIII.Battle
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            //Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             using (AlphaTestEffect ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
             {
                 Projection = projectionMatrix,
                 View = viewMatrix,
-                World = worldMatrix
+                World = worldMatrix,
             })
             using (BasicEffect effect = new BasicEffect(Memory.graphics.GraphicsDevice)
             {
-                TextureEnabled = true
+                TextureEnabled = true,
             })
             {
-                for (int n = 0; n < (modelGroups?.Count ?? 0); n++)
+                //var models = (from modelgroup in modelGroups
+                // where (modelgroup?.Count ?? 0) > 0
+                // from model in modelgroup
+                // where model.quads != null && model.triangles != null && model.vertices != null
+                // select model);
+                int[] order = new int[] { 3, 0, 1, 2 };
+                foreach(int n in order.Where(x=>x < (modelGroups?.Count ?? 0)))
                     foreach (Model b in modelGroups[n])
                     {
                         GeometryVertexPosition vpt = GetVertexBuffer(b);
@@ -136,17 +144,35 @@ namespace OpenVIII.Battle
                             CreateRotation(vpt);
                         if (vpt == null) continue;
                         int localVertexIndex = 0;
-                        for (int i = 0; i < vpt.GeometryInfoSupplier.Length; i++)
+                        foreach (GeometryInfoSupplier gis in vpt.GeometryInfoSupplier.Where(x => !x.GPU.HasFlag(GPU.v2_add)))
                         {
-                            if (vpt.GeometryInfoSupplier[i].GPU.HasFlag(GPU.v2_add))
-                                Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;
-                            else
-                                Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-                            ate.Texture = (Texture2D)textures[vpt.GeometryInfoSupplier[i].clut]; //provide texture per-face
+                            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+                            process(gis);
+                        }
+
+                        //BlendState bs = new BlendState
+                        //{
+                        //    //ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
+                        //    ColorSourceBlend = Blend.One,
+                        //    AlphaSourceBlend = Blend.One,
+                        //    ColorDestinationBlend = Blend.InverseSourceColor,
+                        //    AlphaDestinationBlend = Blend.One,
+                        //    ColorBlendFunction = BlendFunction.Max
+                        //};
+                        foreach (GeometryInfoSupplier gis in vpt.GeometryInfoSupplier.Where(x => x.GPU.HasFlag(GPU.v2_add)))
+                        {
+
+                            Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;//bs;
+                            process(gis);
+                        }
+                       // bs?.Dispose();
+                        void process(GeometryInfoSupplier gis)
+                        {
+                            ate.Texture = (Texture2D)textures[gis.clut]; //provide texture per-face
                             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                             {
                                 pass.Apply();
-                                if (vpt.GeometryInfoSupplier[i].bQuad)
+                                if (gis.bQuad)
                                 {
                                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                                     vertexData: vpt.VertexPositionTexture, vertexOffset: localVertexIndex, primitiveCount: 2);
@@ -172,17 +198,25 @@ namespace OpenVIII.Battle
                 //count defaults to rows * cols. Can override this to be less than that.
                 //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y =0, int skip =1)
                 if (Scenario == 31 || Scenario == 30)
-                    Animations = new List<Animation> { new Animation(64, 64, 4, 4, 4, 2, modelGroups, skip: 0)};
+                    Animations = new List<Animation> { new Animation(64, 64, 4, 4, 4, 2, modelGroups, skip: 0) };
                 else if (Scenario == 20)
                     Animations = new List<Animation> { new Animation(64, 128, 3, 2, 4, 2, modelGroups) };
                 else if (Scenario == 48)
-                    Animations = new List<Animation> { new Animation(84, 32, 3, 4, 3, 3, modelGroups,8,0,32) };
+                    Animations = new List<Animation> { new Animation(84, 32, 3, 4, 3, 3, modelGroups, 8, 0, 32) };
                 else if (Scenario == 51)
                     Animations = new List<Animation> { new Animation(64, 64, 0, 0, 4, 2, modelGroups, skip: 0) };
                 else if (Scenario == 52)
-                    Animations = new List<Animation> { new Animation(64, 64, 2, 0, 4, 1, modelGroups,skip: 0)};
+                    Animations = new List<Animation> { new Animation(64, 64, 2, 0, 4, 1, modelGroups, skip: 0) };
                 else if (Scenario == 79)
-                    Animations = new List<Animation> { new Animation(32, 64, 5, 4, 8, 1, modelGroups,y:192, skip: 0) };
+                    Animations = new List<Animation> { new Animation(32, 64, 5, 4, 8, 1, modelGroups, y: 192, skip: 0) };
+                else if (Scenario == 107 || Scenario == 108 || Scenario == 136)
+                    Animations = new List<Animation> { new Animation(128, 32, 3, 4, 2, 4, modelGroups)
+                    { TopDown = true, Reverseable = true, TotalFrameTime = TimeSpan.FromMilliseconds(1000 / 5), PauseAtStart = TimeSpan.FromMilliseconds(500) } };
+                else if (Scenario == 147)
+                    Animations = new List<Animation> {
+                        new Animation(32, 32, 10, 2, 8, 2, modelGroups, y: 192),
+                        new Animation(32,32,9,1,1,3, modelGroups,x:96,y:160)
+                    };
             }
             Animations?.ForEach(x => x.Update());
         }

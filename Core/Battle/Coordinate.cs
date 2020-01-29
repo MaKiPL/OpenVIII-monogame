@@ -25,7 +25,7 @@ namespace OpenVIII.Battle
         public Vector3 GetVector() => new Vector3(
             x,
             y,
-            -z) / 100f;
+            -z) /50f; /// 100f;
 
         #endregion Methods
     }

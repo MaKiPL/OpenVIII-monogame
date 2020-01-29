@@ -7,14 +7,11 @@ namespace OpenVIII.Battle
 {
     public partial class Stage
     {
-        #region Classes
-
         private class Animation
         {
-            #region Fields
-
             public int FrameNumber = 0;
-            public TimeSpan frametime = TimeSpan.FromMilliseconds(1000 / 10);
+            public TimeSpan TotalFrameTime = TimeSpan.FromMilliseconds(1000 / 10);
+            public TimeSpan PauseAtStart = TimeSpan.Zero;
             public TimeSpan time = TimeSpan.Zero;
             private byte Clut = 4;
             private byte Cols = 4;
@@ -30,11 +27,7 @@ namespace OpenVIII.Battle
             private int Width = 64;
             private int skip;
 
-            #endregion Fields
-
-            #region Constructors
-
-            public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y =0, int skip =1)
+            public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y = 0, int skip = 1)
             {
                 Width = width;
                 Height = height;
@@ -42,13 +35,12 @@ namespace OpenVIII.Battle
                 TexturePage = texturePage;
                 Cols = cols;
                 Rows = rows;
-                Frames = count > 0  && count <= Cols * Rows ? count: Cols * Rows;
+                Frames = count > 0 && count <= Cols * Rows ? count : Cols * Rows;
                 this.skip = skip;
                 Rectangle = new Rectangle(x, y, width, height);
                 IEnumerable<Model> temp = (from modelgroups in _mg
                                            from model in modelgroups
                                            select model).Where(i => i.quads != null && i.triangles != null && i.vertices != null);
-
 
                 qs = (from model in temp
                       from q in model.quads
@@ -58,28 +50,41 @@ namespace OpenVIII.Battle
                       select q).Where(q => Rectangle.Contains(q.Rectangle) && q.TexturePage == texturePage).ToList();
             }
 
-            #endregion Constructors
-
-            #region Properties
-
             public int Frames { get; private set; }
 
-            #endregion Properties
-
-            #region Methods
+            private sbyte step = 1;
+            public bool TopDown;
+            public bool Reverseable;
 
             public void Update()
             {
                 time += Memory.gameTime.ElapsedGameTime;
-                if (time >= frametime)
+                if (time >= TotalFrameTime + (FrameNumber <= skip ? PauseAtStart : TimeSpan.Zero))
                 {
                     time = TimeSpan.Zero;
                     int Last = FrameNumber;
-                    FrameNumber += 1;
-                    if (FrameNumber >= Frames)
+                    if (step != 1 && step != -1) step = 1;
+                    FrameNumber += step;
+                    if (Reverseable)
+                    {
+                        if (FrameNumber >= Frames)
+                        {
+                            FrameNumber = Frames - 1;
+                            step *= -1;
+                        }
+                        if (FrameNumber < skip)
+                        {
+                            FrameNumber = skip + 1;
+                            step *= -1;
+                        }
+                    }
+                    else
+                        if (FrameNumber >= Frames)
+                    {
                         FrameNumber = skip;
+                    }
                     int lastrow, lastcol, col, row;
-                    if (true)
+                    if (!TopDown)
                     {
                         lastcol = Last % Cols;
                         lastrow = (Last / Cols) % Rows;
@@ -116,10 +121,6 @@ namespace OpenVIII.Battle
                     }
                 }
             }
-
-            #endregion Methods
         }
-
-        #endregion Classes
     }
 }

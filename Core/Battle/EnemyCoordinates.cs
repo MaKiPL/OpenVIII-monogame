@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -27,6 +28,8 @@ namespace OpenVIII.Battle
         public bool IsSynchronized => ((ICollection)enemies).IsSynchronized;
         public object SyncRoot => ((ICollection)enemies).SyncRoot;
 
+        public Vector3 AverageVector { get; private set; }
+
         #endregion Properties
 
         #region Indexers
@@ -42,10 +45,15 @@ namespace OpenVIII.Battle
         public static EnemyCoordinates Read(BinaryReader br)
         {
             EnemyCoordinates ec = new EnemyCoordinates();
+            Vector3 total = Vector3.Zero;
             foreach (int i in Enumerable.Range(0, ec.enemies.Capacity))
             {
-                ec.Add(Coordinate.Read(br));
+                Coordinate item = Coordinate.Read(br);
+                ec.Add(item);
+                total += new Vector3(item.x, item.y, item.z);
             }
+            total /= ec.enemies.Capacity;
+            ec.AverageVector = total;
             return ec;
         }
 

@@ -198,10 +198,10 @@ namespace OpenVIII
             {
                 case BATTLEMODULE_DRAWGEOMETRY:
                     //DrawGeometry();
-                    Stage.Draw();
                     DrawMonsters();
                     DrawCharactersWeapons();
                     RegularPyramid.Draw(worldMatrix, viewMatrix, projectionMatrix);
+                    Stage.Draw();
                     Vector3 v = GetIndicatorPoint(-1);
                     v.Y -= 5f;
                     if (!bUseFPSCamera)
@@ -255,7 +255,7 @@ namespace OpenVIII
 
         public static Vector3 GetIndicatorPoint(int n)
         {
-            if ((CharacterInstances == null && n >= 0) || (Enemy.Party == null && n < 0))
+            if ((CharacterInstances == null && n >= 0) || ((Enemy.Party == null || Enemy.Party.Count == 0) && n < 0))
                 return Vector3.Zero;
             else
                 return (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
@@ -829,6 +829,9 @@ namespace OpenVIII
         private static Vector3 GetEnemyPos(int n)
         {
             Coordinate v = Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
+            Vector3 a = Memory.Encounters.enemyCoordinates.AverageVector;
+            v.x -= (short)a.X;
+            v.z -= (short)a.Z;
             return v.GetVector();
         }
 
@@ -875,7 +878,7 @@ namespace OpenVIII
                 1f, 1000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
-            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
+            worldMatrix = Matrix.CreateWorld(camPosition, Vector3.
                           Forward, Vector3.Up);
             battleModule++;
             if (ate == null)
@@ -1031,16 +1034,20 @@ namespace OpenVIII
             Enemy.Party = new List<Enemy>(8);
             for (int i = 0; i < 8; i++)
                 if (Extended.GetBit((byte)encounter.EnabledEnemy, 7 - i))
-                    Enemy.Party.Add(new EnemyInstanceInformation()
-                    {
-                        Data = monstersData.Where(x => x.GetId == encounter.BEnemies[i]).First(),
-                        bIsHidden = Extended.GetBit((byte)encounter.HiddenEnemies, 7 - i),
-                        bIsActive = true,
-                        index = (byte)(7 - i),
-                        bIsUntargetable = Extended.GetBit((byte)encounter.UntargetableEnemy, 7 - i),
-                        animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
-                    }
-                        );
+                {
+                    IEnumerable<Debug_battleDat> enumerable = monstersData.Where(x => x.GetId == encounter.BEnemies[i]);
+                    if ((enumerable?.Count() ?? 0) > 0)
+                        Enemy.Party.Add(new EnemyInstanceInformation()
+                        {
+                            Data = enumerable.First(),
+                            bIsHidden = Extended.GetBit((byte)encounter.HiddenEnemies, 7 - i),
+                            bIsActive = true,
+                            index = (byte)(7 - i),
+                            bIsUntargetable = Extended.GetBit((byte)encounter.UntargetableEnemy, 7 - i),
+                            animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
+                        }
+    );
+                }
         }
 
         private static void ResetTime() => FrameTime = TimeSpan.FromTicks(FrameTime.Ticks % FPS.Ticks);
