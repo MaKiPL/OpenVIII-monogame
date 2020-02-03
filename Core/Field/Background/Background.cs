@@ -126,6 +126,7 @@ namespace OpenVIII.Fields
                      Vector3.Up);
             r.LoadTiles(mapb);
             r.LoadPalettes(mimb);
+            r.DumpRawTexture(mimb);
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
@@ -230,7 +231,6 @@ namespace OpenVIII.Fields
                 ConcurrentDictionary<TextureIDPaletteID, TextureBuffer> texidspalette = new ConcurrentDictionary<TextureIDPaletteID, TextureBuffer>();
                 int Width = 0; int Height = 0;
 
-
                 //Vector2 origin = tiles.Origin;
                 Point lowest = tiles.TopLeft;
                 Vector2 size = new Vector2(tiles.Width, tiles.Height);//new Point(Math.Abs(lowest.X) + highest.X + Tile.size, Math.Abs(lowest.Y) + highest.Y + Tile.size);
@@ -243,7 +243,7 @@ namespace OpenVIII.Fields
                     foreach (string file in files)
                     {
                         //Point highest = new Point(tiles.Max(x => x.X), tiles.Max(x => x.Y));
-                        
+
                         Match match = re.Match(file);
                         if (match.Groups.Count > 1 && UInt32.TryParse(match.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint pupuid))
                         {
@@ -262,14 +262,14 @@ namespace OpenVIII.Fields
                                 {
                                     Tile tile = (Tile)quad;
 
-                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height,false));
+                                    texids.TryAdd(tile.TextureID, new TextureBuffer(Width, Height, false));
                                     Point src = (new Vector2(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y) * scale).ToPoint();
                                     Point dst = (new Vector2(tile.SourceX, tile.SourceY) * scale).ToPoint();
 
                                     if (!dooverlap)
                                         foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
                                                              from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
-                                                             orderby y,x ascending
+                                                             orderby y, x ascending
                                                              select new Point(x, y)))
                                         {
                                             Color input = inTex[src.X + p.X, src.Y + p.Y];
@@ -682,6 +682,69 @@ namespace OpenVIII.Fields
             }
         }
 
+        private void DumpRawTexture(byte[] mimb)
+        {
+            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Module._Toggles.DumpingData))
+            {
+                long startPixel = TextureType.PaletteSectionSize;
+                int Width = TextureType.Width;
+                int Height = checked((int)((mimb.Length - TextureType.PaletteSectionSize) / Width));
+                MemoryStream ms;
+
+                string path = Path.Combine(Module.GetFolder(),
+                    $"{Module.GetFieldName()}_raw_{{0}}bit_{{1}}.png");
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(mimb)))
+                {
+                    process(8);
+                    Width = Width * 2;
+                    process(4);
+                    void process(byte bit)
+                    {
+                        TextureBuffer buffer = new TextureBuffer(Width, Height, false);
+                        foreach (KeyValuePair<byte, Color[]> clut in Cluts)
+                        {
+                            ms.Seek(startPixel, SeekOrigin.Begin);
+                            int i = 0;
+                            byte colorkey = 0;
+                            while (ms.Position + 1 < ms.Length)
+                            {
+                                Color input = Color.TransparentBlack;
+                                if (bit == 8)
+                                {
+                                    i = checked((int)(ms.Position - startPixel));
+                                    colorkey = br.ReadByte();
+                                    input = clut.Value[colorkey];
+                                }
+                                else if (bit == 4)
+                                {
+                                    i++;
+                                    if (i % 2 == 0)
+                                    {
+                                        colorkey = br.ReadByte();
+                                        input = clut.Value[colorkey & 0xf];
+                                    }
+                                    else
+                                    {
+                                        input = clut.Value[(colorkey & 0xf0) >> 4];
+                                    }
+                                }
+                                else throw new ArgumentException($"{nameof(bit)} is {bit}, it may only be 4 or 8.");
+                                if (i < buffer.Count)
+                                    buffer[i] = input;
+                                else break;
+                            }
+
+                            using (Texture2D tex = (Texture2D)buffer)
+                            using (FileStream fs = new FileStream(string.Format(path, bit, clut.Key), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                            {
+                                tex.SaveAsPng(fs, Width, Height);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void FindOverlappingTilesClassicSpriteBatch() => (from t1 in tiles
                                                                   from t2 in tiles
                                                                   where t1.TileID < t2.TileID
@@ -762,9 +825,9 @@ namespace OpenVIII.Fields
 
         private void LoadPalettes(byte[] mimb)
         {
-            int Offset = TextureType?.BytesSkippedPalettes ?? 0;
-            Cluts CLUT = tiles != null ? new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]), false) :
-                new Cluts(Enumerable.Range(0, 15).Select(x => (byte)x).ToDictionary(x => x, x => new Color[colorsPerPalette]), false);
+            int Offset = /*Memory.FieldHolder.FieldID == 76 ? 0 :*/ TextureType?.BytesSkippedPalettes ?? 0;
+            Cluts CLUT = /*tiles != null ? new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]), false) :*/
+                new Cluts(Enumerable.Range(0, 16).Select(x => (byte)x).ToDictionary(x => x, x => new Color[colorsPerPalette]), false);
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 foreach (KeyValuePair<byte, Color[]> clut in CLUT)
                 {
@@ -774,9 +837,62 @@ namespace OpenVIII.Fields
                         clut.Value[i] = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
                 }
             Cluts = CLUT;
+            SaveCluts();
         }
 
         private void LoadTiles(byte[] mapb) => tiles = mapb == null ? default : Tiles.Load(mapb, TextureType.Type);
+
+        private int LoadUpscaleBackgrounds(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                List<string> files = Directory.EnumerateFiles(path, $"*{Module.GetFieldName()}*.png", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+                if (files.Count > 0)
+                {
+                    this.TextureIDs = new Dictionary<byte, TextureHandler>();
+                    string escapedname = Regex.Escape(Module.GetFieldName());
+                    Regex regex = new Regex(@".+" + escapedname + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    foreach (Match file in files.Select(x => regex.Match(x)))
+                    {
+                        if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b))
+                        {
+                            if (b >= 13) b -= 13;
+                            if (!this.TextureIDs.ContainsKey(b))
+                            {
+                                string alt = $"{Module.GetFieldName()}_{b + 13}.png";
+                                this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(File.Exists(alt) ? alt : file.Value, 256, 256, 0, true, true));
+                            }
+                        }
+                    }
+                    SaveSwizzled(this.TextureIDs.ToDictionary(x => x.Key, x => (Texture2D)x.Value));
+                    this.TextureIDsPalettes = new Dictionary<TextureIDPaletteID, TextureHandler>();
+                    Regex regex2 = new Regex(@".+" + escapedname + @"_(\d{1,2})_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    foreach (Match file in files.Select(x => regex2.Match(x)))
+                    {
+                        TextureIDPaletteID tipi;
+                        if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && byte.TryParse(file.Groups[2].Value, out byte b2))
+                        {
+                            if (b >= 13) b -= 13;
+                            if (!this.TextureIDsPalettes.ContainsKey(tipi = new TextureIDPaletteID { PaletteID = b2, TextureID = b }))
+                            {
+                                string alt = $"{Module.GetFieldName()}_{b + 13}_{b2}.png";
+                                this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(File.Exists(alt) ? alt : file.Value, 256, 256, b2, true, true));
+                            }
+                        }
+                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, TextureHandler>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
+
+                            foreach (KeyValuePair<TextureIDPaletteID, TextureHandler> kvp_group in groups)
+                            {
+                                Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => (Texture2D)x.Value);
+                                SaveSwizzled(_TextureIDs, $"_{kvp_group.Key.PaletteID}");
+                                break;
+                            }
+                    }
+                }
+            }
+            int count = (this.TextureIDs?.Count ?? 0) + (this.TextureIDsPalettes?.Count ?? 0);
+            return count;
+        }
 
         //private void SaveSwizzled(string suf = "") => SaveSwizzled(TextureIDs, suf);
         private void OldSaveDeswizzled()
@@ -946,206 +1062,104 @@ namespace OpenVIII.Fields
         {
             if (mimb == null || (tiles?.Count ?? 0) == 0)
                 return false;
-            SaveCluts();
-            //FindOverlappingTiles();
             string path = Path.Combine(Memory.FF8DIR, "textures");
-            if (Directory.Exists(path))
+            int count = LoadUpscaleBackgrounds(path);
+            if (count > 0)
             {
-                List<string> files = Directory.EnumerateFiles(path, $"*{Module.GetFieldName()}*.png", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
-                if (files.Count > 0)
+                Debug.WriteLine($"Loaded {count} Textures from {path}");
+            }
+            else
+            {
+                var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID }).Distinct().ToList();
+                Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
+                Height = UniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
+                Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                Dictionary<byte, HashSet<byte>> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new HashSet<byte>());
+                using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 {
-                    this.TextureIDs = new Dictionary<byte, TextureHandler>();
-                    string escapedname = Regex.Escape(Module.GetFieldName());
-                    Regex regex = new Regex(@".+" + escapedname + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                    foreach (Match file in files.Select(x => regex.Match(x)))
+                    foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
                     {
-                        if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b))
-                        {
-                            if (b >= 13) b -= 13;
-                            if (!this.TextureIDs.ContainsKey(b))
-                            {
-                                string alt = $"{Module.GetFieldName()}_{b + 13}.png";
-                                this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(File.Exists(alt) ? alt : file.Value, 256, 256, 0, true, true));
-                            }
-                        }
+                        GenTexture(kvp.Key, kvp.Value);
                     }
-                    SaveSwizzled(this.TextureIDs.ToDictionary(x => x.Key, x => (Texture2D)x.Value));
-                    this.TextureIDsPalettes = new Dictionary<TextureIDPaletteID, TextureHandler>();
-                    Regex regex2 = new Regex(@".+" + escapedname + @"_(\d{1,2})_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                    foreach (Match file in files.Select(x => regex2.Match(x)))
-                    {
-                        TextureIDPaletteID tipi;
-                        if (file.Groups.Count > 1 && byte.TryParse(file.Groups[1].Value, out byte b) && byte.TryParse(file.Groups[2].Value, out byte b2))
-                        {
-                            if (b >= 13) b -= 13;
-                            if (!this.TextureIDsPalettes.ContainsKey(tipi = new TextureIDPaletteID { PaletteID = b2, TextureID = b }))
-                            {
-                                string alt = $"{Module.GetFieldName()}_{b + 13}_{b2}.png";
-                                this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(File.Exists(alt) ? alt : file.Value, 256, 256, b2, true, true));
-                            }
-                        }
-                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, TextureHandler>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
+                    SaveSwizzled(TextureIDs);
+                    string fieldname = Module.GetFieldName();
+                    this.TextureIDs = TextureIDs.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key}", new Texture2DWrapper(x.Value), ushort.MaxValue));
 
-                            foreach (KeyValuePair<TextureIDPaletteID, TextureHandler> kvp_group in groups)
+                    if (overlap.Any(x => x.Value.Count > 1))
+                    {
+                        Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => overlap[x.TextureID].Contains(x.PaletteID)).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                        this.TextureIDsPalettes = TextureIDsPalettes.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key.TextureID}", new Texture2DWrapper(x.Value), x.Key.PaletteID));
+                        foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp in TextureIDsPalettes)
+                        {
+                            GenTexture(kvp.Key.TextureID, kvp.Value, kvp.Key.PaletteID);
+                        }
+                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
+
+                            foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp_group in groups)
                             {
-                                Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => (Texture2D)x.Value);
+                                Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => x.Value);
                                 SaveSwizzled(_TextureIDs, $"_{kvp_group.Key.PaletteID}");
                                 break;
                             }
                     }
-                    int count = this.TextureIDs.Count + this.TextureIDsPalettes.Count;
-                    if (count > 0)
+                    void GenTexture(byte texID, Texture2D tex2d, byte? inPaletteID = null)
                     {
-                        Debug.WriteLine($"Loaded {count} Textures from {path}");
-                    }
-                    goto end;
-                }
-            }
-            var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID }).Distinct().ToList();
-            Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
-            Height = UniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
-            Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                        TextureBuffer tex = new TextureBuffer(tex2d.Width, tex2d.Height, false);
 
-            //var dup = (from t1 in UniqueSetOfTileData
-            //           from t2 in UniqueSetOfTileData
-            //           where t1 != t2 && t1.TextureID == t1.TextureID && t1.loc == t2.loc
-            //           select new[] { t1, t2 }).ToList();
-            //foreach(var i in UniqueSetOfTileData.GroupBy(x => x.TextureID))
-            //{
-            //    foreach(var j in i.GroupBy(x=>x.loc))
-            //    {
-            //        var m = j.ToList();
-            //        if(m.Count>1 && m[0].loc.X == 240 && m[0].loc.Y == 192)
-            //        {
-            //            m[1].PaletteID = 5;
-            //        }
-            //    }
-            //}
-            //bool overlap = false;
-            Dictionary<byte, HashSet<byte>> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new HashSet<byte>());
-            using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
-            {
-                foreach (KeyValuePair<byte, Texture2D> kvp in TextureIDs)
-                {
-                    GenTexture(kvp.Key, kvp.Value);
-                }
-                SaveSwizzled(TextureIDs);
-                string fieldname = Module.GetFieldName();
-                this.TextureIDs = TextureIDs.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key}", new Texture2DWrapper(x.Value), ushort.MaxValue));
-
-                if (overlap.Any(x => x.Value.Count > 1))
-                //process(true);
-                {
-                    Dictionary<TextureIDPaletteID, Texture2D> TextureIDsPalettes = UniqueSetOfTileData.Where(x => overlap[x.TextureID].Contains(x.PaletteID)).Select(x => new TextureIDPaletteID { TextureID = x.TextureID, PaletteID = x.PaletteID }).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
-                    this.TextureIDsPalettes = TextureIDsPalettes.ToDictionary(x => x.Key, x => TextureHandler.Create($"{ fieldname }_{x.Key.TextureID}", new Texture2DWrapper(x.Value), x.Key.PaletteID));
-                    foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp in TextureIDsPalettes)
-                    {
-                        GenTexture(kvp.Key.TextureID, kvp.Value, kvp.Key.PaletteID);
-                    }
-                    foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
-
-                        foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvp_group in groups)
+                        foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == texID && (!inPaletteID.HasValue || inPaletteID.Value == x.PaletteID)))
                         {
-                            Dictionary<byte, Texture2D> _TextureIDs = groups.ToDictionary(x => x.Key.TextureID, x => x.Value);
-                            SaveSwizzled(_TextureIDs, $"_{kvp_group.Key.PaletteID}");
-                            break;
-                        }
-                }
-                void GenTexture(byte texID, Texture2D tex2d, byte? inPaletteID = null)
-                {
-                    TextureBuffer tex = new TextureBuffer(tex2d.Width, tex2d.Height, false);
+                            long startPixel = TextureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturePageWidth * tile.TextureID) + (TextureType.Width * tile.loc.Y);
 
-                    //foreach (var textureID in UniqueSetOfTileData.GroupBy(x=>x.TextureID == kvp.Key))
-                    foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == texID && (!inPaletteID.HasValue || inPaletteID.Value == x.PaletteID)))
-                    {
-                        long startPixel = TextureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturePageWidth * tile.TextureID) + (TextureType.Width * tile.loc.Y);
-                        //int readlength = Tile.size + (Tile.size * TextureType.Width);
-
-                        byte Colorkey = 0;
-                        foreach (Point p in (from x in Enumerable.Range(0, Tile.size)
-                                             from y in Enumerable.Range(0, Tile.size)
-                                             orderby y, x ascending
-                                             select new Point(x, y)))
-                        //for (int y = 0; y < 16; y++)
-                        {
-                            br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width) + (p.X / (tile.Is4Bit ? 2 : 1)), SeekOrigin.Begin);
-
-                            Point _p = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
-                            //int _y = y + tile.loc.Y;
-                            //  for (int x = 0; x < 16; x++)
-                            //  {
-                            //int _x = x + tile.loc.X;
-                            byte paletteID = tile.PaletteID;
-                            Color input = default;
-                            if (!tile.Is4Bit)
+                            byte Colorkey = 0;
+                            foreach (Point p in (from x in Enumerable.Range(0, Tile.size)
+                                                 from y in Enumerable.Range(0, Tile.size)
+                                                 orderby y, x ascending
+                                                 select new Point(x, y)))
                             {
-                                input = Cluts[paletteID][br.ReadByte()];
-                            }
-                            else
-                            {
-                                if (p.X % 2 == 0)
+                                br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width) + (p.X / (tile.Is4Bit ? 2 : 1)), SeekOrigin.Begin);
+
+                                Point _p = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
+
+                                byte paletteID = tile.PaletteID;
+                                Color input = default;
+                                if (!tile.Is4Bit)
                                 {
-                                    Colorkey = br.ReadByte();
-                                    input = Cluts[paletteID][Colorkey & 0xf];
+                                    input = Cluts[paletteID][br.ReadByte()];
                                 }
                                 else
                                 {
-                                    input = Cluts[paletteID][(Colorkey & 0xf0) >> 4];
+                                    if (p.X % 2 == 0)
+                                    {
+                                        Colorkey = br.ReadByte();
+                                        input = Cluts[paletteID][Colorkey & 0xf];
+                                    }
+                                    else
+                                    {
+                                        input = Cluts[paletteID][(Colorkey & 0xf0) >> 4];
+                                    }
+                                }
+
+                                if (!inPaletteID.HasValue) // forcing a palette happens post overlap test. So shouldn't need to rerun test.
+                                {
+                                    Color current = tex[_p.X, _p.Y];
+                                    Color? output = ChangeColor(current, input, _p, tile.TextureID, overlap);
+                                    if (output.HasValue)
+                                        if (output.Value.A != 0)
+                                            tex[_p.X, _p.Y] = output.Value;
+                                        else continue;
+                                    else break;
+                                }
+                                else
+                                {
+                                    if (input.A != 0)
+                                        tex[_p.X, _p.Y] = input;
                                 }
                             }
-
-
-                            if (!inPaletteID.HasValue) // forcing a palette happens post overlap test. So shouldn't need to rerun test.
-                            {
-                                Color current = tex[_p.X, _p.Y];
-                                Color? output = ChangeColor(current, input, _p, tile.TextureID, overlap);
-                                if (output.HasValue)
-                                    if (output.Value.A != 0)
-                                        tex[_p.X, _p.Y] = output.Value;
-                                    else continue;
-                                else break;
-                            }
-                            else
-                            {
-                                if (input.A != 0)
-                                    tex[_p.X, _p.Y] = input;
-                            }
-                            //if (input.A != 0)
-                            //{
-                            //    if (current.A == 0)
-                            //        output = input;
-                            //    else if (current == input)
-                            //        output = input; // same color might be two+ tiles with same source locations.
-                            //    else
-                            //    {
-                            //        //Point unscaledLocation = tile.Source.Location;
-                            //        //unscaledLocation.Offset(p.ToVector2() / scale);
-
-                            //        IEnumerable<byte> o = (from t1 in tiles
-                            //                               where t1.TextureID == tile.TextureID && t1.ExpandedSource.Contains(_p)
-                            //                               select t1.PaletteID).Distinct();
-                            //        if (o.Count() > 1)
-                            //        {
-                            //            o.ForEach(x => overlap[tile.TextureID].Add(x));
-                            //            output = null;
-                            //        }
-                            //        else output = input; // two tiles same palette is drawing to same place
-                            //        //TODO maybe copy some code from reswizzle where i find all the palettes that conflict only.
-                            //        //overlap = true;
-                            //        //if (current != input)
-                            //        //{
-                            //        //    Debug.WriteLine($"{_p} :: {Memory.FieldHolder.fields[Memory.FieldHolder.FieldID]} :: {tile} \n   existed_color {tex[_x, _y]} :: failed_color={input}");
-                            //        //    break;
-                            //        //}
-                            //    }
-                            //}
-                            //}
                         }
+                        tex.SetData(tex2d);
                     }
-                    tex.SetData(tex2d);
                 }
             }
-        end:
             //the sort here should be the default draw order. May need changed.
             quads = tiles.Select(x => new TileQuadTexture(x, GetTextureUsedByTile(x), 1f)).Where(x => x.Enabled)
                 .OrderByDescending(x => x.GetTile.Z)
