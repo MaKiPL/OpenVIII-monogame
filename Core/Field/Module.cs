@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,17 +17,21 @@ namespace OpenVIII.Fields
     public static partial class Module
     {
         #region Fields
+
         public static Background Background;
         public static WalkMesh WalkMesh;
         private static EventEngine eventEngine;
+        private static INF inf;
         private static Field_mods mod = 0;
+
+        private static MSK msk;
 
         //private static Texture2D tex;
         //private static Texture2D texOverlap;
         private static IServices services;
-        private static INF inf;
+
+        private static SFX sfx;
         private static TDW tdw;
-        private static MSK msk;
 
         #endregion Fields
 
@@ -53,17 +56,22 @@ namespace OpenVIII.Fields
             DISABLED,
             NOJSM
         };
-        
-        public static _Toggles Flip(this _Toggles flagged, _Toggles flag)
-            => flagged ^= flag;
+
         #endregion Enums
 
         #region Properties
 
         public static Cameras Cameras { get; private set; }
+
         public static FieldMenu FieldMenu { get; private set; }
+
+        public static Field_mods Mod => mod;
+
         public static _Toggles Toggles { get; set; } = _Toggles.Quad | _Toggles.Menu;
-        public static Field_mods Mod { get => mod; }
+
+        internal static MrtRat MrtRat { get; private set; }
+
+        internal static PMP pmp { get; private set; }
 
         #endregion Properties
 
@@ -86,6 +94,9 @@ namespace OpenVIII.Fields
             }
         }
 
+        public static _Toggles Flip(this _Toggles flagged, _Toggles flag)
+                                                                    => flagged ^= flag;
+
         public static string GetFieldName()
         {
             string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
@@ -94,11 +105,11 @@ namespace OpenVIII.Fields
             return fieldname;
         }
 
-        public static string GetFolder(string fieldname = null,string subfolder = "")
+        public static string GetFolder(string fieldname = null, string subfolder = "")
         {
             if (string.IsNullOrWhiteSpace(fieldname))
                 fieldname = GetFieldName();
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname,subfolder);
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname, subfolder);
             Directory.CreateDirectory(folder);
             return folder;
         }
@@ -160,7 +171,6 @@ namespace OpenVIII.Fields
 
         private static void DrawDebug()
         {
-
             Background.Draw();
 
             //Memory.SpriteBatchStartAlpha();
@@ -171,8 +181,8 @@ namespace OpenVIII.Fields
             //    $"\n1/4 add: {Background.IsQuarterBlendMode}" +
             //    $"\nsubtract: {Background.IsSubtractBlendMode}", new Point(20, 20), new Vector2(3f));
             //Memory.SpriteBatchEnd();
-            if(Toggles.HasFlag(_Toggles.Menu))
-            FieldMenu.Draw();
+            if (Toggles.HasFlag(_Toggles.Menu))
+                FieldMenu.Draw();
         }
 
         private static void DrawEntities() => throw new NotImplementedException();
@@ -186,7 +196,7 @@ namespace OpenVIII.Fields
             string[] test = aw.GetListOfFiles();
             FieldMenu = FieldMenu.Create();
             //TODO fix endless look on FieldID 50.
-            if (Memory.FieldHolder.FieldID >= (Memory.FieldHolder.fields?.Length ?? 0)||
+            if (Memory.FieldHolder.FieldID >= (Memory.FieldHolder.fields?.Length ?? 0) ||
                 Memory.FieldHolder.FieldID < 0)
                 goto end;
             string fieldArchiveName = test.FirstOrDefault(x => x.IndexOf(Memory.FieldHolder.GetString(), StringComparison.OrdinalIgnoreCase) >= 0);
@@ -277,15 +287,26 @@ namespace OpenVIII.Fields
             tdw = new TDW(tdwb);
             byte[] mskb = getfile(".msk");//movie cam
             msk = new MSK(mskb);
-            //byte[] ratb = getfile(".rat");//battle on field
+            byte[] ratb = getfile(".rat");//battle on field
+            byte[] mrtb = getfile(".mrt");//battle on field
+            MrtRat = new MrtRat(mrtb, ratb);
             //byte[] pmdb = getfile(".pmd");//particle info
-            //byte[] sfxb = getfile(".sfx");//sound effects
-            
+            //if (pmdb != null && pmdb.Length > 4)
+            //    using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(),
+            //        $"{Memory.FieldHolder.GetString()}.pmd"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            //        fs.Write(pmdb, 0, pmdb.Length);
+            byte[] pmpb = getfile(".pmp");//particle graphic?
+            if (pmpb != null && pmpb.Length > 4)
+                pmp = new PMP(pmpb);
+            byte[] sfxb = getfile(".sfx");//sound effects
+            sfx = new SFX(sfxb);
+
             mod++;
-            end:
+        end:
             FieldMenu.Refresh();
             return;
         }
+
         private static void UpdateScript()
         {
             //We do not know every instruction and it's not possible for now to play field with unknown instruction
@@ -355,12 +376,5 @@ namespace OpenVIII.Fields
         //    }
         //    throw new Exception($"Blendtype is {tile.BlendMode}: There are only 4 blend modes, 0-3, 4+ are drawn directly.");
         //}
-    }
-
-    internal class MSK
-    {
-        private byte[] mskb;
-
-        public MSK(byte[] mskb) => this.mskb = mskb;
     }
 }
