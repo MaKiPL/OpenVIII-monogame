@@ -49,6 +49,7 @@ namespace OpenVIII
         private static DeadTime DeadTime;
         private static float degrees = 90;
         private static BasicEffect effect;
+        private static bool ForceReload = false;
         private static FPS_Camera fps_camera;
         private static TimeSpan FrameTime = TimeSpan.Zero;
         private static List<Battle.Mag> MagALL;
@@ -114,9 +115,6 @@ namespace OpenVIII
         #region Properties
 
         public static int battleModule { get; set; } = 0;
-
-        private static bool ForceReload = false;
-
         public static Camera Camera { get; private set; }
         public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
 
@@ -236,7 +234,7 @@ namespace OpenVIII
                     {
                         if (d.GetEnemy(out Enemy e) && e.Equals(enemy))
                         {
-                            Vector3 posIn3DSpace = e.EII.Data.IndicatorPoint;
+                            Vector3 posIn3DSpace = e.EII.Data.IndicatorPoint(e.EII.Location);
                             posIn3DSpace.Y -= 1f;
                             Vector3 ScreenPos = Memory.graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
                             Memory.SpriteBatchStartAlpha();
@@ -258,8 +256,11 @@ namespace OpenVIII
             if ((CharacterInstances == null && n >= 0) || ((Enemy.Party == null || Enemy.Party.Count == 0) && n < 0))
                 return Vector3.Zero;
             else
-                return (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
-                    Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
+            {
+                EnemyInstanceInformation eII = Enemy.Party.FirstOrDefault(x => x.EII.partypos == n)?.EII;
+                return (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint(CharacterInstances[n].Data.Location) :
+                eII.Data.IndicatorPoint(eII.Location)) + PyramidOffset;
+            }
         }
 
         public static void Inputs()
@@ -694,7 +695,7 @@ namespace OpenVIII
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
-                Vector3 charaPosition = GetCharPos(n);
+                Vector3 charaPosition = CharacterInstances[n].Data.Location = GetCharPos(n);
                 DrawBattleDat(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
 
@@ -826,16 +827,32 @@ namespace OpenVIII
 
         private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
 
+        private static byte GetCostume(Characters c) => Memory.State[c].Alternativemodel != 0 ? Costumes[c].First() : Costumes[c].Last();
+
         private static Vector3 GetEnemyPos(int n)
         {
-            Coordinate v = Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
-            Vector3 a = Memory.Encounters.enemyCoordinates.AverageVector;
-            Vector3 m = Memory.Encounters.enemyCoordinates.MidVector;
+            //Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
+            //Vector3 a = Memory.Encounters.enemyCoordinates.AverageVector;
+            //Vector3 m = Memory.Encounters.enemyCoordinates.MidVector;
 
-            v.x -= (short)m.X;
+            //v.x -= (short)m.X;
 
-            v.z -= (short)a.Z;
-            return v.GetVector();
+            //v.z -= (short)a.Z;
+            return Enemy.Party[n].EII.Location;
+        }
+
+        private static byte GetWeaponID(Characters c)
+        {
+            byte weaponId = 0;
+            if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
+                characterData.WeaponID < Kernel_bin.WeaponsData.Count)
+            {
+                byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
+                if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
+                    weaponId = weapons[altID];
+            }
+
+            return weaponId;
         }
 
         private static void InitBattle()
@@ -892,6 +909,19 @@ namespace OpenVIII
                     World = worldMatrix
                 };
             return;
+        }
+
+        private static CharacterInstanceInformation ReadCharacter(ref int cid, Characters c)
+        {
+            CharacterInstanceInformation cii = new CharacterInstanceInformation
+            {
+                Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
+                animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
+                characterId = cid++,
+            };
+            //cii.animationSystem.animationId = 4;
+            Memory.State[c].BattleStart(cii);
+            return cii;
         }
 
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
@@ -971,35 +1001,6 @@ namespace OpenVIII
             };
         }
 
-        private static byte GetCostume(Characters c) => Memory.State[c].Alternativemodel != 0 ? Costumes[c].First() : Costumes[c].Last();
-
-        private static CharacterInstanceInformation ReadCharacter(ref int cid, Characters c)
-        {
-            CharacterInstanceInformation cii = new CharacterInstanceInformation
-            {
-                Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
-                animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
-                characterId = cid++,
-            };
-            //cii.animationSystem.animationId = 4;
-            Memory.State[c].BattleStart(cii);
-            return cii;
-        }
-
-        private static byte GetWeaponID(Characters c)
-        {
-            byte weaponId = 0;
-            if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
-                characterData.WeaponID < Kernel_bin.WeaponsData.Count)
-            {
-                byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
-                if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
-                    weaponId = weapons[altID];
-            }
-
-            return weaponId;
-        }
-
         private static void ReadData()
         {
             ReadCharacters();
@@ -1015,42 +1016,37 @@ namespace OpenVIII
         /// </summary>
         private static void ReadMonster()
         {
-            Battle.Encounter encounter = Memory.Encounters.Current;
-            if (encounter.EnabledEnemy == 0)
+            int r(int i) => 7 - i;
+            Encounter encounter = Memory.Encounters.Current;
+
+            if (encounter.EnabledEnemy.Cast<bool>().Any(x => x))
+            {
+                IEnumerable<byte> monstersList = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)])?.Select(x => x.x).Distinct();
+                monstersData = monstersList?.Select(x => Debug_battleDat.Load(x, Debug_battleDat.EntityType.Monster)).ToArray();
+            }
+            else
             {
                 monstersData = new Debug_battleDat[0];
                 return;
             }
-            List<byte> monstersList = encounter.BEnemies.ToList();
-            for (int i = 7; i > 0; i--)
+
+            Enemy.Party = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)]).Select(x =>
             {
-                bool bEnabled = Extended.GetBit((byte)encounter.EnabledEnemy, 7 - i);
-                if (!bEnabled)
-                    monstersList.RemoveLast();
-            }
-            IGrouping<byte, byte>[] DistinctMonsterPointers = monstersList.GroupBy(x => x).ToArray();
-            monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
-            for (int n = 0; n < monstersData.Length; n++)
-                monstersData[n] = Debug_battleDat.Load(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
-            if (monstersData == null)
-                monstersData = new Debug_battleDat[0];
-            Enemy.Party = new List<Enemy>(8);
-            for (int i = 0; i < 8; i++)
-                if (Extended.GetBit((byte)encounter.EnabledEnemy, 7 - i))
-                {
-                    IEnumerable<Debug_battleDat> enumerable = monstersData.Where(x => x.GetId == encounter.BEnemies[i]);
-                    if ((enumerable?.Count() ?? 0) > 0)
-                        Enemy.Party.Add(new EnemyInstanceInformation()
-                        {
-                            Data = enumerable.First(),
-                            bIsHidden = Extended.GetBit((byte)encounter.HiddenEnemies, 7 - i),
-                            bIsActive = true,
-                            index = (byte)(7 - i),
-                            bIsUntargetable = Extended.GetBit((byte)encounter.UntargetableEnemy, 7 - i),
-                            animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
-                        }
-    );
-                }
+                Debug_battleDat debug_battleDat = monstersData.FirstOrDefault(mon => mon.GetId == x.x);
+                int i = r(x.i);
+                return debug_battleDat == default
+                    ? null
+                    : (Enemy)new EnemyInstanceInformation()
+                    {
+                        Data = debug_battleDat,
+                        bIsHidden = encounter.HiddenEnemies[i],
+                        bIsActive = true,
+                        partypos = (sbyte)(-1 - x.i),
+                        bIsUntargetable = encounter.UntargetableEnemy[i],
+                        animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
+                        Location = encounter.enemyCoordinates[i] //each instance needs own location.
+                    };
+            }).Where(x => x != null).ToList();
         }
 
         private static void ResetTime() => FrameTime = TimeSpan.FromTicks(FrameTime.Ticks % FPS.Ticks);
@@ -1219,6 +1215,8 @@ namespace OpenVIII
 
             public Debug_battleDat character, weapon;
 
+            public Vector3 Location { get; internal set; }
+
             #endregion Fields
         };
 
@@ -1282,7 +1280,9 @@ namespace OpenVIII
             /// bit position of the enemy in encounter data. Use to pair the information with
             /// encounter data
             /// </summary>
-            public byte index;
+            public sbyte partypos;
+
+            public Coordinate Location { get; internal set; }
 
             #endregion Fields
         }

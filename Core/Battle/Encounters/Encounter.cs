@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 
 namespace OpenVIII.Battle
@@ -11,13 +12,13 @@ namespace OpenVIII.Battle
         public EncounterFlag BattleFlags;
         public byte[] bLevels;
         public byte[] bUnk2;
-        public EnemyFlags EnabledEnemy;
+        public BitArray EnabledEnemy;
         public EnemyCoordinates enemyCoordinates;
-        public EnemyFlags HiddenEnemies;
+        public BitArray HiddenEnemies;
         public byte PrimaryCamera;
         public byte Scenario;
-        public EnemyFlags UnloadedEnemy;
-        public EnemyFlags UntargetableEnemy;
+        public BitArray UnloadedEnemy;
+        public BitArray UntargetableEnemy;
         private byte[] Enemies;
         public int ID;
 

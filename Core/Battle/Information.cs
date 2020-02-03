@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
 
 namespace OpenVIII
 {
@@ -13,11 +12,10 @@ namespace OpenVIII
 
         private const int Section7Size = 380;
 
-        public Vector3 Location { get; set; }
-
         #endregion Fields
 
         #region Methods
+
         /// <summary>
         /// Information
         /// </summary>
@@ -286,11 +284,12 @@ namespace OpenVIII
             public byte unk;
 
             public Kernel_bin.Magic_Data DATA => Kernel_bin.MagicData.Count > ID ? Kernel_bin.MagicData[ID] : null;
-            public Kernel_bin.Junctionable_GFs_Data JGFDATA => Kernel_bin.JunctionableGFsData.ContainsKey(GF)? Kernel_bin.JunctionableGFsData[GF]: null;
+            public Kernel_bin.Junctionable_GFs_Data JGFDATA => Kernel_bin.JunctionableGFsData.ContainsKey(GF) ? Kernel_bin.JunctionableGFsData[GF] : null;
+
             // per IFRIT gf's id is between 0x40 and 0x4F. And they seem to be in order of GFs enum.
             public GFs GF => ID > 0x4F || ID < 0x40 ? GFs.Blank : (GFs)(ID - 0x40);
 
-            public FF8String Name { get => GF != GFs.Blank ? Memory.Strings.GetName(GF) : DATA?.Name; }
+            public FF8String Name => GF != GFs.Blank ? Memory.Strings.GetName(GF) : DATA?.Name;
 
             public override string ToString() => Name;
         }

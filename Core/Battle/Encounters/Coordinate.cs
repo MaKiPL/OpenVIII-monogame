@@ -26,7 +26,7 @@ namespace OpenVIII.Battle
             x,
             y,
             -z) /100f; /// 100f;
-
+        public static implicit operator Vector3(Coordinate @in) => @in.GetVector();
         public override string ToString()
         {
             return $"{x} {y} {z}";

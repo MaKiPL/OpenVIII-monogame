@@ -59,10 +59,10 @@ namespace OpenVIII.Battle
                         BattleFlags = (EncounterFlag)br.ReadByte(),
                         PrimaryCamera = br.ReadByte(),
                         AlternativeCamera = br.ReadByte(),
-                        HiddenEnemies = (EnemyFlags) br.ReadByte(),
-                        UnloadedEnemy = (EnemyFlags) br.ReadByte(),
-                        UntargetableEnemy = (EnemyFlags) br.ReadByte(),
-                        EnabledEnemy = (EnemyFlags)br.ReadByte(),
+                        HiddenEnemies = new BitArray(br.ReadBytes(1)),
+                        UnloadedEnemy = new BitArray(br.ReadBytes(1)),
+                        UntargetableEnemy = new BitArray(br.ReadBytes(1)),
+                        EnabledEnemy = new BitArray(br.ReadBytes(1)),
                         enemyCoordinates = EnemyCoordinates.Read(br),
                         BEnemies = br.ReadBytes(8),
                         bUnk2 = br.ReadBytes(16 * 3 + 8),
@@ -113,13 +113,13 @@ namespace OpenVIII.Battle
         public int ID { get => Current.ID; set => _currentIndex = encounters.FindIndex(x => x.ID == value); }
         public byte AlternativeCamera => Current.AlternativeCamera;
         public EncounterFlag BattleFlags => Current.BattleFlags;
-        public EnemyFlags EnabledEnemy => Current.EnabledEnemy;
+        public BitArray EnabledEnemy => Current.EnabledEnemy;
         public EnemyCoordinates enemyCoordinates => Current.enemyCoordinates;
-        public EnemyFlags HiddenEnemies => Current.HiddenEnemies;
+        public BitArray HiddenEnemies => Current.HiddenEnemies;
         public byte PrimaryCamera => Current.PrimaryCamera;
         public byte Scenario => Current.Scenario;
-        public EnemyFlags UnloadedEnemy => Current.UnloadedEnemy;
-        public EnemyFlags UntargetableEnemy => Current.UntargetableEnemy;
+        public BitArray UnloadedEnemy => Current.UnloadedEnemy;
+        public BitArray UntargetableEnemy => Current.UntargetableEnemy;
         public byte[] BEnemies => Current.BEnemies;
         public string Filename => Current.Filename;
         public int ResolveCameraAnimation(byte cameraPointerValue) => Current.ResolveCameraAnimation(cameraPointerValue);
