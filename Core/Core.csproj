@@ -211,6 +211,10 @@
     <Compile Include="Field\INF\Trigger.cs" />
     <Compile Include="Field\INF\Triggers.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
+    <Compile Include="Field\MrtRat.cs" />
+    <Compile Include="Field\MSK.cs" />
+    <Compile Include="Field\PMP.cs" />
+    <Compile Include="Field\SFX.cs" />
     <Compile Include="Field\WalkMesh\Access.cs" />
     <Compile Include="Field\Background\Background.cs" />
     <Compile Include="Field\Background\BackgroundTextureType.cs" />
