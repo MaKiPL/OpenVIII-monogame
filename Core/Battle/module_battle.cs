@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenVIII
 {
-    class module_battle
+    class Module_battle
     {
         public static void Update()
         {
