@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework;
 
 namespace OpenVIII
 {
@@ -11,6 +12,8 @@ namespace OpenVIII
         public Information information;
 
         private const int Section7Size = 380;
+
+        public Vector3 Location { get; set; }
 
         #endregion Fields
 

@@ -222,7 +222,7 @@ namespace OpenVIII.Battle
                     };
             }
             Animations?.ForEach(x => x.Update());
-            TextureAnimations.ForEach(x => x.Update());
+            TextureAnimations?.ForEach(x => x.Update());
         }
 
         private static byte GetClutId(ushort clut)
