@@ -1044,7 +1044,8 @@ namespace OpenVIII
                         partypos = (sbyte)(-1 - x.i),
                         bIsUntargetable = encounter.UntargetableEnemy[i],
                         animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
-                        Location = encounter.enemyCoordinates[i] //each instance needs own location.
+                        Location = encounter.enemyCoordinates[i], //each instance needs own location.
+                        FixedLevel = encounter.bLevels[i]
                     };
             }).Where(x => x != null).ToList();
         }
@@ -1283,6 +1284,8 @@ namespace OpenVIII
             public sbyte partypos;
 
             public Coordinate Location { get; internal set; }
+            public byte FixedLevel { get; internal set; }
+            public bool IsFixedLevel => FixedLevel != 0xFF;
 
             #endregion Fields
         }
