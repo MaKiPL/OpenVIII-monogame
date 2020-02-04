@@ -42,7 +42,6 @@ namespace OpenVIII
         private IEnumerator enumerator;
         private byte[] FI, FS, FL;
         private bool isDir = false;
-        private uint _packedFileSize;
 
         #endregion Fields
 
