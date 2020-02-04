@@ -25,7 +25,7 @@ namespace OpenVIII.Battle
         public Vector3 GetVector() => new Vector3(
             x,
             y,
-            -z) /100f; /// 100f;
+            -z) /Memory.EnemyCoordinateScale; /// 100f;
         public static implicit operator Vector3(Coordinate @in) => @in.GetVector();
         public override string ToString()
         {

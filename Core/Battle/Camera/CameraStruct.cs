@@ -75,19 +75,19 @@ namespace OpenVIII.Battle
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 128)]
             public byte[] unkbyte4A4; //4A4
 
-            private const float V = 100f;
+            private float V => Memory.CameraScale;
 
             private Vector3 offset => new Vector3(30, +40, 0);
 
             public Vector3 Camera_World(int i) => new Vector3(
-                Camera_World_X_s16[i] / V,
-                -(Camera_World_Y_s16[i] / V),
-                -(Camera_World_Z_s16[i] / V)) + offset;
+                Camera_World_X_s16[i],
+                -(Camera_World_Y_s16[i]),
+                -(Camera_World_Z_s16[i]))/V + offset;
 
             public Vector3 Camera_Lookat(int i) => new Vector3(
-                Camera_Lookat_X_s16[i] / V,
-                -(Camera_Lookat_Y_s16[i] / V),
-                -(Camera_Lookat_Z_s16[i] / V)) + offset;
+                Camera_Lookat_X_s16[i],
+                -(Camera_Lookat_Y_s16[i]),
+                -(Camera_Lookat_Z_s16[i]))/V + offset;
 
             public void UpdateTime() => CurrentTime += Memory.gameTime.ElapsedGameTime;
 

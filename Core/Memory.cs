@@ -58,6 +58,10 @@ namespace OpenVIII
 
     public static partial class Memory
     {
+        public static float CameraScale { get; internal set; } = 100f;
+        public static float BattleStageScale { get; internal set; } = 100f;
+        public static float EnemyCoordinateScale { get; internal set; } = 100f;
+
         internal static Log Log;
         public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
@@ -366,9 +370,9 @@ namespace OpenVIII
             Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)}");
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics}");
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics?.GraphicsDevice.Adapter.CurrentDisplayMode}");
-            if(graphics!=null)
-            foreach (DisplayMode i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
-                Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
+            if (graphics != null)
+                foreach (DisplayMode i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
+                    Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
             //Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics.GraphicsDevice.Adapter.DeviceName}");
             //Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch}");
             Log.WriteLine($"{nameof(ContentManager)} :: {content}");
