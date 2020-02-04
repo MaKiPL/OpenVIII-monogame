@@ -146,7 +146,10 @@
     <Compile Include="AV\Movie\Player.cs" />
     <Compile Include="AV\Movie\STATE.cs" />
     <Compile Include="AV\Video.cs" />
+    <Compile Include="Battle\AnimationSystem.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
+    <Compile Include="Battle\CharacterData.cs" />
+    <Compile Include="Battle\CharacterInstanceInformation.cs" />
     <Compile Include="Battle\Encounters\Coordinate.cs" />
     <Compile Include="Battle\DeadTime.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
@@ -155,6 +158,7 @@
     <Compile Include="Battle\Encounters\Encounters.cs" />
     <Compile Include="Battle\Enemy.cs" />
     <Compile Include="Battle\Encounters\EnemyCoordinates.cs" />
+    <Compile Include="Battle\EnemyInstanceInformation.cs" />
     <Compile Include="Battle\FPS_Camera.cs" />
     <Compile Include="Battle\IEnemy.cs" />
     <Compile Include="Battle\Information.cs" />

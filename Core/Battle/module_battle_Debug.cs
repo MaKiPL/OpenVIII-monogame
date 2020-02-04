@@ -433,13 +433,9 @@ namespace OpenVIII
                     if (partypos != Module_battle_debug.partypos)
                     {
                         if (partypos == null)
-                        {
                             RegularPyramid.FadeOut();
-                        }
                         else
-                        {
                             RegularPyramid.FadeIn();
-                        }
                         Module_battle_debug.partypos = partypos;
                     }
                     if (bUseFPSCamera)
@@ -829,8 +825,7 @@ namespace OpenVIII
 
         private static byte GetCostume(Characters c) => Memory.State[c].Alternativemodel != 0 ? Costumes[c].First() : Costumes[c].Last();
 
-        private static Vector3 GetEnemyPos(int n)
-        {
+        private static Vector3 GetEnemyPos(int n) =>
             //Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
             //Vector3 a = Memory.Encounters.enemyCoordinates.AverageVector;
             //Vector3 m = Memory.Encounters.enemyCoordinates.MidVector;
@@ -838,8 +833,7 @@ namespace OpenVIII
             //v.x -= (short)m.X;
 
             //v.z -= (short)a.Z;
-            return Enemy.Party[n].EII.Location;
-        }
+            Enemy.Party[n].EII.Location;
 
         private static byte GetWeaponID(Characters c)
         {
@@ -1138,158 +1132,5 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
-        #region Structs
-
-        /// <summary>
-        /// Animation system. Decided to go for struct, so I can attach it to instance and manipulate
-        /// easily grouped. It's also open for modifications
-        /// </summary>
-        public struct AnimationSystem
-        {
-            #region Fields
-
-            public ConcurrentQueue<int> AnimationQueue;
-
-            private int _animationFrame;
-
-            private int _animationId;
-
-            private int _lastAnimationFrame;
-
-            private int _lastAnimationId;
-
-            private bool bAnimationStopped;
-
-            #endregion Fields
-
-            #region Properties
-
-            public int AnimationFrame
-            {
-                get => _animationFrame; set
-                {
-                    _lastAnimationFrame = _animationFrame;
-                    _animationFrame = value;
-                    if (_animationFrame > 0 && _lastAnimationId != _animationId)
-                        _lastAnimationId = _animationId;
-                }
-            }
-
-            public int AnimationId
-            {
-                get => _animationId; set
-                {
-                    _lastAnimationId = _animationId;
-                    _animationId = value;
-                    AnimationFrame = 0;
-                }
-            }
-
-            public bool AnimationStopped => bAnimationStopped;
-
-            public int LastAnimationFrame { get => _lastAnimationFrame; private set => _lastAnimationFrame = value; }
-
-            public int LastAnimationId { get => _lastAnimationId; private set => _lastAnimationId = value; }
-
-            #endregion Properties
-
-            #region Methods
-
-            public int NextFrame() => ++AnimationFrame;
-
-            public bool StartAnimation() => bAnimationStopped = false;
-
-            public bool StopAnimation()
-            {
-                LastAnimationFrame = AnimationFrame;
-                AnimationId = AnimationId;
-                return bAnimationStopped = true;
-            }
-
-            #endregion Methods
-        }
-
-        public struct CharacterData
-        {
-            #region Fields
-
-            public Debug_battleDat character, weapon;
-
-            public Vector3 Location { get; internal set; }
-
-            #endregion Fields
-        };
-
-        #endregion Structs
-
-        #region Classes
-
-        /// <summary>
-        /// CharacterInstanceInformation should only be used for battle-exclusive data. Manipulating
-        /// HP, GFs, junctions and other character-specific things should happen outside battle,
-        /// because such information about characters is shared between almost all modules. This
-        /// field contains information about the current status of battle rendering like animation
-        /// frames/ rendering flags/ effects attached
-        /// </summary>
-        public class CharacterInstanceInformation
-        {
-            #region Fields
-
-            public AnimationSystem animationSystem;
-            public bool bIsHidden;
-            public int characterId;
-            public CharacterData Data;
-
-            #endregion Fields
-
-            #region Properties
-
-            //0 is Whatever guy
-            public Characters VisibleCharacter => (Characters)Data.character.GetId;
-
-            #endregion Properties
-
-            #region Methods
-
-            //GF sequences, magic...
-            public void SetAnimationID(int id)
-            {
-                if (animationSystem.AnimationId != id &&
-                    id < Data.character.animHeader.animations.Length &&
-                    id < Data.weapon.animHeader.animations.Length &&
-                    id >= 0)
-                {
-                    animationSystem.AnimationId = id;
-                }
-            }
-
-            #endregion Methods
-        }
-
-        public class EnemyInstanceInformation
-        {
-            #region Fields
-
-            public AnimationSystem animationSystem;
-            public bool bIsActive;
-            public bool bIsHidden;
-            public bool bIsUntargetable;
-            public Debug_battleDat Data;
-
-            /// <summary>
-            /// bit position of the enemy in encounter data. Use to pair the information with
-            /// encounter data
-            /// </summary>
-            public sbyte partypos;
-
-            public Coordinate Location { get; internal set; }
-            public byte FixedLevel { get; internal set; }
-            public bool IsFixedLevel => FixedLevel != 0xFF;
-
-            #endregion Fields
-        }
-
-        #endregion Classes
     }
 }

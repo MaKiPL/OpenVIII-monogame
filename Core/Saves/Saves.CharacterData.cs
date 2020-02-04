@@ -227,7 +227,7 @@ namespace OpenVIII
             /// </remarks>
             public bool CanPhoenixPinion => IsDead && !(IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0) && Memory.State.Items.Where(m => m.ID == 31 && m.QTY >= 1).Count() > 0;
 
-            public Module_battle_debug.CharacterInstanceInformation CII { get; private set; }
+            public Battle.CharacterInstanceInformation CII { get; private set; }
 
             /// <summary>
             /// Set by GenerateCrisisLevel(), -1 means no limit break. &gt;=0 has a limit break.
@@ -360,7 +360,7 @@ namespace OpenVIII
 
             public void AutoMAG() => Auto(Kernel_bin.AutoMAG);
 
-            public void BattleStart(Module_battle_debug.CharacterInstanceInformation cii)
+            public void BattleStart(Battle.CharacterInstanceInformation cii)
             {
                 CII = cii;
                 Statuses1 = Kernel_bin.Battle_Only_Statuses.None;
