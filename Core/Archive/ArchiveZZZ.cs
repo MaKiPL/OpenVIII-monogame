@@ -70,7 +70,7 @@ namespace OpenVIII
             }
         }
 
-        private class Header : IList<FileData>
+        private class Header : IList<FileData>, IReadOnlyList<FileData>
         {
             private Header(int count) => Data = new List<FileData>(count);
 
@@ -81,6 +81,8 @@ namespace OpenVIII
             public bool IsReadOnly => ((IList<FileData>)Data).IsReadOnly;
 
             int ICollection<FileData>.Count => ((IList<FileData>)Data).Count;
+
+            public int Count => ((IReadOnlyList<FileData>)Data).Count;
 
             public void Add(FileData item) => ((IList<FileData>)Data).Add(item);
 
