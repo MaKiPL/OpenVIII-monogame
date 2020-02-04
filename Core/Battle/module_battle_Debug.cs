@@ -49,7 +49,6 @@ namespace OpenVIII
         private static bool ForceReload = false;
         private static FPS_Camera fps_camera;
         private static TimeSpan FrameTime = TimeSpan.Zero;
-        private static List<Battle.Mag> MagALL;
         private static Debug_battleDat[] monstersData;
         private static sbyte? partypos = null;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
@@ -142,13 +141,6 @@ namespace OpenVIII
 
         private static IGMDataItem.Icon CROSSHAIR { get; set; }
 
-        private static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count ?? 0) > 0) ?? null;
-
-        private static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
-
-        private static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
-
-        private static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType > 0).Select(x => x.UnknownType) ?? null;
 
         #endregion Properties
 
