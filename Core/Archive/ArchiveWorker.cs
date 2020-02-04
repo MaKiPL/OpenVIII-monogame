@@ -209,11 +209,12 @@ namespace OpenVIII
 
         public override Memory.Archive GetPath() => _path;
 
-        public bool MoveNext() => GetListOfFiles().Length > 0 && enumerator.MoveNext();
+        public bool MoveNext() => (GetListOfFiles()?.Length??0) > 0 && enumerator.MoveNext();
 
         public void Reset()
         {
-            if (GetListOfFiles().Length > 0)
+            string[] list = GetListOfFiles();
+            if (list !=null && list.Length > 0)
                 enumerator.Reset();
         }
 
