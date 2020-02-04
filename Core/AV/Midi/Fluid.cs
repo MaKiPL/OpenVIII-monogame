@@ -945,17 +945,23 @@ namespace OpenVIII.AV.Midi
             }
             for (int i = 0; i < 16; i++)
             {
+                //native build of naudio doesn't have the numbers in the enum.
+                //you can manually force it to take the number by doing (NAudio.Midi.MidiController)number
+
                 //as suggested on https://github.com/FluidSynth/fluidsynth/issues/544#issuecomment-507844553
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_MSB, 120), 0);
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_LSB, 38), 0);
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.LSBGenerator38, 127), 0);
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.MSGgenerator38, 110), 0);
+                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_MSB, 120), 0);//99
+                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_LSB, 38), 0);//98
+                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.LSBGenerator38, 127), 0);//38
+                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.MSGgenerator38, 110), 0);//6
                 //The DLS loader has wrong release/hold/attack so we need to tweak it via generators. It's prior to change
             }
-            MemoryStream ms = new MemoryStream();
-            NAudio.Midi.MidiFile.Export(ms, mid);
-            midBuffer = ms.ToArray();
-            ms.Dispose();
+            using (MemoryStream ms = new MemoryStream())
+            {
+                // pull request to get this added to naudio
+                // https://github.com/naudio/NAudio/pull/499
+                NAudio.Midi.MidiFile.Export(ms, mid);
+                midBuffer = ms.ToArray();
+            }
         }
 
         public void ReadSegmentFileManually(string pt)
