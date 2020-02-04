@@ -53,22 +53,9 @@ namespace OpenVIII.Battle
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(enc)))
             {
                 for (int i = 0; i < encounterCount; i++)
-                    encounters.Add(new Encounter()
-                    {
-                        Scenario = br.ReadByte(),
-                        BattleFlags = (EncounterFlag)br.ReadByte(),
-                        PrimaryCamera = br.ReadByte(),
-                        AlternativeCamera = br.ReadByte(),
-                        HiddenEnemies = new BitArray(br.ReadBytes(1)),
-                        UnloadedEnemy = new BitArray(br.ReadBytes(1)),
-                        UntargetableEnemy = new BitArray(br.ReadBytes(1)),
-                        EnabledEnemy = new BitArray(br.ReadBytes(1)),
-                        enemyCoordinates = EnemyCoordinates.Read(br),
-                        BEnemies = br.ReadBytes(8),
-                        bUnk2 = br.ReadBytes(16 * 3 + 8),
-                        bLevels = br.ReadBytes(8),
-                        ID = encounters.Count
-                    });
+                    encounters.Add(Encounter.Read(br,encounters.Count));
+
+
                 ms = null;
             }
             encounters.encounters = encounters.OrderBy(x => x.Scenario).ThenBy(x => x.ID).ToList();

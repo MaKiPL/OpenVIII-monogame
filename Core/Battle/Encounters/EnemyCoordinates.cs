@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +16,8 @@ namespace OpenVIII.Battle
 
         #region Constructors
 
+        public EnemyCoordinates(List<Coordinate> @in) => enemies = @in;
+
         public EnemyCoordinates() => enemies = new List<Coordinate>(8);
 
         #endregion Constructors
@@ -24,14 +25,12 @@ namespace OpenVIII.Battle
         #region Properties
 
         public int Count => ((ICollection<Coordinate>)enemies).Count;
-        public bool IsReadOnly => ((ICollection<Coordinate>)enemies).IsReadOnly;
-        public bool IsSynchronized => ((ICollection)enemies).IsSynchronized;
-        public object SyncRoot => ((ICollection)enemies).SyncRoot;
 
-        public Vector3 AverageVector { get; private set; }
-        public Vector3 MinVector { get; private set; }
-        public Vector3 MaxVector { get; private set; }
-        public Vector3 MidVector { get; private set; }
+        public bool IsReadOnly => ((ICollection<Coordinate>)enemies).IsReadOnly;
+
+        public bool IsSynchronized => ((ICollection)enemies).IsSynchronized;
+
+        public object SyncRoot => ((ICollection)enemies).SyncRoot;
 
         #endregion Properties
 
@@ -45,21 +44,16 @@ namespace OpenVIII.Battle
 
         #region Methods
 
+        public static implicit operator EnemyCoordinates(List<Coordinate> @in) => new EnemyCoordinates(@in);
+
         public static EnemyCoordinates Read(BinaryReader br)
         {
             EnemyCoordinates ec = new EnemyCoordinates();
-            Vector3 total = Vector3.Zero;
             foreach (int i in Enumerable.Range(0, ec.enemies.Capacity))
             {
                 Coordinate item = Coordinate.Read(br);
                 ec.Add(item);
-                total += new Vector3(item.x, item.y, item.z);
             }
-            total /= ec.enemies.Capacity;
-            ec.AverageVector = total;
-            ec.MinVector = new Vector3(ec.Min(x => x.x), ec.Min(x => x.y), ec.Min(x => x.z));
-            ec.MaxVector = new Vector3(ec.Max(x => x.x), ec.Max(x => x.y), ec.Max(x => x.z));
-            ec.MidVector = (ec.MinVector + ec.MaxVector) / 2f;
             return ec;
         }
 
