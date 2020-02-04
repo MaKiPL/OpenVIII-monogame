@@ -1,4 +1,5 @@
-﻿using System;
+﻿using K4os.Compression.LZ4;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -199,16 +200,25 @@ namespace OpenVIII
             }
 
             // get params from index
-            uint fsLen = BitConverter.ToUInt32(FI, loc * 12);
+            uint fsUncompressedSize = BitConverter.ToUInt32(FI, loc * 12);
             uint fSpos = BitConverter.ToUInt32(FI, (loc * 12) + 4);
-            bool compe = BitConverter.ToUInt32(FI, (loc * 12) + 8) != 0;
+            uint fsCompressedSize = (loc + 1 * 12 < FI.Length) ? BitConverter.ToUInt32(FI, (loc + 1) * 12) : (uint)FS.Length-fSpos;
+            uint compe = BitConverter.ToUInt32(FI, (loc * 12) + 8);
 
             // copy binary data
-            byte[] file = new byte[fsLen];
+            byte[] file = new byte[fsCompressedSize];
             Array.Copy(FS, fSpos, file, 0, file.Length);
-            return compe ? LZSS.DecompressAllNew(file) : file;
-        }
 
+            return compe == 2 ? lz4decompress(file,fsUncompressedSize) : compe == 1 ? LZSS.DecompressAllNew(file) : file;
+        }
+        byte[] lz4decompress(byte[] file, uint fsUncompressedSize)
+        {
+            ReadOnlySpan<byte> input = new ReadOnlySpan<byte>(file);
+            byte[] r = new byte[fsUncompressedSize + 10];
+            Span<byte> output = new Span<byte>(r);
+            LZ4Codec.Decode(input, output);
+            return output.ToArray();
+        }
         /// <summary>
         /// Search file list for line filename is on.
         /// </summary>
