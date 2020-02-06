@@ -79,7 +79,7 @@ namespace OpenVIII
         public abstract string[] GetListOfFiles();
 
         public abstract Memory.Archive GetPath();
-
+        public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename);
         protected static bool TryAdd(Memory.Archive path, ArchiveBase value)
         {
             if (ArchiveCache.TryAdd(path, value))

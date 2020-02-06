@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,63 +8,21 @@ namespace OpenVIII
 {
     public partial class ArchiveZZZ : ArchiveBase
     {
-        public override ArchiveBase GetArchive(string fileName)
-        {
-            fileName = headerData.GetFilenames().FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
-            if (string.IsNullOrWhiteSpace(fileName)) return null;
-            return GetArchive((Memory.Archive)fileName);
-        }
+        #region Fields
 
-        public override ArchiveBase GetArchive(Memory.Archive archive)
-        {
-            if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))                
-                return ArchiveWorker.Load(archive, GetBinaryFile(fileName: archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));
-            return value;
-        }
+        private const int MaxLocalCache = 10;
+        private static ConcurrentDictionary<string, BufferWithAge> LocalCache = new ConcurrentDictionary<string, BufferWithAge>();
 
-        public override byte[] GetBinaryFile(string fileName, bool cache = false)
-        {
-            if (headerData != null)
-            {
-                FileData filedata = headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
-                //if (string.IsNullOrWhiteSpace(fileName)) return null;
-                //FileData filedata = headerData.First(x => x.Filename == fileName);
-                BinaryReader br;
-                if (filedata != default && (br = Open()) != null)
-                    using (br)
-                    {
-                        Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} extracting {filedata.Filename}");
-                        br.BaseStream.Seek(filedata.Offset, SeekOrigin.Begin);
-                        return br.ReadBytes(checked((int)filedata.Size));
-                    }
-                else
-                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} FAILED extracting {fileName}");
-            }
+        private Memory.Archive _path;
 
-            return null;
-        }
+        private string[] FileList;
 
-        public override string[] GetListOfFiles()
-        {
-            if (FileList == null) FileList = ProduceFileLists();
-            return FileList;
-        }
+        private Header headerData;
 
-        private string[] ProduceFileLists() => headerData?.GetFilenames().ToArray();
+        #endregion Fields
 
-        public override Memory.Archive GetPath() => _path;
+        #region Constructors
 
-        public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
-        {
-            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
-            {
-                return value;
-            }
-            else if (ArchiveBase.TryAdd(path, value = new ArchiveZZZ(path, skiplist)))
-            {
-            }
-            return value;
-        }
         protected ArchiveZZZ(Memory.Archive path, bool skiplist = false)
         {
             ArchiveBase tempArchive = null;
@@ -93,23 +52,142 @@ namespace OpenVIII
             }
             if (!skiplist)
                 FileList = ProduceFileLists();
+        }
 
+        #endregion Constructors
+
+        #region Properties
+
+        public List<Memory.Archive> ParentPath { get; }
+
+        private static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.OrderBy(x => x.Value.Touched).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
+
+        #endregion Properties
+
+        #region Methods
+
+        public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
+        {
+            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            {
+                return value;
+            }
+            else if (ArchiveBase.TryAdd(path, value = new ArchiveZZZ(path, skiplist)))
+            {
+            }
+            return value;
+        }
+
+        public static bool LocalTryAdd(string Key, BufferWithAge Value)
+        {
+            if (LocalCache.TryAdd(Key, Value))
+            {
+                int left = 0;
+                if ((left = OrderByAge.Count() - MaxLocalCache) > 0)
+                {
+                    OrderByAge.Take(left).ForEach(x => LocalCache.TryRemove(x.Key, out BufferWithAge tmp));
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public override ArchiveBase GetArchive(string fileName)
+        {
+            fileName = headerData.GetFilenames().FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (string.IsNullOrWhiteSpace(fileName)) return null;
+            return GetArchive((Memory.Archive)fileName);
+        }
+
+        public override ArchiveBase GetArchive(Memory.Archive archive)
+        {
+            if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
+                return ArchiveWorker.Load(archive, GetBinaryFile(fileName: archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));
+            return value;
+        }
+
+        public override byte[] GetBinaryFile(string fileName, bool cache = false)
+        {
+            if (headerData != null)
+            {
+                FileData filedata = headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+                if (LocalCache.TryGetValue(filedata.Filename, out BufferWithAge value))
+                {
+                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Filename}");
+                    value.Poke(); //reset age of data.
+                    return value;
+                }
+                else
+                {
+                    BinaryReader br;
+                    if (filedata != default && (br = Open()) != null)
+                        using (br)
+                        {
+                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} extracting {filedata.Filename}");
+                            br.BaseStream.Seek(filedata.Offset, SeekOrigin.Begin);
+                            byte[] buffer = br.ReadBytes(checked((int)filedata.Size));
+                            if (cache && LocalTryAdd(filedata.Filename, buffer))
+                            {
+                                Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {filedata.Filename}");
+                            }
+                            return buffer;
+                        }
+                    else
+                        Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} FAILED extracting {fileName}");
+                }
+            }
+
+            return null;
+        }
+
+        public override string[] GetListOfFiles()
+        {
+            if (FileList == null) FileList = ProduceFileLists();
+            return FileList;
+        }
+
+        public override Memory.Archive GetPath() => _path;
+
+        public override StreamWithRangeValues GetStreamWithRangeValues(string filename)
+        {
+            if (headerData != null)
+            {
+                FileData filedata = headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
+                //if (string.IsNullOrWhiteSpace(fileName)) return null;
+                //FileData filedata = headerData.First(x => x.Filename == fileName);
+
+                Stream s;
+                if (filedata != default && (s = OpenStream()) != null)
+                {
+                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} got stream of {filename}");
+                    return new StreamWithRangeValues(s, filedata.Offset, filedata.Size);
+                }
+                else
+                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} FAILED locating {filename}");
+            }
+
+            return null;
         }
 
         private BinaryReader Open()
         {
-            FileStream fs;
-            string path = File.Exists(_path) && _path.IsZZZ ? (string)_path : File.Exists(_path.ZZZ) ? _path.ZZZ : null;
-            if (path != null)
-                return new BinaryReader(fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+            Stream s = OpenStream();
+            if (s != null)
+                return new BinaryReader(s);
             else
                 return null;
         }
 
-        private Header headerData;
-        private Memory.Archive _path;
-        private string[] FileList;
+        private Stream OpenStream()
+        {
+            string path = File.Exists(_path) && _path.IsZZZ ? (string)_path : File.Exists(_path.ZZZ) ? _path.ZZZ : null;
+            if (path != null)
+                return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return null;
+        }
 
-        public List<Memory.Archive> ParentPath { get; }
+        private string[] ProduceFileLists() => headerData?.GetFilenames().ToArray();
+
+        #endregion Methods
     }
 }

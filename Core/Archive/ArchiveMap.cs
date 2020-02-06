@@ -44,9 +44,9 @@ namespace OpenVIII
 
         #region Methods
 
-        public static byte[] Lz4decompress(byte[] input, int fsUncompressedSize, int offset = 12)
+        public static byte[] LZ4Uncompress(byte[] input, int fsUncompressedSize, int offset = 12)
         {
-            Memory.Log.WriteLine($"{nameof(ArchiveMap)}::{nameof(Lz4decompress)} :: decompressing data");
+            Memory.Log.WriteLine($"{nameof(ArchiveMap)}::{nameof(LZ4Uncompress)} :: decompressing data");
             //ReadOnlySpan<byte> input = new ReadOnlySpan<byte>(file);
             byte[] output = new byte[fsUncompressedSize];
             //Span<byte> output = new Span<byte>(r);
@@ -57,7 +57,7 @@ namespace OpenVIII
             }
             if (offset > -1)
             {
-                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(Lz4decompress)}::{nameof(offset)}: {offset}");
+                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(LZ4Uncompress)}::{nameof(offset)}: {offset}");
                 return output;//.ToArray();
             }
             else
@@ -114,7 +114,7 @@ namespace OpenVIII
                     return LZSS.DecompressAllNew(buffer);
 
                 case 2:
-                    return Lz4decompress(buffer, fi.UncompressedSize);
+                    return LZ4Uncompress(buffer, fi.UncompressedSize);
 
                 default:
                     throw new InvalidDataException($"{nameof(fi.CompressionType)}: {fi.CompressionType} is invalid...");

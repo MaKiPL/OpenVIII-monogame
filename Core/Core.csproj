@@ -153,8 +153,10 @@
     <Compile Include="Archive\FI.cs" />
     <Compile Include="Archive\FL.cs" />
     <Compile Include="Archive\ZZZ\ArchiveZZZ.cs" />
+    <Compile Include="Archive\BufferWithAge.cs" />
     <Compile Include="Archive\ZZZ\FileData.cs" />
     <Compile Include="Archive\ZZZ\Header.cs" />
+    <Compile Include="Archive\StreamWithRangeValues.cs" />
     <Compile Include="AV\Audio.cs" />
     <Compile Include="AV\Movie\Directories.cs" />
     <Compile Include="AV\Movie\Files.cs" />
