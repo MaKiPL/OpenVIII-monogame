@@ -58,12 +58,12 @@ namespace OpenVIII.Battle
         public static void Init()
         {
             All = new List<Mag>();
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MAGIC);
+            ArchiveWorker aw = (ArchiveWorker)ArchiveWorker.Load(Memory.Archives.A_MAGIC);
             foreach (KeyValuePair<string, byte[]> i in aw)
             {
                 All.Add(Mag.Load(i.Key, i.Value));
             }
-            aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+            aw = (ArchiveWorker)ArchiveWorker.Load(Memory.Archives.A_BATTLE);
             foreach (KeyValuePair<string, byte[]> i in aw.Where(x => Path.GetFileName(x.Key).StartsWith("mag", System.StringComparison.OrdinalIgnoreCase)))
             {
                 All.Add(Mag.Load(i.Key, i.Value));

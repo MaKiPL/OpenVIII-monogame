@@ -192,7 +192,7 @@ namespace OpenVIII.Fields
         private static void Init()
         {
             Memory.SuppressDraw = true;
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             string[] test = aw.GetListOfFiles();
             FieldMenu = FieldMenu.Create();
             //TODO fix endless look on FieldID 50.

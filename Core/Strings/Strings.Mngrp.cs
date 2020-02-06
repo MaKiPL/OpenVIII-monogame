@@ -49,7 +49,7 @@ namespace OpenVIII
 
             protected void GetFileLocations()
             {
-                ArchiveWorker aw = new ArchiveWorker(Archive, true);
+                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
                 MemoryStream ms = null;
                 byte[] buffer = aw.GetBinaryFile(Filenames[1], true);
                 if (buffer != null)
@@ -77,7 +77,7 @@ namespace OpenVIII
             {
                 Files = new StringFile(118);
                 GetFileLocations();
-                ArchiveWorker aw = new ArchiveWorker(Archive, true);
+                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
                 MemoryStream ms = null;
                 byte[] buffer = aw.GetBinaryFile(Filenames[0], true);
                 if (buffer != null)

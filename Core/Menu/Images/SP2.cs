@@ -258,19 +258,19 @@ namespace OpenVIII
         {
             if (Entries == null)
             {
-                ArchiveWorker aw = new ArchiveWorker(ArchiveString);
+                ArchiveBase aw = ArchiveWorker.Load(ArchiveString);
                 InitEntries(aw);
                 InsertCustomEntries();
                 InitTextures<TEX>(aw);
             }
         }
 
-        protected virtual void InitEntries(ArchiveWorker aw = null)
+        protected virtual void InitEntries(ArchiveBase aw = null)
         {
             if (Entries == null)
             {
                 if (aw == null)
-                    aw = new ArchiveWorker(ArchiveString);
+                    aw = ArchiveWorker.Load(ArchiveString);
                 MemoryStream ms = null;
 
                 ushort[] locs;
@@ -308,7 +308,7 @@ namespace OpenVIII
             }
         }
 
-        protected virtual void InitTextures<T>(ArchiveWorker aw = null) where T : Texture_Base, new()
+        protected virtual void InitTextures<T>(ArchiveBase aw = null) where T : Texture_Base, new()
         {
             int count = (int)Props.Sum(x => x.Count);
             if (Textures == null)
@@ -316,7 +316,7 @@ namespace OpenVIII
             if (Textures.Count <= 0)
             {
                 if (aw == null)
-                    aw = new ArchiveWorker(ArchiveString);
+                    aw = ArchiveWorker.Load(ArchiveString);
                 T tex;
                 Scale = new Dictionary<uint, Vector2>(count);
                 int b = 0;

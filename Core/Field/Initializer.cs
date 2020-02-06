@@ -11,7 +11,7 @@ namespace OpenVIII.Fields
         public static void Init()
         {
             Memory.Log.WriteLine($"{nameof(Fields)} :: {nameof(Initializer)} :: {nameof(Init)}");
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             
             ArchiveBase mapdata = aw.GetArchive("mapdata.fs");
             if (mapdata != null)

@@ -525,7 +525,7 @@ namespace OpenVIII
             public static Data LoadInitOut()
             {
                 Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Data)} :: {nameof(LoadInitOut)} ");
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MAIN, true);
+                ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN, true);
                 byte[] buffer = aw.GetBinaryFile("init.out");
                 if (buffer != null && buffer.Length >0)
                 {

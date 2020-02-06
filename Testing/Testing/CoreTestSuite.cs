@@ -29,10 +29,10 @@ namespace OpenVIII.Tests
             };
 
             Memory.Init(null,null, null);
-            Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
+            //Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
             
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
-            Console.WriteLine(aw._path);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
+            //Console.WriteLine(aw._path);
             var wmxPath = aw.GetListOfFiles();
             Console.WriteLine("Files in Archive (" + Memory.Archives.A_WORLD + ")");
             for (var i = 0; i < wmxPath.Length; i++)
@@ -51,9 +51,9 @@ namespace OpenVIII.Tests
         {
             
             Memory.Init(null,null, null);
-            Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
-            Memory.Archives.A_MAIN._Root = Memory.FF8DIRdata_lang;
-            Memory.Archives.A_MENU._Root = Memory.FF8DIRdata_lang;
+            //Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
+            //Memory.Archives.A_MAIN._Root = Memory.FF8DIRdata_lang;
+            //Memory.Archives.A_MENU._Root = Memory.FF8DIRdata_lang;
             
             Memory.Strings = new Strings();
             

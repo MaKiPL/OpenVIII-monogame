@@ -913,7 +913,7 @@ namespace OpenVIII
                 altid = additionalFileId
             };
             Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
             char et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
             string fileName = entityType == EntityType.Monster ? $"c0m{r.id.ToString("D03")}" :
                 entityType == EntityType.Character || entityType == EntityType.Weapon ? $"d{fileId.ToString("x")}{et}{additionalFileId.ToString("D03")}"
@@ -936,7 +936,7 @@ namespace OpenVIII
 
             r.fileName = fileName;
             if (!string.IsNullOrWhiteSpace(path))
-                r.buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+                r.buffer = aw.GetBinaryFile(path);
             if (r.buffer == null || r.buffer.Length < 0)
             {
                 Debug.WriteLine($"Search String: {searchstring} Not Found skipping {entityType}; So resulting file buffer is null.");

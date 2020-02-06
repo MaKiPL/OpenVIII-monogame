@@ -76,7 +76,7 @@ namespace OpenVIII
         public void LoadFonts()
         {
             Memory.Log.WriteLine($"{nameof(Font)} :: {nameof(LoadFonts)} ");
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
             byte[] bufferTex = aw.GetBinaryFile("sysfnt.tex");
             TEX tex = new TEX(bufferTex);
             sysfnt = tex.GetTexture((int)ColorID.White);

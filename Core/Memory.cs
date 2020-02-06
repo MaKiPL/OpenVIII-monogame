@@ -62,7 +62,7 @@ namespace OpenVIII
         public static float BattleStageScale { get; internal set; } = 100f;
         public static float EnemyCoordinateScale { get; internal set; } = 100f;
 
-        internal static Log Log;
+        public static Log Log;
         public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
         public static List<Task> LeftOverTask = new List<Task>();
@@ -357,6 +357,8 @@ namespace OpenVIII
             }
             //EXE_Offsets test = new EXE_Offsets();
             Inited = true;
+            ArchiveBase.PurgeCache();
+            ArchiveWorker.PurgeLocalCache();
             return 0;
         }
 

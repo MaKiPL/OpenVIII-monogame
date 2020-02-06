@@ -288,8 +288,8 @@ namespace OpenVIII
 
         private static void ReadWorldMapFiles()
         {
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_WORLD);
-            ArchiveWorker awMain = new ArchiveWorker(Memory.Archives.A_MAIN);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
+            ArchiveBase awMain = ArchiveWorker.Load(Memory.Archives.A_MAIN);
 
             string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
             string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
@@ -297,15 +297,15 @@ namespace OpenVIII
             string charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
             string railFile = aw.GetListOfFiles().Where(x => x.ToLower().Contains("rail.obj")).Select(x => x).First();
 
-            wmx = ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmxPath);
-            texl = new texl(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, texlPath));
-            chara = new CharaOne(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, charaOne));
-            wmset = new wmset(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, wmPath));
-            rail = new rail(ArchiveWorker.GetBinaryFile(Memory.Archives.A_WORLD, railFile));
+            wmx = aw.GetBinaryFile(wmxPath);
+            texl = new texl(aw.GetBinaryFile(texlPath));
+            chara = new CharaOne(aw.GetBinaryFile(charaOne));
+            wmset = new wmset(aw.GetBinaryFile(wmPath));
+            rail = new rail(aw.GetBinaryFile(railFile));
 
             string wm2fieldPath = awMain.GetListOfFiles().Where(x => x.ToLower().Contains("wm2field.tbl")).Select(x => x).First();
 
-            wm2field = new wm2field(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, wm2fieldPath));
+            wm2field = new wm2field(awMain.GetBinaryFile(wm2fieldPath));
 
             //let's update chara texture indexes due to worldmap VRAM tex atlas behaviour
             chara.AssignTextureSizesForMchInstance(0, new int[] { 0, 1 }); //naturally

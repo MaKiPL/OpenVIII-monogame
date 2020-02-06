@@ -10,7 +10,7 @@ namespace OpenVIII
     /// <summary>
     /// Attempt at a log class.
     /// </summary>
-    internal class Log : TextWriter
+    public class Log : TextWriter
     {
         private FileStream fs;
         private StreamWriter log;

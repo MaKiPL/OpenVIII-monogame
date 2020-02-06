@@ -589,7 +589,7 @@ namespace OpenVIII
 
         public static Items_In_Menu Read()
         {
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
             byte[] buffer = aw.GetBinaryFile("mitem.bin");
             if(buffer != null)
                 using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))

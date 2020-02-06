@@ -13,7 +13,12 @@ namespace OpenVIII
             return GetArchive((Memory.Archive)fileName);
         }
 
-        public override ArchiveBase GetArchive(Memory.Archive archive) => new ArchiveWorker(GetBinaryFile(archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));
+        public override ArchiveBase GetArchive(Memory.Archive archive)
+        {
+            if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))                
+                return ArchiveWorker.Load(archive, GetBinaryFile(fileName: archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));
+            return value;
+        }
 
         public override byte[] GetBinaryFile(string fileName, bool cache = false)
         {
@@ -47,7 +52,18 @@ namespace OpenVIII
 
         public override Memory.Archive GetPath() => _path;
 
-        public ArchiveZZZ(Memory.Archive path, bool skiplist = false)
+        public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
+        {
+            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            {
+                return value;
+            }
+            else if (ArchiveBase.TryAdd(path, value = new ArchiveZZZ(path, skiplist)))
+            {
+            }
+            return value;
+        }
+        protected ArchiveZZZ(Memory.Archive path, bool skiplist = false)
         {
             Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}:: opening archiveFile: {path}");
             _path = path;
@@ -58,6 +74,7 @@ namespace OpenVIII
             }
             if (!skiplist)
                 FileList = ProduceFileLists();
+
         }
 
         private BinaryReader Open()

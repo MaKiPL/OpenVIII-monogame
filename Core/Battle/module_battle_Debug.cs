@@ -665,8 +665,8 @@ namespace OpenVIII
             {
                 Costumes = new ConcurrentDictionary<Characters, SortedSet<byte>>();
                 Regex r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-                foreach (string s in aw.FileList)
+                ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+                foreach (string s in aw.GetListOfFiles())
                 {
                     Match match = r.Match(s);
                     if (match != null)
@@ -696,9 +696,9 @@ namespace OpenVIII
                 {
                     SortedSet<byte> _weapons = new SortedSet<byte>();
                     Regex r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+                    ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
 
-                    foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
+                    foreach (string s in aw.GetListOfFiles().OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
                     {
                         Match match = r.Match(s);
                         if (match != null)

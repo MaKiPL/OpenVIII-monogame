@@ -197,7 +197,7 @@ namespace OpenVIII
                 if (base.Length == 0 && !HadRead)
                 {
                     HadRead = true;
-                    ArchiveWorker aw = new ArchiveWorker(Archive, true);
+                    ArchiveBase aw = ArchiveWorker.Load(Archive, true);
                     using (BinaryReader br = new BinaryReader(new MemoryStream(aw.GetBinaryFile(Filename, true))))
                     {
                         br.BaseStream.Seek(Offset, SeekOrigin.Begin);

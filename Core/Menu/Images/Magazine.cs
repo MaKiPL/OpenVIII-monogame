@@ -35,7 +35,7 @@ namespace OpenVIII
         /// not used in magzine there is no sp2 file.
         /// </summary>
         /// <param name="aw"></param>
-        protected override void InitEntries(ArchiveWorker aw = null) { }
+        protected override void InitEntries(ArchiveBase aw = null) { }
 
         #endregion Methods
     }

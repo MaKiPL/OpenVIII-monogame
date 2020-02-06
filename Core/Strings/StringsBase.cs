@@ -211,7 +211,7 @@ namespace OpenVIII
 
             protected void LoadArchiveFiles_Simple()
             {
-                ArchiveWorker aw = new ArchiveWorker(Archive, true);
+                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
                 MemoryStream ms;
                 byte[] buffer = aw.GetBinaryFile(Filenames[0]);
                 if (buffer != null)

@@ -42,7 +42,7 @@ namespace OpenVIII
         private static Dictionary<Abilities, Ability> s_allAbilities;
         private static Dictionary<Abilities, Equipable_Ability> s_equipableAbilities;
 
-        private ArchiveWorker aw { get; set; }
+        private ArchiveBase aw { get; set; }
         private Memory.Archive ArchiveString { get; } = Memory.Archives.A_MAIN;
         public static IReadOnlyList<Magic_Data> MagicData => s_magicData; //0
         public static IReadOnlyDictionary<GFs, Junctionable_GFs_Data> JunctionableGFsData => s_junctionableGFsData; //1
@@ -91,7 +91,7 @@ namespace OpenVIII
         {
 
             Memory.Log.WriteLine($"{nameof(Kernel_bin)} :: new ");
-            aw = new ArchiveWorker(ArchiveString);
+            aw = ArchiveWorker.Load(ArchiveString);
             byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0]);
             List<Loc> subPositions = Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions;
 

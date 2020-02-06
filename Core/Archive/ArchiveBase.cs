@@ -1,10 +1,67 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
     public abstract class ArchiveBase
     {
+        private const int MaxInCache = 50;
+        #region Fields
+
+        protected bool isDir = false;
+        private static ConcurrentDictionary<Memory.Archive, ArchiveBase> ArchiveCache = new ConcurrentDictionary<Memory.Archive, ArchiveBase>();
+
+        #endregion Fields
+
+        #region Properties
+
+        public TimeSpan Created { get; protected set; }
+
+        public TimeSpan Used { get; protected set; }
+
+        private static IEnumerable<KeyValuePair<Memory.Archive, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => !x.Value.isDir && x.Value.GetType().Equals(typeof(ArchiveZZZ)));
+
+        private static IEnumerable<KeyValuePair<Memory.Archive, ArchiveBase>> Oldest => NonDirOrZZZ.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
+
+        #endregion Properties
+
+        #region Methods
+
+        public static ArchiveBase Load(Memory.Archive archive)
+        {
+            if (archive.IsDir)
+            {
+                return ArchiveWorker.Load(archive);
+            }
+            else if (archive.IsFile)
+            {
+                if (archive.IsFileArchive || archive.IsFileIndex || archive.IsFileList)
+                {
+                    Memory.Archive a = new Memory.Archive(Path.GetFileNameWithoutExtension(archive), Path.GetDirectoryName(archive));
+                    return ArchiveWorker.Load(a);
+                }
+                else if (archive.IsZZZ)
+                {
+                    return ArchiveZZZ.Load(archive);
+                }
+                else
+                    return ArchiveWorker.Load(archive);
+            }
+            else
+                return null;
+        }
+
+        public static void PurgeCache(bool all = false)
+        {
+            if (all)
+                ArchiveCache.ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase value));
+            else
+                NonDirOrZZZ.ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase value));
+        }
+
         public abstract ArchiveBase GetArchive(string fileName);
 
         public void GetArchive(Memory.Archive archive, out byte[] FI, out byte[] FS, out byte[] FL)
@@ -14,37 +71,39 @@ namespace OpenVIII
             FS = GetBinaryFile(archive.FS);
             FL = GetBinaryFile(archive.FL);
         }
+
         public abstract ArchiveBase GetArchive(Memory.Archive archive);
 
         public abstract byte[] GetBinaryFile(string fileName, bool cache = false);
 
-        //public abstract Stream GetBinaryFileStream(string fileName, bool cache = false);
         public abstract string[] GetListOfFiles();
 
         public abstract Memory.Archive GetPath();
 
-        public static ArchiveBase Open(Memory.Archive archive)
+        protected static bool TryAdd(Memory.Archive path, ArchiveBase value)
         {
-            if (archive.IsDir)
+            if (ArchiveCache.TryAdd(path, value))
             {
-                return new ArchiveWorker(archive);
+                value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                value.Created = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                int overage = 0;
+                if ((overage = Oldest.Count() - MaxInCache) > 0)
+                    Oldest.Take(overage).ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp));
+                return true;
             }
-            else if (archive.IsFile)
-            {
-                if (archive.IsFileArchive || archive.IsFileIndex || archive.IsFileList)
-                {
-                    Memory.Archive a = new Memory.Archive(Path.GetFileNameWithoutExtension(archive), Path.GetDirectoryName(archive));
-                    return new ArchiveWorker(a);
-                }
-                else if (archive.IsZZZ)
-                {
-                    return new ArchiveZZZ(archive);
-                }
-                else
-                    return new ArchiveWorker(archive);
-            }
-            else
-                return null;
+            else return false;
         }
+
+        protected static bool TryGetValue(Memory.Archive path, out ArchiveBase value)
+        {
+            if (ArchiveCache.TryGetValue(path, out value))
+            {
+                value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                return true;
+            }
+            else return false;
+        }
+
+        #endregion Methods
     }
 }

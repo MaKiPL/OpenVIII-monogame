@@ -58,7 +58,7 @@ namespace OpenVIII.Battle
 
         public static BinaryReader Open()
         {
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
             string filename = Memory.Encounters.Filename;
             Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Camera)} :: {filename}");
             byte[] stageBuffer = aw.GetBinaryFile(filename);

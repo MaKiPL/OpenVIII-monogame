@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -295,8 +296,11 @@ namespace OpenVIII
 
         private const string names = "name";
 
-        private ArchiveWorker aw;
-
+        private readonly List<string> logonames;
+        private readonly List<string> loopsnames;
+        private readonly List<string> namesnames;
+        private ArchiveBase aw;
+        private bool disposedValue = false;
         private string filename;
 
         #endregion Fields
@@ -309,7 +313,10 @@ namespace OpenVIII
             {
                 return;
             }
-            aw = new ArchiveWorker(Memory.Archives.A_MAIN);
+            aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
+            loopsnames = lof.Where(x => x.IndexOf(loops, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+            namesnames = lof.Where(x => x.IndexOf(names, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+            logonames = lof.Where(x => x.IndexOf("ff8.lzs", StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
             GetName(splashNum, bNames, bLogo);
             ReadSplash();
         }
@@ -318,59 +325,39 @@ namespace OpenVIII
 
         #region Destructors
 
-
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        ~Splash()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(false);
+        }
 
         #endregion Destructors
 
         #region Properties
 
-        public Texture2D tex { get; private set; }
         public int Height => tex?.Height ?? 0;
+        public Texture2D tex { get; private set; }
         public int Width => tex?.Width ?? 0;
+
+        private string[] lof => aw.GetListOfFiles();
 
         #endregion Properties
 
         #region Methods
 
         public static implicit operator Texture2D(Splash s) => s.tex;
-        
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            GC.SuppressFinalize(this);
+        }
 
         public override string ToString() => filename;
-
-        private void GetName(int splashNum, bool bNames, bool bLogo)
-        {
-            string[] lof = aw.GetListOfFiles();
-            filename = !bLogo
-                ? bNames
-                    ? lof.First(x => x.ToLower().Contains($"{names}{splashNum.ToString("D2")}"))
-                    : lof.First(x => x.ToLower().Contains($"{loops}{splashNum.ToString("D2")}"))
-                : lof.First(x => x.ToLower().Contains($"ff8.lzs"));
-        }
-
-        //Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
-        private void ReadSplash()
-        {
-            byte[] buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_MAIN, filename);
-            string fn = Path.GetFileNameWithoutExtension(filename);
-            uint uncompSize = BitConverter.ToUInt32(buffer, 0);
-            buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
-            buffer = LZSS.DecompressAllNew(buffer);
-            TIM_OVERTURE tim = new TIM_OVERTURE(buffer);
-            if ((fn.Equals("ff8", StringComparison.OrdinalIgnoreCase))||(fn.IndexOf("loop", StringComparison.OrdinalIgnoreCase)>=0))
-            {
-                tim.IgnoreAlpha = true;
-            }
-
-            tex = (Texture2D)TextureHandler.Create(fn, tim, 0);//TIM2.Overture(buffer);
-            //using (FileStream fs = File.Create(Path.Combine("D:\\main", Path.GetFileNameWithoutExtension(filename) + ".png")))
-            //    splashTex.SaveAsPng(fs, splashTex.Width, splashTex.Height);
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
@@ -388,23 +375,37 @@ namespace OpenVIII
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        ~Splash()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(false);
-        }
+        private void GetName(int splashNum, bool bNames, bool bLogo) => filename = !bLogo
+                        ? bNames
+                    ? namesnames.ElementAtOrDefault(splashNum - 1)
+                    : loopsnames.ElementAtOrDefault(splashNum - 1)
+                : logonames.FirstOrDefault();
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
+        //Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg
+        private void ReadSplash()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            GC.SuppressFinalize(this);
+            if (string.IsNullOrWhiteSpace(filename)) return;
+            byte[] buffer = aw.GetBinaryFile(filename);
+            string fn = Path.GetFileNameWithoutExtension(filename);
+            uint uncompSize = BitConverter.ToUInt32(buffer, 0);
+            buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
+            buffer = LZSS.DecompressAllNew(buffer);
+            TIM_OVERTURE tim = new TIM_OVERTURE(buffer);
+            if ((fn.Equals("ff8", StringComparison.OrdinalIgnoreCase)) || (fn.IndexOf("loop", StringComparison.OrdinalIgnoreCase) >= 0))
+            {
+                tim.IgnoreAlpha = true;
+            }
+
+            tex = (Texture2D)TextureHandler.Create(fn, tim, 0);//TIM2.Overture(buffer);
+            //using (FileStream fs = File.Create(Path.Combine("D:\\main", Path.GetFileNameWithoutExtension(filename) + ".png")))
+            //    splashTex.SaveAsPng(fs, splashTex.Width, splashTex.Height);
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
-        #endregion
 
         #endregion Methods
+
+        // To detect redundant calls
     }
 }

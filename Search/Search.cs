@@ -47,7 +47,7 @@ namespace OpenVIII.Search
             s = searchstring;
             foreach (Memory.Archive a in ArchiveList)
             {
-                ArchiveWorker aw = new ArchiveWorker(a);
+                ArchiveBase aw = ArchiveWorker.Load(a);
                 string[] lof = aw.GetListOfFiles();
                 foreach (string f in lof)
                 {
