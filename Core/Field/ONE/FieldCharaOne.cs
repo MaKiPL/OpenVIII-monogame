@@ -44,7 +44,7 @@ namespace OpenVIII.Fields
 
 
             string one;
-            string main_chr;
+            //string main_chr;
             try
             {
                 one = test_.First(x => x.EndsWith(".one",StringComparison.OrdinalIgnoreCase));

@@ -144,6 +144,8 @@ namespace OpenVIII
             return null;
         }
 
+        public override string ToString() => $"{_path} :: {Used}";
+
         private BinaryReader Open()
         {
             Stream s = OpenStream();

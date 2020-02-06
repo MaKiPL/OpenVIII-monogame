@@ -299,7 +299,6 @@ namespace OpenVIII
         private readonly List<string> logonames;
         private readonly List<string> loopsnames;
         private readonly List<string> namesnames;
-        private ArchiveBase aw;
         private bool disposedValue = false;
         private string filename;
 
@@ -313,7 +312,8 @@ namespace OpenVIII
             {
                 return;
             }
-            aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
+            var lof = aw.GetListOfFiles();
             loopsnames = lof.Where(x => x.IndexOf(loops, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
             namesnames = lof.Where(x => x.IndexOf(names, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
             logonames = lof.Where(x => x.IndexOf("ff8.lzs", StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
@@ -339,8 +339,6 @@ namespace OpenVIII
         public int Height => tex?.Height ?? 0;
         public Texture2D tex { get; private set; }
         public int Width => tex?.Width ?? 0;
-
-        private string[] lof => aw.GetListOfFiles();
 
         #endregion Properties
 
@@ -385,6 +383,7 @@ namespace OpenVIII
         private void ReadSplash()
         {
             if (string.IsNullOrWhiteSpace(filename)) return;
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
             byte[] buffer = aw.GetBinaryFile(filename);
             string fn = Path.GetFileNameWithoutExtension(filename);
             uint uncompSize = BitConverter.ToUInt32(buffer, 0);

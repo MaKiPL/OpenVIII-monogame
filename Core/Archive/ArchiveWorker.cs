@@ -24,6 +24,7 @@ namespace OpenVIII
 
         #region Constructors
 
+        public override string ToString() => $"{_path} :: {Used}";
         /// <summary>
         /// Saves the active archive and file list.
         /// </summary>

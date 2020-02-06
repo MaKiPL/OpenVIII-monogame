@@ -10,7 +10,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        protected const int MaxLocalCache = 10;
+        protected const int MaxLocalCache = 5;
         protected static ConcurrentDictionary<string, BufferWithAge> LocalCache = new ConcurrentDictionary<string, BufferWithAge>();
         protected Memory.Archive _path;
 
@@ -20,7 +20,7 @@ namespace OpenVIII
         protected string[] FileList;
 
         protected bool isDir = false;
-        private const int MaxInCache = 50;
+        private const int MaxInCache = 5;
         private static ConcurrentDictionary<Memory.Archive, ArchiveBase> ArchiveCache = new ConcurrentDictionary<Memory.Archive, ArchiveBase>();
 
         #endregion Fields
@@ -92,6 +92,8 @@ namespace OpenVIII
         public abstract Memory.Archive GetPath();
 
         public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename);
+
+        public override string ToString() => $"{_path} :: {Used}";
 
         protected static bool LocalTryAdd(string Key, BufferWithAge Value)
         {
