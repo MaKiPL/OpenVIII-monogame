@@ -10,6 +10,15 @@ namespace OpenVIII
     {
         #region Fields
 
+        protected const int MaxLocalCache = 10;
+        protected static ConcurrentDictionary<string, BufferWithAge> LocalCache = new ConcurrentDictionary<string, BufferWithAge>();
+        protected Memory.Archive _path;
+
+        /// <summary>
+        /// Generated File List
+        /// </summary>
+        protected string[] FileList;
+
         protected bool isDir = false;
         private const int MaxInCache = 50;
         private static ConcurrentDictionary<Memory.Archive, ArchiveBase> ArchiveCache = new ConcurrentDictionary<Memory.Archive, ArchiveBase>();
@@ -21,6 +30,8 @@ namespace OpenVIII
         public TimeSpan Created { get; protected set; }
 
         public TimeSpan Used { get; protected set; }
+
+        protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.OrderBy(x => x.Value.Touched).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
         private static IEnumerable<KeyValuePair<Memory.Archive, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => !x.Value.isDir && x.Value.GetType().Equals(typeof(ArchiveZZZ)));
 
@@ -79,7 +90,23 @@ namespace OpenVIII
         public abstract string[] GetListOfFiles();
 
         public abstract Memory.Archive GetPath();
+
         public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename);
+
+        protected static bool LocalTryAdd(string Key, BufferWithAge Value)
+        {
+            if (LocalCache.TryAdd(Key, Value))
+            {
+                int left = 0;
+                if ((left = OrderByAge.Count() - MaxLocalCache) > 0)
+                {
+                    OrderByAge.Take(left).ForEach(x => LocalCache.TryRemove(x.Key, out BufferWithAge tmp));
+                }
+                return true;
+            }
+            return false;
+        }
+
         protected static bool TryAdd(Memory.Archive path, ArchiveBase value)
         {
             if (ArchiveCache.TryAdd(path, value))
@@ -124,6 +151,16 @@ namespace OpenVIII
                     }
                 }
             return null;
+        }
+
+        protected bool LocalTryGetValue(string filename, out BufferWithAge value)
+        {
+            if (LocalCache.TryGetValue(filename, out value))
+            {
+                value.Poke();
+                return true;
+            }
+            return false;
         }
 
         #endregion Methods

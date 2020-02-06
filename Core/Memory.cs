@@ -357,8 +357,7 @@ namespace OpenVIII
             }
             //EXE_Offsets test = new EXE_Offsets();
             Inited = true;
-            ArchiveBase.PurgeCache();
-            ArchiveWorker.PurgeLocalCache();
+            ArchiveBase.PurgeCache();//remove files probably no longer needed.
             return 0;
         }
 

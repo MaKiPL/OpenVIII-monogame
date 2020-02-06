@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,13 +8,6 @@ namespace OpenVIII
     public partial class ArchiveZZZ : ArchiveBase
     {
         #region Fields
-
-        private const int MaxLocalCache = 10;
-        private static ConcurrentDictionary<string, BufferWithAge> LocalCache = new ConcurrentDictionary<string, BufferWithAge>();
-
-        private Memory.Archive _path;
-
-        private string[] FileList;
 
         private Header headerData;
 
@@ -60,8 +52,6 @@ namespace OpenVIII
 
         public List<Memory.Archive> ParentPath { get; }
 
-        private static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.OrderBy(x => x.Value.Touched).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
-
         #endregion Properties
 
         #region Methods
@@ -76,20 +66,6 @@ namespace OpenVIII
             {
             }
             return value;
-        }
-
-        public static bool LocalTryAdd(string Key, BufferWithAge Value)
-        {
-            if (LocalCache.TryAdd(Key, Value))
-            {
-                int left = 0;
-                if ((left = OrderByAge.Count() - MaxLocalCache) > 0)
-                {
-                    OrderByAge.Take(left).ForEach(x => LocalCache.TryRemove(x.Key, out BufferWithAge tmp));
-                }
-                return true;
-            }
-            return false;
         }
 
         public override ArchiveBase GetArchive(string fileName)
@@ -111,10 +87,9 @@ namespace OpenVIII
             if (headerData != null)
             {
                 FileData filedata = headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
-                if (LocalCache.TryGetValue(filedata.Filename, out BufferWithAge value))
+                if (LocalTryGetValue(filedata.Filename, out BufferWithAge value))
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Filename}");
-                    value.Poke(); //reset age of data.
                     return value;
                 }
                 else

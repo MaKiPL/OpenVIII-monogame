@@ -31,7 +31,7 @@ CompuServe	74050,1022
 
         public static byte[] DecompressAllNew(byte[] data, bool skip = false)
         {
-            Memory.Log.WriteLine($"{nameof(LZSS)}::{nameof(DecompressAllNew)} :: decompressing data");
+            //Memory.Log.WriteLine($"{nameof(LZSS)}::{nameof(DecompressAllNew)} :: decompressing data");
             byte[] outfilearray; 
             using (MemoryStream infile = new MemoryStream(!skip?data:data.Skip(4).ToArray()))
             {
