@@ -16,12 +16,21 @@ namespace OpenVIII.Fields
             ArchiveBase mapdata = aw.GetArchive("mapdata.fs");
             if (mapdata != null)
             {
-                string map = mapdata.GetListOfFiles()[0];
-                string[] maplistb = System.Text.Encoding.UTF8.GetString(mapdata.GetBinaryFile(map))
-                    .Replace("\r", "")
-                    .Split('\n');
-                Memory.FieldHolder.fields = maplistb;
-                FieldId.FieldId_ = maplistb;
+
+                string[] v = mapdata.GetListOfFiles();
+                string map = v?[0];
+                if (map != null)
+                {
+                    byte[] bytes = mapdata.GetBinaryFile(map);
+                    if (bytes != null)
+                    {
+                        string[] maplistb = System.Text.Encoding.UTF8.GetString(bytes)
+                            .Replace("\r", "")
+                            .Split('\n');
+                        Memory.FieldHolder.fields = maplistb;
+                        FieldId.FieldId_ = maplistb;
+                    }
+                }
             }
         }
 

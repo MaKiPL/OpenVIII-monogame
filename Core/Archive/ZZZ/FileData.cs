@@ -4,7 +4,7 @@ namespace OpenVIII
 {
     public partial class ArchiveZZZ
     {
-        private struct FileData
+        private class FileData
         {
             public string Filename { get; set; }
             public long Offset { get; set; }

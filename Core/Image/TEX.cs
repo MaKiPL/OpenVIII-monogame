@@ -80,6 +80,8 @@ namespace OpenVIII
         {
             if (!CLP)
                 return null;
+            else if (texture.NumOfCluts == 0)
+                return null;
             else if (clut >= texture.NumOfCluts)
                 throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {texture.NumOfCluts}");
 

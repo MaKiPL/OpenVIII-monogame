@@ -71,6 +71,7 @@ namespace OpenVIII
             protected void Get_Strings_BinMSG(BinaryReader br, string filename, uint PointerStart, uint StringStart, uint grab = 0, uint skip = 0)
             {
                 Loc fpos = Files.subPositions[(int)PointerStart];
+                if (fpos.seek > br.BaseStream.Length || fpos.seek < 0) return;
                 br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
                 if (Files.sPositions.ContainsKey(PointerStart))
                 {
@@ -113,6 +114,7 @@ namespace OpenVIII
                 uint[] fPaddings;
                 fPaddings = mngrp_read_padding(br, Files.subPositions[(int)key], 1);
                 Files.sPositions.Add(key, new List<FF8StringReference>());
+                if (fPaddings == null) return;
                 for (uint p = 0; p < fPaddings.Length; p += 2)
                 {
                     key = list[(int)fPaddings[(int)p + 1]];
@@ -146,11 +148,13 @@ namespace OpenVIII
             {
                 Loc fpos = Files.subPositions[(int)key];
                 uint[] fPaddings = pad ? mngrp_read_padding(br, fpos) : (new uint[] { 1 });
+                if (fPaddings == null) return;
                 Files.sPositions.Add(key, new List<FF8StringReference>());
                 for (uint p = 0; p < fPaddings.Length; p++)
                 {
                     if (fPaddings[p] <= 0) continue;
                     uint fpad = pad ? fPaddings[p] + fpos.seek : fpos.seek;
+                    if (fpad > br.BaseStream.Length || fpad < 0) return;
                     br.BaseStream.Seek(fpad, SeekOrigin.Begin);
                     if (br.BaseStream.Position + 4 < br.BaseStream.Length)
                     {
@@ -175,6 +179,7 @@ namespace OpenVIII
             protected uint[] mngrp_read_padding(BinaryReader br, Loc fpos, int type = 0)
             {
                 uint[] fPaddings = null;
+                if (fpos.seek < 0 || fpos.seek > br.BaseStream.Length) return null;
                 br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
                 uint size = type == 0 ? br.ReadUInt16() : br.ReadUInt32();
                 fPaddings = new uint[type == 0 ? size : size * type * 2];

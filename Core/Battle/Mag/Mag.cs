@@ -181,12 +181,13 @@ namespace OpenVIII.Battle
             int count = br.ReadInt32();
             //count = count > 0x24 ? 0x24 : count; // unsure why.
             List<uint> positions = new List<uint>();
-            while (count-- > 0)
+            while (count-- > 0 && br.BaseStream.Position+4 < br.BaseStream.Length)
             {
                 uint pos = br.ReadUInt32();
                 if (pos > 0 && pos + pGeometry < br.BaseStream.Length)
                     positions.Add(pos + pGeometry);
             }
+            if (count > 0) return;
 
             Geometries = new List<Geometry>(positions.Count);
 
@@ -210,6 +211,7 @@ namespace OpenVIII.Battle
                 uint _verticesOffset = br.ReadUInt16() + pos;
                 ReadVertices();
                 if (OnlyVertex) { continue; }
+                if (_relativeJump > br.BaseStream.Length) return;
                 br.BaseStream.Seek(_relativeJump, SeekOrigin.Begin);
                 ushort _polygonType = br.ReadUInt16();
                 ushort polygons = br.ReadUInt16();

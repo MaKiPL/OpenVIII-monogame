@@ -68,8 +68,13 @@ namespace OpenVIII
         {
             if (Player == null || Player.IsDisposed)
                 Play();
-            Player?.Update();
-            Inputs();
+            if (Player == null) // player is still null move on.
+                Return();
+            else
+            {
+                Player?.Update();
+                Inputs();
+            }
         }
 
         public static void Draw() => Player?.Draw();

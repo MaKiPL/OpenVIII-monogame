@@ -129,7 +129,7 @@ namespace OpenVIII
 
         public static explicit operator Texture2D(TextureBuffer @in)
         {
-            if (Memory.graphics?.GraphicsDevice != null)
+            if (Memory.graphics?.GraphicsDevice != null&& @in.Width>0 && @in.Height >0)
             {
                 Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, @in.Width, @in.Height);
                 @in.SetData(tex);

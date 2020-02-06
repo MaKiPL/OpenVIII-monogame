@@ -62,7 +62,7 @@ namespace OpenVIII
 
             protected override void GetFileLocations(BinaryReader br)
             {
-                while (br.BaseStream.Position < br.BaseStream.Length)
+                while (br.BaseStream.Position+8 < br.BaseStream.Length)
                 {
                     Loc loc = new Loc() { seek = br.ReadUInt32(), length = br.ReadUInt32() };
                     if (loc.seek != 0xFFFFFFFF && loc.length != 0x00000000)

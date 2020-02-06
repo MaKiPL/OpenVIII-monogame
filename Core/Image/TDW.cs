@@ -27,8 +27,9 @@ namespace OpenVIII
 
         private void GetWidths(byte[] Tdw, uint offset, uint length)
         {
+            if (length > int.MaxValue) return;
             MemoryStream ms = new MemoryStream(Tdw);
-            MemoryStream os = new MemoryStream((int)length * 2);
+            MemoryStream os = new MemoryStream(checked((int)length * 2));
             //BinaryWriter and BinaryReader dispose of streams
             using (BinaryWriter bw = new BinaryWriter(os)) 
             using (BinaryReader br = new BinaryReader(ms))
