@@ -335,7 +335,7 @@ namespace OpenVIII.IGMData
                 if (ret && !mouse)
                 {
                     if (!skipsnd)
-                        init_debugger_Audio.PlaySound(0);
+                        AV.Sound.Play(0);
                 }
             }
             skipsnd = false;
@@ -345,45 +345,45 @@ namespace OpenVIII.IGMData
         public virtual bool Inputs_CANCEL()
         {
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(8);
+                AV.Sound.Play(8);
             return false;
         }
 
         public virtual void Inputs_Cards()
         {
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(0);
+                AV.Sound.Play(0);
         }
 
         public virtual void Inputs_Left()
         {
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(0);
+                AV.Sound.Play(0);
         }
 
         public virtual void Inputs_Menu()
         {
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(31);
+                AV.Sound.Play(31);
         }
 
         public virtual bool Inputs_RotateRight()
         {
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(0);
+                AV.Sound.Play(0);
             return false;
         }
         public virtual bool Inputs_OKAY()
         {
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(0);
+                AV.Sound.Play(0);
             return false;
         }
 
         public virtual void Inputs_Right()
         {
             if (!skipsnd)
-                init_debugger_Audio.PlaySound(0);
+                AV.Sound.Play(0);
         }
 
         public override void Refresh()

@@ -27,7 +27,7 @@ namespace OpenVIII
                 {
                     case 0:
                         skipsnd = true;
-                        init_debugger_Audio.PlaySound(31);
+                        AV.Sound.Play(31);
                         base.Inputs_OKAY();
                         if (Damageable.GetCharacterData(out Saves.CharacterData c))
                             c.RemoveAll();

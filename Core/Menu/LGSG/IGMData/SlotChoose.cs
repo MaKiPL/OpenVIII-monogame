@@ -35,7 +35,7 @@ namespace OpenVIII
             {
                 base.Inputs_CANCEL();
                 if (!Save)
-                    init_debugger_Audio.StopMusic();
+                    AV.Music.Stop();
                 Menu.FadeIn();
                 Menu.Module.State = MenuModule.Mode.MainLobby;
 

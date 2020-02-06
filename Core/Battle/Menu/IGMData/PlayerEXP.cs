@@ -83,7 +83,7 @@ namespace OpenVIII.IGMData
                         if (lvl != _lvl && _lvl != 0 && !NoEarnExp)
                         {
                             //trigger level up message and sound effect
-                            init_debugger_Audio.PlaySound(0x28);
+                            AV.Sound.Play(0x28);
                             ITEM[0, 10].Show();
                         }
                     ((IGMDataItem.Integer)ITEM[0, 2]).Data = _lvl = lvl;

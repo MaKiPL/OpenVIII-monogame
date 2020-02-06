@@ -8,10 +8,10 @@ namespace OpenVIII
 {
     public abstract class ArchiveBase
     {
-        private const int MaxInCache = 50;
         #region Fields
 
         protected bool isDir = false;
+        private const int MaxInCache = 50;
         private static ConcurrentDictionary<Memory.Archive, ArchiveBase> ArchiveCache = new ConcurrentDictionary<Memory.Archive, ArchiveBase>();
 
         #endregion Fields
@@ -102,6 +102,28 @@ namespace OpenVIII
                 return true;
             }
             else return false;
+        }
+
+        protected List<Memory.Archive> FindParentPath(Memory.Archive path)
+        {
+            if (path.Parent != null)
+                foreach (Memory.Archive pathParent in path.Parent)
+                {
+                    if (pathParent.IsDir)
+                        return new List<Memory.Archive> { pathParent };
+                    else if (pathParent.IsFile)
+                        return new List<Memory.Archive> { pathParent };
+                    else if (pathParent.Parent != null && pathParent.Parent.Count > 0)
+                    {
+                        List<Memory.Archive> returnList = FindParentPath(pathParent);
+                        if (returnList != null && returnList.Count > 0)
+                        {
+                            returnList.Add(pathParent);
+                            return returnList;
+                        }
+                    }
+                }
+            return null;
         }
 
         #endregion Methods

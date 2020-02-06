@@ -40,7 +40,7 @@ namespace OpenVIII
                         default: return false;
                     }
                 skipsnd = true;
-                init_debugger_Audio.PlaySound(31);
+                AV.Sound.Play(31);
                 Inputs_CANCEL();
                 IGM_Junction.Refresh();
                 return true;

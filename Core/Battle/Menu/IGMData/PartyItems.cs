@@ -47,7 +47,7 @@ namespace OpenVIII.IGMData
         public void Earn()
         {
             skipsnd = true;
-            init_debugger_Audio.PlaySound(17);
+            AV.Sound.Play(17);
         }
 
         public override bool Inputs_CANCEL() => false;

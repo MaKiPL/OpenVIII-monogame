@@ -92,7 +92,7 @@ namespace OpenVIII
                     if (ret)
                     {
                         if (!skipsnd)
-                            init_debugger_Audio.PlaySound(0);
+                            AV.Sound.Play(0);
                     }
                 }
                 if (!ret)

@@ -26,7 +26,7 @@ namespace OpenVIII
             // when it runs out.
             else if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
-                init_debugger_Audio.PlaySound(0);
+                AV.Sound.Play(0);
                 if (Module_movie_test.Index > 0)
                     Module_movie_test.Index--;
                 else
@@ -35,7 +35,7 @@ namespace OpenVIII
             }
             else if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
-                init_debugger_Audio.PlaySound(0);
+                AV.Sound.Play(0);
                 if (Module_movie_test.Index < Movie.Files.Count - 1)
                     Module_movie_test.Index++;
                 else

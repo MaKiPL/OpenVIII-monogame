@@ -175,7 +175,7 @@ namespace OpenVIII.IGMData
                     Module_overture_debug.ResetModule();
                     Memory.Module = MODULE.OVERTURE_DEBUG;
                     Memory.IsMouseVisible = false;
-                    init_debugger_Audio.StopMusic();
+                    AV.Music.Stop();
                     return true;
                 } },
                 { Ditems.Battle, ()=> {
@@ -206,11 +206,11 @@ namespace OpenVIII.IGMData
                 }  },
                 { Ditems.Music, ()=> {
                     Fields.Module.ResetField();
-                    init_debugger_Audio.PlayStopMusic();
+                    AV.Music.PlayStop();
                     return true;
                 }  },
                 { Ditems.Sounds, ()=> {
-                    init_debugger_Audio.PlaySound(debug_choosedAudio);
+                    AV.Sound.Play(debug_choosedAudio);
                     skipsnd = true;
                     return true;
                 }  },
@@ -276,7 +276,7 @@ namespace OpenVIII.IGMData
                     if (debug_choosedAudio > 0)
                         debug_choosedAudio--;
                     else
-                        debug_choosedAudio = init_debugger_Audio.soundEntriesCount-1;
+                        debug_choosedAudio = AV.Sound.EntriesCount-1;
                     return true;
                 }  }
             };
@@ -309,7 +309,7 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
                 { Ditems.Sounds, ()=> {
-                    if (debug_choosedAudio < init_debugger_Audio.soundEntriesCount-1)
+                    if (debug_choosedAudio < AV.Sound.EntriesCount-1)
                         debug_choosedAudio++;
                     else
                         debug_choosedAudio = 0;

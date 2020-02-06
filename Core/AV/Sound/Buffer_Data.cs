@@ -13,10 +13,16 @@
 
         public UInt32 DataSeekLoc;
         public UInt32 DataSize;
-        private IntPtr Header;
         public UInt32 HeaderSize;
+        private IntPtr Header;
 
         #endregion Fields
+
+        #region Properties
+
+        public static string DataFileName { get; private set; }
+
+        #endregion Properties
 
         #region Methods
 
@@ -33,24 +39,34 @@
 
         public unsafe void SetHeader(byte* value) => Header = (IntPtr)value;
 
-        public static string DataFileName { get; private set;  }
-
         private unsafe int ReadData(byte* buf, int buf_size)
         {
             if (string.IsNullOrWhiteSpace(DataFileName))
                 DataFileName = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat");
+
+
+            //Memory.Archive Sound = new Memory.Archive("audio.dat")
             buf_size = Math.Min(buf_size, (int)DataSize);
 
             if (buf_size == 0)
             {
                 return ffmpeg.AVERROR_EOF;
             }
-            FileStream fs = null;
+            Stream s = null;
+            if (File.Exists(DataFileName))
+            {
+                s = new FileStream(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            }
+            else
+            {
+                ArchiveBase other = ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                s = new MemoryStream(other.GetBinaryFile("audio.dat", true), false);
+            }
 
             // binaryReader disposes of fs
-            using (BinaryReader br = new BinaryReader(fs = File.Open(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (BinaryReader br = new BinaryReader(s))
             {
-                fs.Seek(DataSeekLoc, SeekOrigin.Begin);
+                s.Seek(DataSeekLoc, SeekOrigin.Begin);
                 using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
                 {
                     // copy public buffer data to buf
@@ -58,7 +74,7 @@
                     DataSeekLoc += (uint)buf_size;
                     DataSize -= (uint)buf_size;
 
-                    fs = null;
+                    s = null;
                     return buf_size;
                 }
             }

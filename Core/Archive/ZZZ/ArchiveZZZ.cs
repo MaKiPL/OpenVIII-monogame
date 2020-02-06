@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -65,8 +66,26 @@ namespace OpenVIII
         }
         protected ArchiveZZZ(Memory.Archive path, bool skiplist = false)
         {
-            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}:: opening archiveFile: {path}");
+            ArchiveBase tempArchive = null;
+            ParentPath = FindParentPath(path);
+            if (ParentPath != null && ParentPath.Count > 0)
+                foreach (Memory.Archive p in ParentPath)
+                {
+                    if (p.IsDir)
+                    {
+                        tempArchive = ArchiveBase.Load(p);
+                    }
+                    else if (tempArchive != null)
+                    {
+                        throw new Exception("zzz shouldn't be inside an archive.");
+                    }
+                }
             _path = path;
+            if (tempArchive != null)
+            {
+                _path = tempArchive.GetListOfFiles().FirstOrDefault(x => x.IndexOf(path.ZZZ, StringComparison.OrdinalIgnoreCase) > 0);
+            }
+            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}:: opening archiveFile: {_path}");
             using (BinaryReader br = Open())
             {
                 if (br == null) return;
@@ -90,5 +109,7 @@ namespace OpenVIII
         private Header headerData;
         private Memory.Archive _path;
         private string[] FileList;
+
+        public List<Memory.Archive> ParentPath { get; }
     }
 }

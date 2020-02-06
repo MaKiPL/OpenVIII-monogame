@@ -180,7 +180,7 @@ namespace OpenVIII
         {
             if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
-                init_debugger_Audio.StopMusic();
+                AV.Music.Stop();
                 Memory.Module = MODULE.MAINMENU_DEBUG;
             }
             switch (publicModule)
@@ -268,7 +268,7 @@ namespace OpenVIII
 
         private static void InitSound()
         {
-            init_debugger_Audio.PlayMusic(79, loop: false);
+            AV.Music.Play(79, loop: false);
             Memory.MusicIndex = ushort.MaxValue; // reset pos after playing overture; will loop back to start if push next
             publicModule++;
         }

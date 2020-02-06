@@ -66,7 +66,7 @@ namespace OpenVIII.Fields
                 worldMatrix = Matrix.CreateTranslation(0, 0, 0);
                 //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
                 //Memory.musicIndex = 30;
-                //init_debugger_Audio.PlayMusic();
+                //AV.Music.Play();
                 ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
                 {
                     Projection = projectionMatrix,
