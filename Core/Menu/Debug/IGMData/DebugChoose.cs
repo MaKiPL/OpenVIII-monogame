@@ -216,6 +216,7 @@ namespace OpenVIII.IGMData
                 }  },
                 { Ditems.World, ()=> {
                     Menu.FadeIn();
+                    Module_world_debug.playerPosition = new Vector3(-9105f, 30f, -4466); //reset for sake of debugging
                     Memory.Module = MODULE.WORLD_DEBUG;
                     Memory.IsMouseVisible = false;
                     return true;

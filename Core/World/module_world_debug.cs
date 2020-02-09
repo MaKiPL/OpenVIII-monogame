@@ -21,7 +21,7 @@ namespace OpenVIII
         private static float camDistance = 10.0f;
         private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
+        public static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -868,6 +868,32 @@ namespace OpenVIII
                 );
 #endif
 
+            //WORLD MAP TO FIELD CHECK- it should be done on already walked polygon so the player will be able to
+            //enter the triangle with warp zone and warp AFTER that, not just as he enters it
+            if(activeCollidePolygon != null)
+                if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
+            {
+                foreach (var warpZone in wmset.section8WarpZones)
+                {
+                    int fieldId = wm2field.GetFieldId(warpZone.field);
+                    bool bShouldWarp = true;
+                    if (warpZone.segmentId != GetRealSegmentId())
+                        continue;
+                    foreach (var condition in warpZone.conditions)
+                    {
+                        //test conditions here, so far we don't really know them much- therefore
+                        //for balamb town it's simple, but fire cavern and Balamb Garden are on the same segment
+                        //so there should be additional check to test if we want specific stage or not
+                    }
+                    if (bShouldWarp)
+                    {
+                        Memory.FieldHolder.FieldID = (ushort)fieldId;
+                        Memory.Module = MODULE.FIELD_DEBUG;
+                    }
+                        activeCollidePolygon = null; //invalidate current polygon so you won't warp twice when field2wm
+                }
+            }
+
             const float forestAdj = 0f;//-12f;
             foreach (RayCastedTris prt in RaycastedTris)
             {
@@ -890,8 +916,8 @@ namespace OpenVIII
 #endif
                 return;
             }
-            //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
 
+            //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
             foreach (RayCastedTris prt in RaycastedTris)
             {
                 if (!prt.sky) //we do not want skyRaycasts here, iterate only characterRay
@@ -906,6 +932,10 @@ namespace OpenVIII
 #endif
                 return;
             }
+
+            
+
+
             if (!BDebugDisableCollision)
                 playerPosition = lastPlayerPosition;
         }
