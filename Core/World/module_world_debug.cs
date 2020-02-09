@@ -881,16 +881,18 @@ namespace OpenVIII
                         continue;
                     foreach (var condition in warpZone.conditions)
                     {
-                        //test conditions here, so far we don't really know them much- therefore
-                        //for balamb town it's simple, but fire cavern and Balamb Garden are on the same segment
-                        //so there should be additional check to test if we want specific stage or not
+                        //test conditions here, so far we don't really know them much enough
+                        //for example fire cavern is on the same segment as Balamb, so there's additional check with
+                        //the player position. The Fullscreen map is also created by section8 (probably)
                     }
                     if (bShouldWarp)
                     {
+                            Fields.Module.ResetField();
                         Memory.FieldHolder.FieldID = (ushort)fieldId;
                         Memory.Module = MODULE.FIELD_DEBUG;
                     }
                         activeCollidePolygon = null; //invalidate current polygon so you won't warp twice when field2wm
+                        //invalidating activecollidepolygon is not enough- set the position too by wmset.section9
                 }
             }
 

@@ -218,11 +218,23 @@ namespace OpenVIII.Core.World
         public enum worldScriptOpcodes : ushort
         {
             Mode1 = 0xFF01,
+            unkBelov = 0xFF02, //word 2036BDE, on disc3 it's 0xECE
+            unkAbove = 0xFF03, //see above
             Mode2 = 0xFF04, //probably so-called null animation
-            SetRegionId = 0xFF06,
+            SetRegionId = 0xFF06, //for example 283 (If I remember correctly) for Balamb
+            playerPositionUnk = 0xFF07, //probably X and Y for worldmap
             wm2fieldEntryId = 0xFF08,
             CheckForVehicle = 0xFF09,
-            ScriptEnd = 0xFF16
+            squallXlocAbove = 0xFF0F,
+            squallZLocAbove = 0xFF10,
+            squallXlocBelow = 0xFF11,
+            squallZlocBelow = 0xFF12,
+            setUnk = 0xFF12,
+            ScriptEnd = 0xFF16,
+            setUnk2 = 0xFF17,
+            unkBelov2 = 0xFF1A, 
+            ReturnMinusOne = 0xFF1E, //return -1
+            checkVehicleArgument = 0xFF25, //checks argument for vehicle Id
         }
 
         public struct section8ConditionArgument
@@ -234,6 +246,8 @@ namespace OpenVIII.Core.World
         public struct section8WarpZone
         {
             public int field;
+            public bool bAlreadySetField; //only for openviii and testing purpouses- based on conditions one thing can
+                                            //point to different fields. This is to make sure only first fieldId is set
             public int segmentId;
             public section8ConditionArgument[] conditions;
         }
@@ -261,6 +275,7 @@ namespace OpenVIII.Core.World
                     short Mode = 0;
                     Mode = (short)br.ReadUInt32();
                     section8WarpZone localZone = new section8WarpZone();
+                    localZone.field = -1;
                     List<section8ConditionArgument> conditions = new List<section8ConditionArgument>();
                     while(true)
                     {
@@ -275,9 +290,11 @@ namespace OpenVIII.Core.World
                         switch(opcode)
                         {
                             case worldScriptOpcodes.SetRegionId:
+                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
                                 localZone.segmentId = argument;
                                 break;
                             case worldScriptOpcodes.wm2fieldEntryId:
+                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
                                 localZone.field = argument;
                                 break;
                             default:
