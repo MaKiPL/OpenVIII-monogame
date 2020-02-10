@@ -81,12 +81,12 @@ namespace OpenVIII
                 return ArchiveWorker.Load(archive, GetBinaryFile(fileName: archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));
             return value;
         }
-
+        
         public override byte[] GetBinaryFile(string fileName, bool cache = false)
         {
             if (headerData != null)
             {
-                FileData filedata = headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+                FileData filedata = GetFileData(fileName);
                 if (LocalTryGetValue(filedata.Filename, out BufferWithAge value))
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Filename}");
@@ -114,6 +114,8 @@ namespace OpenVIII
 
             return null;
         }
+
+        public FileData GetFileData(string fileName) => headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
 
         public override string[] GetListOfFiles()
         {
@@ -146,7 +148,7 @@ namespace OpenVIII
 
         public override string ToString() => $"{_path} :: {Used}";
 
-        private BinaryReader Open()
+        public BinaryReader Open()
         {
             Stream s = OpenStream();
             if (s != null)
@@ -155,7 +157,7 @@ namespace OpenVIII
                 return null;
         }
 
-        private Stream OpenStream()
+        public Stream OpenStream()
         {
             string path = File.Exists(_path) && _path.IsZZZ ? (string)_path : File.Exists(_path.ZZZ) ? _path.ZZZ : null;
             if (path != null)

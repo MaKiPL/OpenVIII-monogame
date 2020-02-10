@@ -222,7 +222,7 @@
     <Compile Include="Battle\Stage\Model.cs" />
     <Compile Include="Battle\Stage\ModelGroup.cs" />
     <Compile Include="Battle\RegularPyramid.cs" />
-    <Compile Include="AV\Sound\Buffer_Data.cs" />
+    <Compile Include="AV\Buffer_Data.cs" />
     <Compile Include="Battle\Stage\ObjectsGroup.cs" />
     <Compile Include="Battle\Stage\Polygon.cs" />
     <Compile Include="Battle\Stage\Quad.cs" />

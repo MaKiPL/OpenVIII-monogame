@@ -38,6 +38,16 @@ namespace OpenVIII.AV
             {
                 Memory.dicMusic.Add(eyesOnMePrefix, Memory.dicMusic[altEyesOnMePrefix]);
             }
+            ArchiveBase a = ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+            string[] list = a?.GetListOfFiles();
+            if (list != null && list.Length > 0)
+            {
+                ZZZ = true;
+                foreach (string m in list.Where(x => ext.Any(y => x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
+                {
+                    AddMusic(m);
+                }
+            }
             void AddMusicPath(string p)
             {
                 if (!string.IsNullOrWhiteSpace(p) && Directory.Exists(p))
@@ -73,7 +83,14 @@ namespace OpenVIII.AV
                 }
             }
         }
+
         public static bool Playing => musicplaying;
+
+        /// <summary>
+        /// contains files from other.zzz
+        /// </summary>
+        public static bool ZZZ { get; private set; } = false;
+
         public static void Update()
         {
             //checks to see if music buffer is running low and getframe triggers a refill.
@@ -130,6 +147,7 @@ namespace OpenVIII.AV
         //    return pcm;
         //}
         private static bool musicplaying = false;
+
         private static int lastplayed = -1;
 
         public static void PlayStop(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f)
@@ -145,6 +163,7 @@ namespace OpenVIII.AV
         }
 
         private static AV.Audio ffccMusic = null; // testing using class to play music instead of Naudio / Nvorbis
+
         public static void Play(ushort? index = null, float volume = 0.5f, float pitch = 0.0f, float pan = 0.0f, bool loop = true)
         {
             Memory.MusicIndex = index ?? Memory.MusicIndex;
@@ -159,7 +178,7 @@ namespace OpenVIII.AV
             else
                 return;
 
-            string pt = Memory.dicMusic[Memory.MusicIndex][0];
+            string filename = Memory.dicMusic[Memory.MusicIndex][0];
 
             Stop();
 
@@ -171,17 +190,29 @@ namespace OpenVIII.AV
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
                         ffccMusic.Dispose();
-                    ffccMusic = AV.Audio.Load(pt, loop ? 0 : -1);
-                    if (!loop)
-                        ffccMusic.LOOPSTART = -1;
-                    ffccMusic.PlayInTask(volume, pitch, pan);
+                    if (!ZZZ)
+                    {
+                        ffccMusic = AV.Audio.Load(filename, loop ? 0 : -1);
+                        if (!loop)
+                            ffccMusic.LOOPSTART = -1;
+                        ffccMusic.PlayInTask(volume, pitch, pan);
+                    }
+                    else
+                    {
+                        StreamWithRangeValues LoadStreamFunct(string _filename)
+                        {
+                            ArchiveBase a = ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                            return a.GetStreamWithRangeValues(_filename);
+                        }
+                        ffccMusic = Audio.Load(filename, LoadStreamFunct,loop ? 0 : -1);
+                    }
                     break;
 
                 case ".sgt":
 #if _X64
                     if (fluid_Midi == null)
                         fluid_Midi = new AV.Midi.Fluid();
-                    fluid_Midi.ReadSegmentFileManually(pt);
+                    fluid_Midi.ReadSegmentFileManually(filename);
                     fluid_Midi.Play();
 #else
                     if (Extended.IsLinux)
@@ -234,4 +265,3 @@ namespace OpenVIII.AV
         private static AV.Midi.Fluid fluid_Midi;
     }
 }
-

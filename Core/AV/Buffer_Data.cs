@@ -9,12 +9,19 @@
     /// </summary>
     public struct BufferData
     {
+        public enum TargetFile
+        {
+            sound_dat,
+            other_zzz
+        }
+
         #region Fields
 
         public UInt32 DataSeekLoc;
         public UInt32 DataSize;
         public UInt32 HeaderSize;
         private IntPtr Header;
+        public TargetFile Target;
 
         #endregion Fields
 
@@ -53,14 +60,25 @@
                 return ffmpeg.AVERROR_EOF;
             }
             Stream s = null;
-            if (File.Exists(DataFileName))
+            ArchiveZZZ other;
+            switch (Target)
             {
-                s = new FileStream(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            }
-            else
-            {
-                ArchiveBase other = ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-                s = new MemoryStream(other.GetBinaryFile("audio.dat", true), false);
+                case TargetFile.sound_dat:
+                    if (File.Exists(DataFileName))
+                    {
+                        s = new FileStream(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    }
+                    else
+                    {
+                        other = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                        s = new MemoryStream(other.GetBinaryFile("audio.dat", true), false);
+                    }
+                    break;
+                case TargetFile.other_zzz:
+                    other = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                    s = other.OpenStream();
+                    break;
+
             }
 
             // binaryReader disposes of fs
