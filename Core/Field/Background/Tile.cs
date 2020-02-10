@@ -28,7 +28,7 @@ namespace OpenVIII.Fields
             public byte Blend;
 
             public BlendMode BlendMode = BlendMode.none;
-            public byte Depth;
+            public Bppflag Depth;
 
             /// <summary>
             /// Layer ID, Used to control which parts draw.
@@ -97,9 +97,10 @@ namespace OpenVIII.Fields
             public int Height => size;
             public bool Is4Bit => Test4Bit(Depth);
 
-            public static bool Test4Bit(byte depth) => depth == 0 || depth == 3;
-            public static bool Test16Bit(byte depth) => depth == 2;
-            public static bool Test8Bit(byte depth) => depth == 1;
+            public static bool Test4Bit(Bppflag depth) => depth == 0;
+            public static bool Test16Bit(Bppflag depth) => depth.HasFlag(Bppflag._16bpp) && !depth.HasFlag(Bppflag._8bpp);
+            public static bool Test8Bit(Bppflag depth) => !depth.HasFlag(Bppflag._16bpp) && depth.HasFlag(Bppflag._8bpp);
+            
 
             public bool Is8Bit => Test8Bit(Depth);
             public bool Is16Bit => Test16Bit(Depth);
@@ -191,7 +192,7 @@ namespace OpenVIII.Fields
             private static byte GetPaletteID(BinaryReader pbsmap) => (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
             private static byte GetBlend(byte texIdBuffer) => (byte)((texIdBuffer >> 5) & 0x3);
             private static bool GetDraw(byte texIdBuffer) => ((texIdBuffer >> 4) & 0x1) != 0;
-            private static byte GetDepth(byte texIdBuffer) => (byte)(texIdBuffer >> 7 & 0x3);
+            private static Bppflag GetDepth(byte texIdBuffer) => (Bppflag)(texIdBuffer >> 7 & 0x3);
 
             public VertexPositionTexture[] GetQuad(float scale)
             {

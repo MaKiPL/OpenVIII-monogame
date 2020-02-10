@@ -259,6 +259,7 @@
     <Compile Include="Field\Background\Tiles.cs" />
     <Compile Include="Field\WalkMesh\Vert.cs" />
     <Compile Include="Field\WalkMesh\WalkMesh.cs" />
+    <Compile Include="Image\Bppflag.cs" />
     <Compile Include="Image\Cluts.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
