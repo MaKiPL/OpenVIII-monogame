@@ -1070,7 +1070,7 @@ namespace OpenVIII.Fields
             }
             else
             {
-                var UniqueSetOfTileData = tiles.Select(x => new { x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Is4Bit, x.PaletteID, x.AnimationID }).Distinct().ToList();
+                var UniqueSetOfTileData = tiles.Where(x => x.Draw).Select(x => new { x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Depth, x.PaletteID, x.AnimationID }).Distinct().ToList();
                 Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
                 Height = UniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
                 Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
@@ -1108,7 +1108,11 @@ namespace OpenVIII.Fields
 
                         foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == texID && (!inPaletteID.HasValue || inPaletteID.Value == x.PaletteID)))
                         {
-                            long startPixel = TextureType.PaletteSectionSize + (tile.loc.X / (tile.Is4Bit ? 2 : 1)) + (texturePageWidth * tile.TextureID) + (TextureType.Width * tile.loc.Y);
+                            bool is4Bit = Tile.Test4Bit(tile.Depth);
+                            bool is8Bit = Tile.Test8Bit(tile.Depth);
+                            bool is16Bit = Tile.Test8Bit(tile.Depth);
+
+                            long startPixel = TextureType.PaletteSectionSize + (tile.loc.X / (is4Bit ? 2 : 1)) + (texturePageWidth * tile.TextureID) + (TextureType.Width * tile.loc.Y);
 
                             byte Colorkey = 0;
                             foreach (Point p in (from x in Enumerable.Range(0, Tile.size)
@@ -1116,17 +1120,21 @@ namespace OpenVIII.Fields
                                                  orderby y, x ascending
                                                  select new Point(x, y)))
                             {
-                                br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width) + (p.X / (tile.Is4Bit ? 2 : 1)), SeekOrigin.Begin);
+                                br.BaseStream.Seek(startPixel + (p.Y * TextureType.Width / (is16Bit?2:1)) + (p.X / (is4Bit ? 2 : 1)), SeekOrigin.Begin);
 
                                 Point _p = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
 
                                 byte paletteID = tile.PaletteID;
                                 Color input = default;
-                                if (!tile.Is4Bit)
+                                if (is8Bit)
                                 {
                                     input = Cluts[paletteID][br.ReadByte()];
                                 }
-                                else
+                                else if(is16Bit)
+                                {
+                                    input = Texture_Base.ABGR1555toRGBA32bit(br.ReadByte());
+                                }
+                                else if(is4Bit)
                                 {
                                     if (p.X % 2 == 0)
                                     {
