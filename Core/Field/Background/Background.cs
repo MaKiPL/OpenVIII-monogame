@@ -695,6 +695,9 @@ namespace OpenVIII.Fields
                     $"{Module.GetFieldName()}_raw_{{0}}bit_{{1}}.png");
                 using (BinaryReader br = new BinaryReader(ms = new MemoryStream(mimb)))
                 {
+                    Width = Width /2;
+                    process(16);
+                    Width = Width * 2;
                     process(8);
                     Width = Width * 2;
                     process(4);
@@ -709,7 +712,12 @@ namespace OpenVIII.Fields
                             while (ms.Position + 1 < ms.Length)
                             {
                                 Color input = Color.TransparentBlack;
-                                if (bit == 8)
+                                if(bit == 16)
+                                {
+                                    i += 1;
+                                    input = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
+                                }
+                                else if (bit == 8)
                                 {
                                     i = checked((int)(ms.Position - startPixel));
                                     colorkey = br.ReadByte();
@@ -739,6 +747,7 @@ namespace OpenVIII.Fields
                             {
                                 tex.SaveAsPng(fs, Width, Height);
                             }
+                            if (bit == 16) break;
                         }
                     }
                 }
@@ -1132,7 +1141,7 @@ namespace OpenVIII.Fields
                                 }
                                 else if(is16Bit)
                                 {
-                                    input = Texture_Base.ABGR1555toRGBA32bit(br.ReadByte());
+                                    input = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
                                 }
                                 else if(is4Bit)
                                 {
