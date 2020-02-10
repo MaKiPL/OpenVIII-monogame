@@ -24,19 +24,26 @@
         {
             Audio r = new Audio();
 
-            fixed (byte* tmp = &headerData[0])
+            void play(BufferData* d)
             {
-                lock (r.Decoder)
-                {
-                    buffer_Data.SetHeader(tmp);
-                    r.LoadFromRAM(&buffer_Data);
-                    r.Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
-                    ffmpeg.avformat_free_context(r.Decoder.Format);
-                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
-                    r.Decoder.Format = null;
-                }
-                r.Dispose(false);
+                r.LoadFromRAM(d);
+                r.Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.PROCESS_ALL, loopstart);
+                ffmpeg.avformat_free_context(r.Decoder.Format);
+                //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
+                r.Decoder.Format = null;
             }
+            if (headerData != null)
+                fixed (byte* tmp = &headerData[0])
+                {
+                    lock (r.Decoder)
+                    {
+                        buffer_Data.SetHeader(tmp);
+                        play(&buffer_Data);
+                    }
+                    r.Dispose(false);
+                }
+            else
+                play(&buffer_Data);
             return r;
         }
 

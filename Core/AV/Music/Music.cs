@@ -186,6 +186,7 @@ namespace OpenVIII.AV
             {
                 case ".ogg":
                 case ".wav":
+                case ".mp3":
                 default:
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
@@ -199,12 +200,20 @@ namespace OpenVIII.AV
                     }
                     else
                     {
-                        StreamWithRangeValues LoadStreamFunct(string _filename)
-                        {
-                            ArchiveBase a = ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-                            return a.GetStreamWithRangeValues(_filename);
-                        }
-                        ffccMusic = Audio.Load(filename, LoadStreamFunct,loop ? 0 : -1);
+                        ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                        ArchiveZZZ.FileData fd = a.GetFileData(filename);
+
+                        AV.Audio ffcc = AV.Audio.Play(
+                            new AV.BufferData
+                            {
+                                DataSeekLoc = fd.Offset,
+                                DataSize = fd.Size,
+                                HeaderSize = 0,
+                                Target = BufferData.TargetFile.other_zzz
+                            },
+                            null, loop ? 0 : -1);
+                        ffcc.Play(volume, pitch, pan);
+                        ffccMusic = ffcc;
                     }
                     break;
 

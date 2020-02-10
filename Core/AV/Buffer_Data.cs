@@ -17,7 +17,7 @@
 
         #region Fields
 
-        public UInt32 DataSeekLoc;
+        public Int64 DataSeekLoc;
         public UInt32 DataSize;
         public UInt32 HeaderSize;
         private IntPtr Header;
