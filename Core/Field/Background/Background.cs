@@ -1110,7 +1110,7 @@ namespace OpenVIII.Fields
                         {
                             bool is4Bit = Tile.Test4Bit(tile.Depth);
                             bool is8Bit = Tile.Test8Bit(tile.Depth);
-                            bool is16Bit = Tile.Test8Bit(tile.Depth);
+                            bool is16Bit = Tile.Test16Bit(tile.Depth);
 
                             long startPixel = TextureType.PaletteSectionSize + (tile.loc.X / (is4Bit ? 2 : 1)) + (texturePageWidth * tile.TextureID) + (TextureType.Width * tile.loc.Y);
 
