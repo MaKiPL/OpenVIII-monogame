@@ -686,46 +686,70 @@ namespace OpenVIII.Fields
         {
             if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Module._Toggles.DumpingData))
             {
-                long startPixel = TextureType.PaletteSectionSize;
-                int Width = TextureType.Width;
-                int Height = checked((int)((mimb.Length - TextureType.PaletteSectionSize) / Width));
                 MemoryStream ms;
 
                 string path = Path.Combine(Module.GetFolder(),
                     $"{Module.GetFieldName()}_raw_{{0}}bit_{{1}}.png");
                 using (BinaryReader br = new BinaryReader(ms = new MemoryStream(mimb)))
                 {
-                    Width = Width /2;
-                    process(16);
-                    Width = Width * 2;
+
+                    long startPixel = TextureType.PaletteSectionSize;
+                    
+
                     process(8);
-                    Width = Width * 2;
                     process(4);
-                    void process(byte bit)
+                    process(16);
+                    process(24);
+                    process(24,true);
+                    void process(byte bit, bool alt  = false)
                     {
+                        float adj = (bit / 8f);
+                        int Width = (bit == 24)? Width = TextureType.Width :(int)(TextureType.Width / adj);
+                        int Height = checked((int)Math.Ceiling((mimb.Length - TextureType.PaletteSectionSize) / TextureType.Width / (bit == 24 ? adj : 1f)));
+
+                        if (bit == 24 && alt)
+                        {
+                            Width = (int)Math.Ceiling(TextureType.Width / adj);
+                            Height *= (int)adj;
+                        }
+
                         TextureBuffer buffer = new TextureBuffer(Width, Height, false);
                         foreach (KeyValuePair<byte, Color[]> clut in Cluts)
                         {
                             ms.Seek(startPixel, SeekOrigin.Begin);
                             int i = 0;
                             byte colorkey = 0;
-                            while (ms.Position + 1 < ms.Length)
+                            int lastrow = 0;
+                            while (ms.Position + Math.Ceiling(adj) < ms.Length)
                             {
+                                int row = (i / Width);
                                 Color input = Color.TransparentBlack;
-                                if(bit == 16)
+                                if (bit == 24) //just to see if anything is there. don't think there is a real usage of 24 bit.
                                 {
-                                    i += 1;
+                                    if (alt && lastrow != row && row % 3 ==0) i++;
+                                    //i += 1;
+                                    input = new Color
+                                    {
+                                        B = br.ReadByte(),
+                                        G = br.ReadByte(),
+                                        R = br.ReadByte(),
+                                        A = 0xFF,
+                                    };
+                                }
+                                else if (bit == 16)
+                                {
+                                    //i += 1;
                                     input = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
                                 }
                                 else if (bit == 8)
                                 {
-                                    i = checked((int)(ms.Position - startPixel));
+                                    //i = checked((int)(ms.Position - startPixel));
                                     colorkey = br.ReadByte();
                                     input = clut.Value[colorkey];
                                 }
                                 else if (bit == 4)
                                 {
-                                    i++;
+                                    //i++;
                                     if (i % 2 == 0)
                                     {
                                         colorkey = br.ReadByte();
@@ -740,14 +764,16 @@ namespace OpenVIII.Fields
                                 if (i < buffer.Count)
                                     buffer[i] = input;
                                 else break;
+                                i++;
+                                lastrow = row;
                             }
 
                             using (Texture2D tex = (Texture2D)buffer)
-                            using (FileStream fs = new FileStream(string.Format(path, bit, clut.Key), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                            using (FileStream fs = new FileStream(string.Format(path, bit, $"{clut.Key}{(alt?"a":"")}"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                             {
                                 tex.SaveAsPng(fs, Width, Height);
                             }
-                            if (bit == 16) break;
+                            if (bit > 8) break;
                         }
                     }
                 }
@@ -835,7 +861,7 @@ namespace OpenVIII.Fields
         private void LoadPalettes(byte[] mimb)
         {
             int Offset = /*Memory.FieldHolder.FieldID == 76 ? 0 :*/ TextureType?.BytesSkippedPalettes ?? 0;
-            Cluts CLUT = /*tiles != null ? new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]), false) :*/
+            Cluts CLUT = tiles != null ? new Cluts(tiles.Select(x => x.PaletteID).Distinct().ToDictionary(x => x, x => new Color[colorsPerPalette]), false) :
                 new Cluts(Enumerable.Range(0, 16).Select(x => (byte)x).ToDictionary(x => x, x => new Color[colorsPerPalette]), false);
             using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 foreach (KeyValuePair<byte, Color[]> clut in CLUT)
