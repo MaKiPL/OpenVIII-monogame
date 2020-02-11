@@ -468,18 +468,6 @@ namespace OpenVIII
                     break;
             }
 
-            if (Input2.DelayedButton(Keys.J) || Input2.DelayedButton(FF8TextTagKey.Select))
-                MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
-
-            if (Input2.DelayedButton(Keys.R))
-                worldState = _worldState._0init;
-
-            if (Input2.Button(Keys.D9))
-                worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
-
-            if (Input2.Button(Keys.D8))
-                bDebugDisableCollision = !bDebugDisableCollision;
-
             InputUpdate();
             CollisionUpdate();
             AnimationUpdate();
@@ -670,6 +658,18 @@ namespace OpenVIII
             }
             else
                 Memory.IsMouseVisible = false;
+
+            if (Input2.DelayedButton(Keys.J) || Input2.DelayedButton(FF8TextTagKey.Select))
+                MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
+
+            if (Input2.DelayedButton(Keys.R))
+                worldState = _worldState._0init;
+
+            if (Input2.Button(Keys.D9))
+                worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
+
+            if (Input2.Button(Keys.D8))
+                bDebugDisableCollision = !bDebugDisableCollision;
 
             if (worldState != _worldState._9debugFly)
             {
@@ -878,9 +878,18 @@ namespace OpenVIII
                     }
                     if (bShouldWarp)
                     {
-                            Fields.Module.ResetField();
-                        Memory.FieldHolder.FieldID = (ushort)fieldId;
-                        Memory.Module = MODULE.FIELD_DEBUG;
+                            if (imguiStrings == null)
+                                imguiStrings = new List<string>();
+                            imguiStrings.Add("WARPZONE!");
+                            imguiStrings.Add("---------");
+                            imguiStrings.Add($"fieldId: {fieldId}");
+                            imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
+                            for (int contId = 0; contId < warpZone.conditions.Length; contId++)
+                                imguiStrings.Add($"{contId}: {warpZone.conditions[contId].opcode}({warpZone.conditions[contId].opcode.ToString("X")}):{warpZone.conditions[contId].argument}");
+
+                        //    Fields.Module.ResetField();
+                        //Memory.FieldHolder.FieldID = (ushort)fieldId;
+                        //Memory.Module = MODULE.FIELD_DEBUG;
                     }
                         activeCollidePolygon = null; //invalidate current polygon so you won't warp twice when field2wm
                         //invalidating activecollidepolygon is not enough- set the position too by wmset.section9
@@ -1030,6 +1039,7 @@ namespace OpenVIII
 
 
         static Color bgGradient = Color.CornflowerBlue;
+        static List<string> imguiStrings;
         public static void Draw()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(bgGradient);
@@ -1162,6 +1172,13 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"FOV: {FOV}");
             ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}");
             ImGuiNET.ImGui.Text($"imgui::FPS {ImGuiNET.ImGui.GetIO().Framerate}");
+            ImGuiNET.ImGui.Separator();
+            if (imguiStrings != null)
+            {
+                foreach (string s in imguiStrings)
+                    ImGuiNET.ImGui.Text(s);
+                imguiStrings.Clear();
+            }
             ImGuiNET.ImGui.End();
             Memory.imgui.AfterLayout();
         }

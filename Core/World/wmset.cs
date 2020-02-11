@@ -218,9 +218,10 @@ namespace OpenVIII.Core.World
         public enum worldScriptOpcodes : ushort
         {
             Mode1 = 0xFF01,
-            unkBelov = 0xFF02, //word 2036BDE, on disc3 it's 0xECE
-            unkAbove = 0xFF03, //see above
+            flagBelow = 0xFF02, //word 2036BDE, on disc3 it's 0xECE
+            flagAbove = 0xFF03, //see above
             Mode2 = 0xFF04, //probably so-called null animation
+            EndZone = 0xFF05, //this splits the conditions- always at the end or in the middle of two zones
             SetRegionId = 0xFF06, //for example 283 (If I remember correctly) for Balamb
             playerPositionUnk = 0xFF07, //probably X and Y for worldmap
             wm2fieldEntryId = 0xFF08,
