@@ -32,11 +32,11 @@
         #endregion Properties
 
         #region Methods
-
+        
         public unsafe int Read(byte* buf, int buf_size)
-        {
+        {   
             int ret;
-            if ((ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
+            if (HeaderSize >0 && (ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
                 return ret;
             else
                 return ReadData(buf, buf_size);

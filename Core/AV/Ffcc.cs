@@ -874,6 +874,7 @@
                         {
                             //make sure packet is unref before getting a new one.
                             ffmpeg.av_packet_unref(Decoder.Packet);
+                            //Debug.WriteLine("Getting Packet");
                             Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
                             if (Return == ffmpeg.AVERROR_EOF)
                             {

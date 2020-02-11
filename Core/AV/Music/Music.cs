@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -248,13 +249,14 @@ namespace OpenVIII.AV
                 HeaderSize = 0,
                 Target = BufferData.TargetFile.other_zzz
             };
+            GCHandle gch = GCHandle.Alloc(buffer_Data, GCHandleType.Pinned);
             ffccMusic = AV.Audio.Load(
                 &buffer_Data,
                 null, loop ? 0 : -1, Ffcc.FfccMode.STATE_MACH);
             ffccMusic.PlayInTask(volume, pitch, pan);
             while (ffccMusic != null && !ffccMusic.IsDisposed && !cancelToken.IsCancellationRequested)
             { }
-            buffer_Data = buffer_Data;
+            gch.Free();
         }
 
         public static void KillAudio()
