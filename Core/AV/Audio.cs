@@ -9,7 +9,8 @@
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        public static Audio Load(string filename, int loopstart = -1) => Load<Audio>(filename, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.STATE_MACH, loopstart);
+        public static Audio Load(string filename, int loopstart = -1) =>
+            Load<Audio>(filename, AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode.STATE_MACH, loopstart);
 
         /// <summary>
         /// Opens filename and init class.
@@ -20,42 +21,12 @@
         /// <see cref="https://stackoverflow.com/questions/9604633/reading-a-file-located-in-memory-with-libavformat"/>
         /// <seealso cref="http://www.ffmpeg.org/doxygen/trunk/doc_2examples_2avio_reading_8c-example.html"/>
         /// <seealso cref="https://stackoverflow.com/questions/24758386/intptr-to-callback-function"/>
-        public static unsafe Audio Load(BufferData buffer_Data, byte[] headerData, int loopstart = -1, FfccMode ffccMode = FfccMode.PROCESS_ALL) => 
+        public static unsafe Audio Load(BufferData buffer_Data, byte[] headerData, int loopstart = -1, FfccMode ffccMode = FfccMode.PROCESS_ALL) =>
             Load(&buffer_Data, headerData, loopstart, ffccMode);
 
-        public static unsafe Audio Load(BufferData* buffer_Data, byte[] headerData, int loopstart = -1, FfccMode ffccMode = FfccMode.PROCESS_ALL)
-        {
-            Audio r = new Audio();
+        public static unsafe Audio Load(BufferData* buffer_Data, byte[] headerData, int loopstart = -1, FfccMode ffccMode = FfccMode.PROCESS_ALL) => 
+            Load<Audio>(buffer_Data, headerData, loopstart = -1, ffccMode, AVMediaType.AVMEDIA_TYPE_AUDIO);
 
-            void play(BufferData* d)
-            {
-                r.LoadFromRAM(d);
-                r.Init(null, AVMediaType.AVMEDIA_TYPE_AUDIO, ffccMode, loopstart);
-                if (ffccMode == FfccMode.PROCESS_ALL)
-                {
-                    ffmpeg.avformat_free_context(r.Decoder.Format);
-                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
-                    r.Decoder.Format = null;
-                    r.Dispose(false);
-                }
-            }
-            if (ffccMode == FfccMode.PROCESS_ALL || true)
-            {
-                if (headerData != null)
-                    fixed (byte* tmp = &headerData[0])
-                    {
-                        lock (r.Decoder)
-                        {
-                            buffer_Data->SetHeader(tmp);
-                            play(buffer_Data);
-                        }
-                    }
-                else
-                    play(buffer_Data);
-            }
-            return r;
-
-            #endregion Methods
-        }
+        #endregion Methods
     }
 }

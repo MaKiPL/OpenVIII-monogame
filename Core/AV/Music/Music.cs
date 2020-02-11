@@ -194,7 +194,10 @@ namespace OpenVIII.AV
                 default:
                     //ffccMusic = new Ffcc(@"c:\eyes_on_me.wav", AVMediaType.AVMEDIA_TYPE_AUDIO, Ffcc.FfccMode.STATE_MACH);
                     if (ffccMusic != null)
-                        ffccMusic.Dispose();
+                    {
+                        ffccMusic?.Dispose();
+                        ffccMusic = null;
+                    }
                     if (!ZZZ)
                     {
                         ffccMusic = AV.Audio.Load(filename, loop ? 0 : -1);
@@ -206,7 +209,7 @@ namespace OpenVIII.AV
                     {
                         cancelTokenSource = new CancellationTokenSource();
                         cancelToken = cancelTokenSource.Token;
-                        MusicTask = Task.Run(()=>PlayInTask(volume, pitch, pan, loop, filename,cancelToken), cancelToken);
+                        MusicTask = Task.Run(()=>PlayInTask(ref ffccMusic,volume, pitch, pan, loop, filename,cancelToken), cancelToken);
                     }
                     break;
 
@@ -238,7 +241,7 @@ namespace OpenVIII.AV
             lastplayed = Memory.MusicIndex;
         }
 
-        private unsafe static void PlayInTask(float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
+        private unsafe static void PlayInTask(ref Audio ffAudio,float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
         {
             ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
             ArchiveZZZ.FileData fd = a.GetFileData(filename);
@@ -250,12 +253,12 @@ namespace OpenVIII.AV
                 Target = BufferData.TargetFile.other_zzz
             };
             GCHandle gch = GCHandle.Alloc(buffer_Data, GCHandleType.Pinned);
-            ffccMusic = AV.Audio.Load(
+            ffAudio = AV.Audio.Load(
                 &buffer_Data,
                 null, loop ? 0 : -1, Ffcc.FfccMode.STATE_MACH);
-            ffccMusic.PlayInTask(volume, pitch, pan);
-            while (ffccMusic != null && !ffccMusic.IsDisposed && !cancelToken.IsCancellationRequested)
-            { }
+            ffAudio.PlayInTask(volume, pitch, pan);
+            while (!cancelToken.IsCancellationRequested)
+                Thread.Sleep(1000);
             gch.Free();
         }
 

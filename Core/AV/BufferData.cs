@@ -18,7 +18,8 @@
         #region Fields
 
         public Int64 DataSeekLoc;
-        public UInt32 DataSize;
+        private Int64 TotalReadData;
+        public Int64 DataSize;
         public UInt32 HeaderSize;
         private IntPtr Header;
         public TargetFile Target;
@@ -89,8 +90,9 @@
                 {
                     // copy public buffer data to buf
                     ums.Write(br.ReadBytes(buf_size), 0, buf_size);
-                    DataSeekLoc += (uint)buf_size;
-                    DataSize -= (uint)buf_size;
+                    DataSeekLoc += buf_size;
+                    TotalReadData += buf_size;
+                    DataSize -= buf_size;
 
                     s = null;
                     return buf_size;
@@ -113,6 +115,31 @@
             HeaderSize -= (uint)buf_size;
 
             return buf_size;
+        }
+
+        internal unsafe long Seek(long offset, int whence)
+        {
+            switch (whence)
+            {
+                case ffmpeg.AVSEEK_SIZE:
+                if (offset == 0)
+                {
+                    return TotalReadData;
+                }
+                else
+                        throw new Exception($"unknown {nameof(whence)}: {whence}, {nameof(offset)}: {offset}");
+            
+            case 0:
+                offset -= TotalReadData;
+                break;
+                default:
+                    throw new Exception($"unknown {nameof(whence)}: {whence}");
+             }
+
+            DataSeekLoc += offset;
+            TotalReadData += offset;
+            DataSize -= offset;
+            return TotalReadData;
         }
 
         #endregion Methods
