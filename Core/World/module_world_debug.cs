@@ -59,7 +59,6 @@ namespace OpenVIII
         private static rail rail;
 
         private static byte[] wmx;
-        private static float DEBUGshit = 1f;
         private static int debugEncounter = -1;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
@@ -662,23 +661,15 @@ namespace OpenVIII
         {
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
-
-#if DEBUG
-            if (Input2.Button(Keys.NumPad9))
-                DEBUGshit += 0.1f;
-            if (Input2.Button(Keys.NumPad6))
-                DEBUGshit -= 0.1f;
-
-            if (Input2.Button(Keys.NumPad8))
-                DEBUGshit += 1f;
-            if (Input2.Button(Keys.NumPad5))
-                DEBUGshit -= 1f;
-
-            if (Input2.Button(Keys.NumPad7))
-                DEBUGshit += 10f;
-            if (Input2.Button(Keys.NumPad4))
-                DEBUGshit -= 10f;
-#endif
+            if (Input2.Button(Keys.F1))
+                bLockMouse = !bLockMouse;
+            if (bLockMouse != true)
+            {
+                Memory.IsMouseVisible = true;
+                return;
+            }
+            else
+                Memory.IsMouseVisible = false;
 
             if (worldState != _worldState._9debugFly)
             {
@@ -999,9 +990,14 @@ namespace OpenVIII
 
         private const float RotationInterval = 1.5f;
 
+
+        private static bool bLockMouse = true;
         public static void OrbitCamera()
         {
-            InputMouse.Mode = MouseLockMode.Center;
+            if (bLockMouse)
+                InputMouse.Mode = MouseLockMode.Center;
+            else
+                InputMouse.Mode = MouseLockMode.Disabled;
             camDistance = 100f;
             camPosition = new Vector3(
                 (float)(playerPosition.X + camDistance * Extended.Cos(degrees - 180f)),
@@ -1032,9 +1028,11 @@ namespace OpenVIII
 
         private double RadianAngleFromVector3s(Vector3 a, Vector3 b) => Math.Acos(Vector3.Dot(Vector3.Normalize(a), Vector3.Normalize(b)));
 
+
+        static Color bgGradient = Color.CornflowerBlue;
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
+            Memory.spriteBatch.GraphicsDevice.Clear(bgGradient);
 
             
 
@@ -1134,35 +1132,38 @@ namespace OpenVIII
                     break;
             }
 
-            Memory.SpriteBatchStartAlpha();
+
             float playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
             if (playerangle < 0) playerangle += 360f;
             double totalMilliseconds = Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-            RecentFrameTimes.Add(totalMilliseconds);
-            Memory.font.RenderBasicText(
-                $"World map MapState: ={MapState}\n" +
-                $"World Map Camera: ={camPosition}\n" +
-                $"Player position: ={playerPosition}\n" +
-                $"Player rotation: ={playerangle}°\n" +
-                $"Player speed: ={DetectedSpeed} units per update\n" +
-                $"Segment Position: ={segmentPosition} ({GetSegmentVectorPlayerPosition()})\n" +
-                $"Press 8 to enable/disable collision: ={bDebugDisableCollision}\n" +
-                $"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
-                $"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
-                $"debugshit: ={DEBUGshit}\n" +
-                $"encounter: ={debugEncounter}- Press F3 to force battle\n" +
-                $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
-                $"FPS camera degrees: ={degrees}°\n" +
-                $"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}\n" +
-                $"Avg FPS: { $"{1000 / RecentFrameTimes.Average():000.000}" } \n" +
-                $"Avg frametime: { $"{RecentFrameTimes.Average():00.000}" } ms\n" +
-                $"Max frametime: { $"{RecentFrameTimes.Max():00.000}" } ms\n" +
-                $"Min frametime: { $"{RecentFrameTimes.Min():00.000}" } ms\n" +
-                $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
-            Memory.SpriteBatchEnd();
 
-            while (RecentFrameTimes.Count >= 100)
-                RecentFrameTimes.RemoveAt(0);
+            Memory.imgui.BeforeLayout(Memory.gameTime);
+            ImGuiNET.ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero, ImGuiNET.ImGuiCond.Once);
+            ImGuiNET.ImGui.SetNextWindowBgAlpha(.25f);
+            ImGuiNET.ImGui.Begin("WORLD DEBUG");
+            ImGuiNET.ImGui.Text($"Press F1 to lock or unlock mouse: ={bLockMouse}");
+            ImGuiNET.ImGui.Text($"Press 8 to enable/disable collision: ={bDebugDisableCollision}");
+            ImGuiNET.ImGui.Text($"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}");
+            ImGuiNET.ImGui.Separator();
+            System.Numerics.Vector4 imgui_skyColor = new System.Numerics.Vector4(bgGradient.R/255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
+            ImGuiNET.ImGui.ColorEdit4("Sky color: ", ref imgui_skyColor);
+            bgGradient = new Color(imgui_skyColor.X, imgui_skyColor.Y, imgui_skyColor.Z, imgui_skyColor.W);
+            ImGuiNET.ImGui.Text($"World map MapState: ={MapState}");
+            ImGuiNET.ImGui.Text($"World Map Camera: ={camPosition}");
+            System.Numerics.Vector3 imgui_playerPosition = new System.Numerics.Vector3(playerPosition.X, playerPosition.Y, playerPosition.Z);
+            ImGuiNET.ImGui.InputFloat3("Player position: ", ref imgui_playerPosition);
+            playerPosition = new Vector3(imgui_playerPosition.X, imgui_playerPosition.Y, imgui_playerPosition.Z);
+            ImGuiNET.ImGui.Text($"Player rotation: ={playerangle}°");
+            ImGuiNET.ImGui.Text($"Player speed: ={DetectedSpeed} units per update");
+            ImGuiNET.ImGui.Text($"Segment Position: ={segmentPosition} ({GetSegmentVectorPlayerPosition()})");
+            ImGuiNET.ImGui.Text($"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}");
+            ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
+            ImGuiNET.ImGui.Text($"encounter: ={debugEncounter}- Press F3 to force battle");
+            ImGuiNET.ImGui.Text($"FOV: {FOV}");
+            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}");
+            ImGuiNET.ImGui.Text($"imgui::FPS {ImGuiNET.ImGui.GetIO().Framerate}");
+            ImGuiNET.ImGui.End();
+            Memory.imgui.AfterLayout();
         }
 
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
@@ -1321,7 +1322,6 @@ namespace OpenVIII
         private static Vector3 localMchTranslation = new Vector3(0, 6f, 0);
 
         private static Vector2 Scale;
-        private static List<double> RecentFrameTimes = new List<double>(100);
 
         public static bool InVehicle => worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok;
 

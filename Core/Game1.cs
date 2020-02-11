@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Reflection;
+using ImGuiNET;
 
 namespace OpenVIII
 {
@@ -10,6 +11,7 @@ namespace OpenVIII
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+        private Core.ImGuiRenderer imgui;
 
         public Game1()
         {
@@ -30,6 +32,9 @@ namespace OpenVIII
 
         protected override void Initialize()
         {
+            imgui = new Core.ImGuiRenderer(this);
+            imgui.RebuildFontAtlas();
+            Memory.imgui = imgui;
             Window.TextInput += TextEntered;
             Memory.Log = new Log();
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
