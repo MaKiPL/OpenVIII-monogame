@@ -158,6 +158,7 @@
     <Compile Include="Archive\ZZZ\Header.cs" />
     <Compile Include="Archive\StreamWithRangeValues.cs" />
     <Compile Include="AV\Audio.cs" />
+    <Compile Include="AV\BufferData.cs" />
     <Compile Include="AV\Movie\Directories.cs" />
     <Compile Include="AV\Movie\Files.cs" />
     <Compile Include="AV\Music\Midi\Fluid.cs" />
@@ -222,7 +223,6 @@
     <Compile Include="Battle\Stage\Model.cs" />
     <Compile Include="Battle\Stage\ModelGroup.cs" />
     <Compile Include="Battle\RegularPyramid.cs" />
-    <Compile Include="AV\Buffer_Data.cs" />
     <Compile Include="Battle\Stage\ObjectsGroup.cs" />
     <Compile Include="Battle\Stage\Polygon.cs" />
     <Compile Include="Battle\Stage\Quad.cs" />

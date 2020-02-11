@@ -138,7 +138,7 @@ namespace OpenVIII.AV
             {
                 return null;
             }
-            AV.Audio ffcc = AV.Audio.Play(
+            AV.Audio ffcc = AV.Audio.Load(
                 new AV.BufferData
                 {
                     DataSeekLoc = Entries[soundID].Offset,

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OpenVIII.AV
 {
@@ -90,6 +92,7 @@ namespace OpenVIII.AV
         /// contains files from other.zzz
         /// </summary>
         public static bool ZZZ { get; private set; } = false;
+        public static object MusicTask { get; private set; }
 
         public static void Update()
         {
@@ -200,20 +203,9 @@ namespace OpenVIII.AV
                     }
                     else
                     {
-                        ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-                        ArchiveZZZ.FileData fd = a.GetFileData(filename);
-
-                        AV.Audio ffcc = AV.Audio.Play(
-                            new AV.BufferData
-                            {
-                                DataSeekLoc = fd.Offset,
-                                DataSize = fd.Size,
-                                HeaderSize = 0,
-                                Target = BufferData.TargetFile.other_zzz
-                            },
-                            null, loop ? 0 : -1);
-                        ffcc.Play(volume, pitch, pan);
-                        ffccMusic = ffcc;
+                        cancelTokenSource = new CancellationTokenSource();
+                        cancelToken = cancelTokenSource.Token;
+                        MusicTask = Task.Run(()=>PlayInTask(volume, pitch, pan, loop, filename,cancelToken), cancelToken);
                     }
                     break;
 
@@ -226,7 +218,7 @@ namespace OpenVIII.AV
 #else
                     if (Extended.IsLinux)
                     {
-                        fluid_Midi.ReadSegmentFileManually(pt);
+                        fluid_Midi.ReadSegmentFileManually(filename);
                         fluid_Midi.Play();
                         break;
                     }
@@ -234,7 +226,7 @@ namespace OpenVIII.AV
                     {
                         if (dm_Midi == null)
                             dm_Midi = new AV.Midi.DirectMedia();
-                        dm_Midi.Play(pt,loop);
+                        dm_Midi.Play(filename,loop);
                     }
 #endif
 
@@ -243,6 +235,26 @@ namespace OpenVIII.AV
 
             musicplaying = true;
             lastplayed = Memory.MusicIndex;
+        }
+
+        private unsafe static void PlayInTask(float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
+        {
+            ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+            ArchiveZZZ.FileData fd = a.GetFileData(filename);
+            BufferData buffer_Data = new AV.BufferData
+            {
+                DataSeekLoc = fd.Offset,
+                DataSize = fd.Size,
+                HeaderSize = 0,
+                Target = BufferData.TargetFile.other_zzz
+            };
+            ffccMusic = AV.Audio.Load(
+                &buffer_Data,
+                null, loop ? 0 : -1, Ffcc.FfccMode.STATE_MACH);
+            ffccMusic.PlayInTask(volume, pitch, pan);
+            while (ffccMusic != null && !ffccMusic.IsDisposed && !cancelToken.IsCancellationRequested)
+            { }
+            buffer_Data = buffer_Data;
         }
 
         public static void KillAudio()
@@ -261,6 +273,7 @@ namespace OpenVIII.AV
                 ffccMusic.Dispose();
                 ffccMusic = null;
             }
+            cancelTokenSource?.Cancel();
 #if !_X64
             if (dm_Midi != null)
                 dm_Midi.Stop();
@@ -272,5 +285,7 @@ namespace OpenVIII.AV
 
         private static AV.Midi.DirectMedia dm_Midi;
         private static AV.Midi.Fluid fluid_Midi;
+        private static CancellationTokenSource cancelTokenSource;
+        private static CancellationToken cancelToken;
     }
 }

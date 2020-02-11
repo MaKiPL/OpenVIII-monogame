@@ -65,20 +65,37 @@ namespace OpenVIII.Movie
 
         public static Player Load(int ID, bool OverlayingModels = false)
         {
-            if (Files.Exists(ID))
+            AV.Audio ffccAudioFromZZZ = null;
+            if (Files.ZZZ)
             {
-                Player Player = new Player()
-                {
-                    ID = ID,
-                    STATE = STATE.LOAD,
-                    Video = AV.Video.Load(Files[ID]),
-                    Audio = AV.Audio.Load(Files[ID]),
-                    SuppressDraw = !OverlayingModels
-                };
-                Player.STATE++;
-                return Player;
+                ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                ArchiveZZZ.FileData fd = a.GetFileData(Files[ID]);
+
+                AV.Audio ffcc = AV.Audio.Load(
+                    new AV.BufferData
+                    {
+                        DataSeekLoc = fd.Offset,
+                        DataSize = fd.Size,
+                        HeaderSize = 0,
+                        Target = AV.BufferData.TargetFile.other_zzz
+                    },
+                    null, -1);
+
+                //ffcc.Play(volume, pitch, pan);
+                ffccAudioFromZZZ = ffcc;
             }
-            return null;
+            Player Player = new Player()
+            {
+                ID = ID,
+                STATE = STATE.LOAD,
+                Video = Files.Exists(ID) ? AV.Video.Load(Files[ID]) : null,
+                Audio = Files.ZZZ ? ffccAudioFromZZZ : Files.Exists(ID) ? AV.Audio.Load(Files[ID]) : null,
+                SuppressDraw = !OverlayingModels
+            };
+            Player.STATE++;
+            if (Player.Video == null && Player.Audio == null)
+                return Player = null;
+            return Player;
         }
 
         // This code added to correctly implement the disposable pattern.
@@ -234,9 +251,9 @@ namespace OpenVIII.Movie
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
-                if (!Video.IsDisposed)
+                if (!(Video?.IsDisposed?? true))
                     Video.Dispose();
-                if (!Audio.IsDisposed)
+                if (!(Audio?.IsDisposed?? true))
                     Audio.Dispose();
                 if (Texture != null && !Texture.IsDisposed)
                     Texture.Dispose();
