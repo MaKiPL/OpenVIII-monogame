@@ -80,6 +80,8 @@ namespace OpenVIII
 
         public static SpriteBatch spriteBatch;
 
+        public static Core.ImGuiRenderer imgui;
+
         private static int mainThreadID;
 
         public static ContentManager content;

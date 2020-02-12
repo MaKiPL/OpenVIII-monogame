@@ -215,22 +215,56 @@ namespace OpenVIII.Core.World
 
         #region Section 8 - World map to field
 
+        public enum worldScriptOpcodes : ushort
+        {
+            Mode1 = 0xFF01,
+            flagBelow = 0xFF02, //word 2036BDE, on disc3 it's 0xECE
+            flagAbove = 0xFF03, //see above
+            Mode2 = 0xFF04, //probably so-called null animation
+            EndZone = 0xFF05, //this splits the conditions- always at the end or in the middle of two zones
+            SetRegionId = 0xFF06, //for example 283 (If I remember correctly) for Balamb
+            playerPositionUnk = 0xFF07, //probably X and Y for worldmap
+            wm2fieldEntryId = 0xFF08,
+            CheckForVehicle = 0xFF09,
+            squallXlocAbove = 0xFF0F,
+            squallZLocAbove = 0xFF10,
+            squallXlocBelow = 0xFF11,
+            squallZlocBelow = 0xFF12,
+            setUnk = 0xFF12,
+            ScriptEnd = 0xFF16,
+            setUnk2 = 0xFF17,
+            unkBelov2 = 0xFF1A, 
+            ReturnMinusOne = 0xFF1E, //return -1
+            checkVehicleArgument = 0xFF25, //checks argument for vehicle Id
+        }
+
+        public struct section8ConditionArgument
+        {
+            public worldScriptOpcodes opcode;
+            public int argument;
+        }
+
+        public struct section8WarpZone
+        {
+            public int field;
+            public bool bAlreadySetField; //only for openviii and testing purpouses- based on conditions one thing can
+                                            //point to different fields. This is to make sure only first fieldId is set
+            public int segmentId;
+            public section8ConditionArgument[] conditions;
+        }
+
+        public static section8WarpZone[] section8WarpZones;
+
         /// <summary>
-        /// I have to just understand the algorithm and then I'll be able to upgrade it. Right now
-        /// it looks like it's reading 0xFF01 and setting the start modes (there are two)
-        /// and it normally goes like checkCondition-> FAIL=get next entry; SUCCESS= parse next opcodes of this given entry
-        /// so for sure the labeltest goto algorithm needs to be redone- there are two modes but we can still read the same entry if success
-        /// I still don't know what happens when all the conditions will success- if they are only condiditions or actions?
-        /// because if it succedes- then it just simply goes to next condition and next...nextt...next but I don't see anything like changing
-        /// module when wm2field
+        /// Section is responsible for world map to field transition and works as a factor of conditions
+        /// You have to read the header of 0xFF01 and read conditions up to 0xFF16
+        /// The game engine checks given condition and returns TRUE or FALSE. If something fails, then it
+        /// moves forward with checking. Currently we know wm2field pointer, vehicle conditions and 
+        /// that's more or less all we know
         /// </summary>
         public void Section8()
         {
-            /*
-             * Test case available!
-             * Stand before the entrance to Balamb and it would be the [848]/ so-> 12th entry in section8!
-             * It passes first check of 0xFF06 for segment id = 273 and moves further
-             */
+            List<section8WarpZone> localZones = new List<section8WarpZone>();
             MemoryStream ms;
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
@@ -239,216 +273,42 @@ namespace OpenVIII.Core.World
                 for(int i = 0; i<innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
-                    labeltest:
                     short Mode = 0;
-                    uint controlVar = 0;
-                    int v4 = (int)ms.Position;
-                    while (true)
+                    Mode = (short)br.ReadUInt32();
+                    section8WarpZone localZone = new section8WarpZone();
+                    localZone.field = -1;
+                    List<section8ConditionArgument> conditions = new List<section8ConditionArgument>();
+                    while(true)
                     {
-                        while (true)
+                        worldScriptOpcodes opcode = (worldScriptOpcodes)br.ReadUInt16();
+                        ushort argument = br.ReadUInt16();
+                        if (opcode == worldScriptOpcodes.ScriptEnd) //?? maybe
                         {
-                            controlVar = br.ReadUInt32();
-                            if ((controlVar&0xFFFF) != 0xFF01)
-                                break;
-                            Mode = 1;
-                        }
-                        if ((controlVar & 0xFFFF) == 0xFF04)
-                        {
-                            Mode = 2;
-                            v4 = 3;
-                            continue;
-                        }
-                        if (Mode > 0)
+                            localZone.conditions = conditions.ToArray();
+                            localZones.Add(localZone);
                             break;
-                    }
-
-                    if(Mode == 1)
-                    {
-                        if (!bSec8_conditionals(controlVar))
-                            continue; //parse next entry
-                        else
-                            goto labeltest;
-
-                    }
-                    else //Mode 2
-                    {
-                        if(controlVar == 0xFF16)
-                        {
-                            //;something?
-                            continue;
                         }
-                        switch(controlVar)
+                        switch(opcode)
                         {
-                            case 0xFF05:
-                                if (v4 == 2)
-                                {
-                                    //here is goto label- miracle of assembly- make sure to rewrite this shit later
-                                    goto labeltest;
-                                }
-                                if (v4 != 5)
-                                    continue;
-                                goto labeltest;
-                            case 0xFF0A:
-                                v4 = 1;
-                                goto labeltest;
-                            case 0xFF0B:
-                                if(v4==1)
-                                {
-                                    v4 = 3;
-                                    goto labeltest;
-                                }
-                                if (v4 != 4)
-                                    goto labeltest;
-                                v4 = 3;
-                                goto labeltest;
-                            case 0xFF0C:
-                                if (v4 != 2 && v4 != 5)
-                                    goto labeltest;
-                                v4 = 4;
-                                goto labeltest;
-                            case 0xFF0D:
-                                if (v4 != 2 && v4 != 5)
-                                    goto labeltest;
-                                v4 = 6;
-                                goto labeltest;
-                            default: //[sub_545D60:132]
-                                //TODO
+                            case worldScriptOpcodes.SetRegionId:
+                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
+                                localZone.segmentId = argument;
+                                break;
+                            case worldScriptOpcodes.wm2fieldEntryId:
+                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
+                                localZone.field = argument;
+                                break;
+                            default:
+                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
                                 break;
                         }
                     }
                 }
             }
+            section8WarpZones = localZones.ToArray();
         }
 
-        enum sec8_conditional : ushort
-        {
-            /// <summary>
-            /// Checks for segment number (as in wmx.obj- e.g. 273)
-            /// See: ModuleWorld::GetRealSegmentId();
-            /// </summary>
-            SegmentId = 0xFF06,
-            unk02 = 0xFF02,
-            unk03 = 0xFF03,
-            unk07 = 0xFF07,
-            CheckForVehicleGroup = 0xFF09,
-            unk0f = 0xFF0F,
-            unk10 = 0xFF10,
-            unk11 = 0xFF11,
-            unk12 = 0xFF12,
-            unk17 = 0xFF17,
-            unk1a = 0xFF1A,
-            unk1b = 0xFF1B,
-            unk1c = 0xFF1C,
-            unk1d = 0xFF1D,
-            unk20 = 0xFF20,
-            unk18 = 0xFF18,
-            unk19 = 0xFF19,
-            unk1e = 0xFF1E,
-            unk21 = 0xFF21,
-            unk22 = 0xFF22,
-            unk25 = 0xFF25,
-            unk27 = 0xFF27,
-            unk29 = 0xFF29,
-            unk2a = 0xFF2A,
-            unk2c = 0xFF2C,
-            unk2d = 0xFF2D,
-            unk2f = 0xFF2F,
-            unk30 = 0xFF30,
-            unk31 = 0xFF31,
-            unk32 = 0xFF32,
-            unk33 = 0xFF33,
-            unk34 = 0xFF34,
-            unk35 = 0xFF35,
-            unk38 = 0xFF38,
-            unk39 = 0xFF39
-        }
-
-        /// <summary>
-        /// Some wmset sections work on some conditional file structure- therefore during e.g. warping from wm2field it checks entries one-by-one and the one that successively happen to get along with all conditions is parsed/pushed through- if not read next entry
-        /// </summary>
-        /// <param name="controlVar"></param>
-        /// <returns></returns>
-        private bool bSec8_conditionals(uint controlVar)
-        {
-            ushort controlValue = (ushort)(controlVar >> 16);
-            sec8_conditional condition = (sec8_conditional)controlVar;
-            switch (condition)
-            {
-                case sec8_conditional.unk02:
-                    break;
-                case sec8_conditional.unk03:
-                    break;
-                case sec8_conditional.SegmentId: //[145F7F]
-                    return Module_world_debug.GetRealSegmentId() == controlValue;
-                case sec8_conditional.unk07:
-                    break;
-                case sec8_conditional.CheckForVehicleGroup:
-                    break;
-                case sec8_conditional.unk0f:
-                    break;
-                case sec8_conditional.unk10:
-                    break;
-                case sec8_conditional.unk11:
-                    break;
-                case sec8_conditional.unk12:
-                    break;
-                case sec8_conditional.unk17:
-                    break;
-                case sec8_conditional.unk18:
-                    break;
-                case sec8_conditional.unk19:
-                    break;
-                case sec8_conditional.unk1a:
-                    break;
-                case sec8_conditional.unk1b:
-                    break;
-                case sec8_conditional.unk1c:
-                    break;
-                case sec8_conditional.unk1d:
-                    break;
-                case sec8_conditional.unk1e:
-                    break;
-                case sec8_conditional.unk20:
-                    break;
-                case sec8_conditional.unk21:
-                    break;
-                case sec8_conditional.unk22:
-                    break;
-                case sec8_conditional.unk25:
-                    break;
-                case sec8_conditional.unk27:
-                    break;
-                case sec8_conditional.unk29:
-                    break;
-                case sec8_conditional.unk2a:
-                    break;
-                case sec8_conditional.unk2c:
-                    break;
-                case sec8_conditional.unk2d:
-                    break;
-                case sec8_conditional.unk2f:
-                    break;
-                case sec8_conditional.unk30:
-                    break;
-                case sec8_conditional.unk31:
-                    break;
-                case sec8_conditional.unk32:
-                    break;
-                case sec8_conditional.unk33:
-                    break;
-                case sec8_conditional.unk34:
-                    break;
-                case sec8_conditional.unk35:
-                    break;
-                case sec8_conditional.unk38:
-                    break;
-                case sec8_conditional.unk39:
-                    break;
-                default:
-                    break;
-            }
-            return false;
-        }
+        
         #endregion
 
         #region Section 10 - [UNKNOWN]/ Something with vehicles, positions- probably wm2field in vehicle (?)

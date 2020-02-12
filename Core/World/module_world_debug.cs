@@ -21,7 +21,7 @@ namespace OpenVIII
         private static float camDistance = 10.0f;
         private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
-        private static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
+        public static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
         public static BasicEffect effect;
         public static AlphaTestEffect ate;
@@ -59,7 +59,6 @@ namespace OpenVIII
         private static rail rail;
 
         private static byte[] wmx;
-        private static float DEBUGshit = 1f;
         private static int debugEncounter = -1;
         private const int WM_SEG_SIZE = 0x9000; //World map segment size in file
         private const int WM_SEGMENTS_COUNT = 835;
@@ -469,18 +468,6 @@ namespace OpenVIII
                     break;
             }
 
-            if (Input2.DelayedButton(Keys.J) || Input2.DelayedButton(FF8TextTagKey.Select))
-                MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
-
-            if (Input2.DelayedButton(Keys.R))
-                worldState = _worldState._0init;
-
-            if (Input2.Button(Keys.D9))
-                worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
-
-            if (Input2.Button(Keys.D8))
-                bDebugDisableCollision = !bDebugDisableCollision;
-
             InputUpdate();
             CollisionUpdate();
             AnimationUpdate();
@@ -662,23 +649,27 @@ namespace OpenVIII
         {
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
+            if (Input2.Button(Keys.F1))
+                bLockMouse = !bLockMouse;
+            if (bLockMouse != true)
+            {
+                Memory.IsMouseVisible = true;
+                return;
+            }
+            else
+                Memory.IsMouseVisible = false;
 
-#if DEBUG
-            if (Input2.Button(Keys.NumPad9))
-                DEBUGshit += 0.1f;
-            if (Input2.Button(Keys.NumPad6))
-                DEBUGshit -= 0.1f;
+            if (Input2.DelayedButton(Keys.J) || Input2.DelayedButton(FF8TextTagKey.Select))
+                MapState = MapState >= MiniMapState.fullscreen ? MapState = 0 : MapState + 1;
 
-            if (Input2.Button(Keys.NumPad8))
-                DEBUGshit += 1f;
-            if (Input2.Button(Keys.NumPad5))
-                DEBUGshit -= 1f;
+            if (Input2.DelayedButton(Keys.R))
+                worldState = _worldState._0init;
 
-            if (Input2.Button(Keys.NumPad7))
-                DEBUGshit += 10f;
-            if (Input2.Button(Keys.NumPad4))
-                DEBUGshit -= 10f;
-#endif
+            if (Input2.Button(Keys.D9))
+                worldState = worldState == _worldState._1active ? _worldState._9debugFly : _worldState._1active;
+
+            if (Input2.Button(Keys.D8))
+                bDebugDisableCollision = !bDebugDisableCollision;
 
             if (worldState != _worldState._9debugFly)
             {
@@ -868,6 +859,43 @@ namespace OpenVIII
                 );
 #endif
 
+            //WORLD MAP TO FIELD CHECK- it should be done on already walked polygon so the player will be able to
+            //enter the triangle with warp zone and warp AFTER that, not just as he enters it
+            if(activeCollidePolygon != null)
+                if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
+            {
+                foreach (var warpZone in wmset.section8WarpZones)
+                {
+                    int fieldId = wm2field.GetFieldId(warpZone.field);
+                    bool bShouldWarp = true;
+                    if (warpZone.segmentId != GetRealSegmentId())
+                        continue;
+                    foreach (var condition in warpZone.conditions)
+                    {
+                        //test conditions here, so far we don't really know them much enough
+                        //for example fire cavern is on the same segment as Balamb, so there's additional check with
+                        //the player position. The Fullscreen map is also created by section8 (probably)
+                    }
+                    if (bShouldWarp)
+                    {
+                            if (imguiStrings == null)
+                                imguiStrings = new List<string>();
+                            imguiStrings.Add("WARPZONE!");
+                            imguiStrings.Add("---------");
+                            imguiStrings.Add($"fieldId: {fieldId}");
+                            imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
+                            for (int contId = 0; contId < warpZone.conditions.Length; contId++)
+                                imguiStrings.Add($"{contId}: {warpZone.conditions[contId].opcode}({warpZone.conditions[contId].opcode.ToString("X")}):{warpZone.conditions[contId].argument}");
+
+                        //    Fields.Module.ResetField();
+                        //Memory.FieldHolder.FieldID = (ushort)fieldId;
+                        //Memory.Module = MODULE.FIELD_DEBUG;
+                    }
+                        activeCollidePolygon = null; //invalidate current polygon so you won't warp twice when field2wm
+                        //invalidating activecollidepolygon is not enough- set the position too by wmset.section9
+                }
+            }
+
             const float forestAdj = 0f;//-12f;
             foreach (RayCastedTris prt in RaycastedTris)
             {
@@ -890,8 +918,8 @@ namespace OpenVIII
 #endif
                 return;
             }
-            //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
 
+            //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
             foreach (RayCastedTris prt in RaycastedTris)
             {
                 if (!prt.sky) //we do not want skyRaycasts here, iterate only characterRay
@@ -906,6 +934,10 @@ namespace OpenVIII
 #endif
                 return;
             }
+
+            
+
+
             if (!BDebugDisableCollision)
                 playerPosition = lastPlayerPosition;
         }
@@ -967,9 +999,14 @@ namespace OpenVIII
 
         private const float RotationInterval = 1.5f;
 
+
+        private static bool bLockMouse = true;
         public static void OrbitCamera()
         {
-            InputMouse.Mode = MouseLockMode.Center;
+            if (bLockMouse)
+                InputMouse.Mode = MouseLockMode.Center;
+            else
+                InputMouse.Mode = MouseLockMode.Disabled;
             camDistance = 100f;
             camPosition = new Vector3(
                 (float)(playerPosition.X + camDistance * Extended.Cos(degrees - 180f)),
@@ -1000,9 +1037,12 @@ namespace OpenVIII
 
         private double RadianAngleFromVector3s(Vector3 a, Vector3 b) => Math.Acos(Vector3.Dot(Vector3.Normalize(a), Vector3.Normalize(b)));
 
+
+        static Color bgGradient = Color.CornflowerBlue;
+        static List<string> imguiStrings;
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.CornflowerBlue);
+            Memory.spriteBatch.GraphicsDevice.Clear(bgGradient);
 
             
 
@@ -1102,35 +1142,45 @@ namespace OpenVIII
                     break;
             }
 
-            Memory.SpriteBatchStartAlpha();
+
             float playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
             if (playerangle < 0) playerangle += 360f;
             double totalMilliseconds = Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
-            RecentFrameTimes.Add(totalMilliseconds);
-            Memory.font.RenderBasicText(
-                $"World map MapState: ={MapState}\n" +
-                $"World Map Camera: ={camPosition}\n" +
-                $"Player position: ={playerPosition}\n" +
-                $"Player rotation: ={playerangle}°\n" +
-                $"Player speed: ={DetectedSpeed} units per update\n" +
-                $"Segment Position: ={segmentPosition} ({GetSegmentVectorPlayerPosition()})\n" +
-                $"Press 8 to enable/disable collision: ={bDebugDisableCollision}\n" +
-                $"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}\n" +
-                $"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}\n" +
-                $"debugshit: ={DEBUGshit}\n" +
-                $"encounter: ={debugEncounter}- Press F3 to force battle\n" +
-                $"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}\n" +
-                $"FPS camera degrees: ={degrees}°\n" +
-                $"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}\n" +
-                $"Avg FPS: { $"{1000 / RecentFrameTimes.Average():000.000}" } \n" +
-                $"Avg frametime: { $"{RecentFrameTimes.Average():00.000}" } ms\n" +
-                $"Max frametime: { $"{RecentFrameTimes.Max():00.000}" } ms\n" +
-                $"Min frametime: { $"{RecentFrameTimes.Min():00.000}" } ms\n" +
-                $"FOV: ={FOV}", 30, 20, 1f, 2f, lineSpacing: 5);
-            Memory.SpriteBatchEnd();
 
-            while (RecentFrameTimes.Count >= 100)
-                RecentFrameTimes.RemoveAt(0);
+            Memory.imgui.BeforeLayout(Memory.gameTime);
+            ImGuiNET.ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero, ImGuiNET.ImGuiCond.Once);
+            ImGuiNET.ImGui.SetNextWindowBgAlpha(.25f);
+            ImGuiNET.ImGui.Begin("WORLD DEBUG");
+            ImGuiNET.ImGui.Text($"Press F1 to lock or unlock mouse: ={bLockMouse}");
+            ImGuiNET.ImGui.Text($"Press 8 to enable/disable collision: ={bDebugDisableCollision}");
+            ImGuiNET.ImGui.Text($"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}");
+            ImGuiNET.ImGui.Separator();
+            System.Numerics.Vector4 imgui_skyColor = new System.Numerics.Vector4(bgGradient.R/255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
+            ImGuiNET.ImGui.ColorEdit4("Sky color: ", ref imgui_skyColor);
+            bgGradient = new Color(imgui_skyColor.X, imgui_skyColor.Y, imgui_skyColor.Z, imgui_skyColor.W);
+            ImGuiNET.ImGui.Text($"World map MapState: ={MapState}");
+            ImGuiNET.ImGui.Text($"World Map Camera: ={camPosition}");
+            System.Numerics.Vector3 imgui_playerPosition = new System.Numerics.Vector3(playerPosition.X, playerPosition.Y, playerPosition.Z);
+            ImGuiNET.ImGui.InputFloat3("Player position: ", ref imgui_playerPosition);
+            playerPosition = new Vector3(imgui_playerPosition.X, imgui_playerPosition.Y, imgui_playerPosition.Z);
+            ImGuiNET.ImGui.Text($"Player rotation: ={playerangle}°");
+            ImGuiNET.ImGui.Text($"Player speed: ={DetectedSpeed} units per update");
+            ImGuiNET.ImGui.Text($"Segment Position: ={segmentPosition} ({GetSegmentVectorPlayerPosition()})");
+            ImGuiNET.ImGui.Text($"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}");
+            ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
+            ImGuiNET.ImGui.Text($"encounter: ={debugEncounter}- Press F3 to force battle");
+            ImGuiNET.ImGui.Text($"FOV: {FOV}");
+            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}");
+            ImGuiNET.ImGui.Text($"imgui::FPS {ImGuiNET.ImGui.GetIO().Framerate}");
+            ImGuiNET.ImGui.Separator();
+            if (imguiStrings != null)
+            {
+                foreach (string s in imguiStrings)
+                    ImGuiNET.ImGui.Text(s);
+                imguiStrings.Clear();
+            }
+            ImGuiNET.ImGui.End();
+            Memory.imgui.AfterLayout();
         }
 
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
@@ -1289,7 +1339,6 @@ namespace OpenVIII
         private static Vector3 localMchTranslation = new Vector3(0, 6f, 0);
 
         private static Vector2 Scale;
-        private static List<double> RecentFrameTimes = new List<double>(100);
 
         public static bool InVehicle => worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok;
 
