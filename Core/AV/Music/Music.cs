@@ -207,9 +207,10 @@ namespace OpenVIII.AV
                     }
                     else
                     {
-                        cancelTokenSource = new CancellationTokenSource();
-                        cancelToken = cancelTokenSource.Token;
-                        MusicTask = Task.Run(()=>PlayInTask(ref ffccMusic,volume, pitch, pan, loop, filename,cancelToken), cancelToken);
+                        return;
+                        //cancelTokenSource = new CancellationTokenSource();
+                        //cancelToken = cancelTokenSource.Token;
+                        //MusicTask = Task.Run(()=>PlayInTask(ref ffccMusic,volume, pitch, pan, loop, filename,cancelToken), cancelToken);
                     }
                     break;
 

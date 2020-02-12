@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII.Movie
@@ -65,13 +66,35 @@ namespace OpenVIII.Movie
 
         public static Player Load(int ID, bool OverlayingModels = false)
         {
-            AV.Audio ffccAudioFromZZZ = null;
-            if (Files.ZZZ)
+            Player Player = null;
+            if (File.Exists(Files[ID]))
             {
+                Player = new Player()
+                {
+                    ID = ID,
+                    STATE = STATE.LOAD,
+                    Video = AV.Video.Load(Files[ID]),
+                    Audio = AV.Audio.Load(Files[ID]),
+                    SuppressDraw = !OverlayingModels
+                };
+            }
+            else if (Files.ZZZ)
+            {
+                return null; // doesn't work.
                 ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
                 ArchiveZZZ.FileData fd = a.GetFileData(Files[ID]);
 
-                AV.Audio ffcc = AV.Audio.Load(
+                AV.Audio ffccAudioFromZZZ = AV.Audio.Load(
+                    new AV.BufferData
+                    {
+                        DataSeekLoc = fd.Offset,
+                        DataSize = fd.Size,
+                        HeaderSize = 0,
+                        Target = AV.BufferData.TargetFile.other_zzz
+                    },
+                    null, -1);
+
+                AV.Video ffccVideoFromZZZ = AV.Video.Load(
                     new AV.BufferData
                     {
                         DataSeekLoc = fd.Offset,
@@ -82,16 +105,18 @@ namespace OpenVIII.Movie
                     null, -1);
 
                 //ffcc.Play(volume, pitch, pan);
-                ffccAudioFromZZZ = ffcc;
+
+                Player = new Player()
+                {
+                    ID = ID,
+                    STATE = STATE.LOAD,
+                    Video = ffccVideoFromZZZ,
+                    Audio = ffccAudioFromZZZ,
+                    SuppressDraw = !OverlayingModels
+                };
             }
-            Player Player = new Player()
-            {
-                ID = ID,
-                STATE = STATE.LOAD,
-                Video = Files.Exists(ID) ? AV.Video.Load(Files[ID]) : null,
-                Audio = Files.ZZZ ? ffccAudioFromZZZ : Files.Exists(ID) ? AV.Audio.Load(Files[ID]) : null,
-                SuppressDraw = !OverlayingModels
-            };
+            else
+            return null;
             Player.STATE++;
             if (Player.Video == null && Player.Audio == null)
                 return Player = null;
@@ -251,9 +276,9 @@ namespace OpenVIII.Movie
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
-                if (!(Video?.IsDisposed?? true))
+                if (!(Video?.IsDisposed ?? true))
                     Video.Dispose();
-                if (!(Audio?.IsDisposed?? true))
+                if (!(Audio?.IsDisposed ?? true))
                     Audio.Dispose();
                 if (Texture != null && !Texture.IsDisposed)
                     Texture.Dispose();
