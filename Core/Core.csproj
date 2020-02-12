@@ -171,6 +171,7 @@
     <Compile Include="AV\Sound\Sound.cs" />
     <Compile Include="AV\Sound\WAVEFORMATEX.cs" />
     <Compile Include="AV\Video.cs" />
+    <Compile Include="AV\VideoStreamDecoder.cs" />
     <Compile Include="Battle\AnimationSystem.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
     <Compile Include="Battle\Characters\CharacterData.cs" />
