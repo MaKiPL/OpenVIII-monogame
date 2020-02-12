@@ -78,7 +78,7 @@ namespace OpenVIII
         public override ArchiveBase GetArchive(Memory.Archive archive)
         {
             if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
-                return ArchiveWorker.Load(archive, GetBinaryFile(fileName: archive.FI), GetBinaryFile(archive.FS), GetBinaryFile(archive.FL));
+                return ArchiveWorker.Load(archive, GetStreamWithRangeValues(archive.FI), this, GetStreamWithRangeValues(archive.FL));
             return value;
         }
         
@@ -125,7 +125,7 @@ namespace OpenVIII
 
         public override Memory.Archive GetPath() => _path;
 
-        public override StreamWithRangeValues GetStreamWithRangeValues(string filename)
+        public override StreamWithRangeValues GetStreamWithRangeValues(string filename, FI fi =null)
         {
             if (headerData != null)
             {
@@ -137,7 +137,10 @@ namespace OpenVIII
                 if (filedata != default && (s = OpenStream()) != null)
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} got stream of {filename}");
-                    return new StreamWithRangeValues(s, filedata.Offset, filedata.Size);
+                    if (fi != null)
+                        return new StreamWithRangeValues(s, filedata.Offset+fi.Offset, fi.UncompressedSize,fi.CompressionType);
+                    else
+                        return new StreamWithRangeValues(s, filedata.Offset, filedata.Size);
                 }
                 else
                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} FAILED locating {filename}");

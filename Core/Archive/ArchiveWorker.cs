@@ -18,13 +18,14 @@ namespace OpenVIII
 
         private IEnumerator enumerator;
 
+        public readonly ArchiveBase FSArchive;
+
         private byte[] FS;
 
         #endregion Fields
 
         #region Constructors
 
-        public override string ToString() => $"{_path} :: {Used}";
         /// <summary>
         /// Saves the active archive and file list.
         /// </summary>
@@ -56,9 +57,31 @@ namespace OpenVIII
                 }
             if (tempArchive != null)
             {
-                tempArchive.GetArchive(path, out byte[] FI, out FS, out byte[] FL);
+                tempArchive.GetArchive(path, out StreamWithRangeValues FI, out FSArchive, out StreamWithRangeValues FL);
                 ArchiveMap = new ArchiveMap(FI, FL);
             }
+            if (!skiplist)
+                GetListOfFiles();
+        }
+
+        public void CacheFS()
+        {
+            if(FSArchive!=null)
+                FS = FSArchive.GetBinaryFile(_path.FS);
+        }
+
+        public void ClearFS()
+        {
+            if (FSArchive != null)
+                FS = null;
+        }
+
+        protected ArchiveWorker(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skiplist = false)
+        {
+            ArchiveMap = new ArchiveMap(fI, fL);
+            _path = path;
+            FSArchive = fS;
+            FS = null;
             if (!skiplist)
                 GetListOfFiles();
         }
@@ -70,6 +93,10 @@ namespace OpenVIII
             FS = fS;
             if (!skiplist)
                 GetListOfFiles();
+        }
+
+        public ArchiveWorker(Memory.Archive path, bool skiplist = false, StreamWithRangeValues fI = null, StreamWithRangeValues fS = null, StreamWithRangeValues fL = null, bool skiplist1 = false) : this(path, skiplist)
+        {
         }
 
         #endregion Constructors
@@ -106,19 +133,28 @@ namespace OpenVIII
 
         #endregion Indexers
 
-        /// <summary>
-        /// Generate archive worker and get file
-        /// </summary>
-        /// <param name="archive">which archive you want to read from</param>
-        /// <param name="fileName">name of file you want to recieve</param>
-        /// <returns>Uncompressed binary file data</returns>
-        //public static byte[] GetBinaryFile(Memory.Archive archive, string fileName, bool cache = false)
-        //{
-        //    ArchiveWorker tmp = new ArchiveWorker(archive, true);
-        //    return tmp.GetBinaryFile(fileName, cache);
-        //}
-
         #region Methods
+
+        /// <summary>
+        /// Load Archive with out storing FS in byte[] works for archive that aren't compressed.
+        /// </summary>
+        /// <param name="path">Archive file path.</param>
+        /// <param name="fI">Stream containing the FI file</param>
+        /// <param name="fS">Archive where the FS file is.</param>
+        /// <param name="fL">Stream containing the FL file</param>
+        /// <param name="skiplist">Skip generating list of files</param>
+        /// <returns>ArchiveWorker</returns>
+        public static ArchiveBase Load(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skiplist = false)
+        {
+            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            {
+                return value;
+            }
+            else if (ArchiveBase.TryAdd(path, value = new ArchiveWorker(path, fI, fS, fL, skiplist)))
+            {
+            }
+            return value;
+        }
 
         public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
         {
@@ -132,6 +168,17 @@ namespace OpenVIII
             return value;
         }
 
+        /// <summary>
+        /// Generate archive worker and get file
+        /// </summary>
+        /// <param name="archive">which archive you want to read from</param>
+        /// <param name="fileName">name of file you want to recieve</param>
+        /// <returns>Uncompressed binary file data</returns>
+        //public static byte[] GetBinaryFile(Memory.Archive archive, string fileName, bool cache = false)
+        //{
+        //    ArchiveWorker tmp = new ArchiveWorker(archive, true);
+        //    return tmp.GetBinaryFile(fileName, cache);
+        //}
         public static ArchiveBase Load(Memory.Archive path, byte[] fI, byte[] fS, byte[] fL, bool skiplist = false)
         {
             if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
@@ -180,9 +227,9 @@ namespace OpenVIII
                         return ArchiveZZZ.Load(zzz);
                     }
                 }
-                GetArchive(archive, out byte[] fI, out byte[] fS, out byte[] fL);
+                GetArchive(archive, out StreamWithRangeValues fI, out ArchiveBase fS, out StreamWithRangeValues fL);
                 if (fI == null || fS == null || fL == null ||
-                    fI.Length == 0 || fS.Length == 0 || fL.Length == 0)
+                    fI.Length == 0 || fL.Length == 0)
                     return null;
                 return new ArchiveWorker(archive, fI, fS, fL);
             }
@@ -262,17 +309,24 @@ namespace OpenVIII
 
         public override Memory.Archive GetPath() => _path;
 
-        public override StreamWithRangeValues GetStreamWithRangeValues(string fileName)
+        public override StreamWithRangeValues GetStreamWithRangeValues(string fileName, FI inputFI = null)
         {
             if (_path != null)
             {
                 if (string.IsNullOrWhiteSpace(fileName))
                     throw new FileNotFoundException("NO FILENAME");
-
+                Debug.Assert(inputFI == null);
                 if (ArchiveMap != null && ArchiveMap.Count > 1)
                 {
                     FI fi = ArchiveMap.FindString(ref fileName, out int size);
-                    return new StreamWithRangeValues(new MemoryStream(FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                    if (FS != null && FS.Length > 0)
+                    {
+                        return new StreamWithRangeValues(new MemoryStream(FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                    }
+                    else if (FSArchive != null)
+                        return FSArchive.GetStreamWithRangeValues(_path.FS,fi);
+                    else
+                        return null;
                 }
                 else if (!isDir)
                 {
@@ -317,6 +371,8 @@ namespace OpenVIII
                 enumerator.Reset();
         }
 
+        public override string ToString() => $"{_path} :: {Used}";
+
         public bool TryGetValue(string key, out byte[] value) => (value = GetBinaryFile(key)) != null ? true : false;
 
         private static bool GetLine(TextReader tr, out string line)
@@ -342,7 +398,14 @@ namespace OpenVIII
         /// Does the same thing as Get Binary file, but it reads from byte arrays in ram because the
         /// data was already pulled from a file earlier.
         /// </remarks>
-        private byte[] FileInTwoArchives(string filename) => ArchiveMap.GetBinaryFile(filename, new MemoryStream(FS));//    int loc = -1;//    using (MemoryStream ms = new MemoryStream(FL, false))//        loc = FindFile(ref filename, ms);//    if (loc == -1)//    {//        Debug.WriteLine("ArchiveWorker: NO SUCH FILE!");//        return null;//        //throw new Exception("ArchiveWorker: No such file!");//    }//    // get params from index//    uint fsUncompressedSize = BitConverter.ToUInt32(FI, loc * 12);//    uint fSpos = BitConverter.ToUInt32(FI, (loc * 12) + 4);//    //uint fsCompressedSize = (loc + 1 * 12 < FI.Length) ? BitConverter.ToUInt32(FI, (loc + 1) * 12) : (uint)FS.Length - fSpos;//    uint compe = BitConverter.ToUInt32(FI, (loc * 12) + 8);//    // copy binary data//    uint fsCompressedSize = compe == 1 ? BitConverter.ToUInt32(FS, (int)fSpos) : fsUncompressedSize + 10;//    byte[] file = new byte[fsCompressedSize];//    Array.Copy(FS, fSpos, file, 0, file.Length);//    return compe == 2 ? Lz4decompress(FS, checked((int)fSpos), fsUncompressedSize) : compe == 1 ? LZSS.DecompressAllNew(file) : file;
+        private byte[] FileInTwoArchives(string filename)
+        {
+            if (FS != null && FS.Length > 0)
+                return ArchiveMap.GetBinaryFile(filename, new MemoryStream(FS));
+            else if (FSArchive != null)
+                return ArchiveMap.GetBinaryFile(filename, FSArchive.GetStreamWithRangeValues(_path.FS));
+            return null;
+        }
 
         private int FindFile(ref string filename)
         {

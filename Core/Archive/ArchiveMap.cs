@@ -21,7 +21,21 @@ namespace OpenVIII
         {
             FL list = new FL(fl);
             using (BinaryReader br = new BinaryReader(new MemoryStream(fi, false)))
-                entries = list.ToDictionary(x => x.TrimEnd(), x => Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
+                entries = list.ToDictionary(x => x, x => Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
+        }
+
+        public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL)
+        {
+            using (StreamReader sr = new StreamReader(fL, System.Text.Encoding.UTF8))
+            using (BinaryReader br = new BinaryReader(fI))
+            {
+                fL.Seek(fL.Offset, SeekOrigin.Begin);
+                fI.Seek(fI.Offset, SeekOrigin.Begin);
+                entries = new Dictionary<string, FI>();
+                long Count = fI.Size / 12;
+                while (Count-->0)
+                    entries.Add(sr.ReadLine().TrimEnd(), Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
+            }
         }
 
         #endregion Constructors
@@ -85,6 +99,14 @@ namespace OpenVIII
 
         public byte[] GetBinaryFile(string input, Stream data)
         {
+            long Max = data.Length;
+            long Offset = 0;
+            if(data.GetType() == typeof(StreamWithRangeValues))
+            {
+                StreamWithRangeValues s = (StreamWithRangeValues)data;
+                Offset = s.Offset;
+                Max = s.Max;
+            }
             FI fi = FindString(ref input, out int size);
             if (fi == null)
             {
@@ -92,11 +114,11 @@ namespace OpenVIII
                 return null;
             }
             if (size == 0)
-                size = checked((int)(data.Length - fi.Offset));
+                size = checked((int)(Max - (fi.Offset+Offset)));
             byte[] buffer;
             using (BinaryReader br = new BinaryReader(data))
             {
-                br.BaseStream.Seek(fi.Offset, SeekOrigin.Begin);
+                br.BaseStream.Seek(fi.Offset+Offset, SeekOrigin.Begin);
                 if (fi.CompressionType == 1)
                 {
                     size = br.ReadInt32();

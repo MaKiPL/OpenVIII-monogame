@@ -75,6 +75,13 @@ namespace OpenVIII
 
         public abstract ArchiveBase GetArchive(string fileName);
 
+        public void GetArchive(Memory.Archive archive, out StreamWithRangeValues FI, out ArchiveBase FS, out StreamWithRangeValues FL)
+        {
+            Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");
+            FI = GetStreamWithRangeValues(archive.FI);
+            FS = this;
+            FL = GetStreamWithRangeValues(archive.FL);
+        }
         public void GetArchive(Memory.Archive archive, out byte[] FI, out byte[] FS, out byte[] FL)
         {
             Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");
@@ -91,7 +98,7 @@ namespace OpenVIII
 
         public abstract Memory.Archive GetPath();
 
-        public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename);
+        public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename, FI fi= null);
 
         public override string ToString() => $"{_path} :: {Used}";
 

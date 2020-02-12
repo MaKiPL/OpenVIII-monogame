@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -13,7 +15,19 @@ namespace OpenVIII
 
         #region Constructors
 
-        public FL(byte[] buffer) => data = new List<string>(System.Text.Encoding.UTF8.GetString(buffer).Split('\n'));
+        public FL(byte[] buffer) => data = System.Text.Encoding.UTF8.GetString(buffer).Split('\n').Select(x=>x.TrimEnd()).ToList();
+
+        public FL(StreamWithRangeValues fL)
+        {
+            using (StreamReader br = new StreamReader(fL,System.Text.Encoding.UTF8))
+            {
+                fL.Seek(fL.Offset, SeekOrigin.Begin);
+                while(fL.Position<fL.Max)
+                {
+                    data.Add(br.ReadLine().TrimEnd());
+                }
+            }
+        }
 
         #endregion Constructors
 
