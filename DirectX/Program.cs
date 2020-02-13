@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace OpenVIII.DirectX
 {
@@ -15,6 +16,7 @@ namespace OpenVIII.DirectX
         [STAThread]
         private static void Main()
         {
+            start:
             try
             {
                 using (Game1 game = new Game1())
@@ -22,6 +24,7 @@ namespace OpenVIII.DirectX
             }
             catch (InvalidOperationException e)
             {
+                Debug.WriteLine(e);
                 goto start;
             }
         }

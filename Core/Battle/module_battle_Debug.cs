@@ -195,16 +195,17 @@ namespace OpenVIII
             }
 
             Memory.SpriteBatchStartAlpha();
-            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}"), 20, 0, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {Memory.ElapsedGameTime}"), 20, 30 * 2, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}"), 20, 30 * 6, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Camera.Mode: {Camera.cam.control_word & 1}"), 20, 30 * 7, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}"), 20, 30 * 8, 1, 1, 0, 1);
-            Memory.font.RenderBasicText(new FF8String($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30 * 9, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}\n"+
+                $"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})\n"+
+                $"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds > 0 ? 1d / Memory.ElapsedGameTime.TotalSeconds : 0d)}\n"+
+                $"Average FrameRate: {FPSCounter.AverageFramesPerSecond}\n"+
+                $"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}\n"+
+                $"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}\n"+
+                $"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}\n"+
+                $"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}\n"+
+                $"Camera.Mode: {Camera.cam.control_word & 1}\n"+
+                $"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}\n"+
+                $"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++"), 20, 30, 1, 1, 0, 1);
 
             Memory.SpriteBatchEnd();
         }

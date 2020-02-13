@@ -326,6 +326,7 @@
     <Compile Include="Field\Background\Tiles.cs" />
     <Compile Include="Field\WalkMesh\Vert.cs" />
     <Compile Include="Field\WalkMesh\WalkMesh.cs" />
+    <Compile Include="FPSCounter.cs" />
     <Compile Include="Image\Bppflag.cs" />
     <Compile Include="Image\Cluts.cs" />
     <Compile Include="Image\TDW.cs" />
@@ -1175,7 +1176,7 @@
     <Content Include="x86\avcodec-58.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-	<Content Include="x86\ImGui.NET.dll">
+    <Content Include="x86\ImGui.NET.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="x86\avdevice-58.dll">

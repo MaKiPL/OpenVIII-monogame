@@ -144,6 +144,7 @@ namespace OpenVIII
         {
             Memory.GameTime = gameTime;
             Memory.IsActive = IsActive;
+            FPSCounter.Update();
 
             //it breaks the Font
             //Memory.PreferredViewportWidth = graphics.GraphicsDevice.Viewport.Width;

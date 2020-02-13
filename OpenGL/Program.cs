@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace OpenVIII.OpenGL
 {
@@ -21,6 +22,7 @@ namespace OpenVIII.OpenGL
             }
             catch (InvalidOperationException e)
             {
+                Debug.WriteLine(e);
                 goto start;
             }
         }

@@ -1170,7 +1170,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
             ImGuiNET.ImGui.Text($"encounter: ={debugEncounter}- Press F3 to force battle");
             ImGuiNET.ImGui.Text($"FOV: {FOV}");
-            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {Memory.ElapsedGameTime}");
+            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds>0? 1d/Memory.ElapsedGameTime.TotalSeconds:0d)}");
             ImGuiNET.ImGui.Text($"imgui::FPS {ImGuiNET.ImGui.GetIO().Framerate}");
             ImGuiNET.ImGui.Separator();
             if (imguiStrings != null)
