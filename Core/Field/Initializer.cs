@@ -27,6 +27,8 @@ namespace OpenVIII.Fields
                         string[] maplistb = System.Text.Encoding.UTF8.GetString(bytes)
                             .Replace("\r", "")
                             .Split('\n');
+
+                        //Memory.FieldHolder.FieldMemory = new int[1024];
                         Memory.FieldHolder.fields = maplistb;
                         FieldId.FieldId_ = maplistb;
                     }

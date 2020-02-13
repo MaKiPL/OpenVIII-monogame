@@ -199,7 +199,10 @@ namespace OpenVIII.Movie
                     STATE++;
                     if (Audio != null)
                     {
-                        Audio.PlayInTask();
+                        if (Memory.Threaded)
+                            Audio.PlayInTask();
+                        else
+                            Audio.Play();
                     }
                     if (Video != null)
                     {
@@ -208,11 +211,10 @@ namespace OpenVIII.Movie
                     break;
 
                 case STATE.PLAYING:
-                    //if (Audio != null && !Audio.Ahead)
-                    //{
-                    //    // if we are behind the timer get the next frame of audio.
-                    //    Audio.Next();
-                    //}
+                    if (Audio != null && !Memory.Threaded)
+                    {
+                        Audio.NextLoop();
+                    }
                     if (Video == null)
                         STATE = STATE.FINISHED;
                     else if (Video.Behind)

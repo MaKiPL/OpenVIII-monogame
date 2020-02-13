@@ -743,7 +743,7 @@
 
                             task.Dispose();
                         else
-                            Memory.LeftOverTask.Add(task);
+                            Memory.FFCCLeftOverTask.Add(task);
                         task = null;
                     }
                     State = FfccState.DONE;
@@ -1211,11 +1211,7 @@
                 {
                     lock (Decoder) //make the main thread wait if it accesses this class.
                     {
-                        while (!IsDisposed && !Ahead)
-                        {
-                            if (Next() < 0)
-                                break;
-                        }
+                        NextLoop();
                     }
                     if (!useNaudio)
                         Thread.Sleep(NextAsyncSleep); //delay checks
@@ -1250,6 +1246,15 @@
             }
 #endif
             return 0;
+        }
+
+        public void NextLoop()
+        {
+            while (!IsDisposed && !Ahead)
+            {
+                if (Next() < 0)
+                    break;
+            }
         }
 
         /// <summary>

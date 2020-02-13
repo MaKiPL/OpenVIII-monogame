@@ -100,10 +100,10 @@ namespace OpenVIII
             if (offset > -1)
             {
                 Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(LZ4Uncompress)}::{nameof(offset)}: {offset}");
-                return output;//.ToArray();
+                return output;
             }
             else
-                throw new Exception("failed to decompress");
+                throw new Exception($"{nameof(ArchiveWorker)}::{nameof(LZ4Uncompress)} Failed to uncompress...");
         }
 
         public bool ContainsKey(string key) => ((IReadOnlyDictionary<string, FI>)entries).ContainsKey(key);

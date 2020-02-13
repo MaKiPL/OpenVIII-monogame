@@ -65,7 +65,7 @@ namespace OpenVIII
         public static Log Log;
         public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
-        public static List<Task> LeftOverTask = new List<Task>();
+        public static List<Task> FFCCLeftOverTask = new List<Task>();
 
         public enum GraphicModes
         {
@@ -126,6 +126,7 @@ namespace OpenVIII
             /// </summary>
             Stretch
         }
+
         public static bool ProcessActions(Action[] actions)
         {
             if (Threaded)
@@ -139,6 +140,21 @@ namespace OpenVIII
             else actions.ForEach(x => x.Invoke());
             return !Token.IsCancellationRequested;
         }
+
+        public static IEnumerable<bool> ProcessFuncs(Func<bool>[] funcs)
+        {
+            if (Threaded)
+            {
+                List<Task<bool>> tasks = new List<Task<bool>>(funcs.Length);
+                funcs.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
+                //Some code that cannot be threaded on init.
+                if (!Task.WaitAll(tasks.ToArray(), 10000))
+                    throw new TimeoutException("Task took too long!");
+                return tasks.Select(x => x.Result);
+            }
+            else return funcs.Select(x => x.Invoke());
+        }
+
         public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
         public const ScaleMode _scaleMode = ScaleMode.Stretch;
 
@@ -175,12 +191,10 @@ namespace OpenVIII
         public const int PreferredViewportHeight = 720;
 
         private static GameTime gameTime;
+
         public static GameTime GameTime
         {
-            get
-            {
-                return gameTime;
-            }
+            get => gameTime;
             set => gameTime = value;
         }
 
@@ -441,7 +455,6 @@ namespace OpenVIII
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
             Memory.content = content;
-            Memory.FieldHolder.FieldMemory = new int[1024];
 
             FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
@@ -997,12 +1010,12 @@ namespace OpenVIII
             Action a = null;
             while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a) ?? false))
             { a.Invoke(); }
-            for (int i = 0; IsMainThread && i < LeftOverTask.Count; i++)
+            for (int i = 0; IsMainThread && i < FFCCLeftOverTask.Count; i++)
             {
-                if (LeftOverTask[i].IsCompleted)
+                if (FFCCLeftOverTask[i].IsCompleted)
                 {
-                    LeftOverTask[i].Dispose();
-                    LeftOverTask.RemoveAt(i--);
+                    FFCCLeftOverTask[i].Dispose();
+                    FFCCLeftOverTask.RemoveAt(i--);
                 }
             }
         }
@@ -1013,7 +1026,7 @@ namespace OpenVIII
             public static ushort FieldID = 756;
 
             public static string[] fields;
-            public static int[] FieldMemory;
+            //public static int[] FieldMemory;
 
             public static string GetString() => fields?.ElementAtOrDefault(FieldID);
         }

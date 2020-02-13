@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace OpenVIII.AV
 {
@@ -93,16 +92,17 @@ namespace OpenVIII.AV
         /// contains files from other.zzz
         /// </summary>
         public static bool ZZZ { get; private set; } = false;
+
         public static object MusicTask { get; private set; }
 
+        /// <summary>
+        /// <para>checks to see if music buffer is running low and getframe triggers a refill.</para>
+        /// <para>if played in task we don't need to do this.</para>
+        /// </summary>
         public static void Update()
         {
-            //checks to see if music buffer is running low and getframe triggers a refill.
-            //if (ffccMusic != null && !ffccMusic.Ahead)
-            //{
-            //    ffccMusic.Next();
-            //}
-            //if played in task we don't need to do this.
+            if (!Memory.Threaded)
+                ffccMusic?.NextLoop();
         }
 
         //public static byte[] ReadFullyByte(Stream stream)
@@ -203,7 +203,10 @@ namespace OpenVIII.AV
                         ffccMusic = AV.Audio.Load(filename, loop ? 0 : -1);
                         if (!loop)
                             ffccMusic.LOOPSTART = -1;
-                        ffccMusic.PlayInTask(volume, pitch, pan);
+                        if (Memory.Threaded)
+                            ffccMusic.PlayInTask(volume, pitch, pan);
+                        else
+                            ffccMusic.Play(volume, pitch, pan);
                     }
                     else
                     {
@@ -242,7 +245,7 @@ namespace OpenVIII.AV
             lastplayed = Memory.MusicIndex;
         }
 
-        private unsafe static void PlayInTask(ref Audio ffAudio,float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
+        private static unsafe void PlayInTask(ref Audio ffAudio, float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
         {
             ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
             ArchiveZZZ.FileData fd = a.GetFileData(filename);

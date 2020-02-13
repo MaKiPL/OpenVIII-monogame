@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -86,18 +87,23 @@ namespace OpenVIII
 
         private static void GetFiles(string dir, string regex) => ProcessFiles(Directory.EnumerateFiles(dir), regex);
 
-        private static void ProcessFiles(IEnumerable<string> files, string regex)
+        private static void ProcessFiles(IEnumerable<string> files, string pattern)
         {
-            List<Task> tasks = new List<Task>();
-            foreach (string file in files)
-            {
-                Match match = Regex.Match(file, regex, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            //List<Action> actions = new List<Action>();
+            Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            IEnumerable<Action> actions = files.Select(x => new { file = x, match = regex.Match(x) })
+                .Where(x => x.match.Success && x.match.Groups.Count > 1)
+                .Select(x => new Action(() => { Read(x.file, out FileList[int.Parse(x.match.Groups[1].Value) - 1, int.Parse(x.match.Groups[2].Value) - 1]); }));
+            //foreach (string file in files)
+            //{
+            //    Match match = Regex.Match(file, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-                if (match.Success && match.Groups.Count > 0)
-                    tasks.Add(Task.Run(() => Read(file, out FileList[int.Parse(match.Groups[1].Value) - 1, int.Parse(match.Groups[2].Value) - 1])));
-            }
-            Task.WaitAll(tasks.ToArray());
+            //    if (match.Success && match.Groups.Count > 0)
+            //        actions.Add(() => Read(file, out FileList[int.Parse(match.Groups[1].Value) - 1, int.Parse(match.Groups[2].Value) - 1]));
+            //}
+            Memory.ProcessActions(actions.ToArray());
         }
+
         private static void Read(string file, out Data d)
         {
             Debug.WriteLine("Task={0}, Thread={1}, File={2}",
