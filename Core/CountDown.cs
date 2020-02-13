@@ -39,7 +39,7 @@ namespace OpenVIII
         {
             if (!Done)
             {
-                TS -= Memory.gameTime.ElapsedGameTime;
+                TS -= Memory.ElapsedGameTime;
             }
             return Done;
         }

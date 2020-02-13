@@ -23,6 +23,37 @@
     /// </remarks>
     public abstract partial class Ffcc : IDisposable
     {
+
+        protected static unsafe T Load<T>(BufferData* buffer_Data, byte[] headerData, int loopstart, FfccMode ffccMode, AVMediaType avtype) where T : Ffcc, new()
+        {
+            T r = new T();
+
+            void play(BufferData* d)
+            {
+                r.LoadFromRAM(d);
+                r.Init(null, avtype, ffccMode, loopstart);
+                if (ffccMode == FfccMode.PROCESS_ALL)
+                {
+                    ffmpeg.avformat_free_context(r.Decoder.Format);
+                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
+                    r.Decoder.Format = null;
+                    r.Dispose(false);
+                }
+            }
+            if (headerData != null)
+                fixed (byte* tmp = &headerData[0])
+                {
+                    lock (r.Decoder)
+                    {
+                        buffer_Data->SetHeader(tmp);
+                        play(buffer_Data);
+                    }
+                }
+            else
+                play(buffer_Data);
+            return r;
+        }
+
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
@@ -101,6 +132,7 @@
 
 #endif
         private avio_alloc_context_read_packet rf;
+        private avio_alloc_context_seek sf;
         private CancellationTokenSource sourceToken;
 
         private bool stopped = false;
@@ -711,7 +743,7 @@
 
                             task.Dispose();
                         else
-                            Memory.LeftOverTask.Add(task);
+                            Memory.FFCCLeftOverTask.Add(task);
                         task = null;
                     }
                     State = FfccState.DONE;
@@ -874,6 +906,7 @@
                         {
                             //make sure packet is unref before getting a new one.
                             ffmpeg.av_packet_unref(Decoder.Packet);
+                            //Debug.WriteLine("Getting Packet");
                             Return = ffmpeg.av_read_frame(Decoder.Format, Decoder.Packet);
                             if (Return == ffmpeg.AVERROR_EOF)
                             {
@@ -1028,7 +1061,8 @@
                 return;
             }
             rf = new avio_alloc_context_read_packet(Read_packet);
-            _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, bd, rf, null, null);
+            sf = new avio_alloc_context_seek(Seek);
+            _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, bd, rf, null, sf);
 
             if (_avio_ctx == null)
             {
@@ -1036,6 +1070,13 @@
             }
             Decoder._format->pb = _avio_ctx;
             Open();
+        }
+
+        private unsafe long Seek(void* opaque, long offset, int whence)
+        {
+            BufferData* bd = (BufferData*)opaque;
+
+            return bd->Seek(offset, whence);
         }
 
         /// <summary>
@@ -1149,7 +1190,9 @@
                 }
                 //I didn't realize this didn't change the framenumber to 0. it just appends the LOOPSTART pos to the current stream.
                 //So it is possible this could overflow when it's looped long enough to bring the currentframenum to max value.
-                Return = ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, min, LOOPSTART, max, 0);
+                //Return = ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, min, LOOPSTART, max, 0);
+                Return = ffmpeg.av_seek_frame(Decoder.Format, Decoder.StreamIndex, LOOPSTART, 0);
+                
                 CheckReturn();
 
                 State = FfccState.WAITING;
@@ -1168,11 +1211,7 @@
                 {
                     lock (Decoder) //make the main thread wait if it accesses this class.
                     {
-                        while (!IsDisposed && !Ahead)
-                        {
-                            if (Next() < 0)
-                                break;
-                        }
+                        NextLoop();
                     }
                     if (!useNaudio)
                         Thread.Sleep(NextAsyncSleep); //delay checks
@@ -1207,6 +1246,15 @@
             }
 #endif
             return 0;
+        }
+
+        public void NextLoop()
+        {
+            while (!IsDisposed && !Ahead)
+            {
+                if (Next() < 0)
+                    break;
+            }
         }
 
         /// <summary>

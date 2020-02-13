@@ -169,34 +169,43 @@ namespace OpenVIII
             GeneratePages(ID.SPECIAL, ID.SPECIAL_PG1, 4, 8);
 
             //revese order of rewind so arrows draw correctly
-            Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
-            Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
+            if (Entries.ContainsKey(ID.Rewind_Fast))
+            {
+                Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
+                Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
 
-            Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
+                Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
+            }
 
             //override this entry to make it tile instead of have set number of elements.
-            EntryGroup b = Entries[ID.Size_08x64_Bar];
-            Entry Left = b[0].Clone();
-            Entry Center = b[1].Clone();
-            Entry Right = b[7].Clone();
-            Left.Offset = Vector2.Zero;
-            Center.Offset = Vector2.Zero;
-            Right.Offset = new Vector2(-8f, 0);
-            Center.Tile = Vector2.UnitX;
-            Right.Snap_Right = true;
-            Entries[ID.Size_08x64_Bar] = new EntryGroup(Center, Left, Right);
-            ID tmp = ID.D_Pad_Up;
-            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
-            tmp = ID.D_Pad_Down;
-            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
-            tmp = ID.D_Pad_Left;
-            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
-            tmp = ID.D_Pad_Right;
-            Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            if (Entries.ContainsKey(ID.Size_08x64_Bar))
+            {
+                EntryGroup b = Entries[ID.Size_08x64_Bar];
+                Entry Left = b[0].Clone();
+                Entry Center = b[1].Clone();
+                Entry Right = b[7].Clone();
+                Left.Offset = Vector2.Zero;
+                Center.Offset = Vector2.Zero;
+                Right.Offset = new Vector2(-8f, 0);
+                Center.Tile = Vector2.UnitX;
+                Right.Snap_Right = true;
+                Entries[ID.Size_08x64_Bar] = new EntryGroup(Center, Left, Right);
+                ID tmp = ID.D_Pad_Up;
+                Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+                tmp = ID.D_Pad_Down;
+                Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+                tmp = ID.D_Pad_Left;
+                Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+                tmp = ID.D_Pad_Right;
+                Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
+            }
         }
 
         private void GeneratePages(ID label, ID label_pg1, byte count, sbyte offset)
         {
+            if (!Entries.ContainsKey(label_pg1) && !Entries.ContainsKey(label) && !Entries.ContainsKey(ID.Size_08x08_P_))
+                return;
+
             count = (byte)MathHelper.Clamp(count, 1, 99);
             Entry P_ = Entries[ID.Size_08x08_P_][0].Clone();
             P_.Offset.X += Entries[label][0].Width + offset;

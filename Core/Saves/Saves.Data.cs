@@ -236,7 +236,7 @@ namespace OpenVIII
             /// <summary>
             /// Time since loaded
             /// </summary>
-            public TimeSpan ElapsedTimeSinceLoad => Memory.gameTime != null && Loadtime != null ? (Memory.gameTime.TotalGameTime - Loadtime) : new TimeSpan();
+            public TimeSpan ElapsedTimeSinceLoad => Loadtime != null ? (Memory.TotalGameTime - Loadtime) : new TimeSpan();
 
             /// <summary>
             /// 0x0D70 256 + 1024 bytes Field vars
@@ -525,7 +525,7 @@ namespace OpenVIII
             public static Data LoadInitOut()
             {
                 Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Data)} :: {nameof(LoadInitOut)} ");
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MAIN, true);
+                ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN, true);
                 byte[] buffer = aw.GetBinaryFile("init.out");
                 if (buffer != null && buffer.Length >0)
                 {

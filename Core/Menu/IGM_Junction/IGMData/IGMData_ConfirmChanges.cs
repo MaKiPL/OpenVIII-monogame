@@ -28,7 +28,7 @@ namespace OpenVIII
             public override bool Inputs_OKAY()
             {
                 skipsnd = true;
-                init_debugger_Audio.PlaySound(31);
+                AV.Sound.Play(31);
                 IGM_Junction.Data[SectionName.ConfirmChanges].Hide();
                 IGM_Junction.SetMode(Mode.TopMenu);
 

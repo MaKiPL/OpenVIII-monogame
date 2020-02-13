@@ -1,11 +1,13 @@
-﻿namespace OpenVIII.IGMData.Dialog.Timed
+﻿using System;
+
+namespace OpenVIII.IGMData.Dialog.Timed
 {
     public class Small : IGMData.Dialog.Small
     {
         #region Fields
 
-        private double maxtime = 3000;
-        private double timeshow = 0;
+        private TimeSpan maxtime = TimeSpan.FromMilliseconds(3000);
+        private TimeSpan timeshow = TimeSpan.Zero;
 
         #endregion Fields
 
@@ -15,7 +17,7 @@
 
         public override void Show()
         {
-            timeshow = Memory.gameTime.TotalGameTime.TotalMilliseconds;
+            timeshow = TimeSpan.Zero;
             base.Show();
         }
 
@@ -24,8 +26,10 @@
             if (Enabled)
             {
                 base.Update();
-                if (Memory.gameTime.TotalGameTime.TotalMilliseconds - timeshow < maxtime)
+                if ((timeshow += Memory.ElapsedGameTime) < maxtime)
+                {
                     return true;
+                }
                 else
                     Hide();
             }

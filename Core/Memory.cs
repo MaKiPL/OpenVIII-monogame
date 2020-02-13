@@ -58,10 +58,14 @@ namespace OpenVIII
 
     public static partial class Memory
     {
-        internal static Log Log;
+        public static float CameraScale { get; internal set; } = 100f;
+        public static float BattleStageScale { get; internal set; } = 100f;
+        public static float EnemyCoordinateScale { get; internal set; } = 100f;
+
+        public static Log Log;
         public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
-        public static List<Task> LeftOverTask = new List<Task>();
+        public static List<Task> FFCCLeftOverTask = new List<Task>();
 
         public enum GraphicModes
         {
@@ -123,6 +127,34 @@ namespace OpenVIII
             Stretch
         }
 
+        public static bool ProcessActions(Action[] actions)
+        {
+            if (Threaded)
+            {
+                List<Task> tasks = new List<Task>(actions.Length);
+                actions.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
+                //Some code that cannot be threaded on init.
+                if (!Task.WaitAll(tasks.ToArray(), 10000))
+                    throw new TimeoutException("Task took too long!");
+            }
+            else actions.ForEach(x => x.Invoke());
+            return !Token.IsCancellationRequested;
+        }
+
+        public static IEnumerable<bool> ProcessFuncs(Func<bool>[] funcs)
+        {
+            if (Threaded)
+            {
+                List<Task<bool>> tasks = new List<Task<bool>>(funcs.Length);
+                funcs.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
+                //Some code that cannot be threaded on init.
+                if (!Task.WaitAll(tasks.ToArray(), 10000))
+                    throw new TimeoutException("Task took too long!");
+                return tasks.Select(x => x.Result);
+            }
+            else return funcs.Select(x => x.Invoke());
+        }
+
         public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
         public const ScaleMode _scaleMode = ScaleMode.Stretch;
 
@@ -158,7 +190,16 @@ namespace OpenVIII
 
         public const int PreferredViewportHeight = 720;
 
-        public static GameTime gameTime;
+        private static GameTime gameTime;
+
+        public static GameTime GameTime
+        {
+            get => gameTime;
+            set => gameTime = value;
+        }
+
+        public static TimeSpan TotalGameTime => gameTime?.TotalGameTime ?? TimeSpan.Zero;
+        public static TimeSpan ElapsedGameTime => gameTime?.ElapsedGameTime ?? TimeSpan.Zero;
 
         private static ushort prevmusic = 0;
         private static ushort currmusic = 0;
@@ -305,48 +346,65 @@ namespace OpenVIII
             // saves data will reference kernel_bin.
             if (!token.IsCancellationRequested)
                 Kernel_Bin = new Kernel_bin();
+            List<Action> actions = new List<Action>()
+            {
+                // this has a soft requirement on kernel_bin. It checks for null so should work without it.
+                () => {MItems = Items_In_Menu.Read(); },
+                Saves.Init,
+                //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
+                //TODO allow chosing of which save folder to use.
+                InitStrings,
+                //this initializes the field module, it's worth to have this at the beginning
+                Fields.Initializer.Init,
+                //this initializes the encounters
+                Init_debugger_battle.Init,
+            };
+
+            if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
+            {
+                actions.AddRange(new Action[]
+                {
+                    //this initializes the fonts and drawing system- holds fonts in-memory
+                    () => { font = new Font(); },
+                    // card images in menu.
+                    () => { Cards = Cards.Load(); },
+
+                    () => { Card_Game = new Card.Game(); },
+
+                    () => { Faces = Faces.Load(); },
+
+                    () => { Icons = Icons.Load(); },
+
+                    () => { Magazines = Magazine.Load(); }
+                });
+            }
+            actions.Add(() =>
+            {
+                InitState = Saves.Data.LoadInitOut();
+                State = InitState?.Clone();
+            });
 
             List<Task> tasks = new List<Task>();
 
             if (!token.IsCancellationRequested)
             {
-                // this has a soft requirement on kernel_bin. It checks for null so should work without it.
-                tasks.Add(Task.Run(() => { MItems = Items_In_Menu.Read(); }, token));
-                //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
-                //TODO allow chosing of which save folder to use.
-                tasks.Add(Task.Run(Saves.Init, token));
-                //tasks.Add(Task.Run(() => InitState = Saves.Data.LoadInitOut(), token));
-                tasks.Add(Task.Run(InitStrings, token));
-                //this initializes the field module, it's worth to have this at the beginning
-                tasks.Add(Task.Run(Fields.Initializer.Init, token));
-                //this initializes the encounters
-                tasks.Add(Task.Run(Init_debugger_battle.Init));
-
-                if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
+                if (Threaded)
                 {
-                    //this initializes the fonts and drawing system- holds fonts in-memory
-                    tasks.Add(Task.Run(() => { font = new Font(); }, token));
-                    // card images in menu.
-                    tasks.Add(Task.Run(() => { Cards = Cards.Load(); }, token));
-
-                    tasks.Add(Task.Run(() => { Card_Game = new Card.Game(); }, token));
-
-                    tasks.Add(Task.Run(() => { Faces = Faces.Load(); }, token));
-
-                    tasks.Add(Task.Run(() => { Icons = Icons.Load(); }, token));
-
-                    tasks.Add(Task.Run(() => { Magazines = Magazine.Load(); }, token));
+                    foreach (Action a in actions)
+                    {
+                        if (!token.IsCancellationRequested)
+                            tasks.Add(Task.Run(a, token));
+                    }
+                    Task.WaitAll(tasks.ToArray());
                 }
-                Task.WaitAll(tasks.ToArray());
-                InitState = Saves.Data.LoadInitOut();
-                State = InitState?.Clone();
+                else
+                    foreach (Action a in actions)
+                    {
+                        if (!token.IsCancellationRequested)
+                            a.Invoke();
+                    }
                 if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
                 {
-                    //// requires font, faces, and icons. currently cards only used in debug menu. will
-                    //// have support for cards when added to menu.
-                    //if (!token.IsCancellationRequested)
-                    //    Menu.Module.Init();
-
                     // requires font, faces, and icons. currently cards only used in debug menu. will
                     // have support for cards when added to menu.
                     if (!token.IsCancellationRequested)
@@ -355,6 +413,7 @@ namespace OpenVIII
             }
             //EXE_Offsets test = new EXE_Offsets();
             Inited = true;
+            //ArchiveBase.PurgeCache();//remove files probably no longer needed.
             return 0;
         }
 
@@ -368,9 +427,9 @@ namespace OpenVIII
             Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)}");
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics}");
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics?.GraphicsDevice.Adapter.CurrentDisplayMode}");
-            if(graphics!=null)
-            foreach (DisplayMode i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
-                Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
+            if (graphics != null)
+                foreach (DisplayMode i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
+                    Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
             //Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics.GraphicsDevice.Adapter.DeviceName}");
             //Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch}");
             Log.WriteLine($"{nameof(ContentManager)} :: {content}");
@@ -391,16 +450,23 @@ namespace OpenVIII
             FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata_lang)} = {FF8DIRdata_lang}");
 
+            Archives.init();
+
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
             Memory.content = content;
-            Memory.FieldHolder.FieldMemory = new int[1024];
 
             FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
-            InitTask = new Task<int>(InitTaskMethod, Token);
-            InitTask.Start();
+            Threaded = false;
+            if (Threaded)
+            {
+                InitTask = new Task<int>(InitTaskMethod, Token);
+                InitTask.Start();
+            }
+            else
+                InitTaskMethod(Token);
         }
 
         /// <summary>
@@ -455,6 +521,7 @@ namespace OpenVIII
         public static int SetBattleMusic = 6;
 
         public static Battle.Encounters Encounters { get; set; }
+        public static bool Threaded { get; private set; } = true;
 
         #endregion battleProvider
 
@@ -943,12 +1010,12 @@ namespace OpenVIII
             Action a = null;
             while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a) ?? false))
             { a.Invoke(); }
-            for (int i = 0; IsMainThread && i < LeftOverTask.Count; i++)
+            for (int i = 0; IsMainThread && i < FFCCLeftOverTask.Count; i++)
             {
-                if (LeftOverTask[i].IsCompleted)
+                if (FFCCLeftOverTask[i].IsCompleted)
                 {
-                    LeftOverTask[i].Dispose();
-                    LeftOverTask.RemoveAt(i--);
+                    FFCCLeftOverTask[i].Dispose();
+                    FFCCLeftOverTask.RemoveAt(i--);
                 }
             }
         }
@@ -959,7 +1026,7 @@ namespace OpenVIII
             public static ushort FieldID = 756;
 
             public static string[] fields;
-            public static int[] FieldMemory;
+            //public static int[] FieldMemory;
 
             public static string GetString() => fields?.ElementAtOrDefault(FieldID);
         }

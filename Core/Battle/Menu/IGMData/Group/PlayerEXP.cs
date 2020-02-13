@@ -118,7 +118,7 @@ namespace OpenVIII.IGMData.Group
             {
                 countingDown = true;
                 if (EXPsnd == null)
-                    EXPsnd = init_debugger_Audio.PlaySound(34, loop: true);
+                    EXPsnd = AV.Sound.Play(34, loop: true);
                 return true;
             }
             else if (countingDown && remainEXP)
@@ -138,7 +138,7 @@ namespace OpenVIII.IGMData.Group
             {
                 if (remainEXP)
                 {
-                    if ((remaining += Memory.gameTime.ElapsedGameTime.TotalMilliseconds / speedOfEarningExp) > 1)
+                    if ((remaining += Memory.ElapsedGameTime.TotalMilliseconds / speedOfEarningExp) > 1)
                     {
                         if (EXP > 0)
                         {

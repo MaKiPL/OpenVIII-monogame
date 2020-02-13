@@ -37,9 +37,6 @@ namespace OpenVIII
         //parses battle stage and all monsters
         //draw geometry also supports updateCamera
         private static readonly TimeSpan FPS = TimeSpan.FromMilliseconds(1000.0d / 15d);
-
-        private static BinaryReader br;
-        private static uint bs_cameraPointer;
         private static bool bUseFPSCamera = false;
         private static Vector3 camPosition, camTarget;
 
@@ -49,18 +46,16 @@ namespace OpenVIII
         private static DeadTime DeadTime;
         private static float degrees = 90;
         private static BasicEffect effect;
+        private static bool ForceReload = false;
         private static FPS_Camera fps_camera;
         private static TimeSpan FrameTime = TimeSpan.Zero;
-        private static List<Battle.Mag> MagALL;
         private static Debug_battleDat[] monstersData;
-        private static MemoryStream ms;
         private static sbyte? partypos = null;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static Vector3 PyramidOffset = new Vector3(0, 3f, 0);
         private static Battle.RegularPyramid RegularPyramid;
         private static ConcurrentDictionary<Characters, List<byte>> s_weapons;
         private static byte SID = 0;
-        private static byte[] stageBuffer;
 
         #endregion Fields
 
@@ -114,9 +109,6 @@ namespace OpenVIII
         #region Properties
 
         public static int battleModule { get; set; } = 0;
-
-        private static bool ForceReload = false;
-
         public static Camera Camera { get; private set; }
         public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
 
@@ -149,13 +141,6 @@ namespace OpenVIII
 
         private static IGMDataItem.Icon CROSSHAIR { get; set; }
 
-        private static IEnumerable<Battle.Mag> MagGeometries => MagALL?.Where(x => (x.Geometries?.Count ?? 0) > 0) ?? null;
-
-        private static IEnumerable<Battle.Mag> MagPacked => MagALL?.Where(x => x.isPackedMag) ?? null;
-
-        private static IEnumerable<Battle.Mag> MagTIMs => MagALL?.Where(x => x.isTIM) ?? null;
-
-        private static IEnumerable<int> MagUNKID => MagALL?.Where(x => x.UnknownType > 0).Select(x => x.UnknownType) ?? null;
 
         #endregion Properties
 
@@ -212,8 +197,7 @@ namespace OpenVIII
             Memory.SpriteBatchStartAlpha();
             Memory.font.RenderBasicText(new FF8String($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}"), 20, 0, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})"), 20, 30 * 1, 1, 1, 0, 1);
-            if (Memory.gameTime.ElapsedGameTime.TotalMilliseconds > 0)
-                Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {1000 / Memory.gameTime.ElapsedGameTime.TotalMilliseconds}"), 20, 30 * 2, 1, 1, 0, 1);
+            Memory.font.RenderBasicText(new FF8String($"1000/deltaTime milliseconds: {Memory.ElapsedGameTime}"), 20, 30 * 2, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}"), 20, 30 * 3, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}"), 20, 30 * 4, 1, 1, 0, 1);
             Memory.font.RenderBasicText(new FF8String($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}"), 20, 30 * 5, 1, 1, 0, 1);
@@ -236,7 +220,7 @@ namespace OpenVIII
                     {
                         if (d.GetEnemy(out Enemy e) && e.Equals(enemy))
                         {
-                            Vector3 posIn3DSpace = e.EII.Data.IndicatorPoint;
+                            Vector3 posIn3DSpace = e.EII.Data.IndicatorPoint(e.EII.Location);
                             posIn3DSpace.Y -= 1f;
                             Vector3 ScreenPos = Memory.graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
                             Memory.SpriteBatchStartAlpha();
@@ -258,8 +242,11 @@ namespace OpenVIII
             if ((CharacterInstances == null && n >= 0) || ((Enemy.Party == null || Enemy.Party.Count == 0) && n < 0))
                 return Vector3.Zero;
             else
-                return (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint :
-                    Enemy.Party[-n - 1].EII.Data.IndicatorPoint) + PyramidOffset;
+            {
+                EnemyInstanceInformation eII = Enemy.Party.FirstOrDefault(x => x.EII.partypos == n)?.EII;
+                return (n >= 0 ? CharacterInstances[n].Data.character.IndicatorPoint(CharacterInstances[n].Data.Location) :
+                eII.Data.IndicatorPoint(eII.Location)) + PyramidOffset;
+            }
         }
 
         public static void Inputs()
@@ -432,13 +419,9 @@ namespace OpenVIII
                     if (partypos != Module_battle_debug.partypos)
                     {
                         if (partypos == null)
-                        {
                             RegularPyramid.FadeOut();
-                        }
                         else
-                        {
                             RegularPyramid.FadeIn();
-                        }
                         Module_battle_debug.partypos = partypos;
                     }
                     if (bUseFPSCamera)
@@ -560,94 +543,7 @@ namespace OpenVIII
             }
         }
 
-        /// <summary>
-        /// Trigger Event when DeadTime is done.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
-        private static void DeadTime_DoneEvent(object sender, int e)
-        {
-            //Will Gilgamesh appear?
-            if (TestGilgamesh())
-            { }
-            //Will Angelo Recover be used?
-            else if (TestAngelo(Angelo.Recover))
-            { }
-            //Will Angelo Reverse be used?
-            else if (TestAngelo(Angelo.Reverse))
-            { }
-            //Will Angelo Search be used?
-            else if (TestAngelo(Angelo.Search))
-            {
-                //Real game has a counter that count to 255 and resets to 0
-                //instead of a random number. The counter counts up every 1 tick.
-                //60 ticks per second.
-                byte rnd = checked((byte)Memory.Random.Next(256));
-                if (rnd < 128) Algorithm(1);
-                else if (rnd < 160) Algorithm(2);
-                else if (rnd < 176) Algorithm(3);
-                else if (rnd < 192) Algorithm(4);
-                else if (rnd < 200) Algorithm(5);
-                else Algorithm(6);
-                Saves.Item Algorithm(byte i)
-                {
-                    //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936
-                    //I'm unsure where in the game files this is.
-                    //In remaster they changed this. But unsure how
-                    // they added (Ribbon, Friendship, and Mog's Amulet)
-                    // using a true random kinda breaks this.
-                    // because in game random is a set array of numbers 0-255
-                    // so the number you get previous would determin the possible number you get
-                    // so these can only select specific numbers. But because we are using a real random
-                    // more items are possible. might need to tweak this.
-
-                    //these are added in remaster as possible items.
-                    //const byte Ribbon = 100;
-                    //const byte Friendship = 32;
-                    //const byte Mogs_Amulet = 65;
-
-                    Saves.Item item = new Saves.Item { QTY = 1 };
-                    rnd = checked((byte)Memory.Random.Next(256));
-                    switch (i)
-                    {
-                        case 1: // 1-8
-                            item.ID = (byte)(rnd % 8 + 1);
-                            break;
-
-                        case 2: // 102-199
-                            item.ID = (byte)(rnd % 98);
-                            if (item.ID == 0) item.ID = 98;
-                            item.ID += 101;
-                            break;
-
-                        case 3: // 102-124
-                            item.ID = (byte)(rnd % 23);
-                            if (item.ID == 0)
-                                item.ID = 23;
-                            item.ID += 101;
-                            break;
-
-                        case 4: // 67-100
-                            item.ID = (byte)(rnd % 34);
-                            if (item.ID == 0)
-                                item.ID = 34;
-                            item.ID += 66;
-                            break;
-
-                        case 5: // 33-54
-                            item.ID = (byte)(rnd % 32 + 33);
-                            break;
-
-                        case 6:
-                        default: // 33-40
-                            item.ID = (byte)(rnd % 7 + 33);
-                            break;
-                    }
-                    return item;
-                }
-            }
-        }
+        
 
         private static void DrawBattleDat(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
         {
@@ -694,7 +590,7 @@ namespace OpenVIII
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
                 CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
-                Vector3 charaPosition = GetCharPos(n);
+                Vector3 charaPosition = CharacterInstances[n].Data.Location = GetCharPos(n);
                 DrawBattleDat(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
 
@@ -768,8 +664,8 @@ namespace OpenVIII
             {
                 Costumes = new ConcurrentDictionary<Characters, SortedSet<byte>>();
                 Regex r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
-                foreach (string s in aw.FileList)
+                ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+                foreach (string s in aw.GetListOfFiles())
                 {
                     Match match = r.Match(s);
                     if (match != null)
@@ -799,9 +695,9 @@ namespace OpenVIII
                 {
                     SortedSet<byte> _weapons = new SortedSet<byte>();
                     Regex r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+                    ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
 
-                    foreach (string s in aw.FileList.OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
+                    foreach (string s in aw.GetListOfFiles().OrderBy(q => Path.GetFileName(q), StringComparer.InvariantCultureIgnoreCase))
                     {
                         Match match = r.Match(s);
                         if (match != null)
@@ -826,16 +722,30 @@ namespace OpenVIII
 
         private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
 
-        private static Vector3 GetEnemyPos(int n)
+        private static byte GetCostume(Characters c) => Memory.State[c].Alternativemodel != 0 ? Costumes[c].First() : Costumes[c].Last();
+
+        private static Vector3 GetEnemyPos(int n) =>
+            //Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
+            //Vector3 a = Memory.Encounters.enemyCoordinates.AverageVector;
+            //Vector3 m = Memory.Encounters.enemyCoordinates.MidVector;
+
+            //v.x -= (short)m.X;
+
+            //v.z -= (short)a.Z;
+            Enemy.Party[n].EII.Location;
+
+        private static byte GetWeaponID(Characters c)
         {
-            Coordinate v = Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
-            Vector3 a = Memory.Encounters.enemyCoordinates.AverageVector;
-            Vector3 m = Memory.Encounters.enemyCoordinates.MidVector;
+            byte weaponId = 0;
+            if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
+                characterData.WeaponID < Kernel_bin.WeaponsData.Count)
+            {
+                byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
+                if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
+                    weaponId = weapons[altID];
+            }
 
-            v.x -= (short)m.X;
-
-            v.z -= (short)a.Z;
-            return v.GetVector();
+            return weaponId;
         }
 
         private static void InitBattle()
@@ -856,7 +766,6 @@ namespace OpenVIII
             if (DeadTime == null)
             {
                 DeadTime = new DeadTime();
-                DeadTime.DoneEvent += DeadTime_DoneEvent;
             }
             DeadTime.Restart();
             Console.WriteLine($"BS_DEBUG/ENC: Encounter: {Memory.Encounters.ID}\t cEnemies: {Memory.Encounters.EnabledEnemy}\t Enemies: {string.Join(",", Memory.Encounters.BEnemies.Where(x => x != 0x00).Select(x => $"{x}").ToArray())}");
@@ -892,6 +801,19 @@ namespace OpenVIII
                     World = worldMatrix
                 };
             return;
+        }
+
+        private static CharacterInstanceInformation ReadCharacter(ref int cid, Characters c)
+        {
+            CharacterInstanceInformation cii = new CharacterInstanceInformation
+            {
+                Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
+                animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
+                characterId = cid++,
+            };
+            //cii.animationSystem.animationId = 4;
+            Memory.State[c].BattleStart(cii);
+            return cii;
         }
 
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
@@ -971,35 +893,6 @@ namespace OpenVIII
             };
         }
 
-        private static byte GetCostume(Characters c) => Memory.State[c].Alternativemodel != 0 ? Costumes[c].First() : Costumes[c].Last();
-
-        private static CharacterInstanceInformation ReadCharacter(ref int cid, Characters c)
-        {
-            CharacterInstanceInformation cii = new CharacterInstanceInformation
-            {
-                Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
-                animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
-                characterId = cid++,
-            };
-            //cii.animationSystem.animationId = 4;
-            Memory.State[c].BattleStart(cii);
-            return cii;
-        }
-
-        private static byte GetWeaponID(Characters c)
-        {
-            byte weaponId = 0;
-            if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
-                characterData.WeaponID < Kernel_bin.WeaponsData.Count)
-            {
-                byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
-                if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
-                    weaponId = weapons[altID];
-            }
-
-            return weaponId;
-        }
-
         private static void ReadData()
         {
             ReadCharacters();
@@ -1015,42 +908,38 @@ namespace OpenVIII
         /// </summary>
         private static void ReadMonster()
         {
-            Battle.Encounter encounter = Memory.Encounters.Current;
-            if (encounter.EnabledEnemy == 0)
+            int r(int i) => 7 - i;
+            Encounter encounter = Memory.Encounters.Current;
+
+            if (encounter.EnabledEnemy.Cast<bool>().Any(x => x))
+            {
+                IEnumerable<byte> monstersList = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)])?.Select(x => x.x).Distinct();
+                monstersData = monstersList?.Select(x => Debug_battleDat.Load(x, Debug_battleDat.EntityType.Monster)).ToArray();
+            }
+            else
             {
                 monstersData = new Debug_battleDat[0];
                 return;
             }
-            List<byte> monstersList = encounter.BEnemies.ToList();
-            for (int i = 7; i > 0; i--)
+
+            Enemy.Party = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)]).Select(x =>
             {
-                bool bEnabled = Extended.GetBit((byte)encounter.EnabledEnemy, 7 - i);
-                if (!bEnabled)
-                    monstersList.RemoveLast();
-            }
-            IGrouping<byte, byte>[] DistinctMonsterPointers = monstersList.GroupBy(x => x).ToArray();
-            monstersData = new Debug_battleDat[DistinctMonsterPointers.Count()];
-            for (int n = 0; n < monstersData.Length; n++)
-                monstersData[n] = Debug_battleDat.Load(DistinctMonsterPointers[n].Key, Debug_battleDat.EntityType.Monster);
-            if (monstersData == null)
-                monstersData = new Debug_battleDat[0];
-            Enemy.Party = new List<Enemy>(8);
-            for (int i = 0; i < 8; i++)
-                if (Extended.GetBit((byte)encounter.EnabledEnemy, 7 - i))
-                {
-                    IEnumerable<Debug_battleDat> enumerable = monstersData.Where(x => x.GetId == encounter.BEnemies[i]);
-                    if ((enumerable?.Count() ?? 0) > 0)
-                        Enemy.Party.Add(new EnemyInstanceInformation()
-                        {
-                            Data = enumerable.First(),
-                            bIsHidden = Extended.GetBit((byte)encounter.HiddenEnemies, 7 - i),
-                            bIsActive = true,
-                            index = (byte)(7 - i),
-                            bIsUntargetable = Extended.GetBit((byte)encounter.UntargetableEnemy, 7 - i),
-                            animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() }
-                        }
-    );
-                }
+                Debug_battleDat debug_battleDat = monstersData.FirstOrDefault(mon => mon.GetId == x.x);
+                int i = r(x.i);
+                return debug_battleDat == default
+                    ? null
+                    : (Enemy)new EnemyInstanceInformation()
+                    {
+                        Data = debug_battleDat,
+                        bIsHidden = encounter.HiddenEnemies[i],
+                        bIsActive = true,
+                        partypos = (sbyte)(-1 - x.i),
+                        bIsUntargetable = encounter.UntargetableEnemy[i],
+                        animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
+                        Location = encounter.enemyCoordinates[i], //each instance needs own location.
+                        FixedLevel = encounter.bLevels[i]
+                    };
+            }).Where(x => x != null).ToList();
         }
 
         private static void ResetTime() => FrameTime = TimeSpan.FromTicks(FrameTime.Ticks % FPS.Ticks);
@@ -1070,47 +959,8 @@ namespace OpenVIII
             foreach (Enemy e in Enemy.Party)
                 e.EII.animationSystem.StopAnimation();
         }
+        
 
-        private static bool TestAngelo(Angelo ability)
-        {
-            //else if (8 >= [0..255] Angelo Recover is used (3.3 %)
-            //else if (2 >= [0..255] Angelo Reverse is used (1 %)
-            //else if (8 >= [0..255] Angelo Search is used (3.2 %)
-            //Angelo_Disabled I think is set when Rinoa is in space so angelo is out of reach;
-            //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/25194
-            if (Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Angelo_Disabled) ||
-                !Memory.State.PartyData.Contains(Characters.Rinoa_Heartilly) ||
-                !Memory.State.LimitBreakAngelocompleted.HasFlag(ability)) return false;
-            else
-                switch (ability)
-                {
-                    case Angelo.Recover:
-                        return Memory.State.Characters.Any(x => x.Value.IsCritical && !x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 8;
-
-                    case Angelo.Reverse:
-                        return Memory.State.Characters.Any(x => x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 2;
-
-                    case Angelo.Search:
-                        Saves.CharacterData c = Memory.State[Characters.Rinoa_Heartilly];
-                        if (!(c.IsGameOver ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Angel_Wing)))
-                            return Memory.Random.Next(256) < 8;
-                        break;
-                }
-            return false;
-        }
-
-        /// <summary>
-        /// if (12 >= [0..255]) Gilgamesh is summoned (5.1 %)
-        /// </summary>
-        /// <returns>bool</returns>
-        private static bool TestGilgamesh() =>
-
-            Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) <= 12;
 
         /// <summary>
         /// Increments animation frames by N, where N is equal to int(deltaTime/FPS). 15FPS is one
@@ -1119,7 +969,7 @@ namespace OpenVIII
         /// </summary>
         private static void UpdateFrames()
         {
-            FrameTime += Memory.gameTime.ElapsedGameTime;
+            FrameTime += Memory.ElapsedGameTime;
             if (FrameTime > FPS)
             {
                 if (Enemy.Party != null)
@@ -1141,152 +991,5 @@ namespace OpenVIII
         }
 
         #endregion Methods
-
-        #region Structs
-
-        /// <summary>
-        /// Animation system. Decided to go for struct, so I can attach it to instance and manipulate
-        /// easily grouped. It's also open for modifications
-        /// </summary>
-        public struct AnimationSystem
-        {
-            #region Fields
-
-            public ConcurrentQueue<int> AnimationQueue;
-
-            private int _animationFrame;
-
-            private int _animationId;
-
-            private int _lastAnimationFrame;
-
-            private int _lastAnimationId;
-
-            private bool bAnimationStopped;
-
-            #endregion Fields
-
-            #region Properties
-
-            public int AnimationFrame
-            {
-                get => _animationFrame; set
-                {
-                    _lastAnimationFrame = _animationFrame;
-                    _animationFrame = value;
-                    if (_animationFrame > 0 && _lastAnimationId != _animationId)
-                        _lastAnimationId = _animationId;
-                }
-            }
-
-            public int AnimationId
-            {
-                get => _animationId; set
-                {
-                    _lastAnimationId = _animationId;
-                    _animationId = value;
-                    AnimationFrame = 0;
-                }
-            }
-
-            public bool AnimationStopped => bAnimationStopped;
-
-            public int LastAnimationFrame { get => _lastAnimationFrame; private set => _lastAnimationFrame = value; }
-
-            public int LastAnimationId { get => _lastAnimationId; private set => _lastAnimationId = value; }
-
-            #endregion Properties
-
-            #region Methods
-
-            public int NextFrame() => ++AnimationFrame;
-
-            public bool StartAnimation() => bAnimationStopped = false;
-
-            public bool StopAnimation()
-            {
-                LastAnimationFrame = AnimationFrame;
-                AnimationId = AnimationId;
-                return bAnimationStopped = true;
-            }
-
-            #endregion Methods
-        }
-
-        public struct CharacterData
-        {
-            #region Fields
-
-            public Debug_battleDat character, weapon;
-
-            #endregion Fields
-        };
-
-        #endregion Structs
-
-        #region Classes
-
-        /// <summary>
-        /// CharacterInstanceInformation should only be used for battle-exclusive data. Manipulating
-        /// HP, GFs, junctions and other character-specific things should happen outside battle,
-        /// because such information about characters is shared between almost all modules. This
-        /// field contains information about the current status of battle rendering like animation
-        /// frames/ rendering flags/ effects attached
-        /// </summary>
-        public class CharacterInstanceInformation
-        {
-            #region Fields
-
-            public AnimationSystem animationSystem;
-            public bool bIsHidden;
-            public int characterId;
-            public CharacterData Data;
-
-            #endregion Fields
-
-            #region Properties
-
-            //0 is Whatever guy
-            public Characters VisibleCharacter => (Characters)Data.character.GetId;
-
-            #endregion Properties
-
-            #region Methods
-
-            //GF sequences, magic...
-            public void SetAnimationID(int id)
-            {
-                if (animationSystem.AnimationId != id &&
-                    id < Data.character.animHeader.animations.Length &&
-                    id < Data.weapon.animHeader.animations.Length &&
-                    id >= 0)
-                {
-                    animationSystem.AnimationId = id;
-                }
-            }
-
-            #endregion Methods
-        }
-
-        public class EnemyInstanceInformation
-        {
-            #region Fields
-
-            public AnimationSystem animationSystem;
-            public bool bIsActive;
-            public bool bIsHidden;
-            public bool bIsUntargetable;
-            public Debug_battleDat Data;
-
-            /// <summary>
-            /// bit position of the enemy in encounter data. Use to pair the information with
-            /// encounter data
-            /// </summary>
-            public byte index;
-
-            #endregion Fields
-        }
-
-        #endregion Classes
     }
 }

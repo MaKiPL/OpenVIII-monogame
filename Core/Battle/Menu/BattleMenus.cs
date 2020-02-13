@@ -155,7 +155,7 @@ namespace OpenVIII
             lastmenu = Menu.Module.State;
             lastgamestate = Memory.Module;
             lastmusic = Memory.MusicIndex;
-            lastmusicplaying = init_debugger_Audio.MusicPlaying;
+            lastmusicplaying = AV.Music.Playing;
         }
 
         public override void Draw()
@@ -293,9 +293,9 @@ namespace OpenVIII
             Menu.IGM.Refresh(); // else the menu stats won't update.
             Module_battle_debug.ResetState();
             if (lastmusicplaying)
-                init_debugger_Audio.PlayMusic(lastmusic);
+                AV.Music.Play(lastmusic);
             else
-                init_debugger_Audio.StopMusic();
+                AV.Music.Stop();
         }
 
         public override bool SetMode(Enum mode)
@@ -428,9 +428,9 @@ namespace OpenVIII
         private void NewTurnSND()
         {
             if (((BattleMenu)Data[PossibleValidPlayer()]).CrisisLevel > -1)
-                init_debugger_Audio.PlaySound(94);
+                AV.Sound.Play(94);
             else
-                init_debugger_Audio.PlaySound(14);
+                AV.Sound.Play(14);
         }
 
         private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(Player, 0, (int)SectionName.Enemy8);
@@ -509,7 +509,7 @@ namespace OpenVIII
         {
             Memory.Module = MODULE.FIELD_DEBUG;
             Memory.FieldHolder.FieldID = 75; //gover
-            init_debugger_Audio.PlayMusic(0);
+            AV.Music.Play(0);
             Menu.Module.State = MenuModule.Mode.MainLobby;
             return true;
         }
@@ -518,7 +518,7 @@ namespace OpenVIII
 
         private bool UpdateVictoryFunction()
         {
-            init_debugger_Audio.PlayMusic(1);
+            AV.Music.Play(1);
             return Victory_Menu.Update();
         }
 

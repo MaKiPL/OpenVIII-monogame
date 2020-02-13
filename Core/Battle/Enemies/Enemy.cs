@@ -77,7 +77,7 @@ namespace OpenVIII
 
         protected override void ReadData(BinaryReader br, Enum @enum) => throw new NotImplementedException("This method is not used by Enemy");
 
-        public static Enemy Load(Module_battle_debug.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
+        public static Enemy Load(Battle.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
         {
             Enemy r = new Enemy
             {
@@ -128,7 +128,7 @@ namespace OpenVIII
 
         public byte DropRate => (byte)(MathHelper.Clamp(Info.dropRate * 100 / byte.MaxValue, 0, 100));
 
-        public Module_battle_debug.EnemyInstanceInformation EII { get; set; }
+        public Battle.EnemyInstanceInformation EII { get; set; }
 
         public override byte EVA => convert2(Info.eva);
 
@@ -197,7 +197,7 @@ namespace OpenVIII
 
         #endregion Properties
 
-        public static implicit operator Enemy(Module_battle_debug.EnemyInstanceInformation @in) => Load(@in);
+        public static implicit operator Enemy(Battle.EnemyInstanceInformation @in) => Load(@in);
 
         /// <summary>
         /// Return card if succeed at roll
@@ -486,6 +486,6 @@ namespace OpenVIII
             return 0;
         }
 
-        public static implicit operator Module_battle_debug.EnemyInstanceInformation(Enemy @in) => @in.EII;
+        public static implicit operator Battle.EnemyInstanceInformation(Enemy @in) => @in.EII;
     }
 }

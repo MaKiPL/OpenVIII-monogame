@@ -17,7 +17,7 @@ namespace OpenVIII
     {
         bool CanPhoenixPinion { get; }
         Kernel_bin.Character_Stats CharacterStats { get; }
-        Module_battle_debug.CharacterInstanceInformation CII { get; }
+        Battle.CharacterInstanceInformation CII { get; }
         sbyte CurrentCrisisLevel { get; }
         uint Experience { get; set; }
         ushort ExperienceToNextLevel { get; }
@@ -25,7 +25,7 @@ namespace OpenVIII
         bool SwitchLocked { get; }
         List<Kernel_bin.Abilities> UnlockedGFAbilities { get; }
 
-        void BattleStart(Module_battle_debug.CharacterInstanceInformation cii);
+        void BattleStart(Battle.CharacterInstanceInformation cii);
         int CriticalHP(Characters value);
         ushort CurrentHP(Characters c);
         sbyte GenerateCrisisLevel();

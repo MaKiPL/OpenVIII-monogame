@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.Battle;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,8 +41,6 @@ namespace OpenVIII
         }
 
         public DatFile datFile;
-
-        #region section 1 Skeleton
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
         public struct Skeleton
@@ -119,10 +118,6 @@ namespace OpenVIII
         }
 
         public Skeleton skeleton;
-
-        #endregion section 1 Skeleton
-
-        #region section 2 Geometry
 
         public struct Geometry
         {
@@ -507,7 +502,15 @@ namespace OpenVIII
             public byte[] TexturePointers { get; private set; }
         }
 
-        public Vector3 IndicatorPoint => _indicatorPoint;
+        
+
+        public Vector3 IndicatorPoint(Vector3 translationPosition)
+        {
+            if (offsetylow < 0)
+                translationPosition.Y -= offsetylow;
+            return _indicatorPoint + translationPosition;
+        }
+
         //public ConcurrentDictionary<Tuple<int, int>, float> lowpoints = new ConcurrentDictionary<Tuple<int, int>, float>();
 
         /// <summary>
@@ -534,7 +537,7 @@ namespace OpenVIII
         /// constant 15 FPS
         /// </param>
         /// <returns></returns>
-        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, ref Vector3 translationPosition, Quaternion rotation, ref Module_battle_debug.AnimationSystem animationSystem, double step)
+        public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, ref Vector3 translationPosition, Quaternion rotation, ref AnimationSystem animationSystem, double step)
         {
             if (animationSystem.AnimationFrame >= animHeader.animations[animationSystem.AnimationId].animationFrames.Length || animationSystem.AnimationFrame < 0)
                 animationSystem.AnimationFrame = 0;
@@ -556,10 +559,10 @@ namespace OpenVIII
 
             if (objectId == 0)
             {
-                Module_battle_debug.AnimationSystem _animationSystem = animationSystem;
+                Battle.AnimationSystem _animationSystem = animationSystem;
                 AnimationYOffset lastoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.LastAnimationId && x.Frame == lastAnimationFrame) ?? default;
                 AnimationYOffset nextoffsets = AnimationYOffsets?.First(x => x.ID == _animationSystem.AnimationId && x.Frame == _animationSystem.AnimationFrame) ?? default;
-                float offsetylow = MathHelper.Lerp(lastoffsets.LowY, nextoffsets.LowY, (float)step);
+                offsetylow = MathHelper.Lerp(lastoffsets.LowY, nextoffsets.LowY, (float)step);
                 _indicatorPoint.X = MathHelper.Lerp(lastoffsets.MidX, nextoffsets.MidX, (float)step);
                 _indicatorPoint.Y = MathHelper.Lerp(lastoffsets.HighY, nextoffsets.HighY, (float)step);
                 _indicatorPoint.Z = MathHelper.Lerp(lastoffsets.MidZ, nextoffsets.MidZ, (float)step);
@@ -569,9 +572,6 @@ namespace OpenVIII
                     translationPosition.Y += OffsetY;
                 }
                 // If any Y axis readings are lower than 0 in Animation ID >0. Bring it up to zero.
-                if (offsetylow < 0)
-                    translationPosition.Y -= offsetylow;
-                _indicatorPoint += translationPosition;
             }
 
             //Triangle parsing
@@ -647,10 +647,6 @@ namespace OpenVIII
             }
             return new VectorBoneGRP(rootFramePos, VBG.BoneID);
         }
-
-        #endregion section 2 Geometry
-
-        #region section 3 Animation
 
         public struct AnimationData
         {
@@ -827,10 +823,6 @@ namespace OpenVIII
         public int frame;
         public float frameperFPS = 0.0f;
 
-        #endregion section 3 Animation
-
-        #region section 11 Textures
-
         public struct Textures
         {
             /// <summary>
@@ -895,8 +887,6 @@ namespace OpenVIII
         private BinaryReader br;
         //private float lowpoint;
 
-        #endregion section 11 Textures
-
         public enum EntityType
         {
             Monster,
@@ -923,7 +913,7 @@ namespace OpenVIII
                 altid = additionalFileId
             };
             Console.WriteLine($"DEBUG: Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
             char et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
             string fileName = entityType == EntityType.Monster ? $"c0m{r.id.ToString("D03")}" :
                 entityType == EntityType.Character || entityType == EntityType.Weapon ? $"d{fileId.ToString("x")}{et}{additionalFileId.ToString("D03")}"
@@ -946,7 +936,7 @@ namespace OpenVIII
 
             r.fileName = fileName;
             if (!string.IsNullOrWhiteSpace(path))
-                r.buffer = ArchiveWorker.GetBinaryFile(Memory.Archives.A_BATTLE, path);
+                r.buffer = aw.GetBinaryFile(path);
             if (r.buffer == null || r.buffer.Length < 0)
             {
                 Debug.WriteLine($"Search String: {searchstring} Not Found skipping {entityType}; So resulting file buffer is null.");
@@ -969,7 +959,7 @@ namespace OpenVIII
                 //X is lowY, Y is high Y, Z is mid x, W is mid z
                 float baselinelowY = baseline.Min(x => x.X);
                 float baselinehighY = baseline.Max(x => x.Y);
-                float offsetY = 0f;
+                offsetY = 0f;
                 if (Math.Abs(baselinelowY) < BaseLineMaxYFilter)
                 {
                     offsetY -= baselinelowY;
@@ -978,7 +968,7 @@ namespace OpenVIII
                 // Default indicator point
                 _indicatorPoint = new Vector3(0, baselinehighY, 0);
                 // Need to add this later to bring baselinelow to 0.
-                OffsetY = offsetY;
+                //OffsetY = offsetY;
                 // Brings all Y values less than baselinelow to baselinelow
                 AnimationYOffsets = animHeader.animations.SelectMany((animation, animationid) =>
                 animation.animationFrames.Select((animationframe, animationframenumber) =>
@@ -988,8 +978,10 @@ namespace OpenVIII
 
         private List<AnimationYOffset> AnimationYOffsets;
         private Vector3 _indicatorPoint;
+        private float offsetY;
+        private float offsetylow;
 
-        private float OffsetY { get; set; }
+        private float OffsetY => offsetY;
         private Vector3 OffsetYVector => new Vector3(0f, OffsetY, 0f);
 
         public struct AnimationYOffset

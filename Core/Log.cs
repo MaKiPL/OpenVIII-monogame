@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace OpenVIII
@@ -9,7 +10,7 @@ namespace OpenVIII
     /// <summary>
     /// Attempt at a log class.
     /// </summary>
-    internal class Log : TextWriter
+    public class Log : TextWriter
     {
         private FileStream fs;
         private StreamWriter log;
@@ -21,7 +22,7 @@ namespace OpenVIII
             log = new StreamWriter(fs, System.Text.Encoding.UTF8)
             { AutoFlush = true };
         }
-
+        public override void WriteLine(string value) => base.WriteLine($"{Thread.CurrentThread.ManagedThreadId}::{value}");
         public override System.Text.Encoding Encoding => log.Encoding;
         /// <summary>
         /// If Disabled the log.txt will be empty. and Async writes will be null.

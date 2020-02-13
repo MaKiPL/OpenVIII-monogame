@@ -62,7 +62,7 @@ namespace OpenVIII.IGMData.Pool
             else
             {
                 skipsnd = true;
-                init_debugger_Audio.PlaySound(31);
+                AV.Sound.Play(31);
                 base.Inputs_OKAY();
                 GFs select = Contents[CURSOR_SELECT];
                 Characters characterid = Damageable.GetCharacterData(out Saves.CharacterData characterdata) && JunctionedGFs.ContainsKey(select) ?

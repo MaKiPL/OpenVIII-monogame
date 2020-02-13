@@ -317,7 +317,7 @@ namespace OpenVIII.IGMData.Pool
                 if (!BLANKS[CURSOR_SELECT])
                 {
                     skipsnd = true;
-                    init_debugger_Audio.PlaySound(31);
+                    AV.Sound.Play(31);
                     base.Inputs_OKAY();
                     SlotConfirmListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
                     if (Menu.IGM_Junction.GetMode().Equals(IGM_Junction.Mode.Mag_Pool_Stat))

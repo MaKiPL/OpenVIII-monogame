@@ -11,7 +11,7 @@
 
         byte DropRate { get; }
 
-        Module_battle_debug.EnemyInstanceInformation EII { get; set; }
+        Battle.EnemyInstanceInformation EII { get; set; }
 
         byte FixedLevel { get; set; }
 

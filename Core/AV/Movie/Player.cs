@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII.Movie
@@ -65,9 +66,10 @@ namespace OpenVIII.Movie
 
         public static Player Load(int ID, bool OverlayingModels = false)
         {
-            if (Files.Exists(ID))
+            Player Player = null;
+            if (File.Exists(Files[ID]))
             {
-                Player Player = new Player()
+                Player = new Player()
                 {
                     ID = ID,
                     STATE = STATE.LOAD,
@@ -75,10 +77,50 @@ namespace OpenVIII.Movie
                     Audio = AV.Audio.Load(Files[ID]),
                     SuppressDraw = !OverlayingModels
                 };
-                Player.STATE++;
-                return Player;
             }
+            else if (Files.ZZZ)
+            {
+                return null; // doesn't work.
+                ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                var fd = a.GetFileData(Files[ID]);
+
+                AV.Audio ffccAudioFromZZZ = AV.Audio.Load(
+                    new AV.BufferData
+                    {
+                        DataSeekLoc = fd.Value.Offset,
+                        DataSize = fd.Value.UncompressedSize,
+                        HeaderSize = 0,
+                        Target = AV.BufferData.TargetFile.other_zzz
+                    },
+                    null, -1);
+
+                AV.Video ffccVideoFromZZZ = AV.Video.Load(
+                    new AV.BufferData
+                    {
+                        DataSeekLoc = fd.Value.Offset,
+                        DataSize = fd.Value.UncompressedSize,
+                        HeaderSize = 0,
+                        Target = AV.BufferData.TargetFile.other_zzz
+                    },
+                    null, -1);
+
+                //ffcc.Play(volume, pitch, pan);
+
+                Player = new Player()
+                {
+                    ID = ID,
+                    STATE = STATE.LOAD,
+                    Video = ffccVideoFromZZZ,
+                    Audio = ffccAudioFromZZZ,
+                    SuppressDraw = !OverlayingModels
+                };
+            }
+            else
             return null;
+            Player.STATE++;
+            if (Player.Video == null && Player.Audio == null)
+                return Player = null;
+            return Player;
         }
 
         // This code added to correctly implement the disposable pattern.
@@ -157,7 +199,10 @@ namespace OpenVIII.Movie
                     STATE++;
                     if (Audio != null)
                     {
-                        Audio.PlayInTask();
+                        if (Memory.Threaded)
+                            Audio.PlayInTask();
+                        else
+                            Audio.Play();
                     }
                     if (Video != null)
                     {
@@ -166,11 +211,10 @@ namespace OpenVIII.Movie
                     break;
 
                 case STATE.PLAYING:
-                    //if (Audio != null && !Audio.Ahead)
-                    //{
-                    //    // if we are behind the timer get the next frame of audio.
-                    //    Audio.Next();
-                    //}
+                    if (Audio != null && !Memory.Threaded)
+                    {
+                        Audio.NextLoop();
+                    }
                     if (Video == null)
                         STATE = STATE.FINISHED;
                     else if (Video.Behind)
@@ -234,9 +278,9 @@ namespace OpenVIII.Movie
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
-                if (!Video.IsDisposed)
+                if (!(Video?.IsDisposed ?? true))
                     Video.Dispose();
-                if (!Audio.IsDisposed)
+                if (!(Audio?.IsDisposed ?? true))
                     Audio.Dispose();
                 if (Texture != null && !Texture.IsDisposed)
                     Texture.Dispose();

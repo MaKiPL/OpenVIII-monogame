@@ -4,20 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace OpenVIII
-{
-    public static class BinaryReaderExt
-    {
-        #region Methods
-
-        public static Vector3 ReadVertex(this BinaryReader br) => new Vector3(br.ReadVertexDim(), 0 - br.ReadVertexDim(), br.ReadVertexDim());
-
-        public static float ReadVertexDim(this BinaryReader br) => br.ReadInt16() / 2000.0f;
-
-        #endregion Methods
-    }
-}
-
 namespace OpenVIII.Battle
 {
     /// <summary>
@@ -29,7 +15,7 @@ namespace OpenVIII.Battle
     /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_magfiles"/>
     /// <seealso cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/GF_AlternativeTexture.cs"/>
     /// <seealso cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/GfEnviro.cs"/>
-    public class Mag
+    public partial class Mag
     {
         #region Fields
 
@@ -60,49 +46,88 @@ namespace OpenVIII.Battle
 
         #region Constructors
 
-        public Mag(string filename, BinaryReader br)
+        public static IEnumerable<Battle.Mag> WithGeometies => All?.Where(x => (x.Geometries?.Count ?? 0) > 0) ?? null;
+
+        public static IEnumerable<Battle.Mag> Packed => All?.Where(x => x.isPackedMag) ?? null;
+
+        public static IEnumerable<Battle.Mag> MagTIMs => All?.Where(x => x.isTIM) ?? null;
+
+        public static IEnumerable<int> UNKID => All?.Where(x => x.UnknownType > 0).Select(x => x.UnknownType) ?? null;
+        public static List<Mag> All;
+
+        public static void Init()
         {
-            FileName = filename;
-            br.BaseStream.Seek(0, SeekOrigin.Begin);
-            if (TryReadTIM(br) == null)
+            All = new List<Mag>();
+            ArchiveWorker aw = (ArchiveWorker)ArchiveWorker.Load(Memory.Archives.A_MAGIC);
+            aw.CacheFS();
+            foreach (KeyValuePair<string, byte[]> i in aw)
             {
-                isTIM = false;
+                All.Add(Mag.Load(i.Key, i.Value));
+            }
+            aw.ClearFS();
+            aw = (ArchiveWorker)ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+            aw.CacheFS();
+            foreach (KeyValuePair<string, byte[]> i in aw.Where(x => Path.GetFileName(x.Key).StartsWith("mag", System.StringComparison.OrdinalIgnoreCase)))
+            {
+                All.Add(Mag.Load(i.Key, i.Value));
+            }
+            aw.ClearFS();
+        }
+
+        public static Mag Load(string filename, byte[] buffer)
+        {
+            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer, false)))
+                return Load(filename, br);
+        }
+
+        public static Mag Load(string filename, BinaryReader br)
+        {
+            br.BaseStream.Seek(0, SeekOrigin.Begin);
+            Mag m = new Mag
+            {
+                FileName = filename
+            };
+
+            if (m.TryReadTIM(br) == null)
+            {
+                m.isTIM = false;
                 br.BaseStream.Seek(0, SeekOrigin.Begin);
                 //Offset Description
                 //0x00    Probably always null
                 uint pPadding = br.ReadUInt32();
                 if (pPadding != 0)
-                    return;
+                    return m;
                 //0x04    Probably bones/ animation data, might be 0x00
-                pBones = br.ReadUInt32();
+                m.pBones = br.ReadUInt32();
                 //0x08    Unknown(used to determinate texture size *), might be 0x64
-                pTextureLimit = br.ReadUInt32();
+                m.pTextureLimit = br.ReadUInt32();
                 //0x0C    Geometry pointer, might be 0xAC
-                pGeometry = br.ReadUInt32();
+                m.pGeometry = br.ReadUInt32();
                 //0x10    SCOT pointer, might be 0x00
-                pSCOT = br.ReadUInt32();
+                m.pSCOT = br.ReadUInt32();
                 //0x14    Texture pointer, might be 0x30
-                pTexture = br.ReadUInt32();
+                m.pTexture = br.ReadUInt32();
                 //0x18 == 0x98
                 //0x1C == 0xAC
-                if (pBones > br.BaseStream.Length ||
-                    pTextureLimit > br.BaseStream.Length ||
-                    pGeometry > br.BaseStream.Length ||
-                    pSCOT > br.BaseStream.Length ||
-                    pTexture > br.BaseStream.Length)
+                if (m.pBones > br.BaseStream.Length ||
+                    m.pTextureLimit > br.BaseStream.Length ||
+                    m.pGeometry > br.BaseStream.Length ||
+                    m.pSCOT > br.BaseStream.Length ||
+                    m.pTexture > br.BaseStream.Length)
                 {
-                    return;
+                    return m;
                 }
-                if (FileName == "c:\\ff8\\data\\eng\\battle\\mag201_b.19")
-                {
-                }
-                else if (FileName == "c:\\ff8\\data\\eng\\battle\\mag204_b.04")
+                if (m.FileName == "c:\\ff8\\data\\eng\\battle\\mag201_b.19")
                 {
                 }
-                isPackedMag = true;
-                ReadGeometry(br);
-                ReadTextures(br);
+                else if (m.FileName == "c:\\ff8\\data\\eng\\battle\\mag204_b.04")
+                {
+                }
+                m.isPackedMag = true;
+                m.ReadGeometry(br);
+                m.ReadTextures(br);
             }
+            return m;
         }
 
         #endregion Constructors
@@ -160,12 +185,13 @@ namespace OpenVIII.Battle
             int count = br.ReadInt32();
             //count = count > 0x24 ? 0x24 : count; // unsure why.
             List<uint> positions = new List<uint>();
-            while (count-- > 0)
+            while (count-- > 0 && br.BaseStream.Position+4 < br.BaseStream.Length)
             {
                 uint pos = br.ReadUInt32();
                 if (pos > 0 && pos + pGeometry < br.BaseStream.Length)
                     positions.Add(pos + pGeometry);
             }
+            if (count > 0) return;
 
             Geometries = new List<Geometry>(positions.Count);
 
@@ -189,6 +215,7 @@ namespace OpenVIII.Battle
                 uint _verticesOffset = br.ReadUInt16() + pos;
                 ReadVertices();
                 if (OnlyVertex) { continue; }
+                if (_relativeJump > br.BaseStream.Length) return;
                 br.BaseStream.Seek(_relativeJump, SeekOrigin.Begin);
                 ushort _polygonType = br.ReadUInt16();
                 ushort polygons = br.ReadUInt16();
@@ -322,33 +349,7 @@ namespace OpenVIII.Battle
             else
                 return null;
         }
-
-        #endregion Methods
-
-        #region Classes
-
-        public class Geometry
-        {
-            #region Constructors
-
-            public Geometry()
-            {
-                Vertices = new List<Vector3>();
-                Triangles = new List<Vector3>();
-                Quads = new List<Vector4>();
-            }
-
-            #endregion Constructors
-
-            #region Properties
-
-            public List<Vector4> Quads { get; private set; }
-            public List<Vector3> Triangles { get; private set; }
-            public List<Vector3> Vertices { get; private set; }
-
-            #endregion Properties
-        }
-
-        #endregion Classes
     }
+
+    #endregion Methods
 }

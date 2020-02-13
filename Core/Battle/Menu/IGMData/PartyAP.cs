@@ -79,7 +79,7 @@ namespace OpenVIII.IGMData
         public void Earn()
         {
             skipsnd = true;
-            init_debugger_Audio.PlaySound(17);
+            AV.Sound.Play(17);
         }
 
         public override bool Inputs_CANCEL() => false;
@@ -131,7 +131,7 @@ namespace OpenVIII.IGMData
                     })
                     .Replace(DialogSelectedAbility, Kernel_bin.AllAbilities[Ability.Value].Name);
                 skipsnd = true;
-                init_debugger_Audio.PlaySound(0x28);
+                AV.Sound.Play(0x28);
             }
         }
 
@@ -141,7 +141,7 @@ namespace OpenVIII.IGMData
             {
                 ((IGMData.Dialog.Small)ITEM[0, 2]).Data = str_Levelup.Clone().Replace(DialogSelectedGF, Memory.Strings.GetName(GF));
                 skipsnd = true;
-                init_debugger_Audio.PlaySound(0x28);
+                AV.Sound.Play(0x28);
             }
         }
 

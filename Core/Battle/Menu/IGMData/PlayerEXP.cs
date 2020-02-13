@@ -83,7 +83,7 @@ namespace OpenVIII.IGMData
                         if (lvl != _lvl && _lvl != 0 && !NoEarnExp)
                         {
                             //trigger level up message and sound effect
-                            init_debugger_Audio.PlaySound(0x28);
+                            AV.Sound.Play(0x28);
                             ITEM[0, 10].Show();
                         }
                     ((IGMDataItem.Integer)ITEM[0, 2]).Data = _lvl = lvl;
@@ -121,8 +121,8 @@ namespace OpenVIII.IGMData
             ITEM[0, 7] = new IGMDataItem.Icon { Data = Icons.ID.P, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12), 0, 0) };
             ITEM[0, 8] = new IGMDataItem.Integer { Data = c?.ExperienceToNextLevel ?? 0, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0), Spaces = 7 };
             ITEM[0, 9] = new IGMDataItem.Icon { Data = Icons.ID.P, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 20, (int)(SIZE[0].Y + TextScale.Y * 12 * 2), 0, 0) };
-            ITEM[0, 10] = IGMData.Dialog.Timed.Small.Create(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 32), SIZE[0].X + 190, SIZE[0].Y);
-            ITEM[0, 11] = IGMData.Dialog.Small.Create(Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49), SIZE[0].X + 190, SIZE[0].Y);
+            ITEM[0, 10] = IGMData.Dialog.Timed.Small.Create(Strings.Name.LevelUP_, SIZE[0].X + 190, SIZE[0].Y);
+            ITEM[0, 11] = IGMData.Dialog.Small.Create(Strings.Name.Didnt_receive_EXP, SIZE[0].X + 190, SIZE[0].Y);
             ITEM[0, 10].Hide();
             ITEM[0, 11].Hide();
         }

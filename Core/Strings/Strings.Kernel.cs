@@ -79,7 +79,7 @@ namespace OpenVIII
             protected override void LoadArchiveFiles()
             {
                 Settings = (FF8StringReference.Settings.MultiCharByte | FF8StringReference.Settings.Namedic);
-                ArchiveWorker aw = new ArchiveWorker(Archive);
+                ArchiveBase aw = ArchiveWorker.Load(Archive);
                 Files = new StringFile(56);
                 MemoryStream ms = null;
                 byte[] buffer = aw.GetBinaryFile(Filenames[0], true);

@@ -58,7 +58,7 @@ namespace OpenVIII.Battle
 
         public static BinaryReader Open()
         {
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_BATTLE);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
             string filename = Memory.Encounters.Filename;
             Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Camera)} :: {filename}");
             byte[] stageBuffer = aw.GetBinaryFile(filename);
@@ -222,7 +222,7 @@ namespace OpenVIII.Battle
                     };
             }
             Animations?.ForEach(x => x.Update());
-            TextureAnimations.ForEach(x => x.Update());
+            TextureAnimations?.ForEach(x => x.Update());
         }
 
         private static byte GetClutId(ushort clut)
@@ -239,7 +239,7 @@ namespace OpenVIII.Battle
         /// <param name="vpt"></param>
         private void CreateRotation(GeometryVertexPosition vpt)
         {
-            localRotator += (short)skyRotators[Memory.Encounters.Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
+            localRotator += (short)skyRotators[Memory.Encounters.Scenario] / 4096f * Memory.ElapsedGameTime.Milliseconds;
             if (localRotator <= 0)
                 return;
             for (int i = 0; i < vpt.VertexPositionTexture.Length; i++)

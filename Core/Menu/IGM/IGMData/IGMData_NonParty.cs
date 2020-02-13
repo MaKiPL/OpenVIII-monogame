@@ -12,10 +12,9 @@ namespace OpenVIII
         {
             #region Fields
 
+            public static Texture2D _red_pixel;
             private const int BarHeight = 4;
             private const int DefaultHPBarWidth = 118;
-            private Texture2D _red_pixel;
-
             private bool disposedValue = false;
 
             #endregion Fields
@@ -106,10 +105,8 @@ namespace OpenVIII
 
             protected override void Init()
             {
+                Memory.MainThreadOnlyActions.Enqueue(InitRedPixel);
                 Table_Options |= Table_Options.FillRows;
-                _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-                Color[] color = new Color[] { new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
-                _red_pixel.SetData(color, 0, _red_pixel.Width * _red_pixel.Height);
                 Contents = new Damageable[Count];
                 base.Init();
 
@@ -135,8 +132,8 @@ namespace OpenVIII
                     r.Offset(0, 28);
                     r.Width = DefaultHPBarWidth;
                     r.Height = BarHeight;
-                    ITEM[pos, 4] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = Color.Black };
-                    ITEM[pos, 5] = new IGMDataItem.Texture { Data = _red_pixel, Pos = r, Color = color[0] };
+                    ITEM[pos, 4] = new IGMDataItem.Texture { Pos = r, Color = Color.Black };
+                    ITEM[pos, 5] = new IGMDataItem.Texture { Pos = r, Color = new Color(74.5f / 100, 12.5f / 100, 11.8f / 100, 100) };
 
                     //r.Width = DefaultHPBarWidth;
                     //r.Offset(0, 2);
@@ -152,6 +149,22 @@ namespace OpenVIII
                     {
                         ITEM[pos, i]?.Hide();
                     }
+                }
+            }
+
+            protected void InitRedPixel()
+            {
+                if (_red_pixel == null)
+                {
+                    _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                    _red_pixel.SetData(new Color[] { Color.White }, 0, _red_pixel.Width * _red_pixel.Height);
+                }
+                for (int pos = 0; pos < Count; pos++)
+                {
+                    if (ITEM[pos, 4] != null && ITEM[pos, 4].GetType() == typeof(IGMDataItem.Texture))
+                        ((IGMDataItem.Texture)ITEM[pos, 4]).Data = _red_pixel;
+                    if (ITEM[pos, 5] != null && ITEM[pos, 4].GetType() == typeof(IGMDataItem.Texture))
+                        ((IGMDataItem.Texture)ITEM[pos, 5]).Data = _red_pixel;
                 }
             }
 
@@ -175,6 +188,7 @@ namespace OpenVIII
                     r.Height = BarHeight;
                     r.Width = (int)(DefaultHPBarWidth * damageable.PercentFullHP());
                     ((IGMDataItem.Texture)ITEM[pos, 5]).Pos = r;
+
                     //r.Offset(0, 2);
                     //((IGMDataItem.Texture)ITEM[pos, 7]).Pos = r;
 

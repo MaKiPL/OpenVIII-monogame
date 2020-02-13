@@ -17,7 +17,7 @@ namespace OpenVIII.IGMData.Limit
         private static Color Renzokenken_Seperator_Color_Faded;
         private byte _count = 0;
         private int _hits = 7;
-        private double delayMS;
+        private TimeSpan delayMS;
         private Slide<Color> HitSlider = new Slide<Color>(Color.White, Color.TransparentBlack, HitTime, Color.Lerp);
         private Color newattack;
 
@@ -83,7 +83,7 @@ namespace OpenVIII.IGMData.Limit
             ITEM[Count - 5, 0].Hide();
             ITEM[Count - 6, 0].Hide();
             _count = 0;
-            delayMS = 0d;
+            delayMS = TimeSpan.Zero;
             base.Reset();
         }
 
@@ -118,7 +118,7 @@ namespace OpenVIII.IGMData.Limit
             }
             if (!done)
             {
-                if ((delayMS += Memory.gameTime.ElapsedGameTime.TotalMilliseconds) > 1000)
+                if ((delayMS += Memory.ElapsedGameTime) > TimeSpan.FromMilliseconds(1000))
                 {
                     //Damageable.EndTurn(); //gets stuck if the current player isn't squall
                     Menu.BattleMenus.GetCurrentBattleMenu().Damageable.EndTurn();

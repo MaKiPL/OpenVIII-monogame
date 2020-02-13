@@ -76,20 +76,17 @@ namespace OpenVIII
         public void LoadFonts()
         {
             Memory.Log.WriteLine($"{nameof(Font)} :: {nameof(LoadFonts)} ");
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
-            string[] filelist = aw.GetListOfFiles();
-            if (filelist != null)
-            {
-                string sysfntTdwFilepath = filelist.First(x => x.ToLower().Contains("sysfnt.tdw"));
-                string sysfntFilepath = filelist.First(x => x.ToLower().Contains("sysfnt.tex"));
-                TEX tex = new TEX(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntFilepath));
-                sysfnt = tex.GetTexture((int)ColorID.White);
-                sysfntbig = TextureHandler.Create("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
+            byte[] bufferTex = aw.GetBinaryFile("sysfnt.tex");
+            TEX tex = new TEX(bufferTex);
+            sysfnt = tex.GetTexture((int)ColorID.White);
+            sysfntbig = TextureHandler.Create("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
 
-                TDW tim = new TDW(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, sysfntTdwFilepath), 0);
-                charWidths = tim.CharWidths;
-                menuFont = tim.GetTexture((ushort)ColorID.White);
-            }
+            byte[] bufferTDW = aw.GetBinaryFile("sysfnt.tdw");
+            TDW tim = new TDW(bufferTDW);
+            charWidths = tim.CharWidths;
+            menuFont = tim.GetTexture((ushort)ColorID.White);
+            
         }
 
         public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color_ = ColorID.White, bool blink = false)

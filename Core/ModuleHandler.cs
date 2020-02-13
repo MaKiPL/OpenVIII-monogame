@@ -58,7 +58,7 @@ namespace OpenVIII
             switch (module)
             {
                 case MODULE.BATTLE:
-                    module_battle.Update();
+                    Module_battle.Update();
                     break;
 
                 case MODULE.BATTLE_DEBUG:
@@ -130,7 +130,7 @@ namespace OpenVIII
             switch (module)
             {
                 case MODULE.BATTLE:
-                    module_battle.Draw();
+                    Module_battle.Draw();
                     break;
 
                 case MODULE.BATTLE_DEBUG:

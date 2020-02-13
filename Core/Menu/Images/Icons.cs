@@ -181,7 +181,7 @@ namespace OpenVIII
             IndexFilename = "icon.sp1";
         }
 
-        protected override void InitEntries(ArchiveWorker aw = null)
+        protected override void InitEntries(ArchiveBase aw = null)
         {
             if (Entries == null)
             {
@@ -217,7 +217,7 @@ namespace OpenVIII
             }
         }
 
-        protected override void InitTextures<T>(ArchiveWorker aw = null)
+        protected override void InitTextures<T>(ArchiveBase aw = null)
         {
             Textures = new List<TextureHandler>();
             for (int t = 0; t < Props.Count; t++)

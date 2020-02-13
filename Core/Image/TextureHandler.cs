@@ -454,7 +454,7 @@ namespace OpenVIII
                 for (uint c = 0; c < Cols && Memory.graphics?.GraphicsDevice != null; c++)
                 {
                     Texture2D pngTex;
-                    ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_MENU);
+                    ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
                     string[] filelist = aw.GetListOfFiles();
                     string path = "";
                     if (filelist != null)
@@ -465,7 +465,7 @@ namespace OpenVIII
 
                     if (!string.IsNullOrWhiteSpace(path))
                     {
-                        tex = Texture_Base.Open(ArchiveWorker.GetBinaryFile(Memory.Archives.A_MENU, path));
+                        tex = Texture_Base.Open(aw.GetBinaryFile(path));
                         if (Classic == null && c2 < Cols) oldsize.X += tex?.GetWidth ?? ClassicWidth;
                         pngTex = LoadPNG(path, Palette, EnforceSquare);
                     }

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -68,15 +67,14 @@ namespace OpenVIII
         {
             Size = new Vector2 { X = 843, Y = 630 };
             base.Init();
-            //TextScale = new Vector2(2.545455f, 3.0375f);
 
-            List<Task> tasks = new List<Task>
+            Action[] actions = new Action[]
             {
-                Task.Run(() => Data.TryAdd(SectionName.Header, IGMData_Header.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.Footer, IGMData_Footer.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.Clock, IGMData_Clock.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create()))),
-                Task.Run(() => {
+                () => Data.TryAdd(SectionName.Header, IGMData_Header.Create()),
+                () => Data.TryAdd(SectionName.Footer, IGMData_Footer.Create()),
+                () => Data.TryAdd(SectionName.Clock, IGMData_Clock.Create()),
+                () => Data.TryAdd(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create())),
+                () => {
                     FF8String[] keys = new FF8String[] {
                         Strings.Name.SideMenu.Junction,
                         Strings.Name.SideMenu.Item,
@@ -104,21 +102,21 @@ namespace OpenVIII
                         Strings.Description.SideMenu.Tutorial,
                         Strings.Description.SideMenu.Save,
                         Strings.Description.SideMenu.Battle};
+
                     if(keys.Distinct().Count() == keys.Length && values.Length == keys.Length)
                     Data.TryAdd(SectionName.SideMenu, IGMData_SideMenu.Create((from i in Enumerable.Range(0,keys.Length)
                                                                                select i).ToDictionary(x=>keys[x],x=>values[x])));
-                    else Data.TryAdd(SectionName.SideMenu,null); })
-                                                       
-
+                    else Data.TryAdd(SectionName.SideMenu,null);
+                }
             };
-            Task.WaitAll(tasks.ToArray());
+            Memory.ProcessActions(actions);
             Func<bool> SideMenuInputs = null;
-            if(Data[SectionName.SideMenu] != null) SideMenuInputs = Data[SectionName.SideMenu].Inputs;
+            if (Data[SectionName.SideMenu] != null) SideMenuInputs = Data[SectionName.SideMenu].Inputs;
             InputDict = new Dictionary<Mode, Func<bool>>
-                {
-                    { Mode.ChooseItem, SideMenuInputs },
-                    { Mode.ChooseChar, Data[SectionName.PartyGroup].Inputs },
-                };
+                    {
+                        { Mode.ChooseItem, SideMenuInputs },
+                        { Mode.ChooseChar, Data[SectionName.PartyGroup].Inputs },
+                    };
             SetMode((Mode)0);
         }
 

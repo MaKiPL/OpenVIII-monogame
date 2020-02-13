@@ -31,7 +31,7 @@ namespace OpenVIII.Fields
         {
             if (!FieldMainCharaOne.bAlreadyInitialized)
                 FieldMainCharaOne.Init();
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             string[] test = aw.GetListOfFiles();
 
             var CollectionEntry = test.Where(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID],StringComparison.OrdinalIgnoreCase)>=0);
@@ -44,7 +44,7 @@ namespace OpenVIII.Fields
 
 
             string one;
-            string main_chr;
+            //string main_chr;
             try
             {
                 one = test_.First(x => x.EndsWith(".one",StringComparison.OrdinalIgnoreCase));
@@ -171,7 +171,7 @@ namespace OpenVIII.Fields
 
             List<MainFieldChara> mfc = new List<MainFieldChara>();
 
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             string[] test = aw.GetListOfFiles();
 
             var CollectionEntry = test.Where(x => x.ToLower().Contains("main_chr"));

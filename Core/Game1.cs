@@ -41,8 +41,8 @@ namespace OpenVIII
             //Input.Init();
             Memory.Input2 = new Input2();
             Memory.Init(graphics, spriteBatch, Content);
-            init_debugger_Audio.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
-            init_debugger_Audio.Init_SoundAudio(); //this initalizes the WAVE format audio.dat
+            AV.Music.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
+            AV.Sound.Init(); //this initalizes the WAVE format audio.dat
             Memory.Log.WriteLine($"{nameof(Game)} :: {nameof(base.Initialize)}");
             base.Initialize();
         }
@@ -142,7 +142,7 @@ namespace OpenVIII
 
         protected override void Update(GameTime gameTime)
         {
-            Memory.gameTime = gameTime;
+            Memory.GameTime = gameTime;
             Memory.IsActive = IsActive;
 
             //it breaks the Font
@@ -154,7 +154,7 @@ namespace OpenVIII
 
             if (Input2.Button(FF8TextTagKey.Exit) || Input2.Button(FF8TextTagKey.ExitMenu))
                 Exit();
-            init_debugger_Audio.Update();
+            AV.Music.Update();
             ModuleHandler.Update(gameTime);
             base.Update(gameTime);
             if (Memory.SuppressDraw)
@@ -191,10 +191,12 @@ namespace OpenVIII
             Memory.TokenSource.Cancel(); // tell task we are done
             //step0. dispose stop sounds
             Module_movie_test.Reset();
-            init_debugger_Audio.StopMusic();
-            init_debugger_Audio.KillAudio();
+            AV.Music.Stop();
+            AV.Music.KillAudio();
+            AV.Sound.KillAudio();
             //step1. kill init task. to prevent exceptions if exiting before fully loaded.
-            await Memory.InitTask; // wait for task to finish what it's doing.
+            if(Memory.InitTask != null)
+                await Memory.InitTask; // wait for task to finish what it's doing.
         }
     }
 }

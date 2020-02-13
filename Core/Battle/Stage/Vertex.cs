@@ -18,7 +18,7 @@ namespace OpenVIII.Battle
                 Y = br.ReadInt16(),
                 Z = br.ReadInt16(),
             };
-            public static implicit operator Vector3(Vertex v) => new Vector3(v.X,v.Y,v.Z)/100f;///100f;
+            public static implicit operator Vector3(Vertex v) => new Vector3(v.X,v.Y,v.Z)/Memory.BattleStageScale;///100f;
         }
     }
 }

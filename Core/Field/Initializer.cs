@@ -11,17 +11,28 @@ namespace OpenVIII.Fields
         public static void Init()
         {
             Memory.Log.WriteLine($"{nameof(Fields)} :: {nameof(Initializer)} :: {nameof(Init)}");
-            ArchiveWorker aw = new ArchiveWorker(Memory.Archives.A_FIELD);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             
             ArchiveBase mapdata = aw.GetArchive("mapdata.fs");
             if (mapdata != null)
             {
-                string map = mapdata.GetListOfFiles()[0];
-                string[] maplistb = System.Text.Encoding.UTF8.GetString(mapdata.GetBinaryFile(map))
-                    .Replace("\r", "")
-                    .Split('\n');
-                Memory.FieldHolder.fields = maplistb;
-                FieldId.FieldId_ = maplistb;
+
+                string[] maplist = mapdata.GetListOfFiles();
+                string map = maplist?[0];
+                if (map != null)
+                {
+                    byte[] bytes = mapdata.GetBinaryFile(map);
+                    if (bytes != null)
+                    {
+                        string[] maplistb = System.Text.Encoding.UTF8.GetString(bytes)
+                            .Replace("\r", "")
+                            .Split('\n');
+
+                        //Memory.FieldHolder.FieldMemory = new int[1024];
+                        Memory.FieldHolder.fields = maplistb;
+                        FieldId.FieldId_ = maplistb;
+                    }
+                }
             }
         }
 

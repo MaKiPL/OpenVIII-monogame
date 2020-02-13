@@ -25,10 +25,10 @@ namespace OpenVIII.Fields
 
             public byte AnimationState;
 
-            public byte blend1;
+            public byte Blend;
 
             public BlendMode BlendMode = BlendMode.none;
-            public byte Depth;
+            public Bppflag Depth;
 
             /// <summary>
             /// Layer ID, Used to control which parts draw.
@@ -46,6 +46,12 @@ namespace OpenVIII.Fields
             /// for outputting the source tiles to texture pages. some tiles have the same source rectangle. So skip.
             /// </summary>
             public bool Skip = false;
+
+            /// <summary>
+            /// bit is either 1 or 0. if 0 don't draw tile.
+            /// </summary>
+            /// <see cref="https://github.com/myst6re/deling/blob/develop/files/BackgroundFile.h#L49"/>
+            public bool Draw = true;
 
             /// <summary>
             /// Source X from Texture Data
@@ -89,9 +95,15 @@ namespace OpenVIII.Fields
             public int ExpandedSourceX => Is4Bit ? SourceX * 2 : SourceX;
             public Rectangle GetRectangle => new Rectangle(X, Y, size, size);
             public int Height => size;
-            public bool Is4Bit => !Is8Bit;
+            public bool Is4Bit => Test4Bit(Depth);
 
-            public bool Is8Bit => Depth >= 4;
+            public static bool Test4Bit(Bppflag depth) => depth == 0;
+            public static bool Test16Bit(Bppflag depth) => depth.HasFlag(Bppflag._16bpp) && !depth.HasFlag(Bppflag._8bpp);
+            public static bool Test8Bit(Bppflag depth) => !depth.HasFlag(Bppflag._16bpp) && depth.HasFlag(Bppflag._8bpp);
+            
+
+            public bool Is8Bit => Test8Bit(Depth);
+            public bool Is16Bit => Test16Bit(Depth);
 
             /// <summary>
             /// Pupu goes in a loop and +1 the id when it detects an overlap.
@@ -142,15 +154,16 @@ namespace OpenVIII.Fields
                     t.TextureID = (byte)(texIdBuffer & 0xF);
                     // pbsmap.BaseStream.Seek(-1, SeekOrigin.Current);
                     pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
-                    t.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+                    t.PaletteID = GetPaletteID(pbsmap);
                     t.SourceX = pbsmap.ReadByte();
                     t.SourceY = pbsmap.ReadByte();
-                    t.LayerID = (byte)(pbsmap.ReadByte() >> 1/*& 0x7F*/);
+                    t.LayerID = GetLayerID(pbsmap);
                     t.BlendMode = (BlendMode)pbsmap.ReadByte();
                     t.AnimationID = pbsmap.ReadByte();
                     t.AnimationState = pbsmap.ReadByte();
-                    t.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
-                    t.Depth = (byte)(texIdBuffer >> 5);
+                    t.Draw = GetDraw(texIdBuffer);
+                    t.Blend = GetBlend(texIdBuffer);
+                    t.Depth = GetDepth(texIdBuffer);
                     t.TileID = id;
                 }
                 else if (type == 2)
@@ -161,17 +174,25 @@ namespace OpenVIII.Fields
                     byte texIdBuffer = pbsmap.ReadByte();
                     t.TextureID = (byte)(texIdBuffer & 0xF);
                     pbsmap.BaseStream.Seek(1, SeekOrigin.Current);
-                    t.PaletteID = (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+                    t.PaletteID = GetPaletteID(pbsmap);
                     t.AnimationID = pbsmap.ReadByte();
                     t.AnimationState = pbsmap.ReadByte();
-                    t.blend1 = (byte)((texIdBuffer >> 4) & 0x1);
-                    t.Depth = (byte)(texIdBuffer >> 5);
+                    t.Draw = GetDraw(texIdBuffer);
+                    t.Blend = GetBlend(texIdBuffer);
+                    t.Depth = GetDepth(texIdBuffer);
                     t.TileID = id;
+                    t.BlendMode = (((t.Blend & 1) != 0) ? BlendMode.add : BlendMode.none);
                 }
                 t.GeneratePupu();
                 Debug.Assert(p - pbsmap.BaseStream.Position == -16);
                 return t;
             }
+
+            private static byte GetLayerID(BinaryReader pbsmap) => (byte)(pbsmap.ReadByte() >> 1/*& 0x7F*/);
+            private static byte GetPaletteID(BinaryReader pbsmap) => (byte)((pbsmap.ReadInt16() >> 6) & 0xF);
+            private static byte GetBlend(byte texIdBuffer) => (byte)((texIdBuffer >> 5) & 0x3);
+            private static bool GetDraw(byte texIdBuffer) => ((texIdBuffer >> 4) & 0x1) != 0;
+            private static Bppflag GetDepth(byte texIdBuffer) => (Bppflag)(texIdBuffer >> 7 & 0x3);
 
             public VertexPositionTexture[] GetQuad(float scale)
             {

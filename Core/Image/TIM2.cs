@@ -15,8 +15,9 @@ namespace OpenVIII
     /// <seealso cref="http://www.elisanet.fi/6581/PSX/doc/Playstation_Hardware.pdf"/>
     /// <seealso cref="http://www.elisanet.fi/6581/PSX/doc/psx.pdf"/>
     /// <remarks>upgraded TIM class, because that first one is a trash</remarks>
-    public class TIM2 : Texture_Base
+    public partial class TIM2 : Texture_Base
     {
+
         #region Fields
 
         /// <summary>
@@ -83,49 +84,6 @@ namespace OpenVIII
         }
 
         #endregion Constructors
-
-        #region Enums
-
-        /// <summary>
-        /// BPP indicator
-        /// <para>4 BPP is default</para>
-        /// <para>If 8 and 16 are set then it's 24</para>
-        /// <para>CLP should always be set for 4 and 8</para>
-        /// </summary>
-        [Flags]
-        public enum Bppflag : byte
-        {
-            /// <summary>
-            /// <para>4 BPP</para>
-            /// <para>This is 0 so it will show as unset.</para>
-            /// </summary>
-            _4bpp = 0b0,
-
-            /// <summary>
-            /// <para>8 BPP</para>
-            /// <para>if _8bpp and _16bpp are set then it's 24 bit</para>
-            /// </summary>
-            _8bpp = 0b1,
-
-            /// <summary>
-            /// <para>16 BPP</para>
-            /// <para>if _8bpp and _16bpp are set then it's 24 bit</para>
-            /// </summary>
-            _16bpp = 0b10,
-
-            /// <summary>
-            /// <para>24 BPP</para>
-            /// <para>Both flags must be set for this to be right</para>
-            /// </summary>
-            _24bpp = _8bpp | _16bpp,
-
-            /// <summary>
-            /// Color Lookup table Present
-            /// </summary>
-            CLP = 0b1000,
-        }
-
-        #endregion Enums
 
         #region Properties
 
@@ -438,6 +396,7 @@ namespace OpenVIII
 
         protected struct Texture
         {
+
             #region Fields
 
             public byte[] ClutData;
@@ -556,8 +515,10 @@ namespace OpenVIII
             }
 
             #endregion Methods
+
         }
 
         #endregion Structs
+
     }
 }

@@ -175,7 +175,7 @@ namespace OpenVIII.IGMData
                     Module_overture_debug.ResetModule();
                     Memory.Module = MODULE.OVERTURE_DEBUG;
                     Memory.IsMouseVisible = false;
-                    init_debugger_Audio.StopMusic();
+                    AV.Music.Stop();
                     return true;
                 } },
                 { Ditems.Battle, ()=> {
@@ -206,11 +206,11 @@ namespace OpenVIII.IGMData
                 }  },
                 { Ditems.Music, ()=> {
                     Fields.Module.ResetField();
-                    init_debugger_Audio.PlayStopMusic();
+                    AV.Music.PlayStop();
                     return true;
                 }  },
                 { Ditems.Sounds, ()=> {
-                    init_debugger_Audio.PlaySound(debug_choosedAudio);
+                    AV.Sound.Play(debug_choosedAudio);
                     skipsnd = true;
                     return true;
                 }  },
@@ -277,7 +277,7 @@ namespace OpenVIII.IGMData
                     if (debug_choosedAudio > 0)
                         debug_choosedAudio--;
                     else
-                        debug_choosedAudio = init_debugger_Audio.soundEntriesCount-1;
+                        debug_choosedAudio = AV.Sound.EntriesCount-1;
                     return true;
                 }  }
             };
@@ -310,7 +310,7 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
                 { Ditems.Sounds, ()=> {
-                    if (debug_choosedAudio < init_debugger_Audio.soundEntriesCount-1)
+                    if (debug_choosedAudio < AV.Sound.EntriesCount-1)
                         debug_choosedAudio++;
                     else
                         debug_choosedAudio = 0;
@@ -371,7 +371,7 @@ namespace OpenVIII.IGMData
 
         private void FilterEncounters(string filter) => ((DebugSelectPool<Battle.Encounter>)ITEM[(int)Ditems.BattlePool, 0]).Refresh(Memory.Encounters.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
 
-        private void FilterFields(string filter) => ((DebugSelectPool<string>)ITEM[(int)Ditems.FieldPool, 0]).Refresh(Memory.FieldHolder.fields.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
+        private void FilterFields(string filter) => ((DebugSelectPool<string>)ITEM[(int)Ditems.FieldPool, 0]).Refresh(Memory.FieldHolder.fields?.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
 
         private bool SetEncounterOKAYBattle(Battle.Encounter encounter)
         {
@@ -387,12 +387,15 @@ namespace OpenVIII.IGMData
         }
         private bool SetFieldsOKAYBattle(string arg)
         {
-            Memory.FieldHolder.FieldID = (ushort)Memory.FieldHolder.fields.ToList().FindIndex(x => x == arg);
+            if (Memory.FieldHolder.fields != null)
+            {
+                Memory.FieldHolder.FieldID = (ushort)Memory.FieldHolder.fields.ToList().FindIndex(x => x == arg);
 
-            Menu.FadeIn();
-            Fields.Module.ResetField();
-            Memory.Module = MODULE.FIELD_DEBUG;
-            Memory.IsMouseVisible = false;
+                Menu.FadeIn();
+                Fields.Module.ResetField();
+                Memory.Module = MODULE.FIELD_DEBUG;
+                Memory.IsMouseVisible = false;
+            }
             return true;
         }
 

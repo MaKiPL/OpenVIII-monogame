@@ -46,7 +46,7 @@ namespace OpenVIII.IGMData
             //return false;
             void playsnd(int snd)
             {
-                init_debugger_Audio.PlaySound(snd);
+                AV.Sound.Play(snd);
                 skipsnd = true;
                 base.Inputs_OKAY();
             }

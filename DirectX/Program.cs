@@ -3,6 +3,7 @@
 namespace OpenVIII.DirectX
 {
 #if WINDOWS
+
     /// <summary>
     /// The main class.
     /// </summary>
@@ -12,11 +13,19 @@ namespace OpenVIII.DirectX
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
-            using (var game = new OpenVIII.Game1())
-                game.Run();
+            try
+            {
+                using (Game1 game = new Game1())
+                    game.Run();
+            }
+            catch (InvalidOperationException e)
+            {
+                goto start;
+            }
         }
     }
+
 #endif
 }

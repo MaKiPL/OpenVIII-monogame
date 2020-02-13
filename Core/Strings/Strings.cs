@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -120,20 +119,20 @@ namespace OpenVIII
                 if (Files == null)
                 {
                     Memory.Log.WriteLine($"{nameof(Strings)} :: {nameof(Init)}");
-                    var tasks = new List<Task<bool>>();
                     Files = new ConcurrentDictionary<FileID, StringsBase>();
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.NAMEDIC, Namedic.Load()))); // areames and kernel require namedic
+                    Func<bool>[] funcs = new Func<bool>[] {
+                    () => Files.TryAdd(FileID.NAMEDIC, Namedic.Load()), // areames and kernel require namedic
                     //though there shouldn't be anything reading the strings till this is done processing
                     //Task.WaitAll(tasks.ToArray());
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.MNGRP, Mngrp.Load())));
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.AREAMES, Areames.Load())));
-                    tasks.Add(Task.Run(() => Files.TryAdd(FileID.KERNEL, Kernel.Load())));
-                    Task.WaitAll(tasks.ToArray());
-                    if (tasks.Any(x => !x.Result))
+                    () => Files.TryAdd(FileID.MNGRP, Mngrp.Load()),
+                    () => Files.TryAdd(FileID.AREAMES, Areames.Load()),
+                    () => Files.TryAdd(FileID.KERNEL, Kernel.Load()),
+                };
+                    IEnumerable<bool> tasks = Memory.ProcessFuncs(funcs);
+                    if (tasks.Any(x => !x))
                         throw new ArgumentException($"{this}::Failed to add to dictionary...");
                 }
         }
-
 
         #endregion Methods
     }

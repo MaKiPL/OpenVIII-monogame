@@ -41,7 +41,7 @@ namespace OpenVIII
                 if (Input2.DelayedButton(FF8TextTagKey.RotateLeft) || Input2.DelayedButton(FF8TextTagKey.RotateRight))
                 {
                     IGM_LGSG.Mode mode = (IGM_LGSG.Mode)Menu.IGM_LGSG.GetMode();
-                    init_debugger_Audio.PlaySound(0);
+                    AV.Sound.Play(0);
                     mode ^= IGM_LGSG.Mode.Slot1;
                     mode ^= IGM_LGSG.Mode.Slot2;
                     Menu.IGM_LGSG.SetMode(mode);

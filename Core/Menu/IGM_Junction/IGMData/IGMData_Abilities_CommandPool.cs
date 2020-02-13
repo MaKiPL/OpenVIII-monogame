@@ -34,7 +34,7 @@ namespace OpenVIII
                 if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT] && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     skipsnd = true;
-                    init_debugger_Audio.PlaySound(31);
+                    AV.Sound.Play(31);
                     base.Inputs_OKAY();
                     int target = ((IGMData.Base)IGM_Junction.Data[SectionName.TopMenu_Abilities]).CURSOR_SELECT - 1;
                     c.Commands[target] = Contents[CURSOR_SELECT];

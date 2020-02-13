@@ -55,7 +55,7 @@ namespace OpenVIII.Battle
 
             public void Update()
             {
-                time += Memory.gameTime.ElapsedGameTime;
+                time += Memory.ElapsedGameTime;
                 if (time > TotalFrameTime)
                 {
                     FrameNumber++;

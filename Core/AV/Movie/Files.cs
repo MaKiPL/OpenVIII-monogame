@@ -16,6 +16,8 @@ namespace OpenVIII
             private static Directories Directories;
             private static List<string> s_files;
 
+            public static bool ZZZ { get; private set; } = false;
+
             #endregion Fields
 
             #region Properties
@@ -41,14 +43,26 @@ namespace OpenVIII
             {
                 if (s_files == null /*|| s_files.Count == 0*/)
                 {
-                    //Gather all movie files.
-                    s_files = (from directory in Directories
-                               where Directory.Exists(directory)
-                               from file in Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
-                               from extension in Extensions
-                               where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
-                               orderby Path.GetFileNameWithoutExtension(file) ascending
-                               select file).ToList();
+                    ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                    if (a != null)
+                    {
+
+                        s_files = (from file in a.GetListOfFiles()
+                                   from extension in Extensions
+                                   where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
+                                   orderby Path.GetFileNameWithoutExtension(file) ascending
+                                   select file).ToList();
+                        ZZZ = true;
+                    }
+                    else
+                        //Gather all movie files.
+                        s_files = (from directory in Directories
+                                   where Directory.Exists(directory)
+                                   from file in Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
+                                   from extension in Extensions
+                                   where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
+                                   orderby Path.GetFileNameWithoutExtension(file) ascending
+                                   select file).ToList();
                     //Remove duplicate movies ignoring extension that have same name.
                     (from s1 in _Files.Select((Value, Key) => new { Key, Value })
                      from s2 in _Files.Select((Value, Key) => new { Key, Value })
@@ -57,7 +71,7 @@ namespace OpenVIII
                      orderby s2.Key descending
                      select s2.Key).ForEach(Key => s_files.RemoveAt(Key));
 
-                    foreach (var s in s_files)
+                    foreach (string s in s_files)
                         Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Files)} :: {s} ");
                 }
             }

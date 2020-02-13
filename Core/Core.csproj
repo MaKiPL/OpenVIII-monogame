@@ -122,6 +122,9 @@
     <Reference Include="FFmpeg.AutoGen, Version=4.2.0.0, Culture=neutral, PublicKeyToken=9b7632533a381715, processorArchitecture=MSIL">
       <HintPath>..\packages\FFmpeg.AutoGen.4.2.0\lib\net45\FFmpeg.AutoGen.dll</HintPath>
     </Reference>
+    <Reference Include="K4os.Compression.LZ4, Version=1.1.11.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+      <HintPath>..\packages\K4os.Compression.LZ4.1.1.11\lib\net46\K4os.Compression.LZ4.dll</HintPath>
+    </Reference>
     <Reference Include="ImGui.NET, Version=1.72.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>x86\ImGui.NET.dll</HintPath>
@@ -133,6 +136,16 @@
       <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard1.1\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
     </Reference>
@@ -200,31 +213,50 @@
   <ItemGroup>
     <Compile Include="Archive\Archive.cs" />
     <Compile Include="Archive\ArchiveBase.cs" />
+    <Compile Include="Archive\ArchiveMap.cs" />
     <Compile Include="Archive\Archives.cs" />
     <Compile Include="Archive\ArchiveWorker.cs" />
-    <Compile Include="Archive\ArchiveZZZ.cs" />
+    <Compile Include="Archive\FI.cs" />
+    <Compile Include="Archive\FL.cs" />
+    <Compile Include="Archive\ZZZ\ArchiveZZZ.cs" />
+    <Compile Include="Archive\BufferWithAge.cs" />
+    <Compile Include="Archive\ZZZ\FileData.cs" />
+    <Compile Include="Archive\ZZZ\Header.cs" />
+    <Compile Include="Archive\StreamWithRangeValues.cs" />
     <Compile Include="AV\Audio.cs" />
+    <Compile Include="AV\BufferData.cs" />
     <Compile Include="AV\Movie\Directories.cs" />
     <Compile Include="AV\Movie\Files.cs" />
-    <Compile Include="AV\Midi\Fluid.cs" />
-    <Compile Include="AV\Midi\DirectMedia.cs" />
+    <Compile Include="AV\Music\Midi\Fluid.cs" />
+    <Compile Include="AV\Music\Midi\DirectMedia.cs" />
     <Compile Include="AV\Movie\Player.cs" />
     <Compile Include="AV\Movie\STATE.cs" />
+    <Compile Include="AV\Music\Music.cs" />
+    <Compile Include="AV\Sound\ADPCMCOEFSET.cs" />
+    <Compile Include="AV\Sound\Entry.cs" />
+    <Compile Include="AV\Sound\Sound.cs" />
+    <Compile Include="AV\Sound\WAVEFORMATEX.cs" />
     <Compile Include="AV\Video.cs" />
+    <Compile Include="Battle\AnimationSystem.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
+    <Compile Include="Battle\Characters\CharacterData.cs" />
+    <Compile Include="Battle\Characters\CharacterInstanceInformation.cs" />
     <Compile Include="Battle\Encounters\Coordinate.cs" />
     <Compile Include="Battle\DeadTime.cs" />
     <Compile Include="Battle\debug_battleDat.cs" />
     <Compile Include="Battle\Encounters\Encounter.cs" />
     <Compile Include="Battle\Encounters\EncounterFlag.cs" />
     <Compile Include="Battle\Encounters\Encounters.cs" />
-    <Compile Include="Battle\Enemy.cs" />
+    <Compile Include="Battle\Enemies\Enemy.cs" />
     <Compile Include="Battle\Encounters\EnemyCoordinates.cs" />
+    <Compile Include="Battle\Enemies\EnemyInstanceInformation.cs" />
     <Compile Include="Battle\FPS_Camera.cs" />
-    <Compile Include="Battle\IEnemy.cs" />
-    <Compile Include="Battle\Information.cs" />
+    <Compile Include="Battle\Enemies\IEnemy.cs" />
+    <Compile Include="Battle\Enemies\Information.cs" />
+    <Compile Include="BinaryReaderExt.cs" />
+    <Compile Include="Battle\Mag\Geometry.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
-    <Compile Include="Battle\Mag.cs" />
+    <Compile Include="Battle\Mag\Mag.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\ATB.cs" />
@@ -257,7 +289,6 @@
     <Compile Include="Battle\Stage\Model.cs" />
     <Compile Include="Battle\Stage\ModelGroup.cs" />
     <Compile Include="Battle\RegularPyramid.cs" />
-    <Compile Include="AV\Buffer_Data.cs" />
     <Compile Include="Battle\Stage\ObjectsGroup.cs" />
     <Compile Include="Battle\Stage\Polygon.cs" />
     <Compile Include="Battle\Stage\Quad.cs" />
@@ -277,6 +308,10 @@
     <Compile Include="Field\INF\Trigger.cs" />
     <Compile Include="Field\INF\Triggers.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
+    <Compile Include="Field\MrtRat.cs" />
+    <Compile Include="Field\MSK.cs" />
+    <Compile Include="Field\PMP.cs" />
+    <Compile Include="Field\SFX.cs" />
     <Compile Include="Field\WalkMesh\Access.cs" />
     <Compile Include="Field\Background\Background.cs" />
     <Compile Include="Field\Background\BackgroundTextureType.cs" />
@@ -291,6 +326,7 @@
     <Compile Include="Field\Background\Tiles.cs" />
     <Compile Include="Field\WalkMesh\Vert.cs" />
     <Compile Include="Field\WalkMesh\WalkMesh.cs" />
+    <Compile Include="Image\Bppflag.cs" />
     <Compile Include="Image\Cluts.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
@@ -882,7 +918,6 @@
     <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GFs.cs" />
-    <Compile Include="AV\init_debugger_Audio.cs" />
     <Compile Include="Kernel\Kernel_bin.Abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Ability.cs" />
     <Compile Include="Kernel\Kernel_bin.AbilityFlags2.cs" />
@@ -936,7 +971,7 @@
     <Compile Include="Kernel\Kernel_bin.Weapons_Data.cs" />
     <Compile Include="Kernel\Kernel_bin.Zell_limit_break_parameters.cs" />
     <Compile Include="Loc.cs" />
-    <Compile Include="Archive\LZSS.cs" />
+    <Compile Include="Archive\Compression\LZSS.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="Menu\Images\Cards.cs" />
     <Compile Include="Menu\Images\Cards.ID.cs" />
@@ -998,7 +1033,7 @@
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
-    <Compile Include="AV\module_movie_test.cs" />
+    <Compile Include="AV\Movie\module_movie_test.cs" />
     <Compile Include="module_overture_debug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Saves\Saves.CharacterData.cs" />

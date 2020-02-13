@@ -126,7 +126,7 @@ namespace OpenVIII
 
             private void NewGameOkayAction()
             {
-                init_debugger_Audio.PlaySound(28);
+                AV.Sound.Play(28);
                 skipsnd = true;
                 base.Inputs_OKAY();
                 FadeOut();

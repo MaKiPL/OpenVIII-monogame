@@ -78,8 +78,8 @@ namespace OpenVIII
         {
             if (!bInitialized)
                 return;
-            sequenceTimer += Memory.gameTime.ElapsedGameTime.TotalMilliseconds/1000.0;
-            activeFrameTimer += Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
+            sequenceTimer += Memory.ElapsedGameTime.TotalMilliseconds/1000.0;
+            activeFrameTimer += Memory.ElapsedGameTime.TotalMilliseconds;
             //Memory.graphics.GraphicsDevice.Clear(Color.Black);
             if (activeFrameTimer > 1000.0 / 500.0)
             {
