@@ -562,7 +562,7 @@ namespace OpenVIII
         {
             for (int i = 0; i < beachAnims.Length; i++)
             {
-                TimeSpan totalMaxValue =  TimeSpan.FromMilliseconds((15.625f * beachAnims[i].animTimeout) / 1000.0f); //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
+                TimeSpan totalMaxValue =  TimeSpan.FromMilliseconds((15.625f * beachAnims[i].animTimeout)); //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
                 beachAnims[i].deltaTime += Memory.ElapsedGameTime;
                 if (beachAnims[i].deltaTime > totalMaxValue)
                 {
