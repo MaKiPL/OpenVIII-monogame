@@ -23,37 +23,37 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(new MemoryStream(fi, false)))
                 entries = list.ToDictionary(x => x, x => Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
         }
+        private Stream Uncompress(StreamWithRangeValues @in, out long offset)
+        {
+            byte[] buffer = null;
+            byte[] open(int skip = 0)
+            {
+                @in.Seek(@in.Offset + skip, SeekOrigin.Begin);
+                using (BinaryReader br = new BinaryReader(@in))
+                    return br.ReadBytes(checked((int)(@in.Size - skip)));
+            }
+            if (@in.Compression >= 1)
+                switch (@in.Compression)
+                {
+                    case 1:
+                        buffer = open(4);
+                        offset = 0;
+                        return new MemoryStream(LZSS.DecompressAllNew(buffer, false));
 
+                    case 2:
+                        buffer = open();
+                        offset = 0;
+                        return new MemoryStream(LZ4Uncompress(buffer, @in.UncompressedSize));
+                }
+            offset = @in.Offset;
+            return @in;
+        }
         public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL)
         {
             Stream s1 = Uncompress(fL, out long flOffset);
             Stream s2 = Uncompress(fI, out long fiOffset);
             long fiSize = Math.Max(fI.Size, fI.UncompressedSize);
-            Stream Uncompress(StreamWithRangeValues @in, out long offset)
-            {
-                byte[] buffer = null;
-                byte[] open(int skip = 0)
-                {
-                    @in.Seek(@in.Offset + skip, SeekOrigin.Begin);
-                    using (BinaryReader br = new BinaryReader(@in))
-                        return br.ReadBytes(checked((int)(@in.Size - skip)));
-                }
-                if (@in.Compression >= 1)
-                    switch (@in.Compression)
-                    {
-                        case 1:
-                            buffer = open(4);
-                            offset = 0;
-                            return new MemoryStream(LZSS.DecompressAllNew(buffer, false));
-
-                        case 2:
-                            buffer = open();
-                            offset = 0;
-                            return new MemoryStream(LZ4Uncompress(buffer, @in.UncompressedSize));
-                    }
-                offset = @in.Offset;
-                return @in;
-            }
+            
             using (StreamReader sr = new StreamReader(s1, System.Text.Encoding.UTF8))
             using (BinaryReader br = new BinaryReader(s2))
             {
@@ -133,8 +133,13 @@ namespace OpenVIII
             if (data.GetType() == typeof(StreamWithRangeValues))
             {
                 StreamWithRangeValues s = (StreamWithRangeValues)data;
-                Offset = s.Offset;
-                Max = s.Max;
+                
+                data = Uncompress(s, out Offset);
+                if (Offset == s.Offset)
+                    Max = s.Max;
+                else
+                    Max = data.Length;
+
             }
             FI fi = FindString(ref input, out int size);
             if (fi == null)

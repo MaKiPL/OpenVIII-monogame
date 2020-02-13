@@ -264,7 +264,7 @@ namespace OpenVIII
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new FileNotFoundException("NO FILENAME");
 
-            if (ArchiveMap != null && ArchiveMap.Count > 1)
+            if (ArchiveMap != null && ArchiveMap.Count >0)
             {
                 if (cache)
                 {
@@ -567,7 +567,7 @@ namespace OpenVIII
             {
                 if (isDir)
                     return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
-                else if (ArchiveMap != null && ArchiveMap.Count > 1)
+                else if (ArchiveMap != null && ArchiveMap.Count > 0)
                     return ArchiveMap.Keys.Where(x => !string.IsNullOrWhiteSpace(x)).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
                 else if (File.Exists(_path.FL))
                     using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
