@@ -357,7 +357,11 @@ namespace OpenVIII
                             return new StreamWithRangeValues(new MemoryStream(FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
                         }
                         else if (FSArchive != null)
-                            return FSArchive.GetStreamWithRangeValues(_path.FS, fi, size);
+                            if (fi != null) // unsure about this part.
+                                return new StreamWithRangeValues(FSArchive.GetStreamWithRangeValues(_path.FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                        //return GetStreamWithRangeValues(_path.FS, fi, size);
+                            else
+                                return FSArchive.GetStreamWithRangeValues(fileName);
                         else
                             return null;
                     }

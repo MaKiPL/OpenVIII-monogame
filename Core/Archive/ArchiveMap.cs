@@ -61,7 +61,7 @@ namespace OpenVIII
         {
             Stream s1 = Uncompress(fL, out long flOffset);
             Stream s2 = Uncompress(fI, out long fiOffset);
-            long fiSize = Math.Max(fI.Size, fI.UncompressedSize);
+            long fiSize = fI.UncompressedSize == 0? fI.Size: fI.UncompressedSize;
             
             using (StreamReader sr = new StreamReader(s1, System.Text.Encoding.UTF8))
             using (BinaryReader br = new BinaryReader(s2))

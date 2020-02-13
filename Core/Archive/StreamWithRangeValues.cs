@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace OpenVIII
 {
@@ -17,12 +19,18 @@ namespace OpenVIII
 
         public StreamWithRangeValues(Stream s, long offset, long size, uint compression = 0, int uncompressedsize = 0)
         {
+            if (typeof(StreamWithRangeValues) == s.GetType())
+            {
+                StreamWithRangeValues swrv = (StreamWithRangeValues)s;
+                Debug.Assert(swrv.Compression == 0);
+                offset += swrv.Offset;
+            }
             this.s = s;
             Size = size;
             Offset = offset;
             Position = offset;
             Compression = compression;
-            UncompressedSize = uncompressedsize;
+            UncompressedSize = checked((int)(uncompressedsize==0?size:uncompressedsize));
         }
 
         #endregion Constructors
