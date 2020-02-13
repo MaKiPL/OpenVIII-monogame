@@ -26,13 +26,41 @@ namespace OpenVIII
 
         public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL)
         {
-            using (StreamReader sr = new StreamReader(fL, System.Text.Encoding.UTF8))
-            using (BinaryReader br = new BinaryReader(fI))
+            Stream s1 = Uncompress(fL, out long flOffset);
+            Stream s2 = Uncompress(fI, out long fiOffset);
+            long fiSize = Math.Max(fI.Size, fI.UncompressedSize);
+            Stream Uncompress(StreamWithRangeValues @in, out long offset)
             {
-                fL.Seek(fL.Offset, SeekOrigin.Begin);
-                fI.Seek(fI.Offset, SeekOrigin.Begin);
+                byte[] buffer = null;
+                byte[] open(int skip = 0)
+                {
+                    @in.Seek(@in.Offset + skip, SeekOrigin.Begin);
+                    using (BinaryReader br = new BinaryReader(@in))
+                        return br.ReadBytes(checked((int)(@in.Size - skip)));
+                }
+                if (@in.Compression >= 1)
+                    switch (@in.Compression)
+                    {
+                        case 1:
+                            buffer = open(4);
+                            offset = 0;
+                            return new MemoryStream(LZSS.DecompressAllNew(buffer, false));
+
+                        case 2:
+                            buffer = open();
+                            offset = 0;
+                            return new MemoryStream(LZ4Uncompress(buffer, @in.UncompressedSize));
+                    }
+                offset = @in.Offset;
+                return @in;
+            }
+            using (StreamReader sr = new StreamReader(s1, System.Text.Encoding.UTF8))
+            using (BinaryReader br = new BinaryReader(s2))
+            {
+                s1.Seek(flOffset, SeekOrigin.Begin);
+                s2.Seek(fiOffset, SeekOrigin.Begin);
                 entries = new Dictionary<string, FI>();
-                long Count = fI.Size / 12;
+                long Count = fiSize / 12;
                 while (Count-- > 0)
                     entries.Add(sr.ReadLine().TrimEnd(), Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
             }

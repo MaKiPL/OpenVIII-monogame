@@ -83,10 +83,10 @@ namespace OpenVIII
         {
             Size = new Vector2 { X = 840, Y = 630 };
             base.Init();
-            List<Task> tasks = new List<Task>
+            Action[] actions = new Action[]
             {
-                Task.Run(() => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle})),
-                Task.Run(() => {
+                () => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle}),
+                () => {
                     FF8String[] keys = new FF8String[]{
                         Strings.Name.Use, //todo add to Strings.Name
                         Strings.Name.Rearrange,
@@ -100,12 +100,12 @@ namespace OpenVIII
                     if(keys.Distinct().Count() == keys.Length && keys.Length == values.Length)
                     Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create((from i in Enumerable.Range(0,keys.Length) select i).ToDictionary(x=>keys[x],x=>values[x])));
                     else Data.TryAdd(SectionName.TopMenu, null);
-                }),
-                Task.Run(() => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Pos = new Rectangle(615, 0, 225, 66)})),
-                Task.Run(() => Data.TryAdd(SectionName.UseItemGroup, IGMData.Group.Base.Create(IGMData_Statuses.Create(),IGMData.Pool.Item.Create(),IGMData_TargetPool.Create())))
+                },
+                () => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Pos = new Rectangle(615, 0, 225, 66)}),
+                () => Data.TryAdd(SectionName.UseItemGroup, IGMData.Group.Base.Create(IGMData_Statuses.Create(),IGMData.Pool.Item.Create(),IGMData_TargetPool.Create()))
                 
             };
-            Task.WaitAll(tasks.ToArray());
+            Memory.ProcessActions(actions);
             ChoiceChangeHandler = help.TextChangeEvent;
             ItemPool.ItemChangeHandler += help.TextChangeEvent;
             ModeChangeHandler += help.ModeChangeEvent;

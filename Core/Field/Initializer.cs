@@ -17,8 +17,8 @@ namespace OpenVIII.Fields
             if (mapdata != null)
             {
 
-                string[] v = mapdata.GetListOfFiles();
-                string map = v?[0];
+                string[] maplist = mapdata.GetListOfFiles();
+                string map = maplist?[0];
                 if (map != null)
                 {
                     byte[] bytes = mapdata.GetBinaryFile(map);

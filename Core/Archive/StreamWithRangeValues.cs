@@ -22,7 +22,7 @@ namespace OpenVIII
             Offset = offset;
             Position = offset;
             Compression = compression;
-            UncomprssedSize = uncompressedsize;
+            UncompressedSize = uncompressedsize;
         }
 
         #endregion Constructors
@@ -33,7 +33,7 @@ namespace OpenVIII
         public override bool CanSeek => s.CanSeek;
         public override bool CanWrite => s.CanWrite;
         public uint Compression { get; }
-        public int UncomprssedSize { get; }
+        public int UncompressedSize { get; }
 
         public override long Length => s.Length;
         public long Max => Size + Offset;
