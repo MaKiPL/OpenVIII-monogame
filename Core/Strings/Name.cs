@@ -106,6 +106,8 @@
             public static FF8StringReference GF_Received_X_AP_ => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 109);
 
             public static FF8StringReference Raising_GF => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 111);
+
+            public static FF8StringReference Didnt_receive_EXP => Memory.Strings.Read(Strings.FileID.KERNEL, 30, 49);
             #endregion Properties
 
             #region Classes

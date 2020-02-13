@@ -28,7 +28,6 @@ namespace OpenVIII.IGMData.Dialog.Timed
                 base.Update();
                 if ((timeshow += Memory.ElapsedGameTime) < maxtime)
                 {
-                    Show();
                     return true;
                 }
                 else
