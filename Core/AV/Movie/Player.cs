@@ -82,13 +82,13 @@ namespace OpenVIII.Movie
             {
                 return null; // doesn't work.
                 ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-                ArchiveZZZ.FileData fd = a.GetFileData(Files[ID]);
+                var fd = a.GetFileData(Files[ID]);
 
                 AV.Audio ffccAudioFromZZZ = AV.Audio.Load(
                     new AV.BufferData
                     {
-                        DataSeekLoc = fd.Offset,
-                        DataSize = fd.Size,
+                        DataSeekLoc = fd.Value.Offset,
+                        DataSize = fd.Value.UncompressedSize,
                         HeaderSize = 0,
                         Target = AV.BufferData.TargetFile.other_zzz
                     },
@@ -97,8 +97,8 @@ namespace OpenVIII.Movie
                 AV.Video ffccVideoFromZZZ = AV.Video.Load(
                     new AV.BufferData
                     {
-                        DataSeekLoc = fd.Offset,
-                        DataSize = fd.Size,
+                        DataSeekLoc = fd.Value.Offset,
+                        DataSize = fd.Value.UncompressedSize,
                         HeaderSize = 0,
                         Target = AV.BufferData.TargetFile.other_zzz
                     },

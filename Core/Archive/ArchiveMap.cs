@@ -23,6 +23,15 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(new MemoryStream(fi, false)))
                 entries = list.ToDictionary(x => x, x => Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
         }
+
+        public void Add(KeyValuePair<string, FI> keyValuePair) => entries.Add(keyValuePair.Key,keyValuePair.Value);
+
+        public KeyValuePair<string, FI> GetFileData(string fileName)
+        {
+            if (!TryGetValue(fileName, out FI value))
+                return OrderedByName.FirstOrDefault(x => x.Key.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+            return new KeyValuePair<string, FI>(fileName, value);
+        }
         private Stream Uncompress(StreamWithRangeValues @in, out long offset)
         {
             byte[] buffer = null;
@@ -66,6 +75,8 @@ namespace OpenVIII
             }
         }
 
+        public ArchiveMap(int count) => entries = new Dictionary<string, FI>(count);
+
         #endregion Constructors
 
         #region Properties
@@ -75,6 +86,7 @@ namespace OpenVIII
         public IReadOnlyList<KeyValuePair<string, FI>> OrderedByName => entries.Where(x => !string.IsNullOrWhiteSpace(x.Key)).OrderBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
         public IReadOnlyList<KeyValuePair<string, FI>> OrderedByOffset => entries.Where(x => !string.IsNullOrWhiteSpace(x.Key)).OrderBy(x => x.Value.Offset).ThenBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
         public IEnumerable<FI> Values => ((IReadOnlyDictionary<string, FI>)entries).Values;
+
 
         #endregion Properties
 

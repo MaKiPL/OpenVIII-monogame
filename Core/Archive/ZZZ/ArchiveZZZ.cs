@@ -9,7 +9,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        private Header headerData;
+        private ArchiveMap headerData;
 
         #endregion Fields
 
@@ -56,7 +56,9 @@ namespace OpenVIII
         #endregion Properties
 
         #region Methods
-        static object locker = new object(); //prevent two loads at the same time.
+
+        private static object locker = new object(); //prevent two loads at the same time.
+
         public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
         {
             lock (locker)
@@ -70,7 +72,7 @@ namespace OpenVIII
                     value = new ArchiveZZZ(path, skiplist);
                     if (!value.IsOpen)
                         value = null;
-                    if (ArchiveBase.TryAdd(value?.GetPath()?? path, value))
+                    if (ArchiveBase.TryAdd(value?.GetPath() ?? path, value))
                     {
                     }
                 }
@@ -80,7 +82,7 @@ namespace OpenVIII
 
         public override ArchiveBase GetArchive(string fileName)
         {
-            fileName = headerData.GetFilenames().FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+            fileName = GetFileData(fileName).Key;
             if (string.IsNullOrWhiteSpace(fileName)) return null;
             return GetArchive((Memory.Archive)fileName);
         }
@@ -96,24 +98,24 @@ namespace OpenVIII
         {
             if (headerData != null)
             {
-                FileData filedata = GetFileData(fileName);
-                if (LocalTryGetValue(filedata.Filename, out BufferWithAge value))
+                var filedata = GetFileData(fileName);
+                if (LocalTryGetValue(filedata.Key, out BufferWithAge value))
                 {
-                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Filename}");
+                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Key}");
                     return value;
                 }
                 else
                 {
                     BinaryReader br;
-                    if (filedata != default && (br = Open()) != null)
+                    if (!string.IsNullOrWhiteSpace(filedata.Key) && (br = Open()) != null)
                         using (br)
                         {
-                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} extracting {filedata.Filename}");
-                            br.BaseStream.Seek(filedata.Offset, SeekOrigin.Begin);
-                            byte[] buffer = br.ReadBytes(checked((int)filedata.Size));
-                            if (cache && LocalTryAdd(filedata.Filename, buffer))
+                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} extracting {filedata.Key}");
+                            br.BaseStream.Seek(filedata.Value.Offset, SeekOrigin.Begin);
+                            byte[] buffer = br.ReadBytes(filedata.Value.UncompressedSize);
+                            if (cache && LocalTryAdd(filedata.Key, buffer))
                             {
-                                Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {filedata.Filename}");
+                                Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {filedata.Key}");
                             }
                             return buffer;
                         }
@@ -125,7 +127,7 @@ namespace OpenVIII
             return null;
         }
 
-        public FileData GetFileData(string fileName) => headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+        public KeyValuePair<string, FI> GetFileData(string fileName) => headerData.GetFileData(fileName);
 
         public override string[] GetListOfFiles()
         {
@@ -139,18 +141,18 @@ namespace OpenVIII
         {
             if (headerData != null)
             {
-                FileData filedata = headerData.OrderBy(x => x.Filename.Length).ThenBy(x => x.Filename, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.Filename.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0);
+                KeyValuePair<string, FI> filedata = GetFileData(filename);
                 //if (string.IsNullOrWhiteSpace(fileName)) return null;
                 //FileData filedata = headerData.First(x => x.Filename == fileName);
 
                 Stream s;
-                if (filedata != default && (s = OpenStream()) != null)
+                if (!string.IsNullOrWhiteSpace(filedata.Key) && (s = OpenStream()) != null)
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} got stream of {filename}");
                     if (fi != null)
-                        return new StreamWithRangeValues(s, filedata.Offset + fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                        return new StreamWithRangeValues(s, filedata.Value.Offset + fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
                     else
-                        return new StreamWithRangeValues(s, filedata.Offset, filedata.Size);
+                        return new StreamWithRangeValues(s, filedata.Value.Offset, filedata.Value.UncompressedSize);
                 }
                 else
                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} FAILED locating {filename}");
@@ -178,7 +180,7 @@ namespace OpenVIII
 
         public override string ToString() => $"{_path} :: {Used}";
 
-        private string[] ProduceFileLists() => headerData?.GetFilenames().ToArray();
+        private string[] ProduceFileLists() => headerData?.OrderedByName.Select(x=>x.Key).ToArray();
 
         #endregion Methods
     }

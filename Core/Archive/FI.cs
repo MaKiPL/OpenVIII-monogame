@@ -14,6 +14,14 @@ namespace OpenVIII
 
         [FieldOffset(8)]
         public uint CompressionType;
+        public FI()
+        { }
+        public FI(int offset, int uncompressedSize, uint compressionType = 0)
+        {
+            UncompressedSize = uncompressedSize;
+            Offset = offset;
+            CompressionType = compressionType;
+        }
 
         public override string ToString() => $"{{{UncompressedSize}, {Offset}, {CompressionType}}}";
     }

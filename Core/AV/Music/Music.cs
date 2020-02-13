@@ -247,12 +247,13 @@ namespace OpenVIII.AV
 
         private static unsafe void PlayInTask(ref Audio ffAudio, float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
         {
+            return;
             ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-            ArchiveZZZ.FileData fd = a.GetFileData(filename);
+            var fd = a.GetFileData(filename);
             BufferData buffer_Data = new AV.BufferData
             {
-                DataSeekLoc = fd.Offset,
-                DataSize = fd.Size,
+                DataSeekLoc = fd.Value.Offset,
+                DataSize = fd.Value.UncompressedSize,
                 HeaderSize = 0,
                 Target = BufferData.TargetFile.other_zzz
             };
