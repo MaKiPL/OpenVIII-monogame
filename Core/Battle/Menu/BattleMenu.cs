@@ -133,35 +133,22 @@ namespace OpenVIII
 
         private void InitAsync()
         {
-            //IGMData.NamesHPATB.ThreadUnsafeOperations(); //seems to work fine in init thread.
-
-            //Memory.MainThreadOnlyActions.Enqueue(IGMData.Renzokeken.ThreadUnsafeOperations); //only works in main thread.
             Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Limit.Renzokeken.Create(new Rectangle(0, (int)Size.Y - 164, (int)Size.X, 124))));
             int width = 100, height = 100;
             Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, IGMData.Limit.Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 164, width, height))));
-
-            List<Task> tasks = new List<Task>
+            Action[] actions = new Action[]
             {
-                Task.Run(() => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 224), 210, 186), Damageable, true))),
-                Task.Run(() => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), (int)(Size.Y - 164), 389, 40), Damageable))),
+                () => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 224), 210, 186), Damageable, true)),
+                () => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), (int)(Size.Y - 164), 389, 40), Damageable)),
             };
-            //Some code that cannot be threaded on init.
-            //Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), 507, 389, 126), Damageable));
-            //Data.TryAdd(SectionName.Renzokeken, IGMData.Renzokeken.Create(new Rectangle(0, 500, (int)Size.X, 124)));
-            if (!Task.WaitAll(tasks.ToArray(), 10000))
-                throw new TimeoutException("Task took too long!");
-            //Data[SectionName.Commands].Hide();
-            //var t = Task.WhenAll(tasks);
-            //try
-            //{
-            //    await t;
-            //}
-            //catch { }
-
-            //if (t.Status == TaskStatus.RanToCompletion)
-            //    Console.WriteLine("All attempts succeeded.");
-            //else if (t.Status == TaskStatus.Faulted)
-            //    Console.WriteLine(t.Exception);
+            if (Memory.Threaded)
+            {
+                List<Task> tasks = actions.Select(x => Task.Run(x, Memory.Token)).ToList();
+                //Some code that cannot be threaded on init.
+                if (!Task.WaitAll(tasks.ToArray(), 10000))
+                    throw new TimeoutException("Task took too long!");
+            }
+            else actions.ForEach(x => x.Invoke());
         }
 
         #endregion Methods
