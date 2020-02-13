@@ -21,7 +21,7 @@ namespace OpenVIII
 
         protected bool isDir = false;
         private const int MaxInCache = 5;
-        private static ConcurrentDictionary<Memory.Archive, ArchiveBase> ArchiveCache = new ConcurrentDictionary<Memory.Archive, ArchiveBase>();
+        private static ConcurrentDictionary<string, ArchiveBase> ArchiveCache = new ConcurrentDictionary<string, ArchiveBase>();
 
         #endregion Fields
 
@@ -29,13 +29,14 @@ namespace OpenVIII
 
         public TimeSpan Created { get; protected set; }
 
+        public bool IsOpen { get; protected set; } = false;
         public TimeSpan Used { get; protected set; }
 
-        protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.OrderBy(x => x.Value.Touched).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
+        protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.Where(x => x.Value != null).OrderBy(x => x.Value.Touched).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
-        private static IEnumerable<KeyValuePair<Memory.Archive, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => !x.Value.isDir && x.Value.GetType().Equals(typeof(ArchiveZZZ)));
+        private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => x.Value != null && !x.Value.isDir && x.Value.GetType().Equals(typeof(ArchiveZZZ)));
 
-        private static IEnumerable<KeyValuePair<Memory.Archive, ArchiveBase>> Oldest => NonDirOrZZZ.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
+        private static IEnumerable<KeyValuePair<string, ArchiveBase>> Oldest => NonDirOrZZZ.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
 
         #endregion Properties
 
@@ -82,6 +83,7 @@ namespace OpenVIII
             FS = this;
             FL = GetStreamWithRangeValues(archive.FL);
         }
+
         public void GetArchive(Memory.Archive archive, out byte[] FI, out byte[] FS, out byte[] FL)
         {
             Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");
@@ -98,7 +100,7 @@ namespace OpenVIII
 
         public abstract Memory.Archive GetPath();
 
-        public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename, FI fi= null);
+        public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename, FI fi = null, int size = 0);
 
         public override string ToString() => $"{_path} :: {Used}";
 
@@ -120,8 +122,11 @@ namespace OpenVIII
         {
             if (ArchiveCache.TryAdd(path, value))
             {
-                value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
-                value.Created = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                if (value != null)
+                {
+                    value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                    value.Created = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                }
                 int overage = 0;
                 if ((overage = Oldest.Count() - MaxInCache) > 0)
                     Oldest.Take(overage).ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp));
@@ -134,7 +139,8 @@ namespace OpenVIII
         {
             if (ArchiveCache.TryGetValue(path, out value))
             {
-                value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                if (value != null)
+                    value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
                 return true;
             }
             else return false;

@@ -33,7 +33,7 @@ namespace OpenVIII
                 fI.Seek(fI.Offset, SeekOrigin.Begin);
                 entries = new Dictionary<string, FI>();
                 long Count = fI.Size / 12;
-                while (Count-->0)
+                while (Count-- > 0)
                     entries.Add(sr.ReadLine().TrimEnd(), Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
             }
         }
@@ -92,7 +92,8 @@ namespace OpenVIII
             KeyValuePair<string, FI> result2 = OrderedByOffset.FirstOrDefault(x => x.Value.Offset > result.Value.Offset);
             if (result2.Value == default && result2.Value == default)
                 size = 0;
-            else size = result2.Value.Offset - result.Value.Offset;
+            else
+                size = result2.Value.Offset - result.Value.Offset;
             input = result.Key;
             return result.Value;
         }
@@ -101,7 +102,7 @@ namespace OpenVIII
         {
             long Max = data.Length;
             long Offset = 0;
-            if(data.GetType() == typeof(StreamWithRangeValues))
+            if (data.GetType() == typeof(StreamWithRangeValues))
             {
                 StreamWithRangeValues s = (StreamWithRangeValues)data;
                 Offset = s.Offset;
@@ -114,11 +115,11 @@ namespace OpenVIII
                 return null;
             }
             if (size == 0)
-                size = checked((int)(Max - (fi.Offset+Offset)));
+                size = checked((int)(Max - (fi.Offset + Offset)));
             byte[] buffer;
             using (BinaryReader br = new BinaryReader(data))
             {
-                br.BaseStream.Seek(fi.Offset+Offset, SeekOrigin.Begin);
+                br.BaseStream.Seek(fi.Offset + Offset, SeekOrigin.Begin);
                 if (fi.CompressionType == 1)
                 {
                     size = br.ReadInt32();

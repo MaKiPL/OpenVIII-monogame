@@ -18,6 +18,10 @@ namespace OpenVIII
             /// same as Ascii.
             /// </remarks>
             private static string ConvertFilename(byte[] filenamebytes) => System.Text.Encoding.UTF8.GetString(filenamebytes);
+            public override string ToString()
+            {
+                return Filename;
+            }
 
             public static FileData Load(BinaryReader br)
             {
