@@ -106,8 +106,8 @@ namespace OpenVIII.IGMData
                 ((IGMDataItem.Box)ITEM[0, 1]).Data = Item.DATA?.Name;
                 ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{Item.QTY}";
                 ((IGMDataItem.Box)ITEM[0, 3]).Data = Item.DATA?.Description;
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
+                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name ?? "");
+                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name ?? "");
                 ITEM[0, 1].Show();
                 ITEM[0, 2].Show();
                 ITEM[0, 3].Show();
@@ -122,12 +122,13 @@ namespace OpenVIII.IGMData
                 int pos = 0;
                 for (; pos < name.Length; pos++)
                     if (name.Value[pos] == 2) break;
-                ((IGMDataItem.Box)ITEM[0, 1]).Data = new FF8String(name.Value.Take(pos - 1).ToArray());
+                FF8String trimname = new FF8String(name.Value.Take(pos - 1).ToArray());
+                ((IGMDataItem.Box)ITEM[0, 1]).Data = trimname;
                 //TODO grab card name from start of string
                 ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{card.Value}";
                 ((IGMDataItem.Box)ITEM[0, 3]).Data = "";
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name);
+                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, trimname); 
+                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, trimname);
                 ITEM[0, 1].Show();
                 ITEM[0, 2].Show();
                 ITEM[0, 3].Hide();

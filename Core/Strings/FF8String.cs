@@ -75,7 +75,7 @@ namespace OpenVIII
 
         public static FF8String operator +(FF8String a, FF8String b)
         {
-            if (a != null && a.Length >0)
+            if (a != null && a.Length > 0)
             {
                 FF8String s = a.Clone();
                 if (b != null && b.Length > 0)
@@ -139,13 +139,12 @@ namespace OpenVIII
 
         public FF8String Replace(FF8String a, FF8String b)
         {
-            if (Length > 0)
+            if (Length > 0 && a != null && b != null && a.Length > 0 && b.Length > 0)
             {
                 int i = 0;
                 do
                 {
                     i = Array.FindIndex(value, i, Length - i, x => x == a[0]);
-
                     if (i >= 0)
                     {
                         if (value.Skip(i).Take(a.Length).ToArray().SequenceEqual(a.Value))

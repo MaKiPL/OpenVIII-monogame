@@ -13,7 +13,6 @@ namespace OpenVIII.IGMData
         private const float ATBalpha = .8f;
         private const int ATBWidth = 150;
         private static Texture2D dot;
-        private static object locker = new object();
         private Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
         private bool EventAdded = false;
 
@@ -85,12 +84,12 @@ namespace OpenVIII.IGMData
 
         public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty { Pos = pos }, 1, 1, damageable);
 
-        public static void ThreadUnsafeOperations()
+        public void ThreadUnsafeOperations()
         {
-                if (dot == null)
+            if (dot == null)
+            {
+                if (Memory.IsMainThread)
                 {
-                    if (Memory.IsMainThread)
-                    {
                     Texture2D localdot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
                     Color[] tmp = new Color[localdot.Height * localdot.Width];
                     for (int i = 0; i < tmp.Length; i++)
@@ -98,10 +97,12 @@ namespace OpenVIII.IGMData
                     localdot.SetData(tmp);
                     dot = localdot;
                     IGMDataItem.Gradient.ATB.ThreadUnsafeOperations(ATBWidth);
-                    }
-                    else throw new Exception("Must be in main thread!");
                 }
-   
+                else throw new Exception("Must be in main thread!");
+            }
+            if (dot != null)
+                ((IGMDataItem.Texture)(ITEM[0, (byte)DepthID.ATBCharged])).
+                    Data = dot;
         }
 
         public override void ModeChangeEvent(object sender, Enum e)
@@ -140,7 +141,7 @@ namespace OpenVIII.IGMData
                 }
                 sbyte pos = PartyPos;
                 Rectangle rectangle = SIZE[0];
-                rectangle.Offset(0f,SIZE[0].Height * pos);
+                rectangle.Offset(0f, SIZE[0].Height * pos);
                 Rectangle atbbarpos = new Rectangle(rectangle.X + 230, rectangle.Y + 12, ATBWidth, 15);
                 ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Pos = atbbarpos;
                 ((IGMDataItem.Texture)ITEM[0, (byte)DepthID.ATBCharged]).Pos = atbbarpos;
@@ -262,7 +263,7 @@ namespace OpenVIII.IGMData
             ITEM[0, (byte)DepthID.GFNameBox] = new IGMDataItem.Box { Options = Box_Options.Center | Box_Options.Middle };
             ITEM[0, (byte)DepthID.GFNameBox].Hide();
             ITEM[0, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Palette = 0 };
-            ITEM[0, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Data = dot, Color = Color.LightYellow * ATBalpha, Faded_Color = new Color(125, 125, 0, 255) * ATBalpha };
+            ITEM[0, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Color = Color.LightYellow * ATBalpha, Faded_Color = new Color(125, 125, 0, 255) * ATBalpha };
             ITEM[0, (byte)DepthID.ATBCharged].Hide();
             ITEM[0, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
             ITEM[0, (int)DepthID.GFCharging] = IGMDataItem.Gradient.GF.Create(atbbarpos);

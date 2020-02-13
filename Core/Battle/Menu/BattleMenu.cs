@@ -141,14 +141,7 @@ namespace OpenVIII
                 () => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 224), 210, 186), Damageable, true)),
                 () => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), (int)(Size.Y - 164), 389, 40), Damageable)),
             };
-            if (Memory.Threaded)
-            {
-                List<Task> tasks = actions.Select(x => Task.Run(x, Memory.Token)).ToList();
-                //Some code that cannot be threaded on init.
-                if (!Task.WaitAll(tasks.ToArray(), 10000))
-                    throw new TimeoutException("Task took too long!");
-            }
-            else actions.ForEach(x => x.Invoke());
+            Memory.ProcessActions(actions);
         }
 
         #endregion Methods

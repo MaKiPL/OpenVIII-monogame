@@ -133,23 +133,25 @@ namespace OpenVIII
             base.Init();
             Menu_Base[] tmp = new Menu_Base[3];
 
-            List<Task> tasks = new List<Task>
-                {
-                    Task.Run(() => Data.TryAdd(Mode.All, IGMData.Group.Base.Create(
+            Action[] actions = new Action[]
+            {
+                () => Data.TryAdd(Mode.All, IGMData.Group.Base.Create(
                         new IGMDataItem.Box{ Data = new FF8String(new byte[] {
                             (byte)FF8TextTagCode.Key,
                             (byte)FF8TextTagKey.Confirm})+
                             "  "+
                             (Strings.Name.To_confirm),
-                            Pos = new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),Options= Box_Options.Center | Box_Options.Middle }))),
+                            Pos = new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),Options= Box_Options.Center | Box_Options.Middle })),
 
-                    Task.Run(() => tmp[0] = IGMData.PlayerEXP.Create(0)),
-                    Task.Run(() => tmp[1] = IGMData.PlayerEXP.Create(1)),
-                    Task.Run(() => tmp[2] = IGMData.PlayerEXP.Create(2)),
-                    Task.Run(() => Data.TryAdd(Mode.Items, IGMData.PartyItems.Create(new Rectangle(Point.Zero,Size.ToPoint())))),
-                    Task.Run(() => Data.TryAdd(Mode.AP, IGMData.PartyAP.Create(new Rectangle(Point.Zero,Size.ToPoint())))),
-                };
-            Task.WaitAll(tasks.ToArray());
+                    () => tmp[0] = IGMData.PlayerEXP.Create(0),
+                    () => tmp[1] = IGMData.PlayerEXP.Create(1),
+                    () => tmp[2] = IGMData.PlayerEXP.Create(2),
+                    () => Data.TryAdd(Mode.Items, IGMData.PartyItems.Create(new Rectangle(Point.Zero,Size.ToPoint()))),
+                    () => Data.TryAdd(Mode.AP, IGMData.PartyAP.Create(new Rectangle(Point.Zero,Size.ToPoint()))),
+            };
+
+            Memory.ProcessActions(actions);
+
             Data.TryAdd(Mode.Exp, IGMData.Group.PlayerEXP.Create(tmp));
             Data[Mode.Exp].CONTAINER.Pos = new Rectangle(Point.Zero, Size.ToPoint());
             SetMode(Mode.Exp);

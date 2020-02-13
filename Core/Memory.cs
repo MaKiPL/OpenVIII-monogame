@@ -126,7 +126,19 @@ namespace OpenVIII
             /// </summary>
             Stretch
         }
-
+        public static bool ProcessActions(Action[] actions)
+        {
+            if (Threaded)
+            {
+                List<Task> tasks = new List<Task>(actions.Length);
+                actions.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
+                //Some code that cannot be threaded on init.
+                if (!Task.WaitAll(tasks.ToArray(), 10000))
+                    throw new TimeoutException("Task took too long!");
+            }
+            else actions.ForEach(x => x.Invoke());
+            return !Token.IsCancellationRequested;
+        }
         public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
         public const ScaleMode _scaleMode = ScaleMode.Stretch;
 
