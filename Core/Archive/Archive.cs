@@ -22,10 +22,7 @@ namespace OpenVIII
             //public string _Root { get; set; }
             public string _Filename { get; private set; }
 
-            public Archive(string path, params Archive[] parent) : this(path)
-            {
-                Parent = parent.ToList();
-            }
+            public Archive(string path, params Archive[] parent) : this(path) => Parent = parent.ToList();
 
             public Archive(string path)
             {
@@ -47,7 +44,9 @@ namespace OpenVIII
             public static implicit operator string(Archive val) => val._Filename;
 
             public static implicit operator Archive(string path) => new Archive(path);
+
             private readonly string[] ext = new string[] { B_FileList, B_FileIndex, B_FileArchive, B_ZZZ };
+
             /// <summary>
             /// File Archive Extension
             /// </summary>
@@ -69,16 +68,18 @@ namespace OpenVIII
             public bool IsFileList => _Filename.EndsWith(B_FileList, StringComparison.OrdinalIgnoreCase);
             public bool IsFileIndex => _Filename.EndsWith(B_FileIndex, StringComparison.OrdinalIgnoreCase);
             public bool IsFileArchive => _Filename.EndsWith(B_FileArchive, StringComparison.OrdinalIgnoreCase);
+
             public string RemoveExtension
             {
                 get
                 {
                     int startIndex = _Filename.LastIndexOf('.');
-                    if(startIndex != -1)
-                    return _Filename.Remove(startIndex, _Filename.Length - startIndex);
+                    if (startIndex != -1)
+                        return _Filename.Remove(startIndex, _Filename.Length - startIndex);
                     return _Filename;
                 }
             }
+
             /// <summary>
             /// File Index
             /// </summary>
@@ -119,7 +120,9 @@ namespace OpenVIII
             //}
 
             public override string ToString() => this;
+
             public IEnumerator<string> GetEnumerator() => ((IReadOnlyList<string>)ext).GetEnumerator();
+
             IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<string>)ext).GetEnumerator();
         }
     }

@@ -19,7 +19,7 @@ namespace OpenVIII.Fields
         static int animId = 0;
         static int animFrame = 0;
 
-        static float timer = 0.0f;
+        static double timer = 0.0f;
 
         static FieldCharaOne charaOne;
 
@@ -96,8 +96,8 @@ namespace OpenVIII.Fields
                 animFrame = 0;
             }
 
-            timer += (float)Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f;
-            if (timer > 0.033f)
+            timer += Memory.ElapsedGameTime.TotalMilliseconds / 1000.0d;
+            if (timer > 0.033d)
             {
                 animFrame++;
                 timer = 0f;

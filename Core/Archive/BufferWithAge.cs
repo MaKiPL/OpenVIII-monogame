@@ -48,7 +48,7 @@ namespace OpenVIII
 
         public TimeSpan Poke() => Touched = getTimeSpan();
 
-        private static TimeSpan getTimeSpan() => Memory.gameTime?.ElapsedGameTime ?? TimeSpan.Zero;
+        private static TimeSpan getTimeSpan() => Memory.ElapsedGameTime;
 
         #endregion Methods
     }

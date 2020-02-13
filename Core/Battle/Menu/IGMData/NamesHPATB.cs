@@ -85,14 +85,12 @@ namespace OpenVIII.IGMData
 
         public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty { Pos = pos }, 1, 1, damageable);
 
-        public static Texture2D ThreadUnsafeOperations()
+        public static void ThreadUnsafeOperations()
         {
-            lock (locker)
-            {
                 if (dot == null)
                 {
-                    //if (Memory.IsMainThread)
-                    //{
+                    if (Memory.IsMainThread)
+                    {
                     Texture2D localdot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
                     Color[] tmp = new Color[localdot.Height * localdot.Width];
                     for (int i = 0; i < tmp.Length; i++)
@@ -100,11 +98,10 @@ namespace OpenVIII.IGMData
                     localdot.SetData(tmp);
                     dot = localdot;
                     IGMDataItem.Gradient.ATB.ThreadUnsafeOperations(ATBWidth);
-                    //}
-                    //else throw new Exception("Must be in main thread!");
+                    }
+                    else throw new Exception("Must be in main thread!");
                 }
-                return dot;
-            }
+   
         }
 
         public override void ModeChangeEvent(object sender, Enum e)
@@ -254,7 +251,7 @@ namespace OpenVIII.IGMData
         protected override void Init()
         {
             base.Init();
-            ThreadUnsafeOperations();
+            Memory.MainThreadOnlyActions.Enqueue(ThreadUnsafeOperations);
 
             // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
             Rectangle atbbarpos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);

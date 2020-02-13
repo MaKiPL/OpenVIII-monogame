@@ -73,9 +73,9 @@ namespace OpenVIII
             List<Task> tasks = new List<Task>
             {
                 Task.Run(() => Data.TryAdd(SectionName.Header, IGMData_Header.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.Footer, IGMData_Footer.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.Clock, IGMData_Clock.Create())),
-                Task.Run(() => Data.TryAdd(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create()))),
+                Task.Run(() => Data.TryAdd(SectionName.Footer, IGMData_Footer.Create()),Memory.Token),
+                Task.Run(() => Data.TryAdd(SectionName.Clock, IGMData_Clock.Create()),Memory.Token),
+                Task.Run(() => Data.TryAdd(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create())),Memory.Token),
                 Task.Run(() => {
                     FF8String[] keys = new FF8String[] {
                         Strings.Name.SideMenu.Junction,
@@ -107,11 +107,14 @@ namespace OpenVIII
                     if(keys.Distinct().Count() == keys.Length && values.Length == keys.Length)
                     Data.TryAdd(SectionName.SideMenu, IGMData_SideMenu.Create((from i in Enumerable.Range(0,keys.Length)
                                                                                select i).ToDictionary(x=>keys[x],x=>values[x])));
-                    else Data.TryAdd(SectionName.SideMenu,null); })
+                    else Data.TryAdd(SectionName.SideMenu,null); },Memory.Token)
                                                        
 
             };
-            Task.WaitAll(tasks.ToArray());
+            if(!Task.WaitAll(tasks.ToArray(),3000,Memory.Token))
+            {
+                throw new TimeoutException("Tasks Timed Out!");
+            }
             Func<bool> SideMenuInputs = null;
             if(Data[SectionName.SideMenu] != null) SideMenuInputs = Data[SectionName.SideMenu].Inputs;
             InputDict = new Dictionary<Mode, Func<bool>>

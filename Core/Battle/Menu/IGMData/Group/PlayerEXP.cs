@@ -138,7 +138,7 @@ namespace OpenVIII.IGMData.Group
             {
                 if (remainEXP)
                 {
-                    if ((remaining += Memory.gameTime.ElapsedGameTime.TotalMilliseconds / speedOfEarningExp) > 1)
+                    if ((remaining += Memory.ElapsedGameTime.TotalMilliseconds / speedOfEarningExp) > 1)
                     {
                         if (EXP > 0)
                         {

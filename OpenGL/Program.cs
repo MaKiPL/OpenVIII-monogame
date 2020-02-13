@@ -16,7 +16,7 @@ namespace OpenVIII.OpenGL
         start:
             try
             {
-                using (Game1 game = new OpenVIII.Game1())
+                using (Game1 game = new Game1())
                     game.Run();
             }
             catch (InvalidOperationException e)

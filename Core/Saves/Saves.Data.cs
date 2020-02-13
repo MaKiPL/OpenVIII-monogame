@@ -236,7 +236,7 @@ namespace OpenVIII
             /// <summary>
             /// Time since loaded
             /// </summary>
-            public TimeSpan ElapsedTimeSinceLoad => Memory.gameTime != null && Loadtime != null ? (Memory.gameTime.TotalGameTime - Loadtime) : new TimeSpan();
+            public TimeSpan ElapsedTimeSinceLoad => Loadtime != null ? (Memory.TotalGameTime - Loadtime) : new TimeSpan();
 
             /// <summary>
             /// 0x0D70 256 + 1024 bytes Field vars

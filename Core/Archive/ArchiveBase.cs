@@ -124,8 +124,8 @@ namespace OpenVIII
             {
                 if (value != null)
                 {
-                    value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
-                    value.Created = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                    value.Used = Memory.TotalGameTime;
+                    value.Created = Memory.TotalGameTime;
                 }
                 int overage = 0;
                 if ((overage = Oldest.Count() - MaxInCache) > 0)
@@ -140,7 +140,7 @@ namespace OpenVIII
             if (ArchiveCache.TryGetValue(path, out value))
             {
                 if (value != null)
-                    value.Used = Memory.gameTime?.TotalGameTime ?? TimeSpan.Zero;
+                    value.Used = Memory.TotalGameTime;
                 return true;
             }
             else return false;

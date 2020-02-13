@@ -70,7 +70,7 @@ namespace OpenVIII.Battle
 
             public void Update()
             {
-                time += Memory.gameTime.ElapsedGameTime;
+                time += Memory.ElapsedGameTime;
                 if (time >= TotalFrameTime + (FrameNumber <= skip ? PauseAtStart : TimeSpan.Zero))
                 {
                     time = TimeSpan.Zero;

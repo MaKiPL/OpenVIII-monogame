@@ -142,7 +142,7 @@ namespace OpenVIII
 
         protected override void Update(GameTime gameTime)
         {
-            Memory.gameTime = gameTime;
+            Memory.GameTime = gameTime;
             Memory.IsActive = IsActive;
 
             //it breaks the Font
@@ -195,7 +195,8 @@ namespace OpenVIII
             AV.Music.KillAudio();
             AV.Sound.KillAudio();
             //step1. kill init task. to prevent exceptions if exiting before fully loaded.
-            await Memory.InitTask; // wait for task to finish what it's doing.
+            if(Memory.InitTask != null)
+                await Memory.InitTask; // wait for task to finish what it's doing.
         }
     }
 }

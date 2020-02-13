@@ -27,8 +27,7 @@ namespace OpenVIII
         private static void CheckInputLimit()
         {
             //issue here if CheckInputLimit is checked more than once per update cycle this will be wrong.
-            if (Memory.gameTime != null)
-                bLimitInput = (msDelay += Memory.gameTime.ElapsedGameTime) < msDelayLimit;
+                bLimitInput = (msDelay += Memory.ElapsedGameTime) < msDelayLimit;
         }
 
         #endregion Methods
@@ -229,7 +228,7 @@ namespace OpenVIII
 
         public static double Distance(float speed) =>
             // no input throttle but still take the max speed * time; for non analog controls
-            speed * Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
+            speed * Memory.ElapsedGameTime.TotalMilliseconds;
 
         public static void ResetInputLimit()
         {

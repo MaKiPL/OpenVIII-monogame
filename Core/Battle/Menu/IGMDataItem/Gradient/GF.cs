@@ -39,8 +39,13 @@ namespace OpenVIII.IGMDataItem.Gradient
                 _pos = pos ?? Rectangle.Empty,
                 Restriction = pos ?? Rectangle.Empty,
             };
-            r.Data = ThreadUnsafeOperations(r.Width);
-            r.Width = r.Data.Width;
+            Memory.MainThreadOnlyActions.Enqueue(
+            () =>
+            {
+                r.Data = ThreadUnsafeOperations(r.Width);
+                r.Width = r.Data.Width;
+            }
+            );
             return r;
         }
 
@@ -88,7 +93,7 @@ namespace OpenVIII.IGMDataItem.Gradient
         {
             if (Enabled)
             {
-                if (Damageable != null && (Percent != null || Damageable.SummonedGF!= null))
+                if (Damageable != null && (Percent != null || Damageable.SummonedGF != null))
                 {
                     Rectangle r = Restriction;
                     r.Width = Lerp(Width, 0, Percent ?? Damageable.SummonedGF.ATBPercent);

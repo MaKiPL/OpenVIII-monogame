@@ -599,7 +599,7 @@ namespace OpenVIII.Core.World
             /// <summary>
             /// OpenVIII helper value- holds total deltaTime to be used with timeout calculation
             /// </summary>
-            public float deltaTime;
+            public TimeSpan deltaTime;
         }
 
         private textureAnimation[] beachAnimations;

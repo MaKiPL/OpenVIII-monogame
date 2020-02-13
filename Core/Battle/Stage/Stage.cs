@@ -239,7 +239,7 @@ namespace OpenVIII.Battle
         /// <param name="vpt"></param>
         private void CreateRotation(GeometryVertexPosition vpt)
         {
-            localRotator += (short)skyRotators[Memory.Encounters.Scenario] / 4096f * Memory.gameTime.ElapsedGameTime.Milliseconds;
+            localRotator += (short)skyRotators[Memory.Encounters.Scenario] / 4096f * Memory.ElapsedGameTime.Milliseconds;
             if (localRotator <= 0)
                 return;
             for (int i = 0; i < vpt.VertexPositionTexture.Length; i++)

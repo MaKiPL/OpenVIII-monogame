@@ -43,11 +43,11 @@ namespace OpenVIII
 
         #region Properties
 
-        private static float Fadespd1 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 500f) * speed;
+        private static float Fadespd1 => (float)(Memory.ElapsedGameTime.TotalMilliseconds / 500f) * speed;
         private static float Fadespd2 => (float)Fadespd5;
-        private static float Fadespd3 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 5000.0f) * speed;
-        private static float Fadespd4 => (float)(Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 2000.0f) * speed;
-        private static double Fadespd5 => (Memory.gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0d) * speed;
+        private static float Fadespd3 => (float)(Memory.ElapsedGameTime.TotalMilliseconds / 5000.0f) * speed;
+        private static float Fadespd4 => (float)(Memory.ElapsedGameTime.TotalMilliseconds / 2000.0f) * speed;
+        private static double Fadespd5 => (Memory.ElapsedGameTime.TotalMilliseconds / 1000.0d) * speed;
 
         #endregion Properties
 

@@ -81,7 +81,7 @@ namespace OpenVIII
             CurrentPercent = 1f;
             if (!Done || Repeat)
             {
-                CurrentTime += Memory.gameTime.ElapsedGameTime;
+                CurrentTime += Memory.ElapsedGameTime;
                 //CheckRepeat();
                 //return CurrentPercent = CurrentTime < Delay ? 0f : (float)(Done ? 1f : (CurrentTime - Delay).TotalMilliseconds / TotalTime.TotalMilliseconds);
                 CheckRepeat();

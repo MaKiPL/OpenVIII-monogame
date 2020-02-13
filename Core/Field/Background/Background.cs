@@ -362,7 +362,7 @@ namespace OpenVIII.Fields
 
         public void Update()
         {
-            if ((CurrentTime += Memory.gameTime.ElapsedGameTime) > TotalTime)
+            if ((CurrentTime += Memory.ElapsedGameTime) > TotalTime)
             {
                 CurrentTime = TimeSpan.Zero;
                 foreach (KeyValuePair<byte, List<TileQuadTexture>> a in Animations)

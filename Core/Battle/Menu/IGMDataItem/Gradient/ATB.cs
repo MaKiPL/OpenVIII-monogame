@@ -39,8 +39,13 @@ namespace OpenVIII.IGMDataItem.Gradient
                 _pos = pos ?? Rectangle.Empty,
                 Restriction = pos ?? Rectangle.Empty,
             };
-            r.Data = ThreadUnsafeOperations(r.Width);
-            r.Width = r.Data.Width;
+            Memory.MainThreadOnlyActions.Enqueue(
+                () =>
+                {
+                    r.Data = ThreadUnsafeOperations(r.Width);
+                    r.Width = r.Data.Width;
+                }
+            );
             return r;
         }
 

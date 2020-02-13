@@ -72,7 +72,7 @@ namespace OpenVIII
                 {
                     if (!Done)
                     {
-                        double TotalMilliseconds = Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
+                        double TotalMilliseconds = Memory.ElapsedGameTime.TotalMilliseconds;
                         ATBBarIncrement = Damageable.BarIncrement(); // 60 ticks per second.
                         ATBBarPos += checked((float)(ATBBarIncrement * TotalMilliseconds / 60));
                         // if TotalMilliseconds is 1000 then it'll increment 60 times. So this should be right.

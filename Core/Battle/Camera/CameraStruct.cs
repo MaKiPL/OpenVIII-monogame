@@ -89,7 +89,7 @@ namespace OpenVIII.Battle
                 -(Camera_Lookat_Y_s16[i]),
                 -(Camera_Lookat_Z_s16[i]))/V + offset;
 
-            public void UpdateTime() => CurrentTime += Memory.gameTime.ElapsedGameTime;
+            public void UpdateTime() => CurrentTime += Memory.ElapsedGameTime;
 
             public TimeSpan CurrentTime;
             public TimeSpan TotalTime => TimeSpan.FromTicks(TotalTimePerFrame.Ticks * time);

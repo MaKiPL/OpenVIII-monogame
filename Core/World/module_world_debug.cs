@@ -179,7 +179,7 @@ namespace OpenVIII
             public float localRotation;
             public int currentAnimationId;
             public int currentAnimFrame;
-            public float animationDeltaTime;
+            public TimeSpan animationDeltaTime;
             public bool bDraw;
             public float localvRotation;
             public Quaternion localquaternion;
@@ -511,15 +511,15 @@ namespace OpenVIII
                 if (instance.activeCharacter == worldCharacters.Ragnarok && !flying)
                     reverse = true;
 
-                if (instance.animationDeltaTime >= (1000 / 60.0))
+                if (instance.animationDeltaTime >= TimePerFrame)
                 {
                     if (reverse)
                         instance.currentAnimFrame--;
                     else
                         instance.currentAnimFrame++;
-                    instance.animationDeltaTime = 0;
+                    instance.animationDeltaTime = TimeSpan.Zero;
                 }
-                else instance.animationDeltaTime += Memory.gameTime.ElapsedGameTime.Milliseconds;
+                else instance.animationDeltaTime += Memory.ElapsedGameTime;
 
                 if (instance.activeCharacter == worldCharacters.Ragnarok)
                 {
@@ -544,32 +544,33 @@ namespace OpenVIII
             }
         }
 
+        private static TimeSpan TimePerFrame => TimeSpan.FromMilliseconds(1000 / 60.0);
+
         private static void UpdateTextureAnimation()
         {
             if (wmset == null)
                 return;
             wmset.textureAnimation[] beachAnims = wmset.BeachAnimations;
             wmset.textureAnimation[] waterAnims = wmset.WaterAnimations;
-            float elapsedTime = Memory.gameTime.ElapsedGameTime.Milliseconds / 1000.0f;
-            UpdateTextureAnimation_SelectedStruct(ref beachAnims, elapsedTime);
-            UpdateTextureAnimation_SelectedStruct(ref waterAnims, elapsedTime, true);
+            UpdateTextureAnimation_SelectedStruct(ref beachAnims);
+            UpdateTextureAnimation_SelectedStruct(ref waterAnims, true);
             wmset.BeachAnimations = beachAnims;
             wmset.WaterAnimations = waterAnims;
         }
 
-        private static void UpdateTextureAnimation_SelectedStruct(ref wmset.textureAnimation[] beachAnims, float elapsedTime, bool bWater = false)
+        private static void UpdateTextureAnimation_SelectedStruct(ref wmset.textureAnimation[] beachAnims, bool bWater = false)
         {
             for (int i = 0; i < beachAnims.Length; i++)
             {
-                float totalMaxValue = (15.625f * beachAnims[i].animTimeout) / 1000.0f; //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
-                beachAnims[i].deltaTime += elapsedTime;
+                TimeSpan totalMaxValue =  TimeSpan.FromMilliseconds((15.625f * beachAnims[i].animTimeout) / 1000.0f); //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
+                beachAnims[i].deltaTime += Memory.ElapsedGameTime;
                 if (beachAnims[i].deltaTime > totalMaxValue)
                 {
                     if (beachAnims[i].bIncrementing)
                         beachAnims[i].currentAnimationIndex++;
                     else
                         beachAnims[i].currentAnimationIndex--;
-                    beachAnims[i].deltaTime = 0f;
+                    beachAnims[i].deltaTime = TimeSpan.Zero;
                     if (beachAnims[i].currentAnimationIndex >= beachAnims[i].framesCount)
                         if (beachAnims[i].bLooping > 0)
                         {
@@ -1145,9 +1146,8 @@ namespace OpenVIII
 
             float playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
             if (playerangle < 0) playerangle += 360f;
-            double totalMilliseconds = Memory.gameTime.ElapsedGameTime.TotalMilliseconds;
 
-            Memory.imgui.BeforeLayout(Memory.gameTime);
+            Memory.imgui.BeforeLayout(Memory.GameTime);
             ImGuiNET.ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero, ImGuiNET.ImGuiCond.Once);
             ImGuiNET.ImGui.SetNextWindowBgAlpha(.25f);
             ImGuiNET.ImGui.Begin("WORLD DEBUG");
@@ -1170,7 +1170,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
             ImGuiNET.ImGui.Text($"encounter: ={debugEncounter}- Press F3 to force battle");
             ImGuiNET.ImGui.Text($"FOV: {FOV}");
-            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {$"{1000 / totalMilliseconds:000.000}"}");
+            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {Memory.ElapsedGameTime}");
             ImGuiNET.ImGui.Text($"imgui::FPS {ImGuiNET.ImGui.GetIO().Framerate}");
             ImGuiNET.ImGui.Separator();
             if (imguiStrings != null)
