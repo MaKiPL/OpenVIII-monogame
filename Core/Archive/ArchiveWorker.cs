@@ -572,7 +572,7 @@ namespace OpenVIII
                 if (isDir)
                     return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
                 else if (ArchiveMap != null && ArchiveMap.Count > 0)
-                    return ArchiveMap.Keys.Where(x => !string.IsNullOrWhiteSpace(x)).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+                    return ArchiveMap.OrderedByName.Select(x=>x.Key).ToArray();
                 else if (File.Exists(_path.FL))
                     using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();

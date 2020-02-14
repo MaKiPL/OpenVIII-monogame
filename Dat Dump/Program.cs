@@ -75,7 +75,7 @@ namespace OpenVIII.Dat_Dump
                     prefix += $"{ls}{XMLAnimations(xmlWriter, _BattleDat)}";
                     XMLSequences(xmlWriter, _BattleDat, csvFile, prefix);
                     xmlWriter.WriteEndElement();
-                    Enemy e = Enemy.Load(new Module_battle_debug.EnemyInstanceInformation { Data = _BattleDat });
+                    Enemy e = Enemy.Load(new Battle.EnemyInstanceInformation { Data = _BattleDat });
                     void addability(string fieldname, Debug_battleDat.Abilities a, int number)
                     {
                         csv2File.WriteLine($"{name}{ls}" +

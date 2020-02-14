@@ -933,7 +933,7 @@ namespace OpenVIII
                     path = test.First();
             }
             else path = aw.GetListOfFiles().FirstOrDefault(x => x.ToLower().Contains(fileName));
-
+            Debug.Assert("c:\\ff8\\data\\ger\\battle\\d0w007.dat" != path);
             r.fileName = fileName;
             if (!string.IsNullOrWhiteSpace(path))
                 r.buffer = aw.GetBinaryFile(path);

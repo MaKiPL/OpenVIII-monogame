@@ -82,10 +82,11 @@ namespace OpenVIII
         #region Properties
 
         public int Count => ((IReadOnlyDictionary<string, FI>)entries).Count;
-        public IEnumerable<string> Keys => ((IReadOnlyDictionary<string, FI>)entries).Keys;
-        public IReadOnlyList<KeyValuePair<string, FI>> OrderedByName => entries.Where(x => !string.IsNullOrWhiteSpace(x.Key)).OrderBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
-        public IReadOnlyList<KeyValuePair<string, FI>> OrderedByOffset => entries.Where(x => !string.IsNullOrWhiteSpace(x.Key)).OrderBy(x => x.Value.Offset).ThenBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
-        public IEnumerable<FI> Values => ((IReadOnlyDictionary<string, FI>)entries).Values;
+        public IEnumerable<string> Keys => ((IReadOnlyDictionary<string, FI>)FilteredEntries).Keys;
+        private IEnumerable<KeyValuePair<string,FI>> FilteredEntries => entries.Where(x => !string.IsNullOrWhiteSpace(x.Key) && x.Value.UncompressedSize > 0);
+        public IReadOnlyList<KeyValuePair<string, FI>> OrderedByName => FilteredEntries.OrderBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
+        public IReadOnlyList<KeyValuePair<string, FI>> OrderedByOffset => FilteredEntries.OrderBy(x => x.Value.Offset).ThenBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
+        public IEnumerable<FI> Values => ((IReadOnlyDictionary<string, FI>)FilteredEntries).Values;
 
 
         #endregion Properties
