@@ -33,34 +33,34 @@ namespace OpenVIII.Core.World
 
             //if there's no section method either uncommented or commented out, then the section that is lacking is 4 byte NULL
 
-            Section1(); //======FINISHED
-            Section2(); //======FINISHED
+            Section1(); //======FINISHED [Encounter setting]
+            Section2(); //======FINISHED [World map regions]
             //Section3(); //=encounter - looks like it's some supply helping data or roll data? Not sure, it's way before getting encounters
-            Section4(); //======FINISHED
-            Section6(); //======FINISHED
+            Section4(); //======FINISHED [Encounter pointer]
+            Section6(); //======FINISHED [Encounter pointer (Lunar cry)]
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
-            Section8(); //wm2field WIP
+            Section8(); //wm2field WIP - DEBUG data only, almost completed
             //Section9(); //=related to field2wm?
             Section10(); //I still don't know what it is for- something with vehicles- maybe wm2field with vehicle? -> same structure as section8
             //Section11(); //??????
             //Section12();
             //Section13();
-            Section14(); //======FINISHED
-            Section16(); //======FINISHED
+            Section14(); //======FINISHED [Side quest strings]
+            Section16(); //======FINISHED [objects and vehicles]
             //Section18(); //?????
             //Section19(); //=something with regions: wm_getRegionNumber(SquallPos) + wmsets19
             //Section31(); //?????
-            Section32(); //======FINISHED
+            Section32(); //======FINISHED [location names]
             //Section33(); //=SKY GRADIENT/REGION COLOURING
             //Section34(); //?????????
             //Section35(); //=draw points
             //Section36(); //?????????
             //Section37(); //ENCOUNTERS??????
-            Section38(); //======FINISHED
-            Section39(); //======FINISHED
-            Section42(); //======FINISHED
-            Section41(); //=Water animation info - 256x1 texture- how to use it?
-            Section17(); //=======FINISHED=beach animations->let's read that at the end due to references to wmset38
+            Section38(); //======FINISHED [textures archive]
+            Section39(); //======FINISHED [textures of roads, train tracks and bridges]
+            Section42(); //======FINISHED [object and vehicle textures]
+            Section41(); //======FINISHED [texture animation for water] *DO NOT MOVE UP- sec38 needs to be parsed before this
+            Section17(); //======FINISHED [texture animation for beach] *DO NOT MOVE UP- sec38 needs to be parsed before this
 
             //AKAO BELOW
             //Section20();
@@ -230,7 +230,6 @@ namespace OpenVIII.Core.World
             squallZLocAbove = 0xFF10,
             squallXlocBelow = 0xFF11,
             squallZlocBelow = 0xFF12,
-            setUnk = 0xFF12,
             ScriptEnd = 0xFF16,
             setUnk2 = 0xFF17,
             unkBelov2 = 0xFF1A, 
