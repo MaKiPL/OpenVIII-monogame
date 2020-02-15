@@ -1209,13 +1209,18 @@ namespace OpenVIII
                     ImGuiNET.ImGui.Text(s);
                 imguiStrings.Clear();
             }
+
+            ImGuiNET.ImGui.Separator();
+            ImGuiNET.ImGui.Text("-Field2WM-");
+            for(int x = 0; x<wmset.fieldToWorldMapLocations.Length; x++)
+                ImGuiNET.ImGui.Text($"{x}: X={wmset.fieldToWorldMapLocations[x].X}  Y={wmset.fieldToWorldMapLocations[x].Y}  Z={wmset.fieldToWorldMapLocations[x].Z}");
             ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
             ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
             ImGuiNET.ImGui.End();
-            ImGuiNET.ImGui.Begin("!Texture lister!");
-            ImGuiNET.ImGui.Image(Memory.imgui.BindTexture((Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.minimapFullScreenPointer, 0)),
-                new System.Numerics.Vector2(64,64));
-            ImGuiNET.ImGui.End();
+            //ImGuiNET.ImGui.Begin("!Texture lister!");
+            //ImGuiNET.ImGui.Image(Memory.imgui.BindTexture((Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.minimapFullScreenPointer, 0)),
+            //    new System.Numerics.Vector2(64,64));
+            //ImGuiNET.ImGui.End();
             Memory.imgui.AfterLayout();
         }
 

@@ -40,16 +40,16 @@ namespace OpenVIII.Core.World
             Section6(); //======FINISHED [Encounter pointer (Lunar cry)]
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
             Section8(); //wm2field WIP - DEBUG data only, almost completed
-            //Section9(); //=related to field2wm?
+            Section9(); //=related to field2wm?
             Section10(); //I still don't know what it is for- something with vehicles- maybe wm2field with vehicle? -> same structure as section8
-            //Section11(); //??????
-            //Section12();
-            //Section13();
+            Section11(); //??????
+            //Section12(); //[UNKNOWN] Scripts- maybe some additional warp zones?
+            //Section13(); // 12b per entry- SUB_548940
             Section14(); //======FINISHED [Side quest strings]
             Section16(); //======FINISHED [objects and vehicles]
             //Section18(); //?????
-            //Section19(); //=something with regions: wm_getRegionNumber(SquallPos) + wmsets19
-            //Section31(); //?????
+            //Section19(); //=something with regions: it's that island with many drawpoints- regions setting
+            //Section31(); //????? - referenced by FullScreen map
             Section32(); //======FINISHED [location names]
             //Section33(); //=SKY GRADIENT/REGION COLOURING
             //Section34(); //?????????
@@ -237,7 +237,7 @@ namespace OpenVIII.Core.World
             checkVehicleArgument = 0xFF25, //checks argument for vehicle Id
         }
 
-        public struct section8ConditionArgument
+        public struct worldMapScript
         {
             public worldScriptOpcodes opcode;
             public int argument;
@@ -249,7 +249,7 @@ namespace OpenVIII.Core.World
             public bool bAlreadySetField; //only for openviii and testing purpouses- based on conditions one thing can
                                             //point to different fields. This is to make sure only first fieldId is set
             public int segmentId;
-            public section8ConditionArgument[] conditions;
+            public worldMapScript[] conditions;
         }
 
         public static section8WarpZone[] section8WarpZones;
@@ -276,7 +276,7 @@ namespace OpenVIII.Core.World
                     Mode = (short)br.ReadUInt32();
                     section8WarpZone localZone = new section8WarpZone();
                     localZone.field = -1;
-                    List<section8ConditionArgument> conditions = new List<section8ConditionArgument>();
+                    List<worldMapScript> conditions = new List<worldMapScript>();
                     while(true)
                     {
                         worldScriptOpcodes opcode = (worldScriptOpcodes)br.ReadUInt16();
@@ -290,15 +290,15 @@ namespace OpenVIII.Core.World
                         switch(opcode)
                         {
                             case worldScriptOpcodes.SetRegionId:
-                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
+                                conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 localZone.segmentId = argument;
                                 break;
                             case worldScriptOpcodes.wm2fieldEntryId:
-                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
+                                conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 localZone.field = argument;
                                 break;
                             default:
-                                conditions.Add(new section8ConditionArgument() { argument = argument, opcode = opcode });
+                                conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 break;
                         }
                     }
@@ -307,16 +307,85 @@ namespace OpenVIII.Core.World
             section8WarpZones = localZones.ToArray();
         }
 
-        
+
         #endregion
 
-        #region Section 10 - [UNKNOWN]/ Something with vehicles, positions- probably wm2field in vehicle (?)
+        #region Section 9 - Field to World map
+        public static Vector3[] fieldToWorldMapLocations;
+        private void Section9()
+        {
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            {
+                ms.Seek(sectionPointers[9 - 1], SeekOrigin.Begin);
+                int sectionSize = sectionPointers[10 - 1] - sectionPointers[9 - 1] - 4;
+                int entriesCount = sectionSize / 12;
+                fieldToWorldMapLocations = new Vector3[entriesCount];
+                for(int i = 0; i<entriesCount; i++)
+                {
+                    int x = br.ReadInt32();
+                    int y = br.ReadInt32();
+                    int z = br.ReadInt16();
+                    fieldToWorldMapLocations[i].X = Extended.ConvertVanillaWorldXAxisToOpenVIII(x);
+                    fieldToWorldMapLocations[i].Y = Extended.ConvertVanillaWorldYAxisToOpenVIII(y);
+                    fieldToWorldMapLocations[i].Z = Extended.ConvertVanillaWorldZAxisToOpenVIII(z);
+                    ms.Seek(2, SeekOrigin.Current);
+                }
+            }
+        }
+        #endregion
+
+        #region Section 10 - [UNKNOWN]/ Scripts
+        public static worldMapScript[][] section10Scripts;
         /// <summary>
         /// This file follows some schema of 0xFF01->0xFF04
         /// </summary>
         private void Section10()
         {
+            List<List<worldMapScript>> scripts = new List<List<worldMapScript>>();
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            {
+                ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                for (int i = 0; i < innerSec.Length; i++)
+                {
+                    ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
+                    short Mode = 0;
+                    Mode = (short)br.ReadUInt32();
+                    List<worldMapScript> localScript = new List<worldMapScript>();
+                    while (true)
+                    {
+                        worldScriptOpcodes opcode = (worldScriptOpcodes)br.ReadUInt16();
+                        ushort argument = br.ReadUInt16();
+                        if (opcode == worldScriptOpcodes.EndZone) //?? maybe
+                        {
+                            scripts.Add(localScript);
+                            break;
+                        }
+                        localScript.Add(new worldMapScript() { argument = argument, opcode = opcode });
+                    }
+                }
+            }
+            section10Scripts = scripts.Select(x => x.ToArray()).ToArray();
+        }
+        #endregion
 
+        #region Section 11 - [UNKNOWN]
+        private void Section11()
+        {
+            //16 per entry- it's related to sec10
+            /*   
+          v26 = wmsetS11 + 16 * v17;
+          v83 = *(_DWORD *)v26;
+          v84 = *(_DWORD *)(v26 + 4);
+          v85 = *(_DWORD *)(v26 + 8);
+          v86 = *(_DWORD *)(v26 + 12);
+          v88 = *(_WORD *)(v26 + 12);
+          v89 = *(_DWORD *)(v26 + 12) >> 16;
+          v87 = 0;
+          sub_5450D0(v2, v13, (unsigned __int8)v90, (_BYTE)v90 != 80 ? 0 : 4, (int)&v87, (int)&v83);
+          */
         }
         #endregion
 
@@ -548,9 +617,9 @@ namespace OpenVIII.Core.World
          * There's also new texture structure; I haven't seen such structures earlier. Palette is grabbed from section38
          */
 
-         //MODDING NOTE: Thanks to OpenVIII you can now create bigger chunks than 64x64/64x32 without worrying about SSIGPU VRAM!
+            //MODDING NOTE: Thanks to OpenVIII you can now create bigger chunks than 64x64/64x32 without worrying about SSIGPU VRAM!
 
-            [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
+        [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
         public struct textureAnimation
         {
             /// <summary>
