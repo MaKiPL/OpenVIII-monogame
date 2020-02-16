@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using OpenVIII.Core.World;
+using OpenVIII.World;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
@@ -54,7 +54,7 @@ namespace OpenVIII
         public static Vector2 segmentPosition;
         private static CharaOne chara;
         private static texl texl;
-        private static wmset wmset;
+        private static Wmset wmset;
         private static wm2field wm2field;
         private static rail rail;
 
@@ -299,7 +299,7 @@ namespace OpenVIII
             wmx = aw.GetBinaryFile(wmxPath);
             texl = new texl(aw.GetBinaryFile(texlPath));
             chara = new CharaOne(aw.GetBinaryFile(charaOne));
-            wmset = new wmset(aw.GetBinaryFile(wmPath));
+            wmset = new Wmset(aw.GetBinaryFile(wmPath));
             rail = new rail(aw.GetBinaryFile(railFile));
 
             string wm2fieldPath = awMain.GetListOfFiles().Where(x => x.ToLower().Contains("wm2field.tbl")).Select(x => x).First();
@@ -550,15 +550,15 @@ namespace OpenVIII
         {
             if (wmset == null)
                 return;
-            wmset.textureAnimation[] beachAnims = wmset.BeachAnimations;
-            wmset.textureAnimation[] waterAnims = wmset.WaterAnimations;
+            Wmset.textureAnimation[] beachAnims = wmset.BeachAnimations;
+            Wmset.textureAnimation[] waterAnims = wmset.WaterAnimations;
             UpdateTextureAnimation_SelectedStruct(ref beachAnims);
             UpdateTextureAnimation_SelectedStruct(ref waterAnims, true);
             wmset.BeachAnimations = beachAnims;
             wmset.WaterAnimations = waterAnims;
         }
 
-        private static void UpdateTextureAnimation_SelectedStruct(ref wmset.textureAnimation[] beachAnims, bool bWater = false)
+        private static void UpdateTextureAnimation_SelectedStruct(ref Wmset.textureAnimation[] beachAnims, bool bWater = false)
         {
             for (int i = 0; i < beachAnims.Length; i++)
             {
@@ -894,7 +894,7 @@ namespace OpenVIII
             if(activeCollidePolygon != null)
                 if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
             {
-                foreach (var warpZone in wmset.section8WarpZones)
+                foreach (var warpZone in Wmset.section8WarpZones)
                 {
                     int fieldId = wm2field.GetFieldId(warpZone.field);
                     bool bShouldWarp = true;
@@ -1212,8 +1212,8 @@ namespace OpenVIII
 
             ImGuiNET.ImGui.Separator();
             ImGuiNET.ImGui.Text("-Field2WM-");
-            for(int x = 0; x<wmset.fieldToWorldMapLocations.Length; x++)
-                ImGuiNET.ImGui.Text($"{x}: X={wmset.fieldToWorldMapLocations[x].X}  Y={wmset.fieldToWorldMapLocations[x].Y}  Z={wmset.fieldToWorldMapLocations[x].Z}");
+            for(int x = 0; x<Wmset.fieldToWorldMapLocations.Length; x++)
+                ImGuiNET.ImGui.Text($"{x}: X={Wmset.fieldToWorldMapLocations[x].X}  Y={Wmset.fieldToWorldMapLocations[x].Y}  Z={Wmset.fieldToWorldMapLocations[x].Z}");
             ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
             ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
             ImGuiNET.ImGui.End();
@@ -1236,7 +1236,7 @@ namespace OpenVIII
             if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0)
             {
                 VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.shadowBig, 0);
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.shadowBig, 0);
                 ate.Alpha = .25f;
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                 {
@@ -1252,7 +1252,7 @@ namespace OpenVIII
                 if (bHasMoved)
                 {
                     VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
-                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.wmfx_bush, 0);
+                    ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush, 0);
                     foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
@@ -1539,7 +1539,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             }
             
             
-            ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.clouds, 0);
+            ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.clouds, 0);
             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
             {
                 ate.FogEnd = 1500;
@@ -1652,13 +1652,13 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
-                effect.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0);
+                effect.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
                 pass.Apply();
                 effect.GraphicsDevice.DepthStencilState = DepthStencilState.None;
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count/3);
             }
 
-            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
+            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
             Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
@@ -1670,7 +1670,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
 
 
@@ -1685,7 +1685,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
         private static void DrawRectangleMiniMap()
         {
-            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
+            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
             Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
             src.Width = (int)(src.Width * Scale.X);
             src.Height = (int)(src.Height * Scale.Y);
@@ -1705,10 +1705,10 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
             //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
             Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 1).Draw(dst, Color.White * .7f);
+            wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Draw(dst, Color.White * .7f);
             Memory.spriteBatch.End();
 
-            src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
+            src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
             Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
@@ -1720,7 +1720,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
         }
 
@@ -1731,7 +1731,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
         {
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             Memory.SpriteBatchStartStencil();
-            TextureHandler texture = wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0);
+            TextureHandler texture = wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
             int width = Memory.graphics.GraphicsDevice.Viewport.Width;
             int height = Memory.graphics.GraphicsDevice.Viewport.Height;
             texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f), 
@@ -2015,7 +2015,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 ate.Texture = waterAtlas;
             }
             else
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.waterTex2, 0); //FAIL- should not be used (I think)
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.waterTex2, 0); //FAIL- should not be used (I think)
         }
 
         /// <summary>

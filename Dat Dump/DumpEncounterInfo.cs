@@ -7,7 +7,15 @@ namespace OpenVIII.Dat_Dump
 {
     internal class DumpEncounterInfo
     {
+        #region Fields
+
         public static Fields.Archive[] FieldData;
+        private static HashSet<ushort> WorldEncounters;
+
+        #endregion Fields
+
+        #region Properties
+
         public static string[] BattleStageNames { get; } = new string[] {
             "Balamb Garden Quad",
             "Dollet Bridge",
@@ -175,25 +183,23 @@ namespace OpenVIII.Dat_Dump
 
         private static string ls => CultureInfo.CurrentCulture.TextInfo.ListSeparator;
 
+        #endregion Properties
+
+        #region Methods
+
         internal static void Process()
         {
-            if(FieldData == null)
-            {
-                FieldData = new Fields.Archive[Memory.FieldHolder.fields.Length];
-                foreach (ushort i in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
-                {
-                    FieldData[i] = Fields.Archive.Load(i,Fields.Sections.MRT | Fields.Sections.RAT);
-                }
-            }
+            LoadWorld();
+            LoadFields();
             if (DumpMonsterAndCharacterDat.MonsterData?.IsEmpty ?? true)
                 DumpMonsterAndCharacterDat.LoadMonsters(); //load all the monsters.
-            using (StreamWriter csvFile = new StreamWriter(new FileStream("BattleEncounters.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite),System.Text.Encoding.UTF8))
+            using (StreamWriter csvFile = new StreamWriter(new FileStream("BattleEncounters.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite), System.Text.Encoding.UTF8))
             {
                 string Header =
                 $"{nameof(Battle.Encounter.ID)}{ls}" +
                 $"{nameof(Battle.Encounter.Filename)}{ls}" +
                 $"{nameof(BattleStageNames)}{ls}" +
-                $"{nameof(Battle.Encounter.BEnemies)}{ls}"+
+                $"{nameof(Battle.Encounter.BEnemies)}{ls}" +
                 $"{nameof(Fields)}{ls}";
                 csvFile.WriteLine(Header);
                 foreach (Battle.Encounter e in Memory.Encounters)
@@ -220,17 +226,54 @@ namespace OpenVIII.Dat_Dump
                     enemies = enemies.TrimEnd() + "\"";
                     Data += $"{enemies}{ls}";
                     //check encounters in fields and confirm encounter rate is above 0.
-                    var fieldmatchs = FieldData.Where(x => x.MrtRat != null && (x.MrtRat.Any(y=>y.Key==e.ID && y.Value >0)));
+                    IEnumerable<Fields.Archive> fieldmatchs = FieldData.Where(x => x.MrtRat != null && (x.MrtRat.Any(y => y.Key == e.ID && y.Value > 0)));
                     if (fieldmatchs.Any())
-                    
-                        Data += $"\"{string.Join($"{ls} ", fieldmatchs.Select(x => x.FileName)).TrimEnd()}\"{ls}";
 
-                    
+                        Data += $"\"{string.Join($"{ls} ", fieldmatchs.Select(x => x.FileName)).TrimEnd()}\"{ls}";
+                    else if (WorldEncounters.Any(x => x == e.ID))
+                    {
+                        Data += $"WorldMap{ls}";
+                    }
                     else
                         Data += ls;
                     csvFile.WriteLine(Data);
                 }
             }
         }
+
+        private static void LoadFields()
+        {
+            if (FieldData == null)
+            {
+                FieldData = new Fields.Archive[Memory.FieldHolder.fields.Length];
+                foreach (ushort i in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
+                {
+                    FieldData[i] = Fields.Archive.Load(i, Fields.Sections.MRT | Fields.Sections.RAT);
+                }
+            }
+        }
+
+        private static void LoadWorld()
+        {
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
+            ArchiveBase awMain = ArchiveWorker.Load(Memory.Archives.A_MAIN);
+
+            //string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
+            //string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
+            string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains($"wmset{Extended.GetLanguageShort(true)}.obj")).Select(x => x).First();
+            //string charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
+            //string railFile = aw.GetListOfFiles().Where(x => x.ToLower().Contains("rail.obj")).Select(x => x).First();
+
+            //wmx = aw.GetBinaryFile(wmxPath);
+            //texl = new texl(aw.GetBinaryFile(texlPath));
+            //chara = new CharaOne(aw.GetBinaryFile(charaOne));
+            using (World.Wmset Wmset = new World.Wmset(aw.GetBinaryFile(wmPath)))
+            {
+                WorldEncounters = Wmset.Encounters.SelectMany(x=>x.Select(y=>y)).Distinct().ToHashSet();
+            }
+            //rail = new rail(aw.GetBinaryFile(railFile));
+        }
+
+        #endregion Methods
     }
 }

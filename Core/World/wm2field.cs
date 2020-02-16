@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OpenVIII.Core.World
+namespace OpenVIII.World
 {
     /// <summary>
     /// wm2field.tbl = World Map to Field table = helper class that determines the X Y and Z position and also fieldId to warp from field. This file

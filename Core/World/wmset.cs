@@ -5,23 +5,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OpenVIII.Core.World
+namespace OpenVIII.World
 {
-    class wmset : IDisposable
+    public class Wmset : IDisposable
     {
         private const int WMSET_SECTION_COUNT = 48;
         private byte[] buffer;
         private int[] sectionPointers;
 
-
         /// <summary>
         /// wmset file is pseudo-archive containing 48 sections in which every 'chunk' has different data and meaning
         /// </summary>
         /// <param name="wmsetBuffer"></param>
-        public wmset(byte[] wmsetBuffer)
+        public Wmset(byte[] wmsetBuffer)
         {
             buffer = wmsetBuffer;
             sectionPointers = new int[WMSET_SECTION_COUNT];
@@ -91,30 +88,33 @@ namespace OpenVIII.Core.World
             return innerSections.ToArray();
         }
 
-
-
         #region Section 1 - Encounter setting
+
         /// <summary>
         /// Section1 helps providing the correct encounter based on groundId and regionId, then provides the pointer to struct of section4
         /// </summary>
         private const int SECTION1ENTRYCOUNT = 96;
-        [StructLayout(LayoutKind.Sequential, Pack =1, Size =4)]
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 4)]
         private struct EncounterHelper
         {
             public byte regionId;
             public byte groundId;
             public ushort encounterPointer;
         }
+
         private EncounterHelper[] encounterHelpEntries;
+        
+
         private void Section1()
         {
             MemoryStream ms;
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
-                ms.Seek(sectionPointers[1- 1], SeekOrigin.Begin);
+                ms.Seek(sectionPointers[1 - 1], SeekOrigin.Begin);
                 ms.Seek(4, SeekOrigin.Current); //skip first DWORD- it's EOF of global file
                 List<EncounterHelper> encounterHelperList = new List<EncounterHelper>();
-                while(true)
+                while (true)
                 {
                     EncounterHelper entry = Extended.ByteArrayToStructure<EncounterHelper>(br.ReadBytes(4));
                     if (entry.groundId == 0 && entry.regionId == 0 && entry.encounterPointer == 0)
@@ -127,15 +127,17 @@ namespace OpenVIII.Core.World
 
         public ushort GetEncounterHelperPointer(int regionId, int groundId)
         {
-            var encList = encounterHelpEntries.Where(x => x.groundId == groundId).Where(n => n.regionId == regionId);
+            IEnumerable<EncounterHelper> encList = encounterHelpEntries.Where(x => x.groundId == groundId && x.regionId == regionId);
             if (encList.Count() == 0)
                 return 0xFFFF;
-            var enc = encList.First(); //always first, if there are two the same entries then it doesn't make sense- priority is over that one that is first
+            EncounterHelper enc = encList.First(); //always first, if there are two the same entries then it doesn't make sense- priority is over that one that is first
             return enc.encounterPointer;
         }
-        #endregion
+
+        #endregion Section 1 - Encounter setting
 
         #region Section 2 - world map regions
+
         private byte[] regionsBuffer;
 
         private void Section2()
@@ -149,6 +151,7 @@ namespace OpenVIII.Core.World
         }
 
         public byte GetWorldRegionByBlock(int blockId) => regionsBuffer[blockId];
+
         public byte GetWorldRegionBySegmentPosition(int x, int y)
         {
             int regionIndex = y * 32 + x;
@@ -156,11 +159,14 @@ namespace OpenVIII.Core.World
                 return 255;
             else return regionsBuffer[y * 32 + x]; // I had got an exception here. For out of range. //Ok- fixed
         }
-        #endregion
+
+        #endregion Section 2 - world map regions
 
         #region Section 4 - Encounter pointer
+
         private const int SEC4_ENC_PER_CHUNK = 8; //there are 8 scene.out pointers per one block/entry
-        private ushort[][] encounters;
+        public ushort[][] Encounters { get; private set; }
+
         private void Section4()
         {
             MemoryStream ms;
@@ -168,26 +174,29 @@ namespace OpenVIII.Core.World
             {
                 ms.Seek(sectionPointers[4 - 1], SeekOrigin.Begin);
                 List<ushort[]> encounterList = new List<ushort[]>();
-                while(true)
+                while (true)
                 {
                     uint dwordTester = br.ReadUInt32();
                     if (dwordTester == 0)
                         break;
                     ms.Seek(-4, SeekOrigin.Current);
                     ushort[] sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
-                    for(int i = 0; i<SEC4_ENC_PER_CHUNK; i++)
+                    for (int i = 0; i < SEC4_ENC_PER_CHUNK; i++)
                         sceneOutPointers[i] = br.ReadUInt16();
                     encounterList.Add(sceneOutPointers);
                 }
-                encounters = encounterList.ToArray();
+                Encounters = encounterList.ToArray();
             }
         }
 
-        public ushort[] GetEncounters(int pointer) => encounters[pointer];
-        #endregion
+        public ushort[] GetEncounters(int pointer) => Encounters[pointer];
+
+        #endregion Section 4 - Encounter pointer
 
         #region Section 6 - Encounter pointer (Lunar Cry)
+
         private ushort[][] encountersLunar;
+
         private void Section6()
         {
             MemoryStream ms;
@@ -211,7 +220,8 @@ namespace OpenVIII.Core.World
         }
 
         public ushort[] GetEncountersLunar(int pointer) => encountersLunar[pointer];
-        #endregion
+
+        #endregion Section 6 - Encounter pointer (Lunar Cry)
 
         #region Section 8 - World map to field
 
@@ -232,7 +242,7 @@ namespace OpenVIII.Core.World
             squallZlocBelow = 0xFF12,
             ScriptEnd = 0xFF16,
             setUnk2 = 0xFF17,
-            unkBelov2 = 0xFF1A, 
+            unkBelov2 = 0xFF1A,
             ReturnMinusOne = 0xFF1E, //return -1
             checkVehicleArgument = 0xFF25, //checks argument for vehicle Id
         }
@@ -247,8 +257,10 @@ namespace OpenVIII.Core.World
         {
             public int field;
             public bool bAlreadySetField; //only for openviii and testing purpouses- based on conditions one thing can
-                                            //point to different fields. This is to make sure only first fieldId is set
+
+                                          //point to different fields. This is to make sure only first fieldId is set
             public int segmentId;
+
             public worldMapScript[] conditions;
         }
 
@@ -258,7 +270,7 @@ namespace OpenVIII.Core.World
         /// Section is responsible for world map to field transition and works as a factor of conditions
         /// You have to read the header of 0xFF01 and read conditions up to 0xFF16
         /// The game engine checks given condition and returns TRUE or FALSE. If something fails, then it
-        /// moves forward with checking. Currently we know wm2field pointer, vehicle conditions and 
+        /// moves forward with checking. Currently we know wm2field pointer, vehicle conditions and
         /// that's more or less all we know
         /// </summary>
         public void Section8()
@@ -268,16 +280,18 @@ namespace OpenVIII.Core.World
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
-                for(int i = 0; i<innerSec.Length; i++)
+                int[] innerSec = GetInnerPointers(br);
+                for (int i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
                     short Mode = 0;
                     Mode = (short)br.ReadUInt32();
-                    section8WarpZone localZone = new section8WarpZone();
-                    localZone.field = -1;
+                    section8WarpZone localZone = new section8WarpZone
+                    {
+                        field = -1
+                    };
                     List<worldMapScript> conditions = new List<worldMapScript>();
-                    while(true)
+                    while (true)
                     {
                         worldScriptOpcodes opcode = (worldScriptOpcodes)br.ReadUInt16();
                         ushort argument = br.ReadUInt16();
@@ -287,16 +301,18 @@ namespace OpenVIII.Core.World
                             localZones.Add(localZone);
                             break;
                         }
-                        switch(opcode)
+                        switch (opcode)
                         {
                             case worldScriptOpcodes.SetRegionId:
                                 conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 localZone.segmentId = argument;
                                 break;
+
                             case worldScriptOpcodes.wm2fieldEntryId:
                                 conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 localZone.field = argument;
                                 break;
+
                             default:
                                 conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 break;
@@ -307,11 +323,12 @@ namespace OpenVIII.Core.World
             section8WarpZones = localZones.ToArray();
         }
 
-
-        #endregion
+        #endregion Section 8 - World map to field
 
         #region Section 9 - Field to World map
+
         public static Vector3[] fieldToWorldMapLocations;
+
         private void Section9()
         {
             MemoryStream ms;
@@ -321,7 +338,7 @@ namespace OpenVIII.Core.World
                 int sectionSize = sectionPointers[10 - 1] - sectionPointers[9 - 1] - 4;
                 int entriesCount = sectionSize / 12;
                 fieldToWorldMapLocations = new Vector3[entriesCount];
-                for(int i = 0; i<entriesCount; i++)
+                for (int i = 0; i < entriesCount; i++)
                 {
                     int x = br.ReadInt32();
                     int y = br.ReadInt32();
@@ -333,10 +350,13 @@ namespace OpenVIII.Core.World
                 }
             }
         }
-        #endregion
+
+        #endregion Section 9 - Field to World map
 
         #region Section 10 - [UNKNOWN]/ Scripts
+
         public static worldMapScript[][] section10Scripts;
+
         /// <summary>
         /// This file follows some schema of 0xFF01->0xFF04
         /// </summary>
@@ -347,7 +367,7 @@ namespace OpenVIII.Core.World
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
+                int[] innerSec = GetInnerPointers(br);
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
@@ -369,13 +389,15 @@ namespace OpenVIII.Core.World
             }
             section10Scripts = scripts.Select(x => x.ToArray()).ToArray();
         }
-        #endregion
+
+        #endregion Section 10 - [UNKNOWN]/ Scripts
 
         #region Section 11 - [UNKNOWN]
+
         private void Section11()
         {
             //16 per entry- it's related to sec10
-            /*   
+            /*
           v26 = wmsetS11 + 16 * v17;
           v83 = *(_DWORD *)v26;
           v84 = *(_DWORD *)(v26 + 4);
@@ -387,10 +409,12 @@ namespace OpenVIII.Core.World
           sub_5450D0(v2, v13, (unsigned __int8)v90, (_BYTE)v90 != 80 ? 0 : 4, (int)&v87, (int)&v83);
           */
         }
-        #endregion
+
+        #endregion Section 11 - [UNKNOWN]
 
         #region Section 14 - Side quest strings
-        FF8String[] sideQuestDialogues;
+
+        private FF8String[] sideQuestDialogues;
 
         private void Section14()
         {
@@ -398,9 +422,9 @@ namespace OpenVIII.Core.World
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[14 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
+                int[] innerSec = GetInnerPointers(br);
                 sideQuestDialogues = new FF8String[innerSec.Length];
-                for(int i = 0; i<innerSec.Length; i++)
+                for (int i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[14 - 1] + innerSec[i], SeekOrigin.Begin);
                     sideQuestDialogues[i] = Extended.GetBinaryString(br);
@@ -409,7 +433,8 @@ namespace OpenVIII.Core.World
         }
 
         public FF8String GetSection14Text(int index) => sideQuestDialogues[index];
-        #endregion
+
+        #endregion Section 14 - Side quest strings
 
         #region Section 16 - World map objects and vehicles
 
@@ -424,7 +449,7 @@ namespace OpenVIII.Core.World
             public Vector4[] vertices;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack =1, Size =12)]
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
         private struct s16Triangle
         {
             public byte A, B, C;
@@ -458,7 +483,7 @@ namespace OpenVIII.Core.World
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[16 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
+                int[] innerSec = GetInnerPointers(br);
                 s16Models = new s16Model[innerSec.Length];
                 for (int i = 0; i < innerSec.Length; i++)
                 {
@@ -481,7 +506,6 @@ namespace OpenVIII.Core.World
                             br.ReadInt16() / s16Scale,
                             br.ReadUInt16()
                             );
-
                 }
             }
         }
@@ -510,37 +534,37 @@ namespace OpenVIII.Core.World
             float texHeight = 256f;
             byte localXadd = 0;
             byte localYadd = 0;
-            if(textureResolution != null)
+            if (textureResolution != null)
             { texWidth = textureResolution.Value.X; texHeight = textureResolution.Value.Y; };
-            if(textureOriginVector != null)
+            if (textureOriginVector != null)
             { localXadd = (byte)textureOriginVector.Value.X; localYadd = (byte)textureOriginVector.Value.Y; }
 
-            for(int i = 0; i<Model.cTriangles; i++)
+            for (int i = 0; i < Model.cTriangles; i++)
             {
                 Vector3 a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].A], true);
                 Vector3 b = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].B], true);
                 Vector3 c = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].C], true);
-                a= Vector3.Transform(a, Matrix.CreateFromQuaternion(rotation));
-                b= Vector3.Transform(b, Matrix.CreateFromQuaternion(rotation));
-                c= Vector3.Transform(c, Matrix.CreateFromQuaternion(rotation));
+                a = Vector3.Transform(a, Matrix.CreateFromQuaternion(rotation));
+                b = Vector3.Transform(b, Matrix.CreateFromQuaternion(rotation));
+                c = Vector3.Transform(c, Matrix.CreateFromQuaternion(rotation));
                 a += localTranslation;
                 b += localTranslation;
                 c += localTranslation;
 
                 vptList.Add(new VertexPositionTexture(
                     a, new Vector2(
-                        (Model.triangles[i].ua-localXadd)/texWidth,
-                        (Model.triangles[i].va-localYadd)/texHeight)
+                        (Model.triangles[i].ua - localXadd) / texWidth,
+                        (Model.triangles[i].va - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
                     b, new Vector2(
-                        (Model.triangles[i].ub-localXadd)/texWidth,
-                        (Model.triangles[i].vb-localYadd)/texHeight)
+                        (Model.triangles[i].ub - localXadd) / texWidth,
+                        (Model.triangles[i].vb - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
                     c, new Vector2(
-                        (Model.triangles[i].uc-localXadd)/texWidth,
-                        (Model.triangles[i].vc-localYadd)/texHeight)
+                        (Model.triangles[i].uc - localXadd) / texWidth,
+                        (Model.triangles[i].vc - localYadd) / texHeight)
                     ));
 
                 vptTextureIndexList.Add((byte)Model.triangles[i].clut);
@@ -565,8 +589,8 @@ namespace OpenVIII.Core.World
 
                 vptList.Add(new VertexPositionTexture(
                     a, new Vector2(
-                        (Model.quads[i].ua-localXadd) / texWidth,
-                        (Model.quads[i].va-localYadd) / texHeight)
+                        (Model.quads[i].ua - localXadd) / texWidth,
+                        (Model.quads[i].va - localYadd) / texHeight)
                     ));
                 vptList.Add(new VertexPositionTexture(
                     b, new Vector2(
@@ -604,53 +628,61 @@ namespace OpenVIII.Core.World
             }
 
             return new Tuple<VertexPositionTexture[], byte[]>(vptList.ToArray(), vptTextureIndexList.ToArray());
-
         }
+
         public int GetVehicleModelsCount() => s16Models.Length;
 
-        #endregion
+        #endregion Section 16 - World map objects and vehicles
 
         #region Section 17 + 41 - World map texture animations for beach[17] and water[41]
+
         /*
          * Section 17 is responsible for beach texture animations. It's a double file- first it contains chunks. Every chunk contains
          * animation frames information.
          * There's also new texture structure; I haven't seen such structures earlier. Palette is grabbed from section38
          */
 
-            //MODDING NOTE: Thanks to OpenVIII you can now create bigger chunks than 64x64/64x32 without worrying about SSIGPU VRAM!
+        //MODDING NOTE: Thanks to OpenVIII you can now create bigger chunks than 64x64/64x32 without worrying about SSIGPU VRAM!
 
-        [StructLayout(LayoutKind.Sequential, Pack =1, Size =8)]
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
         public struct textureAnimation
         {
             /// <summary>
             /// Unknown
             /// </summary>
             public byte unk;
+
             /// <summary>
             /// Animation speed/timeout between frames- usually 0x20. 1 is the fastest. 0 is invalid. 0xFF is long
             /// </summary>
             public byte animTimeout;
+
             /// <summary>
             /// Frames count- controls how many frames are valid. Usually 4
             /// </summary>
             public byte framesCount;
+
             /// <summary>
             /// If true then frames loop backward. For example 0-1-2-3-2-1-0. If false, then 0-1-2-3-0-1-2-3
             /// </summary>
             public byte bLooping;
+
             /// <summary>
             /// Unused in openviii. It is starting VRAM offset for this texture to be stored
             /// </summary>
             public ushort vramOrigX;
+
             /// <summary>
             /// Unused in openviii. It is starting VRAM offset for this texture to be stored
             /// </summary>
             public ushort vramOrigY;
+
             /// <summary>
             /// Contains texture data for given frame
             /// </summary>
             /// Did you know that there's no way to tell C# to not marshal one field?
             public Texture2D[] framesTextures;
+
             /// <summary>
             /// Contains palette data for given frame- because section41 is palette (version 17)
             /// </summary>
@@ -660,10 +692,12 @@ namespace OpenVIII.Core.World
             /// OpenVIII helper value- if true then index is incrementing- if false then index is decrementing
             /// </summary>
             public bool bIncrementing;
+
             /// <summary>
             /// OpenVIII helper value- holds current frame index
             /// </summary>
             public int currentAnimationIndex;
+
             /// <summary>
             /// OpenVIII helper value- holds total deltaTime to be used with timeout calculation
             /// </summary>
@@ -672,20 +706,24 @@ namespace OpenVIII.Core.World
 
         private textureAnimation[] beachAnimations;
         private textureAnimation[] waterAnimations;
+
         public void Section17()
         {
-            int[] innerPointers;
-            MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            if (Memory.graphics?.GraphicsDevice != null)
             {
-                ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
-                innerPointers = GetInnerPointers(br);
-                BeachAnimations = new textureAnimation[innerPointers.Length];
-                for (int i = 0; i < innerPointers.Length; i++)
-                    BeachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i ,ms, br);
-                //for (int i = 0; i < beachAnimations.Length; i++)
-                //    for (int n = 0; n < beachAnimations[i].framesCount; n++)
-                //        Extended.DumpTexture(beachAnimations[i].framesTextures[n], $"D:\\b_{i}_{n}.png");
+                int[] innerPointers;
+                MemoryStream ms;
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                {
+                    ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
+                    innerPointers = GetInnerPointers(br);
+                    BeachAnimations = new textureAnimation[innerPointers.Length];
+                    for (int i = 0; i < innerPointers.Length; i++)
+                        BeachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i, ms, br);
+                    //for (int i = 0; i < beachAnimations.Length; i++)
+                    //    for (int n = 0; n < beachAnimations[i].framesCount; n++)
+                    //        Extended.DumpTexture(beachAnimations[i].framesTextures[n], $"D:\\b_{i}_{n}.png");
+                }
             }
         }
 
@@ -718,7 +756,7 @@ namespace OpenVIII.Core.World
             ms.Seek(offset, SeekOrigin.Begin);
             //beachAnimation animation = Extended.ByteArrayToStructure<beachAnimation>(br.ReadBytes(8));
             textureAnimation animation = new textureAnimation() //not using Extension because Marshalling doesn't go well with [][] even
-                                                            //though it's not really even used!
+                                                                //though it's not really even used!
             {
                 unk = br.ReadByte(),
                 animTimeout = br.ReadByte(),
@@ -733,8 +771,8 @@ namespace OpenVIII.Core.World
             uint[] imagePointers = new uint[animation.framesCount];
             Color[] palette = null;
             Color[][] customPalette = null;
-            if(texturePointer!= -1)
-                palette = GetWorldMapTexturePalette(texturePointer==0 ?
+            if (texturePointer != -1)
+                palette = GetWorldMapTexturePalette(texturePointer == 0 ?
                 Section38_textures.beach : Section38_textures.beachE, 0);
             for (int i = 0; i < animation.framesCount; i++)
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
@@ -746,7 +784,7 @@ namespace OpenVIII.Core.World
                 customPalette = new Color[imagePointers.Length][];
                 animationFrames = new Texture2D[imagePointers.Length];
             }
-            for(int i = 0; i<animation.framesCount; i++)
+            for (int i = 0; i < animation.framesCount; i++)
             {
                 ms.Seek(imagePointers[i], SeekOrigin.Begin);
                 uint unknownHeader = br.ReadUInt32();
@@ -757,7 +795,7 @@ namespace OpenVIII.Core.World
                     throw new Exception("wmset::section17::texturePointerHeader+4 != 1");
                 _ = br.ReadUInt32() - sec17_imageHeaderSize; //imageSize, but doesn't really matter here
                 _ = br.ReadUInt32(); //unknown
-                ushort width = (ushort)(br.ReadUInt16()*2);
+                ushort width = (ushort)(br.ReadUInt16() * 2);
                 ushort height = br.ReadUInt16();
                 Texture2D texture;
                 Color[] texBuffer;
@@ -785,15 +823,15 @@ namespace OpenVIII.Core.World
                     animationFrames[i] = texture;
                 }
                 else
-                    {
+                {
                     width /= 2;
                     customPalette[i] = new Color[width]; //in sec41 width is the number of colours
-                    for(int m=0; m<width; m++)
+                    for (int m = 0; m < width; m++)
                     {
                         ushort color = br.ReadUInt16();
                         customPalette[i][m] = Texture_Base.ABGR1555toRGBA32bit(color);
                     }
-                    }
+                }
             }
             animation.framesTextures = animationFrames;
             animation.framesPalette = customPalette;
@@ -819,19 +857,21 @@ namespace OpenVIII.Core.World
 
         internal textureAnimation[] WaterAnimations { get => waterAnimations; set => waterAnimations = value; }
 
-        #endregion
+        #endregion Section 17 + 41 - World map texture animations for beach[17] and water[41]
 
         #region Section 32 - World map location names
-        FF8String[] locationsNames;
+
+        private FF8String[] locationsNames;
+
         private void Section32()
         {
             MemoryStream ms;
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[32 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
+                int[] innerSec = GetInnerPointers(br);
                 locationsNames = new FF8String[innerSec.Length];
-                for(int i = 0; i<locationsNames.Length; i++)
+                for (int i = 0; i < locationsNames.Length; i++)
                 {
                     ms.Seek(sectionPointers[32 - 1] + innerSec[i], SeekOrigin.Begin);
                     locationsNames[i] = Extended.GetBinaryString(br);
@@ -840,20 +880,23 @@ namespace OpenVIII.Core.World
         }
 
         public FF8String GetLocationName(int index) => locationsNames[index];
-        #endregion
+
+        #endregion Section 32 - World map location names
 
         #region Section 38 - World map textures archive
+
         /// <summary>
         /// Section 38: World map textures archive
         /// </summary>
         ///
         private List<TextureHandler[]> sec38_textures;
+
         private List<Color[][]> sec38_pals; //because other sections rely on palettes of wmset.38
 
-        TIM2 waterTim;
-        TIM2 waterTim2;
-        TIM2 waterTim3;
-        TIM2 waterTim4;
+        private TIM2 waterTim;
+        private TIM2 waterTim2;
+        private TIM2 waterTim3;
+        private TIM2 waterTim4;
 
         public enum Section38_textures
         {
@@ -902,7 +945,7 @@ namespace OpenVIII.Core.World
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[38 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
+                int[] innerSec = GetInnerPointers(br);
                 sec38_textures = new List<TextureHandler[]>();
                 for (int i = 0; i < innerSec.Length; i++)
                 {
@@ -915,8 +958,8 @@ namespace OpenVIII.Core.World
                         waterTim3 = tim;
                     if (i == (int)Section38_textures.waterfall)
                         waterTim4 = tim;
-                    if (tim.GetBytesPerPixel==4)
-                        if(tim.GetClutSize != (tim.GetClutCount*tim.GetColorsCountPerPalette)) //broken header, force our own values
+                    if (tim.GetBytesPerPixel == 4)
+                        if (tim.GetClutSize != (tim.GetClutCount * tim.GetColorsCountPerPalette)) //broken header, force our own values
                         {
                             tim.ForceSetClutColors(16);
                             tim.ForceSetClutCount((ushort)(tim.GetClutSize / 16));
@@ -937,35 +980,37 @@ namespace OpenVIII.Core.World
 
         private const int WATERBLOCKTEXW = 64; //should be probably dynamic to conform mods
         private const int WATERBLOCKTEXH = 64;
-
-        Texture2D waterAtlas;
+        private Texture2D waterAtlas;
 
         /// <summary>
-        /// Creates atlas with WaterBlockWidth*4 px based on 8BPP TIMs (for animated WM). Therefore user can replace 
+        /// Creates atlas with WaterBlockWidth*4 px based on 8BPP TIMs (for animated WM). Therefore user can replace
         /// individual texture without breaking the atlas as it's created basing on TextureHandler
         /// but their size must conform 4x2 layout where each block has the SAME resolution
         /// </summary>
         private void CreateWaterTextureAtlas()
         {
             /*
-             * for animated water materials there's ANOTHER water texture that is NOT watertex, but is rather built from various 
+             * for animated water materials there's ANOTHER water texture that is NOT watertex, but is rather built from various
              * blocks in independent TIMs- they are NOT 4BPP but 8BPP- although they are not correctly ordered- once again
              * their VRAM x and y kick-in, but we got it covered- the blocks are 4x4 (64px per block). The blocks order is:
              *       0        64     128       192
              *  0   [24]     [17]    [22]      [23]
              *  64  [18]     [19]    [20]      [21]
              */
-            waterAtlas = new Texture2D(Memory.graphics.GraphicsDevice, WATERBLOCKTEXW << 2, WATERBLOCKTEXH<<1, false, SurfaceFormat.Color); //64<<2 is 256
+            if (Memory.graphics?.GraphicsDevice != null)
+            {
+                waterAtlas = new Texture2D(Memory.graphics.GraphicsDevice, WATERBLOCKTEXW << 2, WATERBLOCKTEXH << 1, false, SurfaceFormat.Color); //64<<2 is 256
 
-            WaterTextureAtlasPutChunk(Section38_textures.waterTex6,0,0); // 0 0 
-            WaterTextureAtlasPutChunk(Section38_textures.waterTex2,WATERBLOCKTEXW,0); // 64 0 
-            WaterTextureAtlasPutChunk(Section38_textures.beach,WATERBLOCKTEXW*2,0); // 128 0 
-            WaterTextureAtlasPutChunk(Section38_textures.beachE,WATERBLOCKTEXW*3,0); // 192 0 
-            WaterTextureAtlasPutChunk(Section38_textures.waterTex3,0,WATERBLOCKTEXH); // 0 64 
-            WaterTextureAtlasPutChunk(Section38_textures.waterTex4,WATERBLOCKTEXW,WATERBLOCKTEXH); // 64 64 
-            WaterTextureAtlasPutChunk(Section38_textures.waterfall,WATERBLOCKTEXW*2,WATERBLOCKTEXH); // 128 64
-            WaterTextureAtlasPutChunk(Section38_textures.waterTex5,WATERBLOCKTEXW*3,WATERBLOCKTEXH); // 192 64
-            Extended.DumpTexture(waterAtlas, "D:/test.png");
+                WaterTextureAtlasPutChunk(Section38_textures.waterTex6, 0, 0); // 0 0
+                WaterTextureAtlasPutChunk(Section38_textures.waterTex2, WATERBLOCKTEXW, 0); // 64 0
+                WaterTextureAtlasPutChunk(Section38_textures.beach, WATERBLOCKTEXW * 2, 0); // 128 0
+                WaterTextureAtlasPutChunk(Section38_textures.beachE, WATERBLOCKTEXW * 3, 0); // 192 0
+                WaterTextureAtlasPutChunk(Section38_textures.waterTex3, 0, WATERBLOCKTEXH); // 0 64
+                WaterTextureAtlasPutChunk(Section38_textures.waterTex4, WATERBLOCKTEXW, WATERBLOCKTEXH); // 64 64
+                WaterTextureAtlasPutChunk(Section38_textures.waterfall, WATERBLOCKTEXW * 2, WATERBLOCKTEXH); // 128 64
+                WaterTextureAtlasPutChunk(Section38_textures.waterTex5, WATERBLOCKTEXW * 3, WATERBLOCKTEXH); // 192 64
+                Extended.DumpTexture(waterAtlas, "D:/test.png");
+            }
         }
 
         private void WaterTextureAtlasPutChunk(Section38_textures textureIndex, int x, int y)
@@ -1008,23 +1053,26 @@ namespace OpenVIII.Core.World
                 return;
             Texture2D animatedChunk = null;
             int x = 0, y = 0;
-            switch(index)
+            switch (index)
             {
                 case 0:
                     animatedChunk = waterTim2.GetTexture(palette);
                     x = 0;
                     y = WATERBLOCKTEXH;
                     break;
+
                 case 3:
                     animatedChunk = waterTim.GetTexture(palette);
                     x = WATERBLOCKTEXW;
                     y = 0;
                     break;
+
                 case 2:
                     animatedChunk = waterTim4.GetTexture(palette);
-                    x = WATERBLOCKTEXW*2;
+                    x = WATERBLOCKTEXW * 2;
                     y = WATERBLOCKTEXH;
                     break;
+
                 case 1:
                     animatedChunk = waterTim3.GetTexture(palette);
                     x = WATERBLOCKTEXW;
@@ -1034,14 +1082,14 @@ namespace OpenVIII.Core.World
             UpdateWaterTextureAtlasChunk(animatedChunk, x, y);
         }
 
-        #endregion
+        #endregion Section 38 - World map textures archive
 
         #region Section 39 - Textures of roads, train tracks and bridges
 
-        const int SEC39_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
-        const int SEC39_VRAM_STARTY = 256; //used to map VRAM, but here it's used to create new atlas
-        const int VRAM_TEXBLOCKWIDTH = 256; //wm faces ask VRAM, not texture, so the block is 256px in VRAM + additional chunks from other files that we deal normally as Tex2D[]
-        const int VRAM_TEXBLOCKHEIGHT = 256; //see above
+        private const int SEC39_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
+        private const int SEC39_VRAM_STARTY = 256; //used to map VRAM, but here it's used to create new atlas
+        private const int VRAM_TEXBLOCKWIDTH = 256; //wm faces ask VRAM, not texture, so the block is 256px in VRAM + additional chunks from other files that we deal normally as Tex2D[]
+        private const int VRAM_TEXBLOCKHEIGHT = 256; //see above
         private const int VRAM_BLOCKSIZE = 32; // =VRAM_BLOCKSTEP*4 - one origX of 16 is actually 16/2=8*32=finalXorig
         private const int VRAM_BLOCKSTEP = 8;
 
@@ -1052,26 +1100,29 @@ namespace OpenVIII.Core.World
         /// </summary>
         private void Section39()
         {
-            MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            if (Memory.graphics?.GraphicsDevice != null)
             {
-                ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
-                Texture2D sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
-
-                for (int i = 0; i < innerSec.Length; i++)
+                MemoryStream ms;
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
                 {
-                    TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
-                    Texture2D atlasChunk = tim.GetTexture(0);
-                    byte[] chunkBuffer = new byte[atlasChunk.Width * atlasChunk.Height * 4];
-                    atlasChunk.GetData(chunkBuffer, 0, chunkBuffer.Length);
-                    int newX = tim.GetOrigX - SEC39_VRAM_STARTX;
-                    int newY = tim.GetOrigY - SEC39_VRAM_STARTY;
-                    newX = (newX / VRAM_BLOCKSTEP) * VRAM_BLOCKSIZE;
-                    sec39_texture.SetData(0, new Rectangle(newX, newY, atlasChunk.Width, atlasChunk.Height), chunkBuffer, 0, chunkBuffer.Length);
+                    ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
+                    int[] innerSec = GetInnerPointers(br);
+                    Texture2D sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
+
+                    for (int i = 0; i < innerSec.Length; i++)
+                    {
+                        TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
+                        Texture2D atlasChunk = tim.GetTexture(0);
+                        byte[] chunkBuffer = new byte[atlasChunk.Width * atlasChunk.Height * 4];
+                        atlasChunk.GetData(chunkBuffer, 0, chunkBuffer.Length);
+                        int newX = tim.GetOrigX - SEC39_VRAM_STARTX;
+                        int newY = tim.GetOrigY - SEC39_VRAM_STARTY;
+                        newX = (newX / VRAM_BLOCKSTEP) * VRAM_BLOCKSIZE;
+                        sec39_texture.SetData(0, new Rectangle(newX, newY, atlasChunk.Width, atlasChunk.Height), chunkBuffer, 0, chunkBuffer.Length);
+                    }
+                    this.sec39_texture = TextureHandler.Create($"wmset_tim39.tim", new Texture2DWrapper(sec39_texture), 0, null);
+                    //sec39_texture = TextureHandler.Create($"wmset_tim{(i + 1).ToString("D2")}.tim", new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i])), k, null);
                 }
-                this.sec39_texture = TextureHandler.Create($"wmset_tim39.tim", new Texture2DWrapper(sec39_texture), 0, null);
-                //sec39_texture = TextureHandler.Create($"wmset_tim{(i + 1).ToString("D2")}.tim", new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i])), k, null);
             }
         }
 
@@ -1097,13 +1148,15 @@ namespace OpenVIII.Core.World
         /// </summary>
         /// <returns></returns>
         public Texture2D GetRoadsMiscTextures() => (Texture2D)sec39_texture;
-        #endregion
+
+        #endregion Section 39 - Textures of roads, train tracks and bridges
 
         #region Section 42 - objects and vehicles textures
-        const int SEC42_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
 
-        TextureHandler[][] vehicleTextures;
-        Vector2[] timOrigHolder;
+        private const int SEC42_VRAM_STARTX = 832; //this is beginning of origX to map to one texture
+
+        private TextureHandler[][] vehicleTextures;
+        private Vector2[] timOrigHolder;
 
         public enum VehicleTextureEnum
         {
@@ -1150,11 +1203,11 @@ namespace OpenVIII.Core.World
             using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[42 - 1], SeekOrigin.Begin);
-                var innerSec = GetInnerPointers(br);
+                int[] innerSec = GetInnerPointers(br);
                 for (int i = 0; i < innerSec.Length; i++)
                 {
                     TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[42 - 1] + innerSec[i]));
-                    timOriginHolderList.Add(new Vector2((tim.GetOrigX - SEC42_VRAM_STARTX)*4, tim.GetOrigY));
+                    timOriginHolderList.Add(new Vector2((tim.GetOrigX - SEC42_VRAM_STARTX) * 4, tim.GetOrigY));
                     vehTextures.Add(new TextureHandler[tim.GetClutCount]);
                     for (ushort k = 0; k < vehTextures[i].Length; k++)
                         vehTextures[i][k] = TextureHandler.Create($"wmset_tim42_{(i + 1).ToString("D2")}.tim", tim, k, null);
@@ -1176,6 +1229,7 @@ namespace OpenVIII.Core.World
         /// <param name="clut"></param>
         /// <returns></returns>
         public Vector2 GetVehicleTextureOriginVector(VehicleTextureEnum index, int clut) => timOrigHolder[(int)index];
+
         /// <summary>
         /// Gets X and Y tim origin (psx VRAM) for recalculating UV
         /// </summary>
@@ -1185,6 +1239,7 @@ namespace OpenVIII.Core.World
         public Vector2 GetVehicleTextureOriginVector(int index, int clut) => timOrigHolder[index];
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -1199,7 +1254,7 @@ namespace OpenVIII.Core.World
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                 // TODO: set large fields to null.
 
-                waterAtlas.Dispose();
+                waterAtlas?.Dispose();
                 disposedValue = true;
             }
         }
@@ -1211,16 +1266,13 @@ namespace OpenVIII.Core.World
         // }
 
         // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
+        public void Dispose() =>
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
+            Dispose(true);// TODO: uncomment the following line if the finalizer is overridden above.// GC.SuppressFinalize(this);
 
-        #endregion
+        #endregion IDisposable Support
+
+        #endregion Section 42 - objects and vehicles textures
     }
 }
 

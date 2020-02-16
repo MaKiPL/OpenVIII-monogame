@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace OpenVIII.Core.World
+namespace OpenVIII.World
 {
     /// <summary>
     /// Rail.obj is a file that contains waypoints and stops for trains including sequences

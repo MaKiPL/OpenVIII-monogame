@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace OpenVIII.Core.World
+namespace OpenVIII.World
 {
     internal class CharaOne
     {
