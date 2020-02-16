@@ -219,7 +219,8 @@ namespace OpenVIII.Dat_Dump
                     });
                     enemies = enemies.TrimEnd() + "\"";
                     Data += $"{enemies}{ls}";
-                    var fieldmatchs = FieldData.Where(x => x.MrtRat != null && (x.MrtRat.Keys.Any(y=>y==e.ID)));
+                    //check encounters in fields and confirm encounter rate is above 0.
+                    var fieldmatchs = FieldData.Where(x => x.MrtRat != null && (x.MrtRat.Any(y=>y.Key==e.ID && y.Value >0)));
                     if (fieldmatchs.Any())
                     
                         Data += $"\"{string.Join($"{ls} ", fieldmatchs.Select(x => x.FileName)).TrimEnd()}\"{ls}";
