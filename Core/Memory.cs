@@ -1028,7 +1028,7 @@ namespace OpenVIII
             public static string[] fields;
             //public static int[] FieldMemory;
 
-            public static string GetString() => fields?.ElementAtOrDefault(FieldID);
+            public static string GetString(ushort? inputFieldID = null) => fields?.ElementAtOrDefault(inputFieldID ?? FieldID);
         }
     }
 }

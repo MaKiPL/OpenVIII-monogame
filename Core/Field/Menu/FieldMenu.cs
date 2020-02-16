@@ -197,7 +197,7 @@ namespace OpenVIII.Fields.IGMData
             FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString()?.ToUpper()}";
 
             BLANKS[0] = false;
-            if (Module.Mod != Module.Field_mods.DISABLED)
+            if (Module.Mod != Field_modes.DISABLED)
             {
                 WalkMesh.Data = $"Draw WalkMesh: {Module.Toggles.HasFlag(Module._Toggles.WalkMesh)}";
                 BLANKS[1] = false;

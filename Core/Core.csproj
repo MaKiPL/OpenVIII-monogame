@@ -301,7 +301,10 @@
     <Compile Include="Card_Game\Faces.cs" />
     <Compile Include="CountDown.cs" />
     <Compile Include="DrawVertDeclaration.cs" />
+    <Compile Include="Field\Archive.cs" />
     <Compile Include="Field\Camera\Cameras.cs" />
+    <Compile Include="Field\EnumFlagExt.cs" />
+    <Compile Include="Field\Field_modes.cs" />
     <Compile Include="Field\INF\Gateway.cs" />
     <Compile Include="Field\INF\Gateways.cs" />
     <Compile Include="Field\INF\INF.cs" />
@@ -311,6 +314,7 @@
     <Compile Include="Field\MrtRat.cs" />
     <Compile Include="Field\MSK.cs" />
     <Compile Include="Field\PMP.cs" />
+    <Compile Include="Field\Sections.cs" />
     <Compile Include="Field\SFX.cs" />
     <Compile Include="Field\WalkMesh\Access.cs" />
     <Compile Include="Field\Background\Background.cs" />

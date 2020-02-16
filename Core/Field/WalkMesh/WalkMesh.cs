@@ -19,9 +19,14 @@ namespace OpenVIII.Fields
     /// <seealso cref="https://github.com/q-gears/q-gears/blob/master/utilities/ffvii_field_model_exporter/src/MeshFile.cpp"/>
     public partial class WalkMesh
     {
-        public static WalkMesh Load(byte[] idb)
+        private Cameras Cameras;
+
+        public static WalkMesh Load(byte[] idb,Cameras c)
         {
-            WalkMesh r = new WalkMesh();
+            WalkMesh r = new WalkMesh
+            {
+                Cameras = c
+            };
             r.ReadData(idb);
             return r;
         }
@@ -51,9 +56,9 @@ namespace OpenVIII.Fields
                 //Matrix scale = Matrix.CreateTranslation(0, 0, -Module.Cameras[0].Zoom);
 
                 //Matrix scale = Matrix.CreateScale(1f / 1f);
-                Matrix scale = Matrix.CreateScale(Module.Cameras[0].Zoom / 4096f);
-                Matrix move = Matrix.CreateTranslation(Module.Cameras[0].Position*4096f);
-                Vertices = vs.Select((x, i) => new VertexPositionColor(Vector3.Transform(Vector3.Transform(Vector3.Transform(new Vector3(x.x, x.y , x.z), Module.Cameras[0].RotationMatrix),move), scale), i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
+                Matrix scale = Matrix.CreateScale(Cameras[0].Zoom / 4096f);
+                Matrix move = Matrix.CreateTranslation(Cameras[0].Position*4096f);
+                Vertices = vs.Select((x, i) => new VertexPositionColor(Vector3.Transform(Vector3.Transform(Vector3.Transform(new Vector3(x.x, x.y , x.z), Cameras[0].RotationMatrix),move), scale), i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
             }
         }
         public Vector3 max { get; private set; }

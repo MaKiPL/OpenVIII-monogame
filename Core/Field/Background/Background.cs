@@ -113,13 +113,16 @@ namespace OpenVIII.Fields
             Background r = new Background
             {
                 TextureType = BackgroundTextureType.GetTextureType(mimb),
-                ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice),
-                effect = new BasicEffect(Memory.graphics.GraphicsDevice),
                 camTarget = Vector3.Zero,
                 camPosition = new Vector3(0f, 0f, -10f),
                 fps_camera = new FPS_Camera(),
                 degrees = 90f
             };
+            if (Memory.graphics != null)
+            {
+                r.ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice);
+                r.effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            }
             r.worldMatrix = Matrix.CreateWorld(r.camPosition, Vector3.
                           Forward, Vector3.Up);
             r.viewMatrix = Matrix.CreateLookAt(r.camPosition, r.camTarget,
@@ -1108,7 +1111,7 @@ namespace OpenVIII.Fields
                 var UniqueSetOfTileData = tiles.Where(x => x.Draw).Select(x => new { x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Depth, x.PaletteID, x.AnimationID }).Distinct().ToList();
                 Width = UniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
                 Height = UniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
-                Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                Dictionary<byte, Texture2D> TextureIDs = UniqueSetOfTileData.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => Memory.graphics != null ? new Texture2D(Memory.graphics.GraphicsDevice, 256, 256):null);
                 Dictionary<byte, HashSet<byte>> overlap = tiles.Select(x => x.TextureID).Distinct().ToDictionary(x => x, x => new HashSet<byte>());
                 using (BinaryReader br = new BinaryReader(new MemoryStream(mimb)))
                 {
@@ -1139,6 +1142,7 @@ namespace OpenVIII.Fields
                     }
                     void GenTexture(byte texID, Texture2D tex2d, byte? inPaletteID = null)
                     {
+                        if (tex2d == null) return;
                         TextureBuffer tex = new TextureBuffer(tex2d.Width, tex2d.Height, false);
 
                         foreach (var tile in UniqueSetOfTileData.Where(x => x.TextureID == texID && (!inPaletteID.HasValue || inPaletteID.Value == x.PaletteID)))

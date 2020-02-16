@@ -7,6 +7,7 @@ namespace OpenVIII.Dat_Dump
 {
     internal class DumpEncounterInfo
     {
+        public static Fields.Archive[] FieldData;
         public static string[] BattleStageNames { get; } = new string[] {
             "Balamb Garden Quad",
             "Dollet Bridge",
@@ -176,6 +177,14 @@ namespace OpenVIII.Dat_Dump
 
         internal static void Process()
         {
+            if(FieldData == null)
+            {
+                FieldData = new Fields.Archive[Memory.FieldHolder.fields.Length];
+                foreach (ushort i in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
+                {
+                    FieldData[i] = Fields.Archive.Load(i);
+                }
+            }
             if (DumpMonsterAndCharacterDat.MonsterData?.IsEmpty ?? true)
                 DumpMonsterAndCharacterDat.LoadMonsters(); //load all the monsters.
             using (StreamWriter csvFile = new StreamWriter(new FileStream("BattleEncounters.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite),System.Text.Encoding.UTF8))

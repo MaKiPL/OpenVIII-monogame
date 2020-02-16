@@ -6,7 +6,6 @@
         
         #region Methods
 
-
         private static void Main(string[] args)
         {
             Memory.Init(null, null, null);
