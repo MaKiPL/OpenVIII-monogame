@@ -182,7 +182,7 @@ namespace OpenVIII.Dat_Dump
                 FieldData = new Fields.Archive[Memory.FieldHolder.fields.Length];
                 foreach (ushort i in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
                 {
-                    FieldData[i] = Fields.Archive.Load(i);
+                    FieldData[i] = Fields.Archive.Load(i,Fields.Sections.MRT | Fields.Sections.RAT);
                 }
             }
             if (DumpMonsterAndCharacterDat.MonsterData?.IsEmpty ?? true)
@@ -193,7 +193,8 @@ namespace OpenVIII.Dat_Dump
                 $"{nameof(Battle.Encounter.ID)}{ls}" +
                 $"{nameof(Battle.Encounter.Filename)}{ls}" +
                 $"{nameof(BattleStageNames)}{ls}" +
-                $"{nameof(Battle.Encounter.BEnemies)}{ls}";
+                $"{nameof(Battle.Encounter.BEnemies)}{ls}"+
+                $"{nameof(Fields)}{ls}";
                 csvFile.WriteLine(Header);
                 foreach (Battle.Encounter e in Memory.Encounters)
                 {
@@ -218,6 +219,14 @@ namespace OpenVIII.Dat_Dump
                     });
                     enemies = enemies.TrimEnd() + "\"";
                     Data += $"{enemies}{ls}";
+                    var fieldmatchs = FieldData.Where(x => x.MrtRat != null && (x.MrtRat.Keys.Any(y=>y==e.ID)));
+                    if (fieldmatchs.Any())
+                    
+                        Data += $"\"{string.Join($"{ls} ", fieldmatchs.Select(x => x.FileName)).TrimEnd()}\"{ls}";
+
+                    
+                    else
+                        Data += ls;
                     csvFile.WriteLine(Data);
                 }
             }
