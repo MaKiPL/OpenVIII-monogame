@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -148,10 +149,11 @@ namespace OpenVIII
                 StreamWithRangeValues s = (StreamWithRangeValues)data;
                 
                 data = Uncompress(s, out Offset);
-                if (Offset == s.Offset)
-                    Max = s.Max;
-                else
-                    Max = data.Length;
+                //if (Offset == s.Offset)
+                //    Max = s.Max;
+                //else
+                Debug.Assert(Offset == 0)
+                Max = data.Length;
 
             }
             FI fi = FindString(ref input, out int size);
