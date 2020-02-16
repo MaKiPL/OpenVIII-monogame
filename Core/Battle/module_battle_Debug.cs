@@ -914,8 +914,7 @@ namespace OpenVIII
 
             if (encounter.EnabledEnemy.Cast<bool>().Any(x => x))
             {
-                IEnumerable<byte> monstersList = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)])?.Select(x => x.x).Distinct();
-                monstersData = monstersList?.Select(x => Debug_battleDat.Load(x, Debug_battleDat.EntityType.Monster)).ToArray();
+                monstersData = encounter.UniqueMonstersList?.Select(x => Debug_battleDat.Load(x, Debug_battleDat.EntityType.Monster)).ToArray();
             }
             else
             {

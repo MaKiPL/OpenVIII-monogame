@@ -14,8 +14,10 @@ namespace OpenVIII.Battle
         public byte AlternativeCamera;
         public EncounterFlag BattleFlags;
         public byte[] bLevels;
+
         //public byte[] bUnk1;
         public ushort[] bUnk2;
+
         public byte[] bUnk3;
         public byte[] bUnk4;
         public BitArray EnabledEnemy;
@@ -52,6 +54,8 @@ namespace OpenVIII.Battle
         public override string ToString() => $"{ID} - {Filename}";
 
         #endregion Methods
+        public IEnumerable<KeyValuePair<int, byte>> EnabledMonsters => BEnemies.Select((x, i) => new KeyValuePair<int, byte>(i, x)).Where(x => EnabledEnemy.Cast<bool>().Reverse().ElementAt(x.Key));
+        public IEnumerable<byte> UniqueMonstersList => EnabledMonsters.Select(x => x.Value).Distinct();
 
         public static Encounter Read(BinaryReader br, int id)
         {
@@ -73,6 +77,8 @@ namespace OpenVIII.Battle
                 bLevels = br.ReadBytes(8).Reverse().ToArray(),
                 ID = id
             };
+
+            
             Vector3 total = Vector3.Zero;
             List<Vector3> enabledCoordinates = e.enemyCoordinates.Select((x, i) => new { i, x }).Where(x => e.EnabledEnemy[7 - x.i]).Select(x => new Vector3(x.x.x, x.x.y, x.x.z)).ToList();
             if (enabledCoordinates.Count > 0)

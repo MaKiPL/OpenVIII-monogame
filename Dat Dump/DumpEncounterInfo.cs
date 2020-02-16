@@ -1,4 +1,9 @@
-﻿namespace OpenVIII.Dat_Dump
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+
+namespace OpenVIII.Dat_Dump
 {
     internal class DumpEncounterInfo
     {
@@ -167,11 +172,45 @@
             "Generic Landscape?",
             "Generic Landscape?" };
 
+        private static string ls => CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+
         internal static void Process()
         {
-            foreach (Battle.Encounter e in Memory.Encounters)
+            if (DumpMonsterAndCharacterDat.MonsterData?.IsEmpty ?? true)
+                DumpMonsterAndCharacterDat.LoadMonsters(); //load all the monsters.
+            using (StreamWriter csvFile = new StreamWriter(new FileStream("BattleEncounters.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite),System.Text.Encoding.UTF8))
             {
-                //wip
+                string Header =
+                $"{nameof(Battle.Encounter.ID)}{ls}" +
+                $"{nameof(Battle.Encounter.Filename)}{ls}" +
+                $"{nameof(BattleStageNames)}{ls}" +
+                $"{nameof(Battle.Encounter.BEnemies)}{ls}";
+                csvFile.WriteLine(Header);
+                foreach (Battle.Encounter e in Memory.Encounters)
+                {
+                    //wip
+                    string Data =
+                        $"{e.ID}{ls}" +
+                        $"{e.Filename}{ls}" +
+                        $"\"{BattleStageNames[e.Scenario]}\"{ls}";
+                    string enemies = "\"";
+                    IEnumerable<byte> unique = e.UniqueMonstersList;
+                    IEnumerable<KeyValuePair<byte, int>> counts = e.UniqueMonstersList.Select(x => new KeyValuePair<byte, int>(x, e.EnabledMonsters.Count(y => y.Value == x)));
+                    unique.ForEach(x =>
+                    {
+                        string name = "<unknown>";
+                        if (DumpMonsterAndCharacterDat.MonsterData.TryGetValue(x, out Debug_battleDat _BattleDat) && _BattleDat != null)
+                        {
+                            name = _BattleDat.information.name.Value_str.Trim();
+                            name += $" ({_BattleDat.fileName})";
+                        }
+
+                        enemies += $"{counts.First(y => y.Key == x).Value} × {name}{ls} ";
+                    });
+                    enemies = enemies.TrimEnd() + "\"";
+                    Data += $"{enemies}{ls}";
+                    csvFile.WriteLine(Data);
+                }
             }
         }
     }

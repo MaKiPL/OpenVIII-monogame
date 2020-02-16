@@ -9,7 +9,7 @@ namespace OpenVIII.Dat_Dump
 {
     internal static class DumpMonsterAndCharacterDat
     {
-        private static ConcurrentDictionary<int, Debug_battleDat> MonsterData = new ConcurrentDictionary<int, Debug_battleDat>();
+        public static ConcurrentDictionary<int, Debug_battleDat> MonsterData = new ConcurrentDictionary<int, Debug_battleDat>();
         private static ConcurrentDictionary<int, Debug_battleDat> CharacterData = new ConcurrentDictionary<int, Debug_battleDat>();
 
         public static void Process()
@@ -21,10 +21,12 @@ namespace OpenVIII.Dat_Dump
                 NewLineOnAttributes = true,
                 OmitXmlDeclaration = false,
             };
-            using (StreamWriter csv2File = new StreamWriter(new FileStream("MonsterAttacks.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+            using (StreamWriter csv2File = new StreamWriter(new FileStream("MonsterAttacks.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite), System.Text.Encoding.UTF8))
             {
-                using (StreamWriter csvFile = new StreamWriter(new FileStream("SequenceDump.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+                using (StreamWriter csvFile = new StreamWriter(new FileStream("SequenceDump.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite), System.Text.Encoding.UTF8))
                 {
+                    LoadMonsters();
+                    //header for monster attacks
                     csv2File.WriteLine($"{nameof(Enemy)}{ls}" +
                         $"{nameof(Enemy.EII.Data.fileName)}{ls}" +
                         $"{nameof(Debug_battleDat.Abilities)}{ls}" +
@@ -33,6 +35,7 @@ namespace OpenVIII.Dat_Dump
                         $"Type{ls}" +
                         $"ID{ls}" +
                         $"Name{ls}");
+                    //header for animation info
                     csvFile.WriteLine($"Type{ls}Type ID{ls}Name{ls}Animation Count{ls}Sequence Count{ls}Sequence ID{ls}Offset{ls}Bytes");
                     using (XmlWriter xmlWriter = XmlWriter.Create("SequenceDump.xml", xmlWriterSettings))
                     {
@@ -51,13 +54,19 @@ namespace OpenVIII.Dat_Dump
             Console.Write("Press [Enter] key to continue...  ");
             FF8String sval = Console.ReadLine().Trim((Environment.NewLine + " _").ToCharArray());
         }
+        public static void LoadMonsters()
+        {
+            for (int i = 0; i <= 200; i++)
+            {
+                MonsterData.TryAdd(i, Debug_battleDat.Load(i, Debug_battleDat.EntityType.Monster));
+            }
+        }
 
         private static void XmlMonsterData(XmlWriter xmlWriter, StreamWriter csvFile, StreamWriter csv2File)
         {
             xmlWriter.WriteStartElement("monsters");
             for (int i = 0; i <= 200; i++)
             {
-                MonsterData.TryAdd(i, Debug_battleDat.Load(i, Debug_battleDat.EntityType.Monster));
                 if (MonsterData.TryGetValue(i, out Debug_battleDat _BattleDat) && _BattleDat != null)
                 {
                     const string type = "monster";
