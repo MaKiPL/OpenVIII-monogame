@@ -8,13 +8,23 @@ using System.Linq;
 
 namespace OpenVIII.Fields
 {
+    public static class EnumFlagExt
+    {
+        #region Methods
+
+        public static Module._Toggles Flip(this Module._Toggles flagged, Module._Toggles flag)
+                                                                    => flagged ^= flag;
+
+        #endregion Methods
+    }
+
     //issues found.
     //558 //color looks off on glow. with purple around it.
     //267 //text showing with white background.
     //132 missing lava.
     //pupu states that there is are 2 widths of the texture for Type1 and Type2
     //we are only using 1 so might be reading the wrong pixels somewhere.
-    public static partial class Module
+    public class Module
     {
         #region Fields
 
@@ -26,8 +36,8 @@ namespace OpenVIII.Fields
 
         private static MSK msk;
 
-        //private static Texture2D tex;
-        //private static Texture2D texOverlap;
+        //private  Texture2D tex;
+        //private  Texture2D texOverlap;
         private static IServices services;
 
         private static SFX sfx;
@@ -57,6 +67,107 @@ namespace OpenVIII.Fields
             NOJSM
         };
 
+        [Flags]
+        public enum Sections : uint
+        {
+            None = 0,
+
+            /// <summary>
+            /// Field Character Models
+            /// </summary>
+            MCH = 0x1,
+
+            /// <summary>
+            /// Field Character Models Container
+            /// </summary>
+            ONE = 0x2,
+
+            /// <summary>
+            /// Field Background Image Data
+            /// </summary>
+            MIM = 0x4,
+
+            /// <summary>
+            /// Field Background Tile Data
+            /// </summary>
+            MAP = 0x8,
+
+            /// <summary>
+            /// Field Scripts
+            /// </summary>
+            JSM = 0x10,
+
+            /// <summary>
+            /// Field Script names (unused)
+            /// </summary>
+            SYM = 0x20,
+
+            /// <summary>
+            /// Field Dialogs
+            /// </summary>
+            MSD = 0x40,
+
+            /// <summary>
+            /// Field Gateways
+            /// </summary>
+            INF = 0x80,
+
+            /// <summary>
+            /// Field Walkmesh(same format as FF7)
+            /// </summary>
+            ID = 0x100,
+
+            /// <summary>
+            /// Field Camera
+            /// </summary>
+            CA = 0x200,
+
+            /// <summary>
+            /// Extra font
+            /// </summary>
+            TDW = 0x400,
+
+            /// <summary>
+            /// Movie cam(?)
+            /// </summary>
+            MSK = 0x800,
+
+            /// <summary>
+            /// Battle rate
+            /// </summary>
+            RAT = 0x1000,
+
+            /// <summary>
+            /// Battle encounter
+            /// </summary>
+            MRT = 0x2000,
+
+            /// <summary>
+            /// Particle Info
+            /// </summary>
+            PMD = 0x4000,
+
+            /// <summary>
+            /// Particle Image Data
+            /// </summary>
+            PMP = 0x8000,
+
+            /// <summary>
+            /// Unknown(often 0x0c000000, sometimes 0x0a000000 or 0x0b000000)
+            /// </summary>
+            PVP = 0x10000,
+
+            /// <summary>
+            /// Indexes to Sound Effects(?)
+            /// </summary>
+            SFX = 0x20000,
+
+            /// <summary>
+            /// All files
+            /// </summary>
+            ALL = 0x3FFFF,
+        }
+
         #endregion Enums
 
         #region Properties
@@ -67,11 +178,9 @@ namespace OpenVIII.Fields
 
         public static Field_mods Mod => mod;
 
+        public static MrtRat MrtRat { get; private set; }
+        public static PMP pmp { get; private set; }
         public static _Toggles Toggles { get; set; } = _Toggles.Quad | _Toggles.Menu;
-
-        internal static MrtRat MrtRat { get; private set; }
-
-        internal static PMP pmp { get; private set; }
 
         #endregion Properties
 
@@ -93,9 +202,6 @@ namespace OpenVIII.Fields
                     break;
             }
         }
-
-        public static _Toggles Flip(this _Toggles flagged, _Toggles flag)
-                                                                    => flagged ^= flag;
 
         public static string GetFieldName()
         {
@@ -183,92 +289,6 @@ namespace OpenVIII.Fields
             //Memory.SpriteBatchEnd();
             if (Toggles.HasFlag(_Toggles.Menu))
                 FieldMenu.Draw();
-        }
-
-        private static void DrawEntities() => throw new NotImplementedException();
-
-        private static ushort GetFieldID() => Memory.FieldHolder.FieldID;
-
-        [Flags]
-        public enum Sections : uint
-        {
-            None = 0,
-            /// <summary>
-            /// Field Character Models
-            /// </summary>
-            MCH = 0x1,
-            /// <summary>
-            /// Field Character Models Container
-            /// </summary>
-            ONE = 0x2,
-            /// <summary>
-            /// Field Background Image Data
-            /// </summary>
-            MIM = 0x4,
-            /// <summary>
-            /// Field Background Tile Data
-            /// </summary>
-            MAP = 0x8,
-            /// <summary>
-            /// Field Scripts
-            /// </summary>
-            JSM = 0x10,
-            /// <summary>
-            /// Field Script names (unused)
-            /// </summary>
-            SYM = 0x20,
-            /// <summary>
-            /// Field Dialogs
-            /// </summary>
-            MSD = 0x40,
-            /// <summary>
-            /// Field Gateways
-            /// </summary>
-            INF = 0x80,
-            /// <summary>
-            /// Field Walkmesh(same format as FF7)
-            /// </summary>
-            ID = 0x100,
-            /// <summary>
-            /// Field Camera
-            /// </summary>
-            CA = 0x200,
-            /// <summary>
-            /// Extra font
-            /// </summary>
-            TDW = 0x400,
-            /// <summary>
-            /// Movie cam(?)
-            /// </summary>
-            MSK = 0x800,
-            /// <summary>
-            /// Battle rate
-            /// </summary>
-            RAT = 0x1000,
-            /// <summary>
-            /// Battle encounter
-            /// </summary>
-            MRT = 0x2000,
-            /// <summary>
-            /// Particle Info
-            /// </summary>
-            PMD = 0x4000,
-            /// <summary>
-            /// Particle Image Data
-            /// </summary>
-            PMP = 0x8000,
-            /// <summary>
-            /// Unknown(often 0x0c000000, sometimes 0x0a000000 or 0x0b000000)
-            /// </summary>
-            PVP = 0x10000,
-            /// <summary>
-            /// Indexes to Sound Effects(?)
-            /// </summary>
-            SFX = 0x20000,
-            /// <summary>
-            /// All files
-            /// </summary>
-            ALL = 0x3FFFF,
         }
 
         private static void Init()
@@ -395,6 +415,10 @@ namespace OpenVIII.Fields
             //eventEngine.Update(services);
         }
 
+        private void DrawEntities() => throw new NotImplementedException();
+
+        private ushort GetFieldID() => Memory.FieldHolder.FieldID;
+
         #endregion Methods
 
         ///// <summary>
@@ -407,7 +431,7 @@ namespace OpenVIII.Fields
         ///// <see cref="http://www.raphnet.net/electronique/psx_adaptor/Playstation.txt"/>
         ///// <seealso cref="http://www.psxdev.net/forum/viewtopic.php?t=953"/>
         ///// <seealso cref="//http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_MAP"/>
-        //private static Color BlendColors(ref Color finalImageColor, Color color, Tile tile)
+        //private  Color BlendColors(ref Color finalImageColor, Color color, Tile tile)
         //{
         //    //• Semi Transparency
         //    //When semi transparency is set for a pixel, the GPU first reads the pixel it wants to write to, and then calculates
