@@ -10,9 +10,9 @@
         private static void Main(string[] args)
         {
             Memory.Init(null, null, null);
-            //DumpMonsterAndCharacterDat.Process();
             DumpEncounterInfo.Process();
-            
+            DumpMonsterAndCharacterDat.Process();
+
         }
 
 

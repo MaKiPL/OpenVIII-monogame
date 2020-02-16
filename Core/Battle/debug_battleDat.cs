@@ -10,6 +10,74 @@ using System.Runtime.InteropServices;
 
 namespace OpenVIII
 {
+    [Flags]
+    public enum Sections : ushort
+    {
+        None = 0,
+
+        /// <summary>
+        /// Section 1
+        /// </summary>
+        Skeleton = 0x1,
+
+        /// <summary>
+        /// Section 2
+        /// </summary>
+        /// <remarks>Requires Skeleton</remarks>
+        Model_Geometry = 0x2 | Skeleton,
+
+        /// <summary>
+        /// Section 3
+        /// </summary>
+        /// <remarks>Requires Model_Geometry</remarks>
+        Model_Animation = 0x4 | Model_Geometry,
+
+        /// <summary>
+        /// Section 4
+        /// </summary>
+        Section4_Unknown = 0x8,
+
+        /// <summary>
+        /// Section 5
+        /// </summary>
+        Animation_Sequences = 0x10,
+
+        /// <summary>
+        /// Section 6
+        /// </summary>
+        Section6_Unknown = 0x20,
+
+        /// <summary>
+        /// Section 7
+        /// </summary>
+        Information = 0x40,
+
+        /// <summary>
+        /// Section 8
+        /// </summary>
+        Scripts = 0x80,
+
+        /// <summary>
+        /// Section 9
+        /// </summary>
+        Sounds = 0x100,
+
+        /// <summary>
+        /// Section 10
+        /// </summary>
+        Sounds_Unknown = 0x200,
+
+        /// <summary>
+        /// Section 11
+        /// </summary>
+        Textures = 0x400,
+
+        /// <summary>
+        /// All Sections
+        /// </summary>
+        All = 0x7FF,
+    }
+
     public static class VertexPositionTexturePointersGRP_Ext
     {
         public static bool IsNotSet(this Debug_battleDat.VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP)
@@ -502,8 +570,6 @@ namespace OpenVIII
             public byte[] TexturePointers { get; private set; }
         }
 
-        
-
         public Vector3 IndicatorPoint(Vector3 translationPosition)
         {
             if (offsetylow < 0)
@@ -905,8 +971,9 @@ namespace OpenVIII
         /// <param name="fileId">This number is used in c0m(fileId) or d(fileId)cXYZ</param>
         /// <param name="entityType">Supply Monster, character or weapon (0,1,2)</param>
         /// <param name="additionalFileId">Used only in character or weapon to supply for d(fileId)[c/w](additionalFileId)</param>
-        public static Debug_battleDat Load(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null)
+        public static Debug_battleDat Load(int fileId, EntityType entityType, int additionalFileId = -1, Debug_battleDat skeletonReference = null, Sections flags = Sections.All)
         {
+            Flags = flags;
             Debug_battleDat r = new Debug_battleDat()
             {
                 id = fileId,
@@ -1066,35 +1133,56 @@ namespace OpenVIII
             if (id == 127)
             {
                 // per wiki 127 only have 7 & 8
-                //ReadSection7(datFile.pSections[6], br, fileName);
-                //ReadSection8(datFile.pSections[7]);
-                return null;
+                if (Flags.HasFlag(Sections.Information))
+                    ReadSection7(datFile.pSections[0]);
+                //if (Flags.HasFlag(Sections.Scripts))
+                //    ReadSection8(datFile.pSections[7]);
+                return this;
             }
-            ReadSection1(datFile.pSections[0]);
-            ReadSection3(datFile.pSections[2]); // animation data
-            ReadSection2(datFile.pSections[1]);
-            //ReadSection4(datFile.pSections[3]);
-            ReadSection5(datFile.pSections[4], datFile.pSections[5]);
-            //ReadSection6(datFile.pSections[5]);
-            ReadSection7(datFile.pSections[6]);
+            if (Flags.HasFlag(Sections.Skeleton))
+                ReadSection1(datFile.pSections[0]);
+            if (Flags.HasFlag(Sections.Model_Animation))
+                ReadSection3(datFile.pSections[2]); // animation data
+            if (Flags.HasFlag(Sections.Model_Geometry))
+                ReadSection2(datFile.pSections[1]);
+
+            //if (Flags.HasFlag(Sections.Section4_Unknown))
+            //  ReadSection4(datFile.pSections[3]);
+            if (Flags.HasFlag(Sections.Animation_Sequences))
+                ReadSection5(datFile.pSections[4], datFile.pSections[5]);
+            //if (Flags.HasFlag(Sections.Section6_Unknown))
+            //  ReadSection6(datFile.pSections[5]);
+            if (Flags.HasFlag(Sections.Information))
+                ReadSection7(datFile.pSections[6]);
+            //if (Flags.HasFlag(Sections.Scripts))
             //ReadSection8(datFile.pSections[7]); // battle scripts/ai
-            ReadSection9(datFile.pSections[8], datFile.pSections[9]); //AKAO sounds
-            //ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
-            ReadSection11(datFile.pSections[10]);
+
+            //if (Flags.HasFlag(Sections.Sounds))
+            //    ReadSection9(datFile.pSections[8], datFile.pSections[9]); //AKAO sounds
+            //if (Flags.HasFlag(Sections.Sounds_Unknown))
+            //  ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
+
+            if (Flags.HasFlag(Sections.Textures))
+                ReadSection11(datFile.pSections[10]);
             return this;
         }
 
         private Debug_battleDat LoadCharacter()
         {
-            ReadSection1(datFile.pSections[0]);
-            ReadSection3(datFile.pSections[2]);
-            ReadSection2(datFile.pSections[1]);
-            if (id == 7 && entityType == EntityType.Character)
+            if (Flags.HasFlag(Sections.Skeleton))
+                ReadSection1(datFile.pSections[0]);
+            if (Flags.HasFlag(Sections.Model_Animation))
+                ReadSection3(datFile.pSections[2]);
+            if (Flags.HasFlag(Sections.Model_Geometry))
+                ReadSection2(datFile.pSections[1]);
+            if (id == 7 && entityType == EntityType.Character) // edna has no weapons.
             {
-                ReadSection11(datFile.pSections[8]);
-                ReadSection5(datFile.pSections[5], datFile.pSections[6]);
+                if (Flags.HasFlag(Sections.Textures))
+                    ReadSection11(datFile.pSections[8]);
+                if (Flags.HasFlag(Sections.Animation_Sequences))
+                    ReadSection5(datFile.pSections[5], datFile.pSections[6]);
             }
-            else
+            else if (Flags.HasFlag(Sections.Textures))
                 ReadSection11(datFile.pSections[5]);
             return this;
         }
@@ -1103,19 +1191,27 @@ namespace OpenVIII
         {
             if (id != 1 && id != 9)
             {
-                ReadSection1(datFile.pSections[0]);
-                ReadSection3(datFile.pSections[2]);
-                ReadSection2(datFile.pSections[1]);
-                ReadSection5(datFile.pSections[3], datFile.pSections[4]);
-                ReadSection11(datFile.pSections[6]);
+                if (Flags.HasFlag(Sections.Skeleton))
+                    ReadSection1(datFile.pSections[0]);
+                if (Flags.HasFlag(Sections.Model_Animation))
+                    ReadSection3(datFile.pSections[2]);
+                if (Flags.HasFlag(Sections.Model_Geometry))
+                    ReadSection2(datFile.pSections[1]);
+                if (Flags.HasFlag(Sections.Animation_Sequences))
+                    ReadSection5(datFile.pSections[3], datFile.pSections[4]);
+                if (Flags.HasFlag(Sections.Textures))
+                    ReadSection11(datFile.pSections[6]);
             }
             else if (skeletonReference != null)
             {
                 skeleton = skeletonReference.skeleton;
                 animHeader = skeletonReference.animHeader;
-                ReadSection2(datFile.pSections[0]);
-                ReadSection5(datFile.pSections[1], datFile.pSections[2]);
-                ReadSection11(datFile.pSections[4]);
+                if (Flags.HasFlag(Sections.Model_Geometry))
+                    ReadSection2(datFile.pSections[0]);
+                if (Flags.HasFlag(Sections.Animation_Sequences))
+                    ReadSection5(datFile.pSections[1], datFile.pSections[2]);
+                if (Flags.HasFlag(Sections.Textures))
+                    ReadSection11(datFile.pSections[4]);
             }
             return this;
         }
@@ -1401,5 +1497,6 @@ namespace OpenVIII
         public int id { get; private set; }
         public EntityType entityType { get; private set; }
         public string fileName { get; private set; }
+        public static Sections Flags { get; private set; }
     }
 }

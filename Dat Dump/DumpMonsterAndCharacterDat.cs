@@ -58,7 +58,9 @@ namespace OpenVIII.Dat_Dump
         {
             for (int i = 0; i <= 200; i++)
             {
-                MonsterData.TryAdd(i, Debug_battleDat.Load(i, Debug_battleDat.EntityType.Monster));
+                //one issue with this is animations aren't loaded. because it requires all the geometry and skeleton loaded...
+                // so the sequence dump is probably less useful or broken.
+                MonsterData.TryAdd(i, Debug_battleDat.Load(i, Debug_battleDat.EntityType.Monster,flags: Sections.Animation_Sequences | Sections.Information));
             }
         }
 
