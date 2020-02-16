@@ -672,7 +672,36 @@ namespace OpenVIII
             if (Input2.Button(Keys.D8))
                 bDebugDisableCollision = !bDebugDisableCollision;
 
-            if (worldState != _worldState._9debugFly)
+            if (MapState == MiniMapState.fullscreen) //FULLSCREEN MAP
+            {
+                if (Input2.Button(FF8TextTagKey.Up)/* || shift.Y > 0*/)
+                {
+                    if (fulscrMapCurY < 0.070f)
+                        fulscrMapCurY = 0.870f;
+                    fulscrMapCurY -= 0.005f;
+                }
+                else if (Input2.Button(FF8TextTagKey.Down)/* || shift.Y < 0*/)
+                {
+                    if (fulscrMapCurY > 0.870f)
+                        fulscrMapCurY = 0.070f;
+                    fulscrMapCurY += 0.005f;
+
+                }
+                if (Input2.Button(FF8TextTagKey.Left) /*|| shift.X < 0*/)
+                {
+                    if (fulscrMapCurX < 0.145f)
+                        fulscrMapCurX = 0.745f;
+                    fulscrMapCurX -= 0.003f;
+
+                }
+                else if (Input2.Button(FF8TextTagKey.Right)/* || shift.X > 0*/)
+                {
+                    if (fulscrMapCurX > 0.745)
+                        fulscrMapCurX = 0.145f;
+                    fulscrMapCurX += 0.003f;
+                }
+            }
+            else if (worldState != _worldState._9debugFly)
             {
                 Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 1f);
                 Vector2 right = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, 1f);
@@ -1140,6 +1169,7 @@ namespace OpenVIII
                     break;
 
                 case MiniMapState.fullscreen:
+                    DrawFullScreenMap();
                     break;
             }
 
@@ -1179,7 +1209,18 @@ namespace OpenVIII
                     ImGuiNET.ImGui.Text(s);
                 imguiStrings.Clear();
             }
+
+            ImGuiNET.ImGui.Separator();
+            ImGuiNET.ImGui.Text("-Field2WM-");
+            for(int x = 0; x<wmset.fieldToWorldMapLocations.Length; x++)
+                ImGuiNET.ImGui.Text($"{x}: X={wmset.fieldToWorldMapLocations[x].X}  Y={wmset.fieldToWorldMapLocations[x].Y}  Z={wmset.fieldToWorldMapLocations[x].Z}");
+            ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
+            ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
             ImGuiNET.ImGui.End();
+            //ImGuiNET.ImGui.Begin("!Texture lister!");
+            //ImGuiNET.ImGui.Image(Memory.imgui.BindTexture((Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.minimapFullScreenPointer, 0)),
+            //    new System.Numerics.Vector2(64,64));
+            //ImGuiNET.ImGui.End();
             Memory.imgui.AfterLayout();
         }
 
@@ -1680,6 +1721,27 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
             Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            Memory.SpriteBatchEnd();
+        }
+
+        private static float fulscrMapCurX = 0.5f;
+        private static float fulscrMapCurY = 0.4f;
+
+        private static void DrawFullScreenMap()
+        {
+            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.SpriteBatchStartStencil();
+            TextureHandler texture = wmset.GetWorldMapTexture(wmset.Section38_textures.worldmapMinimap, 0);
+            int width = Memory.graphics.GraphicsDevice.Viewport.Width;
+            int height = Memory.graphics.GraphicsDevice.Viewport.Height;
+            texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f), 
+                (int)(width *0.6), (int)(height *0.8)), Color.White * 1f);
+
+            Memory.SpriteBatchEnd();
+            Memory.SpriteBatchStartAlpha();
+                Memory.Icons.Draw(Icons.ID.Finger_Right, 2, 
+                    new Rectangle((int)(fulscrMapCurX*width), (int)(fulscrMapCurY*height), 0,0), Vector2.One*3);
+
             Memory.SpriteBatchEnd();
         }
 
