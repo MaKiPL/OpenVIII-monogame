@@ -190,7 +190,7 @@ namespace OpenVIII.Fields
         private static ushort GetFieldID() => Memory.FieldHolder.FieldID;
 
         [Flags]
-        public enum Sections:uint
+        public enum Sections : uint
         {
             None = 0,
             /// <summary>
@@ -268,7 +268,7 @@ namespace OpenVIII.Fields
             /// <summary>
             /// All files
             /// </summary>
-            All = ‭0x3FFFF‬,
+            ALL = 0x3FFFF,
         }
 
         private static void Init()
