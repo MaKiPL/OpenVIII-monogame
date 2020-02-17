@@ -48,6 +48,7 @@ namespace OpenVIII.Fields
 
         public static Cameras Load(byte[] idb)
         {
+            if (idb == null || idb.Length == 0) return null;
             Cameras r = new Cameras();
 
             int _sizeofCamera = Cameras.sizeofCamera;

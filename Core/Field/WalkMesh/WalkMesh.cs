@@ -23,6 +23,8 @@ namespace OpenVIII.Fields
 
         public static WalkMesh Load(byte[] idb,Cameras c)
         {
+            if (idb == null || idb.Length == 0) return null;
+
             WalkMesh r = new WalkMesh
             {
                 Cameras = c

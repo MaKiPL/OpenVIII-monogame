@@ -200,9 +200,7 @@ namespace OpenVIII.Fields.IGMData
             if (Module.Mod != Field_modes.DISABLED)
             {
                 WalkMesh.Data = $"Draw WalkMesh: {Module.Toggles.HasFlag(Module._Toggles.WalkMesh)}";
-                BLANKS[1] = false;
                 QuadBG.Data = $"Draw Quad BG: {Module.Toggles.HasFlag(Module._Toggles.Quad)}";
-                BLANKS[2] = false;
 
                 PerspectiveQuadMode.Data = $"Perspective for Quads: {Module.Toggles.HasFlag(Module._Toggles.Quad) && Module.Toggles.HasFlag(Module._Toggles.Perspective)}";
                 if (Module.Toggles.HasFlag(Module._Toggles.Quad))
@@ -216,13 +214,15 @@ namespace OpenVIII.Fields.IGMData
                     PerspectiveQuadMode.FontColor = Font.ColorID.Grey;
                 }
                 ClassicSpriteBatchMode.Data = $"Classic SpriteBatch: {Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)}";
-                BLANKS[4] = false;
                 FourceDump.Data = $"Onload Dump Textures: {Module.Toggles.HasFlag(Module._Toggles.DumpingData)}";
-                BLANKS[5] = false;
                 Deswizzle.Data = $"Deswizzle Tiles";
-                BLANKS[6] = false;
                 Reswizzle.Data = $"Reswizzle Tiles";
-                BLANKS[7] = false;
+                foreach (int i in Enumerable.Range(1, Rows))
+                {
+                        ITEM[i, 0].Show();
+                    if (i != 3)
+                        BLANKS[i] = false;
+                }
                 foreach (int i in Enumerable.Range(8, Rows - 8))
                 {
                     ITEM[i, 0].Hide();

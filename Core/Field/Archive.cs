@@ -171,19 +171,22 @@ namespace OpenVIII.Fields
             if (flags.HasFlag(Sections.INF))
             {
                 byte[] infb = getfile(".inf");//gateways
-                inf = INF.Load(infb);
+                if (infb != null && infb.Length > 0)
+                    inf = INF.Load(infb);
             }
 
             if (flags.HasFlag(Sections.TDW))
             {
                 byte[] tdwb = getfile(".tdw");//extra font
+                if(tdwb != null && tdwb.Length >0)
                 tdw = new TDW(tdwb);
             }
 
             if (flags.HasFlag(Sections.MSK))
             {
                 byte[] mskb = getfile(".msk");//movie cam
-                msk = new MSK(mskb);
+                if (mskb != null && mskb.Length > 0)
+                    msk = new MSK(mskb);
             }
             if (flags.HasFlag(Sections.RAT | Sections.MRT))
             {
@@ -209,7 +212,13 @@ namespace OpenVIII.Fields
             if(flags.HasFlag(Sections.SFX))
             {
                 byte[] sfxb = getfile(".sfx");//sound effects
-                sfx = new SFX(sfxb);
+                if (sfxb != null && sfxb.Length > 0)
+                    sfx = new SFX(sfxb);
+            }
+
+            if (Mod == Field_modes.NOJSM && Background == null)
+            {
+                Mod = Field_modes.DISABLED;
             }
         }
 
@@ -222,10 +231,10 @@ namespace OpenVIII.Fields
 
                 case Field_modes.DEBUGRENDER:
                     UpdateScript();
-                    Background.Update();
+                    Background?.Update();
                     break; //await events here
                 case Field_modes.NOJSM://no scripts but has background.
-                    Background.Update();
+                    Background?.Update();
                     break; //await events here
                 case Field_modes.DISABLED:
                     break;
