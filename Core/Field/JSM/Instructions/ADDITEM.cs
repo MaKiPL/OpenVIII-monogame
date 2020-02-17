@@ -3,27 +3,30 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ADDITEM : JsmInstruction
+    /// <summary>
+    /// Add item to party
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/125_ADDITEM"/>
+    /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/Item_Codes"/>
+    public sealed class ADDITEM : JsmInstruction
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
+        private Saves.Item _item;
 
-        public ADDITEM(IJsmExpression arg0, IJsmExpression arg1)
+        public ADDITEM(Saves.Item item)
         {
-            _arg0 = arg0;
-            _arg1 = arg1;
+            _item = item;
         }
 
         public ADDITEM(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+                item: new Saves.Item(QTY: checked((byte)((Jsm.Expression.PSHN_L)stack.Pop()).Int32()),
+                ID: checked((byte)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())))
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(ADDITEM)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1})";
+            return $"{nameof(ADDITEM)}({nameof(_item)}: {_item})";
         }
     }
 }

@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ADDGIL : JsmInstruction
+    /// <summary>
+    /// Add Gil
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/151_ADDGIL&action=edit&redlink=1"/>
+    public sealed class ADDGIL : JsmInstruction
     {
+        /// <summary>
+        /// Ammount of gil?
+        /// </summary>
         private IJsmExpression _arg0;
 
         public ADDGIL(IJsmExpression arg0)

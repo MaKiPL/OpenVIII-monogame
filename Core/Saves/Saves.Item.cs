@@ -23,7 +23,10 @@ namespace OpenVIII
             #endregion Fields
 
             #region Constructors
-            public Item(byte ID, byte QTY) { this.ID = ID; this.QTY = QTY; }
+            public Item(byte ID, byte QTY) {
+                this.ID = ID;
+                this.QTY = QTY;
+            }
 
             public Item(KeyValuePair<byte, byte> e) : this(e.Key, e.Value)
             { }
@@ -32,8 +35,17 @@ namespace OpenVIII
 
             #region Properties
 
-            public Item_In_Menu? DATA => Memory.MItems?.Items[ID];
-            public override string ToString() => DATA?.Name;
+            public Item_In_Menu? DATA
+            {
+                get
+                {
+                    if (Memory.MItems?.Items != null && Memory.MItems.Items.Count > ID)
+                        return Memory.MItems.Items[ID];
+                    else return null;
+                }
+            }
+
+            public override string ToString() => $"{{{nameof(ID)}: {DATA?.Name??ID.ToString()}, {nameof(QTY)}: {QTY}}}";
             public Item UsedOne()
             {
                 if(QTY <= 1)

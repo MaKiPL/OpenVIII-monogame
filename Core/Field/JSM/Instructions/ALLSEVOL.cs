@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ALLSEVOL : JsmInstruction
+    /// <summary>
+    /// Set Volume of all Sound Effects
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0C3_ALLSEVOL"/>
+    public sealed class ALLSEVOL : JsmInstruction
     {
+        /// <summary>
+        /// Volume (0-127)
+        /// </summary>
         private IJsmExpression _arg0;
 
         public ALLSEVOL(IJsmExpression arg0)

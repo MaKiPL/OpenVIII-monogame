@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ADDPARTY : JsmInstruction
+    /// <summary>
+    /// Add party member to active party
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/086_ADDPARTY"/>
+    public sealed class ADDPARTY : JsmInstruction
     {
+        /// <summary>
+        /// Character ID
+        /// </summary>
         private Characters _characterId;
 
         public ADDPARTY(Characters characterId)

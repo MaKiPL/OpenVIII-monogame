@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ADDPASTGIL : JsmInstruction
+    /// <summary>
+    /// Add Gil to Team Laguna
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/152_ADDPASTGIL&action=edit&redlink=1"/>
+    public sealed class ADDPASTGIL : JsmInstruction
     {
+        /// <summary>
+        /// Amount of Gil
+        /// </summary>
         private IJsmExpression _arg0;
 
         public ADDPASTGIL(IJsmExpression arg0)

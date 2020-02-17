@@ -1,20 +1,46 @@
+using Microsoft.Xna.Framework;
 using System;
-
+using static OpenVIII.Fields.Scripts.Jsm.Expression;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Opens a field message window and lets player choose a single line. AASK saves the chosen line index (first option is always 0) into a temp variable which you can retrieve with PSHI_L 0. 
     /// </summary>
-    internal sealed class AASK : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/06F_AASK"/>
+    public sealed class AASK : JsmInstruction
     {
+        /// <summary>
+        /// Message Channel
+        /// </summary>
         private IJsmExpression _channel;
+        /// <summary>
+        /// Field message ID
+        /// </summary>
         private IJsmExpression _messageId;
+        /// <summary>
+        /// Line of first option
+        /// </summary>
         private IJsmExpression _firstLine;
+        /// <summary>
+        /// Line of last option
+        /// </summary>
         private IJsmExpression _lastLine;
+        /// <summary>
+        /// Line of default option
+        /// </summary>
         private IJsmExpression _beginLine;
+        /// <summary>
+        /// Line of cancel option
+        /// </summary>
         private IJsmExpression _cancelLine;
+        /// <summary>
+        /// X position of window
+        /// </summary>
         private IJsmExpression _posX;
+        /// <summary>
+        /// Y Position of window
+        /// </summary>
         private IJsmExpression _posY;
 
         public AASK(IJsmExpression channel, IJsmExpression messageId, IJsmExpression firstLine, IJsmExpression lastLine, IJsmExpression beginLine, IJsmExpression cancelLine, IJsmExpression posX, IJsmExpression posY)
@@ -28,7 +54,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _posX = posX;
             _posY = posY;
         }
-
+        public Point Pos => new Point(((PSHN_L)_posX).Value, ((PSHN_L)_posY).Value);
         public AASK(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
                 posY: stack.Pop(),

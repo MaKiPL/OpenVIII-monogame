@@ -6,8 +6,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <summary>
     /// Adds a PC to the available party (not to the active party). 
     /// </summary>
-    internal sealed class ADDMEMBER : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/08C_ADDMEMBER"/>
+    public sealed class ADDMEMBER : JsmInstruction
     {
+        /// <summary>
+        /// Character ID
+        /// </summary>
         private readonly Characters _characterId;
 
         public ADDMEMBER(Characters characterId)
