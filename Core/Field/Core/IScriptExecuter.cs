@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using OpenVIII.Fields.Scripts.Instructions;
+using System.Collections.Generic;
 
 namespace OpenVIII.Fields
 {

@@ -1,12 +1,13 @@
 ﻿using OpenVIII.Fields.Scripts.Instructions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
-        public class ExecutableSegment : Segment, IJsmInstruction
+        public class ExecutableSegment : Segment, IJsmInstruction, IEnumerable<IJsmInstruction>
         {
             public ExecutableSegment(Int32 from, Int32 to)
                 : base(from, to)
@@ -23,7 +24,10 @@ namespace OpenVIII.Fields.Scripts
                 return new Executer(instructions);
             }
 
-            private sealed class Executer : IScriptExecuter
+            public IEnumerator<IJsmInstruction> GetEnumerator() => _list.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+
+            private sealed class Executer : IScriptExecuter, IEnumerable<IJsmInstruction>
             {
                 private readonly IEnumerable<IJsmInstruction> _list;
 
@@ -53,6 +57,9 @@ namespace OpenVIII.Fields.Scripts
                         }
                     }
                 }
+
+                public IEnumerator<IJsmInstruction> GetEnumerator() => _list.GetEnumerator();
+                IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
             }
         }
     }

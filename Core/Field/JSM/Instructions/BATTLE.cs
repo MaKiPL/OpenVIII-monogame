@@ -1,9 +1,9 @@
 ﻿using System;
-
+using static OpenVIII.Fields.Scripts.Jsm.Expression;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class BATTLE : JsmInstruction
+    public sealed class BATTLE : JsmInstruction
     {
         private IJsmExpression _arg0;
         private IJsmExpression _arg1;
@@ -20,7 +20,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 arg0: stack.Pop())
         {
         }
-
+        public ushort Encounter => checked((ushort)((PSHN_L)_arg0).Value);
         public override String ToString()
         {
             return $"{nameof(BATTLE)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1})";

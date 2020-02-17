@@ -10,7 +10,7 @@ namespace OpenVIII.Fields.Scripts
         {
             public Int32 Id { get; }
             public IReadOnlyList<GameScript> Scripts { get; }
-
+            public override string ToString() => $"{{{Id}, {nameof(Scripts)} {nameof(Scripts.Count)} = {Scripts.Count}}}";
             public GameObject(Int32 id, IReadOnlyList<GameScript> scripts)
             {
                 Id = id;

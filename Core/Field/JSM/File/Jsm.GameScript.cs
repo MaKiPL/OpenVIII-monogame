@@ -9,6 +9,7 @@ namespace OpenVIII.Fields.Scripts
             public Int32 ScriptId { get; }
             public Jsm.ExecutableSegment Segment { get; }
 
+            public override string ToString() => $"{{{ScriptId}, {Segment}}}";
             public GameScript(Int32 scriptId, Jsm.ExecutableSegment segment)
             {
                 ScriptId = scriptId;

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OpenVIII.Dat_Dump
 {
@@ -9,8 +11,9 @@ namespace OpenVIII.Dat_Dump
     {
         #region Fields
 
-        public static Fields.Archive[] FieldData;
+        public static ConcurrentDictionary<int, Fields.Archive> FieldData;
         private static HashSet<ushort> WorldEncounters;
+        private static HashSet<KeyValuePair<string, ushort>> FieldsWithBattleScripts;
 
         #endregion Fields
 
@@ -226,10 +229,12 @@ namespace OpenVIII.Dat_Dump
                     enemies = enemies.TrimEnd() + "\"";
                     Data += $"{enemies}{ls}";
                     //check encounters in fields and confirm encounter rate is above 0.
-                    IEnumerable<Fields.Archive> fieldmatchs = FieldData.Where(x => x.MrtRat != null && (x.MrtRat.Any(y => y.Key == e.ID && y.Value > 0)));
+                    IEnumerable<string> fieldmatchs = FieldData.Where(x => x.Value.MrtRat != null && (x.Value.MrtRat.Any(y => y.Key == e.ID && y.Value > 0))).Select(x => x.Value.FileName);
+                    IEnumerable<string> second = FieldsWithBattleScripts.Where(x => x.Value == e.ID).Select(x => x.Key);
+                    if(second.Any())
+                    fieldmatchs.Concat(second).Distinct();
                     if (fieldmatchs.Any())
-
-                        Data += $"\"{string.Join($"{ls} ", fieldmatchs.Select(x => x.FileName)).TrimEnd()}\"{ls}";
+                        Data += $"\"{string.Join($"{ls} ", fieldmatchs).TrimEnd()}\"{ls}";
                     else if (WorldEncounters.Any(x => x == e.ID))
                     {
                         Data += $"WorldMap{ls}";
@@ -245,12 +250,33 @@ namespace OpenVIII.Dat_Dump
         {
             if (FieldData == null)
             {
-                FieldData = new Fields.Archive[Memory.FieldHolder.fields.Length];
-                foreach (ushort i in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
+                FieldData = new ConcurrentDictionary<int, Fields.Archive>();
+
+                Task[] tasks = new Task[Memory.FieldHolder.fields.Length];
+                foreach (ushort j in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
                 {
-                    FieldData[i] = Fields.Archive.Load(i, Fields.Sections.MRT | Fields.Sections.RAT);
+                    void process(ushort i)
+                        {
+                        if (!FieldData.ContainsKey(i))
+                        {
+                            Fields.Archive archive = Fields.Archive.Load(i, Fields.Sections.MRT | Fields.Sections.RAT | Fields.Sections.JSM | Fields.Sections.SYM);
+
+                            if (archive != null)
+                                FieldData.TryAdd(i, archive);
+                        }
+                    }
+                    tasks[j]=(Task.Run(() => process(j)));
                 }
+                Task.WaitAll(tasks);
             }
+            FieldsWithBattleScripts =
+            (from FieldArchive in FieldData
+             where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
+             from jsmObject in FieldArchive.Value.jsmObjects
+             from Script in jsmObject.Scripts
+             from Instruction in Script.Segment
+             where Instruction.GetType() == typeof(Fields.Scripts.Instructions.BATTLE)
+             select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((Fields.Scripts.Instructions.BATTLE)Instruction).Encounter))).ToHashSet();
         }
 
         private static void LoadWorld()
@@ -269,7 +295,7 @@ namespace OpenVIII.Dat_Dump
             //chara = new CharaOne(aw.GetBinaryFile(charaOne));
             using (World.Wmset Wmset = new World.Wmset(aw.GetBinaryFile(wmPath)))
             {
-                WorldEncounters = Wmset.Encounters.SelectMany(x=>x.Select(y=>y)).Distinct().ToHashSet();
+                WorldEncounters = Wmset.Encounters.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
             }
             //rail = new rail(aw.GetBinaryFile(railFile));
         }

@@ -33,15 +33,18 @@ namespace OpenVIII.Fields
         public ushort ID { get; private set; }
         public string FileName { get; private set; }
         public string ArchiveName { get; private set; }
+        public List<Scripts.Jsm.GameObject> jsmObjects { get; private set; } = null;
 
         #endregion Properties
 
         #region Methods
 
+        public override string ToString() => $"{{{ID}, {FileName}, {Mod}}}";
         public static Archive Load(ushort inputFieldID, Sections flags = Sections.ALL)
         {
             Archive r = new Archive();
-            r.Init(inputFieldID, flags);
+            if (!r.Init(inputFieldID, flags))
+                return null;
             return r;
         }
 
@@ -60,7 +63,7 @@ namespace OpenVIII.Fields
             }
         }
 
-        public void Init(ushort? inputFieldID = null, Sections flags = Sections.ALL)
+        public bool Init(ushort? inputFieldID = null, Sections flags = Sections.ALL)
         {
             Flags = flags;
             Memory.SuppressDraw = true;
@@ -71,14 +74,14 @@ namespace OpenVIII.Fields
             int count = (Memory.FieldHolder.fields?.Length ?? 0);
             if (ID >= count ||
                 ID < 0)
-                return;
+                return false;
             FileName = Memory.FieldHolder.GetString(ID);
             ArchiveName = test.FirstOrDefault(x => x.IndexOf(FileName, StringComparison.OrdinalIgnoreCase) >= 0);
             if (string.IsNullOrWhiteSpace(ArchiveName))
             {
                 Debug.WriteLine($"FileNotFound :: {ID} - {FileName.ToUpper()}");
                 Mod = Field_modes.DISABLED;
-                return;
+                return false;
             }
 
             ArchiveBase fieldArchive = aw.GetArchive(ArchiveName);
@@ -107,7 +110,6 @@ namespace OpenVIII.Fields
             //let's start with scripts
             string s_jsm = findstr(".jsm");
             string s_sy = findstr(".sy");
-            List<Scripts.Jsm.GameObject> jsmObjects = null;
             if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(s_jsm))
             {
                 try
@@ -145,7 +147,8 @@ namespace OpenVIII.Fields
                     else
                     {
                         Debug.WriteLine($"FileNotFound :: {FileName.ToUpper()}.sy");
-                        Mod = Field_modes.NOJSM;
+                        //sy file might be optional.
+                        //Mod = Field_modes.NOJSM;
                     }
                 }
             }
@@ -220,6 +223,20 @@ namespace OpenVIII.Fields
             {
                 Mod = Field_modes.DISABLED;
             }
+            if (sfx == null &&
+                pmp == null &&
+                MrtRat == null &&
+                msk == null &&
+                tdw == null &&
+                inf == null &&
+                jsmObjects == null &&
+                EventEngine == null &&
+                Cameras == null &&
+                WalkMesh == null &&
+                Background == null &&
+                services == null)
+                return false;
+            return true;
         }
 
         public void Update()

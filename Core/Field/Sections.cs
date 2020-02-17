@@ -28,6 +28,11 @@ namespace OpenVIII.Fields
         MAP = 0x8,
 
         /// <summary>
+        /// Field Background
+        /// </summary>
+        Background = Sections.MIM | Sections.MAP,
+
+        /// <summary>
         /// Field Scripts
         /// </summary>
         JSM = 0x10,
