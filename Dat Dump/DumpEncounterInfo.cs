@@ -231,8 +231,13 @@ namespace OpenVIII.Dat_Dump
                     //check encounters in fields and confirm encounter rate is above 0.
                     IEnumerable<string> fieldmatchs = FieldData.Where(x => x.Value.MrtRat != null && (x.Value.MrtRat.Any(y => y.Key == e.ID && y.Value > 0))).Select(x => x.Value.FileName);
                     IEnumerable<string> second = FieldsWithBattleScripts.Where(x => x.Value == e.ID).Select(x => x.Key);
-                    if(second.Any())
-                    fieldmatchs.Concat(second).Distinct();
+                    if (second.Any())
+                    {
+                        if (fieldmatchs.Any())
+                            fieldmatchs.Concat(second).Distinct();
+                        else
+                            fieldmatchs = second;
+                    }
                     if (fieldmatchs.Any())
                         Data += $"\"{string.Join($"{ls} ", fieldmatchs).TrimEnd()}\"{ls}";
                     else if (WorldEncounters.Any(x => x == e.ID))
