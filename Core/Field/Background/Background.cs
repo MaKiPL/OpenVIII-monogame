@@ -160,49 +160,83 @@ namespace OpenVIII.Fields
 
         public void Deswizzle()
         {
-            string fieldname = Module.GetFieldName();
-            string folder = Module.GetFolder(fieldname, "deswizzle");
-            Vector2 scale = quads[0].Texture.ScaleFactor;
-            int Width = (int)(tiles.Width * scale.X);
-            int Height = (int)(tiles.Height * scale.Y);
-            //Matrix backup = projectionMatrix;
-            //projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
-            tiles.UniquePupuIDs();// make sure each layer has it's own id.
-            foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu id.
+            using (Texture2D mask = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4))
             {
-                using (RenderTarget2D outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, Width, Height))
+                mask.SetData(Enumerable.Range(0, 16).Select(x => Color.White).ToArray());
+                string fieldname = Module.GetFieldName();
+                string folder = Module.GetFolder(fieldname, "deswizzle");
+                Vector2 scale = quads[0].Texture.ScaleFactor;
+                int Width = (int)(tiles.Width * scale.X);
+                int Height = (int)(tiles.Height * scale.Y);
+                //Matrix backup = projectionMatrix;
+                //projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
+                tiles.UniquePupuIDs();// make sure each layer has it's own id.
+                foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu id.
                 {
-                    //start drawing
-                    Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
-                    Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
-                    Memory.SpriteBatchStartAlpha();
-                    foreach (TileQuadTexture quad in pupuIDgroup)
+                    using (RenderTarget2D outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, Width, Height))
                     {
-                        Tile tile = (Tile)quad;
-                        //DrawBackgroundQuadsStart();
-                        //DrawBackgroundQuad(quad, true);
-                        Rectangle dst = tile.GetRectangle;
-                        dst.Offset(Math.Abs(tiles.TopLeft.X), Math.Abs(tiles.TopLeft.Y));
-                        Rectangle src = tile.Source;
-                        //src = src.Scale(scale);
-                        dst = dst.Scale(scale);
-                        quad.Texture.Draw(dst, src, Color.White);
+                        //start drawing
+                        Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
+                        Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                        Memory.SpriteBatchStartAlpha();
+                        foreach (TileQuadTexture quad in pupuIDgroup)
+                        {
+                            Tile tile = (Tile)quad;
+                            //DrawBackgroundQuadsStart();
+                            //DrawBackgroundQuad(quad, true);
+                            Rectangle dst = tile.GetRectangle;
+                            dst.Offset(Math.Abs(tiles.TopLeft.X), Math.Abs(tiles.TopLeft.Y));
+                            Rectangle src = tile.Source;
+                            //src = src.Scale(scale);
+                            dst = dst.Scale(scale);
+                            quad.Texture.Draw(dst, src, Color.White);
+                        }
+                        Memory.SpriteBatchEnd();
+                        //end drawing
+                        Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                        //set path
+                        string path = Path.Combine(folder,
+                            $"{fieldname}_{pupuIDgroup.Key.ToString("X8")}.png");
+                        //save image.
+                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                        {
+                            outTex.SaveAsPng(fs, Width, Height);
+                        }
                     }
-                    Memory.SpriteBatchEnd();
-                    //end drawing
-                    Memory.graphics.GraphicsDevice.SetRenderTarget(null);
-                    //set path
-                    string path = Path.Combine(folder,
-                        $"{fieldname}_{pupuIDgroup.Key.ToString("X8")}.png");
-                    //save image.
-                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    using (RenderTarget2D outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, Width, Height))
                     {
-                        outTex.SaveAsPng(fs, Width, Height);
+                        //start drawing
+                        Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
+                        Memory.graphics.GraphicsDevice.Clear(Color.Black);
+                        Memory.SpriteBatchStartAlpha();
+                        Rectangle src = new Rectangle(0, 0, 4, 4);
+                        foreach (TileQuadTexture quad in pupuIDgroup)
+                        {
+                            Tile tile = (Tile)quad;
+                            //DrawBackgroundQuadsStart();
+                            //DrawBackgroundQuad(quad, true);
+                            Rectangle dst = tile.GetRectangle;
+                            dst.Offset(Math.Abs(tiles.TopLeft.X), Math.Abs(tiles.TopLeft.Y));
+                            //src = src.Scale(scale);
+                            dst = dst.Scale(scale);
+                            Memory.spriteBatch.Draw(mask, dst, src, Color.White);
+                        }
+                        Memory.SpriteBatchEnd();
+                        //end drawing
+                        Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                        //set path
+                        string path = Path.Combine(folder,
+                            $"{fieldname}_{pupuIDgroup.Key.ToString("X8")}_MASK.png");
+                        //save image.
+                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                        {
+                            outTex.SaveAsPng(fs, Width, Height);
+                        }
                     }
                 }
+                Process.Start(folder);
+                //projectionMatrix = backup;
             }
-            Process.Start(folder);
-            //projectionMatrix = backup;
         }
 
         // This code added to correctly implement the disposable pattern.
