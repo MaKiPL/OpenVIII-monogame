@@ -12,7 +12,7 @@ namespace OpenVIII.Fields.Scripts
         {
             public sealed partial class If
             {
-                private sealed class IfSegment : ExecutableSegment
+                public sealed class IfSegment : ExecutableSegment
                 {
                     private readonly If _aggregator;
 

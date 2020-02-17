@@ -1,9 +1,12 @@
-﻿using System.Collections.Concurrent;
+﻿using OpenVIII.Fields.Scripts;
+using OpenVIII.Fields.Scripts.Instructions;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using static OpenVIII.Fields.Scripts.Jsm;
 
 namespace OpenVIII.Dat_Dump
 {
@@ -12,8 +15,8 @@ namespace OpenVIII.Dat_Dump
         #region Fields
 
         public static ConcurrentDictionary<int, Fields.Archive> FieldData;
-        private static HashSet<ushort> WorldEncounters;
         private static HashSet<KeyValuePair<string, ushort>> FieldsWithBattleScripts;
+        private static HashSet<ushort> WorldEncounters;
 
         #endregion Fields
 
@@ -226,7 +229,7 @@ namespace OpenVIII.Dat_Dump
 
                         enemies += $"{counts.First(y => y.Key == x).Value} × {name}{ls} ";
                     });
-                    enemies = enemies.TrimEnd() + "\"";
+                    enemies = enemies.TrimEnd(ls[0], ' ') + "\"";
                     Data += $"{enemies}{ls}";
                     //check encounters in fields and confirm encounter rate is above 0.
                     IEnumerable<string> fieldmatchs = FieldData.Where(x => x.Value.MrtRat != null && (x.Value.MrtRat.Any(y => y.Key == e.ID && y.Value > 0))).Select(x => x.Value.FileName);
@@ -239,7 +242,7 @@ namespace OpenVIII.Dat_Dump
                             fieldmatchs = second;
                     }
                     if (fieldmatchs.Any())
-                        Data += $"\"{string.Join($"{ls} ", fieldmatchs).TrimEnd()}\"{ls}";
+                        Data += $"\"{string.Join($"{ls} ", fieldmatchs).TrimEnd(ls[0], ' ')}\"{ls}";
                     else if (WorldEncounters.Any(x => x == e.ID))
                     {
                         Data += $"WorldMap{ls}";
@@ -261,7 +264,7 @@ namespace OpenVIII.Dat_Dump
                 foreach (ushort j in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
                 {
                     void process(ushort i)
-                        {
+                    {
                         if (!FieldData.ContainsKey(i))
                         {
                             Fields.Archive archive = Fields.Archive.Load(i, Fields.Sections.MRT | Fields.Sections.RAT | Fields.Sections.JSM | Fields.Sections.SYM);
@@ -270,16 +273,50 @@ namespace OpenVIII.Dat_Dump
                                 FieldData.TryAdd(i, archive);
                         }
                     }
-                    tasks[j]=(Task.Run(() => process(j)));
+                    tasks[j] = (Task.Run(() => process(j)));
                 }
                 Task.WaitAll(tasks);
+            }
+            //https://stackoverflow.com/questions/22988115/selectmany-to-flatten-a-nested-structure
+            //Func<IJsmInstruction, IEnumerable<IJsmInstruction>> flattener = null;
+            //flattener = n => new[] { n }
+            //    .Concat(n == null
+            //        ? Enumerable.Empty<JsmInstruction>()
+            //        : n.SelectMany(flattener));
+            IEnumerable<IJsmInstruction> flatten(IJsmInstruction e)
+            {
+                bool checktype(IJsmInstruction inst)
+                {
+                    return
+                        typeof(Control.While.WhileSegment) == inst.GetType() ||
+                    typeof(Control.If.ElseIfSegment) == inst.GetType() ||
+                    typeof(Control.If.ElseSegment) == inst.GetType() ||
+                    typeof(Control.If.IfSegment) == inst.GetType() ||
+                    typeof(Jsm.ExecutableSegment) == inst.GetType();
+                }
+
+                if (checktype(e))
+                {
+                    ExecutableSegment es = ((ExecutableSegment)e);
+                    foreach (ExecutableSegment child in es.Where(x => checktype(x)).Select(x => (ExecutableSegment)x))
+                    {
+                        foreach (IJsmInstruction i in flatten(child))
+                            yield return i;
+                    }
+                    foreach (IJsmInstruction child in es.Where(x => !checktype(x)))
+                    {
+                        yield return child;
+                    }
+                }
+                else
+                    yield return e;
             }
             FieldsWithBattleScripts =
             (from FieldArchive in FieldData
              where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
              from jsmObject in FieldArchive.Value.jsmObjects
              from Script in jsmObject.Scripts
-             from Instruction in Script.Segment
+             from Instruction in flatten(Script.Segment)
              where Instruction.GetType() == typeof(Fields.Scripts.Instructions.BATTLE)
              select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((Fields.Scripts.Instructions.BATTLE)Instruction).Encounter))).ToHashSet();
         }

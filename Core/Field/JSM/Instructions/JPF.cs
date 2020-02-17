@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class JPF : JsmInstruction, IJumpToOpcode, IFormattableScript
+    public sealed class JPF : JsmInstruction, IJumpToOpcode, IFormattableScript
     {
         public Int32 Offset { get; set; }
         public IReadOnlyList<IJsmExpression> Conditions => _conditions;

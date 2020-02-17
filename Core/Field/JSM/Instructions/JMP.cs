@@ -3,7 +3,7 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class JMP : JsmInstruction, IJumpToOpcode
+    public sealed class JMP : JsmInstruction, IJumpToOpcode
     {
         public Int32 Offset { get; set; }
 

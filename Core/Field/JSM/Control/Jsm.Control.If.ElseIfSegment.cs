@@ -12,7 +12,7 @@ namespace OpenVIII.Fields.Scripts
         {
             public sealed partial class If
             {
-                private sealed class ElseIfSegment : Segment
+                public sealed class ElseIfSegment : Segment
                 {
                     public ElseIfSegment(Int32 from, Int32 to)
                         : base(from, to)

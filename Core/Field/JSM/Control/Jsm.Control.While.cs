@@ -47,7 +47,7 @@ namespace OpenVIII.Fields.Scripts
                     yield return _segment;
                 }
 
-                private sealed class WhileSegment : ExecutableSegment
+                public sealed class WhileSegment : ExecutableSegment
                 {
                     public WhileSegment(Int32 from, Int32 to)
                         : base(from, to)
