@@ -317,8 +317,21 @@ namespace OpenVIII.Dat_Dump
              from jsmObject in FieldArchive.Value.jsmObjects
              from Script in jsmObject.Scripts
              from Instruction in flatten(Script.Segment)
-             where Instruction.GetType() == typeof(Fields.Scripts.Instructions.BATTLE)
-             select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((Fields.Scripts.Instructions.BATTLE)Instruction).Encounter))).ToHashSet();
+             where Instruction.GetType() == typeof(BATTLE)
+             select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((BATTLE)Instruction).Encounter))).ToHashSet();
+
+            
+
+            //var Areanames =
+            //(from FieldArchive in FieldData
+            // where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
+            // from jsmObject in FieldArchive.Value.jsmObjects
+            // from Script in jsmObject.Scripts
+            // from Instruction in flatten(Script.Segment)
+            // where Instruction.GetType() == typeof(SETPLACE)
+            // select (new KeyValuePair<string, FF8String>(FieldArchive.Value.FileName, ((SETPLACE)Instruction).areaName()))).ToHashSet().GroupBy(x=>x.Value).ToDictionary(x=>x.Key,x=> string.Join("; ", x.Select(y=>y.Key).ToHashSet()));
+            
+
         }
 
         private static void LoadWorld()

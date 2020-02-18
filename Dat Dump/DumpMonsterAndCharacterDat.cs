@@ -9,8 +9,30 @@ namespace OpenVIII.Dat_Dump
 {
     internal static class DumpMonsterAndCharacterDat
     {
+        #region Fields
+
         public static ConcurrentDictionary<int, Debug_battleDat> MonsterData = new ConcurrentDictionary<int, Debug_battleDat>();
         private static ConcurrentDictionary<int, Debug_battleDat> CharacterData = new ConcurrentDictionary<int, Debug_battleDat>();
+
+        #endregion Fields
+
+        #region Properties
+
+        private static string ls => CultureInfo.CurrentCulture.TextInfo.ListSeparator;
+
+        #endregion Properties
+
+        #region Methods
+
+        public static void LoadMonsters()
+        {
+            for (int i = 0; i <= 200; i++)
+            {
+                //one issue with this is animations aren't loaded. because it requires all the geometry and skeleton loaded...
+                // so the sequence dump is probably less useful or broken.
+                MonsterData.TryAdd(i, Debug_battleDat.Load(i, Debug_battleDat.EntityType.Monster, flags: Sections.Animation_Sequences | Sections.Information));
+            }
+        }
 
         public static void Process()
         {
@@ -54,14 +76,42 @@ namespace OpenVIII.Dat_Dump
             Console.Write("Press [Enter] key to continue...  ");
             FF8String sval = Console.ReadLine().Trim((Environment.NewLine + " _").ToCharArray());
         }
-        public static void LoadMonsters()
+
+        private static string XMLAnimations(XmlWriter xmlWriter, Debug_battleDat _BattleDat)
         {
-            for (int i = 0; i <= 200; i++)
+            string count = $"{_BattleDat.animHeader.animations?.Length ?? 0}";
+            xmlWriter.WriteStartElement("animations");
+            xmlWriter.WriteAttributeString("count", count);
+            xmlWriter.WriteEndElement();
+            return count;
+        }
+
+        private static void XmlCharacterData(XmlWriter xmlWriter, StreamWriter csvFile)
+        {
+            xmlWriter.WriteStartElement("characters");
+            for (int i = 0; i <= 10; i++)
             {
-                //one issue with this is animations aren't loaded. because it requires all the geometry and skeleton loaded...
-                // so the sequence dump is probably less useful or broken.
-                MonsterData.TryAdd(i, Debug_battleDat.Load(i, Debug_battleDat.EntityType.Monster,flags: Sections.Animation_Sequences | Sections.Information));
+                Debug_battleDat test = Debug_battleDat.Load(i, Debug_battleDat.EntityType.Character, 0);
+                if (test != null && CharacterData.TryAdd(i, test))
+                {
+                }
+                if (CharacterData.TryGetValue(i, out Debug_battleDat _BattleDat))
+                {
+                    const string type = "character";
+                    xmlWriter.WriteStartElement(type);
+                    string id = i.ToString();
+                    xmlWriter.WriteAttributeString("id", id);
+                    FF8String name = Memory.Strings.GetName((Characters)i);
+                    xmlWriter.WriteAttributeString("name", name);
+                    string prefix0 = $"{type}{ls}{id}{ls}";
+                    string prefix1 = $"{name}";
+                    prefix1 += $"{ls}{XMLAnimations(xmlWriter, _BattleDat)}";
+                    XMLSequences(xmlWriter, _BattleDat, csvFile, $"{prefix0}{prefix1}");
+                    XmlWeaponData(xmlWriter, i, ref _BattleDat, csvFile, prefix1);
+                    xmlWriter.WriteEndElement();
+                }
             }
+            xmlWriter.WriteEndElement();
         }
 
         private static void XmlMonsterData(XmlWriter xmlWriter, StreamWriter csvFile, StreamWriter csv2File)
@@ -110,33 +160,33 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteEndElement();
         }
 
-        private static string ls => CultureInfo.CurrentCulture.TextInfo.ListSeparator;
-
-        private static void XmlCharacterData(XmlWriter xmlWriter, StreamWriter csvFile)
+        private static void XMLSequences(XmlWriter xmlWriter, Debug_battleDat _BattleDat, StreamWriter csvFile, string prefix)
         {
-            xmlWriter.WriteStartElement("characters");
-            for (int i = 0; i <= 10; i++)
-            {
-                Debug_battleDat test = Debug_battleDat.Load(i, Debug_battleDat.EntityType.Character, 0);
-                if (test != null && CharacterData.TryAdd(i, test))
+            xmlWriter.WriteStartElement("sequences");
+            string count = $"{_BattleDat.Sequences?.Count ?? 0}";
+            xmlWriter.WriteAttributeString("count", count);
+            if (_BattleDat.Sequences != null)
+                foreach (Debug_battleDat.AnimationSequence s in _BattleDat.Sequences)
                 {
-                }
-                if (CharacterData.TryGetValue(i, out Debug_battleDat _BattleDat))
-                {
-                    const string type = "character";
-                    xmlWriter.WriteStartElement(type);
-                    string id = i.ToString();
+                    xmlWriter.WriteStartElement("sequence");
+                    string id = s.id.ToString();
+                    string offset = s.offset.ToString("X");
+                    string bytes = s.data.Length.ToString();
+
                     xmlWriter.WriteAttributeString("id", id);
-                    FF8String name = Memory.Strings.GetName((Characters)i);
-                    xmlWriter.WriteAttributeString("name", name);
-                    string prefix0 = $"{type}{ls}{id}{ls}";
-                    string prefix1 = $"{name}";
-                    prefix1 += $"{ls}{XMLAnimations(xmlWriter, _BattleDat)}";
-                    XMLSequences(xmlWriter, _BattleDat, csvFile, $"{prefix0}{prefix1}");
-                    XmlWeaponData(xmlWriter, i, ref _BattleDat, csvFile, prefix1);
+                    xmlWriter.WriteAttributeString("offset", offset);
+                    xmlWriter.WriteAttributeString("bytes", bytes);
+
+                    csvFile?.Write($"{prefix ?? ""}{ls}{count}{ls}{id}{ls}{s.offset}{ls}{bytes}");
+                    foreach (byte b in s.data)
+                    {
+                        xmlWriter.WriteString($"{b.ToString("X2")} ");
+                        csvFile?.Write($"{ls}{b}");
+                    }
+                    csvFile?.Write(Environment.NewLine);
                     xmlWriter.WriteEndElement();
                 }
-            }
+            csvFile?.Flush();
             xmlWriter.WriteEndElement();
         }
 
@@ -180,43 +230,6 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteEndElement();
         }
 
-        private static void XMLSequences(XmlWriter xmlWriter, Debug_battleDat _BattleDat, StreamWriter csvFile, string prefix)
-        {
-            xmlWriter.WriteStartElement("sequences");
-            string count = $"{_BattleDat.Sequences?.Count ?? 0}";
-            xmlWriter.WriteAttributeString("count", count);
-            if (_BattleDat.Sequences != null)
-                foreach (Debug_battleDat.AnimationSequence s in _BattleDat.Sequences)
-                {
-                    xmlWriter.WriteStartElement("sequence");
-                    string id = s.id.ToString();
-                    string offset = s.offset.ToString("X");
-                    string bytes = s.data.Length.ToString();
-
-                    xmlWriter.WriteAttributeString("id", id);
-                    xmlWriter.WriteAttributeString("offset", offset);
-                    xmlWriter.WriteAttributeString("bytes", bytes);
-
-                    csvFile?.Write($"{prefix ?? ""}{ls}{count}{ls}{id}{ls}{s.offset}{ls}{bytes}");
-                    foreach (byte b in s.data)
-                    {
-                        xmlWriter.WriteString($"{b.ToString("X2")} ");
-                        csvFile?.Write($"{ls}{b}");
-                    }
-                    csvFile?.Write(Environment.NewLine);
-                    xmlWriter.WriteEndElement();
-                }
-            csvFile?.Flush();
-            xmlWriter.WriteEndElement();
-        }
-
-        private static string XMLAnimations(XmlWriter xmlWriter, Debug_battleDat _BattleDat)
-        {
-            string count = $"{_BattleDat.animHeader.animations?.Length ?? 0}";
-            xmlWriter.WriteStartElement("animations");
-            xmlWriter.WriteAttributeString("count", count);
-            xmlWriter.WriteEndElement();
-            return count;
-        }
+        #endregion Methods
     }
 }

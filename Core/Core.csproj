@@ -436,7 +436,6 @@
     <Compile Include="AV\Ffcc.cs" />
     <Compile Include="AV\FfccVaribleGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />
-    <Compile Include="Field\Core\AreaName.cs" />
     <Compile Include="Field\Core\BreakAwaitable.cs" />
     <Compile Include="Field\Core\Coords3D.cs" />
     <Compile Include="Field\Core\Degrees.cs" />
