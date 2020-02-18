@@ -152,7 +152,7 @@ namespace OpenVIII
                 //if (Offset == s.Offset)
                 //    Max = s.Max;
                 //else
-                Debug.Assert(Offset == 0);
+                //Debug.Assert(Offset == 0);// do I need to do something here? :P 
                 Max = data.Length;
 
             }
