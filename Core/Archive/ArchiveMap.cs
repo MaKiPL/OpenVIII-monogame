@@ -63,7 +63,7 @@ namespace OpenVIII
             Stream s1 = Uncompress(fL, out long flOffset);
             Stream s2 = Uncompress(fI, out long fiOffset);
             long fiSize = fI.UncompressedSize == 0? fI.Size: fI.UncompressedSize;
-            
+
             using (StreamReader sr = new StreamReader(s1, System.Text.Encoding.UTF8))
             using (BinaryReader br = new BinaryReader(s2))
             {
@@ -147,12 +147,12 @@ namespace OpenVIII
             if (data.GetType() == typeof(StreamWithRangeValues))
             {
                 StreamWithRangeValues s = (StreamWithRangeValues)data;
-                
+
                 data = Uncompress(s, out Offset);
                 //if (Offset == s.Offset)
                 //    Max = s.Max;
                 //else
-                //Debug.Assert(Offset == 0);// do I need to do something here? :P 
+                //Debug.Assert(Offset == 0);// do I need to do something here? :P
                 Max = data.Length;
 
             }
