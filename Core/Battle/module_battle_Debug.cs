@@ -247,8 +247,9 @@ namespace OpenVIII
                 if (n < 0)
                 {
                     EnemyInstanceInformation eII = Enemy.Party.FirstOrDefault(x => x.EII.partypos == n)?.EII;
-
-                    return eII.Data.IndicatorPoint(eII.Location) + PyramidOffset;
+                    if(eII != null)
+                        return eII.Data.IndicatorPoint(eII.Location) + PyramidOffset;
+                    return Vector3.Zero;
                 }
                 else
                 return CharacterInstances[n].Data.character.IndicatorPoint(CharacterInstances[n].Data.Location) + PyramidOffset;
