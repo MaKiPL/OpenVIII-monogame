@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class POPANIME : JsmInstruction
+    /// <summary>
+    /// pop animation off stack?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/14B_POPANIME&action=edit&redlink=1"/>
+    public sealed class POPANIME : JsmInstruction
     {
         public POPANIME()
         {

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OpenVIII.Core</RootNamespace>
     <AssemblyName>Core</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -310,6 +310,9 @@
     <Compile Include="Field\INF\INF.cs" />
     <Compile Include="Field\INF\Trigger.cs" />
     <Compile Include="Field\INF\Triggers.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\ANIME.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\ANIMELOOP.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\BGANIME.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
     <Compile Include="Field\MrtRat.cs" />
     <Compile Include="Field\MSK.cs" />

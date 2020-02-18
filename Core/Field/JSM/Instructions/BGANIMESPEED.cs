@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class BGANIMESPEED : JsmInstruction
+    /// <summary>
+    /// Set Background Animation Speed
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/09B_BGANIMESPEED&action=edit&redlink=1"/>
+    public sealed class BGANIMESPEED : JsmInstruction
     {
+        /// <summary>
+        /// frame per half second.
+        /// </summary>
         private IJsmExpression _halfFps;
 
         public BGANIMESPEED(IJsmExpression halfFps)
