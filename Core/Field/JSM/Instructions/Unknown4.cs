@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class Unknown4 : JsmInstruction
+    /// <summary>
+    /// Used only twice, on the Ragnarok hatch screen.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/169_UNKNOWN4"/>
+    public sealed class Unknown4 : JsmInstruction
     {
+        /// <summary>
+        /// 1
+        /// </summary>
         private IJsmExpression _arg0;
 
         public Unknown4(IJsmExpression arg0)

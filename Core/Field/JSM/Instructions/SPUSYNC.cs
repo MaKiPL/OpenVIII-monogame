@@ -3,24 +3,32 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SPUSYNC : JsmInstruction
+    /// <summary>
+    /// <para>SPU Sync</para>
+    /// <para>Pauses this script until frame count frames have passed since SPUREADY was called.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/164_SPUSYNC"/>
+    public sealed class SPUSYNC : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        /// <summary>
+        /// Frame count
+        /// </summary>
+        private IJsmExpression _frameCount;
 
-        public SPUSYNC(IJsmExpression arg0)
+        public SPUSYNC(IJsmExpression frameCount)
         {
-            _arg0 = arg0;
+            _frameCount = frameCount;
         }
 
         public SPUSYNC(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg0: stack.Pop())
+                frameCount: stack.Pop())
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(SPUSYNC)}({nameof(_arg0)}: {_arg0})";
+            return $"{nameof(SPUSYNC)}({nameof(_frameCount)}: {_frameCount})";
         }
     }
 }

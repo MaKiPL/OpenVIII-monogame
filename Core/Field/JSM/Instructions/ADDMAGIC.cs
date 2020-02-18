@@ -1,6 +1,5 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -10,37 +9,48 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/Magic_Codes"/>
     public sealed class ADDMAGIC : JsmInstruction
     {
-        /// <summary>
-        /// Quantity
-        /// </summary>
-        private IJsmExpression _arg0;
-        /// <summary>
-        /// Magic ID
-        /// </summary>
-        private IJsmExpression _arg1;
+        #region Fields
+
         /// <summary>
         /// Character ID
         /// </summary>
-        private Characters CharacterID;
-        
-        public ADDMAGIC(IJsmExpression arg0, IJsmExpression arg1, Characters characterid)
+        private readonly Characters _characterID;
+
+        /// <summary>
+        /// Magic ID
+        /// </summary>
+        private readonly IJsmExpression _magicID;
+
+        /// <summary>
+        /// Quantity
+        /// </summary>
+        private readonly IJsmExpression _quantity;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public ADDMAGIC(IJsmExpression quantity, IJsmExpression magicID, Characters characterid)
         {
-            _arg0 = arg0;
-            _arg1 = arg1;
-            CharacterID = characterid;
+            _quantity = quantity;
+            _magicID = magicID;
+            _characterID = characterid;
         }
 
         public ADDMAGIC(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                characterid: (Characters)((Jsm.Expression.PSHN_L)stack.Pop()).Int32(),
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+                characterid: ((IConstExpression)stack.Pop()).Characters(),
+                magicID: stack.Pop(),
+                quantity: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(ADDMAGIC)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(CharacterID)}: {CharacterID})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override String ToString() => $"{nameof(ADDMAGIC)}({nameof(_quantity)}: {_quantity}, {nameof(_magicID)}: {_magicID}, {nameof(_characterID)}: {_characterID})";
+
+        #endregion Methods
     }
 }

@@ -3,6 +3,10 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
+    /// <summary>
+    /// Broken?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/165_BROKEN&action=edit&redlink=1"/>
     internal sealed class BROKEN : JsmInstruction
     {
         private IJsmExpression _arg0;

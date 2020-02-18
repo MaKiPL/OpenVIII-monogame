@@ -3,27 +3,37 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SETCARD : JsmInstruction
+    /// <summary>
+    /// Set Card? Card ID and NPC?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/15E_SETCARD&action=edit&redlink=1"/>
+    public sealed class SETCARD : JsmInstruction
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
+        /// <summary>
+        /// Unsure Maybe NPC who has the card?
+        /// </summary>
+        private readonly IJsmExpression _maybeNPC;
+        /// <summary>
+        /// I think this is the card id.
+        /// </summary>
+        private readonly Cards.ID _cardID;
 
-        public SETCARD(IJsmExpression arg0, IJsmExpression arg1)
+        public SETCARD(IJsmExpression maybeNPC, Cards.ID cardID)
         {
-            _arg0 = arg0;
-            _arg1 = arg1;
+            _maybeNPC = maybeNPC;
+            _cardID = cardID;
         }
 
         public SETCARD(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+                cardID: ((IConstExpression) stack.Pop()).Cards(),
+                maybeNPC: stack.Pop())
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(SETCARD)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1})";
+            return $"{nameof(SETCARD)}({nameof(_maybeNPC)}: {_maybeNPC}, {nameof(_cardID)}: {_cardID})";
         }
     }
 }

@@ -313,6 +313,9 @@
     <Compile Include="Field\JSM\Instructions\Abstract\ANIME.cs" />
     <Compile Include="Field\JSM\Instructions\Abstract\ANIMELOOP.cs" />
     <Compile Include="Field\JSM\Instructions\Abstract\BGANIME.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\TURN.cs" />
+    <Compile Include="Field\JSM\Instructions\ANGELODISABLE.cs" />
+    <Compile Include="Field\JSM\Instructions\HASITEM.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
     <Compile Include="Field\MrtRat.cs" />
     <Compile Include="Field\MSK.cs" />
@@ -889,7 +892,6 @@
     <Compile Include="Field\JSM\Instructions\TUTO.cs" />
     <Compile Include="Field\JSM\Instructions\UCOFF.cs" />
     <Compile Include="Field\JSM\Instructions\UCON.cs" />
-    <Compile Include="Field\JSM\Instructions\Unknown1.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown10.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown11.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown12.cs" />
@@ -900,7 +902,6 @@
     <Compile Include="Field\JSM\Instructions\Unknown2.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown3.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown4.cs" />
-    <Compile Include="Field\JSM\Instructions\Unknown5.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown6.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown7.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown8.cs" />

@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class CLOSEEYES : JsmInstruction
+    /// <summary>
+    /// Force Character's eyes closed
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/15C_CLOSEEYES&action=edit&redlink=1"/>
+    public sealed class CLOSEEYES : JsmInstruction
     {
         public CLOSEEYES()
         {

@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class Unknown3 : JsmInstruction
+    /// <summary>
+    /// Unknown3
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/168_UNKNOWN3&action=edit&redlink=1"/>
+    public sealed class Unknown3 : JsmInstruction
     {
         private IJsmExpression _arg0;
 

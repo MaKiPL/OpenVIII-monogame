@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class Unknown15 : JsmInstruction
+    /// <summary>
+    /// This has something to do with being in a ladder animation when entering an area. It's used only in two MD Level areas when it detects you've come from another area via ladder.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/180_UNKNOWN15"/>
+    public sealed class Unknown15 : JsmInstruction
     {
+        /// <summary>
+        /// 29 or 30
+        /// </summary>
         private IJsmExpression _arg0;
 
         public Unknown15(IJsmExpression arg0)

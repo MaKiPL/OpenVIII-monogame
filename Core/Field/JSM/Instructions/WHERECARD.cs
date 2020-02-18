@@ -3,24 +3,31 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class WHERECARD : JsmInstruction
+    /// <summary>
+    /// Where Card? I guess this is who has a rare card.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/160_WHERECARD&action=edit&redlink=1"/>
+    public sealed class WHERECARD : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        /// <summary>
+        /// card id?
+        /// </summary>
+        private Cards.ID _cardID;
 
-        public WHERECARD(IJsmExpression arg0)
+        public WHERECARD(Cards.ID cardID)
         {
-            _arg0 = arg0;
+            _cardID = cardID;
         }
 
         public WHERECARD(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg0: stack.Pop())
+                cardID: ((IConstExpression)stack.Pop()).Cards())
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(WHERECARD)}({nameof(_arg0)}: {_arg0})";
+            return $"{nameof(WHERECARD)}({nameof(_cardID)}: {_cardID})";
         }
     }
 }

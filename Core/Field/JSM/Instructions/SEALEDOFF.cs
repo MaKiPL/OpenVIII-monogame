@@ -1,26 +1,62 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SEALEDOFF : JsmInstruction
+    /// <summary>
+    /// <para>Enable Sealed Options (Ultimecia's Castle)</para>
+    /// <para>SEALEDOFF? on testbl9 only.</para>
+    /// <para>Enables features of the game pertaining to the last dungeon's mechanic (items, saving, etc).</para>
+    /// <para>Whether or not these are enabled/disabled is stored in byte 334. 0=Sealed, 1=Unsealed</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/159_SEALEDOFF"/>
+    /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/Variables"/>
+    public sealed class SEALEDOFF : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
+        /// <summary>
+        /// If flag is set then an option is enabled.
+        /// </summary>
+        private SFlags _flags;
 
-        public SEALEDOFF(IJsmExpression arg0)
+        #endregion Fields
+
+        #region Constructors
+
+        public SEALEDOFF(SFlags flags)
         {
-            _arg0 = arg0;
+            _flags = flags;
         }
 
         public SEALEDOFF(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg0: stack.Pop())
+                flags: (SFlags)((IConstExpression)stack.Pop()).Int32())
         {
         }
 
-        public override String ToString()
+        #endregion Constructors
+
+        #region Enums
+
+        [Flags]
+        public enum SFlags : byte
         {
-            return $"{nameof(SEALEDOFF)}({nameof(_arg0)}: {_arg0})";
+            AllDisabled = 0x0, //may not be a real value?
+            Items = 0x1, //1. Items
+            Magic = 0x2, //2. Magic
+            GF = 0x4, //4. GF
+            Draw = 0x8, //8. Draw
+            CommandAbility = 0x10, //16. Command Ability
+            LimitBreak = 0x20, //32. Limit Break
+            Resurrection = 0x40, //64. Resurrection
+            Save = 0x80, //128. Save
         }
+
+        #endregion Enums
+
+        #region Methods
+
+        public override String ToString() => $"{nameof(SEALEDOFF)}({nameof(_flags)}: {_flags})";
+
+        #endregion Methods
     }
 }
