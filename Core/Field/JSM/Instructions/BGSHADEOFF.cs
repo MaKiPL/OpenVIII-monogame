@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class BGSHADEOFF : JsmInstruction
+    /// <summary>
+    /// turn off shade?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/117_BGSHADEOFF&action=edit&redlink=1"/>
+    public sealed class BGSHADEOFF : JsmInstruction
     {
         public BGSHADEOFF()
         {

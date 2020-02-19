@@ -68,6 +68,18 @@ namespace OpenVIII.Fields.Scripts
 
         public static Cards.ID Cards(this IConstExpression expression) => checked((Cards.ID)expression.Value);
 
+        public static Byte Byte(this IJsmExpression expression, IServices services) => checked((Byte)expression.Calculate(services));
+
+        public static Byte Byte(this IConstExpression expression) => checked((Byte)expression.Value);
+
+        public static UInt16 UInt16(this IJsmExpression expression, IServices services) => checked((UInt16)expression.Calculate(services));
+
+        public static UInt16 UInt16(this IConstExpression expression) => checked((UInt16)expression.Value);
+
+        public static Int16 Int16(this IJsmExpression expression, IServices services) => checked((Int16)expression.Calculate(services));
+
+        public static Int16 Int16(this IConstExpression expression) => checked((Int16)expression.Value);
+
         public static Int32 Int32(this IJsmExpression expression, IServices services) => checked((Int32)expression.Calculate(services));
 
         public static Int32 Int32(this IConstExpression expression) => checked((Int32)expression.Value);

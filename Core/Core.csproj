@@ -317,6 +317,7 @@
     <Compile Include="Field\JSM\Instructions\Abstract\TURN.cs" />
     <Compile Include="Field\JSM\Instructions\ANGELODISABLE.cs" />
     <Compile Include="Field\JSM\Instructions\HASITEM.cs" />
+    <Compile Include="Field\Menu\FieldDebugControls.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
     <Compile Include="Field\MrtRat.cs" />
     <Compile Include="Field\MSK.cs" />

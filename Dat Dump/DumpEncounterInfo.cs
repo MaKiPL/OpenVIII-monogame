@@ -1,4 +1,5 @@
-﻿using OpenVIII.Fields.Scripts;
+﻿using Microsoft.Xna.Framework;
+using OpenVIII.Fields.Scripts;
 using OpenVIII.Fields.Scripts.Instructions;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -283,57 +284,31 @@ namespace OpenVIII.Dat_Dump
                 }
                 Task.WaitAll(tasks);
             }
-            //https://stackoverflow.com/questions/22988115/selectmany-to-flatten-a-nested-structure
-            //Func<IJsmInstruction, IEnumerable<IJsmInstruction>> flattener = null;
-            //flattener = n => new[] { n }
-            //    .Concat(n == null
-            //        ? Enumerable.Empty<JsmInstruction>()
-            //        : n.SelectMany(flattener));
-            IEnumerable<IJsmInstruction> flatten(IJsmInstruction e)
-            {
-                bool checktype(IJsmInstruction inst)
-                {
-                    return
-                        typeof(Control.While.WhileSegment) == inst.GetType() ||
-                    typeof(Control.If.ElseIfSegment) == inst.GetType() ||
-                    typeof(Control.If.ElseSegment) == inst.GetType() ||
-                    typeof(Control.If.IfSegment) == inst.GetType() ||
-                    typeof(Jsm.ExecutableSegment) == inst.GetType();
-                }
-
-                if (checktype(e))
-                {
-                    ExecutableSegment es = ((ExecutableSegment)e);
-                    foreach (ExecutableSegment child in es.Where(x => checktype(x)).Select(x => (ExecutableSegment)x))
-                    {
-                        foreach (IJsmInstruction i in flatten(child))
-                            yield return i;
-                    }
-                    foreach (IJsmInstruction child in es.Where(x => !checktype(x)))
-                    {
-                        yield return child;
-                    }
-                }
-                else
-                    yield return e;
-            }
+            
             FieldsWithBattleScripts =
             (from FieldArchive in FieldData
              where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
              from jsmObject in FieldArchive.Value.jsmObjects
              from Script in jsmObject.Scripts
-             from Instruction in flatten(Script.Segment)
+             from Instruction in Script.Segment.Flatten()
              where Instruction.GetType() == typeof(BATTLE)
              select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((BATTLE)Instruction).Encounter))).ToHashSet();
 
-            //var Areanames =
-            //(from FieldArchive in FieldData
-            // where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
-            // from jsmObject in FieldArchive.Value.jsmObjects
-            // from Script in jsmObject.Scripts
-            // from Instruction in flatten(Script.Segment)
-            // where Instruction.GetType() == typeof(SETPLACE)
-            // select (new KeyValuePair<string, FF8String>(FieldArchive.Value.FileName, ((SETPLACE)Instruction).areaName()))).ToHashSet().GroupBy(x=>x.Value).ToDictionary(x=>x.Key,x=> string.Join("; ", x.Select(y=>y.Key).ToHashSet()));
+            var Areanames =
+            (from FieldArchive in FieldData
+             where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
+             from jsmObject in FieldArchive.Value.jsmObjects
+             from Script in jsmObject.Scripts
+             from Instruction in Script.Segment.Flatten()
+             where Instruction.GetType() == typeof(RBGSHADELOOP)
+             select (new KeyValuePair<string, (int,int,int,int,Color,Color)>(FieldArchive.Value.FileName,
+             (((RBGSHADELOOP)Instruction).Arg0, 
+             ((RBGSHADELOOP)Instruction).Arg1,
+             ((RBGSHADELOOP)Instruction).Arg8,
+             ((RBGSHADELOOP)Instruction).Arg9,
+             ((RBGSHADELOOP)Instruction).C0, 
+             ((RBGSHADELOOP)Instruction).C1)))).ToHashSet()
+             .GroupBy(x=>x.Value).ToDictionary(x=>x.Key,x=> string.Join("; ", x.Select(y=>y.Key).ToHashSet()));
         }
 
         private static void LoadWorld()

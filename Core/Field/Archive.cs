@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenVIII.Fields.Scripts.Instructions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace OpenVIII.Fields
         #region Methods
 
         public override string ToString() => $"{{{ID}, {FileName}, {Mod}}}";
+
         public static Archive Load(ushort inputFieldID, Sections flags = Sections.ALL)
         {
             Archive r = new Archive();
@@ -47,6 +49,23 @@ namespace OpenVIII.Fields
                 return null;
             return r;
         }
+
+        public HashSet<ushort> GetForcedBattleEncounters() => jsmObjects != null && jsmObjects.Count > 0 ?
+            (
+             from jsmObject in jsmObjects
+             from Script in jsmObject.Scripts
+             from Instruction in Script.Segment.Flatten()
+             where Instruction.GetType() == typeof(BATTLE)
+             select ((BATTLE)Instruction).Encounter).ToHashSet() : null;
+
+        public HashSet<FF8String> GetAreaNames() => jsmObjects != null && jsmObjects.Count > 0 ?
+            (
+             from jsmObject in jsmObjects
+             from Script in jsmObject.Scripts
+             from Instruction in Script.Segment.Flatten()
+             where Instruction.GetType() == typeof(SETPLACE)
+
+             select ((SETPLACE)Instruction).AreaName()).ToHashSet() : null;
 
         public void Draw()
         {
@@ -181,8 +200,8 @@ namespace OpenVIII.Fields
             if (flags.HasFlag(Sections.TDW))
             {
                 byte[] tdwb = getfile(".tdw");//extra font
-                if(tdwb != null && tdwb.Length >0)
-                tdw = new TDW(tdwb);
+                if (tdwb != null && tdwb.Length > 0)
+                    tdw = new TDW(tdwb);
             }
 
             if (flags.HasFlag(Sections.MSK))
@@ -195,7 +214,7 @@ namespace OpenVIII.Fields
             {
                 byte[] ratb = getfile(".rat");//battle on field
                 byte[] mrtb = getfile(".mrt");//battle on field
-                if(ratb != null && mrtb != null && ratb.Length >0 && mrtb.Length>0)
+                if (ratb != null && mrtb != null && ratb.Length > 0 && mrtb.Length > 0)
                     MrtRat = new MrtRat(mrtb, ratb);
             }
             //if (flags.HasFlag(Sections.PMD))
@@ -212,7 +231,7 @@ namespace OpenVIII.Fields
                 if (pmpb != null && pmpb.Length > 4)
                     pmp = new PMP(pmpb);
             }
-            if(flags.HasFlag(Sections.SFX))
+            if (flags.HasFlag(Sections.SFX))
             {
                 byte[] sfxb = getfile(".sfx");//sound effects
                 if (sfxb != null && sfxb.Length > 0)
