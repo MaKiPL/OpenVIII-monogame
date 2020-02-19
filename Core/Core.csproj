@@ -313,6 +313,7 @@
     <Compile Include="Field\JSM\Instructions\Abstract\ANIME.cs" />
     <Compile Include="Field\JSM\Instructions\Abstract\ANIMELOOP.cs" />
     <Compile Include="Field\JSM\Instructions\Abstract\BGANIME.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\KEY.cs" />
     <Compile Include="Field\JSM\Instructions\Abstract\TURN.cs" />
     <Compile Include="Field\JSM\Instructions\ANGELODISABLE.cs" />
     <Compile Include="Field\JSM\Instructions\HASITEM.cs" />

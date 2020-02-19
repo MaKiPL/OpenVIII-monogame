@@ -270,7 +270,7 @@ namespace OpenVIII.IGMData
                     if(Memory.MusicIndex >0)
                         Memory.MusicIndex --;
                     else
-                        Memory.MusicIndex = Memory.dicMusic.Keys.Max();
+                        Memory.MusicIndex = (ushort)Memory.dicMusic.Keys.Max();
                     return true;
                 }  },
                 { Ditems.Sounds, ()=> {
@@ -303,7 +303,7 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
                 { Ditems.Music, ()=> {
-                    if(Memory.MusicIndex <Memory.dicMusic.Keys.Max())
+                    if(Memory.MusicIndex <(ushort)Memory.dicMusic.Keys.Max())
                         Memory.MusicIndex ++;
                     else
                         Memory.MusicIndex = 0;
@@ -348,9 +348,9 @@ namespace OpenVIII.IGMData
                     }
                     return ""; }},
                 { Ditems.Music, ()=> {
-                    if(Memory.dicMusic.Count > Memory.MusicIndex && Memory.dicMusic[Memory.MusicIndex].Count>0)
+                    if(Memory.dicMusic.Count > Memory.MusicIndex && Memory.dicMusic[(MusicId)Memory.MusicIndex].Count>0)
                     {
-                        string end=Path.GetFileNameWithoutExtension(Memory.dicMusic[Memory.MusicIndex][0]);
+                        string end=Path.GetFileNameWithoutExtension(Memory.dicMusic[(MusicId)Memory.MusicIndex][0]);
                         if(strDebugLobby[Ditems.Music]!=null)
                             return strDebugLobby[Ditems.Music].Clone().Append(end);
                         else

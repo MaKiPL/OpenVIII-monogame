@@ -3,7 +3,22 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SETBATTLEMUSIC : JsmInstruction
+    /// <summary>
+    /// <para>Set Battle Music</para>
+    /// <para>Sets which battle music starts playing when a battle starts. Here are some common ones, but you can use any music in the game for a battle</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0CB_SETBATTLEMUSIC"/>
+    /// <remarks>5 = Don't be Afraid (Regular Battle)</remarks>
+    /// <remarks>12 = Don't be Afraid (with X-ATM Intro)</remarks>
+    /// <remarks>13 = Force Your Way(boss battle)</remarks>
+    /// <remarks>59 = Only a Plank between One and Perdition(Bahamut battle)</remarks>
+    /// <remarks>62 = Man with the Machine Gun(Laguna's battle theme)</remarks>
+    /// <remarks>73 = Premonition (Sorceress battles)</remarks>
+    /// <remarks>76 = Maybe I'm a Lion (vs Griever)</remarks>
+    /// <remarks>90 = The Legendary Beast (Junctioned Griever))</remarks>
+    /// <remarks>93 = The Extreme(Ultimecia final battle)</remarks>
+
+    public sealed class SETBATTLEMUSIC : JsmInstruction
     {
         private MusicId _musicId;
 

@@ -2,7 +2,11 @@ using System;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class KEYON2 : JsmInstruction
+    /// <summary>
+    /// 14D KEYON2 (Unused)
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/14D_KEYON2&action=edit&redlink=1"/>
+    public sealed class KEYON2 : JsmInstruction
     {
         public KEYON2()
         {

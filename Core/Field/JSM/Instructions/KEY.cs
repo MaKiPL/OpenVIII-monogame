@@ -1,26 +1,25 @@
 ﻿using System;
-
+using OpenVIII.Fields.Scripts.Instructions.Abstract;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class KEY : JsmInstruction
+    /// <summary>
+    /// Key
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/139_KEY&action=edit&redlink=1"/>
+    public sealed class KEY : Abstract.KEY
     {
-        private IJsmExpression _arg0;
-
-        public KEY(IJsmExpression arg0)
+        public KEY(KeyFlags flags) : base(flags)
         {
-            _arg0 = arg0;
         }
 
-        public KEY(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(
-                arg0: stack.Pop())
+        public KEY(int parameter, IStack<IJsmExpression> stack) : base(parameter, stack)
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(KEY)}({nameof(_arg0)}: {_arg0})";
+            return $"{nameof(KEY)}({nameof(_flags)}: {_flags})";
         }
     }
 }

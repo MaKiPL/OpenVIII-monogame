@@ -215,23 +215,25 @@ namespace OpenVIII
             {
                 if (dicMusic.Count > 0)
                 {
+                    ushort max = (ushort)dicMusic.Keys.Max();
+                    ushort min = (ushort)dicMusic.Keys.Min();
                     while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
-                        !dicMusic.ContainsKey(currmusic))
+                        !dicMusic.ContainsKey((MusicId)currmusic))
                     {
-                        if (dicMusic.Keys.Max() < currmusic)
+                        if (max < currmusic)
                         {
-                            currmusic = dicMusic.Keys.Max();
+                            currmusic = max;
                         }
                         else
                         {
                             currmusic--;
                         }
                     }
-                    while (dicMusic.Count > 0 && prevmusic < currmusic && !dicMusic.ContainsKey(currmusic))
+                    while (dicMusic.Count > 0 && prevmusic < currmusic && !dicMusic.ContainsKey((MusicId)currmusic))
                     {
-                        if (dicMusic.Keys.Max() < currmusic)
+                        if (max < currmusic)
                         {
-                            currmusic = dicMusic.Keys.Min();
+                            currmusic = min;
                         }
                         else
                         {
@@ -249,7 +251,7 @@ namespace OpenVIII
             }
         }
 
-        public static readonly Dictionary<ushort, List<string>> dicMusic = new Dictionary<ushort, List<string>>(); //ogg and sgt files have same 3 digit prefix.
+        public static readonly Dictionary<MusicId, List<string>> dicMusic = new Dictionary<MusicId, List<string>>(); //ogg and sgt files have same 3 digit prefix.
 
         public static void SpriteBatchStartStencil(SamplerState ss = null) =>
 
