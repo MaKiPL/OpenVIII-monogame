@@ -18,6 +18,8 @@ namespace OpenVIII.Dat_Dump
         private static HashSet<KeyValuePair<string, ushort>> FieldsWithBattleScripts;
         private static HashSet<ushort> WorldEncounters;
 
+        public static HashSet<ushort> WorldEncountersLunar { get; private set; }
+
         #endregion Fields
 
         #region Properties
@@ -245,7 +247,11 @@ namespace OpenVIII.Dat_Dump
                         Data += $"\"{string.Join($"{ls} ", fieldmatchs).TrimEnd(ls[0], ' ')}\"{ls}";
                     else if (WorldEncounters.Any(x => x == e.ID))
                     {
-                        Data += $"WorldMap{ls}";
+                        Data += $"\"World Map\"{ls}";
+                    }
+                    else if (WorldEncountersLunar.Any(x => x == e.ID))
+                    {
+                        Data += $"\"World Map - Lunar Cry\"{ls}";
                     }
                     else
                         Data += ls;
@@ -320,8 +326,6 @@ namespace OpenVIII.Dat_Dump
              where Instruction.GetType() == typeof(BATTLE)
              select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((BATTLE)Instruction).Encounter))).ToHashSet();
 
-            
-
             //var Areanames =
             //(from FieldArchive in FieldData
             // where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
@@ -330,8 +334,6 @@ namespace OpenVIII.Dat_Dump
             // from Instruction in flatten(Script.Segment)
             // where Instruction.GetType() == typeof(SETPLACE)
             // select (new KeyValuePair<string, FF8String>(FieldArchive.Value.FileName, ((SETPLACE)Instruction).areaName()))).ToHashSet().GroupBy(x=>x.Value).ToDictionary(x=>x.Key,x=> string.Join("; ", x.Select(y=>y.Key).ToHashSet()));
-            
-
         }
 
         private static void LoadWorld()
@@ -351,6 +353,7 @@ namespace OpenVIII.Dat_Dump
             using (World.Wmset Wmset = new World.Wmset(aw.GetBinaryFile(wmPath)))
             {
                 WorldEncounters = Wmset.Encounters.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
+                WorldEncountersLunar = Wmset.EncountersLunar.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
             }
             //rail = new rail(aw.GetBinaryFile(railFile));
         }

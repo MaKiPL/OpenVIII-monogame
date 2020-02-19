@@ -857,6 +857,7 @@ namespace OpenVIII
         private static void CollisionUpdate()
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
+            
             int realSegmentId = GetRealSegmentId();
             realSegmentId = SetInterchangeableZone(realSegmentId);
             Segment seg = segments[realSegmentId];
@@ -894,12 +895,10 @@ namespace OpenVIII
             if(activeCollidePolygon != null)
                 if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
             {
-                foreach (var warpZone in Wmset.section8WarpZones)
+                foreach (var warpZone in Wmset.section8WarpZones.Where(x => x.segmentId == realSegmentId))
                 {
                     int fieldId = wm2field.GetFieldId(warpZone.field);
                     bool bShouldWarp = true;
-                    if (warpZone.segmentId != GetRealSegmentId())
-                        continue;
                     foreach (var condition in warpZone.conditions)
                     {
                         //test conditions here, so far we don't really know them much enough
