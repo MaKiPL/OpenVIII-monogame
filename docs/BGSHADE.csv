@@ -1,0 +1,179 @@
+﻿arg0,c0,c1,fields
+1, {R:128 G:128 B:128 A:255}, {R:96 G:96 B:96 A:255}, bcmin1_1; bcmin11a; ecmall1; ecmall1a
+1, {R:128 G:128 B:128 A:255}, {R:100 G:100 B:100 A:255}, bgeat_3; bghoke_3
+1, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, bggate_1; bgrank1; crtower1; crtower3; dogate_2; ebadele1; ecmall1; ecmall1a; emlabo2; emlobby2; emlobby4; ephall1; fegate1; fepic1; ffhole1; ggele1; ssadel2; tivisi2; ffhole1a
+1, {R:126 G:126 B:126 A:255}, {R:60 G:60 B:60 A:255}, cdfield2; fhedge1; fhedge2; fhwisef1
+1, {R:128 G:128 B:128 A:255}, {R:64 G:64 B:64 A:255}, doopen_1; doopen1a; feclock6
+1, {R:128 G:128 B:128 A:255}, {R:90 G:90 B:90 A:255}, ebroad9; ebroad9a
+1, {R:96 G:96 B:96 A:255}, {R:96 G:96 B:96 A:255}, eccway12; eccway41; eccway42; ecenter1; ecmway1; ecmway1a; ecoway1; ecoway1a; ecpway1; ecpway1a; glclub1
+1, {R:80 G:80 B:80 A:255}, {R:80 G:80 B:80 A:255}, eccway12; eccway14; eccway21; eccway22; eccway31; ecenter3; ecmway1a; ecpway1; ehback2; ehnoki1
+1, {R:64 G:64 B:64 A:255}, {R:64 G:64 B:64 A:255}, eccway14; eccway32; eccway41; eccway42; ecenter3; ecmall1; ecmall1a
+1, {R:55 G:55 B:55 A:255}, {R:55 G:55 B:55 A:255}, eccway21; eciway11; ecopen2a
+1, {R:45 G:45 B:45 A:255}, {R:45 G:45 B:45 A:255}, eccway22; eciway13; ecopen2; ecopen2a; ecopen3a
+1, {R:50 G:50 B:50 A:255}, {R:50 G:50 B:50 A:255}, eccway32; epwork3
+1, {R:40 G:40 B:40 A:255}, {R:40 G:40 B:40 A:255}, eccway42; ecopen2; ecopen3; ecpview1; ecpview2; ecpway1; epwork3; rgguest2; rgguest3; rgguest4
+1, {R:128 G:128 B:128 A:255}, {R:74 G:74 B:74 A:255}, eciway12; eciway14
+1, {R:128 G:128 B:128 A:255}, {R:127 G:127 B:127 A:255}, eciway12; eciway14
+1, {R:64 G:64 B:64 A:255}, {R:128 G:128 B:128 A:255}, ecmall1; ecmall1a
+1, {R:70 G:70 B:70 A:255}, {R:70 G:70 B:70 A:255}, ecopen2; epwork3
+1, {R:35 G:35 B:35 A:255}, {R:35 G:35 B:35 A:255}, ecopen2
+1, {R:30 G:30 B:30 A:255}, {R:30 G:30 B:30 A:255}, ecopen2a; ecopen3; ecpway1a; rgair1
+1, {R:20 G:20 B:20 A:255}, {R:20 G:20 B:20 A:255}, ecopen2a; ecopen3a; epmeet1; eproad2; epwork3
+1, {R:65 G:65 B:65 A:255}, {R:65 G:65 B:65 A:255}, ecopen3
+1, {R:128 G:128 B:128 A:255}, {R:70 G:70 B:70 A:255}, ecoway2
+1, {R:128 G:128 B:128 A:255}, {R:128 G:128 B:128 A:255}, ecoway2; epwork1; ffhill1; ehenter4
+1, {R:128 G:128 B:128 A:255}, {R:75 G:75 B:75 A:255}, ecoway2a; ecoway3
+1, {R:128 G:128 B:128 A:255}, {R:125 G:125 B:125 A:255}, ecoway2a
+1, {R:128 G:128 B:128 A:255}, {R:120 G:120 B:120 A:255}, ecoway3; ecoway3a
+1, {R:128 G:128 B:128 A:255}, {R:79 G:79 B:79 A:255}, ecoway3a
+1, {R:48 G:48 B:48 A:255}, {R:48 G:48 B:48 A:255}, ecpway1a; ssdock1
+1, {R:128 G:128 B:128 A:255}, {R:65 G:65 B:65 A:255}, ectake3
+1, {R:128 G:128 B:128 A:255}, {R:126 G:126 B:126 A:255}, ectake3
+1, {R:126 G:126 B:126 A:255}, {R:110 G:110 B:110 A:255}, efbig1
+1, {R:126 G:126 B:126 A:255}, {R:30 G:30 B:30 A:255}, elwall2
+1, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, emlabo1; ffhole1; ffhole1a
+1, {R:16 G:16 B:16 A:255}, {R:16 G:16 B:16 A:255}, emlobby2; emlobby4
+1, {R:126 G:126 B:126 A:255}, {R:70 G:70 B:70 A:255}, eproad1; eproad1a
+1, {R:126 G:126 B:126 A:255}, {R:126 G:126 B:126 A:255}, eproad1; eproad1a
+1, {R:32 G:32 B:32 A:255}, {R:32 G:32 B:32 A:255}, eproad2
+1, {R:128 G:128 B:128 A:255}, {R:24 G:24 B:24 A:255}, feclock1
+1, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, fegate1; fetre1
+1, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, feout1
+1, {R:126 G:126 B:126 A:255}, {R:63 G:63 B:63 A:255}, feout1
+1, {R:0 G:0 B:0 A:255}, {R:63 G:63 B:63 A:255}, feout1
+1, {R:0 G:0 B:0 A:255}, {R:32 G:32 B:32 A:255}, fetre1
+1, {R:126 G:126 B:126 A:255}, {R:90 G:90 B:90 A:255}, fhrail2
+1, {R:128 G:128 B:128 A:255}, {R:115 G:115 B:115 A:255}, gdsand3
+1, {R:80 G:80 B:80 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+1, {R:60 G:60 B:60 A:255}, {R:60 G:60 B:60 A:255}, rgroad2
+1, {R:0 G:0 B:0 A:255}, {R:0 G:0 B:0 A:255}, sdcore1
+1, {R:126 G:126 B:126 A:255}, {R:80 G:80 B:80 A:255}, tmhtr1
+1, {R:126 G:126 B:126 A:255}, {R:115 G:115 B:115 A:255}, tmmura2
+1, {R:26 G:26 B:26 A:255}, {R:26 G:26 B:26 A:255}, fewhite1; feblack1
+2, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, fegate1
+2, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, fegate1
+5, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, ectake1
+5, {R:100 G:100 B:100 A:255}, {R:40 G:40 B:40 A:255}, gmmoni1
+5, {R:100 G:100 B:100 A:255}, {R:60 G:60 B:60 A:255}, gmmoni1
+5, {R:60 G:60 B:60 A:255}, {R:30 G:30 B:30 A:255}, gmmoni1
+5, {R:128 G:128 B:128 A:255}, {R:100 G:100 B:100 A:255}, gmmoni1
+5, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, gnroom4
+5, {R:125 G:125 B:125 A:255}, {R:60 G:60 B:60 A:255}, gpcont1
+6, {R:128 G:128 B:128 A:255}, {R:100 G:100 B:100 A:255}, ecoway2; ecoway2a
+10, {R:0 G:0 B:0 A:255}, {R:127 G:127 B:127 A:255}, ecmview1; ecmview2
+10, {R:127 G:127 B:127 A:255}, {R:0 G:0 B:0 A:255}, ecmview1; ecmview2
+10, {R:100 G:100 B:100 A:255}, {R:60 G:60 B:60 A:255}, gmmoni1
+10, {R:60 G:60 B:60 A:255}, {R:30 G:30 B:30 A:255}, gmmoni1
+10, {R:30 G:30 B:30 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+10, {R:80 G:80 B:80 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1; gnroom2
+10, {R:128 G:128 B:128 A:255}, {R:70 G:70 B:70 A:255}, gmmoni1
+10, {R:70 G:70 B:70 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+10, {R:126 G:126 B:126 A:255}, {R:80 G:80 B:80 A:255}, gnroom2
+10, {R:60 G:60 B:60 A:255}, {R:128 G:128 B:128 A:255}, gpcont1
+10, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, ssadel2; timania4
+10, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, timania4
+15, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, ecmall1; ecmall1a
+15, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, ecmall1; ecmall1a
+15, {R:0 G:0 B:0 A:255}, {R:64 G:64 B:64 A:255}, ecmall1; ecmall1a
+15, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, ggele1
+15, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, ggele1
+15, {R:60 G:60 B:60 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1; gpcont1
+15, {R:128 G:128 B:128 A:255}, {R:60 G:60 B:60 A:255}, gmmoni1
+15, {R:100 G:100 B:100 A:255}, {R:60 G:60 B:60 A:255}, gmmoni1
+15, {R:120 G:120 B:120 A:255}, {R:30 G:30 B:30 A:255}, gmmoni1
+15, {R:126 G:126 B:126 A:255}, {R:80 G:80 B:80 A:255}, gnroom2
+15, {R:50 G:50 B:50 A:255}, {R:120 G:120 B:120 A:255}, gpcont1
+15, {R:120 G:120 B:120 A:255}, {R:50 G:50 B:50 A:255}, gpcont1
+16, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, doport_1
+16, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, doport_1
+18, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, bgmast_4
+18, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, bgmast_4
+20, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, crtower1; ffhole1; ffhole1a
+20, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, crtower1; ffhole1; ffhole1a
+20, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, ecenter2; ssadel2
+20, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, ecenter2; ssadel2
+20, {R:0 G:0 B:0 A:255}, {R:127 G:127 B:127 A:255}, ecmview1; ecmview2
+20, {R:127 G:127 B:127 A:255}, {R:0 G:0 B:0 A:255}, ecmview1; ecmview2
+20, {R:32 G:126 B:64 A:255}, {R:32 G:64 B:126 A:255}, ffhole1; ffhole1a
+20, {R:32 G:64 B:126 A:255}, {R:126 G:64 B:32 A:255}, ffhole1; ffhole1a
+20, {R:126 G:64 B:32 A:255}, {R:126 G:126 B:126 A:255}, ffhole1; ffhole1a
+20, {R:126 G:126 B:126 A:255}, {R:32 G:126 B:64 A:255}, ffhole1; ffhole1a
+20, {R:126 G:32 B:64 A:255}, {R:64 G:126 B:32 A:255}, ffhole1; ffhole1a
+20, {R:64 G:126 B:32 A:255}, {R:126 G:126 B:126 A:255}, ffhole1; ffhole1a
+20, {R:126 G:126 B:126 A:255}, {R:32 G:64 B:126 A:255}, ffhole1; ffhole1a
+20, {R:32 G:64 B:126 A:255}, {R:126 G:32 B:64 A:255}, ffhole1; ffhole1a
+20, {R:32 G:64 B:126 A:255}, {R:126 G:126 B:126 A:255}, ffhole1; ffhole1a
+20, {R:126 G:126 B:126 A:255}, {R:126 G:32 B:64 A:255}, ffhole1; ffhole1a
+20, {R:64 G:126 B:32 A:255}, {R:32 G:64 B:126 A:255}, ffhole1; ffhole1a
+20, {R:30 G:30 B:30 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+20, {R:30 G:30 B:30 A:255}, {R:126 G:126 B:126 A:255}, gmmoni1
+20, {R:60 G:60 B:60 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+20, {R:100 G:100 B:100 A:255}, {R:40 G:40 B:40 A:255}, gmmoni1
+20, {R:128 G:128 B:128 A:255}, {R:60 G:60 B:60 A:255}, gmmoni1
+20, {R:100 G:100 B:100 A:255}, {R:60 G:60 B:60 A:255}, gmmoni1
+20, {R:70 G:70 B:70 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+20, {R:50 G:50 B:50 A:255}, {R:120 G:120 B:120 A:255}, gpcont1
+20, {R:120 G:120 B:120 A:255}, {R:50 G:50 B:50 A:255}, gpcont1
+21, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, bgmdele1
+25, {R:100 G:100 B:100 A:255}, {R:120 G:120 B:120 A:255}, ecoway2; ecoway2a
+25, {R:0 G:0 B:0 A:255}, {R:100 G:100 B:100 A:255}, ecoway2; ecoway2a
+25, {R:100 G:100 B:100 A:255}, {R:0 G:0 B:0 A:255}, ecoway2; ecoway2a
+25, {R:30 G:30 B:30 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+25, {R:128 G:128 B:128 A:255}, {R:100 G:100 B:100 A:255}, gmmoni1
+25, {R:128 G:128 B:128 A:255}, {R:60 G:60 B:60 A:255}, gmmoni1
+25, {R:120 G:120 B:120 A:255}, {R:0 G:0 B:0 A:255}, gpbig1; gpbig1a; gpbig2; gpbig2a
+25, {R:50 G:50 B:50 A:255}, {R:120 G:120 B:120 A:255}, gpcont1
+25, {R:120 G:120 B:120 A:255}, {R:50 G:50 B:50 A:255}, gpcont1
+30, {R:128 G:128 B:128 A:255}, {R:65 G:93 B:141 A:255}, bgroom_6
+30, {R:65 G:93 B:141 A:255}, {R:128 G:128 B:128 A:255}, bgroom_6
+30, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, emlobby2; emlobby4; ephall1; ssadel2
+30, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, emlobby2; emlobby4; ephall1; fetre1
+30, {R:128 G:128 B:128 A:255}, {R:35 G:35 B:35 A:255}, epwork1
+30, {R:35 G:35 B:35 A:255}, {R:128 G:128 B:128 A:255}, epwork1
+30, {R:32 G:32 B:32 A:255}, {R:0 G:0 B:0 A:255}, fetre1
+30, {R:30 G:30 B:30 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+30, {R:60 G:60 B:60 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+30, {R:50 G:50 B:50 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+30, {R:70 G:70 B:70 A:255}, {R:128 G:128 B:128 A:255}, gmmoni1
+30, {R:20 G:20 B:20 A:255}, {R:128 G:128 B:128 A:255}, gnroom1
+30, {R:0 G:0 B:0 A:255}, {R:120 G:120 B:120 A:255}, gpbig1; gpbig1a; gpbig2; gpbig2a
+30, {R:120 G:120 B:120 A:255}, {R:0 G:0 B:0 A:255}, gpbig1; gpbig1a; gpbig2; gpbig2a
+32, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, emlabo2
+32, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, emlabo2
+32, {R:0 G:0 B:0 A:255}, {R:80 G:80 B:80 A:255}, emlabo2
+32, {R:80 G:80 B:80 A:255}, {R:0 G:0 B:0 A:255}, emlabo2
+32, {R:0 G:0 B:0 A:255}, {R:64 G:64 B:64 A:255}, emlabo2
+32, {R:64 G:64 B:64 A:255}, {R:0 G:0 B:0 A:255}, emlabo2
+35, {R:0 G:0 B:0 A:255}, {R:120 G:120 B:120 A:255}, gpbig1; gpbig1a; gpbig2; gpbig2a
+40, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, crtower3
+40, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, crtower3
+40, {R:0 G:0 B:0 A:255}, {R:120 G:120 B:120 A:255}, gpbig1; gpbig1a; gpbig2; gpbig2a
+40, {R:120 G:120 B:120 A:255}, {R:0 G:0 B:0 A:255}, gpbig1; gpbig1a; gpbig2; gpbig2a
+42, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, tistud21
+42, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, tistud21
+50, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, feout1
+50, {R:63 G:63 B:63 A:255}, {R:0 G:0 B:0 A:255}, feout1
+50, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, fetre1; ssadel2
+50, {R:32 G:32 B:32 A:255}, {R:0 G:0 B:0 A:255}, fetre1
+60, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, bgmdele1; dogate_2; fegate1
+60, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, dogate_2; fegate1; tivisi2
+60, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, ewpanel2; tmele1
+60, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, ewpanel2; tmele1
+60, {R:0 G:0 B:0 A:255}, {R:100 G:100 B:100 A:255}, sdcore1
+60, {R:100 G:100 B:100 A:255}, {R:0 G:0 B:0 A:255}, sdcore1
+61, {R:126 G:126 B:126 A:255}, {R:191 G:65 B:65 A:255}, dopub_3
+61, {R:191 G:65 B:65 A:255}, {R:0 G:0 B:0 A:255}, dopub_3
+61, {R:0 G:0 B:0 A:255}, {R:191 G:65 B:65 A:255}, dopub_3
+61, {R:191 G:65 B:65 A:255}, {R:126 G:126 B:126 A:255}, dopub_3
+61, {R:126 G:126 B:126 A:255}, {R:65 G:65 B:65 A:255}, emlabo1
+61, {R:65 G:65 B:65 A:255}, {R:126 G:126 B:126 A:255}, emlabo1
+61, {R:0 G:0 B:0 A:255}, {R:126 G:126 B:126 A:255}, emlabo1
+61, {R:126 G:126 B:126 A:255}, {R:0 G:0 B:0 A:255}, emlabo1
+64, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, bggate_1; bgrank1; ebadele1
+64, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, bggate_1; bgrank1; ebadele1
+100, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, ssadel2
+120, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, ffhill1; ehenter4
+120, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, ffhill1; ehenter4
+128, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, fepic1
+128, {R:0 G:0 B:0 A:255}, {R:128 G:128 B:128 A:255}, fepic1
+1600, {R:128 G:128 B:128 A:255}, {R:0 G:0 B:0 A:255}, efbig1
