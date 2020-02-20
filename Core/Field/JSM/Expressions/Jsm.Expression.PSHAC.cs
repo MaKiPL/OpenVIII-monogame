@@ -6,8 +6,16 @@ namespace OpenVIII.Fields.Scripts
     {
         public static partial class Expression
         {
+            /// <summary>
+            /// <para>Push actor code???</para>
+            /// <para>Push the entity ID of an actor onto the stack. This is always used before a call to CTURN to set which character will be faced. IDK what happens when you try to use literals for CTURN or why this function is necessary.</para>
+            /// </summary>
+            /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/013_PSHAC"/>
             public sealed class PSHAC : IJsmExpression, IConstExpression
             {
+                /// <summary>
+                /// ID of the entity to reference
+                /// </summary>
                 private Jsm.FieldObjectId _fieldObjectId;
 
                 /// <summary>

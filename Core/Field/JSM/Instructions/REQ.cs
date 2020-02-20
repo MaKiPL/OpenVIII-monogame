@@ -4,27 +4,18 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Request remote execution
-    /// Go to the method Label in the group Argument with a specified Priority.
-    /// Requests that a remote entity executes one of its member functions at a specified priority. The request is asynchronous and returns immediately without waiting for the remote execution to start or finish. If the specified priority is already busy executing, the request will fail silently. 
+    /// <para>Request remote execution</para>
+    /// <para>Go to the method Label in the group Argument with a specified Priority.</para>
+    /// <para>Requests that a remote entity executes one of its member functions at a specified priority. The request is asynchronous and returns immediately without waiting for the remote execution to start or finish. If the specified priority is already busy executing, the request will fail silently.</para>
     /// </summary>
-    internal sealed class REQ : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/014_REQ"/>
+    public sealed class REQ : Abstract.REQ
     {
-        private Int32 _objectIndex;
-        private Int32 _priority;
-        private Int32 _scriptId;
-
-        public REQ(Int32 objectIndex, Int32 priority, Int32 scriptId)
+        public REQ(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
-            _objectIndex = objectIndex;
-            _priority = priority;
-            _scriptId = scriptId;
         }
 
-        public REQ(Int32 objectIndex, IStack<IJsmExpression> stack)
-            : this(objectIndex,
-                scriptId: ((IConstExpression)stack.Pop()).Int32(),
-                priority: ((IConstExpression)stack.Pop()).Int32())
+        public REQ(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
         }
 

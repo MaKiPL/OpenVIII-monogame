@@ -8,23 +8,14 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// Go to the method Label in the group Argument with a specified Priority.
     /// Requests that a remote entity executes one of its member functions at a specified priority. The request will block until remote execution has finished before returning. 
     /// </summary>
-    internal sealed class REQEW : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/016_REQEW"/>
+    public sealed class REQEW : Abstract.REQ
     {
-        private Int32 _objectIndex;
-        private Int32 _priority;
-        private Int32 _scriptId;
-
-        public REQEW(Int32 objectIndex, Int32 priority, Int32 scriptId)
+        public REQEW(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
-            _objectIndex = objectIndex;
-            _priority = priority;
-            _scriptId = scriptId;
         }
 
-        public REQEW(Int32 objectIndex, IStack<IJsmExpression> stack)
-            : this(objectIndex,
-                scriptId: ((IConstExpression)stack.Pop()).Int32(),
-                priority: ((IConstExpression)stack.Pop()).Int32())
+        public REQEW(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
         }
 

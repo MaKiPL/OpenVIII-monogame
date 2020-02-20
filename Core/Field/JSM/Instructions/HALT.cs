@@ -6,8 +6,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <summary>
     /// Exits the current script and all scripts that are waiting on it. To end only the current script, use RET instead. 
     /// </summary>
-    internal sealed class HALT : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/01C_HALT"/>
+    public sealed class HALT : JsmInstruction
     {
+        /// <summary>
+        /// Always 0.
+        /// </summary>
         private Int32 _parameter;
 
         public HALT(Int32 parameter)

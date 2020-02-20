@@ -7,23 +7,14 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// Requests that the entity associated with a character in the current party executes one of its member functions at a specified priority.
     /// The request will block until remote execution has finished before returning. 
     /// </summary>
-    internal sealed class PREQEW : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/019_PREQEW"/>
+    public sealed class PREQEW : Abstract.PREQ
     {
-        private Int32 _partyId;
-        private Int32 _priority;
-        private Int32 _scriptId;
-
-        public PREQEW(Int32 partyId, Int32 priority, Int32 scriptId)
+        public PREQEW(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
-            _partyId = partyId;
-            _priority = priority;
-            _scriptId = scriptId;
         }
 
-        public PREQEW(Int32 partyId, IStack<IJsmExpression> stack)
-            : this(partyId,
-                scriptId: ((IConstExpression)stack.Pop()).Int32(),
-                priority: ((IConstExpression)stack.Pop()).Int32())
+        public PREQEW(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
         }
 

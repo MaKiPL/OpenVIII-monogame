@@ -6,8 +6,16 @@ namespace OpenVIII.Fields.Scripts
     {
         public static partial class Expression
         {
+            /// <summary>
+            /// <para>Push signed from memory (byte)</para>
+            /// <para>Push the first signed byte from Argument onto the stack.</para>
+            /// </summary>
+            /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/010_PSHSM_B"/>
             public sealed class PSHSM_B : IJsmExpression
             {
+                /// <summary>
+                /// Memory address.
+                /// </summary>
                 private GlobalVariableId<SByte> _globalVariable;
 
                 public PSHSM_B(GlobalVariableId<SByte> globalVariable)

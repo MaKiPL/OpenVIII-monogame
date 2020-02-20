@@ -6,6 +6,11 @@ namespace OpenVIII.Fields.Scripts
     {
         public static partial class Expression
         {
+            /// <summary>
+            /// <para>Calculate</para>
+            /// <para>Calculate value1 Argument value2 and push the result into the stack.</para>
+            /// </summary>
+            /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/001_CAL"/>
             public static class CAL
             {
                 public static IJsmExpression Read(Int32 typeValue, IStack<IJsmExpression> stack)

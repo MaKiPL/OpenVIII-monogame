@@ -4,8 +4,11 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Global[index] = (UInt16)value;
+    /// <para>Pop to memory (word)</para>
+    /// <para>Pop value from stack and store the first two bytes (word) in Argument.</para>
     /// </summary>
-    internal sealed class POPM_W : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/00D_POPM_W"/>
+    public sealed class POPM_W : JsmInstruction
     {
         private GlobalVariableId<UInt16> _globalVariable;
         private IJsmExpression _value;

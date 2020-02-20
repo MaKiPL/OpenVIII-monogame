@@ -3,8 +3,16 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class IDLOCK : JsmInstruction
+    /// <summary>
+    /// <para>Lock walkmesh ID</para>
+    /// <para>Locks a walkmesh triangle so nothing can walk over it.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/01F_IDLOCK"/>
+    public sealed class IDLOCK : JsmInstruction
     {
+        /// <summary>
+        /// Walkmesh triangle ID
+        /// </summary>
         private Int32 _parameter;
 
         public IDLOCK(Int32 parameter)
