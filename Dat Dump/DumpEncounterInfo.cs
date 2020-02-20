@@ -291,8 +291,9 @@ namespace OpenVIII.Dat_Dump
              from jsmObject in FieldArchive.Value.jsmObjects
              from Script in jsmObject.Scripts
              from Instruction in Script.Segment.Flatten()
-             where Instruction.GetType() == typeof(BATTLE)
-             select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((BATTLE)Instruction).Encounter))).ToHashSet();
+             where Instruction is BATTLE
+             let battle = ((BATTLE)Instruction)
+             select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, battle.Encounter))).ToHashSet();
 
             var Areanames =
             (from FieldArchive in FieldData
@@ -300,14 +301,12 @@ namespace OpenVIII.Dat_Dump
              from jsmObject in FieldArchive.Value.jsmObjects
              from Script in jsmObject.Scripts
              from Instruction in Script.Segment.Flatten()
-             where Instruction.GetType() == typeof(RBGSHADELOOP)
-             select (new KeyValuePair<string, (int,int,int,int,Color,Color)>(FieldArchive.Value.FileName,
-             (((RBGSHADELOOP)Instruction).Arg0, 
-             ((RBGSHADELOOP)Instruction).Arg1,
-             ((RBGSHADELOOP)Instruction).Arg8,
-             ((RBGSHADELOOP)Instruction).Arg9,
-             ((RBGSHADELOOP)Instruction).C0, 
-             ((RBGSHADELOOP)Instruction).C1)))).ToHashSet()
+             where Instruction is BGSHADE
+             let instruction = ((BGSHADE)Instruction)
+             select (new KeyValuePair<string, (int,Color,Color)>(FieldArchive.Value.FileName,
+             (instruction.FadeFrames,
+             instruction.C0,
+             instruction.C1)))).ToHashSet()
              .GroupBy(x=>x.Value).ToDictionary(x=>x.Key,x=> string.Join("; ", x.Select(y=>y.Key).ToHashSet()));
         }
 

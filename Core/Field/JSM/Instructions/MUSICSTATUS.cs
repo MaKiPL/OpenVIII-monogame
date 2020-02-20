@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class MUSICSTATUS : JsmInstruction
+    /// <summary>
+    /// See if music is playing?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/140_MUSICSTATUS&action=edit&redlink=1"/>
+    public sealed class MUSICSTATUS : JsmInstruction
     {
         public MUSICSTATUS()
         {

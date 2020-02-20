@@ -55,17 +55,18 @@ namespace OpenVIII.Fields
              from jsmObject in jsmObjects
              from Script in jsmObject.Scripts
              from Instruction in Script.Segment.Flatten()
-             where Instruction.GetType() == typeof(BATTLE)
-             select ((BATTLE)Instruction).Encounter).ToHashSet() : null;
+             where Instruction is BATTLE
+             let battle = ((BATTLE)Instruction)
+             select battle.Encounter).ToHashSet() : null;
 
         public HashSet<FF8String> GetAreaNames() => jsmObjects != null && jsmObjects.Count > 0 ?
             (
              from jsmObject in jsmObjects
              from Script in jsmObject.Scripts
              from Instruction in Script.Segment.Flatten()
-             where Instruction.GetType() == typeof(SETPLACE)
-
-             select ((SETPLACE)Instruction).AreaName()).ToHashSet() : null;
+             where Instruction is SETPLACE
+             let setplace = ((SETPLACE)Instruction)
+             select setplace.AreaName()).ToHashSet() : null;
 
         public void Draw()
         {
