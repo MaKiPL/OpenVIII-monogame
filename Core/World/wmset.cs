@@ -37,7 +37,7 @@ namespace OpenVIII.World
             Section6(); //======FINISHED [Encounter pointer (Lunar cry)]
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
             Section8(); //wm2field WIP - DEBUG data only, almost completed
-            Section9(); //=related to field2wm?
+            Section9(); //======FINISHED [Field to world map coordinates]
             Section10(); //I still don't know what it is for- something with vehicles- maybe wm2field with vehicle? -> same structure as section8
             Section11(); //??????
             //Section12(); //[UNKNOWN] Scripts- maybe some additional warp zones?
@@ -264,7 +264,7 @@ namespace OpenVIII.World
             public worldMapScript[] conditions;
         }
 
-        public static section8WarpZone[] section8WarpZones;
+        public section8WarpZone[] section8WarpZones;
 
         /// <summary>
         /// Section is responsible for world map to field transition and works as a factor of conditions
@@ -326,7 +326,7 @@ namespace OpenVIII.World
 
         #region Section 9 - Field to World map
 
-        public static Vector3[] fieldToWorldMapLocations;
+        public Vector3[] fieldToWorldMapLocations;
 
         private void Section9()
         {

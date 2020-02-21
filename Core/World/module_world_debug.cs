@@ -894,7 +894,7 @@ namespace OpenVIII
             if(activeCollidePolygon != null)
                 if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
             {
-                foreach (var warpZone in Wmset.section8WarpZones)
+                foreach (var warpZone in wmset.section8WarpZones)
                 {
                     int fieldId = wm2field.GetFieldId(warpZone.field);
                     bool bShouldWarp = true;
@@ -1212,16 +1212,16 @@ namespace OpenVIII
 
             ImGuiNET.ImGui.Separator();
             ImGuiNET.ImGui.Text("-Field2WM-");
-            for (int x = 0; x < Wmset.fieldToWorldMapLocations.Length; x++)
+            for (int x = 0; x < wmset.fieldToWorldMapLocations.Length; x++)
             {
                 ImGuiNET.ImGui.Text(
-                    $"{x}: X={Wmset.fieldToWorldMapLocations[x].X}  Y={Wmset.fieldToWorldMapLocations[x].Y}  Z={Wmset.fieldToWorldMapLocations[x].Z}");
+                    $"{x}: X={wmset.fieldToWorldMapLocations[x].X}  Y={wmset.fieldToWorldMapLocations[x].Y}  Z={wmset.fieldToWorldMapLocations[x].Z}");
                 ImGuiNET.ImGui.SameLine();
                 if(ImGuiNET.ImGui.Button($"WARP {x}"))
                 {
-                    playerPosition.X = Wmset.fieldToWorldMapLocations[x].X;
-                    playerPosition.Y = Wmset.fieldToWorldMapLocations[x].Y;
-                    playerPosition.Z = Wmset.fieldToWorldMapLocations[x].Z;
+                    playerPosition.X = wmset.fieldToWorldMapLocations[x].X;
+                    playerPosition.Y = wmset.fieldToWorldMapLocations[x].Y;
+                    playerPosition.Z = wmset.fieldToWorldMapLocations[x].Z;
                 }
             }
             ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
