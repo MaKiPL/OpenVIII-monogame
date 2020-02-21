@@ -17,7 +17,7 @@ namespace OpenVIII
         public BufferWithAge(byte[] buffer)
         {
             this.buffer = buffer;
-            Touched = Created = getTimeSpan();
+            Used = Created = DateTime.Now;
         }
 
         #endregion Constructors
@@ -25,8 +25,8 @@ namespace OpenVIII
         #region Properties
 
         public int Count => ((IReadOnlyList<byte>)buffer).Count;
-        public TimeSpan Created { get; }
-        public TimeSpan Touched { get; private set; }
+        public DateTime Created { get; }
+        public DateTime Used { get; private set; }
 
         #endregion Properties
 
@@ -46,9 +46,9 @@ namespace OpenVIII
 
         IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<byte>)buffer).GetEnumerator();
 
-        public TimeSpan Poke() => Touched = getTimeSpan();
+        public DateTime Poke() => Used = DateTime.Now;
 
-        private static TimeSpan getTimeSpan() => Memory.ElapsedGameTime;
+        public override string ToString() => $"{{{nameof(Created)}: {Created}, {nameof(Used)}: {Used}, Size: {buffer?.Length ?? 0}}}";
 
         #endregion Methods
     }

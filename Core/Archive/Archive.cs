@@ -17,32 +17,47 @@ namespace OpenVIII
         public class Archive : IReadOnlyList<string>
         {
             public List<Archive> Parent { get; set; }
-            public bool IsDir { get; }
-            public bool IsFile { get; }
+            public bool IsDir { get; private set; }
+            public bool IsFile { get; private set; }
 
             //public string _Root { get; set; }
-            public string _Filename { get; private set; }
+            private string _filename;
 
-            public Archive(string path, params Archive[] parent) : this(path) => Parent = parent.ToList();
+            public Archive(string path, params Archive[] parent) : this(path, false) => Parent = parent.ToList();
 
-            public Archive(string path)
+            public Archive(string path, bool keepext, params Archive[] parent) : this(path, keepext) => Parent = parent.ToList();
+            public Archive(string path) : this(path, false)
+            {}
+            
+            public Archive(string path, bool keepext)
             {
                 Parent = null;
+                SetFilename(path, keepext);
+            }
+
+            /// <summary>
+            /// SetFileName can be used to update path.
+            /// </summary>
+            /// <param name="path">Path to search parent for.</param>
+            /// <param name="keepext">Extensions for FIFLFS are all different. Where ZZZ would be just one extension</param>
+            public void SetFilename(string path, bool keepext = false)
+            {
                 if (Directory.Exists(path))
                 {
                     IsDir = true;
-                    _Filename = path;
+                    _filename = path;
                 }
                 else if (File.Exists(path))
                 {
                     IsFile = true;
-                    _Filename = path;
+                    _filename = path;
                 }
+                else if(!keepext)
+                    _filename = Path.GetFileNameWithoutExtension(path);
                 else
-                    _Filename = Path.GetFileNameWithoutExtension(path);
+                    _filename = Path.GetFileName(path);
             }
-
-            public static implicit operator string(Archive val) => val._Filename;
+            public static implicit operator string(Archive val) => val._filename;
 
             public static implicit operator Archive(string path) => new Archive(path);
 
@@ -65,41 +80,44 @@ namespace OpenVIII
 
             public const string B_ZZZ = ".zzz";
 
-            public bool IsZZZ => _Filename.EndsWith(B_ZZZ, StringComparison.OrdinalIgnoreCase);
-            public bool IsFileList => _Filename.EndsWith(B_FileList, StringComparison.OrdinalIgnoreCase);
-            public bool IsFileIndex => _Filename.EndsWith(B_FileIndex, StringComparison.OrdinalIgnoreCase);
-            public bool IsFileArchive => _Filename.EndsWith(B_FileArchive, StringComparison.OrdinalIgnoreCase);
+            public bool IsZZZ => _filename.EndsWith(B_ZZZ, StringComparison.OrdinalIgnoreCase);
+            public bool IsFileList => _filename.EndsWith(B_FileList, StringComparison.OrdinalIgnoreCase);
+            public bool IsFileIndex => _filename.EndsWith(B_FileIndex, StringComparison.OrdinalIgnoreCase);
+            public bool IsFileArchive => _filename.EndsWith(B_FileArchive, StringComparison.OrdinalIgnoreCase);
 
-            public string RemoveExtension
+            private string NoExtension
             {
                 get
                 {
-                    int startIndex = _Filename.LastIndexOf('.');
-                    if (startIndex != -1)
-                        return _Filename.Remove(startIndex, _Filename.Length - startIndex);
-                    return _Filename;
+                    if(!string.IsNullOrWhiteSpace(_filename))
+                    return Path.Combine(Path.GetDirectoryName(_filename),Path.GetFileNameWithoutExtension(_filename));
+                    return "";
+                    //int startIndex = _filename.LastIndexOf('.');
+                    //if (startIndex != -1)
+                    //    return _filename.Remove(startIndex, _filename.Length - startIndex);
+                    //return _filename;
                 }
             }
 
             /// <summary>
             /// File Index
             /// </summary>
-            public string FI => $"{_Filename}{B_FileIndex}";
+            public string FI => $"{NoExtension}{B_FileIndex}";
 
             /// <summary>
             /// File List
             /// </summary>
-            public string FL => $"{_Filename}{B_FileList}";
+            public string FL => $"{NoExtension}{B_FileList}";
 
             /// <summary>
             /// File Archive
             /// </summary>
-            public string FS => $"{_Filename}{B_FileArchive}";
+            public string FS => $"{NoExtension}{B_FileArchive}";
 
             /// <summary>
             /// ZZZ File
             /// </summary>
-            public string ZZZ => $"{_Filename}{B_ZZZ}";
+            public string ZZZ => $"{NoExtension}{B_ZZZ}";
 
             public int Count => ((IReadOnlyList<string>)ext).Count;
 

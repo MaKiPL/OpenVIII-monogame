@@ -130,17 +130,17 @@ namespace OpenVIII.Fields
             //let's start with scripts
             string s_jsm = findstr(".jsm");
             string s_sy = findstr(".sy");
-            if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(s_jsm))
+            if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(s_jsm)&& (FileName != "test3"))
             {
-                try
-                {
+                //try
+                //{
                     jsmObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(s_jsm));
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e);
-                    Mod = Field_modes.NOJSM;
-                }
+                //}
+                //catch (Exception e)
+                //{
+                 //   Debug.WriteLine(e);
+                    //Mod = Field_modes.NOJSM;
+                //}
                 if (Mod != Field_modes.NOJSM)
                 {
                     Sym.GameObjects symObjects;

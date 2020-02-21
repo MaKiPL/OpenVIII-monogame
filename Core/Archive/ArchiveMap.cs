@@ -149,10 +149,7 @@ namespace OpenVIII
                 StreamWithRangeValues s = (StreamWithRangeValues)data;
 
                 data = Uncompress(s, out Offset);
-                //if (Offset == s.Offset)
-                //    Max = s.Max;
-                //else
-                //Debug.Assert(Offset == 0);// do I need to do something here? :P
+                //do I need to do something here? :P
                 Max = data.Length;
 
             }

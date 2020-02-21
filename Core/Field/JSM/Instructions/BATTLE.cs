@@ -1,4 +1,5 @@
 ﻿using System;
+using static OpenVIII.Fields.Scripts.Jsm.Expression;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
@@ -17,16 +18,22 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Constructors
 
-        public BATTLE(ushort encounter, BFlags flags)
+        public BATTLE(IJsmExpression encounter, IJsmExpression flags)
         {
-            _encounter = encounter;
-            _flags = flags;
+            if (encounter is PSHI_L || encounter is PSHSM_W)
+            {
+                //requires service to evaluate value?
+                _encounter = ushort.MaxValue;//so I set an invalid value here.
+            }
+            else
+                _encounter = ((IConstExpression)encounter).UInt16();
+            _flags = (BFlags)((IConstExpression)flags).Int32();
         }
 
         public BATTLE(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                flags: (BFlags)((IConstExpression)stack.Pop()).Int32(),
-                encounter: (ushort)((IConstExpression)stack.Pop()).Int32())
+                flags: stack.Pop(),
+                encounter: stack.Pop())
         {
         }
 

@@ -4,10 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MOVIEREADY : JsmInstruction
     {
-        private Int32 _movieId;
-        private Boolean _flag;
+        private IJsmExpression _movieId;
+        private IJsmExpression _flag;
 
-        public MOVIEREADY(Int32 movieId, Boolean flag)
+        public MOVIEREADY(IJsmExpression movieId, IJsmExpression flag)
         {
             _movieId = movieId;
             _flag = flag;
@@ -15,8 +15,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public MOVIEREADY(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                flag: ((Jsm.Expression.PSHN_L)stack.Pop()).Boolean(),
-                movieId: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
+                flag: stack.Pop(),
+                movieId: stack.Pop())
         {
         }
 
@@ -29,8 +29,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
             var formatter = sw.Format(formatterContext, services);
 
-            foreach (String name in MovieName.PossibleNames(_movieId))
-                formatter.CommentLine(name);
+            //foreach (String name in MovieName.PossibleNames(_movieId))
+            //    formatter.CommentLine(name);
 
             formatter
                 .StaticType(nameof(IMovieService))
@@ -42,7 +42,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            ServiceId.Movie[services].PrepareToPlay(_movieId, _flag);
+            throw new NotImplementedException("was getting InvalidCastExceptions So need correct cast to movieid and flag");
+            //ServiceId.Movie[services].PrepareToPlay(_movieId, _flag);
             return DummyAwaitable.Instance;
         }
     }

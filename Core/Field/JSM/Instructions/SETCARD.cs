@@ -16,9 +16,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// <summary>
         /// I think this is the card id.
         /// </summary>
-        private readonly Cards.ID _cardID;
+        private readonly IJsmExpression _cardID; 
 
-        public SETCARD(IJsmExpression maybeNPC, Cards.ID cardID)
+        public SETCARD(IJsmExpression maybeNPC, IJsmExpression cardID)
         {
             _maybeNPC = maybeNPC;
             _cardID = cardID;
@@ -26,7 +26,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public SETCARD(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                cardID: ((IConstExpression) stack.Pop()).Cards(),
+                cardID: stack.Pop(), //can't cast to card ID with out doing something first
                 maybeNPC: stack.Pop())
         {
         }

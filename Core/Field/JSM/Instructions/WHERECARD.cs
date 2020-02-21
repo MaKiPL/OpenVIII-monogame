@@ -12,16 +12,16 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// <summary>
         /// card id?
         /// </summary>
-        private Cards.ID _cardID;
+        private IJsmExpression _cardID;
 
-        public WHERECARD(Cards.ID cardID)
+        public WHERECARD(IJsmExpression cardID)
         {
             _cardID = cardID;
         }
 
         public WHERECARD(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                cardID: ((IConstExpression)stack.Pop()).Cards())
+                cardID: stack.Pop())
         {
         }
 

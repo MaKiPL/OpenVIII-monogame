@@ -45,13 +45,13 @@ namespace OpenVIII
             if (ParentPath != null && ParentPath.Count > 0)
                 foreach (Memory.Archive p in ParentPath)
                 {
-                    if (p.IsDir)
-                    {
-                        tempArchive = ArchiveBase.Load(p);
-                    }
-                    else if (tempArchive != null)
+                    if (tempArchive != null)
                     {
                         tempArchive = tempArchive.GetArchive(p);
+                    }
+                    else if (p.IsDir || p.IsFile)
+                    {
+                        tempArchive = ArchiveBase.Load(p);
                     }
                 }
             if (tempArchive != null)
@@ -235,23 +235,34 @@ namespace OpenVIII
 
         public override ArchiveBase GetArchive(Memory.Archive archive)
         {
-            if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
+            if (archive == Memory.Archives.ZZZ_MAIN || archive == Memory.Archives.ZZZ_OTHER)
             {
-                if (archive == Memory.Archives.ZZZ_MAIN || archive == Memory.Archives.ZZZ_OTHER)
+                string zzz = archive.ZZZ;
+                if (FindFile(ref zzz) > -1 && !string.IsNullOrWhiteSpace(zzz))
                 {
-                    string zzz = archive.ZZZ;
-                    if (FindFile(ref zzz) > -1 && !string.IsNullOrWhiteSpace(zzz))
+                    if (File.Exists(zzz))
+                        archive.SetFilename(zzz);
+                    if (!ArchiveBase.TryGetValue(archive, out ArchiveBase ab))
                     {
                         return ArchiveZZZ.Load(zzz);
                     }
+                    return ab;
                 }
-                GetArchive(archive, out StreamWithRangeValues fI, out ArchiveBase fS, out StreamWithRangeValues fL);
-                if (fI == null || fS == null || fL == null ||
-                    fI.Length == 0 || fL.Length == 0)
-                    return null;
-                return new ArchiveWorker(archive, fI, fS, fL);
             }
-            return value;
+            else
+            {
+                if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
+                {
+                    GetArchive(archive, out StreamWithRangeValues fI, out ArchiveBase fS, out StreamWithRangeValues fL);
+                    if (fI == null || fS == null || fL == null ||
+                        fI.Length == 0 || fL.Length == 0)
+                        return null;
+                    return new ArchiveWorker(archive, fI, fS, fL);
+
+                }
+                return value;
+            }
+            return null;
         }
 
         /// <summary>
@@ -264,11 +275,18 @@ namespace OpenVIII
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new FileNotFoundException("NO FILENAME");
 
-            if (ArchiveMap != null && ArchiveMap.Count >0)
+            if (ArchiveMap != null && ArchiveMap.Count > 0)
             {
                 if (cache)
                 {
-                    fileName = GetListOfFiles().OrderBy(x => fileName.Length).ThenBy(x => fileName, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+                    string oldfn = fileName;
+                    string[] v = GetListOfFiles();
+                    fileName = v.OrderBy(x => fileName.Length).ThenBy(x => oldfn, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.IndexOf(oldfn, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (string.IsNullOrWhiteSpace(fileName))
+                    {
+
+                    }
+                    Debug.Assert(!string.IsNullOrWhiteSpace(fileName));
                     if (!LocalTryGetValue(fileName, out BufferWithAge value))
                     {
                         byte[] buffer = FileInTwoArchives(fileName);
@@ -358,8 +376,9 @@ namespace OpenVIII
                         }
                         else if (FSArchive != null)
                             if (fi != null) // unsure about this part.
-                                return new StreamWithRangeValues(FSArchive.GetStreamWithRangeValues(_path.FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
-                        //return GetStreamWithRangeValues(_path.FS, fi, size);
+                                //return new StreamWithRangeValues(FSArchive.GetStreamWithRangeValues(_path.FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                                return new StreamWithRangeValues(new MemoryStream(FSArchive.GetBinaryFile(_path.FS,true),false), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                            //return GetStreamWithRangeValues(_path.FS, fi, size);
                             else
                                 return FSArchive.GetStreamWithRangeValues(fileName);
                         else
@@ -433,7 +452,7 @@ namespace OpenVIII
             if (FS != null && FS.Length > 0)
                 return ArchiveMap.GetBinaryFile(filename, new MemoryStream(FS));
             else if (FSArchive != null)
-                return ArchiveMap.GetBinaryFile(filename, FSArchive.GetStreamWithRangeValues(_path.FS));
+                return ArchiveMap.GetBinaryFile(filename, new MemoryStream(FSArchive.GetBinaryFile(_path.FS, true))); //FSArchive.GetStreamWithRangeValues(_path.FS));
             return null;
         }
 
@@ -572,7 +591,7 @@ namespace OpenVIII
                 if (isDir)
                     return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
                 else if (ArchiveMap != null && ArchiveMap.Count > 0)
-                    return ArchiveMap.OrderedByName.Select(x=>x.Key).ToArray();
+                    return ArchiveMap.OrderedByName.Select(x => x.Key).ToArray();
                 else if (File.Exists(_path.FL))
                     using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();

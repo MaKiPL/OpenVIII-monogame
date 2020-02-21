@@ -200,6 +200,7 @@ namespace OpenVIII
 
         public static TimeSpan TotalGameTime => gameTime?.TotalGameTime ?? TimeSpan.Zero;
         public static TimeSpan ElapsedGameTime => gameTime?.ElapsedGameTime ?? TimeSpan.Zero;
+        public static TimeSpan DateTimeNow => TimeSpan.FromTicks(DateTime.Now.Ticks);
 
         private static ushort prevmusic = 0;
         private static ushort currmusic = 0;

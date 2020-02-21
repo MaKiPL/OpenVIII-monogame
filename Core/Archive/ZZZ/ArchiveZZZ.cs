@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -93,34 +94,38 @@ namespace OpenVIII
                 return ArchiveWorker.Load(archive, GetStreamWithRangeValues(archive.FI), this, GetStreamWithRangeValues(archive.FL));
             return value;
         }
-
+        static object BinaryFileLock = new object();
         public override byte[] GetBinaryFile(string fileName, bool cache = false)
         {
             if (headerData != null)
             {
-                var filedata = GetFileData(fileName);
-                if (LocalTryGetValue(filedata.Key, out BufferWithAge value))
+                lock (BinaryFileLock)
                 {
-                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Key}");
-                    return value;
-                }
-                else
-                {
-                    BinaryReader br;
-                    if (!string.IsNullOrWhiteSpace(filedata.Key) && (br = Open()) != null)
-                        using (br)
-                        {
-                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} extracting {filedata.Key}");
-                            br.BaseStream.Seek(filedata.Value.Offset, SeekOrigin.Begin);
-                            byte[] buffer = br.ReadBytes(filedata.Value.UncompressedSize);
-                            if (cache && LocalTryAdd(filedata.Key, buffer))
-                            {
-                                Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {filedata.Key}");
-                            }
-                            return buffer;
-                        }
+                    var filedata = GetFileData(fileName);
+                    if (LocalTryGetValue(filedata.Key, out BufferWithAge value))
+                    {
+                        Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Key}");
+                        return value;
+                    }
                     else
-                        Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} FAILED extracting {fileName}");
+                    {
+                        BinaryReader br;
+                        if (!string.IsNullOrWhiteSpace(filedata.Key) && (br = Open()) != null)
+                            using (br)
+                            {
+                                //Debug.Assert(!fileName.ToLower().Contains("field.fs"));
+                                Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} extracting {filedata.Key}");
+                                br.BaseStream.Seek(filedata.Value.Offset, SeekOrigin.Begin);
+                                byte[] buffer = br.ReadBytes(filedata.Value.UncompressedSize);
+                                if (cache && LocalTryAdd(filedata.Key, buffer))
+                                {
+                                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {filedata.Key}");
+                                }
+                                return buffer;
+                            }
+                        else
+                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} FAILED extracting {fileName}");
+                    }
                 }
             }
 
@@ -141,6 +146,7 @@ namespace OpenVIII
         {
             if (headerData != null)
             {
+                Debug.Assert(Path.GetExtension(filename).ToLower() != ".fs");
                 KeyValuePair<string, FI> filedata = GetFileData(filename);
                 //if (string.IsNullOrWhiteSpace(fileName)) return null;
                 //FileData filedata = headerData.First(x => x.Filename == fileName);

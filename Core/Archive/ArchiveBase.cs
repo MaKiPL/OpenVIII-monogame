@@ -27,12 +27,12 @@ namespace OpenVIII
 
         #region Properties
 
-        public TimeSpan Created { get; protected set; }
+        public DateTime Created { get; protected set; }
 
         public bool IsOpen { get; protected set; } = false;
-        public TimeSpan Used { get; protected set; }
+        public DateTime Used { get; protected set; }
 
-        protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.Where(x => x.Value != null).OrderBy(x => x.Value.Touched).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
+        protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.Where(x => x.Value != null).OrderBy(x => x.Value.Used).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
         private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => x.Value != null && !x.Value.isDir && x.Value.GetType().Equals(typeof(ArchiveZZZ)));
 
@@ -88,7 +88,7 @@ namespace OpenVIII
         {
             Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");
             FI = GetBinaryFile(archive.FI);
-            FS = GetBinaryFile(archive.FS);
+            FS = GetBinaryFile(archive.FS,cache:true);
             FL = GetBinaryFile(archive.FL);
         }
 
@@ -104,43 +104,53 @@ namespace OpenVIII
 
         public override string ToString() => $"{_path} :: {Used}";
 
+        static object localaddlock = new object();
+
         protected static bool LocalTryAdd(string Key, BufferWithAge Value)
         {
-            if (LocalCache.TryAdd(Key, Value))
+            lock (localaddlock)
             {
-                int left = 0;
-                if ((left = OrderByAge.Count() - MaxLocalCache) > 0)
+                if (LocalCache.TryAdd(Key, Value))
                 {
-                    OrderByAge.Take(left).ForEach(x => LocalCache.TryRemove(x.Key, out BufferWithAge tmp));
+                    int left = 0;
+                    if ((left = OrderByAge.Count() - MaxLocalCache) > 0)
+                    {
+                        OrderByAge.Where(x=>x.Key != Key).Reverse().Skip(MaxLocalCache).ForEach(x =>
+                        {
+                            if (LocalCache.TryRemove(x.Key, out BufferWithAge tmp))
+                            {
+                                Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(LocalTryAdd)}::Evicting: \"{x.Key}\"");
+                            }
+                        });
+                    }
+                    return true;
                 }
-                return true;
+                return false;
             }
-            return false;
         }
 
-        protected static bool TryAdd(Memory.Archive path, ArchiveBase value)
+        protected static bool TryAdd(string Key, ArchiveBase value)
         {
-            if (ArchiveCache.TryAdd(path, value))
+            if (ArchiveCache.TryAdd(Key, value))
             {
                 if (value != null)
                 {
-                    value.Used = Memory.TotalGameTime;
-                    value.Created = Memory.TotalGameTime;
+                    value.Used = value.Created = DateTime.Now;
                 }
                 int overage = 0;
                 if ((overage = Oldest.Count() - MaxInCache) > 0)
-                    Oldest.Take(overage).ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp));
+                    Oldest.Where(x => x.Key != Key).Reverse().Skip(MaxInCache).ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp));
                 return true;
             }
             else return false;
         }
 
-        protected static bool TryGetValue(Memory.Archive path, out ArchiveBase value)
+        protected static bool TryGetValue(string path, out ArchiveBase value)
         {
             if (ArchiveCache.TryGetValue(path, out value))
             {
                 if (value != null)
-                    value.Used = Memory.TotalGameTime;
+                    value.Used = DateTime.Now;
                 return true;
             }
             else return false;
