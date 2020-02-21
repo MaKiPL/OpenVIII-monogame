@@ -312,7 +312,6 @@ namespace OpenVIII.World
                                 conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 localZone.field = argument;
                                 break;
-
                             default:
                                 conditions.Add(new worldMapScript() { argument = argument, opcode = opcode });
                                 break;
@@ -341,8 +340,8 @@ namespace OpenVIII.World
                 for (int i = 0; i < entriesCount; i++)
                 {
                     int x = br.ReadInt32();
-                    int y = br.ReadInt32();
-                    int z = br.ReadInt16();
+                    int z = br.ReadInt32();
+                    int y = br.ReadInt16();
                     fieldToWorldMapLocations[i].X = Extended.ConvertVanillaWorldXAxisToOpenVIII(x);
                     fieldToWorldMapLocations[i].Y = Extended.ConvertVanillaWorldYAxisToOpenVIII(y);
                     fieldToWorldMapLocations[i].Z = Extended.ConvertVanillaWorldZAxisToOpenVIII(z);

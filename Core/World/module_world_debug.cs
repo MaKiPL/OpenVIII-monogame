@@ -1074,7 +1074,7 @@ namespace OpenVIII
         {
             Memory.spriteBatch.GraphicsDevice.Clear(bgGradient);
 
-            
+
 
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -1086,7 +1086,7 @@ namespace OpenVIII
             effect.Projection = projectionMatrix;
             effect.View = viewMatrix;
             effect.World = worldMatrix;
-            
+
             if (bUseCustomShaderTest)
             {
                 worldShaderModel.Parameters["Projection"].SetValue(ate.Projection);
@@ -1185,7 +1185,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"Press 8 to enable/disable collision: ={bDebugDisableCollision}");
             ImGuiNET.ImGui.Text($"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}");
             ImGuiNET.ImGui.Separator();
-            System.Numerics.Vector4 imgui_skyColor = new System.Numerics.Vector4(bgGradient.R/255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
+            System.Numerics.Vector4 imgui_skyColor = new System.Numerics.Vector4(bgGradient.R / 255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
             ImGuiNET.ImGui.ColorEdit4("Sky color: ", ref imgui_skyColor);
             bgGradient = new Color(imgui_skyColor.X, imgui_skyColor.Y, imgui_skyColor.Z, imgui_skyColor.W);
             ImGuiNET.ImGui.Text($"World map MapState: ={MapState}");
@@ -1200,7 +1200,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
             ImGuiNET.ImGui.Text($"encounter: ={debugEncounter}- Press F3 to force battle");
             ImGuiNET.ImGui.Text($"FOV: {FOV}");
-            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds>0? 1d/Memory.ElapsedGameTime.TotalSeconds:0d)}");
+            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds > 0 ? 1d / Memory.ElapsedGameTime.TotalSeconds : 0d)}");
             ImGuiNET.ImGui.Text($"imgui::FPS {ImGuiNET.ImGui.GetIO().Framerate}");
             ImGuiNET.ImGui.Separator();
             if (imguiStrings != null)
@@ -1212,8 +1212,18 @@ namespace OpenVIII
 
             ImGuiNET.ImGui.Separator();
             ImGuiNET.ImGui.Text("-Field2WM-");
-            for(int x = 0; x<Wmset.fieldToWorldMapLocations.Length; x++)
-                ImGuiNET.ImGui.Text($"{x}: X={Wmset.fieldToWorldMapLocations[x].X}  Y={Wmset.fieldToWorldMapLocations[x].Y}  Z={Wmset.fieldToWorldMapLocations[x].Z}");
+            for (int x = 0; x < Wmset.fieldToWorldMapLocations.Length; x++)
+            {
+                ImGuiNET.ImGui.Text(
+                    $"{x}: X={Wmset.fieldToWorldMapLocations[x].X}  Y={Wmset.fieldToWorldMapLocations[x].Y}  Z={Wmset.fieldToWorldMapLocations[x].Z}");
+                ImGuiNET.ImGui.SameLine();
+                if(ImGuiNET.ImGui.Button($"WARP {x}"))
+                {
+                    playerPosition.X = Wmset.fieldToWorldMapLocations[x].X;
+                    playerPosition.Y = Wmset.fieldToWorldMapLocations[x].Y;
+                    playerPosition.Z = Wmset.fieldToWorldMapLocations[x].Z;
+                }
+            }
             ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
             ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
             ImGuiNET.ImGui.End();
@@ -1293,8 +1303,8 @@ namespace OpenVIII
 
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
 
-            //if(Memory.currentGraphicMode != Memory.graphicModes.DirectX)
-            //Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
+            if(Memory.currentGraphicMode != Memory.GraphicModes.DirectX)
+             Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
 
         private static void Debug_DrawRailPaths()
