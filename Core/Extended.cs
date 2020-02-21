@@ -52,7 +52,7 @@ namespace OpenVIII
         public static readonly int WORLD_COORDS_ZRANGE = Math.Abs(WORLD_COORDS_MINTOP) + WORLD_COORDS_MAXBOTTOM;
 
         /// <summary>
-        /// Indicates the OpenVIII coordinate system which shows maximum X axis. Minimum is always zero (it's the nearest to left side of worldmap)
+        /// Indicates the OpenVIII coordinate system which shows maximum X axis. Minimum is always zero (it's the nearest to right side of worldmap)
         /// </summary>
         public const int WORLD_OPENVIII_MAXRIGHT = -(32 * 512);
         /// <summary>
@@ -72,10 +72,19 @@ namespace OpenVIII
         /// <returns></returns>
         public static float ConvertVanillaWorldXAxisToOpenVIII(float x)
         {
-            float newX = x + Math.Abs(WORLD_COORDS_MINLEFT);
-            newX /= WORLD_COORDS_XRANGE; //normalized
-            newX *= WORLD_OPENVIII_MAXRIGHT;
-            return newX;
+            if(x>WORLD_COORDS_MINLEFT)
+            {
+                float leftSide = x - WORLD_COORDS_MINLEFT; //this is the distance from left to middle of map
+                //0x1FFFF is one part of map
+                float percentUsage = leftSide / 0x1FFFF; //we now know the left side map percentage use
+                return (float)(percentUsage * (WORLD_OPENVIII_MAXRIGHT / 2.0));
+            }
+            else
+            {
+                float percentUsage = x / WORLD_COORDS_MAXRIGHT;
+                double rightSide = WORLD_OPENVIII_MAXRIGHT / 2.0;
+                return (float)(percentUsage * rightSide + rightSide);
+            }
         }
 
         /// <summary>
@@ -85,10 +94,19 @@ namespace OpenVIII
         /// <returns></returns>
         public static float ConvertVanillaWorldZAxisToOpenVIII(float z)
         {
-            float newZ = z + Math.Abs(WORLD_COORDS_MINTOP);
-            newZ /= WORLD_COORDS_ZRANGE; //normalized
-            newZ *= WORLD_OPENVIII_MAXBOTTOM;
-            return newZ;
+            if (z > WORLD_COORDS_MINTOP)
+            {
+                float topSide = z - WORLD_COORDS_MINTOP; //this is the distance from left to middle of map
+                //0x1FFFF is one part of map
+                float percentUsage = topSide / 0x17FFF; //we now know the left side map percentage use
+                return (float)(percentUsage * (WORLD_OPENVIII_MAXBOTTOM / 2.0));
+            }
+            else
+            {
+                float percentUsage = z / WORLD_COORDS_MAXBOTTOM;
+                double rightSide = WORLD_OPENVIII_MAXBOTTOM / 2.0;
+                return (float)(percentUsage * rightSide + rightSide);
+            }
         }
 
         /// <summary>
