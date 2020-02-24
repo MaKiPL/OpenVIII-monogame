@@ -94,14 +94,16 @@ namespace OpenVIII
                 return ArchiveWorker.Load(archive, GetStreamWithRangeValues(archive.FI), this, GetStreamWithRangeValues(archive.FL));
             return value;
         }
-        static object BinaryFileLock = new object();
+
+        private static object BinaryFileLock = new object();
+
         public override byte[] GetBinaryFile(string fileName, bool cache = false)
         {
             if (headerData != null)
             {
                 lock (BinaryFileLock)
                 {
-                    var filedata = GetFileData(fileName);
+                    KeyValuePair<string, FI> filedata = GetFileData(fileName);
                     if (LocalTryGetValue(filedata.Key, out BufferWithAge value))
                     {
                         Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Key}");
@@ -146,15 +148,19 @@ namespace OpenVIII
         {
             if (headerData != null)
             {
-                Debug.Assert(Path.GetExtension(filename).ToLower() != ".fs");
+                //Debug.Assert(Path.GetExtension(filename).ToLower() != ".fs");
                 KeyValuePair<string, FI> filedata = GetFileData(filename);
+                if (string.IsNullOrWhiteSpace(filedata.Key) && (filedata.Value.CompressionType != 0))
+                {
+                    return new StreamWithRangeValues(new MemoryStream(GetBinaryFile(filedata.Key, true), false), 0, filedata.Value.UncompressedSize);
+                }
                 //if (string.IsNullOrWhiteSpace(fileName)) return null;
                 //FileData filedata = headerData.First(x => x.Filename == fileName);
 
                 Stream s;
                 if (!string.IsNullOrWhiteSpace(filedata.Key) && (s = OpenStream()) != null)
                 {
-                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} got stream of {filename}");
+                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} stream: {filename}");
                     if (fi != null)
                         return new StreamWithRangeValues(s, filedata.Value.Offset + fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
                     else
@@ -186,7 +192,7 @@ namespace OpenVIII
 
         public override string ToString() => $"{_path} :: {Used}";
 
-        private string[] ProduceFileLists() => headerData?.OrderedByName.Select(x=>x.Key).ToArray();
+        private string[] ProduceFileLists() => headerData?.OrderedByName.Select(x => x.Key).ToArray();
 
         #endregion Methods
     }

@@ -42,15 +42,15 @@ namespace OpenVIII
                 using (BinaryReader br = new BinaryReader(@in))
                     return br.ReadBytes(checked((int)(@in.Size - skip)));
             }
-            if (@in.Compression >= 1)
+            if (@in.Compression != 0)
                 switch (@in.Compression)
                 {
-                    case 1:
+                    case CompressionType.LZSS:
                         buffer = open(4);
                         offset = 0;
                         return new MemoryStream(LZSS.DecompressAllNew(buffer, false));
 
-                    case 2:
+                    case CompressionType.LZ4:
                         buffer = open();
                         offset = 0;
                         return new MemoryStream(LZ4Uncompress(buffer, @in.UncompressedSize));
@@ -156,16 +156,18 @@ namespace OpenVIII
             FI fi = FindString(ref input, out int size);
             if (fi == null)
             {
-                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)}:: failed to load {input}");
+                Memory.Log.WriteLine($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} failed to extract {input}");
                 return null;
             }
+            else 
+                Memory.Log.WriteLine($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} extracting {input}");
             if (size == 0)
                 size = checked((int)(Max - (fi.Offset + Offset)));
             byte[] buffer;
             using (BinaryReader br = new BinaryReader(data))
             {
                 br.BaseStream.Seek(fi.Offset + Offset, SeekOrigin.Begin);
-                if (fi.CompressionType == 1)
+                if (fi.CompressionType == CompressionType.LZSS)
                 {
                     size = br.ReadInt32();
                     buffer = br.ReadBytes(size);
@@ -178,10 +180,10 @@ namespace OpenVIII
                 case 0:
                     return buffer;
 
-                case 1:
+                case CompressionType.LZSS:
                     return LZSS.DecompressAllNew(buffer);
 
-                case 2:
+                case CompressionType.LZ4:
                     return LZ4Uncompress(buffer, fi.UncompressedSize);
 
                 default:

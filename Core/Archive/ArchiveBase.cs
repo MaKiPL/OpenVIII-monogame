@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -110,6 +111,7 @@ namespace OpenVIII
         {
             lock (localaddlock)
             {
+                Debug.Assert(Key != "data\\field.fs");
                 if (LocalCache.TryAdd(Key, Value))
                 {
                     int left = 0;
@@ -120,6 +122,7 @@ namespace OpenVIII
                             if (LocalCache.TryRemove(x.Key, out BufferWithAge tmp))
                             {
                                 Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(LocalTryAdd)}::Evicting: \"{x.Key}\"");
+                                
                             }
                         });
                     }

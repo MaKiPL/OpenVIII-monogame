@@ -17,7 +17,7 @@ namespace OpenVIII
 
         #region Constructors
 
-        public StreamWithRangeValues(Stream s, long offset, long size, uint compression = 0, int uncompressedsize = 0)
+        public StreamWithRangeValues(Stream s, long offset, long size, CompressionType compression = 0, int uncompressedsize = 0)
         {
             if (typeof(StreamWithRangeValues) == s.GetType())
             {
@@ -40,7 +40,7 @@ namespace OpenVIII
         public override bool CanRead => s.CanRead;
         public override bool CanSeek => s.CanSeek;
         public override bool CanWrite => s.CanWrite;
-        public uint Compression { get; }
+        public CompressionType Compression { get; }
         public int UncompressedSize { get; }
 
         public override long Length => s.Length;
