@@ -90,7 +90,12 @@ namespace OpenVIII
                 case Faces.ID.Cactuar:
                 case Faces.ID.Tonberry:
                 case Faces.ID.Eden:
-                    return d.GFs[id.ToGFs()].Name ?? Read(FileID.MNGRP, 2, 95 + (int)(id.ToGFs()));
+                    if (d.GFs != null && d.GFs.TryGetValue(id.ToGFs(), out Saves.GFData value))
+                    {
+                        if(value.Name != null && value.Name.Length > 0)
+                            return value.Name;
+                    }
+                    return Read(FileID.MNGRP, 2, 95 + (int)(id.ToGFs()));
 
                 case Faces.ID.Griever:
                     return d.Grieversname ?? Read(FileID.MNGRP, 2, 135);
