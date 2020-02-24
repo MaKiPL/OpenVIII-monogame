@@ -37,7 +37,7 @@ namespace OpenVIII.World
             Section6(); //======FINISHED [Encounter pointer (Lunar cry)]
             //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
             Section8(); //wm2field WIP - DEBUG data only, almost completed
-            Section9(); //=related to field2wm?
+            Section9(); //======FINISHED [Field to world map coordinates]
             Section10(); //I still don't know what it is for- something with vehicles- maybe wm2field with vehicle? -> same structure as section8
             Section11(); //??????
             //Section12(); //[UNKNOWN] Scripts- maybe some additional warp zones?
@@ -49,10 +49,10 @@ namespace OpenVIII.World
             //Section31(); //????? - referenced by FullScreen map
             Section32(); //======FINISHED [location names]
             //Section33(); //=SKY GRADIENT/REGION COLOURING
-            //Section34(); //?????????
+            //Section34(); //related to 14- something with side quests
             //Section35(); //=draw points
             //Section36(); //?????????
-            //Section37(); //ENCOUNTERS??????
+            //Section37(); //Ufo, Pupu and Thrusta encounters
             Section38(); //======FINISHED [textures archive]
             Section39(); //======FINISHED [textures of roads, train tracks and bridges]
             Section42(); //======FINISHED [object and vehicle textures]
@@ -236,6 +236,10 @@ namespace OpenVIII.World
             playerPositionUnk = 0xFF07, //probably X and Y for worldmap
             wm2fieldEntryId = 0xFF08,
             CheckForVehicle = 0xFF09,
+            Set1 = 0xFF0A,
+            Set3If1OrNot4 = 0xFF0B,
+            Set3IfNot2or5 = 0xFF0C,
+            Set6IfNot2Or5 = 0xFF0D,
             squallXlocAbove = 0xFF0F,
             squallZLocAbove = 0xFF10,
             squallXlocBelow = 0xFF11,
@@ -264,7 +268,7 @@ namespace OpenVIII.World
             public worldMapScript[] conditions;
         }
 
-        public static section8WarpZone[] section8WarpZones;
+        public section8WarpZone[] section8WarpZones;
 
         /// <summary>
         /// Section is responsible for world map to field transition and works as a factor of conditions
@@ -327,7 +331,7 @@ namespace OpenVIII.World
 
         #region Section 9 - Field to World map
 
-        public static Vector3[] fieldToWorldMapLocations;
+        public Vector3[] fieldToWorldMapLocations;
 
         private void Section9()
         {
@@ -341,8 +345,8 @@ namespace OpenVIII.World
                 for (int i = 0; i < entriesCount; i++)
                 {
                     int x = br.ReadInt32();
-                    int y = br.ReadInt32();
-                    int z = br.ReadInt16();
+                    int z = br.ReadInt32();
+                    int y = br.ReadInt16();
                     fieldToWorldMapLocations[i].X = Extended.ConvertVanillaWorldXAxisToOpenVIII(x);
                     fieldToWorldMapLocations[i].Y = Extended.ConvertVanillaWorldYAxisToOpenVIII(y);
                     fieldToWorldMapLocations[i].Z = Extended.ConvertVanillaWorldZAxisToOpenVIII(z);
@@ -394,21 +398,44 @@ namespace OpenVIII.World
 
         #region Section 11 - [UNKNOWN]
 
+        public Vector3[] sec11Locations;
         private void Section11()
         {
-            //16 per entry- it's related to sec10
-            /*
-          v26 = wmsetS11 + 16 * v17;
-          v83 = *(_DWORD *)v26;
-          v84 = *(_DWORD *)(v26 + 4);
-          v85 = *(_DWORD *)(v26 + 8);
-          v86 = *(_DWORD *)(v26 + 12);
-          v88 = *(_WORD *)(v26 + 12);
-          v89 = *(_DWORD *)(v26 + 12) >> 16;
-          v87 = 0;
-          sub_5450D0(v2, v13, (unsigned __int8)v90, (_BYTE)v90 != 80 ? 0 : 4, (int)&v87, (int)&v83);
-          */
-        }
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            {
+                ms.Seek(sectionPointers[11 - 1], SeekOrigin.Begin);
+                int entriesCount = sectionPointers[12 - 1] - sectionPointers[11 - 1] - 4;
+                entriesCount /= 16;
+                entriesCount--; //first entry is null
+                ms.Seek(16, SeekOrigin.Current); //pass first entry, it's null
+                sec11Locations = new Vector3[entriesCount];
+                for(int i = 0; i<entriesCount; i++)
+                {
+                    int x = br.ReadInt32();
+                    int z = br.ReadInt32();
+                    int y = br.ReadInt32();
+                    float x_ = Extended.ConvertVanillaWorldXAxisToOpenVIII(x);
+                    float y_ = Extended.ConvertVanillaWorldYAxisToOpenVIII(y);
+                    float z_ = Extended.ConvertVanillaWorldZAxisToOpenVIII(z);
+                    int unk = br.ReadInt16();
+                    int unk2 = br.ReadInt16();
+                    sec11Locations[i] = new Vector3(x_, y_, z_);
+                }
+            }
+                //16 per entry- it's related to sec10
+                /*
+              v26 = wmsetS11 + 16 * v17;
+              v83 = *(_DWORD *)v26;
+              v84 = *(_DWORD *)(v26 + 4);
+              v85 = *(_DWORD *)(v26 + 8);
+              v86 = *(_DWORD *)(v26 + 12);
+              v88 = *(_WORD *)(v26 + 12);
+              v89 = *(_DWORD *)(v26 + 12) >> 16;
+              v87 = 0;
+              sub_5450D0(v2, v13, (unsigned __int8)v90, (_BYTE)v90 != 80 ? 0 : 4, (int)&v87, (int)&v83);
+              */
+            }
 
         #endregion Section 11 - [UNKNOWN]
 
