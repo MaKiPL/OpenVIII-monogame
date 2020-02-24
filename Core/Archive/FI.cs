@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace OpenVIII
 {
@@ -33,5 +34,10 @@ namespace OpenVIII
         }
 
         public override string ToString() => $"{{{UncompressedSize}, {Offset}, {CompressionType}}}";
+        public FI Adjust(int offset_for_fs) {
+            Offset += offset_for_fs;
+            return this;
+        }
+
     }
 }

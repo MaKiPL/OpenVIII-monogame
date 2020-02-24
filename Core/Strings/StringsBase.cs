@@ -213,7 +213,7 @@ namespace OpenVIII
             {
                 ArchiveBase aw = ArchiveWorker.Load(Archive, true);
                 MemoryStream ms;
-                byte[] buffer = aw.GetBinaryFile(Filenames[0]);
+                byte[] buffer = aw.GetBinaryFile(Filenames[0],true);
                 if (buffer != null)
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer, true)))
                     {

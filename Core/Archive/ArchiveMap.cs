@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -90,6 +89,9 @@ namespace OpenVIII
             else
                 throw new Exception($"{nameof(ArchiveWorker)}::{nameof(LZ4Uncompress)} Failed to uncompress...");
         }
+
+        public void MergeMaps(ArchiveMap child, int offset_for_fs) => 
+            entries.AddRange(child.entries.ToDictionary(x => x.Key, x => x.Value.Adjust(offset_for_fs)));
 
         public void Add(KeyValuePair<string, FI> keyValuePair) => entries.Add(keyValuePair.Key, keyValuePair.Value);
 

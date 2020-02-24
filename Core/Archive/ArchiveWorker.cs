@@ -151,7 +151,9 @@ namespace OpenVIII
 
         public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
         {
-            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            if (path.IsZZZ)
+                return ArchiveZZZ.Load(path, skiplist);
+            else if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
             {
                 return value;
             }
@@ -163,8 +165,8 @@ namespace OpenVIII
                 if (ArchiveBase.TryAdd(path, value))
                 {
                 }
+                return value;
             }
-            return value;
         }
 
         ///// <summary>

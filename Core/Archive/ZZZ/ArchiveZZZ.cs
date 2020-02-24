@@ -171,7 +171,7 @@ namespace OpenVIII
 
             return null;
         }
-
+        
         public BinaryReader Open()
         {
             Stream s = OpenStream();

@@ -36,7 +36,7 @@ namespace OpenVIII
 
         protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.Where(x => x.Value != null).OrderBy(x => x.Value.Used).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
-        private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => x.Value != null && !x.Value.isDir && x.Value.GetType().Equals(typeof(ArchiveZZZ)));
+        private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => x.Value != null && !x.Value.isDir && !(x.Value is ArchiveZZZ));
 
         private static IEnumerable<KeyValuePair<string, ArchiveBase>> Oldest => NonDirOrZZZ.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
 
@@ -70,10 +70,31 @@ namespace OpenVIII
 
         public static void PurgeCache(bool all = false)
         {
+            LocalCache.ForEach(x =>
+            {
+                if (LocalCache.TryRemove(x.Key, out BufferWithAge tmp))
+                {
+                    Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
+                }
+            });
+            NonDirOrZZZ.ForEach(x =>
+            {
+                if (ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp))
+                {
+                    Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
+                }
+            });
+
             if (all)
-                ArchiveCache.ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase value));
-            else
-                NonDirOrZZZ.ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase value));
+            {
+                ArchiveCache.ForEach(x =>
+                {
+                    if (ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp))
+                    {
+                        Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
+                    }
+                });
+            }
         }
 
         public abstract ArchiveBase GetArchive(string fileName);
@@ -183,7 +204,8 @@ namespace OpenVIII
         {
             if (LocalCache.TryGetValue(filename, out value))
             {
-                value.Poke();
+                if (value != null)
+                    value.Poke();
                 return true;
             }
             return false;
