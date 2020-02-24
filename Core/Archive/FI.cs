@@ -2,6 +2,13 @@
 
 namespace OpenVIII
 {
+    public enum CompressionType
+    {
+        None = 0,
+        LZSS = 1,
+        LZ4 = 2,
+    }
+
     [StructLayout(LayoutKind.Explicit, Size = 12, Pack = 1)]
     public class FI
     {
@@ -14,8 +21,10 @@ namespace OpenVIII
 
         [FieldOffset(8)]
         public CompressionType CompressionType;
+
         public FI()
         { }
+
         public FI(int offset, int uncompressedSize, CompressionType compressionType = 0)
         {
             UncompressedSize = uncompressedSize;
@@ -24,12 +33,5 @@ namespace OpenVIII
         }
 
         public override string ToString() => $"{{{UncompressedSize}, {Offset}, {CompressionType}}}";
-        
-    }
-    public enum CompressionType
-    {
-        None = 0,
-        LZSS = 1,
-        LZ4 = 2,
     }
 }

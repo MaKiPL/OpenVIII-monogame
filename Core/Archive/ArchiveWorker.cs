@@ -19,9 +19,10 @@ namespace OpenVIII
         private static object cachelock = new object();
 
         private IEnumerator enumerator;
-        //private byte[] FS;
 
         #endregion Fields
+
+        //private byte[] FS;
 
         #region Constructors
 
@@ -76,6 +77,8 @@ namespace OpenVIII
             IsOpen = true;
         }
 
+        #endregion Constructors
+
         //protected ArchiveWorker(Memory.Archive path, byte[] fI, byte[] fS, byte[] fL, bool skiplist = false)
         //{
         //    ArchiveMap = new ArchiveMap(fI, fL);
@@ -86,8 +89,6 @@ namespace OpenVIII
 
         //    IsOpen = true;
         //}
-
-        #endregion Constructors
 
         #region Properties
 
@@ -102,8 +103,6 @@ namespace OpenVIII
         public List<Memory.Archive> ParentPath { get; }
 
         public IEnumerable<byte[]> Values => GetListOfFiles().Select(x => GetBinaryFile(x));
-
-        internal ArchiveMap ArchiveMap { get; }
 
         #endregion Properties
 
@@ -258,7 +257,6 @@ namespace OpenVIII
                         fI.Length == 0 || fL.Length == 0)
                         return null;
                     return new ArchiveWorker(archive, fI, fS, fL);
-
                 }
                 return value;
             }
@@ -292,7 +290,6 @@ namespace OpenVIII
                     fileName = v.OrderBy(x => fileName.Length).ThenBy(x => oldfn, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.IndexOf(oldfn, StringComparison.OrdinalIgnoreCase) >= 0);
                     if (string.IsNullOrWhiteSpace(fileName))
                     {
-
                     }
                     Debug.Assert(!string.IsNullOrWhiteSpace(fileName));
                     if (!LocalTryGetValue(fileName, out BufferWithAge value))
@@ -356,7 +353,7 @@ namespace OpenVIII
         public override StreamWithRangeValues GetStreamWithRangeValues(string fileName, FI inputFI = null, int size = 0)
         {
             void msg() =>
-            Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetStreamWithRangeValues)} getting {fileName}");
+            Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetStreamWithRangeValues)} stream: {fileName}");
             if (inputFI != null)
             {
             }
@@ -378,6 +375,7 @@ namespace OpenVIII
                 else
                 {
                     Debug.Assert(inputFI == null);
+                    string parentFS = _path.FS;
                     if (ArchiveMap != null && ArchiveMap.Count > 1)
                     {
                         FI fi = ArchiveMap.FindString(ref fileName, out size);
@@ -386,16 +384,18 @@ namespace OpenVIII
                         //{
                         //    return new StreamWithRangeValues(new MemoryStream(FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
                         //}
-                        //else 
+                        //else
                         if (FSArchive != null)
                         {
-
                             if (fi != null) // unsure about this part.
                             {
-                                if (fi.CompressionType != 0 && !(FSArchive is ArchiveZZZ))
-                                    return new StreamWithRangeValues(new MemoryStream(FSArchive.GetBinaryFile(_path.FS, true), false), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                                FI parentFI = FSArchive.ArchiveMap?.FindString(ref parentFS, out int parentFSsize);
+                                if (parentFI == null || parentFI.CompressionType == 0 || (FSArchive is ArchiveZZZ))
+                                {
+                                    return new StreamWithRangeValues(FSArchive.GetStreamWithRangeValues(parentFS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                                }
                                 else
-                                    return new StreamWithRangeValues(FSArchive.GetStreamWithRangeValues(_path.FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                                    return new StreamWithRangeValues(new MemoryStream(FSArchive.GetBinaryFile(parentFS, true), false), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
                             }
                             else
                                 return FSArchive.GetStreamWithRangeValues(fileName);
@@ -422,7 +422,7 @@ namespace OpenVIII
                     {
                         FI fi = GetFI(loc);
                         GetCompressedData(fi, out size, true);
-                        return new StreamWithRangeValues(new FileStream(_path.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                        return new StreamWithRangeValues(new FileStream(parentFS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
                     }
                 }
 
@@ -455,8 +455,6 @@ namespace OpenVIII
             }
             return false;
         }
-
-
 
         private int FindFile(ref string filename)
         {

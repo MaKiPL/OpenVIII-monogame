@@ -897,7 +897,7 @@ namespace OpenVIII
             if(activeCollidePolygon != null)
                 if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
             {
-                foreach (var warpZone in Wmset.section8WarpZones.Where(x => x.segmentId == realSegmentId))
+                foreach (var warpZone in wmset.section8WarpZones.Where(x => x.segmentId == realSegmentId))
                 {
                     int fieldId = wm2field.GetFieldId(warpZone.field);
                     bool bShouldWarp = true;

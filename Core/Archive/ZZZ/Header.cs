@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 
 namespace OpenVIII
 {
     public partial class ArchiveZZZ
     {
+        #region Classes
+
         private static class Header
         {
+            #region Methods
+
             public static ArchiveMap Load(BinaryReader br)
             {
                 int capacity = br.ReadInt32();
@@ -19,10 +19,14 @@ namespace OpenVIII
                 return r;
             }
 
+            #endregion Methods
+
             //public IOrderedEnumerable<string> GetFilenames()
             //    => Data.Select(x => x.Filename).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase);
 
             //private Header() => Data = new List<FileData>();
         }
+
+        #endregion Classes
     }
 }

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 #pragma warning disable CS0649
 
@@ -26,9 +25,10 @@ namespace OpenVIII
             public Archive(string path, params Archive[] parent) : this(path, false) => Parent = parent.ToList();
 
             public Archive(string path, bool keepext, params Archive[] parent) : this(path, keepext) => Parent = parent.ToList();
+
             public Archive(string path) : this(path, false)
-            {}
-            
+            { }
+
             public Archive(string path, bool keepext)
             {
                 Parent = null;
@@ -52,11 +52,12 @@ namespace OpenVIII
                     IsFile = true;
                     _filename = path;
                 }
-                else if(!keepext)
+                else if (!keepext)
                     _filename = Path.GetFileNameWithoutExtension(path);
                 else
                     _filename = Path.GetFileName(path);
             }
+
             public static implicit operator string(Archive val) => val._filename;
 
             public static implicit operator Archive(string path) => new Archive(path);
@@ -89,8 +90,8 @@ namespace OpenVIII
             {
                 get
                 {
-                    if(!string.IsNullOrWhiteSpace(_filename))
-                    return Path.Combine(Path.GetDirectoryName(_filename),Path.GetFileNameWithoutExtension(_filename));
+                    if (!string.IsNullOrWhiteSpace(_filename))
+                        return Path.Combine(Path.GetDirectoryName(_filename), Path.GetFileNameWithoutExtension(_filename));
                     return "";
                     //int startIndex = _filename.LastIndexOf('.');
                     //if (startIndex != -1)
@@ -144,7 +145,5 @@ namespace OpenVIII
 
             IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<string>)ext).GetEnumerator();
         }
-
-       
     }
 }

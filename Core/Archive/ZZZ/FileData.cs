@@ -5,11 +5,22 @@ namespace OpenVIII
 {
     public partial class ArchiveZZZ
     {
+        #region Classes
+
         public static class FileData
         {
             //public string Filename { get; set; }
             //public long Offset { get; set; }
             //public uint Size { get; set; }
+
+            #region Methods
+
+            public static KeyValuePair<string, FI> Load(BinaryReader br)
+            {
+                int FilenameLength = br.ReadInt32();
+                byte[] Filenamebytes = br.ReadBytes(FilenameLength);
+                return new KeyValuePair<string, FI>(ConvertFilename(Filenamebytes), new FI(checked((int)br.ReadInt64()), checked((int)br.ReadUInt32())));
+            }
 
             /// <summary>
             /// Decode/Encode the filename string as bytes.
@@ -20,12 +31,9 @@ namespace OpenVIII
             /// </remarks>
             private static string ConvertFilename(byte[] filenamebytes) => System.Text.Encoding.UTF8.GetString(filenamebytes);
 
-            public static KeyValuePair<string,FI> Load(BinaryReader br)
-            {
-                int FilenameLength = br.ReadInt32();
-                byte[] Filenamebytes = br.ReadBytes(FilenameLength);
-                return new KeyValuePair<string, FI>(ConvertFilename(Filenamebytes), new FI(checked((int)br.ReadInt64()), checked((int)br.ReadUInt32())));
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

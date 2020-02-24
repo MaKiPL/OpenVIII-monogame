@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 
 namespace OpenVIII
@@ -30,7 +29,7 @@ namespace OpenVIII
             Offset = offset;
             Position = offset;
             Compression = compression;
-            UncompressedSize = checked((int)(uncompressedsize==0?size:uncompressedsize));
+            UncompressedSize = checked((int)(uncompressedsize == 0 ? size : uncompressedsize));
         }
 
         #endregion Constructors
@@ -41,13 +40,12 @@ namespace OpenVIII
         public override bool CanSeek => s.CanSeek;
         public override bool CanWrite => s.CanWrite;
         public CompressionType Compression { get; }
-        public int UncompressedSize { get; }
-
         public override long Length => s.Length;
         public long Max => Size + Offset;
         public long Offset { get; }
         public override long Position { get => s.Position; set => s.Position = value; }
         public long Size { get; }
+        public int UncompressedSize { get; }
 
         #endregion Properties
 

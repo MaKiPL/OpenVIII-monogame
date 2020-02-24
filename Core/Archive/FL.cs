@@ -15,14 +15,14 @@ namespace OpenVIII
 
         #region Constructors
 
-        public FL(byte[] buffer) => data = System.Text.Encoding.UTF8.GetString(buffer).Split('\n').Select(x=>x.TrimEnd()).ToList();
+        public FL(byte[] buffer) => data = System.Text.Encoding.UTF8.GetString(buffer).Split('\n').Select(x => x.TrimEnd()).ToList();
 
         public FL(StreamWithRangeValues fL)
         {
-            using (StreamReader br = new StreamReader(fL,System.Text.Encoding.UTF8))
+            using (StreamReader br = new StreamReader(fL, System.Text.Encoding.UTF8))
             {
                 fL.Seek(fL.Offset, SeekOrigin.Begin);
-                while(fL.Position<fL.Max)
+                while (fL.Position < fL.Max)
                 {
                     data.Add(br.ReadLine().TrimEnd());
                 }

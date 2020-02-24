@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -10,7 +9,9 @@ namespace OpenVIII
     {
         #region Fields
 
-        private ArchiveMap headerData;
+        private static object BinaryFileLock = new object();
+
+        private static object locker = new object();
 
         #endregion Fields
 
@@ -41,7 +42,7 @@ namespace OpenVIII
             using (BinaryReader br = Open())
             {
                 if (br == null) return;
-                headerData = Header.Load(br);
+                ArchiveMap = Header.Load(br);
             }
             if (!skiplist)
                 FileList = ProduceFileLists();
@@ -56,9 +57,9 @@ namespace OpenVIII
 
         #endregion Properties
 
-        #region Methods
+        //prevent two loads at the same time.
 
-        private static object locker = new object(); //prevent two loads at the same time.
+        #region Methods
 
         public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
         {
@@ -95,11 +96,9 @@ namespace OpenVIII
             return value;
         }
 
-        private static object BinaryFileLock = new object();
-
         public override byte[] GetBinaryFile(string fileName, bool cache = false)
         {
-            if (headerData != null)
+            if (ArchiveMap != null)
             {
                 lock (BinaryFileLock)
                 {
@@ -134,7 +133,7 @@ namespace OpenVIII
             return null;
         }
 
-        public KeyValuePair<string, FI> GetFileData(string fileName) => headerData.GetFileData(fileName);
+        public KeyValuePair<string, FI> GetFileData(string fileName) => ArchiveMap.GetFileData(fileName);
 
         public override string[] GetListOfFiles()
         {
@@ -146,7 +145,7 @@ namespace OpenVIII
 
         public override StreamWithRangeValues GetStreamWithRangeValues(string filename, FI fi = null, int size = 0)
         {
-            if (headerData != null)
+            if (ArchiveMap != null)
             {
                 //Debug.Assert(Path.GetExtension(filename).ToLower() != ".fs");
                 KeyValuePair<string, FI> filedata = GetFileData(filename);
@@ -192,7 +191,7 @@ namespace OpenVIII
 
         public override string ToString() => $"{_path} :: {Used}";
 
-        private string[] ProduceFileLists() => headerData?.OrderedByName.Select(x => x.Key).ToArray();
+        private string[] ProduceFileLists() => ArchiveMap?.OrderedByName.Select(x => x.Key).ToArray();
 
         #endregion Methods
     }

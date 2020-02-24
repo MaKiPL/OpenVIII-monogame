@@ -20,7 +20,7 @@ namespace OpenVIII
             {
                 Archive parent = new Archive(FF8DIR);
                 ZZZ_MAIN = new Archive("main.zzz", true, parent);
-                ZZZ_OTHER = new Archive("other.zzz", true,  parent);
+                ZZZ_OTHER = new Archive("other.zzz", true, parent);
                 A_BATTLE = new Archive("battle", FF8DIRdata_lang, ZZZ_MAIN);
                 A_FIELD = new Archive("field", FF8DIRdata_lang, ZZZ_MAIN);
                 A_MAGIC = new Archive("magic", FF8DIRdata_lang, ZZZ_MAIN);

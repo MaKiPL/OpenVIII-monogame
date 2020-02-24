@@ -20,16 +20,17 @@ namespace OpenVIII
         /// </summary>
         protected string[] FileList;
 
-        protected bool isDir = false;
         private const int MaxInCache = 5;
         private static ConcurrentDictionary<string, ArchiveBase> ArchiveCache = new ConcurrentDictionary<string, ArchiveBase>();
+        private static object localaddlock = new object();
 
         #endregion Fields
 
         #region Properties
 
+        public ArchiveMap ArchiveMap { get; protected set; }
         public DateTime Created { get; protected set; }
-
+        public bool isDir { get; protected set; } = false;
         public bool IsOpen { get; protected set; } = false;
         public DateTime Used { get; protected set; }
 
@@ -89,7 +90,7 @@ namespace OpenVIII
         {
             Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");
             FI = GetBinaryFile(archive.FI);
-            FS = GetBinaryFile(archive.FS,cache:true);
+            FS = GetBinaryFile(archive.FS, cache: true);
             FL = GetBinaryFile(archive.FL);
         }
 
@@ -105,26 +106,23 @@ namespace OpenVIII
 
         public override string ToString() => $"{_path} :: {Used}";
 
-        static object localaddlock = new object();
-
         protected static bool LocalTryAdd(string Key, BufferWithAge Value)
         {
             lock (localaddlock)
             {
-                Debug.Assert(Key != "data\\field.fs");
+                Debug.Assert(!Key.EndsWith("field.fs", StringComparison.OrdinalIgnoreCase));
                 if (LocalCache.TryAdd(Key, Value))
                 {
                     int left = 0;
                     if ((left = OrderByAge.Count() - MaxLocalCache) > 0)
                     {
-                        OrderByAge.Where(x=>x.Key != Key).Reverse().Skip(MaxLocalCache).ForEach(x =>
-                        {
-                            if (LocalCache.TryRemove(x.Key, out BufferWithAge tmp))
-                            {
-                                Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(LocalTryAdd)}::Evicting: \"{x.Key}\"");
-                                
-                            }
-                        });
+                        OrderByAge.Where(x => x.Key != Key).Reverse().Skip(MaxLocalCache).ForEach(x =>
+                          {
+                              if (LocalCache.TryRemove(x.Key, out BufferWithAge tmp))
+                              {
+                                  Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(LocalTryAdd)}::Evicting: \"{x.Key}\"");
+                              }
+                          });
                     }
                     return true;
                 }

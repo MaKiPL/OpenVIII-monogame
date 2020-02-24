@@ -8,8 +8,6 @@ namespace OpenVIII
     {
         //NEW LZSS
 
-        #region License
-
         /**************************************************************
 LZSS.C -- A Data Compression Program
 (tab = 4 spaces)
@@ -22,18 +20,22 @@ NIFTY-Serve	PAF01022
 CompuServe	74050,1022
 **************************************************************/
 
-        #endregion License
+        #region Fields
 
-        private static readonly int N = 4096;
-        private static readonly int F = 18;
-        private static readonly int THRESHOLD = 2;
         private static readonly int EOF = -1;
+        private static readonly int F = 18;
+        private static readonly int N = 4096;
+        private static readonly int THRESHOLD = 2;
+
+        #endregion Fields
+
+        #region Methods
 
         public static byte[] DecompressAllNew(byte[] data, bool skip = false)
         {
             //Memory.Log.WriteLine($"{nameof(LZSS)}::{nameof(DecompressAllNew)} :: decompressing data");
-            byte[] outfilearray; 
-            using (MemoryStream infile = new MemoryStream(!skip?data:data.Skip(4).ToArray()))
+            byte[] outfilearray;
+            using (MemoryStream infile = new MemoryStream(!skip ? data : data.Skip(4).ToArray()))
             {
                 Decode(infile, out outfilearray);
             }
@@ -84,5 +86,7 @@ CompuServe	74050,1022
             }
             outfilearray = outfile.ToArray();
         }
+
+        #endregion Methods
     }
 }
