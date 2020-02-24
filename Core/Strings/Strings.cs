@@ -92,7 +92,8 @@ namespace OpenVIII
                 case Faces.ID.Eden:
                     if (d.GFs != null && d.GFs.TryGetValue(id.ToGFs(), out Saves.GFData value))
                     {
-                        return value.Name;
+                        if(value.Name != null && value.Name.Length > 0)
+                            return value.Name;
                     }
                     return Read(FileID.MNGRP, 2, 95 + (int)(id.ToGFs()));
 
