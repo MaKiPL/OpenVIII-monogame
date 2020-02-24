@@ -18,7 +18,9 @@ namespace OpenVIII
         private static FPS_Camera fps_camera;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static float degrees;
-        private static float camDistance = 10.0f;
+        private static float camDistance = 120.0f;
+        private static float camHeight = 160.0f;
+        private static float cameraFOV = 60;
         private static float renderCamDistance = 1200f;
         private static Vector3 camPosition, camTarget;
         public static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
@@ -244,7 +246,7 @@ namespace OpenVIII
             camTarget = new Vector3(0, 0f, 0f);
             camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                               MathHelper.ToRadians(60),
+                               MathHelper.ToRadians(cameraFOV),
                                Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
                 1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
@@ -900,7 +902,13 @@ namespace OpenVIII
                     bool bShouldWarp = true;
                     if (warpZone.segmentId != GetRealSegmentId())
                         continue;
-                    foreach (var condition in warpZone.conditions)
+                        if (imguiStrings == null)
+                            imguiStrings = new List<string>();
+                        imguiStrings.Add("WARPZONE!");
+                        imguiStrings.Add("---------");
+                        imguiStrings.Add($"fieldId: {fieldId}");
+                        imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
+                        foreach (var condition in warpZone.conditions)
                     {
                         //test conditions here, so far we don't really know them much enough
                         //for example fire cavern is on the same segment as Balamb, so there's additional check with
@@ -908,12 +916,6 @@ namespace OpenVIII
                     }
                     if (bShouldWarp)
                     {
-                            if (imguiStrings == null)
-                                imguiStrings = new List<string>();
-                            imguiStrings.Add("WARPZONE!");
-                            imguiStrings.Add("---------");
-                            imguiStrings.Add($"fieldId: {fieldId}");
-                            imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
                             for (int contId = 0; contId < warpZone.conditions.Length; contId++)
                                 imguiStrings.Add($"{contId}: {warpZone.conditions[contId].opcode}({warpZone.conditions[contId].opcode.ToString("X")}):{warpZone.conditions[contId].argument}");
 
@@ -970,6 +972,24 @@ namespace OpenVIII
 
             if (!BDebugDisableCollision)
                 playerPosition = lastPlayerPosition;
+        }
+
+        private static RayCastedTris? CameraCollisionUpdate()
+        {
+            segmentPosition = new Vector2((int)(camPosition.X / 512) * -1, (int)(camPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
+            int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
+            realSegmentId = SetInterchangeableZone(realSegmentId);
+            Segment seg = segments[realSegmentId];
+            RaycastedTris = new List<RayCastedTris>();
+            Ray skyRay = new Ray(new Vector3(camPosition.X, 5000f, camPosition.Z), Vector3.Down); //drops ray at camPosition from sky
+            for (int i = 0; i < seg.parsedTriangle.Length; i++)
+                if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
+                    RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], skyBarycentric, true));
+
+            //take care of sky rays only
+            if (RaycastedTris.Count == 0)
+                return null;
+            else return RaycastedTris[0];
         }
 
         private static List<RayCastedTris> OrderAndCheckTrisForcollisionsBetween()
@@ -1031,16 +1051,45 @@ namespace OpenVIII
 
 
         private static bool bLockMouse = true;
+
+        private static int orbitCameraMode = 1; //parse from save file [TODO]
+        private static float camSlider = 0f;
+        private static bool camSliderDirection = false;
+        private static float rememberedCamCollideHeight = 0f;
         public static void OrbitCamera()
         {
             if (bLockMouse)
                 InputMouse.Mode = MouseLockMode.Center;
             else
                 InputMouse.Mode = MouseLockMode.Disabled;
-            camDistance = 100f;
+            if (Input2.Button(Keys.F, ButtonTrigger.OnPress))
+            { 
+                orbitCameraMode = orbitCameraMode == 0 ? 1 : 0;
+                camSliderDirection = orbitCameraMode == 0;
+            }
+            if (camSliderDirection)
+                camSlider += 1f * (float)(Memory.ElapsedGameTime.Milliseconds / 1000f);
+            else
+                camSlider -= 1f * (float)(Memory.ElapsedGameTime.Milliseconds / 1000f);
+            camSlider = MathHelper.Clamp(camSlider, 0f, 1f);
+            
+            switch(orbitCameraMode)
+            {
+                case 0: //closeup
+                    camHeight = MathHelper.Lerp(200f, 100f + rememberedCamCollideHeight, camSlider);
+                    cameraFOV = MathHelper.Lerp(42f, 44f, camSlider);
+                    RayCastedTris? activepoly = CameraCollisionUpdate();
+                    if (activepoly.HasValue)
+                       rememberedCamCollideHeight=activepoly.Value.pos.Y;
+                    break;
+                case 1: //faraway
+                    camHeight = MathHelper.Lerp(200f, 100f + rememberedCamCollideHeight, camSlider);
+                    cameraFOV = MathHelper.Lerp(42, 44, camSlider);
+                    break;
+            }
             camPosition = new Vector3(
                 (float)(playerPosition.X + camDistance * Extended.Cos(degrees - 180f)),
-                playerPosition.Y + 50f,
+                camHeight,//playerPosition.Y + 50f,
                 (float)(playerPosition.Z + camDistance * Extended.Sin(degrees - 180f))
                 );
             // check mouse to adjust camera
@@ -1060,7 +1109,11 @@ namespace OpenVIII
             {
                 degrees += 360f;
             }
-            camTarget = playerPosition;
+            camTarget = new Vector3(playerPosition.X, 50f, playerPosition.Z);
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                   MathHelper.ToRadians(cameraFOV),
+                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+    1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
         }
@@ -1070,6 +1123,10 @@ namespace OpenVIII
 
         static Color bgGradient = Color.CornflowerBlue;
         static List<string> imguiStrings;
+        static bool bImguiSec8 = false;
+        static bool bImguiSec9 = false;
+        static bool bImguiSec11 = false;
+
         public static void Draw()
         {
             Memory.spriteBatch.GraphicsDevice.Clear(bgGradient);
@@ -1189,7 +1246,14 @@ namespace OpenVIII
             ImGuiNET.ImGui.ColorEdit4("Sky color: ", ref imgui_skyColor);
             bgGradient = new Color(imgui_skyColor.X, imgui_skyColor.Y, imgui_skyColor.Z, imgui_skyColor.W);
             ImGuiNET.ImGui.Text($"World map MapState: ={MapState}");
-            ImGuiNET.ImGui.Text($"World Map Camera: ={camPosition}");
+            System.Numerics.Vector3 imgui_cameraPosition = new System.Numerics.Vector3(camPosition.X, camPosition.Y, camPosition.Z);
+            ImGuiNET.ImGui.InputFloat3("World map camera", ref imgui_cameraPosition);
+            camPosition = new Vector3(imgui_cameraPosition.X, imgui_cameraPosition.Y, imgui_cameraPosition.Z);
+            ImGuiNET.ImGui.InputFloat("World map camera distance", ref camDistance);
+            ImGuiNET.ImGui.InputFloat("World map camera height", ref camHeight);
+            ImGuiNET.ImGui.InputFloat("World map camera FOV", ref cameraFOV);
+            ImGuiNET.ImGui.Text($"Camera mode: {orbitCameraMode}");
+            ImGuiNET.ImGui.Text($"Camera slide: {camSlider}");
             System.Numerics.Vector3 imgui_playerPosition = new System.Numerics.Vector3(playerPosition.X, playerPosition.Y, playerPosition.Z);
             ImGuiNET.ImGui.InputFloat3("Player position: ", ref imgui_playerPosition);
             playerPosition = new Vector3(imgui_playerPosition.X, imgui_playerPosition.Y, imgui_playerPosition.Z);
@@ -1202,6 +1266,8 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"FOV: {FOV}");
             ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds > 0 ? 1d / Memory.ElapsedGameTime.TotalSeconds : 0d)}");
             ImGuiNET.ImGui.Text($"imgui::FPS {ImGuiNET.ImGui.GetIO().Framerate}");
+            ImGuiNET.ImGui.Checkbox("Field2WM WARPLIST", ref bImguiSec9);
+            ImGuiNET.ImGui.Checkbox("wmset11 locations", ref bImguiSec11);
             ImGuiNET.ImGui.Separator();
             if (imguiStrings != null)
             {
@@ -1211,17 +1277,37 @@ namespace OpenVIII
             }
 
             ImGuiNET.ImGui.Separator();
-            ImGuiNET.ImGui.Text("-Field2WM-");
-            for (int x = 0; x < wmset.fieldToWorldMapLocations.Length; x++)
+            if (bImguiSec9)
             {
-                ImGuiNET.ImGui.Text(
-                    $"{x}: X={wmset.fieldToWorldMapLocations[x].X}  Y={wmset.fieldToWorldMapLocations[x].Y}  Z={wmset.fieldToWorldMapLocations[x].Z}");
-                ImGuiNET.ImGui.SameLine();
-                if(ImGuiNET.ImGui.Button($"WARP {x}"))
+                ImGuiNET.ImGui.Text("-Field2WM-");
+                for (int x = 0; x < wmset.fieldToWorldMapLocations.Length; x++)
                 {
-                    playerPosition.X = wmset.fieldToWorldMapLocations[x].X;
-                    playerPosition.Y = wmset.fieldToWorldMapLocations[x].Y;
-                    playerPosition.Z = wmset.fieldToWorldMapLocations[x].Z;
+                    ImGuiNET.ImGui.Text(
+                        $"{x}: X={wmset.fieldToWorldMapLocations[x].X}  Y={wmset.fieldToWorldMapLocations[x].Y}  Z={wmset.fieldToWorldMapLocations[x].Z}");
+                    ImGuiNET.ImGui.SameLine();
+                    if (ImGuiNET.ImGui.Button($"WARP {x}"))
+                    {
+                        playerPosition.X = wmset.fieldToWorldMapLocations[x].X;
+                        playerPosition.Y = wmset.fieldToWorldMapLocations[x].Y;
+                        playerPosition.Z = wmset.fieldToWorldMapLocations[x].Z;
+                    }
+                }
+                ImGuiNET.ImGui.Separator();
+            }
+            if (bImguiSec11)
+            {
+                ImGuiNET.ImGui.Text("-Section11-");
+                for (int x = 0; x < wmset.sec11Locations.Length; x++)
+                {
+                    ImGuiNET.ImGui.Text(
+                        $"{x}: X={wmset.sec11Locations[x].X}  Y={wmset.sec11Locations[x].Y}  Z={wmset.sec11Locations[x].Z}");
+                    ImGuiNET.ImGui.SameLine();
+                    if (ImGuiNET.ImGui.Button($"WARP s{x}"))
+                    {
+                        playerPosition.X = wmset.sec11Locations[x].X;
+                        playerPosition.Y = wmset.sec11Locations[x].Y;
+                        playerPosition.Z = wmset.sec11Locations[x].Z;
+                    }
                 }
             }
             ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
