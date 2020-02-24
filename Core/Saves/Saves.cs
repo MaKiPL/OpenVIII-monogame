@@ -61,13 +61,13 @@ namespace OpenVIII
                     if (SteamFolders.Length > 0)
                     {
                         Steam2013Folder = SteamFolders[0];
-                        GetFiles(Steam2013Folder, @"slot(\d+)_save(\d+).ff8");
+                        GetFiles(Steam2013Folder, @"slot(\d+)_save(\d+).ff8$");
                     }
                 }
             }
             else if (Directory.Exists(CD2000Folder))
             {
-                ProcessFiles(Directory.GetFiles(CD2000Folder, "*", SearchOption.AllDirectories), @"Slot(\d+)[\\/]save(\d+)");
+                ProcessFiles(Directory.GetFiles(CD2000Folder, "*", SearchOption.AllDirectories), @"Slot(\d+)[\\/]save(\d+)$");
             }
             else if (Directory.Exists(Steam2019Folder))
             {
@@ -79,7 +79,7 @@ namespace OpenVIII
                     if (SteamFolders.Length > 0)
                     {
                         Steam2019Folder = Path.Combine(SteamFolders[0], "game_data", "user", "saves");
-                        GetFiles(Steam2019Folder, @"slot(\d+)_save(\d+).ff8");
+                        GetFiles(Steam2019Folder, @"slot(\d+)_save(\d+).ff8$");
                     }
                 }
             }
