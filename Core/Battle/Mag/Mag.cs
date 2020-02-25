@@ -58,20 +58,15 @@ namespace OpenVIII.Battle
         public static void Init()
         {
             All = new List<Mag>();
-            ArchiveWorker aw = (ArchiveWorker)ArchiveWorker.Load(Memory.Archives.A_MAGIC);
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAGIC);
             //aw.CacheFS();
-            foreach (KeyValuePair<string, byte[]> i in aw)
+            IEnumerable<string> magFiles = aw.GetListOfFiles().Where(x => Path.GetFileName(Path.GetDirectoryName(x)).IndexOf("magic", System.StringComparison.OrdinalIgnoreCase) >= 0 || Path.GetFileName(Path.GetDirectoryName(x)).IndexOf("battle", System.StringComparison.OrdinalIgnoreCase) >= 0 && Path.GetFileName(x).StartsWith("mag", System.StringComparison.OrdinalIgnoreCase)).Distinct();
+            var v  = magFiles.ToList();
+
+            foreach (KeyValuePair<string, byte[]> i in magFiles.ToDictionary(x => x, x => aw.GetBinaryFile(x)))
             {
                 All.Add(Mag.Load(i.Key, i.Value));
             }
-            //aw.ClearFS();
-            aw = (ArchiveWorker)ArchiveWorker.Load(Memory.Archives.A_BATTLE);
-            //aw.CacheFS();
-            foreach (KeyValuePair<string, byte[]> i in aw.Where(x => Path.GetFileName(x.Key).StartsWith("mag", System.StringComparison.OrdinalIgnoreCase)))
-            {
-                All.Add(Mag.Load(i.Key, i.Value));
-            }
-            //aw.ClearFS();
         }
 
         public static Mag Load(string filename, byte[] buffer)
@@ -94,19 +89,19 @@ namespace OpenVIII.Battle
                 br.BaseStream.Seek(0, SeekOrigin.Begin);
                 //Offset Description
                 //0x00    Probably always null
-                uint pPadding = br.ReadUInt32();
+                if (!br.Read(out uint pPadding)) return null;
                 if (pPadding != 0)
                     return m;
                 //0x04    Probably bones/ animation data, might be 0x00
-                m.pBones = br.ReadUInt32();
+                if (!br.Read(out m.pBones)) return null;
                 //0x08    Unknown(used to determinate texture size *), might be 0x64
-                m.pTextureLimit = br.ReadUInt32();
+                if (!br.Read(out m.pTextureLimit)) return null;
                 //0x0C    Geometry pointer, might be 0xAC
-                m.pGeometry = br.ReadUInt32();
+                if (!br.Read(out m.pGeometry)) return null;
                 //0x10    SCOT pointer, might be 0x00
-                m.pSCOT = br.ReadUInt32();
+                if (!br.Read(out m.pSCOT)) return null;
                 //0x14    Texture pointer, might be 0x30
-                m.pTexture = br.ReadUInt32();
+                if (!br.Read(out m.pTexture)) return null;
                 //0x18 == 0x98
                 //0x1C == 0xAC
                 if (m.pBones > br.BaseStream.Length ||
@@ -182,12 +177,11 @@ namespace OpenVIII.Battle
         {
             if (pGeometry == 0) return;
             br.BaseStream.Seek(pGeometry, SeekOrigin.Begin);
-            int count = br.ReadInt32();
+            if (!br.Read(out int count)) return;
             //count = count > 0x24 ? 0x24 : count; // unsure why.
             List<uint> positions = new List<uint>();
-            while (count-- > 0 && br.BaseStream.Position+4 < br.BaseStream.Length)
+            while (count-- > 0 && br.Read(out uint pos))
             {
-                uint pos = br.ReadUInt32();
                 if (pos > 0 && pos + pGeometry < br.BaseStream.Length)
                     positions.Add(pos + pGeometry);
             }
@@ -201,13 +195,14 @@ namespace OpenVIII.Battle
                 const int PassFromStart = 24;
                 bool OnlyVertex = true;
                 br.BaseStream.Seek(pos, SeekOrigin.Begin);
-                count = br.ReadInt32();
+                if (!br.Read(out count)) break;
 
                 if (count > 12u)
                     continue;
                 if (count != 2u)
                     OnlyVertex = false;
                 br.BaseStream.Seek(pos + 8, SeekOrigin.Begin);
+
                 uint _relativeJump = br.ReadUInt32() + pos;
                 br.BaseStream.Seek(pos + PassFromStart, SeekOrigin.Begin);
                 int _vertexCount = br.ReadUInt16() * 8;

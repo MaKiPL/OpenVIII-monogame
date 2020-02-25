@@ -47,6 +47,7 @@ namespace OpenVIII
                     Merge(A_MAIN);
                     Merge(A_MENU);
                     Merge(A_WORLD);
+                    aw.GetListOfFiles(true);
                     ArchiveBase.PurgeCache();
                     A_BATTLE = ZZZ_MAIN;
                     A_FIELD = ZZZ_MAIN;

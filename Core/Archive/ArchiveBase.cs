@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +8,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public abstract class ArchiveBase
+    public abstract class ArchiveBase : IReadOnlyDictionary<string, byte[]>, IEnumerator<KeyValuePair<string, byte[]>>
     {
         #region Fields
 
@@ -19,28 +20,62 @@ namespace OpenVIII
         /// Generated File List
         /// </summary>
         protected string[] FileList;
-
+        private IEnumerator enumerator;
         private const int MaxInCache = 5;
         private static ConcurrentDictionary<string, ArchiveBase> ArchiveCache = new ConcurrentDictionary<string, ArchiveBase>();
         private static object localaddlock = new object();
+
 
         #endregion Fields
 
         #region Properties
 
         public ArchiveMap ArchiveMap { get; protected set; }
+
+        public int Count => GetListOfFiles().Count();
+
         public DateTime Created { get; protected set; }
+
+        public KeyValuePair<string, byte[]> Current => GetCurrent();
+
+
         public bool isDir { get; protected set; } = false;
+
         public bool IsOpen { get; protected set; } = false;
+
+        public IEnumerable<string> Keys => GetListOfFiles();
+
         public DateTime Used { get; protected set; }
 
+        public IEnumerable<byte[]> Values => GetListOfFiles().Select(x => GetBinaryFile(x));
+
         protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.Where(x => x.Value != null).OrderBy(x => x.Value.Used).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
+
+        protected List<Memory.Archive> ParentPath { get; set; }
 
         private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => x.Value != null && !x.Value.isDir && !(x.Value is ArchiveZZZ));
 
         private static IEnumerable<KeyValuePair<string, ArchiveBase>> Oldest => NonDirOrZZZ.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
 
+        object IEnumerator.Current => enumerator;
+
+        protected IEnumerator Enumerator { get => enumerator; set => enumerator = value; }
+
         #endregion Properties
+
+        #region Indexers
+
+        public byte[] this[string key]
+        {
+            get
+            {
+                if (TryGetValue(key, out byte[] value))
+                    return value;
+                return null;
+            }
+        }
+
+        #endregion Indexers
 
         #region Methods
 
@@ -97,6 +132,11 @@ namespace OpenVIII
             }
         }
 
+        public bool ContainsKey(string key) => FindFile(ref key) > -1;
+
+        public void Dispose()
+        { }
+
         public abstract ArchiveBase GetArchive(string fileName);
 
         public void GetArchive(Memory.Archive archive, out StreamWithRangeValues FI, out ArchiveBase FS, out StreamWithRangeValues FL)
@@ -119,13 +159,49 @@ namespace OpenVIII
 
         public abstract byte[] GetBinaryFile(string fileName, bool cache = false);
 
-        public abstract string[] GetListOfFiles();
+        public IEnumerator<KeyValuePair<string, byte[]>> GetEnumerator() => this;
+
+
+        /// <summary>
+        /// Get current file list for loaded archive.
+        /// </summary>
+        public virtual string[] GetListOfFiles(bool force = false)
+        {
+            if (FileList == null || force)
+            {
+                FileList = ProduceFileLists();
+                enumerator = FileList?.GetEnumerator();
+            }
+            return FileList;
+        }
 
         public abstract Memory.Archive GetPath();
 
         public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename, FI fi = null, int size = 0);
 
+        public bool MoveNext() => (GetListOfFiles()?.Length ?? 0) > 0 && enumerator.MoveNext();
+
+        public void Reset()
+        {
+            string[] list = GetListOfFiles();
+            if (list != null && list.Length > 0)
+                enumerator.Reset();
+        }
+
         public override string ToString() => $"{_path} :: {Used}";
+
+        public bool TryGetValue(string key, out byte[] value) => (value = GetBinaryFile(key)) != null ? true : false;
+
+        protected static bool CacheTryGetValue(string path, out ArchiveBase value)
+        {
+            if (ArchiveCache.TryGetValue(path, out value))
+            {
+                if (value != null)
+                    value.Used = DateTime.Now;
+                return true;
+            }
+            else return false;
+        }
 
         protected static bool LocalTryAdd(string Key, BufferWithAge Value)
         {
@@ -167,15 +243,11 @@ namespace OpenVIII
             else return false;
         }
 
-        protected static bool TryGetValue(string path, out ArchiveBase value)
+        protected virtual int FindFile(ref string filename)
         {
-            if (ArchiveCache.TryGetValue(path, out value))
-            {
-                if (value != null)
-                    value.Used = DateTime.Now;
-                return true;
-            }
-            else return false;
+            if (ArchiveMap != null && ArchiveMap.Count > 1)
+                return ArchiveMap.FindString(ref filename, out int size) == default ? -1 : 0;
+            return -1;
         }
 
         protected List<Memory.Archive> FindParentPath(Memory.Archive path)
@@ -210,6 +282,21 @@ namespace OpenVIII
             }
             return false;
         }
+
+        protected virtual string[] ProduceFileLists()
+        {
+            if (ArchiveMap != null && ArchiveMap.Count > 0)
+                return ArchiveMap.OrderedByName.Select(x => x.Key).ToArray();
+            return null;
+        }
+
+        private KeyValuePair<string, byte[]> GetCurrent()
+        {
+            string s = (string)(enumerator.Current);
+            return new KeyValuePair<string, byte[]>(s, GetBinaryFile(s));
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => this;
 
         #endregion Methods
     }

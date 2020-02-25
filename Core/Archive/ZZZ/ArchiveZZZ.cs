@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -11,6 +10,7 @@ namespace OpenVIII
 
         private static object BinaryFileLock = new object();
 
+        private static object getArchiveLock = new object();
         private static object locker = new object();
 
         #endregion Fields
@@ -45,17 +45,11 @@ namespace OpenVIII
                 ArchiveMap = Header.Load(br);
             }
             if (!skiplist)
-                FileList = ProduceFileLists();
+                GetListOfFiles();
             IsOpen = true;
         }
 
         #endregion Constructors
-
-        #region Properties
-
-        public List<Memory.Archive> ParentPath { get; }
-
-        #endregion Properties
 
         //prevent two loads at the same time.
 
@@ -65,7 +59,7 @@ namespace OpenVIII
         {
             lock (locker)
             {
-                if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+                if (ArchiveBase.CacheTryGetValue(path, out ArchiveBase value))
                 {
                     return value;
                 }
@@ -88,12 +82,12 @@ namespace OpenVIII
             if (string.IsNullOrWhiteSpace(fileName)) return null;
             return GetArchive((Memory.Archive)fileName);
         }
-        private static object getArchiveLock = new object();
+
         public override ArchiveBase GetArchive(Memory.Archive archive)
         {
             lock (getArchiveLock)
             {
-                if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
+                if (!ArchiveBase.CacheTryGetValue(archive, out ArchiveBase value))
                     return ArchiveWorker.Load(archive, GetStreamWithRangeValues(archive.FI), this, GetStreamWithRangeValues(archive.FL));
                 return value;
             }
@@ -110,7 +104,7 @@ namespace OpenVIII
                     {
                         if (false && LocalTryGetValue(fileName, out BufferWithAge value))
                         {
-                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {fileName}");
+                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(CacheTryGetValue)} read from cache {fileName}");
                             return value;
                         }
                         else
@@ -124,21 +118,13 @@ namespace OpenVIII
                                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {fileName}");
                                 }
                                 return buffer;
-                            }  
+                            }
                         }
                     }
                 }
             }
             Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} FAILED extracting {fileName}");
             return null;
-        }
-
-        //public KeyValuePair<string, FI> GetFileData(string fileName) => ArchiveMap.GetFileData(fileName);
-
-        public override string[] GetListOfFiles()
-        {
-            if (FileList == null) FileList = ProduceFileLists();
-            return FileList;
         }
 
         public override Memory.Archive GetPath() => _path;
@@ -148,10 +134,10 @@ namespace OpenVIII
             if (ArchiveMap != null)
             {
                 //Debug.Assert(Path.GetExtension(filename).ToLower() != ".fs");
-                FI filedata = ArchiveMap.FindString(ref filename,out size);
-                if (string.IsNullOrWhiteSpace(filename))
+                FI filedata = ArchiveMap.FindString(ref filename, out size);
+                if (!string.IsNullOrWhiteSpace(filename) && filedata != null)
                 {
-                    return new StreamWithRangeValues(OpenStream(),filedata.Offset,size, filedata.CompressionType, filedata.UncompressedSize);
+                    return new StreamWithRangeValues(OpenStream(), filedata.Offset, size, filedata.CompressionType, filedata.UncompressedSize);
                 }
                 //if (string.IsNullOrWhiteSpace(fileName)) return null;
                 //FileData filedata = headerData.First(x => x.Filename == fileName);
@@ -171,7 +157,7 @@ namespace OpenVIII
 
             return null;
         }
-        
+
         public BinaryReader Open()
         {
             Stream s = OpenStream();
@@ -190,8 +176,6 @@ namespace OpenVIII
         }
 
         public override string ToString() => $"{_path} :: {Used}";
-
-        private string[] ProduceFileLists() => ArchiveMap?.OrderedByName.Select(x => x.Key).ToArray();
 
         #endregion Methods
     }

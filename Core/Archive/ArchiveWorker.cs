@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,7 +6,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class ArchiveWorker : ArchiveBase, IReadOnlyDictionary<string, byte[]>, IEnumerator<KeyValuePair<string, byte[]>>
+    public class ArchiveWorker : ArchiveBase
     {
         #region Fields
 
@@ -17,8 +16,6 @@ namespace OpenVIII
         /// prevent two threads from writing to cache at the same time.
         /// </summary>
         private static object cachelock = new object();
-
-        private IEnumerator enumerator;
 
         #endregion Fields
 
@@ -79,47 +76,6 @@ namespace OpenVIII
 
         #endregion Constructors
 
-        //protected ArchiveWorker(Memory.Archive path, byte[] fI, byte[] fS, byte[] fL, bool skiplist = false)
-        //{
-        //    ArchiveMap = new ArchiveMap(fI, fL);
-        //    _path = path;
-        //    FS = fS;
-        //    if (!skiplist)
-        //        GetListOfFiles();
-
-        //    IsOpen = true;
-        //}
-
-        #region Properties
-
-        public int Count => GetListOfFiles().Count();
-
-        public KeyValuePair<string, byte[]> Current => GetCurrent();
-
-        object IEnumerator.Current => GetCurrent();
-
-        public IEnumerable<string> Keys => GetListOfFiles();
-
-        public List<Memory.Archive> ParentPath { get; }
-
-        public IEnumerable<byte[]> Values => GetListOfFiles().Select(x => GetBinaryFile(x));
-
-        #endregion Properties
-
-        #region Indexers
-
-        public byte[] this[string key]
-        {
-            get
-            {
-                if (TryGetValue(key, out byte[] value))
-                    return value;
-                return null;
-            }
-        }
-
-        #endregion Indexers
-
         #region Methods
 
         /// <summary>
@@ -133,7 +89,7 @@ namespace OpenVIII
         /// <returns>ArchiveWorker</returns>
         public static ArchiveBase Load(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skiplist = false)
         {
-            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            if (ArchiveBase.CacheTryGetValue(path, out ArchiveBase value))
             {
                 return value;
             }
@@ -153,7 +109,7 @@ namespace OpenVIII
         {
             if (path.IsZZZ)
                 return ArchiveZZZ.Load(path, skiplist);
-            else if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            else if (ArchiveBase.CacheTryGetValue(path, out ArchiveBase value))
             {
                 return value;
             }
@@ -168,52 +124,6 @@ namespace OpenVIII
                 return value;
             }
         }
-
-        ///// <summary>
-        ///// Generate archive worker and get file
-        ///// </summary>
-        ///// <param name="archive">which archive you want to read from</param>
-        ///// <param name="fileName">name of file you want to recieve</param>
-        ///// <returns>Uncompressed binary file data</returns>
-        ////public static byte[] GetBinaryFile(Memory.Archive archive, string fileName, bool cache = false)
-        ////{
-        ////    ArchiveWorker tmp = new ArchiveWorker(archive, true);
-        ////    return tmp.GetBinaryFile(fileName, cache);
-        ////}
-        //public static ArchiveBase Load(Memory.Archive path, byte[] fI, byte[] fS, byte[] fL, bool skiplist = false)
-        //{
-        //    if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
-        //    {
-        //        return value;
-        //    }
-        //    else
-        //    {
-        //        value = new ArchiveWorker(path, fI, fS, fL, skiplist);
-        //        if (!value.IsOpen)
-        //            value = null;
-        //        if (ArchiveBase.TryAdd(path, value))
-        //        {
-        //        }
-        //    }
-        //    return value;
-        //}
-
-        //public void CacheFS()
-        //{
-        //    if (FSArchive != null)
-        //        FS = FSArchive.GetBinaryFile(_path.FS);
-        //}
-
-        //public void ClearFS()
-        //{
-        //    if (FSArchive != null)
-        //        FS = null;
-        //}
-
-        public bool ContainsKey(string key) => FindFile(ref key) > -1;
-
-        public void Dispose()
-        { }
 
         public override ArchiveBase GetArchive(string fileName)
         {
@@ -243,7 +153,7 @@ namespace OpenVIII
                 {
                     if (File.Exists(zzz))
                         archive.SetFilename(zzz);
-                    if (!ArchiveBase.TryGetValue(archive, out ArchiveBase ab))
+                    if (!ArchiveBase.CacheTryGetValue(archive, out ArchiveBase ab))
                     {
                         return ArchiveZZZ.Load(zzz);
                     }
@@ -252,7 +162,7 @@ namespace OpenVIII
             }
             else
             {
-                if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
+                if (!ArchiveBase.CacheTryGetValue(archive, out ArchiveBase value))
                 {
                     GetArchive(archive, out StreamWithRangeValues fI, out ArchiveBase fS, out StreamWithRangeValues fL);
                     if (fI == null || fS == null || fL == null ||
@@ -331,23 +241,6 @@ namespace OpenVIII
 
             Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: Searched {_path} and could not find {fileName}");
             return null;
-        }
-
-        public IEnumerator<KeyValuePair<string, byte[]>> GetEnumerator() => this;
-
-        IEnumerator IEnumerable.GetEnumerator() => this;
-
-        /// <summary>
-        /// Get current file list for loaded archive.
-        /// </summary>
-        public override string[] GetListOfFiles()
-        {
-            if (FileList == null)
-            {
-                FileList = ProduceFileLists();
-                enumerator = FileList?.GetEnumerator();
-            }
-            return FileList;
         }
 
         public override Memory.Archive GetPath() => _path;
@@ -434,18 +327,42 @@ namespace OpenVIII
             return null;
         }
 
-        public bool MoveNext() => (GetListOfFiles()?.Length ?? 0) > 0 && enumerator.MoveNext();
-
-        public void Reset()
-        {
-            string[] list = GetListOfFiles();
-            if (list != null && list.Length > 0)
-                enumerator.Reset();
-        }
-
         public override string ToString() => $"{_path} :: {Used}";
 
-        public bool TryGetValue(string key, out byte[] value) => (value = GetBinaryFile(key)) != null ? true : false;
+        protected override int FindFile(ref string filename)
+        {
+            if (ArchiveMap != null && ArchiveMap.Count > 1)
+                return base.FindFile(ref filename);
+            else if (isDir)
+            {
+                string f = filename;
+                filename = FileList.FirstOrDefault(x => x.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
+                return string.IsNullOrWhiteSpace(filename) ? -1 : 0;
+            }
+            else
+                using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    return FindFile(ref filename, fs); //File.OpenRead(_path.FL));
+        }
+
+        /// <summary>
+        /// Generate a file list from raw text file.
+        /// </summary>
+        /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
+        protected override string[] ProduceFileLists()
+        {
+            if (_path != null)
+            {
+                string[] r = null;
+                if (isDir)
+                    return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+                else if ((r = base.ProduceFileLists()) != null)
+                { }
+                else if (File.Exists(_path.FL))
+                    using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+            }
+            return null;
+        }
 
         private static bool GetLine(TextReader tr, out string line)
         {
@@ -456,21 +373,6 @@ namespace OpenVIII
                 return true;
             }
             return false;
-        }
-
-        private int FindFile(ref string filename)
-        {
-            if (ArchiveMap != null && ArchiveMap.Count > 1)
-                return ArchiveMap.FindString(ref filename, out int size) == default ? -1 : 0;
-            else if (isDir)
-            {
-                string f = filename;
-                filename = FileList.FirstOrDefault(x => x.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
-                return string.IsNullOrWhiteSpace(filename) ? -1 : 0;
-            }
-            else
-                using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    return FindFile(ref filename, fs); //File.OpenRead(_path.FL));
         }
 
         /// <summary>
@@ -536,13 +438,14 @@ namespace OpenVIII
             temp = GetCompressedData(FI, out int size);
 
             Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: extracting: {fileName}");
-            temp = temp == null ? null : FI.CompressionType == CompressionType.LZ4 ? ArchiveMap.LZ4Uncompress(temp, FI.UncompressedSize) : FI.CompressionType == CompressionType.LZSS ? LZSS.DecompressAllNew(temp,FI.UncompressedSize) : temp;
+            temp = temp == null ? null : FI.CompressionType == CompressionType.LZ4 ? ArchiveMap.LZ4Uncompress(temp, FI.UncompressedSize) : FI.CompressionType == CompressionType.LZSS ? LZSS.DecompressAllNew(temp, FI.UncompressedSize) : temp;
             if (temp != null && cache && LocalTryAdd(fileName, temp))
             {
                 Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: cached: {fileName}");
             }
             return temp;
         }
+
         /// <summary>
         /// GetCompressedData reads data from file directly. This isn't used right now I tried to add checks but they aren't tested yet.
         /// </summary>
@@ -563,7 +466,7 @@ namespace OpenVIII
                 {
                 }
                 // CompressionType = LZS then Compressed Size is defined. Else the Uncompressed size should work for
-                size = compsize>0 ? compsize : FI.UncompressedSize >max? max: FI.UncompressedSize;
+                size = compsize > 0 ? compsize : FI.UncompressedSize > max ? max : FI.UncompressedSize;
                 if (size > max)
                 {
                     throw new InvalidDataException($"{nameof(ArchiveWorker)}::{nameof(GetCompressedData)} Expected size ({size}) > ({max})");
@@ -573,12 +476,6 @@ namespace OpenVIII
                     temp = br.ReadBytes(size);
             }
             return temp;
-        }
-
-        private KeyValuePair<string, byte[]> GetCurrent()
-        {
-            string s = (string)(enumerator.Current);
-            return new KeyValuePair<string, byte[]>(s, GetBinaryFile(s));
         }
 
         private FI GetFI(int loc)
@@ -597,26 +494,16 @@ namespace OpenVIII
         private string[] GetListOfFiles(byte[] fl)
         {
             using (MemoryStream ms = new MemoryStream(fl))
-                return ProduceFileLists(ms);
-        }
-
-        /// <summary>
-        /// Generate a file list from raw text file.
-        /// </summary>
-        /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
-        private string[] ProduceFileLists()
-        {
-            if (_path != null)
             {
-                if (isDir)
-                    return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
-                else if (ArchiveMap != null && ArchiveMap.Count > 0)
-                    return ArchiveMap.OrderedByName.Select(x => x.Key).ToArray();
-                else if (File.Exists(_path.FL))
-                    using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+                try
+                {
+                    return ProduceFileLists(ms);
+                }
+                finally
+                {
+                    Enumerator = FileList?.GetEnumerator();
+                }
             }
-            return null;
         }
 
         private string[] ProduceFileLists(Stream s)

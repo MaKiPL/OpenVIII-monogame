@@ -26,6 +26,9 @@ namespace OpenVIII
 
         public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL)
         {
+            if (fI == null || fL == null)
+                throw new ArgumentNullException($"{nameof(ArchiveMap)}::{nameof(ArchiveMap)} {nameof(fI)} or {nameof(fL)} is null");
+
             Stream s1 = Uncompress(fL, out long flOffset);
             Stream s2 = Uncompress(fI, out long fiOffset);
             long fiSize = fI.UncompressedSize == 0 ? fI.Size : fI.UncompressedSize;
@@ -154,6 +157,10 @@ namespace OpenVIII
 
         public byte[] GetBinaryFile(string input, Stream data)
         {
+            if (data == null)
+                throw new ArgumentNullException($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} {nameof(data)} cannot be null.");
+            if(string.IsNullOrWhiteSpace(input))
+                throw new ArgumentNullException($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} {nameof(input)} cannot be empty or null");
             long offset = 0;
             if (data.GetType() == typeof(StreamWithRangeValues))
             {
@@ -177,13 +184,17 @@ namespace OpenVIII
             return new KeyValuePair<string, FI>(fileName, value);
         }
 
-        public void MergeMaps(ArchiveMap child, int offset_for_fs) =>
+        public void MergeMaps(ArchiveMap child, int offset_for_fs)
+        {
             entries.AddRange(child.entries.ToDictionary(x => x.Key, x => x.Value.Adjust(offset_for_fs)));
+        }
 
         public bool TryGetValue(string key, out FI value) => ((IReadOnlyDictionary<string, FI>)entries).TryGetValue(key, out value);
 
         private Stream Uncompress(StreamWithRangeValues @in, out long offset)
         {
+            offset = 0;
+            if (@in == null) return null;
             byte[] buffer = null;
             byte[] open(int skip = 0)
             {
@@ -197,14 +208,12 @@ namespace OpenVIII
                     case CompressionType.LZSS:
                         buffer = open(0);
                         int compsize = BitConverter.ToInt32(buffer, 0);
-                        offset = 0;
                         if (compsize != buffer.Length - sizeof(int))
                             throw new InvalidDataException($"{nameof(ArchiveMap)}::{nameof(Uncompress)} buffer size incorrect ({compsize}) != ({buffer.Length - sizeof(int)})");
                         return new MemoryStream(LZSS.DecompressAllNew(buffer, @in.UncompressedSize, true));
 
                     case CompressionType.LZ4:
                         buffer = open();
-                        offset = 0;
                         return new MemoryStream(LZ4Uncompress(buffer, @in.UncompressedSize));
                 }
             offset = @in.Offset;
