@@ -48,7 +48,7 @@ namespace OpenVIII
                     case 1:
                         buffer = open(4);
                         offset = 0;
-                        return new MemoryStream(LZSS.DecompressAllNew(buffer, false));
+                        return new MemoryStream(LZSS.DecompressAllNew(buffer, @in.UncompressedSize, false));
 
                     case 2:
                         buffer = open();
@@ -182,7 +182,7 @@ namespace OpenVIII
                     return buffer;
 
                 case 1:
-                    return LZSS.DecompressAllNew(buffer);
+                    return LZSS.DecompressAllNew(buffer, fi.UncompressedSize);
 
                 case 2:
                     return LZ4Uncompress(buffer, fi.UncompressedSize);

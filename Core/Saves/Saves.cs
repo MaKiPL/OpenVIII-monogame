@@ -132,13 +132,15 @@ namespace OpenVIII
                 if (fs.Length >= 5)
                 {
                     size = br.ReadInt32();
-                    byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
-                    decmp = LZSS.DecompressAllNew(tmp);
+                    if ((int)fs.Length - sizeof(uint) == size)
+                    {
+                        byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
+                        decmp = LZSS.DecompressAllNew(tmp, 0);
+                    }
                 }
                 fs = null;
             }
-
-            if (decmp == null || decmp.Length < size)
+            if (decmp == null)
             {
                 Memory.Log.WriteLine($"{nameof(Saves)}::{nameof(Read)} Invalid file: {file}");
             }

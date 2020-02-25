@@ -515,7 +515,7 @@ namespace OpenVIII
             temp = GetCompressedData(FI, out int size);
 
             Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: extracting: {fileName}");
-            temp = temp == null ? null : FI.CompressionType == 2 ? ArchiveMap.LZ4Uncompress(temp, FI.UncompressedSize) : FI.CompressionType == 1 ? LZSS.DecompressAllNew(temp) : temp;
+            temp = temp == null ? null : FI.CompressionType == 2 ? ArchiveMap.LZ4Uncompress(temp, FI.UncompressedSize) : FI.CompressionType == 1 ? LZSS.DecompressAllNew(temp,FI.UncompressedSize) : temp;
             if (temp != null && cache && LocalTryAdd(fileName, temp))
             {
                 Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: cached: {fileName}");
