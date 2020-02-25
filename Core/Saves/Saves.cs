@@ -21,9 +21,9 @@ namespace OpenVIII
     {
         #region Fields
 
-        private const int SteamOffset = 0x184;
         private const int GamesPerSlot = 30;
         private const int Slots = 2;
+        private const int SteamOffset = 0x184;
 
         #endregion Fields
 
@@ -101,8 +101,16 @@ namespace OpenVIII
             //List<Action> actions = new List<Action>();
             Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
             IEnumerable<Action> actions = files.Select(x => new { file = x, match = regex.Match(x) })
-                .Where(x => x.match.Success && x.match.Groups.Count > 1)
-                .Select(x => new { x.file, slot = int.Parse(x.match.Groups[1].Value) - 1, game = int.Parse(x.match.Groups[Slots].Value) - 1 })
+                .Where(x => x.match.Success && x.match.Groups.Count >= 3)
+                .Select(x =>
+                {
+                    if (!int.TryParse(x.match.Groups[1].Value, out int slot) || !int.TryParse(x.match.Groups[2].Value, out int game))
+                    {
+                        slot = -1;
+                        game = -1;
+                    }
+                    return new { x.file, slot = slot - 1, game = game - 1 };
+                })
                 .Where(x => x.slot < Slots && x.game < GamesPerSlot && x.game >= 0 && x.slot >= 0)
                 .Select(x => new Action(() => { Read(x.file, out FileList[x.slot, x.game]); }));
             Memory.ProcessActions(actions.ToArray());
