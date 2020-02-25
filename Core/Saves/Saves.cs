@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -22,7 +19,22 @@ namespace OpenVIII
     /// </remarks>
     public static partial class Saves
     {
+        #region Fields
+
         private const int SteamOffset = 0x184;
+        private const int GamesPerSlot = 30;
+        private const int Slots = 2;
+
+        #endregion Fields
+
+        #region Properties
+
+        /// <summary>
+        /// FF8DIR\Saves
+        /// </summary>
+        public static string CD2000Folder { get; private set; }
+
+        public static Data[,] FileList { get; private set; }
 
         /// <summary>
         /// Documents\Square Enix\FINAL FANTASY VIII Steam\user_#######
@@ -30,21 +42,18 @@ namespace OpenVIII
         public static string Steam2013Folder { get; private set; }
 
         /// <summary>
-        /// FF8DIR\Saves
-        /// </summary>
-        public static string CD2000Folder { get; private set; }
-
-        /// <summary>
         /// Documents\My Games\FINAL FANTASY VIII Remastered\Steam\#################\game_data\user\saves
         /// </summary>
         public static string Steam2019Folder { get; private set; }
 
-        public static Data[,] FileList { get; private set; }
+        #endregion Properties
+
+        #region Methods
 
         public static void Init()
         {
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Init)}");
-            FileList = new Data[2, 30];
+            FileList = new Data[Slots, GamesPerSlot];
             CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(CD2000Folder)} :: {CD2000Folder}");
             Steam2013Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
@@ -93,41 +102,48 @@ namespace OpenVIII
             Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
             IEnumerable<Action> actions = files.Select(x => new { file = x, match = regex.Match(x) })
                 .Where(x => x.match.Success && x.match.Groups.Count > 1)
-                .Select(x => new Action(() => { Read(x.file, out FileList[int.Parse(x.match.Groups[1].Value) - 1, int.Parse(x.match.Groups[2].Value) - 1]); }));
-            //foreach (string file in files)
-            //{
-            //    Match match = Regex.Match(file, pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-            //    if (match.Success && match.Groups.Count > 0)
-            //        actions.Add(() => Read(file, out FileList[int.Parse(match.Groups[1].Value) - 1, int.Parse(match.Groups[2].Value) - 1]));
-            //}
+                .Select(x => new { x.file, slot = int.Parse(x.match.Groups[1].Value) - 1, game = int.Parse(x.match.Groups[Slots].Value) - 1 })
+                .Where(x => x.slot < Slots && x.game < GamesPerSlot && x.game >= 0 && x.slot >= 0)
+                .Select(x => new Action(() => { Read(x.file, out FileList[x.slot, x.game]); }));
             Memory.ProcessActions(actions.ToArray());
         }
 
         private static void Read(string file, out Data d)
         {
-            Debug.WriteLine("Task={0}, Thread={1}, File={2}",
-                Task.CurrentId, Thread.CurrentThread.ManagedThreadId, file);
-            byte[] decmp;
+            d = null;
+            int size = 0;
+            Memory.Log.WriteLine($"{nameof(Saves)}::{nameof(Read)} Extracting: {file}");
+            byte[] decmp = null;
             MemoryStream ms = null;
             FileStream fs = null;
 
             // fs is disposed by binaryreader.
             using (BinaryReader br = new BinaryReader(
-                fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                int size = br.ReadInt32();
-                byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
-                decmp = LZSS.DecompressAllNew(tmp);
+                if (fs.Length > 5)
+                {
+                    size = br.ReadInt32();
+                    byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
+                    decmp = LZSS.DecompressAllNew(tmp);
+                }
                 fs = null;
             }
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(decmp)))
+
+            if (decmp == null || decmp.Length < size)
             {
-                ms.Seek(SteamOffset, SeekOrigin.Begin);
-                d = new Data();
-                d.Read(br);
-                ms = null;
+                Memory.Log.WriteLine($"{nameof(Saves)}::{nameof(Read)} Invalid file: {file}");
             }
+            else
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(decmp)))
+                {
+                    ms.Seek(SteamOffset, SeekOrigin.Begin);
+                    d = new Data();
+                    d.Read(br);
+                    ms = null;
+                }
         }
+
+        #endregion Methods
     }
 }
