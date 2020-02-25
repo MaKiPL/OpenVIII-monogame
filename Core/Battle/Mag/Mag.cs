@@ -57,6 +57,7 @@ namespace OpenVIII.Battle
 
         public static void Init()
         {
+            return;
             All = new List<Mag>();
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAGIC);
             //aw.CacheFS();
