@@ -32,9 +32,7 @@ namespace OpenVIII
 
             protected void SetValues(Memory.Archive archive, params string[] filenames)
             {
-                Debug.WriteLine("Task={0}, Thread={2}, [Files={1}]",
-                Task.CurrentId, string.Join(", ", filenames),
-                Thread.CurrentThread.ManagedThreadId);
+                Memory.Log.WriteLine($"{nameof(StringsBase)}::{nameof(SetValues)} Archive= \"{archive}\", Files= {{{string.Join(", ", filenames)}}}");
 
                 Archive = archive;
                 Filenames = filenames;

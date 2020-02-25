@@ -84,16 +84,19 @@ namespace OpenVIII
 
         public override ArchiveBase GetArchive(string fileName)
         {
-            fileName = GetFileData(fileName).Key;
+            fileName = ArchiveMap.GetFileData(fileName).Key;
             if (string.IsNullOrWhiteSpace(fileName)) return null;
             return GetArchive((Memory.Archive)fileName);
         }
-
+        private static object getArchiveLock = new object();
         public override ArchiveBase GetArchive(Memory.Archive archive)
         {
-            if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
-                return ArchiveWorker.Load(archive, GetStreamWithRangeValues(archive.FI), this, GetStreamWithRangeValues(archive.FL));
-            return value;
+            lock (getArchiveLock)
+            {
+                if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
+                    return ArchiveWorker.Load(archive, GetStreamWithRangeValues(archive.FI), this, GetStreamWithRangeValues(archive.FL));
+                return value;
+            }
         }
 
         public override byte[] GetBinaryFile(string fileName, bool cache = false)
@@ -102,38 +105,35 @@ namespace OpenVIII
             {
                 lock (BinaryFileLock)
                 {
-                    KeyValuePair<string, FI> filedata = GetFileData(fileName);
-                    if (LocalTryGetValue(filedata.Key, out BufferWithAge value))
+                    FI filedata = ArchiveMap.FindString(ref fileName, out int size);
+                    if (!string.IsNullOrWhiteSpace(fileName))
                     {
-                        Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {filedata.Key}");
-                        return value;
-                    }
-                    else
-                    {
-                        BinaryReader br;
-                        if (!string.IsNullOrWhiteSpace(filedata.Key) && (br = Open()) != null)
-                            using (br)
+                        if (false && LocalTryGetValue(fileName, out BufferWithAge value))
+                        {
+                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(TryGetValue)} read from cache {fileName}");
+                            return value;
+                        }
+                        else
+                        {
+                            Stream s;
+                            if ((s = OpenStream()) != null)
                             {
-                                //Debug.Assert(!fileName.ToLower().Contains("field.fs"));
-                                Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} extracting {filedata.Key}");
-                                br.BaseStream.Seek(filedata.Value.Offset, SeekOrigin.Begin);
-                                byte[] buffer = br.ReadBytes(filedata.Value.UncompressedSize);
-                                if (cache && LocalTryAdd(filedata.Key, buffer))
+                                byte[] buffer = ArchiveMap.GetBinaryFile(filedata, s, fileName, size);
+                                if (cache && LocalTryAdd(fileName, buffer))
                                 {
-                                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {filedata.Key}");
+                                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {fileName}");
                                 }
                                 return buffer;
-                            }
-                        else
-                            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} FAILED extracting {fileName}");
+                            }  
+                        }
                     }
                 }
             }
-
+            Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)} FAILED extracting {fileName}");
             return null;
         }
 
-        public KeyValuePair<string, FI> GetFileData(string fileName) => ArchiveMap.GetFileData(fileName);
+        //public KeyValuePair<string, FI> GetFileData(string fileName) => ArchiveMap.GetFileData(fileName);
 
         public override string[] GetListOfFiles()
         {
@@ -148,25 +148,25 @@ namespace OpenVIII
             if (ArchiveMap != null)
             {
                 //Debug.Assert(Path.GetExtension(filename).ToLower() != ".fs");
-                KeyValuePair<string, FI> filedata = GetFileData(filename);
-                if (string.IsNullOrWhiteSpace(filedata.Key) && (filedata.Value.CompressionType != 0))
+                FI filedata = ArchiveMap.FindString(ref filename,out size);
+                if (string.IsNullOrWhiteSpace(filename))
                 {
-                    return new StreamWithRangeValues(new MemoryStream(GetBinaryFile(filedata.Key, true), false), 0, filedata.Value.UncompressedSize);
+                    return new StreamWithRangeValues(OpenStream(),filedata.Offset,size, filedata.CompressionType, filedata.UncompressedSize);
                 }
                 //if (string.IsNullOrWhiteSpace(fileName)) return null;
                 //FileData filedata = headerData.First(x => x.Filename == fileName);
 
-                Stream s;
-                if (!string.IsNullOrWhiteSpace(filedata.Key) && (s = OpenStream()) != null)
-                {
-                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} stream: {filename}");
-                    if (fi != null)
-                        return new StreamWithRangeValues(s, filedata.Value.Offset + fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
-                    else
-                        return new StreamWithRangeValues(s, filedata.Value.Offset, filedata.Value.UncompressedSize);
-                }
-                else
-                    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} FAILED locating {filename}");
+                //Stream s;
+                //if (!string.IsNullOrWhiteSpace(filedata.Key) && (s = OpenStream()) != null)
+                //{
+                //    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} stream: {filename}");
+                //    if (fi != null)
+                //        return new StreamWithRangeValues(s, filedata.Value.Offset + fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+                //    else
+                //        return new StreamWithRangeValues(s, filedata.Value.Offset, filedata.Value.UncompressedSize);
+                //}
+                //else
+                //    Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetStreamWithRangeValues)} FAILED locating {filename}");
             }
 
             return null;

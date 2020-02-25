@@ -249,7 +249,7 @@ namespace OpenVIII.AV
         {
             return;
             ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-            var fd = a.GetFileData(filename);
+            var fd = a.ArchiveMap.GetFileData(filename);
             BufferData buffer_Data = new AV.BufferData
             {
                 DataSeekLoc = fd.Value.Offset,
