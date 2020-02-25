@@ -46,9 +46,12 @@ namespace OpenVIII
                 switch (@in.Compression)
                 {
                     case 1:
-                        buffer = open(4);
+                        buffer = open(0);
+                        int compsize = BitConverter.ToInt32(buffer, 0);
                         offset = 0;
-                        return new MemoryStream(LZSS.DecompressAllNew(buffer, @in.UncompressedSize, false));
+                        if (compsize != buffer.Length - sizeof(int))
+                            throw new InvalidDataException($"{nameof(ArchiveMap)}::{nameof(Uncompress)} buffer size incorrect ({compsize}) != ({buffer.Length - sizeof(int)})");
+                        return new MemoryStream(LZSS.DecompressAllNew(buffer, @in.UncompressedSize, true));
 
                     case 2:
                         buffer = open();
