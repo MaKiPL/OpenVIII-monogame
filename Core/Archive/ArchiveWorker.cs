@@ -98,7 +98,7 @@ namespace OpenVIII
                 value = new ArchiveWorker(path, fI, fS, fL, skiplist);
                 if (!value.IsOpen)
                     value = null;
-                if (ArchiveBase.TryAdd(path, value))
+                if (ArchiveBase.CacheTryAdd(path, value))
                 {
                 }
             }
@@ -118,7 +118,7 @@ namespace OpenVIII
                 value = new ArchiveWorker(path, skiplist);
                 if (!value.IsOpen)
                     value = null;
-                if (ArchiveBase.TryAdd(path, value))
+                if (ArchiveBase.CacheTryAdd(path, value))
                 {
                 }
                 return value;

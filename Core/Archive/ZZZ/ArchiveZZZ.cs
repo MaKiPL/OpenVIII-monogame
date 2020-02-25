@@ -68,8 +68,12 @@ namespace OpenVIII
                     value = new ArchiveZZZ(path, skiplist);
                     if (!value.IsOpen)
                         value = null;
-                    if (ArchiveBase.TryAdd(value?.GetPath() ?? path, value))
+                    if (value != null)
                     {
+                        if (ArchiveBase.CacheTryAdd(value.GetPath() ?? path, value))
+                        {
+                        }
+                        path.SetFilename(value.GetPath() ?? path);
                     }
                 }
                 return value;

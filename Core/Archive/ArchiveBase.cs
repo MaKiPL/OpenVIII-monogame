@@ -22,7 +22,7 @@ namespace OpenVIII
         protected string[] FileList;
         private IEnumerator enumerator;
         private const int MaxInCache = 5;
-        private static ConcurrentDictionary<string, ArchiveBase> ArchiveCache = new ConcurrentDictionary<string, ArchiveBase>();
+        private static ConcurrentDictionary<string, ArchiveBase> Cache = new ConcurrentDictionary<string, ArchiveBase>();
         private static object localaddlock = new object();
 
 
@@ -53,7 +53,7 @@ namespace OpenVIII
 
         protected List<Memory.Archive> ParentPath { get; set; }
 
-        private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => ArchiveCache.Where(x => x.Value != null && !x.Value.isDir && !(x.Value is ArchiveZZZ));
+        private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => Cache.Where(x => x.Value != null && !x.Value.isDir && !(x.Value is ArchiveZZZ));
 
         private static IEnumerable<KeyValuePair<string, ArchiveBase>> Oldest => NonDirOrZZZ.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
 
@@ -114,7 +114,7 @@ namespace OpenVIII
             });
             NonDirOrZZZ.ForEach(x =>
             {
-                if (ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp))
+                if (Cache.TryRemove(x.Key, out ArchiveBase tmp))
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                 }
@@ -122,9 +122,9 @@ namespace OpenVIII
 
             if (all)
             {
-                ArchiveCache.ForEach(x =>
+                Cache.ForEach(x =>
                 {
-                    if (ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp))
+                    if (Cache.TryRemove(x.Key, out ArchiveBase tmp))
                     {
                         Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                     }
@@ -194,7 +194,7 @@ namespace OpenVIII
 
         protected static bool CacheTryGetValue(string path, out ArchiveBase value)
         {
-            if (ArchiveCache.TryGetValue(path, out value))
+            if (Cache.TryGetValue(path, out value))
             {
                 if (value != null)
                     value.Used = DateTime.Now;
@@ -227,9 +227,9 @@ namespace OpenVIII
             }
         }
 
-        protected static bool TryAdd(string Key, ArchiveBase value)
+        protected static bool CacheTryAdd(string Key, ArchiveBase value)
         {
-            if (ArchiveCache.TryAdd(Key, value))
+            if (Cache.TryAdd(Key, value))
             {
                 if (value != null)
                 {
@@ -237,7 +237,7 @@ namespace OpenVIII
                 }
                 int overage = 0;
                 if ((overage = Oldest.Count() - MaxInCache) > 0)
-                    Oldest.Where(x => x.Key != Key).Reverse().Skip(MaxInCache).ForEach(x => ArchiveCache.TryRemove(x.Key, out ArchiveBase tmp));
+                    Oldest.Where(x => x.Key != Key).Reverse().Skip(MaxInCache).ForEach(x => Cache.TryRemove(x.Key, out ArchiveBase tmp));
                 return true;
             }
             else return false;
