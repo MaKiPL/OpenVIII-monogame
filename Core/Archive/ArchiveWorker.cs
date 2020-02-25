@@ -350,9 +350,9 @@ namespace OpenVIII
         /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
         protected override string[] ProduceFileLists()
         {
+            string[] r = null;
             if (_path != null)
             {
-                string[] r = null;
                 if (isDir)
                     return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
                 else if ((r = base.ProduceFileLists()) != null)
@@ -361,7 +361,7 @@ namespace OpenVIII
                     using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
             }
-            return null;
+            return r;
         }
 
         private static bool GetLine(TextReader tr, out string line)
