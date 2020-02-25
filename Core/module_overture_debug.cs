@@ -313,7 +313,7 @@ namespace OpenVIII
                 return;
             }
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
-            var lof = aw.GetListOfFiles();
+            string[] lof = aw.GetListOfFiles();
             loopsnames = lof.Where(x => x.IndexOf(loops, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
             namesnames = lof.Where(x => x.IndexOf(names, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
             logonames = lof.Where(x => x.IndexOf("ff8.lzs", StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
@@ -385,10 +385,21 @@ namespace OpenVIII
             if (string.IsNullOrWhiteSpace(filename)) return;
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
             byte[] buffer = aw.GetBinaryFile(filename);
+
             string fn = Path.GetFileNameWithoutExtension(filename);
-            uint uncompSize = BitConverter.ToUInt32(buffer, 0);
-            buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
-            buffer = LZSS.DecompressAllNew(buffer);
+
+            if (buffer.Length <= 4)
+            {
+                Memory.Log.WriteLine($"{nameof(Module_overture_debug)}::{nameof(ReadSplash)} \"{filename}\" too small to read any data.");
+                return;
+            }
+            int compSize = BitConverter.ToInt32(buffer, 0);
+            if (compSize != buffer.Length - sizeof(int))
+            {
+                Memory.Log.WriteLine($"{nameof(Module_overture_debug)}::{nameof(ReadSplash)} \"{filename}\" wrong size ({buffer.Length - sizeof(int)}) to be ({compSize}).");
+                return;
+            }
+            buffer = LZSS.DecompressAllNew(buffer, 0, true);
             TIM_OVERTURE tim = new TIM_OVERTURE(buffer);
             if ((fn.Equals("ff8", StringComparison.OrdinalIgnoreCase)) || (fn.IndexOf("loop", StringComparison.OrdinalIgnoreCase) >= 0))
             {

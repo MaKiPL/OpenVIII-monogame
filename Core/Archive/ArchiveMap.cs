@@ -24,6 +24,42 @@ namespace OpenVIII
                 entries = list.ToDictionary(x => x, x => Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
         }
 
+        public void Add(KeyValuePair<string, FI> keyValuePair) => entries.Add(keyValuePair.Key,keyValuePair.Value);
+
+        public KeyValuePair<string, FI> GetFileData(string fileName)
+        {
+            if (!TryGetValue(fileName, out FI value))
+                return OrderedByName.FirstOrDefault(x => x.Key.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
+            return new KeyValuePair<string, FI>(fileName, value);
+        }
+        private Stream Uncompress(StreamWithRangeValues @in, out long offset)
+        {
+            byte[] buffer = null;
+            byte[] open(int skip = 0)
+            {
+                @in.Seek(@in.Offset + skip, SeekOrigin.Begin);
+                using (BinaryReader br = new BinaryReader(@in))
+                    return br.ReadBytes(checked((int)(@in.Size - skip)));
+            }
+            if (@in.Compression >= 1)
+                switch (@in.Compression)
+                {
+                    case 1:
+                        buffer = open(0);
+                        int compsize = BitConverter.ToInt32(buffer, 0);
+                        offset = 0;
+                        if (compsize != buffer.Length - sizeof(int))
+                            throw new InvalidDataException($"{nameof(ArchiveMap)}::{nameof(Uncompress)} buffer size incorrect ({compsize}) != ({buffer.Length - sizeof(int)})");
+                        return new MemoryStream(LZSS.DecompressAllNew(buffer, @in.UncompressedSize, true));
+
+                    case 2:
+                        buffer = open();
+                        offset = 0;
+                        return new MemoryStream(LZ4Uncompress(buffer, @in.UncompressedSize));
+                }
+            offset = @in.Offset;
+            return @in;
+        }
         public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL)
         {
             Stream s1 = Uncompress(fL, out long flOffset);
@@ -90,7 +126,7 @@ namespace OpenVIII
                 throw new Exception($"{nameof(ArchiveWorker)}::{nameof(LZ4Uncompress)} Failed to uncompress...");
         }
 
-        public void MergeMaps(ArchiveMap child, int offset_for_fs) => 
+        public void MergeMaps(ArchiveMap child, int offset_for_fs) =>
             entries.AddRange(child.entries.ToDictionary(x => x.Key, x => x.Value.Adjust(offset_for_fs)));
 
         public void Add(KeyValuePair<string, FI> keyValuePair) => entries.Add(keyValuePair.Key, keyValuePair.Value);
@@ -153,9 +189,8 @@ namespace OpenVIII
             {
                 case 0:
                     return buffer;
-
                 case CompressionType.LZSS:
-                    return LZSS.DecompressAllNew(buffer);
+                    return LZSS.DecompressAllNew(buffer, fi.UncompressedSize);
 
                 case CompressionType.LZ4:
                     return LZ4Uncompress(buffer, fi.UncompressedSize);

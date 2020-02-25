@@ -536,21 +536,39 @@ namespace OpenVIII
             temp = GetCompressedData(FI, out int size);
 
             Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: extracting: {fileName}");
-            temp = temp == null ? null : FI.CompressionType == CompressionType.LZ4 ? ArchiveMap.LZ4Uncompress(temp, FI.UncompressedSize) : FI.CompressionType == CompressionType.LZSS ? LZSS.DecompressAllNew(temp) : temp;
+            temp = temp == null ? null : FI.CompressionType == 2 ? ArchiveMap.LZ4Uncompress(temp, FI.UncompressedSize) : FI.CompressionType == FI.UncompressedSize ? LZSS.DecompressAllNew(temp,FI.UncompressedSize) : temp;
             if (temp != null && cache && LocalTryAdd(fileName, temp))
             {
                 Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: cached: {fileName}");
             }
             return temp;
         }
-
+        /// <summary>
+        /// GetCompressedData reads data from file directly. This isn't used right now I tried to add checks but they aren't tested yet.
+        /// </summary>
+        /// <param name="FI"></param>
+        /// <param name="size"></param>
+        /// <param name="skipdata"></param>
+        /// <returns></returns>
         private byte[] GetCompressedData(FI FI, out int size, bool skipdata = false)
         {
             byte[] temp = null;
-            using (BinaryReader br = new BinaryReader(new FileStream(_path.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            FileStream fs;
+            using (BinaryReader br = new BinaryReader(fs = new FileStream(_path.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 br.BaseStream.Seek(FI.Offset, SeekOrigin.Begin);
-                size = FI.CompressionType == CompressionType.LZSS ? br.ReadInt32() : FI.UncompressedSize;//checked((int)(br.BaseStream.Length - br.BaseStream.Position));
+                int compsize = 0;
+                int max = (int)(fs.Length - fs.Position);
+                if (FI.CompressionType == CompressionType.LZSS && fs.Length > 5 && (compsize = br.ReadInt32()) > (max -= sizeof(int)))
+                {
+                }
+                // CompressionType = LZS then Compressed Size is defined. Else the Uncompressed size should work for
+                size = compsize>0 ? compsize : FI.UncompressedSize >max? max: FI.UncompressedSize;
+                if (size > max)
+                {
+                    throw new InvalidDataException($"{nameof(ArchiveWorker)}::{nameof(GetCompressedData)} Expected size ({size}) > ({max})");
+                    return null;
+                }
                 if (!skipdata)
                     temp = br.ReadBytes(size);
             }

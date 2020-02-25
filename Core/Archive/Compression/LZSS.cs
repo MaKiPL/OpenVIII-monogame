@@ -31,7 +31,7 @@ CompuServe	74050,1022
 
         #region Methods
 
-        public static byte[] DecompressAllNew(byte[] data, bool skip = false)
+        public static byte[] DecompressAllNew(byte[] data, int uncompressedsize, bool skip = false)
         {
             //Memory.Log.WriteLine($"{nameof(LZSS)}::{nameof(DecompressAllNew)} :: decompressing data");
             byte[] outfilearray;
@@ -39,6 +39,8 @@ CompuServe	74050,1022
             {
                 Decode(infile, out outfilearray);
             }
+            if (uncompressedsize > 0 && outfilearray.Length != uncompressedsize)
+                throw new InvalidDataException($"{nameof(LZSS)}::{nameof(DecompressAllNew)} Expected size ({uncompressedsize}) != ({outfilearray.Length})");
             return outfilearray;
         }
 
