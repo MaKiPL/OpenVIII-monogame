@@ -106,7 +106,7 @@ namespace OpenVIII
                     FI filedata = ArchiveMap.FindString(ref fileName, out int size);
                     if (!string.IsNullOrWhiteSpace(fileName))
                     {
-                        if (false && LocalTryGetValue(fileName, out BufferWithAge value))
+                        if (LocalTryGetValue(fileName, out BufferWithAge value))
                         {
                             Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(CacheTryGetValue)} read from cache {fileName}");
                             return value;
@@ -117,10 +117,11 @@ namespace OpenVIII
                             if ((s = OpenStream()) != null)
                             {
                                 byte[] buffer = ArchiveMap.GetBinaryFile(filedata, s, fileName, size);
-                                if (cache && LocalTryAdd(fileName, buffer))
+                                if (buffer != null && cache && LocalTryAdd(fileName, buffer))
                                 {
                                     Memory.Log.WriteLine($"{nameof(ArchiveZZZ)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {fileName}");
                                 }
+                                
                                 return buffer;
                             }
                         }
