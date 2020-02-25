@@ -129,7 +129,7 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(
                 fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                if (fs.Length > 5)
+                if (fs.Length >= 5)
                 {
                     size = br.ReadInt32();
                     byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
