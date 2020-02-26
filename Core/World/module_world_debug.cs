@@ -479,7 +479,7 @@ namespace OpenVIII
                 EncounterUpdate();
                 bFirstRun = false;
             }
-            if(bHasMoved)
+            if (bHasMoved)
             {
                 UpdatePlayerQuaternion(ref worldCharacterInstances[currentControllableEntity].localquaternion);
             }
@@ -564,7 +564,7 @@ namespace OpenVIII
         {
             for (int i = 0; i < beachAnims.Length; i++)
             {
-                TimeSpan totalMaxValue =  TimeSpan.FromMilliseconds((15.625f * beachAnims[i].animTimeout)); //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
+                TimeSpan totalMaxValue = TimeSpan.FromMilliseconds((15.625f * beachAnims[i].animTimeout)); //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
                 beachAnims[i].deltaTime += Memory.ElapsedGameTime;
                 if (beachAnims[i].deltaTime > totalMaxValue)
                 {
@@ -769,7 +769,7 @@ namespace OpenVIII
                     playerPosition = lastPlayerPosition + diffvect;
                 }
             }
-            if(Input2.Button(Keys.F3))
+            if (Input2.Button(Keys.F3))
             {
                 Menu.BattleMenus.CameFrom(); // allows returning to current state after victory menu complete.
                 Extended.postBackBufferDelegate = BattleSwirl.Init;
@@ -893,40 +893,7 @@ namespace OpenVIII
 
             //WORLD MAP TO FIELD CHECK- it should be done on already walked polygon so the player will be able to
             //enter the triangle with warp zone and warp AFTER that, not just as he enters it
-            if(activeCollidePolygon != null)
-                if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
-            {
-                foreach (var warpZone in wmset.section8WarpZones)
-                {
-                    int fieldId = wm2field.GetFieldId(warpZone.field);
-                    bool bShouldWarp = true;
-                    if (warpZone.segmentId != GetRealSegmentId())
-                        continue;
-                        if (imguiStrings == null)
-                            imguiStrings = new List<string>();
-                        imguiStrings.Add("WARPZONE!");
-                        imguiStrings.Add("---------");
-                        imguiStrings.Add($"fieldId: {fieldId}");
-                        imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
-                        foreach (var condition in warpZone.conditions)
-                    {
-                        //test conditions here, so far we don't really know them much enough
-                        //for example fire cavern is on the same segment as Balamb, so there's additional check with
-                        //the player position. The Fullscreen map is also created by section8 (probably)
-                    }
-                    if (bShouldWarp)
-                    {
-                            for (int contId = 0; contId < warpZone.conditions.Length; contId++)
-                                imguiStrings.Add($"{contId}: {warpZone.conditions[contId].opcode}({warpZone.conditions[contId].opcode.ToString("X")}):{warpZone.conditions[contId].argument}");
-
-                        //    Fields.Module.ResetField();
-                        //Memory.FieldHolder.FieldID = (ushort)fieldId;
-                        //Memory.Module = MODULE.FIELD_DEBUG;
-                    }
-                        activeCollidePolygon = null; //invalidate current polygon so you won't warp twice when field2wm
-                        //invalidating activecollidepolygon is not enough- set the position too by wmset.section9
-                }
-            }
+            WorldMapToField();
 
             const float forestAdj = 0f;//-12f;
             foreach (RayCastedTris prt in RaycastedTris)
@@ -967,11 +934,49 @@ namespace OpenVIII
                 return;
             }
 
-            
+
 
 
             if (!BDebugDisableCollision)
                 playerPosition = lastPlayerPosition;
+        }
+
+        private static void WorldMapToField()
+        {
+            if (activeCollidePolygon != null)
+                if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
+                {
+                    foreach (var warpZone in wmset.section8WarpZones)
+                    {
+                        int fieldId = wm2field.GetFieldId(warpZone.field);
+                        bool bShouldWarp = true;
+                        if (warpZone.segmentId != GetRealSegmentId())
+                            continue;
+                        if (imguiStrings == null)
+                            imguiStrings = new List<string>();
+                        imguiStrings.Add("WARPZONE!");
+                        imguiStrings.Add("---------");
+                        imguiStrings.Add($"fieldId: {fieldId}");
+                        imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
+                        foreach (var condition in warpZone.conditions)
+                        {
+                            //test conditions here, so far we don't really know them much enough
+                            //for example fire cavern is on the same segment as Balamb, so there's additional check with
+                            //the player position. The Fullscreen map is also created by section8 (probably)
+                        }
+                        if (bShouldWarp)
+                        {
+                            for (int contId = 0; contId < warpZone.conditions.Length; contId++)
+                                imguiStrings.Add($"{contId}: {warpZone.conditions[contId].opcode}({warpZone.conditions[contId].opcode.ToString("X")}):{warpZone.conditions[contId].argument}");
+
+                            //    Fields.Module.ResetField();
+                            //Memory.FieldHolder.FieldID = (ushort)fieldId;
+                            //Memory.Module = MODULE.FIELD_DEBUG;
+                        }
+                        activeCollidePolygon = null; //invalidate current polygon so you won't warp twice when field2wm
+                                                     //invalidating activecollidepolygon is not enough- set the position too by wmset.section9
+                    }
+                }
         }
 
         private static RayCastedTris? CameraCollisionUpdate()
@@ -1062,8 +1067,8 @@ namespace OpenVIII
                 InputMouse.Mode = MouseLockMode.Center;
             else
                 InputMouse.Mode = MouseLockMode.Disabled;
-            if (Input2.Button(Keys.F, ButtonTrigger.OnPress))
-            { 
+            if (Input2.Button(Keys.F, ButtonTrigger.OnPress)) //[TODO]
+            {
                 orbitCameraMode = orbitCameraMode == 0 ? 1 : 0;
                 camSliderDirection = orbitCameraMode == 0;
             }
@@ -1072,15 +1077,15 @@ namespace OpenVIII
             else
                 camSlider -= 1f * (float)(Memory.ElapsedGameTime.Milliseconds / 1000f);
             camSlider = MathHelper.Clamp(camSlider, 0f, 1f);
-            
-            switch(orbitCameraMode)
+
+            switch (orbitCameraMode)
             {
                 case 0: //closeup
                     camHeight = MathHelper.Lerp(200f, 100f + rememberedCamCollideHeight, camSlider);
                     cameraFOV = MathHelper.Lerp(42f, 44f, camSlider);
                     RayCastedTris? activepoly = CameraCollisionUpdate();
                     if (activepoly.HasValue)
-                       rememberedCamCollideHeight=activepoly.Value.pos.Y;
+                        rememberedCamCollideHeight = activepoly.Value.pos.Y;
                     break;
                 case 1: //faraway
                     camHeight = MathHelper.Lerp(200f, 100f + rememberedCamCollideHeight, camSlider);
@@ -1310,13 +1315,25 @@ namespace OpenVIII
                     }
                 }
             }
-            ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
-            ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
-            ImGuiNET.ImGui.End();
+
+
+            if (ImGuiNET.ImGui.CollapsingHeader("fullscreenmap debugger"))
+            {
+                    ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
+                    ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
+                for (int i = 0; i < screenMapLocations.Length; i++)
+                {
+                    ImGuiNET.ImGui.InputFloat($"lA{i}", ref screenMapLocations[i].x);
+                    ImGuiNET.ImGui.SameLine();
+                    ImGuiNET.ImGui.InputFloat($"lB{i}", ref screenMapLocations[i].y);
+                }
+            }
+            ImGuiNET.ImGui.EndChild();
             //ImGuiNET.ImGui.Begin("!Texture lister!");
             //ImGuiNET.ImGui.Image(Memory.imgui.BindTexture((Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.minimapFullScreenPointer, 0)),
             //    new System.Numerics.Vector2(64,64));
             //ImGuiNET.ImGui.End();
+            ImGuiNET.ImGui.End();
             Memory.imgui.AfterLayout();
         }
 
@@ -1389,8 +1406,8 @@ namespace OpenVIII
 
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
 
-            if(Memory.currentGraphicMode != Memory.GraphicModes.DirectX)
-             Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
+            if (Memory.currentGraphicMode != Memory.GraphicModes.DirectX)
+                Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
 
         private static void Debug_DrawRailPaths()
@@ -1569,7 +1586,7 @@ namespace OpenVIII
         #region wm background static geometry supplier
         static Vector3[] wm_backgroundCylinderVerts = new Vector3[]
         {
-new Vector3(41.8239f, 0.0000f, -3.9575f), new Vector3(36.2066f, 0.0000f, -24.9213f), new Vector3(20.8601f, 0.0000f, -40.2678f), 
+new Vector3(41.8239f, 0.0000f, -3.9575f), new Vector3(36.2066f, 0.0000f, -24.9213f), new Vector3(20.8601f, 0.0000f, -40.2678f),
 new Vector3(-0.1036f, 0.0000f, -45.8850f),new Vector3(-21.0674f, 0.0000f, -40.2678f),new Vector3(-36.4139f, 0.0000f, -24.9213f),
 new Vector3(-42.0311f, 0.0000f, -3.9576f),new Vector3(-36.4139f, 0.0000f, 17.0062f),new Vector3(-21.0674f, 0.0000f, 32.3527f),
 new Vector3(-0.1036f, 0.0000f, 37.9699f),new Vector3(20.8601f, 0.0000f, 32.3527f),new Vector3(36.2066f, 0.0000f, 17.0062f),
@@ -1620,7 +1637,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
         static VertexPositionTexture[] wm_backgroundCloudsLocalCylinderMeshTranslated = null;
         private static void DrawBackgroundClouds()
         {
-            if (bHasMoved || wm_backgroundCloudsLocalCylinderMeshTranslated==null)
+            if (bHasMoved || wm_backgroundCloudsLocalCylinderMeshTranslated == null)
             {
                 wm_backgroundCloudsLocalCylinderMeshTranslated = wm_backgroundCloudsCylinderMesh.Clone() as VertexPositionTexture[];
                 for (int i = 0; i < wm_backgroundCloudsCylinderMesh.Length; i++)
@@ -1633,8 +1650,8 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                     wm_backgroundCloudsLocalCylinderMeshTranslated[i].Position = pos;
                 }
             }
-            
-            
+
+
             ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.clouds, 0);
             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
             {
@@ -1683,7 +1700,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             effect.View = viewMatrix;
 
 
-            for (int i = 0; i<wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
+            for (int i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
             {
                 byte offsetPointer = wm_planetMinimap_indicesB_tris[i];
                 if (offsetPointer == 0xFF)
@@ -1692,7 +1709,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 offsetPointer *= 2;
 
                 sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
-                sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer+1];
+                sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
 
                 //uv
                 short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
@@ -1702,16 +1719,16 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
 
 
-                Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
+                Vector3 vec = new Vector3(-vertX + 2000f, -vertY, 0);
                 vpt.Add(new VertexPositionTexture(vec, new Vector2(UVu, UVv)));
             }
 
-            for (int i = 0; i < wm_planetMinimap_indicesA_quad.Length; i+=4) //ABD ACD -> we have to retriangulate it
+            for (int i = 0; i < wm_planetMinimap_indicesA_quad.Length; i += 4) //ABD ACD -> we have to retriangulate it
             {
-                Vector3 A=Vector3.Zero, B=Vector3.Zero, C=Vector3.Zero, D=Vector3.Zero;
+                Vector3 A = Vector3.Zero, B = Vector3.Zero, C = Vector3.Zero, D = Vector3.Zero;
                 Vector2 uvA = Vector2.Zero; Vector2 uvB = Vector2.Zero; Vector2 uvC = Vector2.Zero; Vector2 uvD = Vector2.Zero;
 
-                for(int n = 0; n<4; n++)
+                for (int n = 0; n < 4; n++)
                 {
                     byte offsetPointer = wm_planetMinimap_indicesA_quad[i + n];
                     offsetPointer *= 2;
@@ -1725,7 +1742,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                     var UVu = playerPosition.X / -16384.0f + u / 100.0f;
                     var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
 
-                    Vector3 vec = new Vector3(-vertX+2000f, -vertY, 0);
+                    Vector3 vec = new Vector3(-vertX + 2000f, -vertY, 0);
                     Vector2 vecUV = new Vector2(UVu, UVv);
                     if (n == 0)
                     { A = vec; uvA = vecUV; }
@@ -1751,7 +1768,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 effect.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
                 pass.Apply();
                 effect.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count/3);
+                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count / 3);
             }
 
             Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
@@ -1823,8 +1840,94 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
         private static float fulscrMapCurX = 0.5f;
         private static float fulscrMapCurY = 0.4f;
 
+
+        struct fullScreenMapLocations
+        {
+            public bool bDraw;
+            public float x;
+            public float y;
+            public FF8String locationName;
+        }
+
+        private static fullScreenMapLocations[] screenMapLocations = new fullScreenMapLocations[20]
+        {
+            new fullScreenMapLocations() {x= 0.555f, y= 0.345f}, //BGarden
+            new fullScreenMapLocations() {x= 0.530f, y= 0.370f}, //BCity
+            new fullScreenMapLocations() {x= 0.465f, y= 0.315f}, //Dollet
+            new fullScreenMapLocations() {x= 0.449f, y= 0.455f}, //Timber
+            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Galbadia Garden
+            new fullScreenMapLocations() {x= 0.360f, y= 0.350f}, //Deling
+            new fullScreenMapLocations() {x= 0.375f, y= 0.450f}, //Desert Prison
+            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Missile Base
+            new fullScreenMapLocations() {x= 0.542f, y= 0.475f}, //Fisherman
+            new fullScreenMapLocations() {x= 0.385f, y= 0.510f}, //Winhill
+            new fullScreenMapLocations() {x= 0.430f, y= 0.760f}, //Edea House
+            new fullScreenMapLocations() {x= 0.611f, y= 0.240f}, //Trabia
+            new fullScreenMapLocations() {x= 0.525f, y= 0.14f}, //Shumi
+            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Trabia
+            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Esthar city
+            new fullScreenMapLocations() {x= 0.620f, y= 0.485f}, //Esthar airstation
+            new fullScreenMapLocations() {x= 0.687f, y= 0.460f}, //Lunatic pandora
+            new fullScreenMapLocations() {x= 0.715f, y= 0.51f}, //Lunar gate
+            new fullScreenMapLocations() {x= 0.675f, y= 0.535f}, //Esthar memorial
+            new fullScreenMapLocations() {x= 0.698f, y= 0.590f}, //Tear point
+        };
+        //0.145 - 0.745 X 
+        //0.070 - 0.870 Y
+        private static bool bFullScreenMapInitialize = true;
+        private static Texture2D fullScreenMapMark;
+
         private static void DrawFullScreenMap()
         {
+            if(bFullScreenMapInitialize)
+            {
+                screenMapLocations[0].locationName = wmset.GetLocationName(0); //BalambGarden
+                screenMapLocations[0].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[1].locationName = wmset.GetLocationName(1); //Balamb City
+                screenMapLocations[1].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[2].locationName = wmset.GetLocationName(3); //DOllet
+                screenMapLocations[2].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[3].locationName = wmset.GetLocationName(4); //Timber
+                screenMapLocations[3].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[4].locationName = wmset.GetLocationName(6); //Galbadia Garden
+                screenMapLocations[4].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[5].locationName = wmset.GetLocationName(8); //Deling
+                screenMapLocations[5].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[6].locationName = wmset.GetLocationName(10); //Desert Prison
+                screenMapLocations[6].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[7].locationName = wmset.GetLocationName(11); //Missile Base
+                screenMapLocations[7].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[8].locationName = wmset.GetLocationName(13); //Fisherman
+                screenMapLocations[8].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[9].locationName = wmset.GetLocationName(15); //Winhill
+                screenMapLocations[9].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[10].locationName = wmset.GetLocationName(18); //Edea house
+                screenMapLocations[10].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[11].locationName = wmset.GetLocationName(19); //Trabia
+                screenMapLocations[11].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[12].locationName = wmset.GetLocationName(20); //shumi
+                screenMapLocations[12].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[13].locationName = wmset.GetLocationName(22); //Trabia
+                screenMapLocations[13].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[14].locationName = wmset.GetLocationName(26); //Esthar city
+                screenMapLocations[14].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[15].locationName = wmset.GetLocationName(27); //Esthar airstation
+                screenMapLocations[15].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[16].locationName = wmset.GetLocationName(28); //Lunatic pandora lab
+                screenMapLocations[16].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[17].locationName = wmset.GetLocationName(29); //lunar gate
+                screenMapLocations[17].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[18].locationName = wmset.GetLocationName(30); //esthar memorial
+                screenMapLocations[18].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+                screenMapLocations[19].locationName = wmset.GetLocationName(31); //tear point
+                screenMapLocations[19].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
+
+                fullScreenMapMark = new Texture2D(Memory.graphics.GraphicsDevice, 2, 1, false, SurfaceFormat.Color); //1x1 yellow and 1x1 red
+                fullScreenMapMark.SetData(new Color[] { Color.Yellow, Color.Red });
+
+                bFullScreenMapInitialize = false;
+            }
+            //Draw full-screen minimap
             Memory.graphics.GraphicsDevice.Clear(Color.Black);
             Memory.SpriteBatchStartStencil();
             TextureHandler texture = wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
@@ -1832,8 +1935,33 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             int height = Memory.graphics.GraphicsDevice.Viewport.Height;
             texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f), 
                 (int)(width *0.6), (int)(height *0.8)), Color.White * 1f);
-
             Memory.SpriteBatchEnd();
+
+                Memory.SpriteBatchStartAlpha();
+            //draw locations
+            for(int i = 0; i<screenMapLocations.Length;i++)
+            {
+                if (!screenMapLocations[i].bDraw)
+                    continue;
+                Memory.spriteBatch.Draw(fullScreenMapMark, new Rectangle((int)(width * screenMapLocations[i].x),
+                    (int)(height * screenMapLocations[i].y), 8, 8),
+                    new Rectangle(0, 0, 1, 1), Color.White);
+            }
+            //draw vehicles
+            //[TODO]
+            //draw location names
+            //[TODO]
+            for(int i = 0; i<screenMapLocations.Length; i++)
+            {
+                float xDistance = Math.Abs((fulscrMapCurX + 0.05f) - screenMapLocations[i].x);
+                float yDistance = Math.Abs((fulscrMapCurY + 0.005f) - screenMapLocations[i].y);
+                if(xDistance < 0.015 && yDistance<0.015)
+                    Memory.font.RenderBasicText(screenMapLocations[i].locationName, 
+                        new Vector2(width*0.7f, height*0.9f),new Vector2(2,2), Font.Type.sysFntBig);
+            }
+                Memory.SpriteBatchEnd();
+
+            //Finally draw cursor
             Memory.SpriteBatchStartAlpha();
                 Memory.Icons.Draw(Icons.ID.Finger_Right, 2, 
                     new Rectangle((int)(fulscrMapCurX*width), (int)(fulscrMapCurY*height), 0,0), Vector2.One*3);

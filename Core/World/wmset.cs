@@ -35,10 +35,8 @@ namespace OpenVIII.World
             //Section3(); //=encounter - looks like it's some supply helping data or roll data? Not sure, it's way before getting encounters
             Section4(); //======FINISHED [Encounter pointer]
             Section6(); //======FINISHED [Encounter pointer (Lunar cry)]
-            //Section7(); //=something with roads colours, cluts. Can't really understand why it's needed, looks like some kind of helper for VRAM?
             Section8(); //wm2field WIP - DEBUG data only, almost completed
             Section9(); //======FINISHED [Field to world map coordinates]
-            Section10(); //I still don't know what it is for- something with vehicles- maybe wm2field with vehicle? -> same structure as section8
             Section11(); //??????
             //Section12(); //[UNKNOWN] Scripts- maybe some additional warp zones?
             //Section13(); // 12b per entry- SUB_548940
@@ -46,7 +44,7 @@ namespace OpenVIII.World
             Section16(); //======FINISHED [objects and vehicles]
             //Section18(); //?????
             //Section19(); //=something with regions: it's that island with many drawpoints- regions setting
-            //Section31(); //????? - referenced by FullScreen map
+            //Section31(); //????? - referenced by FullScreen map - prob. 12 bytes per entry, where 3rd byte is locationPointer
             Section32(); //======FINISHED [location names]
             //Section33(); //=SKY GRADIENT/REGION COLOURING
             //Section34(); //related to 14- something with side quests
@@ -70,6 +68,9 @@ namespace OpenVIII.World
             //Section48();
 
             //-not important in openviii implementation/ sections used for limited memory solutions/psx hardware limitations
+            //Section7(); //helpers for roads textures- as we have it working and no issues this will be useless to reverse/investigate
+            //Section10(); //Looks like it's a helper for model and texture on world map objects. By altering some variables
+                            //you are able to use e.g. Selphie texture on Ragnarok- 0xFF13 - arg=texIndex
             //Section29(); //water block for limited memory rendering- not important in today
             //Section40(); //can't understand this one
         }
@@ -244,6 +245,7 @@ namespace OpenVIII.World
             squallZLocAbove = 0xFF10,
             squallXlocBelow = 0xFF11,
             squallZlocBelow = 0xFF12,
+            SetTexture = 0xFF13,
             ScriptEnd = 0xFF16,
             setUnk2 = 0xFF17,
             unkBelov2 = 0xFF1A,
@@ -357,44 +359,44 @@ namespace OpenVIII.World
 
         #endregion Section 9 - Field to World map
 
-        #region Section 10 - [UNKNOWN]/ Scripts
+        //#region Section 10 - [UNKNOWN]/ Scripts
 
-        public static worldMapScript[][] section10Scripts;
+        //public static worldMapScript[][] section10Scripts;
 
-        /// <summary>
-        /// This file follows some schema of 0xFF01->0xFF04
-        /// </summary>
-        private void Section10()
-        {
-            List<List<worldMapScript>> scripts = new List<List<worldMapScript>>();
-            MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
-            {
-                ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
-                int[] innerSec = GetInnerPointers(br);
-                for (int i = 0; i < innerSec.Length; i++)
-                {
-                    ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
-                    short Mode = 0;
-                    Mode = (short)br.ReadUInt32();
-                    List<worldMapScript> localScript = new List<worldMapScript>();
-                    while (true)
-                    {
-                        worldScriptOpcodes opcode = (worldScriptOpcodes)br.ReadUInt16();
-                        ushort argument = br.ReadUInt16();
-                        if (opcode == worldScriptOpcodes.EndZone) //?? maybe
-                        {
-                            scripts.Add(localScript);
-                            break;
-                        }
-                        localScript.Add(new worldMapScript() { argument = argument, opcode = opcode });
-                    }
-                }
-            }
-            section10Scripts = scripts.Select(x => x.ToArray()).ToArray();
-        }
+        ///// <summary>
+        ///// This file follows some schema of 0xFF01->0xFF04
+        ///// </summary>
+        //private void Section10()
+        //{
+        //    List<List<worldMapScript>> scripts = new List<List<worldMapScript>>();
+        //    MemoryStream ms;
+        //    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+        //    {
+        //        ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
+        //        int[] innerSec = GetInnerPointers(br);
+        //        for (int i = 0; i < innerSec.Length; i++)
+        //        {
+        //            ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
+        //            short Mode = 0;
+        //            Mode = (short)br.ReadUInt32();
+        //            List<worldMapScript> localScript = new List<worldMapScript>();
+        //            while (true)
+        //            {
+        //                worldScriptOpcodes opcode = (worldScriptOpcodes)br.ReadUInt16();
+        //                ushort argument = br.ReadUInt16();
+        //                if (opcode == worldScriptOpcodes.EndZone) //?? maybe
+        //                {
+        //                    scripts.Add(localScript);
+        //                    break;
+        //                }
+        //                localScript.Add(new worldMapScript() { argument = argument, opcode = opcode });
+        //            }
+        //        }
+        //    }
+        //    section10Scripts = scripts.Select(x => x.ToArray()).ToArray();
+        //}
 
-        #endregion Section 10 - [UNKNOWN]/ Scripts
+        //#endregion Section 10 - [UNKNOWN]/ Scripts
 
         #region Section 11 - [UNKNOWN]
 
@@ -907,6 +909,8 @@ namespace OpenVIII.World
         }
 
         public FF8String GetLocationName(int index) => locationsNames[index];
+
+        public int GetlocationNamesLength => locationsNames.Length;
 
         #endregion Section 32 - World map location names
 
