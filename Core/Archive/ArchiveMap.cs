@@ -22,6 +22,7 @@ namespace OpenVIII
             FL list = new FL(fl);
             using (BinaryReader br = new BinaryReader(new MemoryStream(fi, false)))
                 entries = list.ToDictionary(x => x, x => Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
+            CorrectCompressionforLZSfiles();
         }
 
         public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL)
@@ -43,6 +44,7 @@ namespace OpenVIII
                 while (Count-- > 0)
                     entries.Add(sr.ReadLine().TrimEnd(), Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
             }
+            CorrectCompressionforLZSfiles();
         }
 
         public ArchiveMap(int count) => entries = new Dictionary<string, FI>(count);
@@ -131,13 +133,18 @@ namespace OpenVIII
             using (BinaryReader br = new BinaryReader(data))
             {
                 br.BaseStream.Seek(fi.Offset + offset, SeekOrigin.Begin);
-                if (fi.CompressionType == CompressionType.LZSS)
+                switch (fi.CompressionType)
                 {
-                    size = br.ReadInt32();
-                    buffer = br.ReadBytes(size);
+                    case CompressionType.LZSS:
+                    case CompressionType.LZSS_UnknownSize:
+                    case CompressionType.LZSS_LZSS:
+                        int readSize = br.ReadInt32();
+                        if (size != readSize + sizeof(int))
+                            throw new InvalidDataException($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} Size inside of lzs {{{readSize}}} doesn't match size calculated by region {{{size}}}.");
+                        size = readSize;
+                        break;
                 }
-                else
-                    buffer = br.ReadBytes(size);
+                buffer = br.ReadBytes(size);
             }
             switch (fi.CompressionType)
             {
@@ -146,6 +153,12 @@ namespace OpenVIII
 
                 case CompressionType.LZSS:
                     return LZSS.DecompressAllNew(buffer, fi.UncompressedSize);
+
+                case CompressionType.LZSS_LZSS:
+                    return LZSS.DecompressAllNew(LZSS.DecompressAllNew(buffer, fi.UncompressedSize), 0, true);
+
+                case CompressionType.LZSS_UnknownSize:
+                    return LZSS.DecompressAllNew(buffer, 0);
 
                 case CompressionType.LZ4:
                     return LZ4Uncompress(buffer, fi.UncompressedSize);
@@ -159,7 +172,7 @@ namespace OpenVIII
         {
             if (data == null)
                 throw new ArgumentNullException($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} {nameof(data)} cannot be null.");
-            if(string.IsNullOrWhiteSpace(input))
+            if (string.IsNullOrWhiteSpace(input))
                 throw new ArgumentNullException($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} {nameof(input)} cannot be empty or null");
             long offset = 0;
             if (data.GetType() == typeof(StreamWithRangeValues))
@@ -184,12 +197,24 @@ namespace OpenVIII
             return new KeyValuePair<string, FI>(fileName, value);
         }
 
-        public void MergeMaps(ArchiveMap child, int offset_for_fs)
-        {
-            entries.AddRange(child.entries.ToDictionary(x => x.Key, x => x.Value.Adjust(offset_for_fs)));
-        }
+        /// <summary>
+        /// Merge two file lists together.
+        /// </summary>
+        /// <param name="child">the map being merged.</param>
+        /// <param name="offset_for_fs">offset where the file data is.</param>
+        public void MergeMaps(ArchiveMap child, int offset_for_fs) => entries.AddRange(child.entries.ToDictionary(x => x.Key, x => x.Value.Adjust(offset_for_fs)));
 
         public bool TryGetValue(string key, out FI value) => ((IReadOnlyDictionary<string, FI>)entries).TryGetValue(key, out value);
+
+        /// <summary>
+        /// This forces the compression to be set to lzss so the file comes out uncompressed.
+        /// </summary>
+        private void CorrectCompressionforLZSfiles()
+        {
+            IEnumerable<KeyValuePair<string, FI>> lszfiles = entries.Where(x => x.Key.EndsWith("lzs", StringComparison.OrdinalIgnoreCase));
+            lszfiles.Where(x => x.Value.CompressionType == CompressionType.None).ForEach(x => entries[x.Key].CompressionType = CompressionType.LZSS_UnknownSize);
+            lszfiles.Where(x => x.Value.CompressionType == CompressionType.LZSS).ForEach(x => entries[x.Key].CompressionType = CompressionType.LZSS_LZSS);
+        }
 
         private Stream Uncompress(StreamWithRangeValues @in, out long offset)
         {
