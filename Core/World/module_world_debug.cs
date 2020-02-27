@@ -518,7 +518,11 @@ namespace OpenVIII
                     if (reverse)
                         instance.currentAnimFrame--;
                     else
-                        instance.currentAnimFrame++;
+                    {
+                        int Frames = (int)(instance.animationDeltaTime.TotalMilliseconds / TimePerFrame.TotalMilliseconds);
+                        Frames =  MathHelper.Clamp(Frames, 0, 3);
+                        instance.currentAnimFrame += Frames ;
+                    }
                     instance.animationDeltaTime = TimeSpan.Zero;
                 }
                 else instance.animationDeltaTime += Memory.ElapsedGameTime;
@@ -642,6 +646,7 @@ namespace OpenVIII
         public static float VectorToAngle(Vector2 vector) => (float)Math.Atan2(vector.Y, -vector.X);
 
         public static float DetectedSpeed;
+        private const float playerSpeed = 25f; //the lower the faster
 
         /// <summary>
         /// Provides 4-axis support for input of currently controlled entity
@@ -680,27 +685,27 @@ namespace OpenVIII
                 {
                     if (fulscrMapCurY < 0.070f)
                         fulscrMapCurY = 0.870f;
-                    fulscrMapCurY -= 0.005f;
+                    fulscrMapCurY -= 0.005f * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds/25.0f;
                 }
                 else if (Input2.Button(FF8TextTagKey.Down)/* || shift.Y < 0*/)
                 {
                     if (fulscrMapCurY > 0.870f)
                         fulscrMapCurY = 0.070f;
-                    fulscrMapCurY += 0.005f;
+                    fulscrMapCurY += 0.005f * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
 
                 }
                 if (Input2.Button(FF8TextTagKey.Left) /*|| shift.X < 0*/)
                 {
                     if (fulscrMapCurX < 0.145f)
                         fulscrMapCurX = 0.745f;
-                    fulscrMapCurX -= 0.003f;
+                    fulscrMapCurX -= 0.003f* (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
 
                 }
                 else if (Input2.Button(FF8TextTagKey.Right)/* || shift.X > 0*/)
                 {
                     if (fulscrMapCurX > 0.745)
                         fulscrMapCurX = 0.145f;
-                    fulscrMapCurX += 0.003f;
+                    fulscrMapCurX += 0.003f* (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
                 }
             }
             else if (worldState != _worldState._9debugFly)
@@ -766,7 +771,7 @@ namespace OpenVIII
                         //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
                         diffvect *= dist / distmax;
                     }
-                    playerPosition = lastPlayerPosition + diffvect;
+                    playerPosition = lastPlayerPosition + (diffvect * (float)(Memory.GameTime.ElapsedGameTime.TotalMilliseconds/ playerSpeed));
                 }
             }
             if (Input2.Button(Keys.F3))
@@ -1106,9 +1111,9 @@ namespace OpenVIII
             //Debug.WriteLine($"{rightstick.X}");
             shift += rightstick;
             if (Input2.Button(FF8TextTagKey.RotateLeft, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees -= RotationInterval;
+                degrees -= RotationInterval * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds/25f;
             if (Input2.Button(FF8TextTagKey.RotateRight, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees += RotationInterval;
+                degrees += RotationInterval *(float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25f;
             degrees += shift.X;
             degrees %= 360f;
             if (degrees < 0)
