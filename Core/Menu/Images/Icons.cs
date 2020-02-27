@@ -194,14 +194,14 @@ namespace OpenVIII
                         Loc[] locs = new Loc[br.ReadUInt32()];
                         for (int i = 0; i < locs.Length; i++)
                         {
-                            locs[i].seek = br.ReadUInt16();
-                            locs[i].length = br.ReadUInt16();
+                            locs[i].Seek = br.ReadUInt16();
+                            locs[i].Length = br.ReadUInt16();
                         }
                         Entries = new Dictionary<ID, EntryGroup>(locs.Length + 10);
                         for (int i = 0; i < locs.Length; i++)
                         {
-                            ms.Seek(locs[i].seek, SeekOrigin.Begin);
-                            byte c = (byte)locs[i].length;
+                            ms.Seek(locs[i].Seek, SeekOrigin.Begin);
+                            byte c = (byte)locs[i].Length;
                             Entries[(ID)i] = new EntryGroup(c);
                             for (int e = 0; e < c; e++)
                             {

@@ -12,88 +12,110 @@ namespace OpenVIII
     /// </summary>
     public class Log : TextWriter
     {
-        private FileStream fs;
-        private StreamWriter log;
-        private bool enabled = true;
+        #region Fields
+
+        private FileStream _fs;
+        private StreamWriter _log;
+
+        #endregion Fields
+
+        #region Constructors
 
         public Log()
         {
-            fs = new FileStream("log.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
-            log = new StreamWriter(fs, System.Text.Encoding.UTF8)
+            _fs = new FileStream("log.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+            _log = new StreamWriter(_fs, System.Text.Encoding.UTF8)
             { AutoFlush = true };
         }
-        public override void WriteLine(string value) => base.WriteLine($"{Thread.CurrentThread.ManagedThreadId}:{Task.CurrentId}:{value}");
-        public override System.Text.Encoding Encoding => log.Encoding;
+
+        #endregion Constructors
+
+        #region Destructors
+
+        ~Log()
+        {
+            Dispose(true);
+        }
+
+        #endregion Destructors
+
+        #region Properties
+
         /// <summary>
         /// If Disabled the log.txt will be empty. and Async writes will be null.
         /// </summary>
-        public bool Enabled { get => enabled; set => enabled = value; }
+        public bool Enabled { get; set; } = true;
+
+        public override System.Text.Encoding Encoding => _log.Encoding;
+
+        #endregion Properties
+
+        #region Methods
+
+        [ComVisible(false)]
+        public override void Close() => _log.Close();
+
+        [ComVisible(false)]
+        public override void Flush() => _log.Flush();
 
         public override void Write(char value)
         {
-            if (Enabled) log.Write(value);
+            if (Enabled) _log.Write(value);
             else Debug.Write(value);
         }
 
         public override void Write(char[] buffer, int index, int count)
         {
-            if (Enabled) log.Write(buffer, index, count);
+            if (Enabled) _log.Write(buffer, index, count);
             else Debug.Write(new string(buffer.Skip(index).Take(count).ToArray()));
         }
 
         public override void Write(string value)
         {
-            if (Enabled) log.Write(value);
+            if (Enabled) _log.Write(value);
             else Debug.Write(value);
         }
 
         public override void Write(char[] buffer)
         {
-            if (Enabled) log.Write(buffer);
+            if (Enabled) _log.Write(buffer);
             else Debug.Write(buffer);
         }
 
         [ComVisible(false)]
-        public override Task WriteAsync(char value) => !Enabled ? null : log.WriteAsync(value);
+        public override Task WriteAsync(char value) => !Enabled ? null : _log.WriteAsync(value);
 
         [ComVisible(false)]
-        public override Task WriteAsync(string value) => !Enabled ? null : log.WriteAsync(value);
+        public override Task WriteAsync(string value) => !Enabled ? null : _log.WriteAsync(value);
 
         [ComVisible(false)]
-        public override Task WriteAsync(char[] buffer, int index, int count) => !Enabled ? null : log.WriteAsync(buffer, index, count);
+        public override Task WriteAsync(char[] buffer, int index, int count) => !Enabled ? null : _log.WriteAsync(buffer, index, count);
+
+        public override void WriteLine(string value) => base.WriteLine($"{Thread.CurrentThread.ManagedThreadId}:{Task.CurrentId}:{value}");
 
         [ComVisible(false)]
-        public override Task WriteLineAsync() => !Enabled ? null : log.WriteLineAsync();
+        public override Task WriteLineAsync() => !Enabled ? null : _log.WriteLineAsync();
 
         [ComVisible(false)]
-        public override Task WriteLineAsync(char value) => !Enabled ? null : log.WriteLineAsync(value);
+        public override Task WriteLineAsync(char value) => !Enabled ? null : _log.WriteLineAsync(value);
 
         [ComVisible(false)]
-        public override Task WriteLineAsync(string value) => !Enabled ? null : log.WriteLineAsync(value);
+        public override Task WriteLineAsync(string value) => !Enabled ? null : _log.WriteLineAsync(value);
 
         [ComVisible(false)]
-        public override Task WriteLineAsync(char[] buffer, int index, int count) => !Enabled ? null : log.WriteLineAsync(buffer, index, count);
-
-        [ComVisible(false)]
-        public override void Close() => log.Close();
-
-        [ComVisible(false)]
-        public override void Flush() => log.Flush();
+        public override Task WriteLineAsync(char[] buffer, int index, int count) => !Enabled ? null : _log.WriteLineAsync(buffer, index, count);
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
             //log?.Close();
             //log?.Dispose();
-            log = null;
-            fs?.Close();
-            fs?.Dispose();
-            fs = null;
+            _log = null;
+            _fs?.Close();
+            _fs?.Dispose();
+            _fs = null;
         }
 
-        ~Log()
-        {
-            Dispose(true);
-        }
+        #endregion Methods
     }
 }
