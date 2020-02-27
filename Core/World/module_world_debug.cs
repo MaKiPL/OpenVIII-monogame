@@ -1852,23 +1852,22 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             public FF8String locationName;
         }
 
-        private static fullScreenMapLocations[] screenMapLocations = new fullScreenMapLocations[20]
+        private static fullScreenMapLocations[] screenMapLocations = new fullScreenMapLocations[19]
         {
             new fullScreenMapLocations() {x= 0.555f, y= 0.345f}, //BGarden
             new fullScreenMapLocations() {x= 0.530f, y= 0.370f}, //BCity
             new fullScreenMapLocations() {x= 0.465f, y= 0.315f}, //Dollet
             new fullScreenMapLocations() {x= 0.449f, y= 0.455f}, //Timber
-            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Galbadia Garden
+            new fullScreenMapLocations() {x= 0.410f, y= 0.370f}, //GGarden
             new fullScreenMapLocations() {x= 0.360f, y= 0.350f}, //Deling
             new fullScreenMapLocations() {x= 0.375f, y= 0.450f}, //Desert Prison
-            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Missile Base
+            new fullScreenMapLocations() {x= 0.340f, y= 0.415f}, //Missile Base
             new fullScreenMapLocations() {x= 0.542f, y= 0.475f}, //Fisherman
             new fullScreenMapLocations() {x= 0.385f, y= 0.510f}, //Winhill
             new fullScreenMapLocations() {x= 0.430f, y= 0.760f}, //Edea House
             new fullScreenMapLocations() {x= 0.611f, y= 0.240f}, //Trabia
             new fullScreenMapLocations() {x= 0.525f, y= 0.14f}, //Shumi
-            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Trabia
-            new fullScreenMapLocations() {x= 0.0f, y= 0.0f}, //[TODO] Esthar city
+            new fullScreenMapLocations() {x= 0.640f, y= 0.450f}, //Esthar city
             new fullScreenMapLocations() {x= 0.620f, y= 0.485f}, //Esthar airstation
             new fullScreenMapLocations() {x= 0.687f, y= 0.460f}, //Lunatic pandora
             new fullScreenMapLocations() {x= 0.715f, y= 0.51f}, //Lunar gate
@@ -1910,20 +1909,18 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 screenMapLocations[11].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
                 screenMapLocations[12].locationName = wmset.GetLocationName(20); //shumi
                 screenMapLocations[12].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
-                screenMapLocations[13].locationName = wmset.GetLocationName(22); //Trabia
+                screenMapLocations[13].locationName = wmset.GetLocationName(26); //Esthar city
                 screenMapLocations[13].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
-                screenMapLocations[14].locationName = wmset.GetLocationName(26); //Esthar city
+                screenMapLocations[14].locationName = wmset.GetLocationName(27); //Esthar airstation
                 screenMapLocations[14].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
-                screenMapLocations[15].locationName = wmset.GetLocationName(27); //Esthar airstation
+                screenMapLocations[15].locationName = wmset.GetLocationName(28); //Lunatic pandora lab
                 screenMapLocations[15].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
-                screenMapLocations[16].locationName = wmset.GetLocationName(28); //Lunatic pandora lab
+                screenMapLocations[16].locationName = wmset.GetLocationName(29); //lunar gate
                 screenMapLocations[16].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
-                screenMapLocations[17].locationName = wmset.GetLocationName(29); //lunar gate
+                screenMapLocations[17].locationName = wmset.GetLocationName(30); //esthar memorial
                 screenMapLocations[17].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
-                screenMapLocations[18].locationName = wmset.GetLocationName(30); //esthar memorial
+                screenMapLocations[18].locationName = wmset.GetLocationName(31); //tear point
                 screenMapLocations[18].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
-                screenMapLocations[19].locationName = wmset.GetLocationName(31); //tear point
-                screenMapLocations[19].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
 
                 fullScreenMapMark = new Texture2D(Memory.graphics.GraphicsDevice, 2, 1, false, SurfaceFormat.Color); //1x1 yellow and 1x1 red
                 fullScreenMapMark.SetData(new Color[] { Color.Yellow, Color.Red });
