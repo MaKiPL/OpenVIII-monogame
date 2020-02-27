@@ -40,7 +40,7 @@ namespace OpenVIII.AV
             {
                 Memory.dicMusic.Add(eyesOnMePrefix, Memory.dicMusic[altEyesOnMePrefix]);
             }
-            ArchiveBase a = ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+            ArchiveBase a = ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
             string[] list = a?.GetListOfFiles();
             if (list != null && list.Length > 0)
             {
@@ -248,31 +248,29 @@ namespace OpenVIII.AV
         private static unsafe void PlayInTask(ref Audio ffAudio, float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
         {
             return;
-            ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-            var fd = a.ArchiveMap.GetFileData(filename);
-            BufferData buffer_Data = new AV.BufferData
-            {
-                DataSeekLoc = fd.Value.Offset,
-                DataSize = fd.Value.UncompressedSize,
-                HeaderSize = 0,
-                Target = BufferData.TargetFile.other_zzz
-            };
-            GCHandle gch = GCHandle.Alloc(buffer_Data, GCHandleType.Pinned);
-            ffAudio = AV.Audio.Load(
-                &buffer_Data,
-                null, loop ? 0 : -1, Ffcc.FfccMode.STATE_MACH);
-            ffAudio.PlayInTask(volume, pitch, pan);
-            while (!cancelToken.IsCancellationRequested)
-                Thread.Sleep(1000);
-            gch.Free();
+            //ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
+            //var fd = a.ArchiveMap.GetFileData(filename);
+            //BufferData buffer_Data = new AV.BufferData
+            //{
+            //    DataSeekLoc = fd.Value.Offset,
+            //    DataSize = fd.Value.UncompressedSize,
+            //    HeaderSize = 0,
+            //    Target = BufferData.TargetFile.other_zzz
+            //};
+            //GCHandle gch = GCHandle.Alloc(buffer_Data, GCHandleType.Pinned);
+            //ffAudio = AV.Audio.Load(
+            //    &buffer_Data,
+            //    null, loop ? 0 : -1, Ffcc.FfccMode.STATE_MACH);
+            //ffAudio.PlayInTask(volume, pitch, pan);
+            //while (!cancelToken.IsCancellationRequested)
+            //    Thread.Sleep(1000);
+            //gch.Free();
         }
 
         public static void KillAudio()
         {
-            if (dm_Midi != null)
-                dm_Midi.Dispose();
-            if (fluid_Midi != null)
-                fluid_Midi.Dispose();
+            dm_Midi?.Dispose();
+            fluid_Midi?.Dispose();
         }
 
         public static void Stop()
@@ -288,8 +286,7 @@ namespace OpenVIII.AV
             if (dm_Midi != null)
                 dm_Midi.Stop();
 #else
-            if (fluid_Midi != null)
-                fluid_Midi.Stop();
+            fluid_Midi?.Stop();
 #endif
         }
 

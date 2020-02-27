@@ -46,28 +46,28 @@ namespace OpenVIII.Battle
 
         #region Constructors
 
-        public static IEnumerable<Battle.Mag> WithGeometies => All?.Where(x => (x.Geometries?.Count ?? 0) > 0) ?? null;
+        public static IEnumerable<Battle.Mag> WithGeometries => All?.Where(x => (x.Geometries?.Count ?? 0) > 0) ?? null;
 
         public static IEnumerable<Battle.Mag> Packed => All?.Where(x => x.isPackedMag) ?? null;
 
-        public static IEnumerable<Battle.Mag> MagTIMs => All?.Where(x => x.isTIM) ?? null;
+        public static IEnumerable<Battle.Mag> MagTim => All?.Where(x => x.isTIM) ?? null;
 
-        public static IEnumerable<int> UNKID => All?.Where(x => x.UnknownType > 0).Select(x => x.UnknownType) ?? null;
+        public static IEnumerable<int> Unknown => All?.Where(x => x.UnknownType > 0).Select(x => x.UnknownType) ?? null;
         public static List<Mag> All;
 
         public static void Init()
         {
             return;
-            All = new List<Mag>();
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAGIC);
-            //aw.CacheFS();
-            IEnumerable<string> magFiles = aw.GetListOfFiles().Where(x => Path.GetFileName(Path.GetDirectoryName(x)).IndexOf("magic", System.StringComparison.OrdinalIgnoreCase) >= 0 || Path.GetFileName(Path.GetDirectoryName(x)).IndexOf("battle", System.StringComparison.OrdinalIgnoreCase) >= 0 && Path.GetFileName(x).StartsWith("mag", System.StringComparison.OrdinalIgnoreCase)).Distinct();
-            var v  = magFiles.ToList();
+            //All = new List<Mag>();
+            //ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAGIC);
+            ////aw.CacheFS();
+            //IEnumerable<string> magFiles = aw.GetListOfFiles().Where(x => Path.GetFileName(Path.GetDirectoryName(x)).IndexOf("magic", System.StringComparison.OrdinalIgnoreCase) >= 0 || Path.GetFileName(Path.GetDirectoryName(x)).IndexOf("battle", System.StringComparison.OrdinalIgnoreCase) >= 0 && Path.GetFileName(x).StartsWith("mag", System.StringComparison.OrdinalIgnoreCase)).Distinct();
+            //var v  = magFiles.ToList();
 
-            foreach (KeyValuePair<string, byte[]> i in magFiles.ToDictionary(x => x, x => aw.GetBinaryFile(x)))
-            {
-                All.Add(Mag.Load(i.Key, i.Value));
-            }
+            //foreach (KeyValuePair<string, byte[]> i in magFiles.ToDictionary(x => x, x => aw.GetBinaryFile(x)))
+            //{
+            //    All.Add(Mag.Load(i.Key, i.Value));
+            //}
         }
 
         public static Mag Load(string filename, byte[] buffer)

@@ -12,19 +12,18 @@ namespace OpenVIII
     {
         #region Fields
 
-        protected const int MaxLocalCache = 5;
-        protected static ConcurrentDictionary<string, BufferWithAge> LocalCache = new ConcurrentDictionary<string, BufferWithAge>();
-        protected Memory.Archive _path;
+        protected Memory.Archive Archive;
 
         /// <summary>
         /// Generated File List
         /// </summary>
         protected string[] FileList;
-        private IEnumerator enumerator;
-        private const int MaxInCache = 5;
-        private static ConcurrentDictionary<string, ArchiveBase> Cache = new ConcurrentDictionary<string, ArchiveBase>();
-        private static object localaddlock = new object();
 
+        private const int MaxInCache = 5;
+        private const int MaxLocalCache = 5;
+        private static readonly ConcurrentDictionary<string, ArchiveBase> Cache = new ConcurrentDictionary<string, ArchiveBase>();
+        private static readonly object LocalAddLock = new object();
+        private static readonly ConcurrentDictionary<string, BufferWithAge> LocalCache = new ConcurrentDictionary<string, BufferWithAge>();
 
         #endregion Fields
 
@@ -32,14 +31,14 @@ namespace OpenVIII
 
         public ArchiveMap ArchiveMap { get; protected set; }
 
-        public int Count => GetListOfFiles().Count();
+        public int Count => GetListOfFiles().Length;
 
         public DateTime Created { get; protected set; }
 
         public KeyValuePair<string, byte[]> Current => GetCurrent();
 
-
-        public bool isDir { get; protected set; } = false;
+        object IEnumerator.Current => Enumerator;
+        public bool IsDir { get; protected set; } = false;
 
         public bool IsOpen { get; protected set; } = false;
 
@@ -51,15 +50,12 @@ namespace OpenVIII
 
         protected static IOrderedEnumerable<KeyValuePair<string, BufferWithAge>> OrderByAge => LocalCache.Where(x => x.Value != null).OrderBy(x => x.Value.Used).ThenBy(x => x.Key.Length).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
+        protected IEnumerator Enumerator { get; set; }
         protected List<Memory.Archive> ParentPath { get; set; }
 
-        private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZZZ => Cache.Where(x => x.Value != null && !x.Value.isDir && !(x.Value is ArchiveZZZ));
+        private static IEnumerable<KeyValuePair<string, ArchiveBase>> NonDirOrZzz => Cache.Where(x => x.Value != null && !x.Value.IsDir && !(x.Value is ArchiveZzz));
 
-        private static IEnumerable<KeyValuePair<string, ArchiveBase>> Oldest => NonDirOrZZZ.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
-
-        object IEnumerator.Current => enumerator;
-
-        protected IEnumerator Enumerator { get => enumerator; set => enumerator = value; }
+        private static IEnumerable<KeyValuePair<string, ArchiveBase>> Oldest => NonDirOrZzz.OrderBy(x => x.Value.Used).ThenBy(x => x.Value.Created);
 
         #endregion Properties
 
@@ -85,36 +81,38 @@ namespace OpenVIII
             {
                 return ArchiveWorker.Load(archive);
             }
-            else if (archive.IsFile)
+
+            if (archive.IsFile)
             {
                 if (archive.IsFileArchive || archive.IsFileIndex || archive.IsFileList)
                 {
                     Memory.Archive a = new Memory.Archive(Path.GetFileNameWithoutExtension(archive), Path.GetDirectoryName(archive));
                     return ArchiveWorker.Load(a);
                 }
-                else if (archive.IsZZZ)
+
+                if (archive.IsZZZ)
                 {
-                    return ArchiveZZZ.Load(archive);
+                    return ArchiveZzz.Load(archive);
                 }
-                else
-                    return ArchiveWorker.Load(archive);
+
+                return ArchiveWorker.Load(archive);
             }
-            else
-                return null;
+
+            return null;
         }
 
         public static void PurgeCache(bool all = false)
         {
             LocalCache.ForEach(x =>
             {
-                if (LocalCache.TryRemove(x.Key, out BufferWithAge tmp))
+                if (LocalCache.TryRemove(x.Key, out BufferWithAge _))
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                 }
             });
-            NonDirOrZZZ.ForEach(x =>
+            NonDirOrZzz.ForEach(x =>
             {
-                if (Cache.TryRemove(x.Key, out ArchiveBase tmp))
+                if (Cache.TryRemove(x.Key, out ArchiveBase _))
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                 }
@@ -124,7 +122,7 @@ namespace OpenVIII
             {
                 Cache.ForEach(x =>
                 {
-                    if (Cache.TryRemove(x.Key, out ArchiveBase tmp))
+                    if (Cache.TryRemove(x.Key, out ArchiveBase _))
                     {
                         Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                     }
@@ -139,26 +137,20 @@ namespace OpenVIII
 
         public abstract ArchiveBase GetArchive(string fileName);
 
-        public virtual int GetMaxSize(Memory.Archive archive)
-        {
-            using(StreamWithRangeValues s = GetStreamWithRangeValues(archive.FS))
-                return checked((int)s.Size);
-        }
-        
-        public void GetArchive(Memory.Archive archive, out StreamWithRangeValues FI, out ArchiveBase FS, out StreamWithRangeValues FL)
+        public void GetArchive(Memory.Archive archive, out StreamWithRangeValues fi, out ArchiveBase fs, out StreamWithRangeValues fl)
         {
             Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");
-            FI = GetStreamWithRangeValues(archive.FI);
-            FS = this;
-            FL = GetStreamWithRangeValues(archive.FL);
+            fi = GetStreamWithRangeValues(archive.FI);
+            fs = this;
+            fl = GetStreamWithRangeValues(archive.FL);
         }
 
-        public void GetArchive(Memory.Archive archive, out byte[] FI, out byte[] FS, out byte[] FL)
+        public void GetArchive(Memory.Archive archive, out byte[] fi, out byte[] fs, out byte[] fl)
         {
             Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");
-            FI = GetBinaryFile(archive.FI);
-            FS = GetBinaryFile(archive.FS, cache: true);
-            FL = GetBinaryFile(archive.FL);
+            fi = GetBinaryFile(archive.FI);
+            fs = GetBinaryFile(archive.FS, cache: true);
+            fl = GetBinaryFile(archive.FL);
         }
 
         public abstract ArchiveBase GetArchive(Memory.Archive archive);
@@ -167,142 +159,125 @@ namespace OpenVIII
 
         public IEnumerator<KeyValuePair<string, byte[]>> GetEnumerator() => this;
 
+        IEnumerator IEnumerable.GetEnumerator() => this;
 
         /// <summary>
         /// Get current file list for loaded archive.
         /// </summary>
         public virtual string[] GetListOfFiles(bool force = false)
         {
-            if (FileList == null || force)
-            {
-                FileList = ProduceFileLists();
-                enumerator = FileList?.GetEnumerator();
-            }
+            if (FileList != null && !force) return FileList;
+            FileList = ProduceFileLists();
+            Enumerator = FileList?.GetEnumerator();
             return FileList;
+        }
+
+        public virtual int GetMaxSize(Memory.Archive archive)
+        {
+            using (StreamWithRangeValues s = GetStreamWithRangeValues(archive.FS))
+                return checked((int)s.Size);
         }
 
         public abstract Memory.Archive GetPath();
 
-        public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename, FI fi = null, int size = 0);
+        public abstract StreamWithRangeValues GetStreamWithRangeValues(string filename);
 
-        public bool MoveNext() => (GetListOfFiles()?.Length ?? 0) > 0 && enumerator.MoveNext();
+        public bool MoveNext() => (GetListOfFiles()?.Length ?? 0) > 0 && Enumerator.MoveNext();
 
         public void Reset()
         {
             string[] list = GetListOfFiles();
             if (list != null && list.Length > 0)
-                enumerator.Reset();
+                Enumerator.Reset();
         }
 
-        public override string ToString() => $"{_path} :: {Used}";
+        public override string ToString() => $"{Archive} :: {Used}";
 
-        public bool TryGetValue(string key, out byte[] value) => (value = GetBinaryFile(key)) != null ? true : false;
+        public bool TryGetValue(string key, out byte[] value) => (value = GetBinaryFile(key)) != null;
+
+        protected static bool CacheTryAdd(string key, ArchiveBase value)
+        {
+            if (!Cache.TryAdd(key, value)) return false;
+            if (value != null) value.Used = value.Created = DateTime.Now;
+
+            if ((Oldest.Count() - MaxInCache) > 0)
+                Oldest.Where(x => x.Key != key).Reverse().Skip(MaxInCache)
+                    .ForEach(x => Cache.TryRemove(x.Key, out ArchiveBase _));
+            return true;
+        }
 
         protected static bool CacheTryGetValue(string path, out ArchiveBase value)
         {
-            if (Cache.TryGetValue(path, out value))
-            {
-                if (value != null)
-                    value.Used = DateTime.Now;
-                return true;
-            }
-            else return false;
+            if (!Cache.TryGetValue(path, out value)) return false;
+            if (value != null)
+                value.Used = DateTime.Now;
+            return true;
         }
 
-        protected static bool LocalTryAdd(string Key, BufferWithAge Value)
+        protected static bool LocalTryAdd(string key, BufferWithAge value)
         {
-            lock (localaddlock)
+            lock (LocalAddLock)
             {
-                Debug.Assert(!Key.EndsWith("field.fs", StringComparison.OrdinalIgnoreCase));
-                if (LocalCache.TryAdd(Key, Value))
+                Debug.Assert(!key.EndsWith("field.fs", StringComparison.OrdinalIgnoreCase));
+                if (!LocalCache.TryAdd(key, value)) return false;
+                if ((OrderByAge.Count() - MaxLocalCache) > 0)
                 {
-                    int left = 0;
-                    if ((left = OrderByAge.Count() - MaxLocalCache) > 0)
+                    OrderByAge.Where(x => x.Key != key).Reverse().Skip(MaxLocalCache).ForEach(x =>
                     {
-                        OrderByAge.Where(x => x.Key != Key).Reverse().Skip(MaxLocalCache).ForEach(x =>
-                          {
-                              if (LocalCache.TryRemove(x.Key, out BufferWithAge tmp))
-                              {
-                                  Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(LocalTryAdd)}::Evicting: \"{x.Key}\"");
-                              }
-                          });
-                    }
-                    return true;
+                        if (LocalCache.TryRemove(x.Key, out BufferWithAge _))
+                        {
+                            Memory.Log.WriteLine(
+                                $"{nameof(ArchiveBase)}::{nameof(LocalTryAdd)}::Evicting: \"{x.Key}\"");
+                        }
+                    });
                 }
-                return false;
-            }
-        }
-
-        protected static bool CacheTryAdd(string Key, ArchiveBase value)
-        {
-            if (Cache.TryAdd(Key, value))
-            {
-                if (value != null)
-                {
-                    value.Used = value.Created = DateTime.Now;
-                }
-                int overage = 0;
-                if ((overage = Oldest.Count() - MaxInCache) > 0)
-                    Oldest.Where(x => x.Key != Key).Reverse().Skip(MaxInCache).ForEach(x => Cache.TryRemove(x.Key, out ArchiveBase tmp));
                 return true;
             }
-            else return false;
         }
 
         protected virtual int FindFile(ref string filename)
         {
-            if (ArchiveMap != null && ArchiveMap.Count > 1)
-                return ArchiveMap.FindString(ref filename, out int size) == default ? -1 : 0;
-            return -1;
+            if (string.IsNullOrWhiteSpace(filename)) return -1;
+            return ArchiveMap != null && ArchiveMap.Count > 1
+                ? ArchiveMap.FindString(ref filename, out int _) == default ? -1 : 0
+                : -1;
         }
 
         protected List<Memory.Archive> FindParentPath(Memory.Archive path)
         {
-            if (path.Parent != null)
-                foreach (Memory.Archive pathParent in path.Parent)
-                {
-                    if (pathParent.IsDir)
-                        return new List<Memory.Archive> { pathParent };
-                    else if (pathParent.IsFile)
-                        return new List<Memory.Archive> { pathParent };
-                    else if (pathParent.Parent != null && pathParent.Parent.Count > 0)
-                    {
-                        List<Memory.Archive> returnList = FindParentPath(pathParent);
-                        if (returnList != null && returnList.Count > 0)
-                        {
-                            returnList.Add(pathParent);
-                            return returnList;
-                        }
-                    }
-                }
+            if (path.Parent == null) return null;
+            foreach (Memory.Archive pathParent in path.Parent)
+            {
+                if (pathParent.IsDir)
+                    return new List<Memory.Archive> { pathParent };
+                if (pathParent.IsFile)
+                    return new List<Memory.Archive> { pathParent };
+                if (pathParent.Parent == null || pathParent.Parent.Count <= 0) continue;
+                List<Memory.Archive> returnList = FindParentPath(pathParent);
+                if (returnList == null || returnList.Count <= 0) continue;
+                returnList.Add(pathParent);
+                return returnList;
+            }
             return null;
         }
 
         protected bool LocalTryGetValue(string filename, out BufferWithAge value)
         {
-            if (LocalCache.TryGetValue(filename, out value))
-            {
-                if (value != null)
-                    value.Poke();
-                return true;
-            }
-            return false;
+            if (!LocalCache.TryGetValue(filename, out value)) return false;
+            value?.Poke();
+            return true;
         }
 
-        protected virtual string[] ProduceFileLists()
-        {
-            if (ArchiveMap != null && ArchiveMap.Count > 0)
-                return ArchiveMap.OrderedByName.Select(x => x.Key).ToArray();
-            return null;
-        }
+        protected virtual string[] ProduceFileLists() =>
+            ArchiveMap != null && ArchiveMap.Count > 0
+                ? ArchiveMap.OrderedByName.Select(x => x.Key).ToArray()
+                : null;
 
         private KeyValuePair<string, byte[]> GetCurrent()
         {
-            string s = (string)(enumerator.Current);
+            string s = (string)(Enumerator.Current);
             return new KeyValuePair<string, byte[]>(s, GetBinaryFile(s));
         }
-
-        IEnumerator IEnumerable.GetEnumerator() => this;
 
         #endregion Methods
     }

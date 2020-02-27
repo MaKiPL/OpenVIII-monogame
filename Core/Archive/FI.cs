@@ -1,5 +1,6 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+
+// ReSharper disable InconsistentNaming
 
 namespace OpenVIII
 {
@@ -27,10 +28,11 @@ namespace OpenVIII
         }
 
         public override string ToString() => $"{{{UncompressedSize}, {Offset}, {CompressionType}}}";
-        public FI Adjust(int offset_for_fs) {
-            Offset += offset_for_fs;
+
+        public FI Adjust(int offsetForFs)
+        {
+            Offset += offsetForFs;
             return this;
         }
-
     }
 }

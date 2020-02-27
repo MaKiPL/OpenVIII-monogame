@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class ArchiveZZZ
+    public sealed partial class ArchiveZzz
     {
         #region Classes
 
@@ -10,6 +10,11 @@ namespace OpenVIII
         {
             #region Methods
 
+            /// <summary>
+            /// Convert ZZZ header to an Archive Map.
+            /// </summary>
+            /// <param name="br">Binary Reader containing raw data</param>
+            /// <returns>ArchiveMap</returns>
             public static ArchiveMap Load(BinaryReader br)
             {
                 int capacity = br.ReadInt32();
@@ -20,11 +25,6 @@ namespace OpenVIII
             }
 
             #endregion Methods
-
-            //public IOrderedEnumerable<string> GetFilenames()
-            //    => Data.Select(x => x.Filename).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase);
-
-            //private Header() => Data = new List<FileData>();
         }
 
         #endregion Classes

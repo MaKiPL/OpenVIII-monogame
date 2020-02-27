@@ -453,7 +453,7 @@ namespace OpenVIII
             FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata_lang)} = {FF8DIRdata_lang}");
 
-            Archives.init();
+            Archives.Init();
 
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;

@@ -1,8 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.AV;
 
 namespace OpenVIII.Movie
 {
@@ -10,20 +11,20 @@ namespace OpenVIII.Movie
     {
         #region Fields
 
-        public static readonly int[] LetterBox = new int[] { 101, 103, 104 };
-        private static Files Files;
+        public static readonly int[] LetterBox = { 101, 103, 104 };
+        private static Files _files;
 
         private STATE _state;
 
-        private AV.Audio Audio;
+        private Audio _audio;
 
-        private bool disposedValue = false;
+        private bool _disposedValue;
 
-        private bool SuppressDraw;
+        private bool _suppressDraw;
 
-        private Texture2D Texture;
+        private Texture2D _texture;
 
-        private AV.Video Video;
+        private Video _video;
 
         #endregion Fields
 
@@ -46,12 +47,12 @@ namespace OpenVIII.Movie
 
         #region Properties
 
-        public int ID { get; private set; }
+        public int Id { get; private set; }
 
         // To detect redundant calls
-        public bool IsDisposed => disposedValue;
+        public bool IsDisposed => _disposedValue;
 
-        public STATE STATE
+        public STATE State
         {
             get => _state; private set
             {
@@ -64,63 +65,65 @@ namespace OpenVIII.Movie
 
         #region Methods
 
-        public static Player Load(int ID, bool OverlayingModels = false)
+        public static Player Load(int id, bool overlayingModels = false)
         {
-            Player Player = null;
-            if (File.Exists(Files[ID]))
+            Player player;
+            if(_files == null)
+                _files = Files.Instance;
+            if (File.Exists(_files[id]))
             {
-                Player = new Player()
+                player = new Player
                 {
-                    ID = ID,
-                    STATE = STATE.LOAD,
-                    Video = AV.Video.Load(Files[ID]),
-                    Audio = AV.Audio.Load(Files[ID]),
-                    SuppressDraw = !OverlayingModels
+                    Id = id,
+                    State = STATE.LOAD,
+                    _video = Video.Load(_files[id]),
+                    _audio = Audio.Load(_files[id]),
+                    _suppressDraw = !overlayingModels
                 };
             }
-            else if (Files.ZZZ)
+            else if (Files.Zzz)
             {
                 return null; // doesn't work.
-                ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-                var fd = a.ArchiveMap.GetFileData(Files[ID]);
+                //ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
+                //var fd = a.ArchiveMap.GetFileData(Files[ID]);
 
-                AV.Audio ffccAudioFromZZZ = AV.Audio.Load(
-                    new AV.BufferData
-                    {
-                        DataSeekLoc = fd.Value.Offset,
-                        DataSize = fd.Value.UncompressedSize,
-                        HeaderSize = 0,
-                        Target = AV.BufferData.TargetFile.other_zzz
-                    },
-                    null, -1);
+                //AV.Audio ffccAudioFromZZZ = AV.Audio.Load(
+                //    new AV.BufferData
+                //    {
+                //        DataSeekLoc = fd.Value.Offset,
+                //        DataSize = fd.Value.UncompressedSize,
+                //        HeaderSize = 0,
+                //        Target = AV.BufferData.TargetFile.other_zzz
+                //    },
+                //    null, -1);
 
-                AV.Video ffccVideoFromZZZ = AV.Video.Load(
-                    new AV.BufferData
-                    {
-                        DataSeekLoc = fd.Value.Offset,
-                        DataSize = fd.Value.UncompressedSize,
-                        HeaderSize = 0,
-                        Target = AV.BufferData.TargetFile.other_zzz
-                    },
-                    null, -1);
+                //AV.Video ffccVideoFromZZZ = AV.Video.Load(
+                //    new AV.BufferData
+                //    {
+                //        DataSeekLoc = fd.Value.Offset,
+                //        DataSize = fd.Value.UncompressedSize,
+                //        HeaderSize = 0,
+                //        Target = AV.BufferData.TargetFile.other_zzz
+                //    },
+                //    null, -1);
 
-                //ffcc.Play(volume, pitch, pan);
+                ////ffcc.Play(volume, pitch, pan);
 
-                Player = new Player()
-                {
-                    ID = ID,
-                    STATE = STATE.LOAD,
-                    Video = ffccVideoFromZZZ,
-                    Audio = ffccAudioFromZZZ,
-                    SuppressDraw = !OverlayingModels
-                };
+                //Player = new Player()
+                //{
+                //    ID = ID,
+                //    STATE = STATE.LOAD,
+                //    Video = ffccVideoFromZZZ,
+                //    Audio = ffccAudioFromZZZ,
+                //    SuppressDraw = !OverlayingModels
+                //};
             }
             else
-            return null;
-            Player.STATE++;
-            if (Player.Video == null && Player.Audio == null)
-                return Player = null;
-            return Player;
+                return null;
+            player.State++;
+            if (player._video == null && player._audio == null)
+                return null;
+            return player;
         }
 
         // This code added to correctly implement the disposable pattern.
@@ -130,13 +133,13 @@ namespace OpenVIII.Movie
 
         public void Draw()
         {
-            switch (STATE)
+            switch (State)
             {
                 case STATE.LOAD:
                     break;
 
                 case STATE.CLEAR:
-                    STATE++;
+                    State++;
                     ClearScreen();
                     break;
 
@@ -149,45 +152,44 @@ namespace OpenVIII.Movie
                     break;
 
                 case STATE.FINISHED:
-                    STATE++;
+                    State++;
                     PlayingDraw();
                     break;
 
                 case STATE.RESET:
                     break;
-
                 case STATE.RETURN:
-                default:
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
         public void PlayingDraw()
         {
-            if (Texture == null)
+            if (_texture == null)
             {
                 return;
             }
             //draw frame;
-            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
             Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
             ClearScreen();
-            Rectangle dst = new Rectangle(new Point(0), (new Vector2(Texture.Width, Texture.Height) * Memory.Scale(Texture.Width, Texture.Height, LetterBox.Contains(ID) ? Memory.ScaleMode.FitHorizontal : Memory.ScaleMode.FitBoth)).ToPoint());
+            Rectangle dst = new Rectangle(new Point(0), (new Vector2(_texture.Width, _texture.Height) * Memory.Scale(_texture.Width, _texture.Height, LetterBox.Contains(Id) ? Memory.ScaleMode.FitHorizontal : Memory.ScaleMode.FitBoth)).ToPoint());
             dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
-            Memory.spriteBatch.Draw(Texture, dst, Microsoft.Xna.Framework.Color.White);
+            Memory.spriteBatch.Draw(_texture, dst, Color.White);
             Memory.SpriteBatchEnd();
         }
 
-        public void STOP()
+        public void Stop()
         {
-            Audio.Dispose();
-            Video.Dispose();
-            STATE = STATE.RETURN;
+            _audio.Dispose();
+            _video.Dispose();
+            State = STATE.RETURN;
         }
 
         public void Update()
         {
-            switch (STATE)
+            switch (State)
             {
                 case STATE.LOAD:
                     break;
@@ -196,62 +198,61 @@ namespace OpenVIII.Movie
                     break;
 
                 case STATE.STARTPLAY:
-                    STATE++;
-                    if (Audio != null)
+                    State++;
+                    if (_audio != null)
                     {
                         if (Memory.Threaded)
-                            Audio.PlayInTask();
+                            _audio.PlayInTask();
                         else
-                            Audio.Play();
+                            _audio.Play();
                     }
-                    if (Video != null)
-                    {
-                        Video.Play();
-                    }
+
+                    _video?.Play();
                     break;
 
                 case STATE.PLAYING:
-                    if (Audio != null && !Memory.Threaded)
+                    if (_audio != null && !Memory.Threaded)
                     {
-                        Audio.NextLoop();
+                        _audio.NextLoop();
                     }
-                    if (Video == null)
-                        STATE = STATE.FINISHED;
-                    else if (Video.Behind)
+                    if (_video == null)
+                        State = STATE.FINISHED;
+                    else if (_video.Behind)
                     {
-                        if (Video.Next() < 0)
+                        if (_video.Next() < 0)
                         {
-                            STATE = STATE.FINISHED;
+                            State = STATE.FINISHED;
                             //Memory.SuppressDraw = true;
                             break;
                         }
-                        else if (Texture != null)
+
+                        if (_texture != null)
                         {
-                            Texture.Dispose();
+                            _texture.Dispose();
                             GC.Collect();
                             GC.WaitForPendingFinalizers();
-                            Texture = null;
+                            _texture = null;
                         }
                     }
                     else
                     {
                         //Memory next frame is skipped.
-                        Memory.SuppressDraw = SuppressDraw;
+                        Memory.SuppressDraw = _suppressDraw;
                     }
-                    if (Texture == null)
+                    if (_texture == null)
                     {
-                        if (Video != null)
+                        if (_video != null)
                         {
                             if (Memory.State?.Fieldvars != null)
-                                Memory.State.Fieldvars.FMVFrames = (ulong)Video.CurrentFrameNum;
-                            Texture = Video.Texture2D();
+                                Memory.State.Fieldvars.FMVFrames = (ulong)_video.CurrentFrameNum;
+                            _texture = _video.Texture2D();
                         }
                     }
                     break;
 
                 case STATE.PAUSED:
                     //todo add a function to pause sound
-                    //pausing the stopwatch will cause the video to pause because it calcs the current frame based on time.
+                    //pausing the stopwatch will cause the video to pause because it calculates the current frame based on time.
                     break;
 
                 case STATE.FINISHED:
@@ -259,36 +260,29 @@ namespace OpenVIII.Movie
 
                 case STATE.RESET:
                     break;
-
-                case STATE.RETURN:
-                default:
-
-                    break;
             }
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (_disposedValue) return;
+            if (disposing)
             {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-                if (!(Video?.IsDisposed ?? true))
-                    Video.Dispose();
-                if (!(Audio?.IsDisposed ?? true))
-                    Audio.Dispose();
-                if (Texture != null && !Texture.IsDisposed)
-                    Texture.Dispose();
-                disposedValue = true;
+                // TODO: dispose managed state (managed objects).
             }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+            // TODO: set large fields to null.
+            if (!(_video?.IsDisposed ?? true))
+                _video.Dispose();
+            if (!(_audio?.IsDisposed ?? true))
+                _audio.Dispose();
+            if (_texture != null && !_texture.IsDisposed)
+                _texture.Dispose();
+            _disposedValue = true;
         }
 
-        private static void ClearScreen() => Memory.spriteBatch.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Black);
+        private static void ClearScreen() => Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
 
         #endregion Methods
 
