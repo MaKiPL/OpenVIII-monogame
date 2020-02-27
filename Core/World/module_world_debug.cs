@@ -1699,6 +1699,8 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             viewMatrix = Matrix.CreateLookAt(planetCamPos, planetCamTarget,
              Vector3.Up);
             effect.View = viewMatrix;
+            effect.Projection = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.ToRadians(60), Memory.graphics.GraphicsDevice.Viewport.AspectRatio, 1, 10000f);
 
 
             for (int i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
