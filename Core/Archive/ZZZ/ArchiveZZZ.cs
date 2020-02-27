@@ -38,6 +38,7 @@ namespace OpenVIII
                 archive.SetFilename(tempArchive.GetListOfFiles()
                     .FirstOrDefault(x => x.IndexOf(archive.ZZZ, StringComparison.OrdinalIgnoreCase) > 0));
             Memory.Log.WriteLine($"{nameof(ArchiveZzz)}:: opening archiveFile: {archive}");
+            if (string.IsNullOrWhiteSpace(archive)) return;
             using (BinaryReader br = Open())
             {
                 if (br == null) return;
@@ -56,6 +57,7 @@ namespace OpenVIII
 
         public static ArchiveBase Load(Memory.Archive path, bool skipList = false)
         {
+            if (string.IsNullOrWhiteSpace(path)) return null;
             lock (Locker)
             {
                 if (CacheTryGetValue(path, out ArchiveBase value))
@@ -67,7 +69,7 @@ namespace OpenVIII
                     value = new ArchiveZzz(path, skipList);
                     if (!value.IsOpen)
                         value = null;
-                    if (value == null) return null;
+                    if (value == null || string.IsNullOrWhiteSpace(path)) return null;
                     if (CacheTryAdd(value.GetPath() ?? path, value))
                     {
                     }
