@@ -44,6 +44,12 @@ namespace OpenVIII
             AV.Music.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             AV.Sound.Init(); //this initalizes the WAVE format audio.dat
             Memory.Log.WriteLine($"{nameof(Game)} :: {nameof(base.Initialize)}");
+
+            //          FORCE FPS LIMIT HERE        
+            //this.IsFixedTimeStep = true;
+            //this.TargetElapsedTime = TimeSpan.FromSeconds(1d / 30d);
+            //          =====================
+
             base.Initialize();
         }
 
