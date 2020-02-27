@@ -1215,8 +1215,8 @@ namespace OpenVIII
                 DrawCharacter(charaInstance);
 #if DEBUG
             DrawDebug();
-            DrawCharacterShadow();
 #endif
+            DrawCharacterShadowSpecialEffects();
 
             switch (MapState)
             {
@@ -1343,11 +1343,12 @@ namespace OpenVIII
         /// <summary>
         /// Takes care of drawing shadows and additional FX when needed (like in forest). [WIP]
         /// </summary>
-        private static void DrawCharacterShadow()
+        private static void DrawCharacterShadowSpecialEffects()
         {
+            worldCharacterInstances[currentControllableEntity].bDraw = true; //always draw and later test the cases
             if (activeCollidePolygon == null)
                 return;
-            if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0)
+            if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0) //shadow
             {
                 VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.shadowBig, 0);
@@ -1361,8 +1362,9 @@ namespace OpenVIII
                 ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 ate.Alpha = 1f;
             }
-            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0)
+            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0) //forest
             {
+                worldCharacterInstances[currentControllableEntity].bDraw = false;
                 if (bHasMoved)
                 {
                     VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
@@ -1501,7 +1503,9 @@ namespace OpenVIII
 
         private static void DrawCharacter(worldCharacterInstance? charaInstance_)
         {
-            if (charaInstance_ == null)
+            if (!charaInstance_.HasValue)
+                return;
+            if (!charaInstance_.Value.bDraw)
                 return;
             worldCharacterInstance charaInstance = charaInstance_.Value;
             int MchIndex = (int)charaInstance.activeCharacter;
