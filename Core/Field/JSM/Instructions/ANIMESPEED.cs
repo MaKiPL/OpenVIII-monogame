@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ANIMESPEED : JsmInstruction
+    /// <summary>
+    /// Set animation speed. Sets the speed of this entity's animations. 
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0E7_ANIMESPEED"/>
+    public sealed class ANIMESPEED : JsmInstruction
     {
+        /// <summary>
+        /// Frames per second.
+        /// </summary>
         private Int32 _fps;
 
         public ANIMESPEED(Int32 fps)
@@ -14,6 +21,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public ANIMESPEED(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
+                //Frame speed of 1 means 2 frames per second. So doubling makes it fps.
                 fps: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32() * 2) // Native: FPS / 2
         {
         }

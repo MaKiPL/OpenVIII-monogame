@@ -3,27 +3,25 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class Unknown7 : JsmInstruction
+    /// <summary>
+    /// <para>Counterclockwise Turn</para>
+    /// <para>Turns this entity counterclockwise to face some direction. The only noticeable difference between this and the other turn functions is that the turn is always counterclockwise.</para>
+    /// <para>It is unknown how this differs from UNKNOWN9.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/172_UNKNOWN7"/>
+    public sealed class Unknown7 : Abstract.TURN
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
-
-        public Unknown7(IJsmExpression arg0, IJsmExpression arg1)
+        public Unknown7(IJsmExpression frames, IJsmExpression angle) : base(frames, angle)
         {
-            _arg0 = arg0;
-            _arg1 = arg1;
         }
 
-        public Unknown7(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+        public Unknown7(int parameter, IStack<IJsmExpression> stack) : base(parameter, stack)
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(Unknown7)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1})";
+            return $"{nameof(Unknown7)}({nameof(_frames)}: {_frames}, {nameof(_angle)}: {_angle})";
         }
     }
 }

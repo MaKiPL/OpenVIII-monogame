@@ -4,24 +4,20 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Play an animation.
-    /// 
-    /// ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP
-    /// R - Async (don't wait for the animation)
-    /// C - Range (play frame range)
-    /// KEEP - Freeze (don't return the base animation, freeze on the last frame)
+    /// <para>Play an animation.</para>
+    /// <para>ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP</para>
+    /// <para>R - Async (don't wait for the animation)</para>
+    /// <para>C - Range (play frame range)</para>
+    /// <para>KEEP - Freeze (don't return the base animation, freeze on the last frame)</para>
     /// </summary>
-    internal sealed class ANIMEKEEP : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/02E_ANIMEKEEP"/>
+    public sealed class ANIMEKEEP : Abstract.ANIME
     {
-        private Int32 _animationId;
-
-        public ANIMEKEEP(Int32 animationId)
+        public ANIMEKEEP(int animationId) : base(animationId)
         {
-            _animationId = animationId;
         }
 
-        public ANIMEKEEP(Int32 animationId, IStack<IJsmExpression> stack)
-            : this(animationId)
+        public ANIMEKEEP(int animationId, IStack<IJsmExpression> stack) : base(animationId, stack)
         {
         }
 

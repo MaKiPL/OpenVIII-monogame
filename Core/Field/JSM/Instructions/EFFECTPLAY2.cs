@@ -3,11 +3,26 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class EFFECTPLAY2 : JsmInstruction
+    /// <summary>
+    /// <para>Play sound effect</para>
+    /// <para>Plays a sound effect through the given sound channel. The channel is important because it's the parameter used in SESTOP to halt a specific sound effect (and to prevent multiple counds from silencing each other). AFAIK Channels go up to 2^20 (which is 1048576), so you can theoretically have 20 sounds playing at once. 0 doesn't seem like it's a usable channel, but this is untested.</para>
+    /// <para>Note: It seems each area can have a maximum of 32 sounds predefined(meaning sound ID 31 is the highest you can play with this). You have to use EFFECTPLAY to use more than 32 sounds.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/021_EFFECTPLAY2"/>
+    public sealed class EFFECTPLAY2 : JsmInstruction
     {
         private readonly Int32 _fieldSoundIndex;
+        /// <summary>
+        /// Pan (0=left, 255=right)
+        /// </summary>
         private IJsmExpression _pan;
+        /// <summary>
+        /// Volume (0-127)
+        /// </summary>
         private IJsmExpression _volume;
+        /// <summary>
+        /// Channel (must be a power of 2)
+        /// </summary>
         private IJsmExpression _channel;
 
         public EFFECTPLAY2(Int32 fieldSoundIndex, IJsmExpression pan, IJsmExpression volume, IJsmExpression channel)

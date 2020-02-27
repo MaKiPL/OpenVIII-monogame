@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ANIMESYNC : JsmInstruction
+    /// <summary>
+    /// Animation Synchronize. Pauses this script until the entity's current animation is finished playing.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/044_ANIMESYNC"/>
+    public sealed class ANIMESYNC : JsmInstruction
     {
         public ANIMESYNC()
         {

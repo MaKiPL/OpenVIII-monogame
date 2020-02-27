@@ -32,7 +32,7 @@ namespace OpenVIII.Tests
             //Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
             
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
-            //Console.WriteLine(aw._path);
+            //Console.WriteLine(aw.archive);
             var wmxPath = aw.GetListOfFiles();
             Console.WriteLine("Files in Archive (" + Memory.Archives.A_WORLD + ")");
             for (var i = 0; i < wmxPath.Length; i++)

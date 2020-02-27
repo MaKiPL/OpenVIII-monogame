@@ -1,26 +1,41 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class HOWMANYCARD : JsmInstruction
+    /// <summary>
+    /// <para>How Many cards? how many cards you have?</para>
+    /// <para>Only used on tipub1 with man2 </para>
+    /// <para>See if you have this card. So you can return it to the Drifter blocking the door.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/15F_HOWMANYCARD&action=edit&redlink=1"/>
+    /// <seealso cref="https://www.ign.com/wikis/final-fantasy-viii/Timber_TV_Station"/>
+    public sealed class HOWMANYCARD : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
 
-        public HOWMANYCARD(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        /// <summary>
+        /// Card ID? only value is 12 = Buel. 
+        /// </summary>
+        private Cards.ID _cardID;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public HOWMANYCARD(Cards.ID cardID) => _cardID = cardID;
 
         public HOWMANYCARD(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg0: stack.Pop())
+                cardID: ((IConstExpression)stack.Pop()).Cards())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(HOWMANYCARD)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override String ToString() => $"{nameof(HOWMANYCARD)}({nameof(_cardID)}: {_cardID})";
+
+        #endregion Methods
     }
 }

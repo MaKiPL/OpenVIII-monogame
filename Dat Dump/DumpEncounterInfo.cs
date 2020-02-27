@@ -1,4 +1,5 @@
-﻿using OpenVIII.Fields.Scripts;
+﻿using Microsoft.Xna.Framework;
+using OpenVIII.Fields.Scripts;
 using OpenVIII.Fields.Scripts.Instructions;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ namespace OpenVIII.Dat_Dump
         public static ConcurrentDictionary<int, Fields.Archive> FieldData;
         private static HashSet<KeyValuePair<string, ushort>> FieldsWithBattleScripts;
         private static HashSet<ushort> WorldEncounters;
+
+        public static HashSet<ushort> WorldEncountersLunar { get; private set; }
 
         #endregion Fields
 
@@ -245,7 +248,11 @@ namespace OpenVIII.Dat_Dump
                         Data += $"\"{string.Join($"{ls} ", fieldmatchs).TrimEnd(ls[0], ' ')}\"{ls}";
                     else if (WorldEncounters.Any(x => x == e.ID))
                     {
-                        Data += $"WorldMap{ls}";
+                        Data += $"\"World Map\"{ls}";
+                    }
+                    else if (WorldEncountersLunar.Any(x => x == e.ID))
+                    {
+                        Data += $"\"World Map - Lunar Cry\"{ls}";
                     }
                     else
                         Data += ls;
@@ -277,48 +284,30 @@ namespace OpenVIII.Dat_Dump
                 }
                 Task.WaitAll(tasks);
             }
-            //https://stackoverflow.com/questions/22988115/selectmany-to-flatten-a-nested-structure
-            //Func<IJsmInstruction, IEnumerable<IJsmInstruction>> flattener = null;
-            //flattener = n => new[] { n }
-            //    .Concat(n == null
-            //        ? Enumerable.Empty<JsmInstruction>()
-            //        : n.SelectMany(flattener));
-            IEnumerable<IJsmInstruction> flatten(IJsmInstruction e)
-            {
-                bool checktype(IJsmInstruction inst)
-                {
-                    return
-                        typeof(Control.While.WhileSegment) == inst.GetType() ||
-                    typeof(Control.If.ElseIfSegment) == inst.GetType() ||
-                    typeof(Control.If.ElseSegment) == inst.GetType() ||
-                    typeof(Control.If.IfSegment) == inst.GetType() ||
-                    typeof(Jsm.ExecutableSegment) == inst.GetType();
-                }
-
-                if (checktype(e))
-                {
-                    ExecutableSegment es = ((ExecutableSegment)e);
-                    foreach (ExecutableSegment child in es.Where(x => checktype(x)).Select(x => (ExecutableSegment)x))
-                    {
-                        foreach (IJsmInstruction i in flatten(child))
-                            yield return i;
-                    }
-                    foreach (IJsmInstruction child in es.Where(x => !checktype(x)))
-                    {
-                        yield return child;
-                    }
-                }
-                else
-                    yield return e;
-            }
+            
             FieldsWithBattleScripts =
             (from FieldArchive in FieldData
              where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
              from jsmObject in FieldArchive.Value.jsmObjects
              from Script in jsmObject.Scripts
-             from Instruction in flatten(Script.Segment)
-             where Instruction.GetType() == typeof(Fields.Scripts.Instructions.BATTLE)
-             select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, ((Fields.Scripts.Instructions.BATTLE)Instruction).Encounter))).ToHashSet();
+             from Instruction in Script.Segment.Flatten()
+             where Instruction is BATTLE
+             let battle = ((BATTLE)Instruction)
+             select (new KeyValuePair<string, ushort>(FieldArchive.Value.FileName, battle.Encounter))).ToHashSet();
+
+            var Areanames =
+            (from FieldArchive in FieldData
+             where FieldArchive.Value.jsmObjects != null && FieldArchive.Value.jsmObjects.Count > 0
+             from jsmObject in FieldArchive.Value.jsmObjects
+             from Script in jsmObject.Scripts
+             from Instruction in Script.Segment.Flatten()
+             where Instruction is BGSHADE
+             let instruction = ((BGSHADE)Instruction)
+             select (new KeyValuePair<string, (int,Color,Color)>(FieldArchive.Value.FileName,
+             (instruction.FadeFrames,
+             instruction.C0,
+             instruction.C1)))).ToHashSet()
+             .GroupBy(x=>x.Value).ToDictionary(x=>x.Key,x=> string.Join("; ", x.Select(y=>y.Key).ToHashSet()));
         }
 
         private static void LoadWorld()
@@ -338,6 +327,7 @@ namespace OpenVIII.Dat_Dump
             using (World.Wmset Wmset = new World.Wmset(aw.GetBinaryFile(wmPath)))
             {
                 WorldEncounters = Wmset.Encounters.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
+                WorldEncountersLunar = Wmset.EncountersLunar.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
             }
             //rail = new rail(aw.GetBinaryFile(railFile));
         }

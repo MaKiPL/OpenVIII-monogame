@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     public abstract class JsmInstruction : IJsmInstruction, IFormattableScript
@@ -10,24 +9,15 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public virtual void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.AppendLine(this.ToString());
-        }
+        public virtual void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.AppendLine(this.ToString());
 
-        public virtual IAwaitable Execute(IServices services)
-        {
-            return TestExecute(services);
-        }
+        public virtual IAwaitable Execute(IServices services) => TestExecute(services);
 
-        public virtual IAwaitable TestExecute(IServices services)
-        {
-            throw new NotImplementedException($"The instruction {GetType()} is not implemented yet. Please override \"{nameof(Execute)}\" method if you know the correct behavior or \"{nameof(TestExecute)}\" method for test environment.");
-        }
+        public virtual IAwaitable TestExecute(IServices services) => throw new NotImplementedException($"The instruction {GetType()} is not implemented yet. Please override \"{nameof(Execute)}\" method if you know the correct behavior or \"{nameof(TestExecute)}\" method for test environment.");
 
         public static JsmInstruction TryMake(Jsm.Opcode opcode, Int32 parameter, IStack<IJsmExpression> stack)
         {
-            if (Factories.TryGetValue(opcode, out var make))
+            if (Factories.TryGetValue(opcode, out Make make))
                 return make(parameter, stack);
 
             return null;
@@ -385,11 +375,11 @@ namespace OpenVIII.Fields.Scripts.Instructions
             //{Opcode.SETPARTY2, (p, s) => new SETPARTY2(p, s)},
             {Jsm.Opcode.SPUSYNC, (p, s) => new SPUSYNC(p, s)},
             {Jsm.Opcode.BROKEN, (p, s) => new BROKEN(p, s)},
-            {Jsm.Opcode.Unknown1, (p, s) => new Unknown1(p, s)},
+            {Jsm.Opcode.ANGELODISABLE, (p, s) => new ANGELODISABLE(p, s)},
             {Jsm.Opcode.Unknown2, (p, s) => new Unknown2(p, s)},
             {Jsm.Opcode.Unknown3, (p, s) => new Unknown3(p, s)},
             {Jsm.Opcode.Unknown4, (p, s) => new Unknown4(p, s)},
-            {Jsm.Opcode.Unknown5, (p, s) => new Unknown5(p, s)},
+            {Jsm.Opcode.HASITEM, (p, s) => new HASITEM(p, s)},
             {Jsm.Opcode.Unknown6, (p, s) => new Unknown6(p, s)},
             {Jsm.Opcode.Unknown7, (p, s) => new Unknown7(p, s)},
             {Jsm.Opcode.Unknown8, (p, s) => new Unknown8(p, s)},

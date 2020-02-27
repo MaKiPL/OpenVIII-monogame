@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class PARTICLESET : JsmInstruction
+    /// <summary>
+    /// Set Particle?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/154_PARTICLESET&action=edit&redlink=1"/>
+    public sealed class PARTICLESET : JsmInstruction
     {
         private IJsmExpression _arg0;
 

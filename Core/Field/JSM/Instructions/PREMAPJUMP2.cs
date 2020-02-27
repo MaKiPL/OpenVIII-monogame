@@ -3,8 +3,15 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class PREMAPJUMP2 : JsmInstruction
+    /// <summary>
+    /// Something having to do with field loading.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/182_UNKNOWN17"/>
+    public sealed class PREMAPJUMP2 : JsmInstruction
     {
+        /// <summary>
+        /// Field map ID
+        /// </summary>
         private readonly int _fieldMapId;
 
         public PREMAPJUMP2(int fieldMapId)

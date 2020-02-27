@@ -3,55 +3,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
-#pragma warning disable CS0649
+// ReSharper disable InconsistentNaming
 
 namespace OpenVIII
 {
     public static partial class Memory
     {
+        #region Classes
+
         /// <summary>
         /// Archive class handles the filename formatting and extensions for archive files.
         /// </summary>
         public class Archive : IReadOnlyList<string>
         {
-            public List<Archive> Parent { get; set; }
-            public bool IsDir { get; }
-            public bool IsFile { get; }
-
-            //public string _Root { get; set; }
-            public string _Filename { get; private set; }
-
-            public Archive(string path, params Archive[] parent) : this(path) => Parent = parent.ToList();
-
-            public Archive(string path)
-            {
-                Parent = null;
-                if (Directory.Exists(path))
-                {
-                    IsDir = true;
-                    _Filename = path;
-                }
-                else if (File.Exists(path))
-                {
-                    IsFile = true;
-                    _Filename = path;
-                }
-                else
-                    _Filename = Path.GetFileNameWithoutExtension(path);
-            }
-
-            public static implicit operator string(Archive val) => val._Filename;
-
-            public static implicit operator Archive(string path) => new Archive(path);
-
-            private readonly string[] ext = new string[] { B_FileList, B_FileIndex, B_FileArchive, B_ZZZ };
+            #region Fields
 
             /// <summary>
             /// File Archive Extension
             /// </summary>
-            public const string B_FileList = ".fl";
+            public const string B_FileArchive = ".fs";
 
             /// <summary>
             /// File Index Extension
@@ -61,72 +32,111 @@ namespace OpenVIII
             /// <summary>
             /// File Archive Extension
             /// </summary>
-            public const string B_FileArchive = ".fs";
+            public const string B_FileList = ".fl";
 
             public const string B_ZZZ = ".zzz";
+            private readonly string[] _ext = { B_FileList, B_FileIndex, B_FileArchive, B_ZZZ };
+            private string _filename;
 
-            public bool IsZZZ => _Filename.EndsWith(B_ZZZ, StringComparison.OrdinalIgnoreCase);
-            public bool IsFileList => _Filename.EndsWith(B_FileList, StringComparison.OrdinalIgnoreCase);
-            public bool IsFileIndex => _Filename.EndsWith(B_FileIndex, StringComparison.OrdinalIgnoreCase);
-            public bool IsFileArchive => _Filename.EndsWith(B_FileArchive, StringComparison.OrdinalIgnoreCase);
+            #endregion Fields
 
-            public string RemoveExtension
+            #region Constructors
+
+            public Archive(string path, params Archive[] parent) : this(path, false) => Parent = parent.ToList();
+
+            public Archive(string path, bool keepExtension, params Archive[] parent) : this(path, keepExtension) => Parent = parent.ToList();
+
+            public Archive(string path) : this(path, false)
+            { }
+
+            public Archive(string path, bool keepExtension)
             {
-                get
-                {
-                    int startIndex = _Filename.LastIndexOf('.');
-                    if (startIndex != -1)
-                        return _Filename.Remove(startIndex, _Filename.Length - startIndex);
-                    return _Filename;
-                }
+                Parent = null;
+                SetFilename(path, keepExtension);
             }
+
+            #endregion Constructors
+
+            #region Properties
+
+            public int Count => ((IReadOnlyList<string>)_ext).Count;
 
             /// <summary>
             /// File Index
             /// </summary>
-            public string FI => $"{_Filename}{B_FileIndex}";
+            public string FI => $"{NoExtension}{B_FileIndex}";
 
             /// <summary>
             /// File List
             /// </summary>
-            public string FL => $"{_Filename}{B_FileList}";
+            public string FL => $"{NoExtension}{B_FileList}";
 
             /// <summary>
             /// File Archive
             /// </summary>
-            public string FS => $"{_Filename}{B_FileArchive}";
+            public string FS => $"{NoExtension}{B_FileArchive}";
+
+            public bool IsDir { get; private set; }
+            public bool IsFile { get; private set; }
+            public bool IsFileArchive => _filename.EndsWith(B_FileArchive, StringComparison.OrdinalIgnoreCase);
+            public bool IsFileIndex => _filename.EndsWith(B_FileIndex, StringComparison.OrdinalIgnoreCase);
+            public bool IsFileList => _filename.EndsWith(B_FileList, StringComparison.OrdinalIgnoreCase);
+            public bool IsZZZ => _filename.EndsWith(B_ZZZ, StringComparison.OrdinalIgnoreCase);
+            public List<Archive> Parent { get; set; }
 
             /// <summary>
             /// ZZZ File
             /// </summary>
-            public string ZZZ => $"{_Filename}{B_ZZZ}";
+            public string ZZZ => $"{NoExtension}{B_ZZZ}";
 
-            public int Count => ((IReadOnlyList<string>)ext).Count;
+            private string NoExtension => !string.IsNullOrWhiteSpace(_filename) ? Path.Combine(Path.GetDirectoryName(_filename) ?? throw new InvalidOperationException(), Path.GetFileNameWithoutExtension(_filename)) : "";
 
-            public string this[int index] => ((IReadOnlyList<string>)ext)[index];
+            #endregion Properties
 
-            //public bool FileExistsInFolder { get; private set; }
+            #region Indexers
 
-            ///// <summary>
-            ///// Test if input file path exists
-            ///// </summary>
-            ///// <param name="input">file path</param>
-            ///// <returns></returns>
-            //private string Test(string input)
-            //{
-            //    //using this for archives in archives would always throw exceptions
-            //    if (!File.Exists(input)) FileExistsInFolder = false; //throw new FileNotFoundException($"There is no {input} file!\nExiting...");
-            //    else FileExistsInFolder = true;
-            //    return input;
-            //}
+            public string this[int index] => ((IReadOnlyList<string>)_ext)[index];
+
+            #endregion Indexers
+
+            #region Methods
+
+            public static implicit operator Archive(string path) => new Archive(path);
+
+            public static implicit operator string(Archive val) => val._filename;
+
+            public IEnumerator<string> GetEnumerator() => ((IReadOnlyList<string>)_ext).GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<string>)_ext).GetEnumerator();
+
+            /// <summary>
+            /// SetFileName can be used to update path.
+            /// </summary>
+            /// <param name="path">Path to search parent for.</param>
+            /// <param name="keepExtension">Extensions for FI FL FS are all different. Where ZZZ would be just one extension</param>
+            public void SetFilename(string path, bool keepExtension = false)
+            {
+                if (Directory.Exists(path))
+                {
+                    IsDir = true;
+                    _filename = path;
+                }
+                else if (File.Exists(path))
+                {
+                    IsFile = true;
+                    _filename = path;
+                }
+                else if (!keepExtension)
+                    _filename = Path.GetFileNameWithoutExtension(path);
+                else
+                    _filename = Path.GetFileName(path);
+            }
 
             public override string ToString() => this;
 
-            public IEnumerator<string> GetEnumerator() => ((IReadOnlyList<string>)ext).GetEnumerator();
-
-            IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<string>)ext).GetEnumerator();
+            #endregion Methods
         }
 
-       
+        #endregion Classes
     }
 }

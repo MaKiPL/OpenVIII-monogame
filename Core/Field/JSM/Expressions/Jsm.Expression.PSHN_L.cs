@@ -7,6 +7,11 @@ namespace OpenVIII.Fields.Scripts
     {
         public static partial class Expression
         {
+            /// <summary>
+            /// <para>Push Numeric (long)</para>
+            /// <para>Push Argument onto the stack.</para>
+            /// </summary>
+            /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/007_PSHN_L"/>
             public sealed class PSHN_L : IConstExpression
             {
                 public Int32 Value { get; }

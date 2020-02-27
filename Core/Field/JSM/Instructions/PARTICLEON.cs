@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class PARTICLEON : JsmInstruction
+    /// <summary>
+    /// Turn Particle on.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/14E_PARTICLEON&action=edit&redlink=1"/>
+    public sealed class PARTICLEON : JsmInstruction
     {
         private IJsmExpression _arg0;
 

@@ -859,6 +859,7 @@ namespace OpenVIII
         private static void CollisionUpdate()
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
+
             int realSegmentId = GetRealSegmentId();
             realSegmentId = SetInterchangeableZone(realSegmentId);
             Segment seg = segments[realSegmentId];
@@ -896,19 +897,17 @@ namespace OpenVIII
             if(activeCollidePolygon != null)
                 if (activeCollidePolygon.Value.texFlags.HasFlag(Texflags.TEXFLAGS_ISENTERABLE))
             {
-                foreach (var warpZone in wmset.section8WarpZones)
+                foreach (var warpZone in wmset.section8WarpZones.Where(x => x.segmentId == realSegmentId))
                 {
                     int fieldId = wm2field.GetFieldId(warpZone.field);
                     bool bShouldWarp = true;
-                    if (warpZone.segmentId != GetRealSegmentId())
-                        continue;
-                        if (imguiStrings == null)
-                            imguiStrings = new List<string>();
-                        imguiStrings.Add("WARPZONE!");
-                        imguiStrings.Add("---------");
-                        imguiStrings.Add($"fieldId: {fieldId}");
-                        imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
-                        foreach (var condition in warpZone.conditions)
+                    if (imguiStrings == null)
+                        imguiStrings = new List<string>();
+                    imguiStrings.Add("WARPZONE!");
+                    imguiStrings.Add("---------");
+                    imguiStrings.Add($"fieldId: {fieldId}");
+                    imguiStrings.Add($"First segmentId: {warpZone.segmentId}");
+                    foreach (var condition in warpZone.conditions)
                     {
                         //test conditions here, so far we don't really know them much enough
                         //for example fire cavern is on the same segment as Balamb, so there's additional check with
@@ -967,7 +966,7 @@ namespace OpenVIII
                 return;
             }
 
-            
+
 
 
             if (!BDebugDisableCollision)
@@ -1063,7 +1062,7 @@ namespace OpenVIII
             else
                 InputMouse.Mode = MouseLockMode.Disabled;
             if (Input2.Button(Keys.F, ButtonTrigger.OnPress))
-            { 
+            {
                 orbitCameraMode = orbitCameraMode == 0 ? 1 : 0;
                 camSliderDirection = orbitCameraMode == 0;
             }
@@ -1072,7 +1071,7 @@ namespace OpenVIII
             else
                 camSlider -= 1f * (float)(Memory.ElapsedGameTime.Milliseconds / 1000f);
             camSlider = MathHelper.Clamp(camSlider, 0f, 1f);
-            
+
             switch(orbitCameraMode)
             {
                 case 0: //closeup
@@ -1569,7 +1568,7 @@ namespace OpenVIII
         #region wm background static geometry supplier
         static Vector3[] wm_backgroundCylinderVerts = new Vector3[]
         {
-new Vector3(41.8239f, 0.0000f, -3.9575f), new Vector3(36.2066f, 0.0000f, -24.9213f), new Vector3(20.8601f, 0.0000f, -40.2678f), 
+new Vector3(41.8239f, 0.0000f, -3.9575f), new Vector3(36.2066f, 0.0000f, -24.9213f), new Vector3(20.8601f, 0.0000f, -40.2678f),
 new Vector3(-0.1036f, 0.0000f, -45.8850f),new Vector3(-21.0674f, 0.0000f, -40.2678f),new Vector3(-36.4139f, 0.0000f, -24.9213f),
 new Vector3(-42.0311f, 0.0000f, -3.9576f),new Vector3(-36.4139f, 0.0000f, 17.0062f),new Vector3(-21.0674f, 0.0000f, 32.3527f),
 new Vector3(-0.1036f, 0.0000f, 37.9699f),new Vector3(20.8601f, 0.0000f, 32.3527f),new Vector3(36.2066f, 0.0000f, 17.0062f),
@@ -1633,8 +1632,8 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                     wm_backgroundCloudsLocalCylinderMeshTranslated[i].Position = pos;
                 }
             }
-            
-            
+
+
             ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.clouds, 0);
             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
             {
@@ -1830,12 +1829,12 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             TextureHandler texture = wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
             int width = Memory.graphics.GraphicsDevice.Viewport.Width;
             int height = Memory.graphics.GraphicsDevice.Viewport.Height;
-            texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f), 
+            texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f),
                 (int)(width *0.6), (int)(height *0.8)), Color.White * 1f);
 
             Memory.SpriteBatchEnd();
             Memory.SpriteBatchStartAlpha();
-                Memory.Icons.Draw(Icons.ID.Finger_Right, 2, 
+                Memory.Icons.Draw(Icons.ID.Finger_Right, 2,
                     new Rectangle((int)(fulscrMapCurX*width), (int)(fulscrMapCurY*height), 0,0), Vector2.One*3);
 
             Memory.SpriteBatchEnd();

@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SWAP : JsmInstruction
+    /// <summary>
+    /// Swap?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/162_SWAP&action=edit&redlink=1"/>
+    public sealed class SWAP : JsmInstruction
     {
         public SWAP()
         {

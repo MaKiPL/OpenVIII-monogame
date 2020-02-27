@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 
 namespace OpenVIII
@@ -11,57 +10,56 @@ namespace OpenVIII
     {
         #region Fields
 
-        private Stream s;
+        private readonly Stream _s;
 
         #endregion Fields
 
         #region Constructors
 
-        public StreamWithRangeValues(Stream s, long offset, long size, uint compression = 0, int uncompressedsize = 0)
+        public StreamWithRangeValues(Stream s, long offset, long size, CompressionType compression = 0, int uncompressedSize = 0)
         {
             if (typeof(StreamWithRangeValues) == s.GetType())
             {
-                StreamWithRangeValues swrv = (StreamWithRangeValues)s;
-                Debug.Assert(swrv.Compression == 0);
-                offset += swrv.Offset;
+                StreamWithRangeValues r = (StreamWithRangeValues)s;
+                Debug.Assert(r.Compression == 0);
+                offset += r.Offset;
             }
-            this.s = s;
+            _s = s;
             Size = size;
             Offset = offset;
             Position = offset;
             Compression = compression;
-            UncompressedSize = checked((int)(uncompressedsize==0?size:uncompressedsize));
+            UncompressedSize = checked((int)(uncompressedSize == 0 ? size : uncompressedSize));
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public override bool CanRead => s.CanRead;
-        public override bool CanSeek => s.CanSeek;
-        public override bool CanWrite => s.CanWrite;
-        public uint Compression { get; }
-        public int UncompressedSize { get; }
-
-        public override long Length => s.Length;
+        public override bool CanRead => _s.CanRead;
+        public override bool CanSeek => _s.CanSeek;
+        public override bool CanWrite => _s.CanWrite;
+        public CompressionType Compression { get; }
+        public override long Length => _s.Length;
         public long Max => Size + Offset;
         public long Offset { get; }
-        public override long Position { get => s.Position; set => s.Position = value; }
+        public sealed override long Position { get => _s.Position; set => _s.Position = value; }
         public long Size { get; }
+        public int UncompressedSize { get; }
 
         #endregion Properties
 
         #region Methods
 
-        public override void Flush() => s.Flush();
+        public override void Flush() => _s.Flush();
 
-        public override int Read(byte[] buffer, int offset, int count) => s.Read(buffer, offset, count);
+        public override int Read(byte[] buffer, int offset, int count) => _s.Read(buffer, offset, count);
 
-        public override long Seek(long offset, SeekOrigin origin) => s.Seek(offset, origin);
+        public override long Seek(long offset, SeekOrigin origin) => _s.Seek(offset, origin);
 
-        public override void SetLength(long value) => s.SetLength(value);
+        public override void SetLength(long value) => _s.SetLength(value);
 
-        public override void Write(byte[] buffer, int offset, int count) => s.Write(buffer, offset, count);
+        public override void Write(byte[] buffer, int offset, int count) => _s.Write(buffer, offset, count);
 
         #endregion Methods
     }

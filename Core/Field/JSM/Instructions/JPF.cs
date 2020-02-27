@@ -4,8 +4,16 @@ using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
+    /// <summary>
+    /// <para>Jump Forward with condition</para>
+    /// <para>Jump forward a number of instructions given by the Argument if condition is equal to 0. Else does nothing. The condition is always popped from the stack.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/003_JPF"/>
     public sealed class JPF : JsmInstruction, IJumpToOpcode, IFormattableScript
     {
+        /// <summary>
+        /// Number of instructions to jump forward. (in Deling's editor, this is just a label)
+        /// </summary>
         public Int32 Offset { get; set; }
         public IReadOnlyList<IJsmExpression> Conditions => _conditions;
         private readonly List<IJsmExpression> _conditions = new List<IJsmExpression>();

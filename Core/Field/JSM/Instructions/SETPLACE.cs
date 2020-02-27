@@ -1,16 +1,23 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SETPLACE : JsmInstruction
+    /// <summary>
+    /// <para>Set Area Display Name</para>
+    /// <para>This controls what shows up at the bottom of the menu and in your saved game slots.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/133_SETPLACE"/>
+    public sealed class SETPLACE : JsmInstruction
     {
+        #region Fields
+
         private readonly Int32 _areaId;
 
-        public SETPLACE(Int32 areaId)
-        {
-            _areaId = areaId;
-        }
+        #endregion Fields
+
+        #region Constructors
+
+        public SETPLACE(Int32 areaId) => _areaId = areaId;
 
         public SETPLACE(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
@@ -18,25 +25,39 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
+        #endregion Constructors
+
+        #region Properties
+
+        public int AreaId => _areaId;
+
+        #endregion Properties
+
+        #region Methods
+
+        public FF8String AreaName()
         {
-            return $"{nameof(SETPLACE)}({nameof(_areaId)}: {_areaId})";
+            FF8StringReference s = Memory.Strings[Strings.FileID.AREAMES][0, _areaId];
+            if (s.Length > 0)
+                return s;
+            return null;
         }
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
-                .CommentLine(AreaName.Get(_areaId))
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
+                .CommentLine(AreaName())
                 .StaticType(nameof(IFieldService))
                 .Method(nameof(IFieldService.BindArea))
                 .Argument("areaId", _areaId)
                 .Comment(nameof(SETPLACE));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Field[services].BindArea(_areaId);
             return DummyAwaitable.Instance;
         }
+
+        public override String ToString() => $"{nameof(SETPLACE)}({nameof(_areaId)}: {_areaId}, {nameof(AreaName)}: {AreaName()})";
+
+        #endregion Methods
     }
 }

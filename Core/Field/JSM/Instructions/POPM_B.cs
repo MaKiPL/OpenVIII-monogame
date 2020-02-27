@@ -5,8 +5,11 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Global[index] = (Byte)value;
+    /// <para>Pop to memory (byte)</para>
+    /// <para>Pop value from stack and store the first byte in Argument.</para>
     /// </summary>
-    internal sealed class POPM_B : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/00B_POPM_B"/>
+    public sealed class POPM_B : JsmInstruction
     {
         private GlobalVariableId<Byte> _globalVariable;
         private IJsmExpression _value;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace OpenVIII.OpenGL
 {
@@ -8,23 +7,18 @@ namespace OpenVIII.OpenGL
     /// </summary>
     public static class Program
     {
+        #region Methods
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         private static void Main()
         {
-        start:
-            try
-            {
-                using (Game1 game = new Game1())
-                    game.Run();
-            }
-            catch (InvalidOperationException e)
-            {
-                Debug.WriteLine(e);
-                goto start;
-            }
+            using (Game1 game = new Game1())
+                game.Run();
         }
+
+        #endregion Methods
     }
 }

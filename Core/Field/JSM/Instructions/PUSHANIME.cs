@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class PUSHANIME : JsmInstruction
+    /// <summary>
+    /// Push animation on stack?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/14A_PUSHANIME&action=edit&redlink=1"/>
+    public sealed class PUSHANIME : JsmInstruction
     {
         public PUSHANIME()
         {

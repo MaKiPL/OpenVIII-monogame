@@ -13,11 +13,11 @@ namespace OpenVIII.AV
         {
             Memory.Log.WriteLine($"{nameof(Music)} :: {nameof(Init)}");
             // PC 2000 version has an CD audio track for eyes on me. I don't think we can play that.
-            const int unkPrefix = 999;
-            const int altLoserPrefix = 512;
-            const int loserPrefix = 0;
-            const int eyesOnMePrefix = 513;
-            const int altEyesOnMePrefix = 22;
+            const MusicId unkPrefix = (MusicId)999;
+            const MusicId altLoserPrefix = (MusicId)512;
+            const MusicId loserPrefix = (MusicId)0;
+            const MusicId eyesOnMePrefix = (MusicId)513;
+            const MusicId altEyesOnMePrefix = (MusicId)22;
             string[] ext = { ".ogg", ".sgt", ".wav", ".mp3" };
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
@@ -40,7 +40,7 @@ namespace OpenVIII.AV
             {
                 Memory.dicMusic.Add(eyesOnMePrefix, Memory.dicMusic[altEyesOnMePrefix]);
             }
-            ArchiveBase a = ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+            ArchiveBase a = ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
             string[] list = a?.GetListOfFiles();
             if (list != null && list.Length > 0)
             {
@@ -65,23 +65,23 @@ namespace OpenVIII.AV
                 if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
                 {
                     //mismatched prefix's go here
-                    if (key == altLoserPrefix)
+                    if ((MusicId)key == altLoserPrefix)
                     {
-                        key = loserPrefix; //loser.ogg and sgt don't match.
+                        key = (ushort)loserPrefix; //loser.ogg and sgt don't match.
                     }
                 }
                 else if (m.IndexOf("eyes_on_me", StringComparison.OrdinalIgnoreCase) >= 0)
-                    key = eyesOnMePrefix;
+                    key = (ushort)eyesOnMePrefix;
                 else
-                    key = unkPrefix;
+                    key = (ushort)unkPrefix;
 
-                if (!Memory.dicMusic.ContainsKey(key))
+                if (!Memory.dicMusic.ContainsKey((MusicId)key))
                 {
-                    Memory.dicMusic.Add(key, new List<string> { m });
+                    Memory.dicMusic.Add((MusicId)key, new List<string> { m });
                 }
                 else
                 {
-                    Memory.dicMusic[key].Add(m);
+                    Memory.dicMusic[(MusicId)key].Add(m);
                 }
             }
         }
@@ -175,14 +175,14 @@ namespace OpenVIII.AV
             if (musicplaying && lastplayed == Memory.MusicIndex) return;
             string ext = "";
 
-            if (Memory.dicMusic.Count > 0 && Memory.dicMusic[Memory.MusicIndex].Count > 0)
+            if (Memory.dicMusic.Count > 0 && Memory.dicMusic[(MusicId)Memory.MusicIndex].Count > 0)
             {
-                ext = Path.GetExtension(Memory.dicMusic[Memory.MusicIndex][0]).ToLower();
+                ext = Path.GetExtension(Memory.dicMusic[(MusicId)Memory.MusicIndex][0]).ToLower();
             }
             else
                 return;
 
-            string filename = Memory.dicMusic[Memory.MusicIndex][0];
+            string filename = Memory.dicMusic[(MusicId)Memory.MusicIndex][0];
 
             Stop();
 
@@ -248,31 +248,29 @@ namespace OpenVIII.AV
         private static unsafe void PlayInTask(ref Audio ffAudio, float volume, float pitch, float pan, bool loop, string filename, CancellationToken cancelToken)
         {
             return;
-            ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-            var fd = a.GetFileData(filename);
-            BufferData buffer_Data = new AV.BufferData
-            {
-                DataSeekLoc = fd.Value.Offset,
-                DataSize = fd.Value.UncompressedSize,
-                HeaderSize = 0,
-                Target = BufferData.TargetFile.other_zzz
-            };
-            GCHandle gch = GCHandle.Alloc(buffer_Data, GCHandleType.Pinned);
-            ffAudio = AV.Audio.Load(
-                &buffer_Data,
-                null, loop ? 0 : -1, Ffcc.FfccMode.STATE_MACH);
-            ffAudio.PlayInTask(volume, pitch, pan);
-            while (!cancelToken.IsCancellationRequested)
-                Thread.Sleep(1000);
-            gch.Free();
+            //ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
+            //var fd = a.ArchiveMap.GetFileData(filename);
+            //BufferData buffer_Data = new AV.BufferData
+            //{
+            //    DataSeekLoc = fd.Value.Offset,
+            //    DataSize = fd.Value.UncompressedSize,
+            //    HeaderSize = 0,
+            //    Target = BufferData.TargetFile.other_zzz
+            //};
+            //GCHandle gch = GCHandle.Alloc(buffer_Data, GCHandleType.Pinned);
+            //ffAudio = AV.Audio.Load(
+            //    &buffer_Data,
+            //    null, loop ? 0 : -1, Ffcc.FfccMode.STATE_MACH);
+            //ffAudio.PlayInTask(volume, pitch, pan);
+            //while (!cancelToken.IsCancellationRequested)
+            //    Thread.Sleep(1000);
+            //gch.Free();
         }
 
         public static void KillAudio()
         {
-            if (dm_Midi != null)
-                dm_Midi.Dispose();
-            if (fluid_Midi != null)
-                fluid_Midi.Dispose();
+            dm_Midi?.Dispose();
+            fluid_Midi?.Dispose();
         }
 
         public static void Stop()
@@ -288,8 +286,7 @@ namespace OpenVIII.AV
             if (dm_Midi != null)
                 dm_Midi.Stop();
 #else
-            if (fluid_Midi != null)
-                fluid_Midi.Stop();
+            fluid_Midi?.Stop();
 #endif
         }
 

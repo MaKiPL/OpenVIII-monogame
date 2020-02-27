@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class PARTICLEOFF : JsmInstruction
+    /// <summary>
+    /// Turn Particleoff
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/14F_PARTICLEOFF&action=edit&redlink=1"/>
+    public sealed class PARTICLEOFF : JsmInstruction
     {
         private IJsmExpression _arg0;
 

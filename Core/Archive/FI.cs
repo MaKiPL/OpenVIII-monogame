@@ -1,5 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
+// ReSharper disable InconsistentNaming
+
 namespace OpenVIII
 {
     [StructLayout(LayoutKind.Explicit, Size = 12, Pack = 1)]
@@ -13,10 +15,12 @@ namespace OpenVIII
         public int Offset;
 
         [FieldOffset(8)]
-        public uint CompressionType;
+        public CompressionType CompressionType;
+
         public FI()
         { }
-        public FI(int offset, int uncompressedSize, uint compressionType = 0)
+
+        public FI(int offset, int uncompressedSize, CompressionType compressionType = 0)
         {
             UncompressedSize = uncompressedSize;
             Offset = offset;
@@ -24,5 +28,11 @@ namespace OpenVIII
         }
 
         public override string ToString() => $"{{{UncompressedSize}, {Offset}, {CompressionType}}}";
+
+        public FI Adjust(int offsetForFs)
+        {
+            Offset += offsetForFs;
+            return this;
+        }
     }
 }

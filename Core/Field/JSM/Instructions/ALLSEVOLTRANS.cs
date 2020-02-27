@@ -3,9 +3,19 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ALLSEVOLTRANS : JsmInstruction
+    /// <summary>
+    /// Transition Volume of all Sound Effects
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0C4_ALLSEVOLTRANS"/>
+    public sealed class ALLSEVOLTRANS : JsmInstruction
     {
+        /// <summary>
+        /// Final Volume (0-127)
+        /// </summary>
         private IJsmExpression _arg0;
+        /// <summary>
+        /// Frame count
+        /// </summary>
         private IJsmExpression _arg1;
 
         public ALLSEVOLTRANS(IJsmExpression arg0, IJsmExpression arg1)

@@ -1,26 +1,21 @@
 ﻿using System;
-
+using OpenVIII.Fields.Scripts.Instructions.Abstract;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class KEYSCAN2 : JsmInstruction
+    public sealed class KEYSCAN2 : Abstract.KEY
     {
-        private IJsmExpression _arg0;
-
-        public KEYSCAN2(IJsmExpression arg0)
+        public KEYSCAN2(KeyFlags flags) : base(flags)
         {
-            _arg0 = arg0;
         }
 
-        public KEYSCAN2(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(
-                arg0: stack.Pop())
+        public KEYSCAN2(int parameter, IStack<IJsmExpression> stack) : base(parameter, stack)
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(KEYSCAN2)}({nameof(_arg0)}: {_arg0})";
+            return $"{nameof(KEYSCAN2)}({nameof(_flags)}: {_flags})";
         }
     }
 }

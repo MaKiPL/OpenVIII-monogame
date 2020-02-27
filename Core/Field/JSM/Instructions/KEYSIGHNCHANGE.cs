@@ -3,7 +3,11 @@ using System;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class KEYSIGHNCHANGE : JsmInstruction
+    /// <summary>
+    /// Keysighnchange, only used on test
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/150_KEYSIGHNCHANGE&action=edit&redlink=1"/>
+    public sealed class KEYSIGHNCHANGE : JsmInstruction
     {
         private IJsmExpression _arg0;
 

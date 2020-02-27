@@ -1,53 +1,62 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class RBGSHADELOOP : JsmInstruction
+    /// <summary>
+    /// RBG Shade Loop between two colors.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0D2_RBGSHADELOOP&action=edit&redlink=1"/>
+    public sealed class RBGSHADELOOP : JsmInstruction
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
-        private IJsmExpression _arg2;
-        private IJsmExpression _arg3;
-        private IJsmExpression _arg4;
-        private IJsmExpression _arg5;
-        private IJsmExpression _arg6;
-        private IJsmExpression _arg7;
-        private IJsmExpression _arg8;
-        private IJsmExpression _arg9;
+        private readonly Int32 _fadeFrames0;
+        private readonly Int32 _fadeFrames1;
+        private readonly Int32 _holdFrames0;
+        private readonly Int32 _holdFrames1;
+        private readonly Color _c0;
+        private readonly Color _c1;
 
-        public RBGSHADELOOP(IJsmExpression arg0, IJsmExpression arg1, IJsmExpression arg2, IJsmExpression arg3, IJsmExpression arg4, IJsmExpression arg5, IJsmExpression arg6, IJsmExpression arg7, IJsmExpression arg8, IJsmExpression arg9)
+        public int FadeFrames0 => _fadeFrames0;
+
+        public int FadeFrames1 => _fadeFrames1;
+
+        public int HoldFrames0 => _holdFrames0;
+
+        public int HoldFrames1 => _holdFrames1;
+
+        public Color C0 => _c0;
+
+        public Color C1 => _c1;
+
+        public RBGSHADELOOP(Int32 fadeFrames0, Int32 fadeFrames1, byte red0, byte green0, byte blue0, byte red1, byte green1, byte blue1, Int32 holdFrames0, Int32 holdFrames1)
         {
-            _arg0 = arg0;
-            _arg1 = arg1;
-            _arg2 = arg2;
-            _arg3 = arg3;
-            _arg4 = arg4;
-            _arg5 = arg5;
-            _arg6 = arg6;
-            _arg7 = arg7;
-            _arg8 = arg8;
-            _arg9 = arg9;
+            _fadeFrames0 = fadeFrames0; // transitional frame time 0 being instant color change
+            _fadeFrames1 = fadeFrames1; // transitional frame time 0 being instant color change
+            (_c0.R, _c0.G, _c0.B,_c0.A) = (red0, green0, blue0, 0xFF); 
+            (_c1.R, _c1.G, _c1.B, _c1.A) = (red1, green1, blue1, 0xFF);
+            _holdFrames0 = holdFrames0 < 1 ? 1 : holdFrames0; //frames to stay on color
+            _holdFrames1 = holdFrames1 < 1 ? 1 : holdFrames1; //frames to stay on color
         }
 
         public RBGSHADELOOP(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg9: stack.Pop(),
-                arg8: stack.Pop(),
-                arg7: stack.Pop(),
-                arg6: stack.Pop(),
-                arg5: stack.Pop(),
-                arg4: stack.Pop(),
-                arg3: stack.Pop(),
-                arg2: stack.Pop(),
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+                holdFrames1: ((IConstExpression)stack.Pop()).Int32(),
+                holdFrames0: ((IConstExpression)stack.Pop()).Int32(),
+                blue1: ((IConstExpression)stack.Pop()).Byte(),
+                green1: ((IConstExpression)stack.Pop()).Byte(),
+                red1: ((IConstExpression)stack.Pop()).Byte(),
+                blue0: ((IConstExpression)stack.Pop()).Byte(),
+                green0: ((IConstExpression)stack.Pop()).Byte(),
+                red0: ((IConstExpression)stack.Pop()).Byte(),
+                fadeFrames1: ((IConstExpression)stack.Pop()).Int32(),
+                fadeFrames0: ((IConstExpression)stack.Pop()).Int32())
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(RBGSHADELOOP)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2}, {nameof(_arg3)}: {_arg3}, {nameof(_arg4)}: {_arg4}, {nameof(_arg5)}: {_arg5}, {nameof(_arg6)}: {_arg6}, {nameof(_arg7)}: {_arg7}, {nameof(_arg8)}: {_arg8}, {nameof(_arg9)}: {_arg9})";
+            return $"{nameof(RBGSHADELOOP)}({nameof(_fadeFrames0)}: {_fadeFrames0}, {nameof(_fadeFrames1)}: {_fadeFrames1}, {nameof(_c0)}: {_c0}, {nameof(_c1)}: {_c1}, {nameof(_holdFrames0)}: {_holdFrames0}, {nameof(_holdFrames1)}: {_holdFrames1})";
         }
     }
 }

@@ -6,11 +6,24 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <summary>
     /// Pop up a message window and pauses script execution until the player dismisses the window. 
     /// </summary>
-    internal sealed class AMESW : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/064_AMESW"/>
+    public sealed class AMESW : JsmInstruction
     {
+        /// <summary>
+        /// Message Channel
+        /// </summary>
         private IJsmExpression _channel;
+        /// <summary>
+        /// Field message ID
+        /// </summary>
         private IJsmExpression _messageId;
+        /// <summary>
+        /// X position of window
+        /// </summary>
         private IJsmExpression _posX;
+        /// <summary>
+        /// Y position of window
+        /// </summary>
         private IJsmExpression _posY;
 
         public AMESW(IJsmExpression channel, IJsmExpression messageId, IJsmExpression posX, IJsmExpression posY)

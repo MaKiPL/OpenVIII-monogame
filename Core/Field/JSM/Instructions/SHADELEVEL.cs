@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SHADELEVEL : JsmInstruction
+    /// <summary>
+    /// Shade Level; Sets some shading for the actor. 
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0AF_SHADELEVEL"/>
+    public sealed class SHADELEVEL : JsmInstruction
     {
         private IJsmExpression _arg0;
 

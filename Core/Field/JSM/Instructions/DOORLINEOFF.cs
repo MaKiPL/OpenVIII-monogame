@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class DOORLINEOFF : JsmInstruction
+    /// <summary>
+    /// door line off? disable door?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/142_DOORLINEOFF&action=edit&redlink=1"/>
+    public sealed class DOORLINEOFF : JsmInstruction
     {
         public DOORLINEOFF()
         {

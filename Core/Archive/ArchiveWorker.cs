@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,19 +6,11 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class ArchiveWorker : ArchiveBase, IReadOnlyDictionary<string, byte[]>, IEnumerator<KeyValuePair<string, byte[]>>
+    public sealed class ArchiveWorker : ArchiveBase
     {
         #region Fields
 
-        public readonly ArchiveBase FSArchive;
-
-        /// <summary>
-        /// prevent two threads from writing to cache at the same time.
-        /// </summary>
-        private static object cachelock = new object();
-
-        private IEnumerator enumerator;
-        private byte[] FS;
+        public readonly ArchiveBase FsArchive;
 
         #endregion Fields
 
@@ -28,60 +19,49 @@ namespace OpenVIII
         /// <summary>
         /// Saves the active archive and file list.
         /// </summary>
-        /// <param name="path">Memory.Archive</param>
-        /// <param name="skiplist">If list generation is unneeded you can skip it by setting true</param>
-        protected ArchiveWorker(Memory.Archive path, bool skiplist = false)
+        /// <param name="archive">Memory.Archive</param>
+        /// <param name="skipList">If list generation is unneeded you can skip it by setting true</param>
+        private ArchiveWorker(Memory.Archive archive, bool skipList = false)
         {
-            if (path.IsDir)
+            if (archive.IsDir)
             {
-                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}:: opening directory: {path}");
-                isDir = true;
+                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}:: opening directory: {archive}");
+                IsDir = true;
             }
             else
-                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}:: opening archiveFile: {path}");
-            _path = path;
-            ParentPath = FindParentPath(path);
+                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}:: opening archiveFile: {archive}");
+            Archive = archive;
+            ParentPath = FindParentPath(archive);
             ArchiveBase tempArchive = null;
             if (ParentPath != null && ParentPath.Count > 0)
                 foreach (Memory.Archive p in ParentPath)
                 {
-                    if (p.IsDir)
-                    {
-                        tempArchive = ArchiveBase.Load(p);
-                    }
-                    else if (tempArchive != null)
+                    if (tempArchive != null)
                     {
                         tempArchive = tempArchive.GetArchive(p);
+                    }
+                    else if (p.IsDir || p.IsFile)
+                    {
+                        tempArchive = ArchiveBase.Load(p);
                     }
                 }
             if (tempArchive != null)
             {
-                tempArchive.GetArchive(path, out StreamWithRangeValues FI, out FSArchive, out StreamWithRangeValues FL);
-                ArchiveMap = new ArchiveMap(FI, FL);
+                tempArchive.GetArchive(archive, out StreamWithRangeValues fi, out FsArchive, out StreamWithRangeValues fl);
+                ArchiveMap = new ArchiveMap(fi, fl, tempArchive.GetMaxSize(archive));
             }
-            if (!skiplist)
+            if (!skipList)
                 GetListOfFiles();
             IsOpen = true;
         }
 
-        protected ArchiveWorker(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skiplist = false)
+        private ArchiveWorker(Memory.Archive archive, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skipList = false)
         {
-            ArchiveMap = new ArchiveMap(fI, fL);
-            _path = path;
-            FSArchive = fS;
-            FS = null;
-            if (!skiplist)
-                GetListOfFiles();
-
-            IsOpen = true;
-        }
-
-        protected ArchiveWorker(Memory.Archive path, byte[] fI, byte[] fS, byte[] fL, bool skiplist = false)
-        {
-            ArchiveMap = new ArchiveMap(fI, fL);
-            _path = path;
-            FS = fS;
-            if (!skiplist)
+            ArchiveMap = new ArchiveMap(fI, fL, fS.GetMaxSize(archive));
+            Archive = archive;
+            FsArchive = fS;
+            //FS = null;
+            if (!skipList)
                 GetListOfFiles();
 
             IsOpen = true;
@@ -89,130 +69,50 @@ namespace OpenVIII
 
         #endregion Constructors
 
-        #region Properties
-
-        public int Count => GetListOfFiles().Count();
-
-        public KeyValuePair<string, byte[]> Current => GetCurrent();
-
-        object IEnumerator.Current => GetCurrent();
-
-        public IEnumerable<string> Keys => GetListOfFiles();
-
-        public List<Memory.Archive> ParentPath { get; }
-
-        public IEnumerable<byte[]> Values => GetListOfFiles().Select(x => GetBinaryFile(x));
-
-        internal ArchiveMap ArchiveMap { get; }
-
-        #endregion Properties
-
-        #region Indexers
-
-        public byte[] this[string key]
-        {
-            get
-            {
-                if (TryGetValue(key, out byte[] value))
-                    return value;
-                return null;
-            }
-        }
-
-        #endregion Indexers
-
         #region Methods
 
         /// <summary>
         /// Load Archive with out storing FS in byte[] works for archive that aren't compressed.
         /// </summary>
-        /// <param name="path">Archive file path.</param>
+        /// <param name="path">Archive file archive.</param>
         /// <param name="fI">Stream containing the FI file</param>
         /// <param name="fS">Archive where the FS file is.</param>
         /// <param name="fL">Stream containing the FL file</param>
-        /// <param name="skiplist">Skip generating list of files</param>
+        /// <param name="skipList">Skip generating list of files</param>
         /// <returns>ArchiveWorker</returns>
-        public static ArchiveBase Load(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skiplist = false)
+        public static ArchiveBase Load(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skipList = false)
         {
-            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            if (CacheTryGetValue(path, out ArchiveBase value))
             {
                 return value;
             }
-            else
+
+            value = new ArchiveWorker(path, fI, fS, fL, skipList);
+            if (!value.IsOpen)
+                value = null;
+            if (CacheTryAdd(path, value))
             {
-                value = new ArchiveWorker(path, fI, fS, fL, skiplist);
-                if (!value.IsOpen)
-                    value = null;
-                if (ArchiveBase.TryAdd(path, value))
-                {
-                }
             }
             return value;
         }
 
-        public static ArchiveBase Load(Memory.Archive path, bool skiplist = false)
+        public static ArchiveBase Load(Memory.Archive path, bool skipList = false)
         {
-            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
+            if (path.IsZZZ)
+                return ArchiveZzz.Load(path, skipList);
+            if (CacheTryGetValue(path, out ArchiveBase value))
             {
                 return value;
             }
-            else
+
+            value = new ArchiveWorker(path, skipList);
+            if (!value.IsOpen)
+                value = null;
+            if (CacheTryAdd(path, value))
             {
-                value = new ArchiveWorker(path, skiplist);
-                if (!value.IsOpen)
-                    value = null;
-                if (ArchiveBase.TryAdd(path, value))
-                {
-                }
             }
             return value;
         }
-
-        /// <summary>
-        /// Generate archive worker and get file
-        /// </summary>
-        /// <param name="archive">which archive you want to read from</param>
-        /// <param name="fileName">name of file you want to recieve</param>
-        /// <returns>Uncompressed binary file data</returns>
-        //public static byte[] GetBinaryFile(Memory.Archive archive, string fileName, bool cache = false)
-        //{
-        //    ArchiveWorker tmp = new ArchiveWorker(archive, true);
-        //    return tmp.GetBinaryFile(fileName, cache);
-        //}
-        public static ArchiveBase Load(Memory.Archive path, byte[] fI, byte[] fS, byte[] fL, bool skiplist = false)
-        {
-            if (ArchiveBase.TryGetValue(path, out ArchiveBase value))
-            {
-                return value;
-            }
-            else
-            {
-                value = new ArchiveWorker(path, fI, fS, fL, skiplist);
-                if (!value.IsOpen)
-                    value = null;
-                if (ArchiveBase.TryAdd(path, value))
-                {
-                }
-            }
-            return value;
-        }
-
-        public void CacheFS()
-        {
-            if (FSArchive != null)
-                FS = FSArchive.GetBinaryFile(_path.FS);
-        }
-
-        public void ClearFS()
-        {
-            if (FSArchive != null)
-                FS = null;
-        }
-
-        public bool ContainsKey(string key) => FindFile(ref key) > -1;
-
-        public void Dispose()
-        { }
 
         public override ArchiveBase GetArchive(string fileName)
         {
@@ -220,82 +120,89 @@ namespace OpenVIII
                 throw new FileNotFoundException("NO FILENAME");
             if (ArchiveMap != null && ArchiveMap.Count > 1)
                 FindFile(ref fileName);
-            else if (isDir)
+            else if (IsDir)
             {
                 if (FileList == null || FileList.Length == 0)
                     ProduceFileLists();
                 fileName = FileList.FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
             }
             else
-            if (File.Exists(_path.FL))
-                using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            if (File.Exists(Archive.FL))
+                using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     FindFile(ref fileName, fs);
             return GetArchive((Memory.Archive)fileName);
         }
 
         public override ArchiveBase GetArchive(Memory.Archive archive)
         {
-            if (!ArchiveBase.TryGetValue(archive, out ArchiveBase value))
+            if (archive == Memory.Archives.ZZZ_MAIN || archive == Memory.Archives.ZZZ_OTHER)
             {
-                if (archive == Memory.Archives.ZZZ_MAIN || archive == Memory.Archives.ZZZ_OTHER)
-                {
-                    string zzz = archive.ZZZ;
-                    if (FindFile(ref zzz) > -1 && !string.IsNullOrWhiteSpace(zzz))
-                    {
-                        return ArchiveZZZ.Load(zzz);
-                    }
-                }
-                GetArchive(archive, out StreamWithRangeValues fI, out ArchiveBase fS, out StreamWithRangeValues fL);
-                if (fI == null || fS == null || fL == null ||
-                    fI.Length == 0 || fL.Length == 0)
-                    return null;
-                return new ArchiveWorker(archive, fI, fS, fL);
+                string zzz = archive.ZZZ;
+                if (FindFile(ref zzz) <= -1 || string.IsNullOrWhiteSpace(zzz)) return null;
+                if (File.Exists(zzz))
+                    archive.SetFilename(zzz);
+                return !CacheTryGetValue(archive, out ArchiveBase ab) ? ArchiveZzz.Load(zzz) : ab;
             }
-            return value;
+
+            if (CacheTryGetValue(archive, out ArchiveBase value)) return value;
+            GetArchive(archive, out StreamWithRangeValues fI, out ArchiveBase fS, out StreamWithRangeValues fL);
+            return fI == null || fS == null || fL == null ||
+                   fI.Length == 0 || fL.Length == 0
+                ? null
+                : new ArchiveWorker(archive, fI, fS, fL);
         }
 
         /// <summary>
-        /// GetBinary
+        /// Get binary data
         /// </summary>
-        /// <param name="fileName"></param>
+        /// <param name="fileName">filename you want</param>
+        /// <param name="cache">if true store the data for later</param>
         /// <returns></returns>
         public override byte[] GetBinaryFile(string fileName, bool cache = false)
         {
             if (string.IsNullOrWhiteSpace(fileName))
                 throw new FileNotFoundException("NO FILENAME");
-
-            if (ArchiveMap != null && ArchiveMap.Count >0)
+            byte[] FileInTwoArchives()
             {
-                if (cache)
-                {
-                    fileName = GetListOfFiles().OrderBy(x => fileName.Length).ThenBy(x => fileName, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
-                    if (!LocalTryGetValue(fileName, out BufferWithAge value))
-                    {
-                        byte[] buffer = FileInTwoArchives(fileName);
-                        if (LocalTryAdd(fileName, buffer))
-                        {
-                            Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} cached {fileName}");
-                        }
-                        return buffer;
-                    }
-                    Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)}::{nameof(LocalTryGetValue)} read from cache {fileName}");
-                    return value;
-                }
-                else
-                    return FileInTwoArchives(fileName);
+                //if (FS != null && FS.Length > 0)
+                //    return ArchiveMap.GetBinaryFile(filename, new MemoryStream(FS));
+                //else
+                return FsArchive != null ? ArchiveMap.GetBinaryFile(fileName, FsArchive.GetStreamWithRangeValues(Archive.FS)) : null;
             }
-            else if (!isDir)
+            if (ArchiveMap != null && ArchiveMap.Count > 0)
+            {
+                if (!cache) return FileInTwoArchives();
+                string fileNameBackup = fileName;
+                GetListOfFiles();
+                fileName = FileList.OrderBy(x => fileName.Length).ThenBy(x => fileNameBackup, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.IndexOf(fileNameBackup, StringComparison.OrdinalIgnoreCase) >= 0);
+
+                if (string.IsNullOrWhiteSpace(fileName)) throw new NullReferenceException($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} fileName ({fileNameBackup}) not found!");
+
+                if (!LocalTryGetValue(fileName, out BufferWithAge value))
+                {
+                    byte[] buffer = FileInTwoArchives();
+                    if (LocalTryAdd(fileName, buffer))
+                    {
+                        Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} cached {fileName}");
+                    }
+                    return buffer;
+                }
+                Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)}::{nameof(LocalTryGetValue)} read from cache {fileName}");
+                return value;
+            }
+
+            if (!IsDir)
             {
                 int loc = -1;
-                if (File.Exists(_path.FL))
-                    using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        loc = FindFile(ref fileName, fs); //File.OpenRead(_path.FL));
+                if (File.Exists(Archive.FL))
+                    using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        loc = FindFile(ref fileName, fs); //File.OpenRead(archive.FL));
 
                 // read file list
 
                 if (loc == -1)
                 {
-                    Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: {_path.FL}");
+                    Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: {Archive.FL}");
                     //throw new Exception("ArchiveWorker: No such file!");
                 }
                 else
@@ -304,161 +211,58 @@ namespace OpenVIII
             else
                 return GetBinaryFile(fileName, 0, cache);
 
-            Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: Searched {_path} and could not find {fileName}");
+            Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: Searched {Archive} and could not find {fileName}");
             return null;
         }
 
-        public IEnumerator<KeyValuePair<string, byte[]>> GetEnumerator() => this;
+        public override Memory.Archive GetPath() => Archive;
 
-        IEnumerator IEnumerable.GetEnumerator() => this;
+        public override StreamWithRangeValues GetStreamWithRangeValues(string fileName) =>
+            GetStreamWithRangeValues(fileName, null, 0);
 
-        /// <summary>
-        /// Get current file list for loaded archive.
-        /// </summary>
-        public override string[] GetListOfFiles()
-        {
-            if (FileList == null)
-            {
-                FileList = ProduceFileLists();
-                enumerator = FileList?.GetEnumerator();
-            }
-            return FileList;
-        }
+        public override string ToString() => $"{Archive} :: {Used}";
 
-        public override Memory.Archive GetPath() => _path;
-
-        public override StreamWithRangeValues GetStreamWithRangeValues(string fileName, FI inputFI = null, int size = 0)
-        {
-            if (inputFI != null)
-            {
-            }
-            if (_path != null)
-            {
-                if (string.IsNullOrWhiteSpace(fileName))
-                    throw new FileNotFoundException("NO FILENAME");
-                else if (isDir)
-                {
-                    FindFile(ref fileName);
-                    FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-                    if (inputFI == null)
-                        return new StreamWithRangeValues(fs, 0, fs.Length);
-                    else
-                        return new StreamWithRangeValues(fs, inputFI.Offset, size, inputFI.CompressionType, inputFI.UncompressedSize);
-                }
-                else
-                {
-                    Debug.Assert(inputFI == null);
-                    if (ArchiveMap != null && ArchiveMap.Count > 1)
-                    {
-                        FI fi = ArchiveMap.FindString(ref fileName, out size);
-                        if (FS != null && FS.Length > 0)
-                        {
-                            return new StreamWithRangeValues(new MemoryStream(FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
-                        }
-                        else if (FSArchive != null)
-                            if (fi != null) // unsure about this part.
-                                return new StreamWithRangeValues(FSArchive.GetStreamWithRangeValues(_path.FS), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
-                        //return GetStreamWithRangeValues(_path.FS, fi, size);
-                            else
-                                return FSArchive.GetStreamWithRangeValues(fileName);
-                        else
-                            return null;
-                    }
-
-                    int loc = -1;
-                    if (File.Exists(_path.FL))
-                        using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                            loc = FindFile(ref fileName, fs); //File.OpenRead(_path.FL));
-
-                    // read file list
-
-                    if (loc == -1)
-                    {
-                        Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: {_path.FL}");
-                        //throw new Exception("ArchiveWorker: No such file!");
-                    }
-                    else
-                    {
-                        FI fi = GetFI(loc);
-                        GetCompressedData(fi, out size, true);
-                        return new StreamWithRangeValues(new FileStream(_path.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
-                    }
-                }
-
-                Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: Searched {_path} and could not find {fileName}");
-                return null;
-            }
-            return null;
-        }
-
-        public bool MoveNext() => (GetListOfFiles()?.Length ?? 0) > 0 && enumerator.MoveNext();
-
-        public void Reset()
-        {
-            string[] list = GetListOfFiles();
-            if (list != null && list.Length > 0)
-                enumerator.Reset();
-        }
-
-        public override string ToString() => $"{_path} :: {Used}";
-
-        public bool TryGetValue(string key, out byte[] value) => (value = GetBinaryFile(key)) != null ? true : false;
-
-        private static bool GetLine(TextReader tr, out string line)
-        {
-            line = tr.ReadLine();
-            if (!string.IsNullOrWhiteSpace(line))
-            {
-                line.TrimEnd('\0');
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Give me three archives as bytes uncompressed please!
-        /// </summary>
-        /// <param name="FI">FileIndex</param>
-        /// <param name="FS">FileSystem</param>
-        /// <param name="FL">FileList</param>
-        /// <param name="filename">Filename of the file to get</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// Does the same thing as Get Binary file, but it reads from byte arrays in ram because the
-        /// data was already pulled from a file earlier.
-        /// </remarks>
-        private byte[] FileInTwoArchives(string filename)
-        {
-            if (FS != null && FS.Length > 0)
-                return ArchiveMap.GetBinaryFile(filename, new MemoryStream(FS));
-            else if (FSArchive != null)
-                return ArchiveMap.GetBinaryFile(filename, FSArchive.GetStreamWithRangeValues(_path.FS));
-            return null;
-        }
-
-        private int FindFile(ref string filename)
+        protected override int FindFile(ref string filename)
         {
             if (ArchiveMap != null && ArchiveMap.Count > 1)
-                return ArchiveMap.FindString(ref filename, out int size) == default ? -1 : 0;
-            else if (isDir)
+                return base.FindFile(ref filename);
+            if (IsDir)
             {
                 string f = filename;
                 filename = FileList.FirstOrDefault(x => x.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
                 return string.IsNullOrWhiteSpace(filename) ? -1 : 0;
             }
-            else
-                using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    return FindFile(ref filename, fs); //File.OpenRead(_path.FL));
+
+            using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                return FindFile(ref filename, fs); //File.OpenRead(archive.FL));
+        }
+
+        /// <summary>
+        /// Generate a file list from raw text file.
+        /// </summary>
+        /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
+        protected override string[] ProduceFileLists()
+        {
+            string[] r;
+            if (Archive == null) return null;
+            if (IsDir)
+                return Directory.GetFiles(Archive, "*", SearchOption.AllDirectories).OrderBy(x => x.Length)
+                    .ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+            if ((r = base.ProduceFileLists()) != null)
+                return r;
+            if (!File.Exists(Archive.FL)) return null;
+            using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
         }
 
         /// <summary>
         /// Search file list for line filename is on.
         /// </summary>
-        /// <param name="filename">filename or path to search for</param>
+        /// <param name="filename">filename or archive to search for</param>
         /// <param name="stream">stream of text data to search in</param>
         /// <returns>-1 on error or &gt;=0 on success.</returns>
-        private int FindFile(ref string filename, Stream stream)
+        private static int FindFile(ref string filename, Stream stream)
         {
             if (string.IsNullOrWhiteSpace(filename)) return -1;
             filename = filename.TrimEnd('\0');
@@ -472,15 +276,33 @@ namespace OpenVIII
                         Debug.WriteLine("ArchiveWorker::File entry is null. Returning -1");
                         break;
                     }
-                    if (line.IndexOf(filename, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        filename = line; //make sure the filename in dictionary is consistant.
-                        return i;
-                    }
+
+                    if (line.IndexOf(filename, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                    filename = line; //make sure the filename in dictionary is consistent.
+                    return i;
                 }
             }
             Debug.WriteLine($"ArchiveWorker:: Filename {filename}, not found. returning -1");
             return -1;
+        }
+
+        private static bool GetLine(TextReader tr, out string line)
+        {
+            line = tr.ReadLine();
+            if (string.IsNullOrWhiteSpace(line)) return false;
+            line = line.TrimEnd('\0');
+            return true;
+        }
+
+        private static IEnumerable<string> ProduceFileLists(Stream s)
+        {
+            using (StreamReader sr = new StreamReader(s, System.Text.Encoding.UTF8))
+            {
+                List<string> fl = new List<string>();
+                while (!sr.EndOfStream)
+                    fl.Add(sr.ReadLine()?.Trim('\0', '\r', '\n'));
+                return fl.ToArray();
+            }
         }
 
         private byte[] GetBinaryFile(string fileName, int loc, bool cache)
@@ -491,7 +313,7 @@ namespace OpenVIII
                 Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: read from cache: {fileName}");
                 return b;
             }
-            if (isDir)
+            if (IsDir)
             {
                 if (FileList == null || FileList.Length == 0)
                     ProduceFileLists();
@@ -507,106 +329,165 @@ namespace OpenVIII
                         return buffer;
                     }
             }
-            byte[] temp = null;
             //read index data
 
-            FI FI = GetFI(loc);
+            FI fi = GetFi(loc);
             //read binary data.
-            temp = GetCompressedData(FI, out int size);
+            byte[] temp = GetCompressedData(fi, out int _);
 
             Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: extracting: {fileName}");
-            temp = temp == null ? null : FI.CompressionType == 2 ? ArchiveMap.LZ4Uncompress(temp, FI.UncompressedSize) : FI.CompressionType == 1 ? LZSS.DecompressAllNew(temp,FI.UncompressedSize) : temp;
+
+            if (temp != null)
+                switch (fi.CompressionType)
+                {
+                    case CompressionType.None:
+                        break;
+
+                    case CompressionType.LZSS:
+                        LZSS.DecompressAllNew(temp, fi.UncompressedSize);
+                        break;
+
+                    case CompressionType.LZ4:
+                        temp = ArchiveMap.Lz4Uncompress(temp, fi.UncompressedSize);
+                        break;
+
+                    case CompressionType.LZSS_UnknownSize:
+                        LZSS.DecompressAllNew(temp, 0);
+                        break;
+
+                    case CompressionType.LZSS_LZSS:
+                        LZSS.DecompressAllNew(LZSS.DecompressAllNew(temp, fi.UncompressedSize), 0);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
             if (temp != null && cache && LocalTryAdd(fileName, temp))
             {
                 Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: cached: {fileName}");
             }
             return temp;
         }
+
         /// <summary>
         /// GetCompressedData reads data from file directly. This isn't used right now I tried to add checks but they aren't tested yet.
         /// </summary>
-        /// <param name="FI"></param>
+        /// <param name="fi"></param>
         /// <param name="size"></param>
-        /// <param name="skipdata"></param>
+        /// <param name="skipData"></param>
         /// <returns></returns>
-        private byte[] GetCompressedData(FI FI, out int size, bool skipdata = false)
+        private byte[] GetCompressedData(FI fi, out int size, bool skipData = false)
         {
             byte[] temp = null;
             FileStream fs;
-            using (BinaryReader br = new BinaryReader(fs = new FileStream(_path.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (BinaryReader br = new BinaryReader(fs = new FileStream(Archive.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
-                br.BaseStream.Seek(FI.Offset, SeekOrigin.Begin);
-                int compsize = 0;
+                br.BaseStream.Seek(fi.Offset, SeekOrigin.Begin);
+                int compressedSize = 0;
                 int max = (int)(fs.Length - fs.Position);
-                if (FI.CompressionType == 1 && fs.Length > 5 && (compsize = br.ReadInt32()) > (max -= sizeof(int)))
+                switch (fi.CompressionType)
                 {
+                    case CompressionType.None:
+                    case CompressionType.LZSS_UnknownSize:
+                        compressedSize = fi.UncompressedSize;
+                        break;
+
+                    case CompressionType.LZSS:
+                    case CompressionType.LZSS_LZSS:
+                        if (fs.Length < 5) throw new InvalidDataException();
+                        compressedSize = br.ReadInt32();
+                        if (compressedSize > (max -= sizeof(int))) throw new InvalidDataException();
+                        break;
+
+                    case CompressionType.LZ4:
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
-                // CompressionType = LZS then Compressed Size is defined. Else the Uncompressed size should work for 
-                size = compsize>0 ? compsize : FI.UncompressedSize >max? max: FI.UncompressedSize;
+                // CompressionType = LZS then Compressed Size is defined. Else the Uncompressed size should work for
+                size = compressedSize > 0 ? compressedSize : fi.UncompressedSize > max ? max : fi.UncompressedSize;
                 if (size > max)
                 {
-                    throw new InvalidDataException($"{nameof(ArchiveWorker)}::{nameof(GetCompressedData)} Expected size ({size}) > ({max})");
-                    return null;
+                    throw new InvalidDataException(
+                        $"{nameof(ArchiveWorker)}::{nameof(GetCompressedData)} Expected size ({size}) > ({max})");
                 }
-                if (!skipdata)
+                if (!skipData)
                     temp = br.ReadBytes(size);
             }
             return temp;
         }
 
-        private KeyValuePair<string, byte[]> GetCurrent()
+        private FI GetFi(int loc)
         {
-            string s = (string)(enumerator.Current);
-            return new KeyValuePair<string, byte[]>(s, GetBinaryFile(s));
-        }
-
-        private FI GetFI(int loc)
-        {
-            using (BinaryReader br = new BinaryReader(new FileStream(_path.FI, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))//File.OpenRead(_path.FI)))
+            using (BinaryReader br = new BinaryReader(new FileStream(Archive.FI, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))//File.OpenRead(archive.FI)))
             {
                 br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
                 return Extended.ByteArrayToClass<FI>(br.ReadBytes(12));
             }
         }
 
-        /// <summary>
-        /// Generate a file list from binary data.
-        /// </summary>
-        /// <param name="fl">raw File List</param>
-        private string[] GetListOfFiles(byte[] fl)
+        private StreamWithRangeValues GetStreamWithRangeValues(string fileName, FI inputFi, int size)
         {
-            using (MemoryStream ms = new MemoryStream(fl))
-                return ProduceFileLists(ms);
-        }
-
-        /// <summary>
-        /// Generate a file list from raw text file.
-        /// </summary>
-        /// <see cref="https://stackoverflow.com/questions/12744725/how-do-i-perform-file-readalllines-on-a-file-that-is-also-open-in-excel"/>
-        private string[] ProduceFileLists()
-        {
-            if (_path != null)
+            void msg() =>
+            Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetStreamWithRangeValues)} stream: {fileName}");
+            if (inputFi != null)
             {
-                if (isDir)
-                    return Directory.GetFiles(_path, "*", SearchOption.AllDirectories).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
-                else if (ArchiveMap != null && ArchiveMap.Count > 0)
-                    return ArchiveMap.OrderedByName.Select(x=>x.Key).ToArray();
-                else if (File.Exists(_path.FL))
-                    using (FileStream fs = new FileStream(_path.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
             }
+
+            if (Archive == null) return null;
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new FileNotFoundException("NO FILENAME");
+            if (IsDir)
+            {
+                FindFile(ref fileName);
+                msg();
+                FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                if (inputFi == null)
+                    return new StreamWithRangeValues(fs, 0, fs.Length);
+                return new StreamWithRangeValues(fs, inputFi.Offset, size, inputFi.CompressionType, inputFi.UncompressedSize);
+            }
+
+            Debug.Assert(inputFi == null);
+            string parentFs = Archive.FS;
+            if (ArchiveMap != null && ArchiveMap.Count > 1)
+            {
+                FI fi = ArchiveMap.FindString(ref fileName, out size);
+                msg();
+                if (FsArchive == null) return null;
+                if (fi == null) return FsArchive.GetStreamWithRangeValues(fileName);
+                FI parentFi = FsArchive.ArchiveMap?.FindString(ref parentFs, out int _);
+                return parentFi == null || parentFi.CompressionType == 0 || (FsArchive is ArchiveZzz)
+                    ? new StreamWithRangeValues(FsArchive.GetStreamWithRangeValues(parentFs), fi.Offset, size,
+                        fi.CompressionType, fi.UncompressedSize)
+                    : new StreamWithRangeValues(new MemoryStream(FsArchive.GetBinaryFile(parentFs, true), false),
+                        fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+            }
+
+            int loc = -1;
+            if (File.Exists(Archive.FL))
+                using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    loc = FindFile(ref fileName, fs); //File.OpenRead(archive.FL));
+
+            msg();
+            // read file list
+
+            if (loc == -1)
+            {
+                Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: {Archive.FL}");
+                //throw new Exception("ArchiveWorker: No such file!");
+            }
+            else
+            {
+                FI fi = GetFi(loc);
+                GetCompressedData(fi, out size, true);
+                return new StreamWithRangeValues(new FileStream(parentFs, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
+            }
+
+            Debug.WriteLine($"ArchiveWorker: NO SUCH FILE! :: Searched {Archive} and could not find {fileName}");
             return null;
-        }
-
-        private string[] ProduceFileLists(Stream s)
-        {
-            using (StreamReader sr = new StreamReader(s, System.Text.Encoding.UTF8))
-            {
-                List<string> fl = new List<string>();
-                while (!sr.EndOfStream)
-                    fl.Add(sr.ReadLine().Trim('\0', '\r', '\n'));
-                return fl.ToArray();
-            }
         }
 
         #endregion Methods

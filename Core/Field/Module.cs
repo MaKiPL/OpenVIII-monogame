@@ -1,11 +1,11 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII.Fields
 {
-
     //issues found.
     //558 //color looks off on glow. with purple around it.
     //267 //text showing with white background.
@@ -38,11 +38,23 @@ namespace OpenVIII.Fields
 
         #region Properties
 
-        public static Background Background => Archive.Background;
-        public static Cameras Cameras => Archive.Cameras;
-        private static EventEngine EventEngine => Archive.EventEngine;
+        public static Background Background => Archive?.Background;
+        public static Cameras Cameras => Archive?.Cameras;
+        private static EventEngine EventEngine => Archive?.EventEngine;
         public static FieldMenu FieldMenu { get; private set; }
-        private static INF inf => Archive.inf;
+        private static INF inf => Archive?.inf;
+        public static FF8String AreaName => Archive?.GetAreaNames()?.FirstOrDefault();
+
+        public static ushort GetForcedBattleEncounter
+        {
+            get
+            {
+                HashSet<ushort> t = Archive?.GetForcedBattleEncounters();
+                if (t == null || t.Count == 0)
+                    return ushort.MaxValue;
+                return t.First();
+            }
+        }
 
         public static Field_modes Mod
         {
@@ -69,10 +81,8 @@ namespace OpenVIII.Fields
 
         #region Methods
 
-
         public static void Draw()
         {
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
             switch (Mod)
             {
                 case Field_modes.INIT:
@@ -88,6 +98,7 @@ namespace OpenVIII.Fields
                     break;
             }
         }
+
         public static string GetFieldName()
         {
             string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
@@ -146,11 +157,6 @@ namespace OpenVIII.Fields
             }
         }
 
-
-        
-
-
         #endregion Methods
-
     }
 }

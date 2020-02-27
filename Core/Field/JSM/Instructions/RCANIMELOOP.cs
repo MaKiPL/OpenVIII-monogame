@@ -3,29 +3,23 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class RCANIMELOOP : JsmInstruction
+    /// <summary>
+    /// Loops the given frames of an animation. Resume script, Play controlled looping animation
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/036_RCANIMELOOP"/>
+    public sealed class RCANIMELOOP : Abstract.ANIMELOOP
     {
-        private Int32 _parameter;
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
-
-        public RCANIMELOOP(Int32 parameter, IJsmExpression arg0, IJsmExpression arg1)
+        public RCANIMELOOP(int parameter, IStack<IJsmExpression> stack) : base(parameter, stack)
         {
-            _parameter = parameter;
-            _arg0 = arg0;
-            _arg1 = arg1;
         }
 
-        public RCANIMELOOP(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(parameter,
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+        public RCANIMELOOP(int animationId, int firstFrame, int lastFrame) : base(animationId, firstFrame, lastFrame)
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(RCANIMELOOP)}({nameof(_parameter)}: {_parameter}, {nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1})";
+            return $"{nameof(RCANIMELOOP)}({nameof(_animationId)}: {_animationId}, {nameof(_firstFrame)}: {_firstFrame}, {nameof(_lastFrame)}: {_lastFrame})";
         }
     }
 }

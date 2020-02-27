@@ -4,10 +4,15 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Disable this entity's scripts, hides its model, and makes it throughable. Call USE to re-enable. 
+    /// <para>Unuse entity</para>
+    /// <para>Disable this entity's scripts, hides its model, and makes it throughable. Call USE to re-enable. </para>
     /// </summary>
-    internal sealed class UNUSE : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/01A_UNUSE"/>
+    public sealed class UNUSE : JsmInstruction
     {
+        /// <summary>
+        /// Always 0.
+        /// </summary>
         private Int32 _parameter;
 
         public UNUSE(Int32 parameter)

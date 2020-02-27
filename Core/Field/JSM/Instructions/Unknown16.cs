@@ -3,24 +3,31 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class Unknown16 : JsmInstruction
+    /// <summary>
+    /// Set Draw Point ID / Assigns this draw point an ID. Draw points with identical IDs share Full/Drained status.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/181_UNKNOWN16"/>
+    public sealed class Unknown16 : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        /// <summary>
+        /// Draw point ID
+        /// </summary>
+        private readonly IJsmExpression _drawPointID;
 
-        public Unknown16(IJsmExpression arg0)
+        public Unknown16(IJsmExpression drawPointID)
         {
-            _arg0 = arg0;
+            _drawPointID = drawPointID;
         }
 
         public Unknown16(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg0: stack.Pop())
+                drawPointID: stack.Pop())
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(Unknown16)}({nameof(_arg0)}: {_arg0})";
+            return $"{nameof(Unknown16)}({nameof(_drawPointID)}: {_drawPointID})";
         }
     }
 }
