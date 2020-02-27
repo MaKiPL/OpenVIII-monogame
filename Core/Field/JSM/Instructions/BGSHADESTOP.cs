@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class BGSHADESTOP : JsmInstruction
+    /// <summary>
+    /// stop shade?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0D1_BGSHADESTOP&action=edit&redlink=1"/>
+    public sealed class BGSHADESTOP : JsmInstruction
     {
         public BGSHADESTOP()
         {

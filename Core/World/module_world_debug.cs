@@ -859,6 +859,7 @@ namespace OpenVIII
         private static void CollisionUpdate()
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
+
             int realSegmentId = GetRealSegmentId();
             realSegmentId = SetInterchangeableZone(realSegmentId);
             Segment seg = segments[realSegmentId];
@@ -1933,7 +1934,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             TextureHandler texture = wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
             int width = Memory.graphics.GraphicsDevice.Viewport.Width;
             int height = Memory.graphics.GraphicsDevice.Viewport.Height;
-            texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f), 
+            texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f),
                 (int)(width *0.6), (int)(height *0.8)), Color.White * 1f);
             Memory.SpriteBatchEnd();
 
@@ -1963,7 +1964,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
             //Finally draw cursor
             Memory.SpriteBatchStartAlpha();
-                Memory.Icons.Draw(Icons.ID.Finger_Right, 2, 
+                Memory.Icons.Draw(Icons.ID.Finger_Right, 2,
                     new Rectangle((int)(fulscrMapCurX*width), (int)(fulscrMapCurY*height), 0,0), Vector2.One*3);
 
             Memory.SpriteBatchEnd();

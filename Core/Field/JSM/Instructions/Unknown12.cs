@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class Unknown12 : JsmInstruction
+    /// <summary>
+    /// End Unknown11
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/177_UNKNOWN12"/>
+    public sealed class Unknown12 : JsmInstruction
     {
         public Unknown12()
         {

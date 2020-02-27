@@ -3,8 +3,16 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class LBL : JsmInstruction
+    /// <summary>
+    /// <para>Label</para>
+    /// <para>Specify the absolute identifier of the script. Each script starts with this opcode. This may be redundant and optional information.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/005_LBL"/>
+    public sealed class LBL : JsmInstruction
     {
+        /// <summary>
+        /// Script ID.
+        /// </summary>
         public Int32 Label { get; }
 
         public LBL(Int32 label)

@@ -8,23 +8,14 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// The request is asynchronous and returns immediately without waiting for the remote execution to start or finish.
     /// If the specified priority is already busy executing, the request will fail silently. 
     /// </summary>
-    internal sealed class PREQ : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/017_PREQ"/>
+    public sealed class PREQ : Abstract.PREQ
     {
-        private Int32 _partyId;
-        private Int32 _priority;
-        private Int32 _scriptId;
-
-        public PREQ(Int32 partyId, Int32 priority, Int32 scriptId)
+        public PREQ(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
-            _partyId = partyId;
-            _priority = priority;
-            _scriptId = scriptId;
         }
 
-        public PREQ(Int32 partyId, IStack<IJsmExpression> stack)
-            : this(partyId,
-                scriptId: ((IConstExpression)stack.Pop()).Int32(),
-                priority: ((IConstExpression)stack.Pop()).Int32())
+        public PREQ(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
         }
 

@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class ANIMESTOP : JsmInstruction
+    /// <summary>
+    /// Resume script, controlled animation. Returns this entity to its base animation.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/045_ANIMESTOP"/>
+    public sealed class ANIMESTOP : JsmInstruction
     {
         public ANIMESTOP()
         {

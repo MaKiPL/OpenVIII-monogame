@@ -129,10 +129,10 @@ namespace OpenVIII.World
         public ushort GetEncounterHelperPointer(int regionId, int groundId)
         {
             IEnumerable<EncounterHelper> encList = encounterHelpEntries.Where(x => x.groundId == groundId && x.regionId == regionId);
-            if (encList.Count() == 0)
+            if (!encList.Any())
                 return 0xFFFF;
-            EncounterHelper enc = encList.First(); //always first, if there are two the same entries then it doesn't make sense- priority is over that one that is first
-            return enc.encounterPointer;
+            return encList.First().encounterPointer; //always first, if there are two the same entries then it doesn't make sense- priority is over that one that is first
+            
         }
 
         #endregion Section 1 - Encounter setting
@@ -156,7 +156,7 @@ namespace OpenVIII.World
         public byte GetWorldRegionBySegmentPosition(int x, int y)
         {
             int regionIndex = y * 32 + x;
-            if (regionIndex >= 768 || regionIndex < 0)
+            if (regionIndex >= regionsBuffer.Length || regionIndex < 0)
                 return 255;
             else return regionsBuffer[y * 32 + x]; // I had got an exception here. For out of range. //Ok- fixed
         }
@@ -196,7 +196,7 @@ namespace OpenVIII.World
 
         #region Section 6 - Encounter pointer (Lunar Cry)
 
-        private ushort[][] encountersLunar;
+        public ushort[][] EncountersLunar { get; private set; }
 
         private void Section6()
         {
@@ -216,11 +216,11 @@ namespace OpenVIII.World
                         sceneOutPointers[i] = br.ReadUInt16();
                     encounterList.Add(sceneOutPointers);
                 }
-                encountersLunar = encounterList.ToArray();
+                EncountersLunar = encounterList.ToArray();
             }
         }
 
-        public ushort[] GetEncountersLunar(int pointer) => encountersLunar[pointer];
+        public ushort[] GetEncountersLunar(int pointer) => EncountersLunar[pointer];
 
         #endregion Section 6 - Encounter pointer (Lunar Cry)
 

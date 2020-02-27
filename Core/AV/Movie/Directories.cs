@@ -6,45 +6,46 @@ namespace OpenVIII
 {
     namespace Movie
     {
-        public struct Directories : IEnumerable<string>
+        public class Directories : IEnumerable<string>
         {
+            private Directories()
+            {
+                if (_directories == null /*|| _directories.Count == 0*/)
+                {
+                    _directories = new List<string> {
+                        Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
+                        Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
+                    };
+                    foreach (string s in _directories)
+                        Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Directories)} :: {s} ");
+                }
+            }
+
+            public static Directories Instance { get; } = new Directories();
+
             #region Fields
 
-            private static List<string> s_directories;
+            private static List<string> _directories;
 
             #endregion Fields
 
             #region Properties
 
-            public int Count => _Directories.Count;
-            private static List<string> _Directories { get { Init(); return s_directories; } set => s_directories = value; }
+            public static int Count => _directories.Count;
 
             #endregion Properties
 
             #region Indexers
 
-            public string this[int i] => _Directories[i];
+            public string this[int i] => _directories[i];
 
             #endregion Indexers
 
             #region Methods
+            
+            public IEnumerator<string> GetEnumerator() => _directories.GetEnumerator();
 
-            public static void Init()
-            {
-                if (s_directories == null /*|| s_directories.Count == 0*/)
-                {
-                    s_directories = new List<string> {
-                        Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
-                        Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
-                    };
-                    foreach (string s in s_directories)
-                        Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Directories)} :: {s} ");
-                }
-            }
-
-            public IEnumerator<string> GetEnumerator() => _Directories.GetEnumerator();
-
-            IEnumerator IEnumerable.GetEnumerator() => _Directories.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => _directories.GetEnumerator();
 
             #endregion Methods
         }

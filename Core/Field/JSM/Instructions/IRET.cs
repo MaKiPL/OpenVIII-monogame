@@ -5,9 +5,11 @@ using System.ComponentModel;
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
+    /// <para>Return</para>
     /// If the script was called by another script, return to the another script where the current script was requested. Else the script is halted. 
     /// </summary>
-    internal sealed class IRET : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/006_RET"/>
+    public sealed class IRET : JsmInstruction
     {
         public Int32 Unknown { get; }
 

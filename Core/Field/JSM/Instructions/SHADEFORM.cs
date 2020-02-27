@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SHADEFORM : JsmInstruction
+    /// <summary>
+    /// two sets of 4 values. i think it could be colors but unsure.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0B0_SHADEFORM&action=edit&redlink=1"/>
+    public sealed class SHADEFORM : JsmInstruction
     {
         private IJsmExpression _arg0;
         private IJsmExpression _arg1;

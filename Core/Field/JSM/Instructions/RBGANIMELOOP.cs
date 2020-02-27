@@ -3,27 +3,25 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class RBGANIMELOOP : JsmInstruction
-    {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
 
-        public RBGANIMELOOP(IJsmExpression arg0, IJsmExpression arg1)
+    /// <summary>
+    /// BGanime with R and LOOP unsure the structure copied from BGanime assuming they are related.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/097_RBGANIMELOOP&action=edit&redlink=1"/>
+    public sealed class RBGANIMELOOP : Abstract.BGANIME
+    {
+
+        public RBGANIMELOOP(IJsmExpression firstFrame, IJsmExpression lastFrame) : base(firstFrame, lastFrame)
         {
-            _arg0 = arg0;
-            _arg1 = arg1;
         }
 
-        public RBGANIMELOOP(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+        public RBGANIMELOOP(int parameter, IStack<IJsmExpression> stack) : base(parameter, stack)
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(RBGANIMELOOP)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1})";
+            return $"{nameof(RBGANIMELOOP)}({nameof(_firstFrame)}: {_firstFrame}, {nameof(_lastFrame)}: {_lastFrame})";
         }
     }
 }

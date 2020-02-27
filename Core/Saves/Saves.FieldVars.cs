@@ -76,7 +76,7 @@ namespace OpenVIII
             public byte[] Hacktuar; //[306-319]Reserved for Hacktuar / FF8Voice
             public byte[] UltimeciaGallery; //[320-332]Ultimecia Gallery related (pictures viewed?)
             public byte UltimeciaArmory; //[333]Ultimecia Armory chest flags
-            public byte UltimeciaCastle; //[334]Ultimecia Castle seals. See SEALEDOFF for details.
+            public Fields.Scripts.Instructions.SEALEDOFF.SFlags UltimeciaCastleSeals; //[334]Ultimecia Castle seals. See SEALEDOFF for details.
             public byte Card; //[335]Card related
             public byte BusRelated; //[336]Deling City bus related
             public byte[] GatesOpened; //[338-340]Deling Sewer gates opened
@@ -367,7 +367,7 @@ namespace OpenVIII
                 Hacktuar = br.ReadBytes(14); //[306-319]Reserved for Hacktuar / FF8Voice
                 UltimeciaGallery = br.ReadBytes(3); //[320-332]Ultimecia Gallery related (pictures viewed?)
                 UltimeciaArmory = br.ReadByte(); //[333]Ultimecia Armory chest flags
-                UltimeciaCastle = br.ReadByte(); //[334]Ultimecia Castle seals. See SEALEDOFF for details.
+                UltimeciaCastleSeals = (Fields.Scripts.Instructions.SEALEDOFF.SFlags)br.ReadByte(); //[334]Ultimecia Castle seals. See SEALEDOFF for details.
                 Card = br.ReadByte(); //[335]Card related
                 BusRelated = br.ReadByte(); //[336]Deling City bus related
                 GatesOpened = br.ReadBytes(3); //[338-340]Deling Sewer gates opened

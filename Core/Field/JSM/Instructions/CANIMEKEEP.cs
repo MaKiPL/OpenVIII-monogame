@@ -3,31 +3,22 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    /// <summary>
-    /// Play an animation.
-    /// 
-    /// ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP
-    /// R - Async (don't wait for the animation)
-    /// C - Range (play frame range)
-    /// KEEP - Freeze (don't return the base animation, freeze on the last frame)
-    /// </summary>
-    internal sealed class CANIMEKEEP : JsmInstruction
-    {
-        private readonly Int32 _animationId;
-        private readonly Int32 _lastFrame;
-        private readonly Int32 _firstFrame;
 
-        public CANIMEKEEP(Int32 animationId, Int32 lastFrame, Int32 firstFrame)
+    /// <summary>
+    /// <para>Play an animation.</para>
+    /// <para>ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP</para>
+    /// <para>R - Async (don't wait for the animation)</para>
+    /// <para>C - Range (play frame range)</para>
+    /// <para>KEEP - Freeze (don't return the base animation, freeze on the last frame)</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/030_CANIMEKEEP"/>
+    public sealed class CANIMEKEEP : Abstract.ANIMELOOP
+    {
+        public CANIMEKEEP(int animationId, int firstFrame, int lastFrame) : base(animationId, firstFrame, lastFrame)
         {
-            _animationId = animationId;
-            _lastFrame = lastFrame;
-            _firstFrame = firstFrame;
         }
 
-        public CANIMEKEEP(Int32 animationId, IStack<IJsmExpression> stack)
-            : this(animationId,
-                firstFrame: ((IConstExpression)stack.Pop()).Int32(),
-                lastFrame: ((IConstExpression)stack.Pop()).Int32())
+        public CANIMEKEEP(int animationId, IStack<IJsmExpression> stack) : base(animationId, stack)
         {
         }
 

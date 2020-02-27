@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OpenVIII.Core</RootNamespace>
     <AssemblyName>Core</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -216,6 +216,7 @@
     <Compile Include="Archive\ArchiveMap.cs" />
     <Compile Include="Archive\Archives.cs" />
     <Compile Include="Archive\ArchiveWorker.cs" />
+    <Compile Include="Archive\CompressionType.cs" />
     <Compile Include="Archive\FI.cs" />
     <Compile Include="Archive\FL.cs" />
     <Compile Include="Archive\ZZZ\ArchiveZZZ.cs" />
@@ -253,6 +254,7 @@
     <Compile Include="Battle\FPS_Camera.cs" />
     <Compile Include="Battle\Enemies\IEnemy.cs" />
     <Compile Include="Battle\Enemies\Information.cs" />
+    <Compile Include="Battle\Mag\BinReaderExt.cs" />
     <Compile Include="BinaryReaderExt.cs" />
     <Compile Include="Battle\Mag\Geometry.cs" />
     <Compile Include="Battle\init_debugger_battle.cs" />
@@ -310,6 +312,16 @@
     <Compile Include="Field\INF\INF.cs" />
     <Compile Include="Field\INF\Trigger.cs" />
     <Compile Include="Field\INF\Triggers.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\ANIME.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\ANIMELOOP.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\BGANIME.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\KEY.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\PREQ.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\REQ.cs" />
+    <Compile Include="Field\JSM\Instructions\Abstract\TURN.cs" />
+    <Compile Include="Field\JSM\Instructions\ANGELODISABLE.cs" />
+    <Compile Include="Field\JSM\Instructions\HASITEM.cs" />
+    <Compile Include="Field\Menu\FieldDebugControls.cs" />
     <Compile Include="Field\Menu\FieldMenu.cs" />
     <Compile Include="Field\MrtRat.cs" />
     <Compile Include="Field\MSK.cs" />
@@ -430,7 +442,6 @@
     <Compile Include="AV\Ffcc.cs" />
     <Compile Include="AV\FfccVaribleGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />
-    <Compile Include="Field\Core\AreaName.cs" />
     <Compile Include="Field\Core\BreakAwaitable.cs" />
     <Compile Include="Field\Core\Coords3D.cs" />
     <Compile Include="Field\Core\Degrees.cs" />
@@ -886,7 +897,6 @@
     <Compile Include="Field\JSM\Instructions\TUTO.cs" />
     <Compile Include="Field\JSM\Instructions\UCOFF.cs" />
     <Compile Include="Field\JSM\Instructions\UCON.cs" />
-    <Compile Include="Field\JSM\Instructions\Unknown1.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown10.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown11.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown12.cs" />
@@ -897,7 +907,6 @@
     <Compile Include="Field\JSM\Instructions\Unknown2.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown3.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown4.cs" />
-    <Compile Include="Field\JSM\Instructions\Unknown5.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown6.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown7.cs" />
     <Compile Include="Field\JSM\Instructions\Unknown8.cs" />

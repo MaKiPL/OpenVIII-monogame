@@ -3,8 +3,16 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class Unknown13 : JsmInstruction
+    /// <summary>
+    /// <para>Sound channel available?</para>
+    /// <para>Used in Galbadian Missile Base when pushing the launcher into its bay. It's supposed to control which channel the pushing sound plays through. However, it doesn't seem to actually do anything.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/178_UNKNOWN13"/>
+    public sealed class Unknown13 : JsmInstruction
     {
+        /// <summary>
+        /// Sound channel?
+        /// </summary>
         private IJsmExpression _arg0;
 
         public Unknown13(IJsmExpression arg0)

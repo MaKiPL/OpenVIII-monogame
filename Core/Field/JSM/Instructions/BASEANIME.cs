@@ -3,23 +3,17 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class BASEANIME : JsmInstruction
+    /// <summary>
+    /// Sets this entity's model to loop the given frames of this animation while it's idle.
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/02C_BASEANIME"/>
+    public sealed class BASEANIME : Abstract.ANIMELOOP
     {
-        private Int32 _animationId;
-        private Int32 _lastFrame;
-        private Int32 _firstFrame;
-
-        public BASEANIME(Int32 animationId, Int32 lastFrame, Int32 firstFrame)
+        public BASEANIME(int animationId, int firstFrame, int lastFrame) : base(animationId, firstFrame, lastFrame)
         {
-            _animationId = animationId;
-            _lastFrame = lastFrame;
-            _firstFrame = firstFrame;
         }
 
-        public BASEANIME(Int32 animationId, IStack<IJsmExpression> stack)
-            : this(animationId,
-                firstFrame: ((IConstExpression)stack.Pop()).Int32(),
-                lastFrame: ((IConstExpression)stack.Pop()).Int32())
+        public BASEANIME(int animationId, IStack<IJsmExpression> stack) : base(animationId, stack)
         {
         }
 

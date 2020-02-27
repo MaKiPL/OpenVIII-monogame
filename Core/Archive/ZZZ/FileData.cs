@@ -3,13 +3,25 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class ArchiveZZZ
+    public sealed partial class ArchiveZzz
     {
+        #region Classes
+
         public static class FileData
         {
-            //public string Filename { get; set; }
-            //public long Offset { get; set; }
-            //public uint Size { get; set; }
+            #region Methods
+
+            /// <summary>
+            /// Convert the FileData for ZZZ to a String and FI pair
+            /// </summary>
+            /// <param name="br">Binary reader with raw data.</param>
+            /// <returns>String and FI pair</returns>
+            public static KeyValuePair<string, FI> Load(BinaryReader br)
+            {
+                int filenameLength = br.ReadInt32();
+                byte[] filenameBytes = br.ReadBytes(filenameLength);
+                return new KeyValuePair<string, FI>(ConvertFilename(filenameBytes), new FI(checked((int)br.ReadInt64()), checked((int)br.ReadUInt32())));
+            }
 
             /// <summary>
             /// Decode/Encode the filename string as bytes.
@@ -18,14 +30,11 @@ namespace OpenVIII
             /// Could be Ascii or UTF8, I see no special characters and the first like 127 of UTF8 is the
             /// same as Ascii.
             /// </remarks>
-            private static string ConvertFilename(byte[] filenamebytes) => System.Text.Encoding.UTF8.GetString(filenamebytes);
+            private static string ConvertFilename(byte[] filenameBytes) => System.Text.Encoding.UTF8.GetString(filenameBytes);
 
-            public static KeyValuePair<string,FI> Load(BinaryReader br)
-            {
-                int FilenameLength = br.ReadInt32();
-                byte[] Filenamebytes = br.ReadBytes(FilenameLength);
-                return new KeyValuePair<string, FI>(ConvertFilename(Filenamebytes), new FI(checked((int)br.ReadInt64()), checked((int)br.ReadUInt32())));
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

@@ -11,7 +11,7 @@ namespace OpenVIII.Battle
     {
         #region Fields
 
-        private const bool EnableDumpingData = true;
+        private const bool EnableDumpingData = false;
 
         /// <summary>
         /// skyRotating floats are hardcoded

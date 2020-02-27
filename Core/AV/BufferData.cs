@@ -1,9 +1,9 @@
-﻿namespace OpenVIII.AV
-{
-    using FFmpeg.AutoGen;
-    using System;
-    using System.IO;
+﻿using System;
+using System.IO;
+using FFmpeg.AutoGen;
 
+namespace OpenVIII.AV
+{
     /// <summary>
     /// Used only when reading ADPCM data from memory.
     /// </summary>
@@ -11,18 +11,18 @@
     {
         public enum TargetFile
         {
-            sound_dat,
-            other_zzz
+            SoundDat,
+            OtherZzz
         }
 
         #region Fields
 
-        public Int64 DataSeekLoc;
-        private Int64 TotalReadData;
-        public Int64 DataSize;
-        public UInt32 HeaderSize;
-        private IntPtr Header;
-        public TargetFile Target;
+        public long DataSeekLoc { get; set; }
+        private long _totalReadData;
+        public long DataSize { get; set; }
+        public uint HeaderSize { get; set; }
+        private IntPtr _header;
+        public TargetFile Target { get; set; }
 
         #endregion Fields
 
@@ -34,125 +34,109 @@
 
         #region Methods
         
-        public unsafe int Read(byte* buf, int buf_size)
+        public unsafe int Read(byte* buf, int bufSize)
         {   
             int ret;
-            if (HeaderSize >0 && (ret = ReadHeader(buf, buf_size)) != ffmpeg.AVERROR_EOF)
+            if (HeaderSize >0 && (ret = ReadHeader(buf, bufSize)) != ffmpeg.AVERROR_EOF)
                 return ret;
-            else
-                return ReadData(buf, buf_size);
+            return ReadData(buf, bufSize);
         }
 
-        public void SetHeader(IntPtr value) => Header = value;
+        public unsafe void SetHeader(byte* value) => _header = (IntPtr)value;
 
-        public unsafe void SetHeader(byte* value) => Header = (IntPtr)value;
-
-        private unsafe int ReadData(byte* buf, int buf_size)
+        private unsafe int ReadData(byte* buf, int bufSize)
         {
             if (string.IsNullOrWhiteSpace(DataFileName))
                 DataFileName = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat");
 
+            bufSize = Math.Min(bufSize, (int)DataSize);
 
-            //Memory.Archive Sound = new Memory.Archive("audio.dat")
-            buf_size = Math.Min(buf_size, (int)DataSize);
-
-            if (buf_size == 0)
+            if (bufSize == 0)
             {
                 return ffmpeg.AVERROR_EOF;
             }
-            Stream s = null;
-            ArchiveZZZ other;
+            Stream s;
+            ArchiveZzz other;
             switch (Target)
             {
-                case TargetFile.sound_dat:
+                case TargetFile.SoundDat:
                     if (File.Exists(DataFileName))
                     {
                         s = new FileStream(DataFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     }
                     else
                     {
-                        other = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                        other = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
                         s = new MemoryStream(other.GetBinaryFile("audio.dat", true), false);
                     }
                     break;
-                case TargetFile.other_zzz:
-                    other = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
+                case TargetFile.OtherZzz:
+                    other = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
                     s = other.OpenStream();
                     break;
 
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        $"{nameof(BufferData)}::{nameof(ReadData)}::{nameof(Target)} Value out of range! Target = {{{Target}}}");
             }
 
             // binaryReader disposes of fs
+            if(s == null) throw new NullReferenceException($"{nameof(BufferData)}::{nameof(ReadData)} stream is null");
             using (BinaryReader br = new BinaryReader(s))
             {
                 s.Seek(DataSeekLoc, SeekOrigin.Begin);
-                using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, buf_size, buf_size, FileAccess.Write))
+                using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, bufSize, bufSize, FileAccess.Write))
                 {
                     // copy public buffer data to buf
-                    ums.Write(br.ReadBytes(buf_size), 0, buf_size);
-                    DataSeekLoc += buf_size;
-                    TotalReadData += buf_size;
-                    DataSize -= buf_size;
+                    ums.Write(br.ReadBytes(bufSize), 0, bufSize);
+                    DataSeekLoc += bufSize;
+                    _totalReadData += bufSize;
+                    DataSize -= bufSize;
 
-                    s = null;
-                    return buf_size;
+                    return bufSize;
                 }
             }
         }
 
-        private unsafe int ReadHeader(byte* buf, int buf_size)
+        private unsafe int ReadHeader(byte* buf, int bufSize)
         {
-            buf_size = Math.Min(buf_size, (int)HeaderSize);
+            bufSize = Math.Min(bufSize, (int)HeaderSize);
 
-            if (buf_size == 0)
+            if (bufSize == 0)
             {
                 return ffmpeg.AVERROR_EOF;
             }
 
             // copy public buffer data to buf
-            Buffer.MemoryCopy((void*)Header, (void*)buf, buf_size, buf_size);
-            Header += buf_size;
-            HeaderSize -= (uint)buf_size;
+            Buffer.MemoryCopy((void*)_header, buf, bufSize, bufSize);
+            _header += bufSize;
+            HeaderSize -= (uint)bufSize;
 
-            return buf_size;
+            return bufSize;
         }
 
-        internal unsafe long Seek(long offset, int whence)
+        internal long Seek(long offset, int whence)
         {
             switch (whence)
             {
                 case ffmpeg.AVSEEK_SIZE:
-                if (offset == 0)
-                {
-                    return TotalReadData;
-                }
-                else
-                        throw new Exception($"unknown {nameof(whence)}: {whence}, {nameof(offset)}: {offset}");
-            
-            case 0:
-                offset -= TotalReadData;
-                break;
+                    return offset == 0
+                        ? _totalReadData
+                        : throw new Exception($"unknown {nameof(whence)}: {whence}, {nameof(offset)}: {offset}");
+
+                case 0:
+                    offset -= _totalReadData;
+                    break;
                 default:
                     throw new Exception($"unknown {nameof(whence)}: {whence}");
              }
 
             DataSeekLoc += offset;
-            TotalReadData += offset;
+            _totalReadData += offset;
             DataSize -= offset;
-            return TotalReadData;
+            return _totalReadData;
         }
 
         #endregion Methods
-
-        //can't do this because soon as fixed block ends the pointer is no good.
-        //private void SetHeader(byte[] value)
-        //{
-        //    fixed (byte* tmp = &value[0])
-        //    {
-        //        Header = (IntPtr)tmp;
-        //    }
-        //}
-
-        //< size left in the buffer
-    };
+    }
 }

@@ -3,27 +3,31 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class SETHP : JsmInstruction
+    /// <summary>
+    /// Set HP
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/146_SETHP&action=edit&redlink=1"/>
+    public sealed class SETHP : JsmInstruction
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
+        private readonly Characters _character;
+        private readonly Int32 _hp;
 
-        public SETHP(IJsmExpression arg0, IJsmExpression arg1)
+        public SETHP(Characters character, Int32 hp)
         {
-            _arg0 = arg0;
-            _arg1 = arg1;
+            _character = character;
+            _hp = hp;
         }
 
         public SETHP(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                arg1: stack.Pop(),
-                arg0: stack.Pop())
+                hp: ((IConstExpression)stack.Pop()).Int32(),
+                character: ((IConstExpression)stack.Pop()).Characters())
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(SETHP)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1})";
+            return $"{nameof(SETHP)}({nameof(_character)}: {_character}, {nameof(_hp)}: {_hp})";
         }
     }
 }

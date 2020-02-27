@@ -8,22 +8,67 @@ namespace OpenVIII
 {
     namespace Movie
     {
-        public struct Files : IEnumerable<string>
+        public class Files : IEnumerable<string>
         {
+            private Files()
+            {
+
+                if (_files != null) return;
+                if(Extensions == null)
+                    Extensions = new [] { ".avi", ".mkv", ".mp4", ".bik" };
+                ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
+                if (a != null)
+                {
+                    string[] listOfFiles = a.GetListOfFiles();
+                    _files = (from file in listOfFiles
+                              from extension in Extensions
+                              where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
+                              orderby Path.GetFileNameWithoutExtension(file)
+                              select file).ToList();
+                    Zzz = true;
+                }
+                else
+                {
+                    //Gather all movie files.
+                    Directories d = Directories.Instance;
+                    _files = (from directory in d
+                              where Directory.Exists(directory)
+                              from file in Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
+                              from extension in Extensions
+                              where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
+                              orderby Path.GetFileNameWithoutExtension(file)
+                              select file).ToList();
+                }
+
+                //Remove duplicate movies ignoring extension that have same name.
+                (from s1 in _files.Select((value, key) => new { Key = key, Value = value })
+                 from s2 in _files.Select((value, key) => new { Key = key, Value = value })
+                 where s1?.Value != null
+                 where s2?.Value != null
+                 where s1.Key < s2.Key
+                 where Path.GetFileNameWithoutExtension(s1.Value ?? throw new NullReferenceException($"{nameof(Files)}::{s1} value cannot be null")).Equals(Path.GetFileNameWithoutExtension(s2.Value), StringComparison.OrdinalIgnoreCase)
+                 orderby s2.Key descending
+                 select s2.Key).ForEach(key => _files.RemoveAt(key));
+
+                foreach (string s in _files)
+                    Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Files)} :: {s} ");
+            }
+
+            public static Files Instance { get; } = new Files();
+
             #region Fields
 
-            private static readonly string[] Extensions = new string[] { ".avi", ".mkv", ".mp4", ".bik" };
-            private static Directories Directories;
-            private static List<string> s_files;
+            private static string[] Extensions;
+            private static List<string> _files;
 
-            public static bool ZZZ { get; private set; } = false;
+            public static bool Zzz { get; private set; }
 
             #endregion Fields
 
             #region Properties
 
-            public static int Count => _Files.Count;
-            private static List<string> _Files { get { Init(); return s_files; } set => s_files = value; }
+            public int Count =>
+                    _files.Count;
 
             #endregion Properties
 
@@ -35,50 +80,14 @@ namespace OpenVIII
 
             #region Methods
 
-            public static string At(int i) => _Files[i];
+            public string At(int i) => _files[i];
 
-            public static bool Exists(int i) => Count > i && i >= 0 && File.Exists(_Files[i]);
+            public bool Exists(int i) => Count > i && i >= 0 && File.Exists(_files[i]);
 
-            public static void Init()
-            {
-                if (s_files == null /*|| s_files.Count == 0*/)
-                {
-                    ArchiveZZZ a = (ArchiveZZZ)ArchiveZZZ.Load(Memory.Archives.ZZZ_OTHER);
-                    if (a != null)
-                    {
 
-                        s_files = (from file in a.GetListOfFiles()
-                                   from extension in Extensions
-                                   where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
-                                   orderby Path.GetFileNameWithoutExtension(file) ascending
-                                   select file).ToList();
-                        ZZZ = true;
-                    }
-                    else
-                        //Gather all movie files.
-                        s_files = (from directory in Directories
-                                   where Directory.Exists(directory)
-                                   from file in Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
-                                   from extension in Extensions
-                                   where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
-                                   orderby Path.GetFileNameWithoutExtension(file) ascending
-                                   select file).ToList();
-                    //Remove duplicate movies ignoring extension that have same name.
-                    (from s1 in _Files.Select((Value, Key) => new { Key, Value })
-                     from s2 in _Files.Select((Value, Key) => new { Key, Value })
-                     where s1.Key < s2.Key
-                     where Path.GetFileNameWithoutExtension(s1.Value).Equals(Path.GetFileNameWithoutExtension(s2.Value), StringComparison.OrdinalIgnoreCase)
-                     orderby s2.Key descending
-                     select s2.Key).ForEach(Key => s_files.RemoveAt(Key));
+            public IEnumerator GetEnumerator() => _files.GetEnumerator();
 
-                    foreach (string s in s_files)
-                        Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Files)} :: {s} ");
-                }
-            }
-
-            public IEnumerator GetEnumerator() => _Files.GetEnumerator();
-
-            IEnumerator<string> IEnumerable<string>.GetEnumerator() => _Files.GetEnumerator();
+            IEnumerator<string> IEnumerable<string>.GetEnumerator() => _files.GetEnumerator();
 
             #endregion Methods
         }

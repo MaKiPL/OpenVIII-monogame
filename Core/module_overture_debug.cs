@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using OpenVIII.Encoding.Tags;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -14,17 +15,17 @@ namespace OpenVIII
         #region Fields
 
         private const float speed = 1f;
-        private static bool bFadingIn = true;
-        private static bool bNames = true;
+        private static bool bFadingIn;
+        private static bool bNames;
 
         //by default first should fade in, wait, then fire fading out and wait for finish, then loop
         private static bool bWaitingSplash, bFadingOut;
 
         private static float fSplashWait, Fade;
-        private static OverturepublicModule publicModule = OverturepublicModule._4Squaresoft;
+        private static OverturepublicModule publicModule = OverturepublicModule._5Reset;
         private static double publicTimer;
-        private static int splashIndex, splashName = 1, splashLoop = 1;
-        private static Splash splashTex = null;
+        private static int splashIndex, splashName, splashLoop;
+        private static Splash splashTex;
 
         #endregion Fields
 
@@ -36,7 +37,8 @@ namespace OpenVIII
             _1WaitBeforeFirst,
             _2PlaySequence,
             _3SequenceFinishedPlayMainMenu,
-            _4Squaresoft
+            _4Squaresoft,
+            _5Reset
         }
 
         #endregion Enums
@@ -55,32 +57,22 @@ namespace OpenVIII
 
         public static void Draw()
         {
+            Memory.graphics.GraphicsDevice.Clear(Color.Black);
             switch (publicModule)
             {
-                case OverturepublicModule._0InitSound:
-                case OverturepublicModule._1WaitBeforeFirst:
-                    Memory.graphics.GraphicsDevice.Clear(Color.Black);
-                    break;
-
                 case OverturepublicModule._2PlaySequence:
-                    Memory.graphics.GraphicsDevice.Clear(Color.Black);
                     DrawSplash();
                     break; //actually this is our entry point for draw;
                 case OverturepublicModule._3SequenceFinishedPlayMainMenu:
                     DrawLogo(); //after this ends, jump into main menu module
-                    break;
-
-                case OverturepublicModule._4Squaresoft:
-                    publicModule = OverturepublicModule._0InitSound;
-                    Module_movie_test.Index = 104;//104 is SE logo in steam release.
-                    Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
-                    Memory.Module = MODULE.MOVIETEST;
                     break;
             }
         }
 
         public static void ResetModule()
         {
+            bFadingIn = true;
+            bNames = true;
             publicModule = 0;
             publicTimer = 0.0f;
             bFadingIn = true;
@@ -90,6 +82,7 @@ namespace OpenVIII
             Fade = 0;
             splashIndex = 0;
             splashName = splashLoop = 1;
+            splashTex = null;
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
             Memory.Module = MODULE.OVERTURE_DEBUG;
             publicModule = OverturepublicModule._4Squaresoft;
@@ -197,6 +190,17 @@ namespace OpenVIII
                 case OverturepublicModule._2PlaySequence:
                     SplashUpdate(ref splashIndex);
                     break;
+
+                case OverturepublicModule._4Squaresoft:
+                    publicModule = OverturepublicModule._0InitSound;
+                    Module_movie_test.Index = 104;//104 is SE logo in steam release.
+                    Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
+                    Memory.Module = MODULE.MOVIETEST;
+                    break;
+                case OverturepublicModule._5Reset:
+                    ResetModule();
+                    Update();
+                    return;
             }
         }
 
@@ -296,9 +300,9 @@ namespace OpenVIII
 
         private const string names = "name";
 
-        private readonly List<string> logonames;
-        private readonly List<string> loopsnames;
-        private readonly List<string> namesnames;
+        private static List<string> logonames;
+        private static List<string> loopsnames;
+        private static List<string> namesnames;
         private bool disposedValue = false;
         private string filename;
 
@@ -313,10 +317,7 @@ namespace OpenVIII
                 return;
             }
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
-            var lof = aw.GetListOfFiles();
-            loopsnames = lof.Where(x => x.IndexOf(loops, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
-            namesnames = lof.Where(x => x.IndexOf(names, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
-            logonames = lof.Where(x => x.IndexOf("ff8.lzs", StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+            InitNames(aw);
             GetName(splashNum, bNames, bLogo);
             ReadSplash();
         }
@@ -337,14 +338,16 @@ namespace OpenVIII
         #region Properties
 
         public int Height => tex?.Height ?? 0;
-        public Texture2D tex { get; private set; }
+
+        public TextureHandler tex { get; private set; }
+
         public int Width => tex?.Width ?? 0;
 
         #endregion Properties
 
         #region Methods
 
-        public static implicit operator Texture2D(Splash s) => s.tex;
+        public static implicit operator Texture2D(Splash s) => (Texture2D)s.tex;
 
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
@@ -373,6 +376,17 @@ namespace OpenVIII
             }
         }
 
+        private static void InitNames(ArchiveBase aw)
+        {
+            if (loopsnames == null && namesnames == null && logonames == null)
+            {
+                string[] lof = aw.GetListOfFiles();
+                loopsnames = lof.Where(x => x.IndexOf(loops, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+                namesnames = lof.Where(x => x.IndexOf(names, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+                logonames = lof.Where(x => x.IndexOf("ff8.lzs", StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+            }
+        }
+
         private void GetName(int splashNum, bool bNames, bool bLogo) => filename = !bLogo
                         ? bNames
                     ? namesnames.ElementAtOrDefault(splashNum - 1)
@@ -383,19 +397,19 @@ namespace OpenVIII
         private void ReadSplash()
         {
             if (string.IsNullOrWhiteSpace(filename)) return;
+            string fn = Path.GetFileNameWithoutExtension(filename);
+            //Debug.Assert(!fn.Equals("ff8", StringComparison.OrdinalIgnoreCase));
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
             byte[] buffer = aw.GetBinaryFile(filename);
-            string fn = Path.GetFileNameWithoutExtension(filename);
-            uint uncompSize = BitConverter.ToUInt32(buffer, 0);
-            buffer = buffer.Skip(4).ToArray(); //hotfix for new LZSS
-            buffer = LZSS.DecompressAllNew(buffer);
+
             TIM_OVERTURE tim = new TIM_OVERTURE(buffer);
+            
             if ((fn.Equals("ff8", StringComparison.OrdinalIgnoreCase)) || (fn.IndexOf("loop", StringComparison.OrdinalIgnoreCase) >= 0))
             {
                 tim.IgnoreAlpha = true;
             }
 
-            tex = (Texture2D)TextureHandler.Create(fn, tim, 0);//TIM2.Overture(buffer);
+            tex = TextureHandler.Create(fn, tim, 0);//TIM2.Overture(buffer);
             //using (FileStream fs = File.Create(Path.Combine("D:\\main", Path.GetFileNameWithoutExtension(filename) + ".png")))
             //    splashTex.SaveAsPng(fs, splashTex.Width, splashTex.Height);
 

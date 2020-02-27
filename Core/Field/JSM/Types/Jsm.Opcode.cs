@@ -2,7 +2,7 @@
 {
     public static partial class Jsm
     {
-        public enum Opcode
+        public enum Opcode : ushort
         {
             NOP,
             CAL,
@@ -362,11 +362,11 @@
             SETPARTY2,
             SPUSYNC,
             BROKEN,
-            Unknown1,
+            ANGELODISABLE,
             Unknown2,
             Unknown3,
             Unknown4,
-            Unknown5,
+            HASITEM,
             Unknown6,
             Unknown7,
             Unknown8,

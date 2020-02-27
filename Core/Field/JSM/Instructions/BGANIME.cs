@@ -6,21 +6,13 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <summary>
     /// Animates a background object on the field. 
     /// </summary>
-    internal sealed class BGANIME : JsmInstruction
+    public sealed class BGANIME : Abstract.BGANIME
     {
-        private IJsmExpression _lastFrame;
-        private IJsmExpression _firstFrame;
-
-        public BGANIME(IJsmExpression lastFrame, IJsmExpression firstFrame)
+        public BGANIME(IJsmExpression firstFrame, IJsmExpression lastFrame) : base(firstFrame, lastFrame)
         {
-            _lastFrame = lastFrame;
-            _firstFrame = firstFrame;
         }
 
-        public BGANIME(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(
-                firstFrame: stack.Pop(),
-                lastFrame: stack.Pop())
+        public BGANIME(int parameter, IStack<IJsmExpression> stack) : base(parameter, stack)
         {
         }
 

@@ -1,22 +1,25 @@
 ﻿using Microsoft.Xna.Framework.Input;
+using OpenVIII.AV;
 using OpenVIII.Encoding.Tags;
+using OpenVIII.Movie;
 
 namespace OpenVIII
 {
     public static class Module_movie_test
     {
-        private const MODULE defaultReturnState = MODULE.MAINMENU_DEBUG;
-        private static Movie.Player Player;
+        private const MODULE DefaultReturnState = MODULE.MAINMENU_DEBUG;
+        private static Player _player;
 
         /// <summary>
         /// Movie file list
         /// </summary>
 
-        public static MODULE ReturnState { get; set; } = defaultReturnState;
+        public static MODULE ReturnState { get; set; } = DefaultReturnState;
         public static int Index { get; set; }
 
         public static void Inputs()
         {
+            Files files = Files.Instance;
             if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
                 Return();
@@ -26,20 +29,20 @@ namespace OpenVIII
             // when it runs out.
             else if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
-                AV.Sound.Play(0);
-                if (Module_movie_test.Index > 0)
-                    Module_movie_test.Index--;
+                Sound.Play(0);
+                if (Index > 0)
+                    Index--;
                 else
-                    Module_movie_test.Index = Movie.Files.Count - 1;
+                    Index = files.Count - 1;
                 Reset();
             }
             else if (Input2.DelayedButton(FF8TextTagKey.Right))
             {
-                AV.Sound.Play(0);
-                if (Module_movie_test.Index < Movie.Files.Count - 1)
-                    Module_movie_test.Index++;
+                Sound.Play(0);
+                if (Index < files.Count - 1)
+                    Index++;
                 else
-                    Module_movie_test.Index = 0;
+                    Index = 0;
                 Reset();
             }
 #endif
@@ -53,36 +56,36 @@ namespace OpenVIII
 
         public static void Play()
         {
-            Player = Movie.Player.Load(Index);
-            if (Player != null)
-                Player.StateChanged += Player_StateChanged;
+            _player = Player.Load(Index);
+            if (_player != null)
+                _player.StateChanged += Player_StateChanged;
         }
 
-        private static void Player_StateChanged(object sender, Movie.STATE e)
+        private static void Player_StateChanged(object sender, STATE e)
         {
-            if (e == Movie.STATE.RETURN)
+            if (e == STATE.RETURN)
                 Return();
         }
 
         public static void Update()
         {
-            if (Player == null || Player.IsDisposed)
+            if (_player == null || _player.IsDisposed)
                 Play();
-            if (Player == null) // player is still null move on.
+            if (_player == null) // player is still null move on.
                 Return();
             else
             {
-                Player?.Update();
+                _player?.Update();
                 Inputs();
             }
         }
 
-        public static void Draw() => Player?.Draw();
+        public static void Draw() => _player?.Draw();
 
         public static void Reset()
         {
-            Player = null;
-            ReturnState = defaultReturnState;
+            _player = null;
+            ReturnState = DefaultReturnState;
         }
     }
 }

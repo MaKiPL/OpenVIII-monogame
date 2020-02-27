@@ -4,27 +4,18 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Request remote execution (asynchronous execution, guaranteed)
-    /// Go to the method Label in the group Argument with a specified Priority.
-    /// Requests that a remote entity executes one of its member functions at a specified priority. If the specified priority is already busy executing, the request will block until it becomes available and only then return. The remote execution is still carried out asynchronously, with no notification of completion. 
+    /// <para>Request remote execution (asynchronous execution, guaranteed)</para>
+    /// <para>Go to the method Label in the group Argument with a specified Priority.</para>
+    /// <para>Requests that a remote entity executes one of its member functions at a specified priority. If the specified priority is already busy executing, the request will block until it becomes available and only then return. The remote execution is still carried out asynchronously, with no notification of completion. </para>
     /// </summary>
-    internal sealed class REQSW : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/015_REQSW"/>
+    public sealed class REQSW : Abstract.REQ
     {
-        private Int32 _objectIndex;
-        private Int32 _priority;
-        private Int32 _scriptId;
-
-        public REQSW(Int32 objectIndex, Int32 priority, Int32 scriptId)
+        public REQSW(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
-            _objectIndex = objectIndex;
-            _priority = priority;
-            _scriptId = scriptId;
         }
 
-        public REQSW(Int32 objectIndex, IStack<IJsmExpression> stack)
-            : this(objectIndex,
-                scriptId: ((IConstExpression)stack.Pop()).Int32(),
-                priority: ((IConstExpression)stack.Pop()).Int32())
+        public REQSW(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
         }
 

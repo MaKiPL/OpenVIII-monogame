@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class LADDERANIME : JsmInstruction
+    /// <summary>
+    /// ladder climbing animation?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/037_LADDERANIME"/>
+    public sealed class LADDERANIME : JsmInstruction
     {
         private Int32 _parameter;
         private IJsmExpression _arg0;

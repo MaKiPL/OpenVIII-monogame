@@ -5,9 +5,15 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Temp[index] = value;
+    /// <para>Pop to Temp List (long)</para>
+    /// <para>Pop the top value from the stack and store the first four bytes (long) at index position Argument in the Temp List.</para>
     /// </summary>
-    internal sealed class POPI_L : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/009_POPI_L"/>
+    public sealed class POPI_L : JsmInstruction
     {
+        /// <summary>
+        /// Index position in the Temp List (0 &lt;= Argument &lt; 8).
+        /// </summary>
         private ScriptResultId _index;
         private IJsmExpression _value;
 

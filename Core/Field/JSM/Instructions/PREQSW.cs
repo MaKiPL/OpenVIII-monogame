@@ -8,23 +8,14 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// If the specified priority is already busy executing, the request will block until it becomes available and only then return.
     /// The remote execution is still carried out asynchronously, with no notification of completion. 
     /// </summary>
-    internal sealed class PREQSW : JsmInstruction
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/018_PREQSW"/>
+    public sealed class PREQSW : Abstract.PREQ
     {
-        private Int32 _partyId;
-        private Int32 _priority;
-        private Int32 _scriptId;
-
-        public PREQSW(Int32 partyId, Int32 priority, Int32 scriptId)
+        public PREQSW(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
-            _partyId = partyId;
-            _priority = priority;
-            _scriptId = scriptId;
         }
 
-        public PREQSW(Int32 partyId, IStack<IJsmExpression> stack)
-            : this(partyId,
-                scriptId: ((IConstExpression)stack.Pop()).Int32(),
-                priority: ((IConstExpression)stack.Pop()).Int32())
+        public PREQSW(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
         }
 

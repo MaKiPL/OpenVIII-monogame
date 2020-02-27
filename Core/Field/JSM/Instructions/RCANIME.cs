@@ -3,31 +3,21 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    /// <summary>
-    /// Play an animation.
-    /// 
-    /// ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP
-    /// R - Async (don't wait for the animation)
-    /// C - Range (play frame range)
-    /// KEEP - Freeze (don't return the base animation, freeze on the last frame)
-    /// </summary>
-    internal sealed class RCANIME : JsmInstruction
-    {
-        private Int32 _animationId;
-        private Int32 _lastFrame;
-        private Int32 _firstFrame;
 
-        public RCANIME(Int32 animationId, Int32 lastFrame, Int32 firstFrame)
+    /// <summary>
+    /// <para>Play an animation.</para>
+    /// <para>ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP</para>
+    /// <para>R - Async (don't wait for the animation)</para>
+    /// <para>C - Range (play frame range)</para>
+    /// <para>KEEP - Freeze (don't return the base animation, freeze on the last frame)</para>
+    /// </summary>
+    public sealed class RCANIME : Abstract.ANIMELOOP
+    {
+        public RCANIME(int animationId, int firstFrame, int lastFrame) : base(animationId, firstFrame, lastFrame)
         {
-            _animationId = animationId;
-            _lastFrame = lastFrame;
-            _firstFrame = firstFrame;
         }
 
-        public RCANIME(Int32 animationId, IStack<IJsmExpression> stack)
-            : this(animationId,
-                firstFrame: ((IConstExpression)stack.Pop()).Int32(),
-                lastFrame: ((IConstExpression)stack.Pop()).Int32())
+        public RCANIME(int animationId, IStack<IJsmExpression> stack) : base(animationId, stack)
         {
         }
 

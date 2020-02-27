@@ -3,8 +3,16 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
+    /// <summary>
+    /// <para>Jump</para>
+    /// <para>Jump a number of instructions given by Argument. If Argument is negative, jumps backward.</para>
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/002_JMP"/>
     public sealed class JMP : JsmInstruction, IJumpToOpcode
     {
+        /// <summary>
+        /// Number of instructions to jump (signed value).
+        /// </summary>
         public Int32 Offset { get; set; }
 
         public JMP(Int32 offset)

@@ -22,7 +22,7 @@ namespace OpenVIII
             log = new StreamWriter(fs, System.Text.Encoding.UTF8)
             { AutoFlush = true };
         }
-        public override void WriteLine(string value) => base.WriteLine($"{Thread.CurrentThread.ManagedThreadId}::{value}");
+        public override void WriteLine(string value) => base.WriteLine($"{Thread.CurrentThread.ManagedThreadId}:{Task.CurrentId}:{value}");
         public override System.Text.Encoding Encoding => log.Encoding;
         /// <summary>
         /// If Disabled the log.txt will be empty. and Async writes will be null.

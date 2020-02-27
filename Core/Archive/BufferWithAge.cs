@@ -8,7 +8,7 @@ namespace OpenVIII
     {
         #region Fields
 
-        private byte[] buffer;
+        private readonly byte[] _buffer;
 
         #endregion Fields
 
@@ -16,23 +16,23 @@ namespace OpenVIII
 
         public BufferWithAge(byte[] buffer)
         {
-            this.buffer = buffer;
-            Touched = Created = getTimeSpan();
+            this._buffer = buffer;
+            Used = Created = DateTime.Now;
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public int Count => ((IReadOnlyList<byte>)buffer).Count;
-        public TimeSpan Created { get; }
-        public TimeSpan Touched { get; private set; }
+        public int Count => ((IReadOnlyList<byte>)_buffer).Count;
+        public DateTime Created { get; }
+        public DateTime Used { get; private set; }
 
         #endregion Properties
 
         #region Indexers
 
-        public byte this[int index] => ((IReadOnlyList<byte>)buffer)[index];
+        public byte this[int index] => ((IReadOnlyList<byte>)_buffer)[index];
 
         #endregion Indexers
 
@@ -40,15 +40,15 @@ namespace OpenVIII
 
         public static implicit operator BufferWithAge(byte[] @in) => new BufferWithAge(@in);
 
-        public static implicit operator byte[] (BufferWithAge @in) => @in.buffer;
+        public static implicit operator byte[] (BufferWithAge @in) => @in._buffer;
 
-        public IEnumerator<byte> GetEnumerator() => ((IReadOnlyList<byte>)buffer).GetEnumerator();
+        public IEnumerator<byte> GetEnumerator() => ((IReadOnlyList<byte>)_buffer).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<byte>)buffer).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<byte>)_buffer).GetEnumerator();
 
-        public TimeSpan Poke() => Touched = getTimeSpan();
+        public DateTime Poke() => Used = DateTime.Now;
 
-        private static TimeSpan getTimeSpan() => Memory.ElapsedGameTime;
+        public override string ToString() => $"{{{nameof(Created)}: {Created}, {nameof(Used)}: {Used}, Size: {_buffer?.Length ?? 0}}}";
 
         #endregion Methods
     }

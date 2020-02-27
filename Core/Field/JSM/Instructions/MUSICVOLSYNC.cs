@@ -3,7 +3,11 @@
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class MUSICVOLSYNC : JsmInstruction
+    /// <summary>
+    /// Music Vol Sync?
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/149_MUSICVOLSYNC&action=edit&redlink=1"/>
+    public sealed class MUSICVOLSYNC : JsmInstruction
     {
         public MUSICVOLSYNC()
         {

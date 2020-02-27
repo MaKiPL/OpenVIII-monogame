@@ -13,37 +13,33 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// <summary>
         /// Message Channel
         /// </summary>
-        private IJsmExpression _channel;
+        private readonly IJsmExpression _channel;
         /// <summary>
         /// Field message ID
         /// </summary>
-        private IJsmExpression _messageId;
+        private readonly IJsmExpression _messageId;
         /// <summary>
         /// Line of first option
         /// </summary>
-        private IJsmExpression _firstLine;
+        private readonly IJsmExpression _firstLine;
         /// <summary>
         /// Line of last option
         /// </summary>
-        private IJsmExpression _lastLine;
+        private readonly IJsmExpression _lastLine;
         /// <summary>
         /// Line of default option
         /// </summary>
-        private IJsmExpression _beginLine;
+        private readonly IJsmExpression _beginLine;
         /// <summary>
         /// Line of cancel option
         /// </summary>
-        private IJsmExpression _cancelLine;
+        private readonly IJsmExpression _cancelLine;
         /// <summary>
-        /// X position of window
+        /// position of window
         /// </summary>
-        private IJsmExpression _posX;
-        /// <summary>
-        /// Y Position of window
-        /// </summary>
-        private IJsmExpression _posY;
+        private readonly Point _pos;
 
-        public AASK(IJsmExpression channel, IJsmExpression messageId, IJsmExpression firstLine, IJsmExpression lastLine, IJsmExpression beginLine, IJsmExpression cancelLine, IJsmExpression posX, IJsmExpression posY)
+        public AASK(IJsmExpression channel, IJsmExpression messageId, IJsmExpression firstLine, IJsmExpression lastLine, IJsmExpression beginLine, IJsmExpression cancelLine, Int32 posX, Int32 posY)
         {
             _channel = channel;
             _messageId = messageId;
@@ -51,14 +47,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _lastLine = lastLine;
             _beginLine = beginLine;
             _cancelLine = cancelLine;
-            _posX = posX;
-            _posY = posY;
+            (_pos.X, _pos.Y) = (posX, posY);
         }
-        public Point Pos => new Point(((PSHN_L)_posX).Value, ((PSHN_L)_posY).Value);
         public AASK(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                posY: stack.Pop(),
-                posX: stack.Pop(),
+                posY: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32(),
+                posX: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32(),
                 cancelLine: stack.Pop(),
                 beginLine: stack.Pop(),
                 lastLine: stack.Pop(),
@@ -70,7 +64,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override String ToString()
         {
-            return $"{nameof(AASK)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_firstLine)}: {_firstLine}, {nameof(_lastLine)}: {_lastLine}, {nameof(_beginLine)}: {_beginLine}, {nameof(_cancelLine)}: {_cancelLine}, {nameof(_posX)}: {_posX}, {nameof(_posY)}: {_posY})";
+            return $"{nameof(AASK)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_firstLine)}: {_firstLine}, {nameof(_lastLine)}: {_lastLine}, {nameof(_beginLine)}: {_beginLine}, {nameof(_cancelLine)}: {_cancelLine}, {nameof(_pos)}: {_pos})";
         }
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
@@ -88,8 +82,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 .Argument("lastLine", _lastLine)
                 .Argument("beginLine", _beginLine)
                 .Argument("cancelLine", _cancelLine)
-                .Argument("posX", _posX)
-                .Argument("posY", _posY)
+                .Argument("posX", _pos.X)
+                .Argument("posY", _pos.Y)
                 .Comment(nameof(AASK));
         }
 
@@ -102,8 +96,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 _lastLine.Int32(services),
                 _beginLine.Int32(services),
                 _cancelLine.Int32(services),
-                _posX.Int32(services),
-                _posY.Int32(services));
+                _pos.X,//do we need to use the services code for these? they don't do it in AMES
+                _pos.Y);
         }
     }
 }

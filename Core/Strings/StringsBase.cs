@@ -32,9 +32,7 @@ namespace OpenVIII
 
             protected void SetValues(Memory.Archive archive, params string[] filenames)
             {
-                Debug.WriteLine("Task={0}, Thread={2}, [Files={1}]",
-                Task.CurrentId, string.Join(", ", filenames),
-                Thread.CurrentThread.ManagedThreadId);
+                Memory.Log.WriteLine($"{nameof(StringsBase)}::{nameof(SetValues)} Archive= \"{archive}\", Files= {{{string.Join(", ", filenames)}}}");
 
                 Archive = archive;
                 Filenames = filenames;
@@ -213,7 +211,7 @@ namespace OpenVIII
             {
                 ArchiveBase aw = ArchiveWorker.Load(Archive, true);
                 MemoryStream ms;
-                byte[] buffer = aw.GetBinaryFile(Filenames[0]);
+                byte[] buffer = aw.GetBinaryFile(Filenames[0],true);
                 if (buffer != null)
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer, true)))
                     {

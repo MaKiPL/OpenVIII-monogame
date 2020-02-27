@@ -10,23 +10,25 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/Item_Codes"/>
     public sealed class ADDITEM : JsmInstruction
     {
-        private Saves.Item _item;
+        private readonly IJsmExpression _id;
+        private readonly IJsmExpression _qty;
 
-        public ADDITEM(Saves.Item item)
+        public ADDITEM(IJsmExpression id, IJsmExpression qty)
         {
-            _item = item;
+            _id = id;
+            _qty = qty;
         }
 
         public ADDITEM(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                item: new Saves.Item(QTY: checked((byte)((Jsm.Expression.PSHN_L)stack.Pop()).Int32()),
-                ID: checked((byte)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())))
+                qty: stack.Pop(),
+                id: stack.Pop())
         {
         }
 
         public override String ToString()
         {
-            return $"{nameof(ADDITEM)}({nameof(_item)}: {_item})";
+            return $"{nameof(ADDITEM)}({nameof(_id)}: {_id}, {nameof(_qty)}: {_qty}";
         }
     }
 }
