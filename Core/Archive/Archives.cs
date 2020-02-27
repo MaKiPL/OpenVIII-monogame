@@ -30,7 +30,15 @@ namespace OpenVIII
                 A_WORLD = new Archive("world", FF8DIRdata_lang, ZZZ_MAIN);
                 A_MOVIES = new Archive("movies", FF8DIRdata_lang, ZZZ_OTHER, FF8DIRdata);
 
-                var aw = ArchiveZZZ.Load(ZZZ_MAIN);
+                var aw = ArchiveZZZ.Load(ZZZ_MAIN); //try to load main.zzz also caches it.
+                //This actually slows things down. I thought it might be a good idea but atleast now we know.
+                //MergeFIFLFStoZZZ(aw); // try to merge all the file maps into the zzz map. Since all the binary data is in there.
+                aw = ArchiveZZZ.Load(ZZZ_OTHER); //try to load other.zzz also caches it.
+
+            }
+
+            private static void MergeFIFLFStoZZZ(ArchiveBase aw)
+            {
                 if (aw != null)
                 {
                     void Merge(Archive a)
@@ -56,8 +64,6 @@ namespace OpenVIII
                     A_MENU = ZZZ_MAIN;
                     A_WORLD = ZZZ_MAIN;
                 }
-                aw = ArchiveZZZ.Load(ZZZ_OTHER);
-                
             }
 
             public static Archive ConvertPath(string path) => new Archive(path);

@@ -55,7 +55,7 @@ namespace OpenVIII
             if (tempArchive != null)
             {
                 tempArchive.GetArchive(path, out StreamWithRangeValues FI, out FSArchive, out StreamWithRangeValues FL);
-                ArchiveMap = new ArchiveMap(FI, FL);
+                ArchiveMap = new ArchiveMap(FI, FL, tempArchive.GetMaxSize(path));
             }
             if (!skiplist)
                 GetListOfFiles();
@@ -64,7 +64,7 @@ namespace OpenVIII
 
         protected ArchiveWorker(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skiplist = false)
         {
-            ArchiveMap = new ArchiveMap(fI, fL);
+            ArchiveMap = new ArchiveMap(fI, fL, fS.GetMaxSize(path));
             _path = path;
             FSArchive = fS;
             //FS = null;

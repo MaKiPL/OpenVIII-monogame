@@ -139,6 +139,12 @@ namespace OpenVIII
 
         public abstract ArchiveBase GetArchive(string fileName);
 
+        public virtual int GetMaxSize(Memory.Archive archive)
+        {
+            using(StreamWithRangeValues s = GetStreamWithRangeValues(archive.FS))
+                return checked((int)s.Size);
+        }
+        
         public void GetArchive(Memory.Archive archive, out StreamWithRangeValues FI, out ArchiveBase FS, out StreamWithRangeValues FL)
         {
             Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(GetArchive)} - Reading: {archive.FI}, {archive.FS}, {archive.FL}");

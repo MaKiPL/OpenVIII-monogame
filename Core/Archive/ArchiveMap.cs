@@ -17,19 +17,20 @@ namespace OpenVIII
 
         #region Constructors
 
-        public ArchiveMap(byte[] fi, byte[] fl)
+        public ArchiveMap(byte[] fi, byte[] fl, int max)
         {
+            Max = max;
             FL list = new FL(fl);
             using (BinaryReader br = new BinaryReader(new MemoryStream(fi, false)))
                 entries = list.ToDictionary(x => x, x => Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
             CorrectCompressionforLZSfiles();
         }
 
-        public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL)
+        public ArchiveMap(StreamWithRangeValues fI, StreamWithRangeValues fL, int max)
         {
             if (fI == null || fL == null)
                 throw new ArgumentNullException($"{nameof(ArchiveMap)}::{nameof(ArchiveMap)} {nameof(fI)} or {nameof(fL)} is null");
-
+            Max = max;
             Stream s1 = Uncompress(fL, out long flOffset);
             Stream s2 = Uncompress(fI, out long fiOffset);
             long fiSize = fI.UncompressedSize == 0 ? fI.Size : fI.UncompressedSize;
@@ -64,6 +65,8 @@ namespace OpenVIII
         public IEnumerable<FI> Values => ((IReadOnlyDictionary<string, FI>)FilteredEntries).Values;
 
         private IEnumerable<KeyValuePair<string, FI>> FilteredEntries => entries.Where(x => !string.IsNullOrWhiteSpace(x.Key) && x.Value.UncompressedSize > 0);
+
+        public int Max { get; private set; } = 0;
 
         #endregion Properties
 
@@ -103,14 +106,26 @@ namespace OpenVIII
         {
             string _input = input;
             KeyValuePair<string, FI> result = OrderedByName.FirstOrDefault(x => x.Key.IndexOf(_input, StringComparison.OrdinalIgnoreCase) > -1);
-            if (string.IsNullOrWhiteSpace(result.Key))
+            if (string.IsNullOrWhiteSpace(result.Key) || result.Value == default)
             {
                 size = 0;
                 return null;
             }
             KeyValuePair<string, FI> result2 = OrderedByOffset.FirstOrDefault(x => x.Value.Offset > result.Value.Offset);
-            if (result2.Value == default && result2.Value == default)
-                size = 0;
+            if (result2.Value == default)
+            {
+                switch (result.Value.CompressionType)
+                {
+                    case CompressionType.None:
+                    case CompressionType.LZSS_UnknownSize:
+                        size = result.Value.UncompressedSize;
+                        break;
+                    default:
+                        size = Max-result.Value.Offset;
+                        if (size < 0) size = 0; // could be problems.
+                        break;
+                }
+            }
             else
                 size = result2.Value.Offset - result.Value.Offset;
             input = result.Key;
@@ -120,6 +135,10 @@ namespace OpenVIII
         public byte[] GetBinaryFile(FI fi, Stream data, string input, int size, long offset = 0)
         {
             long max = data.Length;
+            if(data is StreamWithRangeValues swrv)
+            {
+                max = swrv.Max;
+            }
             if (fi == null)
             {
                 Memory.Log.WriteLine($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} failed to extract {input}");
