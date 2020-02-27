@@ -14,7 +14,7 @@ namespace OpenVIII
     {
         private FileStream fs;
         private StreamWriter log;
-        private bool enabled = false;
+        private bool enabled = true;
 
         public Log()
         {
