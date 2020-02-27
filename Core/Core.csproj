@@ -18,7 +18,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugWindows|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>TRACE;DEBUG;_WINDOWS;_X64</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
@@ -29,7 +29,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugWindows|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>TRACE;DEBUG;_WINDOWS;_X86</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
@@ -40,7 +40,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseWindows|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>TRACE;_WINDOWS;_X64</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>pdbonly</DebugType>
@@ -52,7 +52,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseWindows|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>TRACE;_WINDOWS</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>pdbonly</DebugType>
@@ -63,7 +63,7 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseLinux|x64'">
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>TRACE;_X64</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
@@ -75,7 +75,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseLinux|x86'">
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -87,7 +87,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugLinux|x64'">
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE;_X64</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>x64</PlatformTarget>
@@ -97,7 +97,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugLinux|x86'">
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <LangVersion>latest</LangVersion>
