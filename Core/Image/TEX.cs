@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -116,7 +117,14 @@ namespace OpenVIII
                 if (texture.PaletteFlag != 0)
                 {
                     if (colors != null && colors.Length != texture.NumOfColours)
-                        throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColours}");
+                    {
+                        if (colors.Length > texture.NumOfColours) //truncate colors to the correct amount. in some
+                            colors = colors.Take(texture.NumOfColours).ToArray();
+                        else // might need to expand the array the other way if we get more mismatches.
+                            throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColours}");
+                    }
+                    
+                    
 
                     MemoryStream ms;
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
