@@ -25,9 +25,9 @@ namespace OpenVIII
             if (Assembly.GetCallingAssembly().GetName().Name.Contains("DirectX"))
             {
                 _graphics.GraphicsProfile = GraphicsProfile.HiDef;
-                Memory.currentGraphicMode = Memory.GraphicModes.DirectX;
+                Memory.CurrentGraphicMode = Memory.GraphicModes.DirectX;
             }
-            else Memory.currentGraphicMode = Memory.GraphicModes.OpenGL;
+            else Memory.CurrentGraphicMode = Memory.GraphicModes.OpenGL;
             Content.RootDirectory = "Content";
             _graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             _graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
@@ -96,7 +96,7 @@ namespace OpenVIII
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
             //Input.Init();
             Memory.Input2 = new Input2();
-            Memory.Init(_graphics, _spriteBatch, Content);
+            Memory.Init(_graphics, _spriteBatch, Content, Arguments);
             AV.Music.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
             AV.Sound.Init(); //this initializes the WAVE format audio.dat
             Memory.Log.WriteLine($"{nameof(Game)} :: {nameof(base.Initialize)}");
