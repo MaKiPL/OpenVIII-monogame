@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -297,44 +298,39 @@ namespace OpenVIII
 
         public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
 
-        public static Texture2D UseBest(Texture2D _old, Texture2D _new) => UseBest(_old, _new, out Vector2 scale);
+        public static Texture2D UseBest(Texture2D _old, Texture2D @new) => UseBest(_old, @new, out Vector2 scale);
 
-        public static Texture2D UseBest(Texture2D _old, Texture2D _new, out Vector2 scale)
+        public static Texture2D UseBest(Texture2D _old, Texture2D @new, out Vector2 scale)
         {
-            if (_new == null)
+            if (@new == null)
             {
                 scale = Vector2.One;
                 return _old;
             }
             else
             {
-                scale = GetScale(_old, _new);
+                scale = GetScale(_old, @new);
                 _old.Dispose();
-                return _new;
+                return @new;
             }
         }
 
-        public static Texture2D UseBest(Texture_Base _old, Texture2D _new, ushort palette = 0, Color[] colors = null) => UseBest(_old, _new, out Vector2 scale, palette, colors);
+        public static Texture2D UseBest(Texture_Base old, Texture2D @new, ushort palette = 0, Color[] colors = null) => UseBest(old, @new, out Vector2 scale, palette, colors);
 
-        public static Texture2D UseBest(Texture_Base _old, Texture2D _new, out Vector2 scale, ushort palette = 0, Color[] colors = null)
+        public static Texture2D UseBest(Texture_Base old, Texture2D @new, out Vector2 scale, ushort palette = 0, Color[] colors = null)
         {
-            Texture2D tex;
-
-            if (_new == null && _old != null)
+            if (@new == null && old != null)
             {
                 scale = Vector2.One;
-                if (_old.GetClutCount <= 1)
-                    return _old.GetTexture();
-                tex = colors != null ? _old.GetTexture(colors) : _old.GetTexture(palette);
+                if (old.GetClutCount <= 1)
+                    return old.GetTexture();
+                Texture2D tex = colors != null ? old.GetTexture(colors) : old.GetTexture(palette);
                 return tex;
             }
             else
             {
-                if (_old != null)
-                    scale = GetScale(_old, _new);
-                else
-                    scale = Vector2.Zero;
-                return _new;
+                scale = old != null ? GetScale(old, @new) : Vector2.Zero;
+                return @new;
             }
         }
 

@@ -51,7 +51,7 @@ namespace OpenVIII.Fields
 
         #region Methods
 
-        public override void ForceSetClutColors(ushort newNumOfColours) => throw new System.NotImplementedException();
+        public override void ForceSetClutColors(ushort newNumOfColors) => throw new System.NotImplementedException();
 
         public override void ForceSetClutCount(ushort newClut) => throw new System.NotImplementedException();
 
@@ -59,7 +59,7 @@ namespace OpenVIII.Fields
 
         public override Texture2D GetTexture() => GetTexture(0);
 
-        public override Texture2D GetTexture(Color[] colors = null)
+        public override Texture2D GetTexture(Color[] colors)
         {
             Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
             TextureBuffer texbuff = new TextureBuffer(width, height, false);
@@ -70,7 +70,7 @@ namespace OpenVIII.Fields
             return tex;
         }
 
-        public override Texture2D GetTexture(ushort? clut = null) => GetTexture(GetClutColors(clut ?? 0));
+        public override Texture2D GetTexture(ushort clut) => GetTexture(GetClutColors(clut));
 
         public override void Load(byte[] buffer, uint offset = 0)
         {

@@ -44,7 +44,7 @@ namespace OpenVIII
 
         public static implicit operator Texture2DWrapper(Texture2D right) => new Texture2DWrapper(right);
 
-        public override void ForceSetClutColors(ushort newNumOfColours)
+        public override void ForceSetClutColors(ushort newNumOfColors)
         {; }
 
         public override void ForceSetClutCount(ushort newClut)
@@ -54,9 +54,9 @@ namespace OpenVIII
 
         public override Texture2D GetTexture() => tex;
 
-        public override Texture2D GetTexture(Color[] colors = null) => tex;
+        public override Texture2D GetTexture(Color[] colors) => tex;
 
-        public override Texture2D GetTexture(ushort? clut = null) => tex;
+        public override Texture2D GetTexture(ushort clut) => tex;
 
         public override void Load(byte[] buffer, uint offset = 0) => throw new System.NotImplementedException("This class must use Load(Texture2D)");
 
