@@ -44,7 +44,7 @@ namespace OpenVIII
         /// <summary>
         /// If Disabled the log.txt will be empty. and Async writes will be null.
         /// </summary>
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = false;
 
         public override System.Text.Encoding Encoding => _log.Encoding;
 
