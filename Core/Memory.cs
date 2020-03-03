@@ -456,8 +456,11 @@ namespace OpenVIII
             MainThreadOnlyActions = new ConcurrentQueue<Action>();
 
             FF8DIR = GameLocation.Current.DataPath;
+            void SetData() =>
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
-            bool langset = false;
+
+            SetData();
+            bool languageSet = false;
             void setLang(string lang)
             {
                 switch (lang.ToLower())
@@ -496,13 +499,13 @@ namespace OpenVIII
                         throw new InvalidEnumArgumentException($"{nameof(Memory)}::{nameof(Init)}::{nameof(lang)} ({lang}) is not a supported language code. (de,en,es,fr,it,jp)");
                 }
 
-                langset = true;
+                languageSet = true;
             }
             if (arguments != null && arguments.Length > 0)
             {
                 IEnumerable<string[]> splitArguments = (from a in arguments
                                                         where a.Contains('=')
-                                                        select a.Trim().Split(new[] { '=' }, 2));
+                                                        select a.Trim().Split(new[] { '=' }, 2)).OrderByDescending(x=>x[0],StringComparer.OrdinalIgnoreCase);
                 foreach (string[] s in splitArguments)
                 {
                     bool test(string @in, ref string @out)
@@ -513,19 +516,20 @@ namespace OpenVIII
                     }
 
                     string lang = "";
-                    if (test("dir", ref _ff8Dir))
+                    if (test("dir", ref _ff8Dir)) //override ff8 directory
                     {
                         if (!Directory.Exists(_ff8Dir))
                             throw new DirectoryNotFoundException(
                                 $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8Dir)} ({s[0]}) Cannot find path: \"{_ff8Dir}\"");
+                        SetData();
                     }
-                    else if (test("data", ref _ff8DirData))
+                    else if (test("data", ref _ff8DirData)) //override data folder location
                     {
                         if (!Directory.Exists(_ff8DirData))
                             throw new DirectoryNotFoundException(
                                 $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8DirData)} ({s[0]}) Cannot find path: \"{_ff8DirData}\"");
                     }
-                    else if (test("lang", ref lang))
+                    else if (test("lang", ref lang)) //override language
                     {
                         setLang(lang);
                     }
@@ -534,7 +538,7 @@ namespace OpenVIII
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIR)} = {FF8DIR}");
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata)} = {FF8DIRdata}");
             string langDatPath = Path.Combine(FF8DIR, "lang.dat");
-            if (!langset && File.Exists(langDatPath))
+            if (!languageSet && File.Exists(langDatPath))
                 using (StreamReader streamReader = new StreamReader(
                     new FileStream(langDatPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.UTF8))
                 {
