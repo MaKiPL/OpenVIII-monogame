@@ -228,29 +228,37 @@ namespace OpenVIII
         protected override void InitTextures<T>(ArchiveBase aw = null)
         {
             Textures = new List<TextureHandler>();
-            foreach (TexProps t1 in Props)
+            foreach (TexProps texProps in Props)
             {
-                byte[] buffer = aw.GetBinaryFile(t1.Filename);
+                byte[] buffer = aw.GetBinaryFile(texProps.Filename);
                 if (buffer == null) continue;
                 T tex = new T();
                 tex.Load(buffer);
-                if (t1.Colors == null || t1.Colors.Length == 0)
+
+                void add(ushort cult, Color[] colors = null)
                 {
-                    for (ushort i = 0; i < tex.GetClutCount; i++)
+                    void oneImage() => Textures.Add(TextureHandler.Create(texProps.Filename, tex, 1, 1, cult, colors));
+                    if (ForceOriginal == false && texProps.Big != null && texProps.Big.Count > 0)
                     {
-                        if (ForceOriginal == false && t1.Big != null && t1.Big.Count > 0)
-                            Textures.Add(TextureHandler.Create(t1.Big[0].Filename, tex, 2, t1.Big[0].Split / 2, i));
+                        TextureHandler textureHandler = TextureHandler.Create(texProps.Big[0].Filename, tex, 2,
+                            texProps.Big[0].Split / 2,
+                            cult, colors);
+                        if (textureHandler.AllTexture2Ds.FirstOrDefault() == default ||
+                            textureHandler.AllTexture2Ds.Any(x => x == null))
+                        {
+                            textureHandler.Dispose();
+                            oneImage();
+                        }
                         else
-                            Textures.Add(TextureHandler.Create(t1.Filename, tex, 1, 1, i));
+                            Textures.Add(textureHandler);
                     }
+                    else oneImage();
                 }
+                if (texProps.Colors == null || texProps.Colors.Length == 0)
+                    for (ushort cult = 0; cult < tex.GetClutCount; cult++)
+                        add(cult);
                 else
-                {
-                    if (ForceOriginal == false && t1.Big != null && t1.Big.Count > 0)
-                        Textures.Add(TextureHandler.Create(t1.Big[0].Filename, tex, 2, t1.Big[0].Split / 2, (ushort)Textures.Count, colors: t1.Big[0].Colors ?? t1.Colors));
-                    else
-                        Textures.Add(TextureHandler.Create(t1.Filename, tex, 1, 1, (ushort)Textures.Count, colors: t1.Colors));
-                }
+                    add((ushort)Textures.Count, texProps.Big?[0]?.Colors ?? texProps.Colors); // Unsure if the big check here is worth doing... or if it'll cause issues.
             }
         }
 

@@ -120,6 +120,7 @@ namespace OpenVIII
                         r = Rectangle.Union(r, this[i].GetRectangle);
                     r = r.Scale(tex.ScaleFactor);
                     Texture2D t = (Texture2D)tex;
+                    if (t == null) return default;
                     Color[] tc = new Color[r.Width * r.Height];
                     t.GetData(0, r, tc, 0, tc.Length);
                     HSL test, last;
