@@ -160,7 +160,7 @@ namespace OpenVIII.IGMData
             // 6,7,8
             BLANKS.SetAll(true);
             Spell = new IGMDataItem.Text { Pos = SIZE[0] };
-            Number = new IGMDataItem.Integer { Pos = SIZE[1], Spaces = 3, NumType = Icons.NumType.sysFntBig };
+            Number = new IGMDataItem.Integer { Pos = SIZE[1], Spaces = 3, NumType = Icons.NumType.SysFntBig };
             Times = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 65], Pos = SIZE[2] };
             Do_Over = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 67], Pos = SIZE[3] };
             BLANKS[3] = false;

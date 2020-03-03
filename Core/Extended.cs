@@ -20,6 +20,7 @@ namespace OpenVIII
             de,
             es,
             it,
+            jp
         }
 
         //WORLD MAP COORDINATES HELPER

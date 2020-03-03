@@ -72,7 +72,7 @@ namespace OpenVIII
 
         #region Methods
 
-        public override void ForceSetClutColors(ushort newNumOfColours) => texture.NumOfColours = newNumOfColours;
+        public override void ForceSetClutColors(ushort newNumOfColors) => texture.NumOfColours = newNumOfColors;
 
         public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = (byte)newClut;
 
@@ -98,6 +98,7 @@ namespace OpenVIII
             return colors;
         }
 
+
         /// <summary>
         /// Get Texture2D converted to 32bit color
         /// </summary>
@@ -109,28 +110,39 @@ namespace OpenVIII
         /// more lax and allow any size array and only throw errors if the colorkey is greater than
         /// size of array. Or we could treat any of those bad matches as transparent.
         /// </remarks>
-        public override Texture2D GetTexture(Color[] colors = null)
+        public override Texture2D GetTexture(Color[] colors)
         {
-            if (Memory.graphics.GraphicsDevice != null)
+            if (Memory.graphics.GraphicsDevice == null) return null;
+            if (texture.PaletteFlag != 0)
             {
-                if (texture.PaletteFlag != 0)
-                {
-                    if (colors != null && colors.Length != texture.NumOfColours)
-                        throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColours}");
+                if (colors == null) throw new ArgumentNullException(nameof(colors));
+                //if (colors != null && colors.Length != texture.NumOfColours)
+                //{
+                //    //if (colors.Length > texture.NumOfColours) //truncate colors to the correct amount. in some
+                //    //    colors = colors.Take(texture.NumOfColours).ToArray();
+                //    //else // might need to expand the array the other way if we get more mismatches.
+                //        //Array.Resize(ref colors,texture.NumOfColours);
+                //    //throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColours}");
+                //}
 
-                    MemoryStream ms;
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                MemoryStream ms;
+                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                {
+                    ms.Seek(TextureLocator, SeekOrigin.Begin);
+                    TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
+                    for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
                     {
-                        ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
-                        for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
-                        {
-                            convertBuffer[i] = colors[br.ReadByte()]; //colorkey
-                        }
-                        return convertBuffer.GetTexture();
+                        byte colorKey = br.ReadByte();
+                        if (colorKey > colors.Length) continue;
+                        convertBuffer[i] = colors[colorKey];
                     }
+
+                    return convertBuffer.GetTexture();
                 }
-                else if (texture.bytesPerPixel == 2)
+            }
+            else
+            {
+                if (texture.bytesPerPixel == 2)
                 {
                     MemoryStream ms;
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
@@ -141,6 +153,7 @@ namespace OpenVIII
                         {
                             convertBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
                         }
+
                         return convertBuffer.GetTexture();
                     }
                 }
@@ -162,16 +175,16 @@ namespace OpenVIII
                             color.R = br.ReadByte();
                             convertBuffer[i] = color;
                         }
+
                         return convertBuffer.GetTexture();
                     }
                 }
             }
+
             return null;
         }
 
-        public override Texture2D GetTexture(ushort? clut = null) => GetTexture(GetClutColors(clut ?? 0));
-
-        public override Texture2D GetTexture() => GetTexture(0);
+        public override Texture2D GetTexture(ushort clut) => GetTexture(GetClutColors(clut));
 
         public override void Load(byte[] buffer, uint offset = 0)
         {

@@ -150,14 +150,14 @@ namespace OpenVIII
             {
                 base.Init();
                 Slider = new Slide<Vector2>(Vector2.Zero, Vector2.Zero, time, Vector2.SmoothStep);
-                BlockNumber = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), NumType = Icons.NumType.Num_8x16_0, Spaces = 2, Padding = 2 };
+                BlockNumber = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0), NumType = Icons.NumType.Num8X16, Spaces = 2, Padding = 2 };
                 Face1 = new IGMDataItem.Face { Pos = new Rectangle(BlockNumber.X + 44, SIZE[0].Y, 124, SIZE[0].Height), Border = true };
                 Face2 = new IGMDataItem.Face { Pos = new Rectangle(Face1.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };
                 Face3 = new IGMDataItem.Face { Pos = new Rectangle(Face2.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };
                 int Face3offsetx = Face3.X + Face1.Width + 4;
                 Name = new IGMDataItem.Text { Pos = new Rectangle(Face3offsetx, SIZE[0].Y, 0, 0) };
                 LV = new IGMDataItem.Text { Data = Strings.Name.LV, Pos = new Rectangle(Name.X, SIZE[0].Y + 64, 0, 0) };
-                LV_Num = new IGMDataItem.Integer { Pos = new Rectangle(Name.X + 80, LV.Y, 0, 0), NumType = Icons.NumType.sysFntBig };
+                LV_Num = new IGMDataItem.Integer { Pos = new Rectangle(Name.X + 80, LV.Y, 0, 0), NumType = Icons.NumType.SysFntBig };
                 Disc = new IGMDataItem.Icon { Data = Icons.ID.DISC, Pos = new Rectangle(LV_Num.X + 100, LV.Y, 0, 0) };
                 Disc_Num = new IGMDataItem.Integer { Pos = new Rectangle(Disc.X + 80, LV.Y, 0, 0) };
                 int col3x = SIZE[0].X + SIZE[0].Width - 180;

@@ -21,7 +21,7 @@ namespace OpenVIII.IGMData
         #region Destructors
 
         ~DebugSelectPool()
-        { Game1.onTextEntered -= Game1_onTextEntered; }
+        { Game1.OnTextEntered -= Game1_onTextEntered; }
 
         #endregion Destructors
 
@@ -163,7 +163,7 @@ namespace OpenVIII.IGMData
         {
             base.Init();
             filter = "";
-            Game1.onTextEntered += Game1_onTextEntered;
+            Game1.OnTextEntered += Game1_onTextEntered;
             Contents = new DataType[Rows * Cols];
             foreach (int i in Enumerable.Range(0, Rows * Cols))
             {

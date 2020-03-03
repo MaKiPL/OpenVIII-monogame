@@ -113,7 +113,7 @@ namespace OpenVIII.IGMData
 
             ITEM[0, 0] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0) };
             ITEM[0, 1] = new IGMDataItem.Icon { Data = Icons.ID.Size_16x16_Lv_, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y + 34, 0, 0), Palette = 13 };
-            ITEM[0, 2] = new IGMDataItem.Integer { Data = _lvl, Pos = new Rectangle(SIZE[0].X + 50, SIZE[0].Y + 38, 0, 0), Spaces = 4, NumType = Icons.NumType.sysFntBig };
+            ITEM[0, 2] = new IGMDataItem.Integer { Data = _lvl, Pos = new Rectangle(SIZE[0].X + 50, SIZE[0].Y + 38, 0, 0), Spaces = 4, NumType = Icons.NumType.SysFntBig };
             ITEM[0, 3] = new IGMDataItem.Text { Data = ECN, Pos = new Rectangle(SIZE[0].X + 390, SIZE[0].Y, 0, 0) };
             ITEM[0, 4] = new IGMDataItem.Integer { Data = _exp, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 160, SIZE[0].Y, 0, 0), Spaces = 7 };
             ITEM[0, 5] = new IGMDataItem.Icon { Data = Icons.ID.P, Pos = new Rectangle(SIZE[0].X + SIZE[0].Width - 20, SIZE[0].Y, 0, 0) };

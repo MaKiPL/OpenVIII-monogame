@@ -162,7 +162,7 @@ namespace OpenVIII
         public void SetData(Texture2D tex) => tex.SetData(colors);
         public void GetData(Texture2D tex) => tex.GetData(colors);
 
-        public override void ForceSetClutColors(ushort newNumOfColours)
+        public override void ForceSetClutColors(ushort newNumOfColors)
         {
         }
 
@@ -174,9 +174,9 @@ namespace OpenVIII
 
         public override Texture2D GetTexture() => (Texture2D)this;
 
-        public override Texture2D GetTexture(Color[] colors = null) => (Texture2D)this;
+        public override Texture2D GetTexture(Color[] colors) => (Texture2D)this;
 
-        public override Texture2D GetTexture(ushort? clut = null) => (Texture2D)this;
+        public override Texture2D GetTexture(ushort clut) => (Texture2D)this;
 
         public override void Save(string path)
         {

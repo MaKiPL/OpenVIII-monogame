@@ -61,11 +61,11 @@ namespace OpenVIII
                 uint count = br.ReadUInt32();
                 while (count-- > 0)
                 {
-                    Loc l = new Loc { seek = br.ReadUInt32() };
-                    if (count <= 0) l.length = (uint)br.BaseStream.Length - l.seek;
+                    Loc l = new Loc { Seek = br.ReadUInt32() };
+                    if (count <= 0) l.Length = (uint)br.BaseStream.Length - l.Seek;
                     else
                     {
-                        l.length = br.ReadUInt32() - l.seek;
+                        l.Length = br.ReadUInt32() - l.Seek;
                         br.BaseStream.Seek(-4, SeekOrigin.Current);
                     }
                     Files.subPositions.Add(l);
@@ -122,7 +122,7 @@ namespace OpenVIII
                             Loc fpos = Files.subPositions[(int)key];
                             if (StringLocations.ContainsKey(key))
                             {
-                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)(StringLocations[key].Item1)].seek, StringLocations[key].Item2, StringLocations[key].Item3);
+                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)(StringLocations[key].Item1)].Seek, StringLocations[key].Item2, StringLocations[key].Item3);
                             }
                         }
                         ms = null;

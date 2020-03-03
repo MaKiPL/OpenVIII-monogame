@@ -999,8 +999,7 @@ namespace OpenVIII.World
                     sec38_pals.Add(new Color[tim.GetClutCount][]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
-                        Color[] table;
-                        table = tim.GetPalette(k);
+                        Color[] table = tim.GetPalette(k);
                         sec38_pals[i][k] = table;
                         sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, table);
                     }
