@@ -15,12 +15,12 @@ namespace OpenVIII
     {
         #region Fields
 
+        private static readonly ID[] NumberStarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0, ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
+        private static ConcurrentDictionary<int, ID[]> _numbersIDs;
         private Rectangle _dataSize;
 
         // ReSharper disable once InconsistentNaming
         private new Dictionary<ID, EntryGroup> Entries;
-        private static readonly ID[] NumberStarts = { ID.Num_8x8_0_0, ID.Num_8x8_1_0, ID.Num_8x8_2_0, ID.Num_8x16_0_0, ID.Num_8x16_1_0, ID.Num_16x16_0_0 };
-        private static ConcurrentDictionary<int, ID[]> _numbersIDs;
 
         #endregion Fields
 
@@ -86,12 +86,15 @@ namespace OpenVIII
                 case NumType.SysFnt:
                     DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
+
                 case NumType.SysFntBig:
                     DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
+
                 case NumType.MenuFont:
                     DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
+
                 case NumType.Num8X8:
                 case NumType.Num8X8A:
                 case NumType.Num8X8B:
@@ -99,6 +102,7 @@ namespace OpenVIII
                 case NumType.Num8X16A:
                 case NumType.Num16X16:
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
@@ -108,7 +112,7 @@ namespace OpenVIII
                 _numbersIDs = new ConcurrentDictionary<int, ID[]>();
                 int j = 0;
                 foreach (ID id in NumberStarts)
-                    _numbersIDs.TryAdd(j++, Enumerable.Range((int) id, 10).Select(x => checked((ID) x)).ToArray());
+                    _numbersIDs.TryAdd(j++, Enumerable.Range((int)id, 10).Select(x => checked((ID)x)).ToArray());
             }
 
             IEnumerable<int> intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
@@ -119,10 +123,10 @@ namespace OpenVIII
             {
                 if (_numbersIDs == null) continue;
                 if (!skipDraw)
-                        Draw(_numbersIDs[(int) type][i], palette, dst, scale, fade,
-                            blink
-                                ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount)
-                                : Font.ColorID2Color[color]);
+                    Draw(_numbersIDs[(int)type][i], palette, dst, scale, fade,
+                        blink
+                            ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount)
+                            : Font.ColorID2Color[color]);
                 float width = Entries[_numbersIDs[(int)type][i]].GetRectangle.Width * scale.X;
                 float height = Entries[_numbersIDs[(int)type][i]].GetRectangle.Height * scale.Y;
                 dst.Offset(width, 0);
@@ -146,25 +150,15 @@ namespace OpenVIII
 
         public override Entry GetEntry(Enum id) => Entries[(ID)id][0];
 
-        public EntryGroup GetEntryGroup(Enum id)
-        {
-            if ((ID)id != ID.None)
-                return Entries?[(ID)id];
-            return null;
-        }
+        public EntryGroup GetEntryGroup(Enum id) => (ID)id != ID.None ? Entries?[(ID)id] : null;
 
         public Color MostSaturated(Enum ic, byte pal)
         {
-            if (Textures.Count > pal)
-            {
-                EntryGroup eg = this[(ID)ic];
-                if (eg != null)
-                {
-                    TextureHandler tex = Textures[pal];
-                    return eg.MostSaturated(tex, pal);
-                }
-            }
-            return default;
+            if (Textures.Count <= pal) return default;
+            EntryGroup eg = this[(ID)ic];
+            if (eg == null) return default;
+            TextureHandler tex = Textures[pal];
+            return eg.MostSaturated(tex, pal);
         }
 
         public override void Trim(Enum ic, byte pal)
@@ -182,10 +176,9 @@ namespace OpenVIII
             red[15] = new Color(255, 30, 30, 255); //red
             red[14] = new Color(140, 30, 30, 255); //dark red
             red[13] = new Color(37, 37, 37, 255); //gray
-            yellow[15]= new Color(222, 222, 8, 255); //yellow
-            yellow[14]= new Color(131, 131, 24, 255); //dark yellow
-            yellow[13]= new Color(41, 41, 41, 255); //gray
-            
+            yellow[15] = new Color(222, 222, 8, 255); //yellow
+            yellow[14] = new Color(131, 131, 24, 255); //dark yellow
+            yellow[13] = new Color(41, 41, 41, 255); //gray
 
             //FORCE_ORIGINAL = true;
             Props = new List<TexProps>

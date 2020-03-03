@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using OpenVIII.Fields;
 
 namespace OpenVIII
 {
@@ -99,26 +101,21 @@ namespace OpenVIII
         public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
         {
             string s = FindPNG(filename, palette);
-            if (string.IsNullOrWhiteSpace(s) || !_ths.TryGetValue(s, out TextureHandler ret))
+            if (!string.IsNullOrWhiteSpace(s) && _ths.TryGetValue(s, out TextureHandler ret)) return ret;
+            ret = new TextureHandler
             {
-                ret = new TextureHandler
-                {
-                    ModdedFilename = s,
-                    //Modded = string.IsNullOrWhiteSpace(s),
-                    Filename = filename,
-                    Classic = classic,
-                    Cols = cols,
-                    Rows = rows,
-                    Palette = palette,
-                    Colors = colors
-                };
-                ret.Init();
-                if (ret.Modded && !string.IsNullOrWhiteSpace(ret.ModdedFilename))
-                {
-                    _ths.TryAdd(ret.ModdedFilename, ret);
-                    //if (_pngs.ContainsKey(ret.ModdedFilename))
-                    //    _pngs.TryRemove(ret.ModdedFilename,out Texture2D none);
-                }
+                ModdedFilename = s,
+                Filename = filename,
+                Classic = classic,
+                Cols = cols,
+                Rows = rows,
+                Palette = palette,
+                Colors = colors
+            };
+            ret.Init();
+            if (ret.Modded && !string.IsNullOrWhiteSpace(ret.ModdedFilename))
+            {
+                _ths.TryAdd(ret.ModdedFilename, ret);
             }
             return ret;
         }
@@ -175,6 +172,8 @@ namespace OpenVIII
 
         public static explicit operator Texture2D(TextureHandler t)
         {
+            if (t.Count == 0)
+                return null;
             if (t.Count == 1)
                 return t[0, 0];
             throw new Exception("TextureHandler can only be cast to Texture2D if there is only one texture in the array use [cols,rows] instead");
@@ -288,7 +287,7 @@ namespace OpenVIII
             return src;
         }
 
-        public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
+        public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t?.Width ?? 0, t?.Height ?? 0);
 
         public static Rectangle ToRectangle(TextureHandler t) => new Rectangle(0, 0, (int)t.ClassicSize.X, (int)t.ClassicSize.Y);
 
@@ -362,58 +361,73 @@ namespace OpenVIII
 
         public Vector2 GetScale(int cols = 0, int rows = 0) => ScaleFactor;
 
+        public IEnumerable<(int col, int row)> Grid =>
+            (from row in Enumerable.Range(0, (int) Rows)
+                from col in Enumerable.Range(0, (int) Cols)
+                select (col, row));
+
+        public IEnumerable<Texture2D> AllTexture2Ds => Grid.Select(x => Textures[x.col, x.row]);
         public void Merge()
         {
-            if (Rows * Cols > 1 && Textures != null && Textures.Length >= Rows * Cols)
+            if (Rows * Cols <= 1 || Textures == null || Textures.Length < Rows * Cols) return;
+            if (Memory.IsMainThread)
             {
-                if (Memory.IsMainThread)
+                int width = 0;
+                int height = 0;
+                if(!(AllTexture2Ds.Any(x=>x == null)))
                 {
-                    int width = 0;
-                    int height = 0;
                     for (int r = 0; r < (int)Rows; r++)
                     {
-                        int rowwidth = 0;
-                        int rowheight = 0;
+                        int rowWidth = 0;
+                        int rowHeight = 0;
                         for (int c = 0; c < (int)Cols && Textures[c, r] != null; c++)
                         {
-                            rowwidth += Textures[c, r].Width;
-                            if (rowheight < Textures[c, r].Height)
-                                rowheight = Textures[c, r].Height;
+                            rowWidth += Textures[c, r].Width;
+                            if (rowHeight < Textures[c, r].Height)
+                                rowHeight = Textures[c, r].Height;
                         }
-                        if (width < rowwidth)
-                            width = rowwidth;
-                        height += rowheight;
+                        if (width < rowWidth)
+                            width = rowWidth;
+                        height += rowHeight;
                     }
-                    if (width == 0 || height == 0) return;
-                    Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
-                    Rectangle dst = new Rectangle();
-                    for (int r = 0; r < (int)Rows; r++)
-                    {
-                        dst.Y += r > 0 ? Textures[0, r - 1].Height : 0;
-                        for (int c = 0; c < (int)Cols; c++)
-                        {
-                            dst.Height = Textures[c, r].Height;
-                            dst.Width = Textures[c, r].Width;
-                            dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
-                            Color[] buffer = new Color[dst.Height * dst.Width];
-                            Textures[c, r].GetData<Color>(buffer);
-                            tex.SetData(0, dst, buffer, 0, buffer.Length);
-                            //Textures[c, r].Dispose();
-                        }
-                        dst.X = 0;
-                    }
-                    foreach (Texture2D t in Textures)
-                        t.Dispose();
-                    Textures = new Texture2D[1, 1];
-                    Textures[0, 0] = tex;
-                    Rows = 1;
-                    Cols = 1;
-                    Count = 1;
                 }
-                else
+
+                if (width == 0 || height == 0)
                 {
-                    Memory.MainThreadOnlyActions.Enqueue(this.Merge);
+                    Rows = 0;
+                    Cols = 0;
+                    Count = 0;
+                    Textures = null;
+                    return;
                 }
+                Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                Rectangle dst = new Rectangle();
+                for (int r = 0; r < (int)Rows; r++)
+                {
+                    dst.Y += r > 0 ? Textures[0, r - 1].Height : 0;
+                    for (int c = 0; c < (int)Cols; c++)
+                    {
+                        dst.Height = Textures[c, r].Height;
+                        dst.Width = Textures[c, r].Width;
+                        dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
+                        Color[] buffer = new Color[dst.Height * dst.Width];
+                        Textures[c, r].GetData(buffer);
+                        tex.SetData(0, dst, buffer, 0, buffer.Length);
+                        //Textures[c, r].Dispose();
+                    }
+                    dst.X = 0;
+                }
+                foreach (Texture2D t in Textures)
+                    t.Dispose();
+                Textures = new Texture2D[1, 1];
+                Textures[0, 0] = tex;
+                Rows = 1;
+                Cols = 1;
+                Count = 1;
+            }
+            else
+            {
+                Memory.MainThreadOnlyActions.Enqueue(this.Merge);
             }
         }
 
@@ -443,6 +457,8 @@ namespace OpenVIII
             Vector2 size = Vector2.Zero;
             Vector2 oldsize = Vector2.Zero;
             Texture_Base tex = null;
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
+            string[] filelist = aw.GetListOfFiles();
             uint c2 = 0;
             uint r2 = 0;
             for (uint r = 0; r < Rows; r++)
@@ -450,8 +466,6 @@ namespace OpenVIII
                 for (uint c = 0; c < Cols && Memory.graphics?.GraphicsDevice != null; c++)
                 {
                     Texture2D pngTex;
-                    ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
-                    string[] filelist = aw.GetListOfFiles();
                     string path = "";
                     if (filelist != null)
                     {
@@ -470,7 +484,7 @@ namespace OpenVIII
                         pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette, EnforceSquare) : LoadPNG(Filename, Palette, EnforceSquare);
                     }
 
-                    if (tex == null) tex = Classic;
+
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
                     if (pngTex != null) Modded = true;
                     if (c2 < Cols && Textures[c2, r2] != null) size.X += Textures[c2++, r2].Width;
@@ -668,7 +682,7 @@ namespace OpenVIII
 
         #region IDisposable Support
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
