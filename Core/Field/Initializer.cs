@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace OpenVIII.Fields
+﻿namespace OpenVIII.Fields
 {
     public static class Initializer
     {
@@ -13,27 +10,20 @@ namespace OpenVIII.Fields
             Memory.Log.WriteLine($"{nameof(Fields)} :: {nameof(Initializer)} :: {nameof(Init)}");
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             
-            ArchiveBase mapdata = aw.GetArchive("mapdata.fs");
-            if (mapdata != null)
-            {
+            // ReSharper disable once StringLiteralTypo
+            ArchiveBase mapData = aw.GetArchive("mapdata.fs");
+            if (mapData == null) return;
+            // ReSharper disable once StringLiteralTypo
+            const string map = "maplist";
+            byte[] bytes = mapData.GetBinaryFile(map);
+            if (bytes == null) return;
+            string[] mapList = System.Text.Encoding.UTF8.GetString(bytes)
+                .Replace("\r", "")
+                .Split('\n');
 
-                string[] maplist = mapdata.GetListOfFiles();
-                string map = maplist?[0];
-                if (map != null)
-                {
-                    byte[] bytes = mapdata.GetBinaryFile(map);
-                    if (bytes != null)
-                    {
-                        string[] maplistb = System.Text.Encoding.UTF8.GetString(bytes)
-                            .Replace("\r", "")
-                            .Split('\n');
-
-                        //Memory.FieldHolder.FieldMemory = new int[1024];
-                        Memory.FieldHolder.fields = maplistb;
-                        FieldId.FieldId_ = maplistb;
-                    }
-                }
-            }
+            //Memory.FieldHolder.FieldMemory = new int[1024];
+            Memory.FieldHolder.fields = mapList;
+            FieldId.FieldId_ = mapList;
         }
 
         public static IServices GetServices()

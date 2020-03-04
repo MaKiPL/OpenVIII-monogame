@@ -111,19 +111,19 @@ namespace OpenVIII
                     }
                     if (Memory.State.Characters != null && character != Characters.Blank)
                     {
-                        ITEM[0, 1] = new IGMDataItem.Integer { Data = Memory.State.Characters[character].Level, Pos = new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 6 };
+                        ITEM[0, 1] = new IGMDataItem.Integer { Data = Memory.State.Characters[character].Level, Pos = new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 6 };
                         ITEM[0, 2] = Memory.State.Party != null && Memory.State.Party.Contains(character)
                             ? new IGMDataItem.Icon { Data = Icons.ID.InParty, Pos = new Rectangle(SIZE[0].X + 155, SIZE[0].Y, 0, 0), Palette = 6 }
                             : null;
-                        ITEM[1, 1] = new IGMDataItem.Integer { Data = Memory.State.Characters[character].CurrentHP(character), Pos = new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 6 };
-                        ITEM[1, 3] = new IGMDataItem.Integer { Data = Memory.State.Characters[character].MaxHP(character), Pos = new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 5 };
+                        ITEM[1, 1] = new IGMDataItem.Integer { Data = Memory.State.Characters[character].CurrentHP(character), Pos = new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 6 };
+                        ITEM[1, 3] = new IGMDataItem.Integer { Data = Memory.State.Characters[character].MaxHP(character), Pos = new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 5 };
                     }
                     if (Memory.State.GFs != null && (gf != GFs.Blank && gf != GFs.All))
                     {
-                        ITEM[0, 1] = new IGMDataItem.Integer { Data = Memory.State.GFs[gf].Level, Pos = new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 6 };
+                        ITEM[0, 1] = new IGMDataItem.Integer { Data = Memory.State.GFs[gf].Level, Pos = new Rectangle(SIZE[0].X + 35, SIZE[0].Y, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 6 };
                         ITEM[0, 2] = null;
-                        ITEM[1, 1] = new IGMDataItem.Integer { Data = Memory.State.GFs[gf].CurrentHP(), Pos = new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 6 };
-                        ITEM[1, 3] = new IGMDataItem.Integer { Data = Memory.State.GFs[gf].MaxHP(), Pos = new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 5 };
+                        ITEM[1, 1] = new IGMDataItem.Integer { Data = Memory.State.GFs[gf].CurrentHP(), Pos = new Rectangle(SIZE[1].X + 35, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 6 };
+                        ITEM[1, 3] = new IGMDataItem.Integer { Data = Memory.State.GFs[gf].MaxHP(), Pos = new Rectangle(SIZE[1].X + 155, SIZE[1].Y, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 5 };
                     }
                 }
             }

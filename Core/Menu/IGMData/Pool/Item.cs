@@ -232,7 +232,7 @@ namespace OpenVIII.IGMData.Pool
             for (byte pos = 0; pos < Rows; pos++)
             {
                 ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
-                ITEM[pos, 1] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.sysFntBig, Spaces = 3 };
+                ITEM[pos, 1] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + SIZE[pos].Width - 60, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.SysFntBig, Spaces = 3 };
             }
             NUM_ = new IGMDataItem.Icon { Data = Icons.ID.NUM_, Pos = new Rectangle(SIZE[Rows - 1].X + SIZE[Rows - 1].Width - 60, Y, 0, 0), Scale = new Vector2(2.5f) };
             PointerZIndex = Rows - 1;

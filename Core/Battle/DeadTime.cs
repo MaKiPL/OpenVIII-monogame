@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace OpenVIII
@@ -9,9 +10,9 @@ namespace OpenVIII
     {
         private static int Lerp(int start, int end, float amount) => checked((int)MathHelper.Lerp(start, end, amount));
 
-        private static TimeSpan totalTime(int start) => TimeSpan.FromMilliseconds((1000d / 15d) * start);
+        private static TimeSpan GenerateTotalTime(int start) => TimeSpan.FromMilliseconds((1000d / 15d) * start);
 
-        public DeadTime() : base(200, 0, totalTime(200), Lerp)
+        public DeadTime() : base(200, 0, GenerateTotalTime(200), Lerp)
         {
             Repeat = true;
             DoneEvent += DeadTime_DoneEvent;
@@ -43,7 +44,7 @@ namespace OpenVIII
         public event EventHandler<Characters> AngeloRecover;
 
         /// <summary>
-        /// Test if an ablility can trigger for Angelo.
+        /// Test if an ability can trigger for Angelo.
         /// </summary>
         /// <param name="ability"></param>
         /// <returns></returns>
@@ -54,9 +55,9 @@ namespace OpenVIII
             //else if (8 >= [0..255] Angelo Search is used (3.2 %)
             //Angelo_Disabled I think is set when Rinoa is in space so angelo is out of reach;
             //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/25194
-            if (Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Angelo_Disabled) ||
+            if (Memory.State.BattleMiscFlags.HasFlag(Saves.BattleMiscFlags.AngeloDisabled) ||
                 !Memory.State.PartyData.Contains(Characters.Rinoa_Heartilly) ||
-                !Memory.State.LimitBreakAngelocompleted.HasFlag(ability)) return false;
+                !Memory.State.LimitBreakAngeloCompleted.HasFlag(ability)) return false;
             else
                 switch (ability)
                 {
@@ -72,7 +73,7 @@ namespace OpenVIII
                             c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) ||
                             c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) ||
                             c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) ||
+                            c.Statuses0.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) ||
                             c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Angel_Wing)))
                             return Memory.Random.Next(256) < 8;
                         break;
@@ -86,7 +87,7 @@ namespace OpenVIII
         /// <returns>bool</returns>
         private static bool TestGilgamesh() =>
 
-            Memory.State.BattleMISCIndicator.HasFlag(Saves.Data.MiscIndicator.Gilgamesh) && Memory.Random.Next(256) <= 12;
+            Memory.State.BattleMiscFlags.HasFlag(Saves.BattleMiscFlags.Gilgamesh) && Memory.Random.Next(256) <= 12;
 
         /// <summary>
         /// Trigger Event when DeadTime is done.
@@ -94,17 +95,15 @@ namespace OpenVIII
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         private void DeadTime_DoneEvent(object sender, int e)
         {
             bool save(IEnumerable<Characters> hurt, ref EventHandler<Characters> @event)
             {
-                if (hurt != null && hurt.Count() > 0)
-                {
-                    Characters c = hurt.Random();
-                    @event?.Invoke(this, c);
-                    return true;
-                }
-                return false;
+                if (hurt == null || !hurt.Any()) return false;
+                Characters c = hurt.Random();
+                @event?.Invoke(this, c);
+                return true;
             }
             //Will Gilgamesh appear?
             if (TestGilgamesh())
@@ -140,14 +139,14 @@ namespace OpenVIII
                     // they added (Ribbon, Friendship, and Mog's Amulet)
                     // using a true random kinda breaks this.
                     // because in game random is a set array of numbers 0-255
-                    // so the number you get previous would determin the possible number you get
+                    // so the number you get previous would determine the possible number you get
                     // so these can only select specific numbers. But because we are using a real random
                     // more items are possible. might need to tweak this.
 
                     //these are added in remaster as possible items.
                     //const byte Ribbon = 100;
                     //const byte Friendship = 32;
-                    //const byte Mogs_Amulet = 65;
+                    //const byte Mog's_Amulet = 65;
 
                     Saves.Item item = new Saves.Item { QTY = 1 };
                     rnd = checked((byte)Memory.Random.Next(256));
@@ -181,7 +180,6 @@ namespace OpenVIII
                             item.ID = (byte)(rnd % 32 + 33);
                             break;
 
-                        case 6:
                         default: // 33-40
                             item.ID = (byte)(rnd % 7 + 33);
                             break;

@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace OpenVIII.DirectX
+namespace OpenVIII.OpenGLLinux
 {
-#if WINDOWS
-
     /// <summary>
     /// The main class.
     /// </summary>
     public static class Program
     {
+        #region Methods
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -21,7 +21,7 @@ namespace OpenVIII.DirectX
                 game.Run();
             }
         }
-    }
 
-#endif
+        #endregion Methods
+    }
 }

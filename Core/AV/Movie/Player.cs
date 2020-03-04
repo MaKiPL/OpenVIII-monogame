@@ -243,8 +243,8 @@ namespace OpenVIII.Movie
                     {
                         if (_video != null)
                         {
-                            if (Memory.State?.Fieldvars != null)
-                                Memory.State.Fieldvars.FMVFrames = (ulong)_video.CurrentFrameNum;
+                            if (Memory.State?.FieldVars != null)
+                                Memory.State.FieldVars.FMVFrames = (ulong)_video.CurrentFrameNum;
                             _texture = _video.Texture2D();
                         }
                     }

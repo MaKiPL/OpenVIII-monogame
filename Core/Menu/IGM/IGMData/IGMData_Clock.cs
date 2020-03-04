@@ -22,16 +22,16 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State?.Fieldvars != null)
+                if (Memory.State?.FieldVars != null)
                 {
                     base.Refresh();
 
-                    ((IGMDataItem.Integer)ITEM[0, 1]).Data = Memory.State.Timeplayed.TotalHours < MaxHourOrMins ? checked((int)(Memory.State.Timeplayed.TotalHours)) : MaxHourOrMins;
-                    ((IGMDataItem.Integer)ITEM[0, 3]).Data = Memory.State.Timeplayed.TotalHours < MaxHourOrMins ? Memory.State.Timeplayed.Minutes : MaxHourOrMins;
+                    ((IGMDataItem.Integer)ITEM[0, 1]).Data = Memory.State.TimePlayed.TotalHours < MaxHourOrMins ? checked((int)(Memory.State.TimePlayed.TotalHours)) : MaxHourOrMins;
+                    ((IGMDataItem.Integer)ITEM[0, 3]).Data = Memory.State.TimePlayed.TotalHours < MaxHourOrMins ? Memory.State.TimePlayed.Minutes : MaxHourOrMins;
                     if (!Memory.State.TeamLaguna)
                     {
                         //TODO Hide seed rank if not in seed yet.
-                        int SeedRank = Memory.State.Fieldvars.SeedRankPts / 100;
+                        int SeedRank = Memory.State.FieldVars.SeedRankPts / 100;
                         ((IGMDataItem.Integer)ITEM[0, 5]).Data = SeedRank < MaxSeedRank ? SeedRank : MaxSeedRank;
                         ITEM[0, 4].Show();
                         ITEM[0, 5].Show();
@@ -46,7 +46,7 @@ namespace OpenVIII
                         if (i != 4 && i != 5)
                             ITEM[0, i]?.Show();
                     }
-                ((IGMDataItem.Integer)ITEM[0, 6]).Data = Memory.State.AmountofGil < MaxGil ? (int)(Memory.State.AmountofGil) : MaxGil;
+                ((IGMDataItem.Integer)ITEM[0, 6]).Data = Memory.State.AmountOfGil < MaxGil ? (int)(Memory.State.AmountOfGil) : MaxGil;
                 }
             }
 

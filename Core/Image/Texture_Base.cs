@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -143,20 +145,27 @@ namespace OpenVIII
             }
         }
 
-        public abstract void ForceSetClutColors(ushort newNumOfColours);
+        public abstract void ForceSetClutColors(ushort newNumOfColors);
 
         public abstract void ForceSetClutCount(ushort newClut);
 
         public abstract Color[] GetClutColors(ushort clut);
 
-        public abstract Texture2D GetTexture();
+        public Texture2D GetTexture(Dictionary<int, Color> colorOverride,sbyte clut = -1)
+        {
+            if (colorOverride == null || colorOverride.Count == 0) return null;
+            Color[] colors = clut>0 && clut < GetClutCount ? GetClutColors((ushort)clut):new Color[GetColorsCountPerPalette];
+            if (colors == null) return null;
+            colorOverride.Where(x=>x.Key<colors.Length).ForEach(x=>colors[x.Key]=x.Value);
+            return GetTexture((colors));
+        }
 
-        public abstract Texture2D GetTexture(Color[] colors = null);
+        public abstract Texture2D GetTexture(Color[] colors);
 
-        public abstract Texture2D GetTexture(ushort? clut = null);
+        public abstract Texture2D GetTexture(ushort clut);
 
-        //    public static byte GetAlpha => Modes[0];
-        //}
+        public virtual Texture2D GetTexture() => GetTexture(GetClutColors(0));
+
         public abstract void Load(byte[] buffer, uint offset = 0);
 
         public abstract void Save(string path);

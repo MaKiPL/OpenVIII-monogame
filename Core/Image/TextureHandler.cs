@@ -2,7 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,20 +12,29 @@ using System.Text.RegularExpressions;
 namespace OpenVIII
 {
     /// <summary>
-    /// This contains functions to Load Highres mod versions of textures and get scale vector.
+    /// This contains functions to Load High res mod versions of textures and get scale vector.
     /// </summary>
     public class TextureHandler : IDisposable
     {
         #region Fields
 
-        private static ConcurrentDictionary<string, Texture2D> _pngs = new ConcurrentDictionary<string, Texture2D>();
-        private static ConcurrentDictionary<string, TextureHandler> _ths = new ConcurrentDictionary<string, TextureHandler>();
-        private static string[] pngs;
+        private static readonly ConcurrentDictionary<string, Texture2D> PngCache = new ConcurrentDictionary<string, Texture2D>();
+        private static readonly ConcurrentDictionary<string, TextureHandler> TextureHandlerCache = new ConcurrentDictionary<string, TextureHandler>();
+        private static string[] _pngStrings;
         private Texture_Base _classic;
+
+        private bool _disposedValue;
+
+        /// <summary>
+        /// If i'm expecting a 256x256 and get a 128x256 pad the pixels with transparent ones.
+        /// </summary>
+        private bool _enforceSquare;
 
         #endregion Fields
 
         #region Properties
+
+        public IEnumerable<Texture2D> AllTexture2Ds => Grid.Select(x => Textures[x.col, x.row]);
 
         /// <summary>
         /// Original sub 256x265 texture, required for fallback when issues happen.
@@ -43,9 +54,14 @@ namespace OpenVIII
 
         public uint Count { get; protected set; }
 
+        public IEnumerable<(int col, int row)> Grid =>
+            (from row in Enumerable.Range(0, (int)Rows)
+             from col in Enumerable.Range(0, (int)Cols)
+             select (col, row));
+
         public int Height => (int)Size.Y;
 
-        public bool Modded { get; private set; } = false;
+        public bool Modded { get; private set; }
 
         public string ModdedFilename { get; private set; }
         public ushort Palette { get; protected set; }
@@ -97,48 +113,38 @@ namespace OpenVIII
 
         public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
         {
-            string s = FindPNG(filename, palette);
-            if (string.IsNullOrWhiteSpace(s) || !_ths.TryGetValue(s, out TextureHandler ret))
+            string pngPath = FindPng(filename, palette);
+            if (!string.IsNullOrWhiteSpace(pngPath) && TextureHandlerCache.TryGetValue(pngPath, out TextureHandler ret)) return ret;
+            ret = new TextureHandler
             {
-                ret = new TextureHandler
-                {
-                    ModdedFilename = s,
-                    //Modded = string.IsNullOrWhiteSpace(s),
-                    Filename = filename,
-                    Classic = classic,
-                    Cols = cols,
-                    Rows = rows,
-                    Palette = palette,
-                    Colors = colors
-                };
-                ret.Init();
-                if (ret.Modded && !string.IsNullOrWhiteSpace(ret.ModdedFilename))
-                {
-                    _ths.TryAdd(ret.ModdedFilename, ret);
-                    //if (_pngs.ContainsKey(ret.ModdedFilename))
-                    //    _pngs.TryRemove(ret.ModdedFilename,out Texture2D none);
-                }
+                ModdedFilename = pngPath,
+                Filename = filename,
+                Classic = classic,
+                Cols = cols,
+                Rows = rows,
+                Palette = palette,
+                Colors = colors
+            };
+            ret.Init();
+            if (ret.Modded && !string.IsNullOrWhiteSpace(ret.ModdedFilename))
+            {
+                TextureHandlerCache.TryAdd(ret.ModdedFilename, ret);
             }
             return ret;
         }
 
-        /// <summary>
-        /// If i'm expecting a 256x256 and get a 128x256 pad the pixels with transparent ones.
-        /// </summary>
-        private bool EnforceSquare = false;
-
-        public static TextureHandler CreateFromPNG(string filename, int classic_width, int classic_height, ushort palette, bool enforceSquare, bool ForceReload = false)
+        public static TextureHandler CreateFromPng(string filename, int classicWidth, int classicHeight, ushort palette, bool enforceSquare, bool forceReload = false)
         {
-            string s = FindPNG(filename, palette);
-            if (string.IsNullOrWhiteSpace(s) || !_ths.TryGetValue(s, out TextureHandler ret))
+            string s = FindPng(filename, palette);
+            if (string.IsNullOrWhiteSpace(s) || !TextureHandlerCache.TryGetValue(s, out TextureHandler ret))
             {
                 ret = new TextureHandler
                 {
-                    EnforceSquare = enforceSquare,
+                    _enforceSquare = enforceSquare,
                     ModdedFilename = filename,
                     //Modded = string.IsNullOrWhiteSpace(s),
                     Filename = filename,
-                    ClassicSize = new Vector2(classic_width, classic_height),
+                    ClassicSize = new Vector2(classicWidth, classicHeight),
                     Cols = 1,
                     Rows = 1,
                     Palette = palette
@@ -146,12 +152,10 @@ namespace OpenVIII
                 ret.Init();
                 if (ret.Modded && !string.IsNullOrWhiteSpace(ret.ModdedFilename))
                 {
-                    _ths.TryAdd(ret.ModdedFilename, ret);
-                    //if (_pngs.ContainsKey(ret.ModdedFilename))
-                    //    _pngs.TryRemove(ret.ModdedFilename,out Texture2D none);
+                    TextureHandlerCache.TryAdd(ret.ModdedFilename, ret);
                 }
             }
-            else if (ForceReload && ret.Modded)
+            else if (forceReload && ret.Modded)
             {
                 ret.Reload();
             }
@@ -159,87 +163,73 @@ namespace OpenVIII
             return ret;
         }
 
-        private void Reload()
-        {
-            if (Rows * Cols == 1)
-            {
-                Textures[0, 0].Dispose();
-                if (_pngs.TryRemove(ModdedFilename, out Texture2D value) && !value.IsDisposed)
-                    value.Dispose();
-                Textures[0, 0] = LoadPNG(ModdedFilename, Palette, EnforceSquare);
-            }
-            else
-                throw new Exception("too many textures reload not setup for >1 texture");
-        }
-
         public static explicit operator Texture2D(TextureHandler t)
         {
+            if (t.Count == 0)
+                return null;
             if (t.Count == 1)
                 return t[0, 0];
             throw new Exception("TextureHandler can only be cast to Texture2D if there is only one texture in the array use [cols,rows] instead");
             //return null;
         }
 
-        public static string FindPNG(string path, int palette = -1)
+        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+        public static string FindPng(string path, int palette = -1)
         {
             if (File.Exists(path))
                 return path;
-            
-            string bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path,@"\{[\d\.\:]+\}","",RegexOptions.IgnoreCase | RegexOptions.Compiled)));
+
+            string bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path, @"\{[\d\.\:]+\}", "", RegexOptions.IgnoreCase | RegexOptions.Compiled)));
             string textures = Path.Combine(Memory.FF8DIR, "textures");
             if (Directory.Exists(textures))
             {
-                if (pngs == null)
-                    pngs = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
+                if (_pngStrings == null)
+                    _pngStrings = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
 
-                var limited = pngs.Where(x => x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
-                if (limited.Count() > 0)
-                {
-                    Regex re = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                    Match t;
-                    string tex = limited.FirstOrDefault(x => (t = re.Match(x)).Success && t.Groups.Count > 1 && int.TryParse(t.Groups[1].Value, out int p) && p == palette);
-                    //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
-                    //    tex = _findPNG(bn);
-                    //if (tex != null)
-                    if (string.IsNullOrWhiteSpace(tex))
-                    {
-                        re = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                        tex = limited.FirstOrDefault(x => (t = re.Match(x)).Success);
-                    }
+                IOrderedEnumerable<string> limited = _pngStrings.Where(x => x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
+                if (!limited.Any()) return null;
 
-                    if (!string.IsNullOrWhiteSpace(tex))
-                        return tex;
-                }
+                Regex re1 = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                Regex re2 = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                IEnumerable<Match> matches = (limited.Select(x => new { x, m1 = re1.Match(x) })
+                    .Select(t => new { t, m2 = re2.Match(t.x) })
+                    .Where(t => (t.t.m1.Success || t.m2.Success))
+                    .OrderByDescending(t => t.t.m1.Success)
+                    .Select(t => t.t.m1.Success ? t.t.m1 : t.m2));
+                string tex = matches.FirstOrDefault(x =>
+                        (x.Groups.Count == 3 && int.TryParse(x.Groups[1].Value, out int p) && p == palette) ||
+                        x.Groups.Count == 2)
+                    ?.Value;
+                //string tex = limited.FirstOrDefault(x => (t = re1.Match(x)).Success && t.Groups.Count > 1 && int.TryParse(t.Groups[1].Value, out int p) && p == palette);
+                //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
+                //    tex = _findPNG(bn);
+                //if (tex != null)
+                //if (string.IsNullOrWhiteSpace(tex))
+                //{
+                //    tex = limited.FirstOrDefault(x => (t = re2.Match(x)).Success);
+                //}
+
+                return tex;
             }
             return null;
-            //string _findPNG(string testname)
-            //{
-            //    return pngs.Where(x => x.IndexOf(testname, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x).FirstOrDefault();
-            //}
         }
 
         public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
 
-        public static Vector2 GetOffset(Point oldLoc, Point newLoc) => GetOffset(oldLoc.ToVector2(), newLoc.ToVector2());
-
         public static Vector2 GetOffset(Vector2 oldLoc, Vector2 newLoc) => Abs(oldLoc - newLoc);
 
-        public static Vector2 GetScale(Vector2 _old, Vector2 _new)
+        public static Vector2 GetScale(Vector2 old, Vector2 @new)
         {
-            if (_new.Y == 0 && _new.X != 0)
-                return new Vector2(_new.X / _old.X);
-            else if (_new.Y != 0 && _new.X == 0)
-                return new Vector2(_new.Y / _old.Y);
-            else if (_new.Y == 0 && _new.X == 0)
+            if (Math.Abs(@new.Y) < float.Epsilon && Math.Abs(@new.X) > float.Epsilon)
+                return new Vector2(@new.X / old.X);
+            else if (Math.Abs(@new.Y) > float.Epsilon && Math.Abs(@new.X) < float.Epsilon)
+                return new Vector2(@new.Y / old.Y);
+            else if (Math.Abs(@new.Y) < float.Epsilon && Math.Abs(@new.X) < float.Epsilon)
                 return Vector2.One;
-            return _new / _old;
+            return @new / old;
         }
 
-        public static Vector2 GetScale(Vector2 _old, Texture2D _new) => new Vector2(_new.Width / _old.X, _new.Height / _old.Y);
-
-        public static Vector2 GetScale(Texture_Base _old, Texture2D _new) => new Vector2((float)_new.Width / _old.GetWidth, (float)_new.Height / _old.GetHeight);
-
-        public static Vector2 GetScale(Texture2D _old, Texture2D _new) => new Vector2((float)_new.Width / _old.Width, (float)_new.Height / _old.Height);
+        public static Vector2 GetScale(Texture_Base old, Texture2D @new) => new Vector2((float)@new.Width / old.GetWidth, (float)@new.Height / old.GetHeight);
 
         public static Vector2 GetScale(Point oldSize, Point newSize) => GetScale(oldSize.ToVector2(), newSize.ToVector2());
 
@@ -250,16 +240,17 @@ namespace OpenVIII
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
+        // ReSharper disable once InconsistentNaming
         public static Texture2D LoadPNG(string path, int palette = -1, bool forceSquare = false)
         {
-            string pngpath = File.Exists(path) ? path : FindPNG(path, palette);
+            string pngPath = File.Exists(path) ? path : FindPng(path, palette);
             Texture2D tex = null;
-            if (!string.IsNullOrWhiteSpace(pngpath) && !_pngs.TryGetValue(pngpath, out tex))
+            if (!string.IsNullOrWhiteSpace(pngPath) && !PngCache.TryGetValue(pngPath, out tex))
             {
-                using (FileStream fs = new FileStream(pngpath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (FileStream fs = new FileStream(pngPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                    _pngs.TryAdd(pngpath, tex);
+                    PngCache.TryAdd(pngPath, tex);
                 }
             }
             if (tex != null && forceSquare && tex.Width != tex.Height)
@@ -287,63 +278,43 @@ namespace OpenVIII
             return src;
         }
 
-        public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t.Width, t.Height);
+        public static Rectangle ToRectangle(Texture2D t) => new Rectangle(0, 0, t?.Width ?? 0, t?.Height ?? 0);
 
         public static Rectangle ToRectangle(TextureHandler t) => new Rectangle(0, 0, (int)t.ClassicSize.X, (int)t.ClassicSize.Y);
 
         public static Rectangle ToRectangle(Vector2 loc, Vector2 size) => new Rectangle(loc.ToPoint(), size.ToPoint());
 
-        public static Vector2 ToVector2(Texture2D t) => t!=null?new Vector2(t.Width, t.Height):Vector2.Zero;
+        public static Vector2 ToVector2(Texture2D t) => t != null ? new Vector2(t.Width, t.Height) : Vector2.Zero;
 
-        public static Vector2 ToVector2(TextureHandler t) => new Vector2(t.ClassicSize.X, t.ClassicSize.Y);
+        public static Texture2D UseBest(Texture_Base old, Texture2D @new, ushort palette = 0, Color[] colors = null) => UseBest(old, @new, out Vector2 _, palette, colors);
 
-        public static Texture2D UseBest(Texture2D _old, Texture2D _new) => UseBest(_old, _new, out Vector2 scale);
-
-        public static Texture2D UseBest(Texture2D _old, Texture2D _new, out Vector2 scale)
+        public static Texture2D UseBest(Texture_Base old, Texture2D @new, out Vector2 scale, ushort palette = 0, Color[] colors = null)
         {
-            if (_new == null)
+            if (@new == null && old != null)
             {
                 scale = Vector2.One;
-                return _old;
-            }
-            else
-            {
-                scale = GetScale(_old, _new);
-                _old.Dispose();
-                return _new;
-            }
-        }
-
-        public static Texture2D UseBest(Texture_Base _old, Texture2D _new, ushort palette = 0, Color[] colors = null) => UseBest(_old, _new, out Vector2 scale, palette, colors);
-
-        public static Texture2D UseBest(Texture_Base _old, Texture2D _new, out Vector2 scale, ushort palette = 0, Color[] colors = null)
-        {
-            Texture2D tex;
-
-            if (_new == null && _old != null)
-            {
-                scale = Vector2.One;
-                if (_old.GetClutCount <= 1)
-                    return _old.GetTexture();
-                tex = colors != null ? _old.GetTexture(colors) : _old.GetTexture(palette);
+                if (old.GetClutCount <= 1)
+                    return old.GetTexture();
+                Texture2D tex = colors != null ? old.GetTexture(colors) : old.GetTexture(palette);
                 return tex;
             }
             else
             {
-                if (_old != null)
-                    scale = GetScale(_old, _new);
-                else
-                    scale = Vector2.Zero;
-                return _new;
+                scale = old != null ? GetScale(old, @new) : Vector2.Zero;
+                return @new;
             }
         }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() =>
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
 
         public void Draw(Rectangle dst, Rectangle? src, Color color)
         {
             if (src != null)
             {
                 _Draw(dst, src.Value, color);
-                return;
             }
             //drawing texture directly
             else
@@ -368,128 +339,172 @@ namespace OpenVIII
 
         public void Merge()
         {
-            if (Rows * Cols > 1 && Textures != null && Textures.Length >= Rows * Cols)
+            if (Rows * Cols <= 1 || Textures == null || Textures.Length < Rows * Cols) return;
+            if (Memory.IsMainThread)
             {
-                if (Memory.IsMainThread)
+                int width = 0;
+                int height = 0;
+                if (!(AllTexture2Ds.Any(x => x == null)))
                 {
-                    int width = 0;
-                    int height = 0;
                     for (int r = 0; r < (int)Rows; r++)
                     {
-                        int rowwidth = 0;
-                        int rowheight = 0;
+                        int rowWidth = 0;
+                        int rowHeight = 0;
                         for (int c = 0; c < (int)Cols && Textures[c, r] != null; c++)
                         {
-                            rowwidth += Textures[c, r].Width;
-                            if (rowheight < Textures[c, r].Height)
-                                rowheight = Textures[c, r].Height;
+                            rowWidth += Textures[c, r].Width;
+                            if (rowHeight < Textures[c, r].Height)
+                                rowHeight = Textures[c, r].Height;
                         }
-                        if (width < rowwidth)
-                            width = rowwidth;
-                        height += rowheight;
+                        if (width < rowWidth)
+                            width = rowWidth;
+                        height += rowHeight;
                     }
-                    if (width == 0 || height == 0) return;
-                    Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
-                    Rectangle dst = new Rectangle();
-                    for (int r = 0; r < (int)Rows; r++)
-                    {
-                        dst.Y += r > 0 ? Textures[0, r - 1].Height : 0;
-                        for (int c = 0; c < (int)Cols; c++)
-                        {
-                            dst.Height = Textures[c, r].Height;
-                            dst.Width = Textures[c, r].Width;
-                            dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
-                            Color[] buffer = new Color[dst.Height * dst.Width];
-                            Textures[c, r].GetData<Color>(buffer);
-                            tex.SetData(0, dst, buffer, 0, buffer.Length);
-                            //Textures[c, r].Dispose();
-                        }
-                        dst.X = 0;
-                    }
-                    foreach (Texture2D t in Textures)
-                        t.Dispose();
-                    Textures = new Texture2D[1, 1];
-                    Textures[0, 0] = tex;
-                    Rows = 1;
-                    Cols = 1;
-                    Count = 1;
                 }
-                else
+
+                if (width == 0 || height == 0)
                 {
-                    Memory.MainThreadOnlyActions.Enqueue(this.Merge);
+                    Rows = 0;
+                    Cols = 0;
+                    Count = 0;
+                    Textures = null;
+                    return;
                 }
+                Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                Rectangle dst = new Rectangle();
+                for (int r = 0; r < (int)Rows; r++)
+                {
+                    dst.Y += r > 0 ? Textures[0, r - 1].Height : 0;
+                    for (int c = 0; c < (int)Cols; c++)
+                    {
+                        dst.Height = Textures[c, r].Height;
+                        dst.Width = Textures[c, r].Width;
+                        dst.X += c > 0 ? Textures[c - 1, r].Width : 0;
+                        Color[] buffer = new Color[dst.Height * dst.Width];
+                        Textures[c, r].GetData(buffer);
+                        tex.SetData(0, dst, buffer, 0, buffer.Length);
+                        //Textures[c, r].Dispose();
+                    }
+                    dst.X = 0;
+                }
+                foreach (Texture2D t in Textures)
+                    t.Dispose();
+                Textures = new Texture2D[1, 1];
+                Textures[0, 0] = tex;
+                Rows = 1;
+                Cols = 1;
+                Count = 1;
+            }
+            else
+            {
+                Memory.MainThreadOnlyActions.Enqueue(this.Merge);
             }
         }
 
         public void Save() => Save("", true);
-        public void Save(string _outpath,bool replace)
+
+        public void Save(string outPath, bool replace)
         {
             string clean = Path.GetFileNameWithoutExtension(Regex.Replace(Filename, @"{[^}]+}", ""));
             clean = $"{Path.GetFileName(clean)}_{(Palette).ToString()}.png";
-            string outpath = Path.Combine(string.IsNullOrWhiteSpace(_outpath)?Path.GetTempPath():_outpath, clean);
-            if((!File.Exists(outpath) || replace)
+            outPath = Path.Combine(string.IsNullOrWhiteSpace(outPath) ? Path.GetTempPath() : outPath, clean);
+            if ((!File.Exists(outPath) || replace)
             && (Textures != null && Textures.Length > 0 && Textures[0, 0] != null))
-                using (FileStream fs = File.Create(outpath))
+                using (FileStream fs = File.Create(outPath))
                     Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
             else
                 Debug.WriteLine($"{this} :: Textures is null or empty! :: {Filename}");
         }
 
         /// <summary>
-        /// Remove all transparenct rows and cols of pixels
+        /// Remove all transparent rows and cols of pixels
         /// </summary>
         /// <param name="src"></param>
         /// <returns></returns>
         public Rectangle Trim(Rectangle src) => _process(Rectangle.Empty, src, Color.TransparentBlack, _Trim_SingleTexture);
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposedValue) return;
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects).
+            }
+            if (!string.IsNullOrWhiteSpace(ModdedFilename) && PngCache.TryRemove(ModdedFilename, out Texture2D tex))
+            {
+                if (!tex.IsDisposed)
+                {
+                    tex.Dispose();
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(Filename) && TextureHandlerCache.TryRemove(Filename, out TextureHandler textureHandler))
+            {
+                foreach (Texture2D t in textureHandler.Textures)
+                {
+                    if (!t.IsDisposed)
+                    {
+                        t.Dispose();
+                    }
+                }
+            }
+            // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+            // TODO: set large fields to null.
+
+            // TODO need an easy way to remove old textures from cache.
+
+            _disposedValue = true;
+        }
+
         protected void Process()
         {
+            if (Memory.graphics?.GraphicsDevice == null) return;
             Vector2 size = Vector2.Zero;
-            Vector2 oldsize = Vector2.Zero;
+            Vector2 oldSize = Vector2.Zero;
             Texture_Base tex = null;
+            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU); // TODO remove this should be done outside of texture handler.
+            string[] listOfFiles = aw.GetListOfFiles(); // TODO remove this.
             uint c2 = 0;
             uint r2 = 0;
+            uint total = Rows * Cols;
             for (uint r = 0; r < Rows; r++)
             {
-                for (uint c = 0; c < Cols && Memory.graphics?.GraphicsDevice != null; c++)
+                for (uint c = 0; c < Cols; c++)
                 {
                     Texture2D pngTex;
-                    ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
-                    string[] filelist = aw.GetListOfFiles();
                     string path = "";
-                    if (filelist != null)
+                    if (listOfFiles != null)
                     {
                         string value = string.Format(Filename, c + r * Cols + StartOffset);
-                        path = filelist.FirstOrDefault(x => (x.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0));
+                        path = listOfFiles.FirstOrDefault(x => (x.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0));
                     }
 
                     if (!string.IsNullOrWhiteSpace(path))
                     {
                         tex = Texture_Base.Open(aw.GetBinaryFile(path));
-                        if (Classic == null && c2 < Cols) oldsize.X += tex?.GetWidth ?? ClassicWidth;
-                        pngTex = LoadPNG(path, Palette, EnforceSquare);
+                        if (Classic == null && c2 < Cols) oldSize.X += tex?.GetWidth ?? ClassicWidth;
+                        pngTex = LoadPNG(path, Palette, _enforceSquare);
                     }
                     else
                     {
-                        pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette, EnforceSquare) : LoadPNG(Filename, Palette, EnforceSquare);
+                        pngTex = !string.IsNullOrWhiteSpace(ModdedFilename) ? LoadPNG(ModdedFilename, Palette, _enforceSquare) : LoadPNG(Filename, Palette, _enforceSquare);
                     }
 
-                    if (tex == null) tex = Classic;
+                    if (tex == null && total == 1) tex = Classic;
                     Textures[c, r] = (UseBest(tex, pngTex, Palette, Colors));
                     if (pngTex != null) Modded = true;
                     if (c2 < Cols && Textures[c2, r2] != null) size.X += Textures[c2++, r2].Width;
                 }
-                if (Classic == null && r2 < Rows) oldsize.Y += tex?.GetHeight ?? ClassicHeight;
+                if (Classic == null && r2 < Rows) oldSize.Y += tex?.GetHeight ?? ClassicHeight;
                 if (r2 < Rows && Textures.LongLength > r2 + c2 - 1 && Textures[c2 - 1, r2] != null) size.Y += Textures[c2 - 1, r2++].Height;
             }
             Size = size;
-            if (Classic == null && ClassicSize == Vector2.Zero) ClassicSize = oldsize;
+            if (Classic == null && ClassicSize == Vector2.Zero) ClassicSize = oldSize;
         }
 
         private void _Draw(Rectangle dst, Rectangle src, Color color)
         => _process(dst, src, color, _Draw);
 
-        private Rectangle _Draw(Texture2D tex, Rectangle dst, Rectangle src, Color color)
+        private static Rectangle _Draw(Texture2D tex, Rectangle dst, Rectangle src, Color color)
         {
             Memory.spriteBatch.Draw(tex, dst, src, color);
             return src;
@@ -526,9 +541,9 @@ namespace OpenVIII
         }
 
         /// <summary>
-        /// Process the texture with the given varibles.
+        /// Process the texture with the given variables.
         /// <para>Only used by trim and draw.</para>
-        /// <para>Trim really only needs src varible</para>
+        /// <para>Trim really only needs src variable</para>
         /// </summary>
         /// <param name="dst"></param>
         /// <param name="src"></param>
@@ -555,20 +570,20 @@ namespace OpenVIII
                     for (uint c = 0; c < Cols; c++)
                     {
                         //Start: if were always only one texture pcs
-                        Rectangle _src = Scale(src, ScaleFactor);
+                        Rectangle source2 = Scale(src, ScaleFactor);
                         cnt = ContainerRectangle(offset, Textures[c, r]);
-                        if (cnt.Contains(_src))
+                        if (cnt.Contains(source2))
                         {
-                            _src.Location = (GetOffset(cnt, _src)).ToPoint();
-                            return single(Textures[c, r], dst, _src, color);
+                            source2.Location = (GetOffset(cnt, source2)).ToPoint();
+                            return single(Textures[c, r], dst, source2, color);
                         }
                         //End
                         //This part is for if a given src rectangle overlaps >=2 textures
-                        else if (cnt.Intersects(_src))
+                        else if (cnt.Intersects(source2))
                         {
-                            Rectangle src2 = Rectangle.Intersect(cnt, _src);
+                            Rectangle src2 = Rectangle.Intersect(cnt, source2);
                             src2.Location = (GetOffset(cnt, src2)).ToPoint();
-                            dst2 = Scale(dst, GetScale(_src.Size, src2.Size));
+                            dst2 = Scale(dst, GetScale(source2.Size, src2.Size));
                             dst2.Location = (dst.Location);
                             dst2.Offset(dstOffset);
                             if (ret == Rectangle.Empty)
@@ -596,7 +611,7 @@ namespace OpenVIII
             // storage of colors.
             Color[] tmp = new Color[src.Width * src.Height];
             // colors of all pixels
-            tex.GetData<Color>(0, src, tmp, 0, tmp.Length);
+            tex.GetData(0, src, tmp, 0, tmp.Length);
             // max x and y values
             int x2 = src.Width;
             int y2 = src.Height;
@@ -633,7 +648,7 @@ namespace OpenVIII
             ret.Height += 1;
             ret.Offset(src.X, src.Y);
             ret = Scale(ret, ReverseScaleFactor);
-            src = Scale(src, ReverseScaleFactor);
+            //src = Scale(src, ReverseScaleFactor);
             return ret;
         }
 
@@ -670,59 +685,28 @@ namespace OpenVIII
             //}
         }
 
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        private void Reload()
         {
-            if (!disposedValue)
+            if (Rows * Cols == 1)
             {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-                if (!string.IsNullOrWhiteSpace(ModdedFilename) && _pngs.TryRemove(ModdedFilename, out Texture2D tex))
-                {
-                    if (!tex.IsDisposed)
-                    {
-                        tex.Dispose();
-                        tex = null;
-                    }
-                }
-                if (!string.IsNullOrWhiteSpace(Filename) && _ths.TryRemove(Filename, out TextureHandler texh))
-                {
-                    foreach (Texture2D t in texh.Textures)
-                    {
-                        if (!t.IsDisposed)
-                        {
-                            t.Dispose();
-                        }
-                    }
-                    texh = null;
-                }
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                // TODO need an easy way to remove old textures from cache.
-
-                disposedValue = true;
+                Textures[0, 0].Dispose();
+                if (PngCache.TryRemove(ModdedFilename, out Texture2D value) && !value.IsDisposed)
+                    value.Dispose();
+                Textures[0, 0] = LoadPNG(ModdedFilename, Palette, _enforceSquare);
             }
+            else
+                throw new Exception("too many textures reload not setup for >1 texture");
         }
 
+        #endregion Methods
+
+        // To detect redundant calls
         // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
         // ~TextureHandler() {
         //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
         //   Dispose(false);
         // }
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose() =>
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);// TODO: uncomment the following line if the finalizer is overridden above.// GC.SuppressFinalize(this);
-
-        #endregion IDisposable Support
-
-        #endregion Methods
+        // TODO: uncomment the following line if the finalizer is overridden above.// GC.SuppressFinalize(this);
     }
 }

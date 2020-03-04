@@ -743,7 +743,7 @@
 
                             task.Dispose();
                         else
-                            Memory.FFCCLeftOverTask.Add(task);
+                            Memory.FfccLeftOverTask.Add(task);
                         task = null;
                     }
                     State = FfccState.DONE;
@@ -788,12 +788,14 @@
                 }
                 else
                 {
+#if _WINDOWS
                     if (nAudioOut != null && useNaudio)
                     {
                         nAudioOut.Dispose();
                         nAudioOut = null;
                         bufferedWaveProvider.ClearBuffer();
                     }
+#endif
                     if (sourceToken != null)
                     {
                         sourceToken.Dispose();

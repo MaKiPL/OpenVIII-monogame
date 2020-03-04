@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -65,7 +66,7 @@ namespace OpenVIII
         public static Log Log;
         public static bool EnableDumpingData = false;
         public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
-        public static List<Task> FFCCLeftOverTask = new List<Task>();
+        public static List<Task> FfccLeftOverTask = new List<Task>();
 
         public enum GraphicModes
         {
@@ -73,9 +74,9 @@ namespace OpenVIII
             DirectX
         };
 
-        public static GraphicModes currentGraphicMode;
+        public static GraphicModes CurrentGraphicMode;
 
-        //monogame
+        //MonoGame
         public static GraphicsDeviceManager graphics;
 
         public static SpriteBatch spriteBatch;
@@ -333,8 +334,18 @@ namespace OpenVIII
 
         private static MODULE module = MODULE.OVERTURE_DEBUG;
 
-        public static string FF8DIR { get; private set; }
-        public static string FF8DIRdata { get; private set; }
+        public static string FF8DIR
+        {
+            get => _ff8Dir;
+            private set => _ff8Dir = value;
+        }
+
+        public static string FF8DIRdata
+        {
+            get => _ff8DirData;
+            private set => _ff8DirData = value;
+        }
+
         public static string FF8DIRdata_lang { get; private set; }
 
         public static int InitTaskMethod(object obj)
@@ -415,16 +426,16 @@ namespace OpenVIII
                 }
             }
             //EXE_Offsets test = new EXE_Offsets();
-            Inited = true;
+            Initiated = true;
             //ArchiveBase.PurgeCache();//remove files probably no longer needed.
             return 0;
         }
 
-        public static bool Inited { get; private set; } = false;
+        public static bool Initiated { get; private set; } = false;
         public static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == mainThreadID;
         public static ConcurrentQueue<Action> MainThreadOnlyActions;
 
-        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content)
+        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content, string[] arguments)
         {
             if (Log == null) Log = new Log();
             Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)}");
@@ -445,12 +456,99 @@ namespace OpenVIII
             MainThreadOnlyActions = new ConcurrentQueue<Action>();
 
             FF8DIR = GameLocation.Current.DataPath;
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIR)} = {FF8DIR}");
+            void SetData() =>
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
+
+            SetData();
+            bool languageSet = false;
+            void setLang(string lang)
+            {
+                switch (lang.ToLower())
+                {
+                    case "2":
+                    case "de":
+                        languages = Extended.Languages.de;
+                        break;
+
+                    case "0":
+                    case "en":
+                        languages = Extended.Languages.en;
+                        break;
+
+                    case "3":
+                    case "es":
+                        languages = Extended.Languages.es;
+                        break;
+
+                    case "1":
+                    case "fr":
+                        languages = Extended.Languages.fr;
+                        break;
+
+                    case "4":
+                    case "it":
+                        languages = Extended.Languages.it;
+                        break;
+
+                    case "5":
+                    case "jp":
+                        languages = Extended.Languages.jp;
+                        break;
+
+                    default:
+                        throw new InvalidEnumArgumentException($"{nameof(Memory)}::{nameof(Init)}::{nameof(lang)} ({lang}) is not a supported language code. (de,en,es,fr,it,jp)");
+                }
+
+                languageSet = true;
+            }
+            if (arguments != null && arguments.Length > 0)
+            {
+                IEnumerable<string[]> splitArguments = (from a in arguments
+                                                        where a.Contains('=')
+                                                        select a.Trim().Split(new[] { '=' }, 2)).OrderByDescending(x=>x[0],StringComparer.OrdinalIgnoreCase);
+                foreach (string[] s in splitArguments)
+                {
+                    bool test(string @in, ref string @out)
+                    {
+                        if (!s[0].Equals(@in, StringComparison.OrdinalIgnoreCase)) return false;
+                        @out = s[1].Trim(('"'));
+                        return true;
+                    }
+
+                    string lang = "";
+                    if (test("dir", ref _ff8Dir)) //override ff8 directory
+                    {
+                        if (!Directory.Exists(_ff8Dir))
+                            throw new DirectoryNotFoundException(
+                                $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8Dir)} ({s[0]}) Cannot find path: \"{_ff8Dir}\"");
+                        SetData();
+                    }
+                    else if (test("data", ref _ff8DirData)) //override data folder location
+                    {
+                        if (!Directory.Exists(_ff8DirData))
+                            throw new DirectoryNotFoundException(
+                                $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8DirData)} ({s[0]}) Cannot find path: \"{_ff8DirData}\"");
+                    }
+                    else if (test("lang", ref lang)) //override language
+                    {
+                        setLang(lang);
+                    }
+                }
+            }
+            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIR)} = {FF8DIR}");
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata)} = {FF8DIRdata}");
-            string testdir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
+            string langDatPath = Path.Combine(FF8DIR, "lang.dat");
+            if (!languageSet && File.Exists(langDatPath))
+                using (StreamReader streamReader = new StreamReader(
+                    new FileStream(langDatPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.UTF8))
+                {
+                    string lang = streamReader.ReadLine()?.Trim();
+                    setLang(lang);
+                }
+
             Memory.Log.WriteLine($"{nameof(Extended)} :: {nameof(Extended.GetLanguageShort)} = {Extended.GetLanguageShort()}");
-            FF8DIRdata_lang = Directory.Exists(testdir) ? testdir : FF8DIRdata;
+            string testDir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
+            FF8DIRdata_lang = Directory.Exists(testDir) ? testDir : FF8DIRdata;
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata_lang)} = {FF8DIRdata_lang}");
 
             Archives.Init();
@@ -458,6 +556,7 @@ namespace OpenVIII
             Memory.graphics = graphics;
             Memory.spriteBatch = spriteBatch;
             Memory.content = content;
+            Memory.Arguments = arguments;
 
             FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
@@ -471,6 +570,8 @@ namespace OpenVIII
             else
                 InitTaskMethod(Token);
         }
+
+        public static string[] Arguments { get; set; }
 
         /// <summary>
         /// If true by the end of Update() will skip the next Draw()
@@ -487,7 +588,7 @@ namespace OpenVIII
             {
                 _state = value;
                 if (_state != null)
-                    _state.Loadtime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
+                    _state.LoadTime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
             }
         }
 
@@ -1005,6 +1106,8 @@ namespace OpenVIII
         public static Random Random = null;
 
         public static int Year = 2013; // need to dynamicly detect if 2000/2013/2019, maybe need 2000 1.2 as well.
+        private static string _ff8Dir;
+        private static string _ff8DirData;
 
         #endregion DrawPointMagic
 
@@ -1013,12 +1116,12 @@ namespace OpenVIII
             Action a = null;
             while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a) ?? false))
             { a.Invoke(); }
-            for (int i = 0; IsMainThread && i < FFCCLeftOverTask.Count; i++)
+            for (int i = 0; IsMainThread && i < FfccLeftOverTask.Count; i++)
             {
-                if (FFCCLeftOverTask[i].IsCompleted)
+                if (FfccLeftOverTask[i].IsCompleted)
                 {
-                    FFCCLeftOverTask[i].Dispose();
-                    FFCCLeftOverTask.RemoveAt(i--);
+                    FfccLeftOverTask[i].Dispose();
+                    FfccLeftOverTask.RemoveAt(i--);
                 }
             }
         }

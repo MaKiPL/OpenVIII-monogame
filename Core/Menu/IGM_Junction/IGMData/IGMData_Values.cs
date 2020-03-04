@@ -66,7 +66,7 @@ namespace OpenVIII
                             total[(T)availableFlagsarray[pos + 1]],
                         Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 80, SIZE[pos + offset].Y, 0, 0),
                         Palette = 17,
-                        NumType = Icons.NumType.sysFntBig,
+                        NumType = Icons.NumType.SysFntBig,
                         Spaces = 3
                     };
                     ITEM[pos + offset, 4] = new IGMDataItem.Text() { Data = "%", Pos = new Rectangle(SIZE[pos + offset].X + SIZE[pos + offset].Width - 20, SIZE[pos + offset].Y, 0, 0) };

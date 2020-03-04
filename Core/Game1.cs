@@ -2,50 +2,106 @@
 using Microsoft.Xna.Framework.Graphics;
 using OpenVIII.Encoding.Tags;
 using System;
+using System.Linq;
 using System.Reflection;
-using ImGuiNET;
 
 namespace OpenVIII
 {
     public class Game1 : Game
     {
-        private GraphicsDeviceManager graphics;
-        private SpriteBatch spriteBatch;
-        private Core.ImGuiRenderer imgui;
+        #region Fields
+
+        private readonly GraphicsDeviceManager _graphics;
+        private Core.ImGuiRenderer _imgui;
+        private SpriteBatch _spriteBatch;
+
+        #endregion Fields
+
+        #region Constructors
 
         public Game1()
         {
-            graphics = new GraphicsDeviceManager(this);
+            _graphics = new GraphicsDeviceManager(this);
             if (Assembly.GetCallingAssembly().GetName().Name.Contains("DirectX"))
             {
-                graphics.GraphicsProfile = GraphicsProfile.HiDef;
-                Memory.currentGraphicMode = Memory.GraphicModes.DirectX;
+                _graphics.GraphicsProfile = GraphicsProfile.HiDef;
+                Memory.CurrentGraphicMode = Memory.GraphicModes.DirectX;
             }
-            else Memory.currentGraphicMode = Memory.GraphicModes.OpenGL;
+            else Memory.CurrentGraphicMode = Memory.GraphicModes.OpenGL;
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
-            graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
+            _graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
+            _graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
             Window.AllowUserResizing = true;
             IsFixedTimeStep = false;
-            graphics.SynchronizeWithVerticalRetrace = false;
+            _graphics.SynchronizeWithVerticalRetrace = false;
+        }
+
+        #endregion Constructors
+
+        #region Events
+
+        public static event EventHandler<TextInputEventArgs> OnTextEntered;
+
+        #endregion Events
+
+        #region Properties
+
+        public string[] Arguments { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        protected override void Draw(GameTime gameTime)
+        {
+            ModuleHandler.Draw(gameTime);
+            base.Draw(gameTime);
+            if (!Extended.bRequestedBackBuffer) return;
+            Texture2D tex = new Texture2D(_graphics.GraphicsDevice, _graphics.GraphicsDevice.Viewport.Width, _graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
+            byte[] b = new byte[tex.Width * tex.Height * 4];
+            _graphics.GraphicsDevice.GetBackBufferData(b);
+            tex.SetData(b);
+            Extended.BackBufferTexture = tex;
+            Extended.bRequestedBackBuffer = false;
+            Extended.bBackBufferAvailable = true;
+            Extended.postBackBufferDelegate();
         }
 
         protected override void Initialize()
         {
-            imgui = new Core.ImGuiRenderer(this);
-            imgui.RebuildFontAtlas();
-            Memory.imgui = imgui;
+            _imgui = new Core.ImGuiRenderer(this);
+            _imgui.RebuildFontAtlas();
+            Memory.imgui = _imgui;
             Window.TextInput += TextEntered;
             Memory.Log = new Log();
+            if (Arguments != null)
+            {
+                string log =
+                    Arguments.FirstOrDefault(x => x.Trim().StartsWith("log=", StringComparison.OrdinalIgnoreCase));
+                if (!string.IsNullOrWhiteSpace((log)))
+                {
+                    log = log.Trim();
+                    if (log.EndsWith("false", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Memory.Log.Enabled = false;
+                    }
+
+                    if (log.EndsWith("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Memory.Log.Enabled = true;
+                    }
+                }
+            }
+
             FFmpeg.AutoGen.Example.FFmpegBinariesHelper.RegisterFFmpegBinaries();
             //Input.Init();
             Memory.Input2 = new Input2();
-            Memory.Init(graphics, spriteBatch, Content);
+            Memory.Init(_graphics, _spriteBatch, Content, Arguments);
             AV.Music.Init(); //this initializes the DirectAudio, it's true that it gets loaded AFTER logo, but we will do the opposite
-            AV.Sound.Init(); //this initalizes the WAVE format audio.dat
+            AV.Sound.Init(); //this initializes the WAVE format audio.dat
             Memory.Log.WriteLine($"{nameof(Game)} :: {nameof(base.Initialize)}");
 
-            //          FORCE FPS LIMIT HERE        
+            //          FORCE FPS LIMIT HERE
             //this.IsFixedTimeStep = true;
             //this.TargetElapsedTime = TimeSpan.FromSeconds(1d / 30d);
             //          =====================
@@ -53,14 +109,10 @@ namespace OpenVIII
             base.Initialize();
         }
 
-        static public event EventHandler<TextInputEventArgs> onTextEntered;
-
-        private void TextEntered(object sender, TextInputEventArgs e) => onTextEntered?.Invoke(sender, e);
-
         protected override void LoadContent()
         {
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-            Memory.spriteBatch = spriteBatch;
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            Memory.spriteBatch = _spriteBatch;
             // Memory.shadowTexture = Content.Load<Texture2D>("Shadow");
             GenerateShadowModel();
             base.LoadContent();
@@ -72,7 +124,38 @@ namespace OpenVIII
             base.OnExiting(sender, args);
         }
 
-        private void GenerateShadowModel()
+        protected override void UnloadContent()
+        {
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            Memory.GameTime = gameTime;
+            Memory.IsActive = IsActive;
+            FPSCounter.Update();
+
+            //it breaks the Font
+            //Memory.PreferredViewportWidth = graphics.GraphicsDevice.Viewport.Width;
+            //Memory.PreferredViewportHeight = graphics.GraphicsDevice.Viewport.Height;
+
+            Input2.Update();
+            Memory.Update();
+
+            if (Input2.Button(FF8TextTagKey.Exit) || Input2.Button(FF8TextTagKey.ExitMenu))
+                Exit();
+            AV.Music.Update();
+            ModuleHandler.Update(gameTime);
+            base.Update(gameTime);
+            if (Memory.SuppressDraw)
+            {
+                SuppressDraw();
+                Memory.SuppressDraw = false;
+            }
+
+            IsMouseVisible = Memory.IsMouseVisible;
+        }
+
+        private static void GenerateShadowModel()
         {
             /*
              * X-X
@@ -106,7 +189,7 @@ namespace OpenVIII
 
             VertexPositionTexture[] vpt = new VertexPositionTexture[]
                 {
-                //righttop (should be bottom left)
+                //right top (should be bottom left)
                                 new VertexPositionTexture(vertices[0], textureCoordinates[6]),
                 new VertexPositionTexture(vertices[1], textureCoordinates[7]),
                 new VertexPositionTexture(vertices[2], textureCoordinates[4]),
@@ -142,58 +225,7 @@ namespace OpenVIII
             Memory.shadowGeometry = vpt;
         }
 
-        protected override void UnloadContent()
-        {
-        }
-
-        protected override void Update(GameTime gameTime)
-        {
-            Memory.GameTime = gameTime;
-            Memory.IsActive = IsActive;
-            FPSCounter.Update();
-
-            //it breaks the Font
-            //Memory.PreferredViewportWidth = graphics.GraphicsDevice.Viewport.Width;
-            //Memory.PreferredViewportHeight = graphics.GraphicsDevice.Viewport.Height;
-
-            Input2.Update();
-            Memory.Update();
-
-            if (Input2.Button(FF8TextTagKey.Exit) || Input2.Button(FF8TextTagKey.ExitMenu))
-                Exit();
-            AV.Music.Update();
-            ModuleHandler.Update(gameTime);
-            base.Update(gameTime);
-            if (Memory.SuppressDraw)
-            {
-                SuppressDraw();
-                Memory.SuppressDraw = false;
-            }
-
-            IsMouseVisible = Memory.IsMouseVisible;
-        }
-
-        protected override void Draw(GameTime gameTime)
-        {
-            ModuleHandler.Draw(gameTime);
-            base.Draw(gameTime);
-            if (Extended.bRequestedBackBuffer)
-            {
-                Texture2D tex = new Texture2D(graphics.GraphicsDevice, graphics.GraphicsDevice.Viewport.Width, graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
-                byte[] b = new byte[tex.Width * tex.Height * 4];
-                graphics.GraphicsDevice.GetBackBufferData<byte>(b);
-                tex.SetData(b);
-                Extended.BackBufferTexture = tex;
-                Extended.bRequestedBackBuffer = false;
-                if (tex != null)
-                {
-                    Extended.bBackBufferAvailable = true;
-                    Extended.postBackBufferDelegate();
-                }
-            }
-        }
-
-        private async void GracefullyExit()
+        private static async void GracefullyExit()
         {
             Memory.TokenSource.Cancel(); // tell task we are done
             //step0. dispose stop sounds
@@ -202,8 +234,12 @@ namespace OpenVIII
             AV.Music.KillAudio();
             AV.Sound.KillAudio();
             //step1. kill init task. to prevent exceptions if exiting before fully loaded.
-            if(Memory.InitTask != null)
+            if (Memory.InitTask != null)
                 await Memory.InitTask; // wait for task to finish what it's doing.
         }
+
+        private static void TextEntered(object sender, TextInputEventArgs e) => OnTextEntered?.Invoke(sender, e);
+
+        #endregion Methods
     }
 }

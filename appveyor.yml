@@ -1,0 +1,30 @@
+version: 1.0.{build}
+image:
+- Ubuntu
+- Visual Studio 2019
+configuration: DebugWindows
+platform: x64
+environment:
+  matrix:
+  - platform: x64
+    projectname: OpenGL
+  - platform: x86
+    projectname: OpenGL
+  - platform: x64
+    projectname: DirectX
+  - platform: x86
+    projectname: DirectX
+build_script:
+- ps: "# List PowerShell's Environmental Variables\n#gci env:* | sort-object name\nif($isLinux)\n{\n$Env:operatingsystem = \"Linux\"\nif($Env:projectname -eq \"DirectX\")\n{\nexit\n}\n# Update\nInvoke-Command -ScriptBlock {\nsudo apt update\nsudo apt-get --assume-yes install nuget mono-complete mono-devel gtk-sharp3 zip ffmpeg\necho ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections\nsudo apt-get --assume-yes install ttf-mscorefonts-installer\nwget https://github.com/MonoGame/MonoGame/releases/download/v3.7.1/monogame-sdk.run\nchmod +x monogame-sdk.run\nsudo ./monogame-sdk.run --noexec --keep --target ./monogame\ncd monogame\necho Y | sudo ./postinstall.sh\ncd ..  \nnuget restore\nmsbuild $Env:APPVEYOR_BUILD_FOLDER/OpenGL$Env:operatingsystem /property:Configuration=Debug$Env:operatingsystem  /property:Platform=$Env:platform\n}\n\n# Zip Contents\n\nInvoke-Expression \"zip $Env:APPVEYOR_PROJECT_NAME-$Env:operatingsystem-$Env:projectname-$Env:platform.zip -r $Env:APPVEYOR_BUILD_FOLDER/bin\"\n\n}\nif($isWindows)\n{\n$Env:operatingsystem = \"Windows\"\n\n\n# Install MonoGame\n\n(New-Object Net.WebClient).DownloadFile('https://github.com/MonoGame/MonoGame/releases/download/v3.7.1/MonoGameSetup.exe', 'C:\\MonoGameSetup.exe')\n\nInvoke-Command -ScriptBlock {C:\\MonoGameSetup.exe /S /v/qn}\n\n# Nuget Restore\n\nInvoke-Command -ScriptBlock {nuget restore}\n\n# Build OpenVIII\n\nInvoke-Expression \"msbuild $Env:APPVEYOR_BUILD_FOLDER\\$Env:projectname /property:Configuration=Debug$Env:operatingsystem /property:Platform=$Env:Platform\"\n\n# Zip Contents\n\nInvoke-Expression \"7z a $Env:APPVEYOR_PROJECT_NAME-$Env:operatingsystem-$Env:projectname-$Env:Platform.zip -r $Env:APPVEYOR_BUILD_FOLDER\\bin\\*.*\"\n}"
+artifacts:
+- path: '*.zip'
+  name: Canary
+deploy:
+- provider: GitHub
+  release: Canary
+  description: Automatic Test build.  Linux built on Ubuntu 18.04. Windows built on Visual Studio 2019.
+  auth_token:
+    secure: eEeKv5g3NCHIMBHemwNRtL+bD7aTK9hUf9xvlrkHJj2gQF1gbGFw+2uDtvfFTU91
+  artifact: Canary
+  prerelease: true
+  force_update: true

@@ -73,6 +73,25 @@ Requirements: MonoGame + Visual Studio
 
 10. That's all. You can now compile the executable.
 
+
+## Command-Line Arguments
+1. Enable log file.
+
+`log=true`
+
+2. Force a FF8 Directory Path.
+
+`dir="Path_To_FF8"`
+
+3. Force a different data folder.
+
+`data="Path_To_Data"`
+
+4. Force language code.
+
+`lang=xx`
+
+
 ## Development guidelines
 
 1. This project is currently in active development, therefore you can make new pull requests directly to main branch. 
@@ -91,3 +110,4 @@ PS. Required FFmpeg dlls. (available on Ubuntu Cosmos via `sudo apt-get install 
 * swscale-5.dll
 <br/>
 I'd like to thank everyone involved in this project!
+

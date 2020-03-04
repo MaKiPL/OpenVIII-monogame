@@ -69,8 +69,8 @@ namespace OpenVIII
             protected void Get_Strings_BinMSG(BinaryReader br, string filename, uint PointerStart, uint StringStart, uint grab = 0, uint skip = 0)
             {
                 Loc fpos = Files.subPositions[(int)PointerStart];
-                if (fpos.seek > br.BaseStream.Length || fpos.seek < 0) return;
-                br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
+                if (fpos.Seek > br.BaseStream.Length || fpos.Seek < 0) return;
+                br.BaseStream.Seek(fpos.Seek, SeekOrigin.Begin);
                 if (Files.sPositions.ContainsKey(PointerStart))
                 {
                 }
@@ -82,7 +82,7 @@ namespace OpenVIII
                     {
                         Files.sPositions.Add(PointerStart, new List<FF8StringReference>());
                         uint g = 1;
-                        while (br.BaseStream.Position < fpos.max)
+                        while (br.BaseStream.Position < fpos.Max)
                         {
                             b = br.ReadUInt16();
                             if (last > b)
@@ -117,7 +117,7 @@ namespace OpenVIII
                 {
                     key = list[(int)fPaddings[(int)p + 1]];
                     Loc fpos = Files.subPositions[(int)key];
-                    uint fpad = fPaddings[p] + fpos.seek;
+                    uint fpad = fPaddings[p] + fpos.Seek;
                     br.BaseStream.Seek(fpad, SeekOrigin.Begin);
                     if (!Files.sPositions.ContainsKey(key))
                         Files.sPositions.Add(key, new List<FF8StringReference>());
@@ -151,7 +151,7 @@ namespace OpenVIII
                 for (uint p = 0; p < fPaddings.Length; p++)
                 {
                     if (fPaddings[p] <= 0) continue;
-                    uint fpad = pad ? fPaddings[p] + fpos.seek : fpos.seek;
+                    uint fpad = pad ? fPaddings[p] + fpos.Seek : fpos.Seek;
                     if (fpad > br.BaseStream.Length || fpad < 0) return;
                     br.BaseStream.Seek(fpad, SeekOrigin.Begin);
                     if (br.BaseStream.Position + 4 < br.BaseStream.Length)
@@ -177,14 +177,14 @@ namespace OpenVIII
             protected uint[] mngrp_read_padding(BinaryReader br, Loc fpos, int type = 0)
             {
                 uint[] fPaddings = null;
-                if (fpos.seek < 0 || fpos.seek > br.BaseStream.Length) return null;
-                br.BaseStream.Seek(fpos.seek, SeekOrigin.Begin);
+                if (fpos.Seek < 0 || fpos.Seek > br.BaseStream.Length) return null;
+                br.BaseStream.Seek(fpos.Seek, SeekOrigin.Begin);
                 uint size = type == 0 ? br.ReadUInt16() : br.ReadUInt32();
                 fPaddings = new uint[type == 0 ? size : size * type * 2];
                 for (int i = 0; i < fPaddings.Length; i += 1 + type)
                 {
                     fPaddings[i] = br.ReadUInt16();
-                    if (type == 0 && fPaddings[i] + fpos.seek >= fpos.max)
+                    if (type == 0 && fPaddings[i] + fpos.Seek >= fpos.Max)
                         fPaddings[i] = 0;
                     //if (fPaddings[i] != 0)
                     //    fPaddings[i] += fpos.seek;
@@ -216,7 +216,7 @@ namespace OpenVIII
                     using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer, true)))
                     {
                         Files = new StringFile(1);
-                        Files.subPositions.Add(new Loc { seek = 0, length = uint.MaxValue });
+                        Files.subPositions.Add(new Loc { Seek = 0, Length = uint.MaxValue });
                         Get_Strings_Offsets(br, Filenames[0], 0);
                         ms = null;
                     }

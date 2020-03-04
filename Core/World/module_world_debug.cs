@@ -1433,12 +1433,12 @@ namespace OpenVIII
 
         private static void DrawDebug()
         {
-            if (Memory.currentGraphicMode != Memory.GraphicModes.DirectX) //looks like strict DX shaders can't simply accept SV_POSITION, COLOR0 or something?
+            if (Memory.CurrentGraphicMode != Memory.GraphicModes.DirectX) //looks like strict DX shaders can't simply accept SV_POSITION, COLOR0 or something?
                 DrawDebug_Rays(); //uncomment to enable drawing rays for collision
 
             //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
 
-            if (Memory.currentGraphicMode != Memory.GraphicModes.DirectX)
+            if (Memory.CurrentGraphicMode != Memory.GraphicModes.DirectX)
                 Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
         }
 
