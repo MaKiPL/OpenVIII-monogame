@@ -142,7 +142,7 @@
     <Error Condition="!Exists('..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>Copy $(ProjectDir)\Content\testShader.xnb $(TargetDir)\Content\</PostBuildEvent>
+    <PostBuildEvent>cp $(ProjectDir)Content\testShader.xnb $(TargetDir)Content\</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
