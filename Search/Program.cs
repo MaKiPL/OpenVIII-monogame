@@ -11,7 +11,7 @@ namespace OpenVIII.Search
         static void Main(string[] args)
         {
             start:
-            Memory.Init(null, null, null, null);
+            Memory.Init(null, null, null, args);
             Console.Write("Insert string you would like to find. This assumes you are looking for FF8 formated strings." +
                 "\r\nThere may be special characters in your string so you might have to remove words to get a match.\r\n The search is case senseative.\r\n Input:  ");
             FF8String sval = Console.ReadLine().Trim((Environment.NewLine+" _").ToCharArray());
