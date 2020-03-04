@@ -58,10 +58,10 @@ namespace OpenVIII.IGMData.Pool
 
         public override void Refresh()
         {
-            if (Memory.State == null || Memory.State.LimitBreakQuistis_Unlocked_BlueMagic == null) return;
+            if (Memory.State == null || Memory.State.LimitBreakQuistisUnlockedBlueMagic == null) return;
             Kernel_bin.Blue_Magic bm = 0;
             unlocked = new List<Kernel_bin.Blue_Magic>();
-            foreach (bool b in Memory.State.LimitBreakQuistis_Unlocked_BlueMagic)
+            foreach (bool b in Memory.State.LimitBreakQuistisUnlockedBlueMagic)
             {
                 if (b)
                     unlocked.Add(bm);

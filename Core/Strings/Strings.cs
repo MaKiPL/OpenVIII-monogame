@@ -52,16 +52,16 @@ namespace OpenVIII
             switch (id)
             {
                 case Faces.ID.Squall_Leonhart:
-                    return d.Squallsname ?? Read(FileID.MNGRP, 2, 92);
+                    return d.SquallName ?? Read(FileID.MNGRP, 2, 92);
 
                 case Faces.ID.Rinoa_Heartilly:
-                    return d.Rinoasname ?? Read(FileID.MNGRP, 2, 93);
+                    return d.RinoaName ?? Read(FileID.MNGRP, 2, 93);
 
                 case Faces.ID.Angelo:
-                    return d.Angelosname ?? Read(FileID.MNGRP, 2, 94);
+                    return d.AngeloName ?? Read(FileID.MNGRP, 2, 94);
 
                 case Faces.ID.Boko:
-                    return d.Bokosname ?? Read(FileID.MNGRP, 2, 135);
+                    return d.BokoName ?? Read(FileID.MNGRP, 2, 135);
 
                 case Faces.ID.Zell_Dincht:
                 case Faces.ID.Irvine_Kinneas:
@@ -98,7 +98,7 @@ namespace OpenVIII
                     return Read(FileID.MNGRP, 2, 95 + (int)(id.ToGFs()));
 
                 case Faces.ID.Griever:
-                    return d.Grieversname ?? Read(FileID.MNGRP, 2, 135);
+                    return d.GrieverName ?? Read(FileID.MNGRP, 2, 135);
 
                 case Faces.ID.MiniMog:
                     return Read(FileID.KERNEL, 0, 72); // also in KERNEL, 12, 36

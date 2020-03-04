@@ -1,5 +1,8 @@
-﻿namespace OpenVIII
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace OpenVIII
 {
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public enum GFs : byte
     {
         Quezacotl,

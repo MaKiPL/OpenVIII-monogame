@@ -1,15 +1,28 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
+// ReSharper disable UnusedMember.Global
 
 namespace OpenVIII
 {
     public static partial class Saves
     {
+        [Flags]
+        public enum BattleMiscFlags : byte
+        {
+            Dream = 0x1,
+            Odin = 0x2,
+            Phoenix = 0x4,
+            Gilgamesh = 0x8,
+            AngeloDisabled = 0x10,
+            AngelWingEnabled = 0x20,
+            Unk40 = 0x40,
+            Unk80 = 0x80
+        }
         #region Classes
 
         /// <summary>
@@ -21,11 +34,8 @@ namespace OpenVIII
             #region Fields
 
             private Dictionary<Characters, CharacterData> _characters;
-            private TimeSpan _gametime;
             private Dictionary<GFs, GFData> _gfs;
-            private List<Item> _items;
             private List<Shop> _shops;
-            private TimeSpan _timeplayed;
 
             #endregion Fields
 
@@ -37,13 +47,13 @@ namespace OpenVIII
                 _gfs = new Dictionary<GFs, GFData>(16);
                 _characters = new Dictionary<Characters, CharacterData>(8);
                 _shops = new List<Shop>(20);
-                _items = new List<Item>(198);
-                Timeplayed = new TimeSpan();
-                CoordX = new short[3];
-                CoordY = new short[3];
-                Triangle_ID = new ushort[3];
-                Fieldvars = new FieldVars(); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-                Worldmap = new Worldmap();//br.ReadBytes(128);//0x1270
+                Items = new List<Item>(198);
+                TimePlayed = new TimeSpan();
+                CoordinateX = new short[3];
+                CoordinateY = new short[3];
+                TriangleID = new ushort[3];
+                FieldVars = new FieldVars(); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+                WorldMap = new Worldmap();//br.ReadBytes(128);//0x1270
                 TripleTriad = new TripleTriad(); //br.ReadBytes(128);//0x12F0
                 ChocoboWorld = new ChocoboWorld(); //br.ReadBytes(64);//0x1370
             }
@@ -55,22 +65,22 @@ namespace OpenVIII
             /// <summary>
             /// 0x000C 4 bytes Preview: Amount of Gil
             /// </summary>
-            public uint AmountofGilPreview { get; set; }
+            public uint AmountOfGilPreview { get; set; }
 
             /// <summary>
             /// 0x0B20 4 bytes Amount of Gil (Laguna)
             /// </summary>
-            public uint AmountofGil_Laguna { get; set; }
+            public uint AmountOfGilLaguna { get; set; }
 
             /// <summary>
             /// 0x0B1C 4 bytes Amount of Gil
             /// </summary>
-            public uint AmountofGil { get; set; }
+            public uint AmountOfGil { get; set; }
 
             /// <summary>
             /// 0x0040 12 bytes Preview: Angelo's name (0x00 terminated)
             /// </summary>
-            public FF8String Angelosname { get; set; }
+            public FF8String AngeloName { get; set; }
 
             public byte AveragePartyLevel
             {
@@ -94,7 +104,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0D08 4 bytes Battle: First "Bomb" battle (Elemental tip)
             /// </summary>
-            public uint BattleELEMENTAL { get; set; }
+            public uint BattleElemental { get; set; }
 
             /// <summary>
             /// 0x0CF2 2 bytes Battle: battle escaped
@@ -104,17 +114,17 @@ namespace OpenVIII
             /// <summary>
             /// 0x0D10 4 bytes Battle: First "Irvine" battle (Irvine's limit break tip)
             /// </summary>
-            public uint BattleIRVINE { get; set; }
+            public uint BattleIrvine { get; set; }
 
             /// <summary>
             /// 0x0D14 8 bytes Battle: Magic drawn once
             /// </summary>
-            public BitArray BattleMAGIC { get; set; }
+            public BitArray BattleMagic { get; set; }
 
             /// <summary>
             /// 0x0D0C 4 bytes Battle: First "T-Rex" battle (Mental tip)
             /// </summary>
-            public uint BattleMENTAL { get; set; }
+            public uint BattleMental { get; set; }
 
             /// <summary>
             /// 0x0D04 4 bytes Battle: First "Bug" battle (R1 tip)
@@ -124,17 +134,17 @@ namespace OpenVIII
             /// <summary>
             /// 0x0D30 1 byte Battle: Renzokuken auto
             /// </summary>
-            public bool BattleRAUTO { get; set; }
+            public bool BattleRenzokukenAuto { get; set; }
 
             /// <summary>
             /// 0x0D31 1 byte Battle: Renzokuken indicator
             /// </summary>
-            public bool BattleRINDICATOR { get; set; }
+            public bool BattleRenzokukenIndicator { get; set; }
 
             /// <summary>
-            /// 0x0D1C 20 bytes Battle: Ennemy scanned once
+            /// 0x0D1C 20 bytes Battle: Enemy scanned once
             /// </summary>
-            public BitArray BattleSCAN { get; set; }
+            public BitArray BattleScan { get; set; }
 
             /// <summary>
             /// 0x0CF4 4 bytes Unknown
@@ -142,27 +152,16 @@ namespace OpenVIII
             public uint BattleTonberryKilledCount { get; set; }
 
             /// <summary>
-            /// 0x0CFC 4 bytes Battle: Tonberry Sr killed (yeah, this is a boolean)
+            /// 0x0CFC 4 bytes Battle: Tonberry King killed (yeah, this is a boolean)
             /// </summary>
-            public bool BattleTonberrySrKilled { get; set; }
+            public bool BattleTonberryKingKilled { get; set; }
 
             /// <summary>
             /// Battle: dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
             /// </summary>
-            public MiscIndicator BattleMISCIndicator { get; set; }
+            public BattleMiscFlags BattleMiscFlags { get; set; }
 
-            [Flags]
-            public enum MiscIndicator : byte
-            {
-                Dream = 0x1,
-                Odin = 0x2,
-                Phoenix = 0x4,
-                Gilgamesh = 0x8,
-                Angelo_Disabled = 0x10,
-                Angel_Wing_Enabled = 0x20,
-                UNK40 = 0x40,
-                UNK80 = 0x80
-            }
+            
 
             /// <summary>
             /// 0x0CEC 4 bytes Battle: victory count
@@ -172,7 +171,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x004C 12 bytes Preview: Boko's name (0x00 terminated)
             /// </summary>
-            public FF8String Bokosname { get; set; }
+            public FF8String BokoName { get; set; }
 
             /// <summary>
             /// 0x04A0-0x08C7 152 bytes each 8 of them. Characters: Squall-Edea
@@ -183,8 +182,7 @@ namespace OpenVIII
                 {
                     if (_characters.Values.Count > 0)
                         return _characters;
-                    else
-                        return null;
+                    return null;
                 }
             }
 
@@ -199,14 +197,14 @@ namespace OpenVIII
             public Configuration Configuration { get; set; }
 
             /// <summary>
-            /// 0x0D56 3*2 bytes (signed) Coord X (party1, party2, party3)
+            /// 0x0D56 3*2 bytes (signed) coordinate X (party1, party2, party3)
             /// </summary>
-            public short[] CoordX { get; set; }
+            public short[] CoordinateX { get; set; }
 
             /// <summary>
-            /// 0x0D5C 3*2 bytes (signed) Coord Y (party1, party2, party3)
+            /// 0x0D5C 3*2 bytes (signed) coordinate Y (party1, party2, party3)
             /// </summary>
-            public short[] CoordY { get; set; }
+            public short[] CoordinateY { get; set; }
 
             /// <summary>
             /// 0x0CE4 4 bytes Countdown
@@ -226,7 +224,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x005C 4 bytes Preview: Current save (last saved game)
             /// </summary>
-            public uint Currentsave { get; set; }
+            public uint CurrentSave { get; set; }
 
             /// <summary>
             /// 0x0D68 3*1 bytes Direction (party1, party2, party3)
@@ -236,18 +234,18 @@ namespace OpenVIII
             /// <summary>
             /// Time since loaded
             /// </summary>
-            public TimeSpan ElapsedTimeSinceLoad => Loadtime != null ? (Memory.TotalGameTime - Loadtime) : new TimeSpan();
+            public TimeSpan ElapsedTimeSinceLoad => (Memory.TotalGameTime - LoadTime);
 
             /// <summary>
             /// 0x0D70 256 + 1024 bytes Field vars
             /// </summary>
             /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/Variables"/>
-            public FieldVars Fieldvars { get; set; }
+            public FieldVars FieldVars { get; set; }
 
             /// <summary>
             /// 0x0006 2 bytes Preview: 1st character's current HP
             /// </summary>
-            public ushort FirstCharactersCurrentHP { get; set; }
+            public ushort FirstCharactersCurrentHp { get; set; }
 
             /// <summary>
             /// 0x0024 1 byte Preview: 1st character's level
@@ -257,13 +255,13 @@ namespace OpenVIII
             /// <summary>
             /// 0x0008 2 bytes Preview: 1st character's max HP
             /// </summary>
-            public ushort FirstCharactersMaxHP { get; set; }
+            public ushort FirstCharactersMaxHp { get; set; }
 
             /// <summary>
             /// <para>0x0CE0 4 bytes Game time</para>
-            /// <para>unsure if this is a duplicate of Timeplayed or something.</para>
+            /// <para>unsure if this is a duplicate of Time played or something.</para>
             /// </summary>
-            public TimeSpan Gametime { get => _gametime; private set => _gametime = value; }
+            public TimeSpan GameTime { get; private set; }
 
             /// <summary>
             /// 0x0060 - 0x049F 68 bytes each 16 of them. Guardian Forces: Quetzalcoatl-Eden
@@ -273,7 +271,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0B0C 12 bytes Griever name (FF8 text format)
             /// </summary>
-            public FF8String Grieversname { get; set; }
+            public FF8String GrieverName { get; set; }
 
             /// <summary>
             /// <para>0x0B54 396 bytes Items 198 items (Item ID and Quantity)</para>
@@ -281,14 +279,14 @@ namespace OpenVIII
             /// The order of items out of battle and Each item uses 2 bytes 1 for ID and 1 for Quantity
             /// </para>
             /// </summary>
-            public List<Item> Items => _items;
+            public List<Item> Items { get; private set; }
 
             /// <summary>
             /// <para>0x0B34 32 bytes Items battle order</para>
             /// <para>Only the items that can be used in battle</para>
             /// <para>The order they appear in the battle item menu.</para>
             /// </summary>
-            public byte[] Itemsbattleorder { get; set; }
+            public byte[] ItemsBattleOrder { get; set; }
 
             /// <summary>
             /// 0x0B08 4 bytes Known weapons
@@ -299,45 +297,45 @@ namespace OpenVIII
             /// <para>0x0B2A 1 byte Limit Break Angelo completed</para>
             /// <para>Each bit is a completely learned ability</para>
             /// </summary>
-            public Angelo LimitBreakAngelocompleted { get; set; }
+            public Angelo LimitBreakAngeloCompleted { get; set; }
 
             /// <summary>
             /// <para>0x0B2B 1 byte Limit Break Angelo known</para>
             /// <para>Each bit is an ability is known about/able to be learned</para>
             /// </summary>
-            public Angelo LimitBreakAngeloknown { get; set; }
+            public Angelo LimitBreakAngeloKnown { get; set; }
 
             /// <summary>
             /// <para>0x0B2C 8 bytes Limit Break Angelo points</para>
-            /// <para>Each byte is progress to learing an ability</para>
+            /// <para>Each byte is progress to learning an ability</para>
             /// </summary>
-            public Dictionary<Angelo, byte> LimitBreakAngelopoints { get; set; }
+            public Dictionary<Angelo, byte> LimitBreakAngeloPoints { get; set; }
 
-            public BitArray LimitBreakIrvine_Unlocked_Shot { get; set; }
+            public BitArray LimitBreakIrvineUnlockedShot { get; set; }
 
             /// <summary>
             /// <para>0x0B24 2 bytes Limit Break Quistis</para>
             /// <para>Each bit is an unlocked blue magic spell</para>
             /// </summary>
-            public BitArray LimitBreakQuistis_Unlocked_BlueMagic { get; set; }
+            public BitArray LimitBreakQuistisUnlockedBlueMagic { get; set; }
 
             /// <summary>
             /// <para>0x0B29 1 byte Limit Break Selphie</para>
             /// <para>I think this sets bits when a rare spell is used.</para>
             /// </summary>
-            public BitArray LimitBreakSelphie_Used_RareSpells { get; set; }
+            public BitArray LimitBreakSelphieUsedRareSpells { get; set; }
 
             /// <summary>
             /// <para>0x0B26 2 bytes Limit Break Zell</para>
             /// <para>Each bit is a combo/attack unlocked. So it shows on screen.</para>
             /// <para>You can use the combo if you know it.</para>
             /// </summary>
-            public BitArray LimitBreakZell_Unlocked_Duel { get; set; }
+            public BitArray LimitBreakZellUnlockedDuel { get; set; }
 
             /// <summary>
             /// xna GameTime when loaded
             /// </summary>
-            public TimeSpan Loadtime { get; set; }
+            public TimeSpan LoadTime { get; set; }
 
             /// <summary>
             /// 0x0004 2 bytes Preview: Location ID
@@ -345,30 +343,13 @@ namespace OpenVIII
             public ushort LocationID { get; set; }
 
             /// <summary>
-            /// 0x0D50 2 bytes Module (1= field, 2= worldmap, 3= battle)
+            /// 0x0D50 2 bytes Module (1= field, 2= world map, 3= battle)
             /// </summary>
             public ushort Module { get; set; }
 
-            public List<CharacterData> NonPartyMembers
-            {
-                get
-                {
-                    List<CharacterData> c = null;
-
-                    if (Characters != null)
-                    {
-                        c = new List<CharacterData>();
-                        foreach (KeyValuePair<Characters, CharacterData> i in Characters)
-                        {
-                            if (!Party.Contains(i.Key) && i.Value.Available)
-                            {
-                                c.Add(i.Value);
-                            }
-                        }
-                    }
-                    return c;
-                }
-            }
+            public IEnumerable<CharacterData> NonPartyMembers => Characters == null
+                ? null
+                : (from i in Characters where !Party.Contains(i.Key) && i.Value.Available select i.Value);
 
             /// <summary>
             /// 0x0D6B 1 byte Padding
@@ -398,7 +379,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0034 12 bytes Preview: Rinoa's name (0x00 terminated)
             /// </summary>
-            public FF8String Rinoasname { get; set; }
+            public FF8String RinoaName { get; set; }
 
             /// <summary>
             /// 0x000A 2 bytes Preview: save count
@@ -436,7 +417,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0028 12 bytes Preview: Squall's name (0x00 terminated)
             /// </summary>
-            public FF8String Squallsname { get; set; }
+            public FF8String SquallName { get; set; }
 
             public bool TeamLaguna => Party != null && (Party[0] == OpenVIII.Characters.Laguna_Loire || Party[1] == OpenVIII.Characters.Laguna_Loire || Party[2] == OpenVIII.Characters.Laguna_Loire);
 
@@ -444,15 +425,15 @@ namespace OpenVIII
             /// Stored playtime in seconds. Made into timespan for easy parsing.
             /// </summary>
             /// <remarks>0x0020 4 bytes Preview: Total number of seconds played</remarks>
-            public TimeSpan Timeplayed { get => _timeplayed; set => _timeplayed = value; }
+            public TimeSpan TimePlayed { get; set; }
 
             /// <summary>
             /// 0x0D62 3*2 bytes Triangle ID (party1, party2, party3)
             /// </summary>
-            public ushort[] Triangle_ID { get; set; }
+            public ushort[] TriangleID { get; set; }
 
             /// <summary>
-            /// 0x12F0 128 bytes Triple Triad (TODO)
+            /// 0x12F0 128 bytes Triple Triad (TODO flush this out)
             /// </summary>
             public TripleTriad TripleTriad { get; set; }
 
@@ -504,9 +485,9 @@ namespace OpenVIII
             public uint Unknown9 { get; set; }
 
             /// <summary>
-            /// 0x1270 128 bytes Worldmap
+            /// 0x1270 128 bytes World map
             /// </summary>
-            public Worldmap Worldmap { get; set; }
+            public Worldmap WorldMap { get; set; }
 
             #endregion Properties
 
@@ -546,19 +527,19 @@ namespace OpenVIII
             public Data Clone()
             {
                 Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Data)} :: {nameof(Clone)} ");
-                //shadowcopy
+                //shadow copy
                 Data d = (Data)MemberwiseClone();
-                //deepcopy anything that needs it here.
+                //deep copy anything that needs it here.
 
                 d._characters = _characters.ToDictionary(x => x.Key, x => (CharacterData)x.Value.Clone());
                 d._gfs = _gfs.ToDictionary(x => x.Key, x => (GFData)x.Value.Clone());
                 d.ChocoboWorld = ChocoboWorld.Clone();
-                d.Fieldvars = Fieldvars.Clone();
-                d.Worldmap = Worldmap.Clone();
+                d.FieldVars = FieldVars.Clone();
+                d.WorldMap = WorldMap.Clone();
                 d.TripleTriad = TripleTriad.Clone();
-                d.LimitBreakAngelopoints = LimitBreakAngelopoints.ToDictionary(x => x.Key, x => x.Value);
+                d.LimitBreakAngeloPoints = LimitBreakAngeloPoints.ToDictionary(x => x.Key, x => x.Value);
                 d._shops = _shops.Select(x => x.Clone()).ToList();
-                d._items = _items.Select(x => x.Clone()).ToList();
+                d.Items = Items.Select(x => x.Clone()).ToList();
                 return d;
             }
 
@@ -585,39 +566,39 @@ namespace OpenVIII
             /// How many dead characters there are.
             /// </summary>
             /// <returns>&gt;=0</returns>
-            public int DeadCharacters() => Characters.Where(m => m.Value.Available && m.Value.CurrentHP() == 0 || (m.Value.Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0).Count();
+            public int DeadCharacters() =>
+                Characters?.Count(m =>
+                    m.Value.Available && m.Value.CurrentHP() == 0 ||
+                    (m.Value.Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0) ?? 0;
 
             /// <summary>
             /// How many dead party members there are.
             /// </summary>
             /// <returns>&gt;=0</returns>
-            public int DeadPartyMembers() => PartyData.Where(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead).Count();
+            public int DeadPartyMembers() =>
+                PartyData?.Count(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead) ?? 0;
 
             public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
             {
                 ConcurrentQueue<GFs> ret = new ConcurrentQueue<GFs>();
                 abilities = null;
-                if (GFs != null)
+                if (GFs == null) return ret;
+                abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
+                foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value != null && i.Value.Exists))
                 {
-                    abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
-                    foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value != null && i.Value.Exists))
+                    if (!g.Value.EarnExp(ap, out Kernel_bin.Abilities ability)) continue;
+                    if (ability != Kernel_bin.Abilities.None)
                     {
-                        if (g.Value.EarnExp(ap, out Kernel_bin.Abilities ability))
-                        {
-                            if (ability != Kernel_bin.Abilities.None)
-                            {
-                                abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
-                            }
-                            ret.Enqueue(g.Key);
-                        }
+                        abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
                     }
+                    ret.Enqueue(g.Key);
                 }
                 return ret;
             }
 
             public bool EarnItem(Cards.ID card, byte qty, byte location = 0)
             {
-                TTCardInfo i = new TTCardInfo() { Unlocked = true, Qty = qty, Location = location };
+                TTCardInfo i = new TTCardInfo { Unlocked = true, Qty = qty, Location = location };
                 if (!TripleTriad.cards.TryAdd(card, i))
                 {
                     TripleTriad.cards[card].Unlocked = i.Unlocked;
@@ -637,7 +618,7 @@ namespace OpenVIII
                     int k = Items.FindIndex(item => item.ID == iD);
                     if (qty < 0)
                         return Items[k] = Items[k].Add(checked((sbyte)qty));
-                    else if (qty > 0)
+                    if (qty > 0)
                         return Items[k] = Items[k].Add(checked((byte)qty));
                 }
                 else if (Items.Any(i => i.ID == 0) && qty > 0)
@@ -652,38 +633,29 @@ namespace OpenVIII
 
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
-                Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>(16);
-                if (Characters != null)
+                Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>();
+                if (Characters == null) return r;
+                foreach (KeyValuePair<Characters, CharacterData> c in Characters)
                 {
-                    foreach (KeyValuePair<Characters, CharacterData> c in Characters)
-                    {
-                        foreach (GFs gf in c.Value.JunctionedGFs)
+                    foreach (GFs gf in c.Value.JunctionedGFs)
+                        if(!r.ContainsKey(gf) && gf >= OpenVIII.GFs.Quezacotl && gf <= OpenVIII.GFs.Eden )
                             r.Add(gf, c.Key);
 
-                        //if (c.Value.JunctionedGFs != GFflags.None)
-                        //{
-                        //    IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(GFflags)).Cast<Enum>();
-                        //    foreach (Enum flag in availableFlags.Where(c.Value.JunctionedGFs.HasFlag))
-                        //    {
-                        //        if ((GFflags)flag == GFflags.None) continue;
-                        //        r.Add(ConvertGFEnum[(GFflags)flag], c.Key);
-                        //    }
-                        //}
-                    }
+
                 }
                 return r;
             }
 
-            public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) ? GFs[gf].MaxGFAbilities : false;
+            public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) && GFs[gf].MaxGFAbilities;
 
             public bool PartyHasAbility(Kernel_bin.Abilities a)
             {
-                if (PartyData != null)
-                    foreach (Characters c in PartyData)
-                    {
-                        if (Characters.TryGetValue(c, out CharacterData cd) && cd.Abilities.Contains(a))
-                            return true;
-                    }
+                if (PartyData == null) return false;
+                foreach (Characters c in PartyData)
+                {
+                    if (Characters.TryGetValue(c, out CharacterData cd) && cd.Abilities.Contains(a))
+                        return true;
+                }
                 return false;
             }
 
@@ -691,55 +663,22 @@ namespace OpenVIII
             {
                 //Read Data
                 LocationID = br.ReadUInt16();//0x0004
-                FirstCharactersCurrentHP = br.ReadUInt16();//0x0006
-                FirstCharactersMaxHP = br.ReadUInt16();//0x0008
+                FirstCharactersCurrentHp = br.ReadUInt16();//0x0006
+                FirstCharactersMaxHp = br.ReadUInt16();//0x0008
                 SaveCount = br.ReadUInt16();//0x000A
-                AmountofGilPreview = br.ReadUInt32();//0x000C
-                Timeplayed = new TimeSpan(0, 0, checked((int)br.ReadUInt32()));//0x0020
+                AmountOfGilPreview = br.ReadUInt32();//0x000C
+                TimePlayed = new TimeSpan(0, 0, checked((int)br.ReadUInt32()));//0x0020
                 FirstCharactersLevel = br.ReadByte();//0x0024
-                Party = Array.ConvertAll(br.ReadBytes(3), Item => (Characters)Item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
-                Squallsname = br.ReadBytes(12);//0x0028
-                Rinoasname = br.ReadBytes(12);//0x0034
-                Angelosname = br.ReadBytes(12);//0x0040
-                Bokosname = br.ReadBytes(12);//0x004C
+                Party = Array.ConvertAll(br.ReadBytes(3), item => (Characters)item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
+                SquallName = br.ReadBytes(12);//0x0028
+                RinoaName = br.ReadBytes(12);//0x0034
+                AngeloName = br.ReadBytes(12);//0x0040
+                BokoName = br.ReadBytes(12);//0x004C
 
                 CurrentDisk = br.ReadUInt32();//0x0058
-                Currentsave = br.ReadUInt32();//0x005C
+                CurrentSave = br.ReadUInt32();//0x005C
                 ReadInitOut(br);
-                //GetNames();
-                //for (byte i = 0; i <= (int)OpenVIII.GFs.Eden; i++)
-                //{
-                //    _gfs.Add((GFs)i, GFData.Load(br, (GFs)i));
-                //}
-                //for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
-                //{
-                //    var tmp = CharacterData.Load(br, (Characters)i);
-
-                //    tmp.Name = Memory.Strings.GetName((Characters)i, this);
-                //    _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total
-                //}
-                //for (int i = 0; i < _shops.Capacity; i++)
-                //    _shops.Add(new Shop(br));//0x0960 //400 bytes
-                //Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
-                //PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
-                //KnownWeapons = new BitArray(br.ReadBytes(4)); //0x0B08 // 4 bytes
-                //Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
-                //if (string.IsNullOrWhiteSpace(Grieversname)) Grieversname = Memory.Strings.GetName(Faces.ID.Griever);
-                //Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
-                //Unknown2 = br.ReadUInt16();//0x0B1A
-                //AmountofGil2 = br.ReadUInt32();//0x0B1C //dupilicate
-                //AmountofGil_Laguna = br.ReadUInt32();//0x0B20
-                //LimitBreakQuistis_Unlocked_BlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
-                //LimitBreakZell_Unlocked_Duel = new BitArray(br.ReadBytes(2));//0x0B26
-                //LimitBreakIrvine_Unlocked_Shot = new BitArray(br.ReadBytes(1));//0x0B28
-                //LimitBreakSelphie_Used_RareSpells = new BitArray(br.ReadBytes(1));//0x0B29
-                //LimitBreakAngelocompleted = new BitArray(br.ReadBytes(1));//0x0B2A
-                //LimitBreakAngeloknown = new BitArray(br.ReadBytes(1));//0x0B2B
-                //LimitBreakAngelopoints = br.ReadBytes(8);//0x0B2C
-                //Itemsbattleorder = br.ReadBytes(32);//0x0B34
-                //for (int i = 0; i < _items.Capacity; i++)
-                //    _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
-                Gametime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
+                GameTime = new TimeSpan(0, 0, (int)br.ReadUInt32());//0x0CE0
                 Countdown = br.ReadUInt32();//0x0CE4
                 Unknown3 = br.ReadUInt32();//0x0CE8
                 BattleVictoryCount = br.ReadUInt32();//0x0CEC
@@ -747,36 +686,36 @@ namespace OpenVIII
                 BattleEscapeCount = br.ReadUInt16();//0x0CF2
                 Unknown5 = br.ReadUInt32();//0x0CF4
                 BattleTonberryKilledCount = br.ReadUInt32();//0x0CF8
-                BattleTonberrySrKilled = br.ReadUInt32() > 0;//0x0CFC (yeah, this is a boolean)
+                BattleTonberryKingKilled = br.ReadUInt32() > 0;//0x0CFC (yeah, this is a boolean)
                 Unknown6 = br.ReadUInt32();//0x0D00
-                BattleR1 = br.ReadUInt32();//0x0D04 First "Bug" battle (R1 tip)
-                BattleELEMENTAL = br.ReadUInt32();//0x0D08 First "Bomb" battle (Elemental tip)
-                BattleMENTAL = br.ReadUInt32();//0x0D0C  First "T-Rex" battle (Mental tip)
-                BattleIRVINE = br.ReadUInt32();//0x0D10 First "Irvine" battle (Irvine's limit break tip)
-                BattleMAGIC = new BitArray(br.ReadBytes(8));//0x0D14 Magic drawn once
-                BattleSCAN = new BitArray(br.ReadBytes(20));//0x0D1C Ennemy scanned once
-                BattleRAUTO = br.ReadByte() > 0;//0x0D30 Renzokuken auto
-                BattleRINDICATOR = br.ReadByte() > 0;//0x0D31 Renzokuken indicator
-                BattleMISCIndicator = (MiscIndicator)br.ReadByte();//0x0D32 dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
+                BattleR1 = br.ReadUInt32();//0x0D04 First bug battle (R1 tip)
+                BattleElemental = br.ReadUInt32();//0x0D08 First "Bomb" battle (Elemental tip)
+                BattleMental = br.ReadUInt32();//0x0D0C  First "T-Rex" battle (Mental tip)
+                BattleIrvine = br.ReadUInt32();//0x0D10 First "Irvine" battle (Irvine's limit break tip)
+                BattleMagic = new BitArray(br.ReadBytes(8));//0x0D14 Magic drawn once
+                BattleScan = new BitArray(br.ReadBytes(20));//0x0D1C Enemy scanned once
+                BattleRenzokukenAuto = br.ReadByte() > 0;//0x0D30 Renzokuken auto
+                BattleRenzokukenIndicator = br.ReadByte() > 0;//0x0D31 Renzokuken indicator
+                BattleMiscFlags = (BattleMiscFlags)br.ReadByte();//0x0D32 dream/Odin/Phoenix/Gilgamesh/Angelo disabled/Angel Wing enabled/???/???
                 TutorialInfos = new BitArray(br.ReadBytes(16));//0x0D33
                 SeeDTestLevel = br.ReadByte();//0x0D43
                 Unknown7 = br.ReadUInt32();//0x0D44
-                Party2 = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item); //0x0D48 (last byte always = 255) //dupicate?
+                Party2 = Array.ConvertAll(br.ReadBytes(4), item => (Characters)item); //0x0D48 (last byte always = 255) //duplicate?
                 Unknown8 = br.ReadUInt32();//0x0D4C
-                Module = br.ReadUInt16();//0x0D50 (1= field, 2= worldmap, 3= battle)
+                Module = br.ReadUInt16();//0x0D50 (1= field, 2= world map, 3= battle)
                 CurrentField = br.ReadUInt16();//0x0D52
                 PreviousField = br.ReadUInt16();//0x0D54
                 for (int i = 0; i < 3; i++)
-                    CoordX[i] = br.ReadInt16();//0x0D56 signed  (party1, party2, party3)
+                    CoordinateX[i] = br.ReadInt16();//0x0D56 signed  (party1, party2, party3)
                 for (int i = 0; i < 3; i++)
-                    CoordY[i] = br.ReadInt16();//0x0D5C signed  (party1, party2, party3)
+                    CoordinateY[i] = br.ReadInt16();//0x0D5C signed  (party1, party2, party3)
                 for (int i = 0; i < 3; i++)
-                    Triangle_ID[i] = br.ReadUInt16();//0x0D62  (party1, party2, party3)
+                    TriangleID[i] = br.ReadUInt16();//0x0D62  (party1, party2, party3)
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B
                 Unknown9 = br.ReadUInt32();//0x0D6C
-                Fieldvars.Read(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-                Worldmap.Read(br);//br.ReadBytes(128);//0x1270
+                FieldVars.Read(br); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
+                WorldMap.Read(br);//br.ReadBytes(128);//0x1270
                 TripleTriad.Read(br); //br.ReadBytes(128);//0x12F0
                 ChocoboWorld.Read(br); //br.ReadBytes(64);//0x1370
             }
@@ -806,28 +745,28 @@ namespace OpenVIII
                     _shops.Add(new Shop(br));//0x0960 //400 bytes
                 //init offset 2704
                 //Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
-                Configuration = new Saves.Configuration(br);
-                PartyData = Array.ConvertAll(br.ReadBytes(4), Item => (Characters)Item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
+                Configuration = new Configuration(br);
+                PartyData = Array.ConvertAll(br.ReadBytes(4), item => (Characters)item).ToList(); //0x0B04 // 4 bytes 0xFF terminated.
                 if (Party == null) Party = PartyData.Take(3).ToList();
                 KnownWeapons = new BitArray(br.ReadBytes(4)); //0x0B08 // 4 bytes
-                Grieversname = br.ReadBytes(12); //0x0B0C // 12 bytes
-                if (string.IsNullOrWhiteSpace(Grieversname)) Grieversname = Memory.Strings.GetName(Faces.ID.Griever);
+                GrieverName = br.ReadBytes(12); //0x0B0C // 12 bytes
+                if (string.IsNullOrWhiteSpace(GrieverName)) GrieverName = Memory.Strings.GetName(Faces.ID.Griever);
                 Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
                 Unknown2 = br.ReadUInt16();//0x0B1A
-                AmountofGil = br.ReadUInt32();//0x0B1C //dupilicate
-                if (AmountofGilPreview != AmountofGil) AmountofGilPreview = AmountofGil;
-                AmountofGil_Laguna = br.ReadUInt32();//0x0B20
-                LimitBreakQuistis_Unlocked_BlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
-                LimitBreakZell_Unlocked_Duel = new BitArray(br.ReadBytes(2));//0x0B26
-                LimitBreakIrvine_Unlocked_Shot = new BitArray(br.ReadBytes(1));//0x0B28
-                LimitBreakSelphie_Used_RareSpells = new BitArray(br.ReadBytes(1));//0x0B29
-                LimitBreakAngelocompleted = (Angelo)br.ReadByte();//0x0B2A
-                LimitBreakAngeloknown = (Angelo)br.ReadByte();//0x0B2B
-                LimitBreakAngelopoints = br.ReadBytes(8).Select((value, key) => new { key, value }).ToDictionary(x => (Angelo)(x.key + 1), x => checked(x.value));//0x0B2C
-                Itemsbattleorder = br.ReadBytes(32);//0x0B34
+                AmountOfGil = br.ReadUInt32();//0x0B1C //dupilicate
+                if (AmountOfGilPreview != AmountOfGil) AmountOfGilPreview = AmountOfGil;
+                AmountOfGilLaguna = br.ReadUInt32();//0x0B20
+                LimitBreakQuistisUnlockedBlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
+                LimitBreakZellUnlockedDuel = new BitArray(br.ReadBytes(2));//0x0B26
+                LimitBreakIrvineUnlockedShot = new BitArray(br.ReadBytes(1));//0x0B28
+                LimitBreakSelphieUsedRareSpells = new BitArray(br.ReadBytes(1));//0x0B29
+                LimitBreakAngeloCompleted = (Angelo)br.ReadByte();//0x0B2A
+                LimitBreakAngeloKnown = (Angelo)br.ReadByte();//0x0B2B
+                LimitBreakAngeloPoints = br.ReadBytes(8).Select((value, key) => new { key, value }).ToDictionary(x => (Angelo)(x.key + 1), x => x.value);//0x0B2C
+                ItemsBattleOrder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
-                for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < _items.Capacity; i++)
-                    _items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
+                for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < Items.Capacity; i++)
+                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
             /// <summary>
@@ -857,16 +796,15 @@ namespace OpenVIII
                 Characters c = id.ToCharacters();
                 if (c == OpenVIII.Characters.Blank)
                     return GetDamageable(gf);
-                else
-                    return GetDamageable(c);
+                return GetDamageable(c);
             }
 
             private void GetNames()
             {
-                if (string.IsNullOrWhiteSpace(Squallsname)) Squallsname = Memory.Strings.GetName(Faces.ID.Squall_Leonhart);
-                if (string.IsNullOrWhiteSpace(Rinoasname)) Rinoasname = Memory.Strings.GetName(Faces.ID.Rinoa_Heartilly);
-                if (string.IsNullOrWhiteSpace(Angelosname)) Angelosname = Memory.Strings.GetName(Faces.ID.Angelo);
-                if (string.IsNullOrWhiteSpace(Bokosname)) Bokosname = Memory.Strings.GetName(Faces.ID.Boko);
+                if (string.IsNullOrWhiteSpace(SquallName)) SquallName = Memory.Strings.GetName(Faces.ID.Squall_Leonhart);
+                if (string.IsNullOrWhiteSpace(RinoaName)) RinoaName = Memory.Strings.GetName(Faces.ID.Rinoa_Heartilly);
+                if (string.IsNullOrWhiteSpace(AngeloName)) AngeloName = Memory.Strings.GetName(Faces.ID.Angelo);
+                if (string.IsNullOrWhiteSpace(BokoName)) BokoName = Memory.Strings.GetName(Faces.ID.Boko);
             }
 
             #endregion Methods

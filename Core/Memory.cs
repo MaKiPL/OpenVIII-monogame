@@ -588,7 +588,7 @@ namespace OpenVIII
             {
                 _state = value;
                 if (_state != null)
-                    _state.Loadtime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
+                    _state.LoadTime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
             }
         }
 

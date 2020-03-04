@@ -37,7 +37,7 @@ namespace OpenVIII
         public bool Reversed { get; private set; } = false;
         public TimeSpan ReversedTime { get; set; }
         public T Start { get; set; }
-        public TimeSpan TotalTime { get; set; }
+        public virtual TimeSpan TotalTime { get; set; }
 
         #endregion Properties
 

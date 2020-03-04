@@ -103,12 +103,12 @@ namespace OpenVIII
                     Name.Data = characterData.Name;
                     LV_Num.Data = characterData.Level;
                     Disc_Num.Data = checked((int)Data.CurrentDisk);
-                    Hours.Data = checked((int)MathHelper.Clamp(checked((float)Data.Timeplayed.TotalHours), 0, 99));
+                    Hours.Data = checked((int)MathHelper.Clamp(checked((float)Data.TimePlayed.TotalHours), 0, 99));
                     if (Hours.Data < 99)
-                        Mins.Data = checked((int)MathHelper.Clamp(checked((float)Data.Timeplayed.Minutes), 0, 99));
+                        Mins.Data = checked((int)MathHelper.Clamp(checked((float)Data.TimePlayed.Minutes), 0, 99));
                     else
                         Mins.Data = 99;
-                    Gil.Data = checked((int)Data.AmountofGil);
+                    Gil.Data = checked((int)Data.AmountOfGil);
                     Location.Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Data.LocationID);
                     foreach (Menu_Base i in ITEM)
                         i?.Show();

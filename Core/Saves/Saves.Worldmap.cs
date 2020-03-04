@@ -6,7 +6,7 @@ namespace OpenVIII
     public static partial class Saves
     {
         /// <summary>
-        /// Worldmap vars for savegame
+        /// WorldMap vars for savegame
         /// </summary>
         /// <see cref="https://github.com/myst6re/hyne/blob/master/SaveData.h"/>
         public class Worldmap

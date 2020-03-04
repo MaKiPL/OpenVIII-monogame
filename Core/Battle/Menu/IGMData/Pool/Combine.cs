@@ -208,7 +208,7 @@ namespace OpenVIII.IGMData.Pool
                 {
                     FF8String replace(FF8String str)
                     {
-                        return str.Clone().Replace(new FF8String(new byte[] { 3, 64 }), Memory.State.Angelosname);
+                        return str.Clone().Replace(new FF8String(new byte[] { 3, 64 }), Memory.State.AngeloName);
                     }
                     if (rinoa_Limit_Breaks_Part_1 != null)
                         return replace(rinoa_Limit_Breaks_Part_1.Name);
