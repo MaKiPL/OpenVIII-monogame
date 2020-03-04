@@ -1161,6 +1161,7 @@ namespace OpenVIII
                 worldShaderModel.Parameters["View"].SetValue(ate.View);
                 worldShaderModel.Parameters["World"].SetValue(ate.World);
                 worldShaderModel.Parameters["camWorld"].SetValue(camPosition);
+                worldShaderModel.Parameters["skyColor"].SetValue(skyColor);
             }
 
 
@@ -1255,6 +1256,9 @@ namespace OpenVIII
             ImGuiNET.ImGui.Separator();
             System.Numerics.Vector4 imgui_skyColor = new System.Numerics.Vector4(bgGradient.R / 255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
             ImGuiNET.ImGui.ColorEdit4("Sky color: ", ref imgui_skyColor);
+            System.Numerics.Vector4 imgui_skyColor2 = new System.Numerics.Vector4(skyColor.X, skyColor.Y, skyColor.Z, 1.0f);
+            ImGuiNET.ImGui.ColorEdit4("Colorize: ", ref imgui_skyColor2);
+            skyColor = new Vector3(imgui_skyColor2.X, imgui_skyColor2.Y, imgui_skyColor2.Z);
             bgGradient = new Color(imgui_skyColor.X, imgui_skyColor.Y, imgui_skyColor.Z, imgui_skyColor.W);
             ImGuiNET.ImGui.Text($"World map MapState: ={MapState}");
             System.Numerics.Vector3 imgui_cameraPosition = new System.Numerics.Vector3(camPosition.X, camPosition.Y, camPosition.Z);
@@ -1334,7 +1338,26 @@ namespace OpenVIII
                     ImGuiNET.ImGui.InputFloat($"lB{i}", ref screenMapLocations[i].y);
                 }
             }
-            ImGuiNET.ImGui.EndChild();
+            Texture2D imguiTex = null;
+            if (ImGuiNET.ImGui.CollapsingHeader("wmset textures"))
+            {
+                var enumValues = Enum.GetValues(typeof(Wmset.Section38_textures));
+                for (int i = 0; i < enumValues.Length; i++)
+                {
+                    ImGuiNET.ImGui.Text($"{(Wmset.Section38_textures)i}");
+                    ImGuiNET.ImGui.SameLine();
+                    imguiTex = (Texture2D)wmset.GetWorldMapTexture(
+                        (Wmset.Section38_textures)enumValues.GetValue(i), 0);
+                    ImGuiNET.ImGui.Image(Memory.imgui.BindTexture(imguiTex), new System.Numerics.Vector2(64,64));
+                    if(ImGuiNET.ImGui.IsItemHovered())
+                    {
+                        ImGuiNET.ImGui.BeginTooltip();
+                        ImGuiNET.ImGui.Text($"W: {imguiTex.Width} H: {imguiTex.Height}");
+                        ImGuiNET.ImGui.Image(Memory.imgui.BindTexture(imguiTex), new System.Numerics.Vector2(imguiTex.Width, imguiTex.Height));
+                        ImGuiNET.ImGui.End();
+                    }
+                }
+            }
             //ImGuiNET.ImGui.Begin("!Texture lister!");
             //ImGuiNET.ImGui.Image(Memory.imgui.BindTexture((Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.minimapFullScreenPointer, 0)),
             //    new System.Numerics.Vector2(64,64));
@@ -1345,6 +1368,7 @@ namespace OpenVIII
 
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
 
+        private static float fxWalkDuration;
         /// <summary>
         /// Takes care of drawing shadows and additional FX when needed (like in forest). [WIP]
         /// </summary>
@@ -1372,7 +1396,7 @@ namespace OpenVIII
                 worldCharacterInstances[currentControllableEntity].bDraw = false;
                 if (bHasMoved)
                 {
-                    VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                    VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 12f);
                     ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush, 0);
                     foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                     {
@@ -1887,6 +1911,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
         //0.070 - 0.870 Y
         private static bool bFullScreenMapInitialize = true;
         private static Texture2D fullScreenMapMark;
+        private static Vector3 skyColor = Vector3.One;
 
         private static void DrawFullScreenMap()
         {

@@ -13,6 +13,8 @@ float3 bendOrigin = { 0, 0, 0 };
 float bendDistance = 350.0;
 float3 bendVector = { 0, -0.01, 0 };
 
+float3 skyColor = { 1.0, 1.0, 1.0 };
+
 
 
     //pre-set;
@@ -94,6 +96,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
     float3 camPosition = camWorld;
     //textureColor = ApplyFog(textureColor, vertPosition, camPosition);
     ApplyAlphaMasking(textureColor);
+    float4 skyColorExtension = { skyColor.rgb, 1.0 };
+    textureColor *= skyColorExtension;
     return textureColor;
 }
 
@@ -105,6 +109,8 @@ float4 PixelShaderFunction_Water(VertexShaderOutput input) : COLOR0
     textureColor = ApplyFog(textureColor, vertPosition, camPosition);
     ApplyAlphaMasking(textureColor);
 
+    float4 skyColorExtension = { skyColor.rgb, 1.0 };
+    textureColor *= skyColorExtension;
     return textureColor;
 }
 
