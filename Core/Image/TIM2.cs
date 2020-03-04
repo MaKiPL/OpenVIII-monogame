@@ -150,7 +150,7 @@ namespace OpenVIII
             return !a;
         }
 
-        public override void ForceSetClutColors(ushort newNumOfColours) => texture.NumOfColours = newNumOfColours;
+        public override void ForceSetClutColors(ushort newNumOfColors) => texture.NumOfColours = newNumOfColors;
 
         public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = newClut;
 
@@ -183,11 +183,11 @@ namespace OpenVIII
         /// If true skip size check useful for files with more than just Tim
         /// </param>
         /// <returns>Texture2D</returns>
-        public override Texture2D GetTexture(ushort? clut = null)
+        public override Texture2D GetTexture(ushort clut)
         {
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
-                return GetTexture(br, clut == null || !CLP ? null : GetClutColors(br, clut.Value));
+                return GetTexture(br, !CLP ? null : GetClutColors(br, clut));
             }
         }
 

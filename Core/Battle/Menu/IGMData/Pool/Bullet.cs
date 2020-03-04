@@ -142,7 +142,7 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[i, 1] = new IGMDataItem.Integer
                 {
                     Pos = new Rectangle(SIZE[i].Right - widthofnumber, SIZE[i].Top, widthofnumber, SIZE[i].Height),
-                    NumType = Icons.NumType.sysFntBig,
+                    NumType = Icons.NumType.SysFntBig,
                     Spaces = 3
                 };
                 ITEM[i, 1].Hide();

@@ -13,10 +13,13 @@ namespace OpenVIII.DirectX
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        private static void Main()
+        private static void Main(string[] args)
         {
             using (Game1 game = new Game1())
+            {
+                game.Arguments = args;
                 game.Run();
+            }
         }
     }
 

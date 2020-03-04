@@ -56,7 +56,7 @@ namespace OpenVIII.Battle
         public void Draw(Matrix worldMatrix, Matrix viewMatrix, Matrix projectionMatrix)
         {
             //donno why but direct x crashes when i try to draw colored primatives.
-            if (Memory.currentGraphicMode == Memory.GraphicModes.DirectX || alpha < float.Epsilon) return;
+            if (Memory.CurrentGraphicMode == Memory.GraphicModes.DirectX || alpha < float.Epsilon) return;
             effect.World = worldMatrix;
             effect.View = viewMatrix;
             effect.Projection = projectionMatrix;

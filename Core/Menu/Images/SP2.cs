@@ -11,20 +11,15 @@ namespace OpenVIII
     /// SP2 is a handler for .sp1 and .sp2 files. They are texture atlas coordinates
     /// <para>This stores the entries in Entry objects or EntryGroup objects</para>
     /// </summary>
+    // ReSharper disable once InconsistentNaming
     public abstract partial class SP2
     {
-        #region Constructors
-
-        protected SP2()
-        { }
-
-        #endregion Constructors
-
         #region Enums
 
         /// <summary>
         /// enum to be added to class when implemented
         /// </summary>
+        // ReSharper disable once InconsistentNaming
         public enum ID { NotImplemented }
 
         #endregion Enums
@@ -56,7 +51,7 @@ namespace OpenVIII
         /// <summary>
         /// If true disable mods and high res textures.
         /// </summary>
-        protected bool FORCE_ORIGINAL { get; set; } = false;
+        protected bool ForceOriginal { get; set; } = false;
 
         /// <summary>
         /// *.sp1 or *.sp2 that contains the entries or entrygroups. With Rectangle and offset information.
@@ -148,24 +143,20 @@ namespace OpenVIII
         public virtual TextureHandler GetTexture(Enum id, int file = -1)
         {
             int pos = Convert.ToInt32(id);
-            int File = file >= 0 ? file : GetEntry((uint)pos).File;
-            //check if we set a custom file and we have a pos more then set entriespertexture
-            if (File <= 0)
+            file = file >= 0 ? file : GetEntry((uint)pos).File;
+            //check if we set a custom file and we have a pos more then set entries per texture
+            if (file <= 0)
             {
                 if (EntriesPerTexture > 0 && pos >= EntriesPerTexture)
-                    File = (pos / EntriesPerTexture);
+                    file = (pos / EntriesPerTexture);
             }
-            if (File > 0)
+            if (file <= 0) return Textures.Count > file ? Textures[file] : null;
+            int j = (int)Props.Sum(x => x.Count);
+            if (file >= j)
             {
-                int j = (int)Props.Sum(x => x.Count);
-                if (File >= j)
-                {
-                    File %= j;
-                }
+                file %= j;
             }
-            if(Textures.Count>File)
-                return Textures[File];
-            return null;
+            return Textures.Count>file ? Textures[file] : null;
         }
 
         public virtual TextureHandler GetTexture(Enum id, out Vector2 scale)
@@ -188,48 +179,48 @@ namespace OpenVIII
 
         protected virtual VertexPositionTexture_Texture2D Quad(Entry entry, TextureHandler texture, float scale = .25f, Box_Options options = Box_Options.Middle | Box_Options.Center, float z = 0f)
         {
-            Rectangle r = entry.GetRectangle;
-            Vector2 s = texture.ScaleFactor;
-            Vector2 o = options.HasFlag(Box_Options.UseOffset) ? entry.Offset : Vector2.Zero;
+            Rectangle rectangle = entry.GetRectangle;
+            Vector2 scaleFactor = texture.ScaleFactor;
+            Vector2 offset = options.HasFlag(Box_Options.UseOffset) ? entry.Offset : Vector2.Zero;
             VertexPositionTexture[] vpt = new VertexPositionTexture[6];
-            float left = 0f, right = 0f, bottom = 0f, top = 0f;
+            float left, right, bottom, top;
             if (options.HasFlag(Box_Options.Left))
             {
                 left = 0;
-                right = r.Width;
+                right = rectangle.Width;
             }
             else if (options.HasFlag(Box_Options.Right))
             {
-                left = -r.Width;
+                left = -rectangle.Width;
                 right = 0;
             }
             else// (options.HasFlag(Box_Options.Center))
             {
-                left = -r.Width / 2f;
-                right = r.Width / 2f;
+                left = -rectangle.Width / 2f;
+                right = rectangle.Width / 2f;
             }
             if (options.HasFlag(Box_Options.Top))
             {
                 bottom = 0;
-                top = r.Height;
+                top = rectangle.Height;
             }
             else if (options.HasFlag(Box_Options.Buttom))
             {
-                bottom = -r.Height;
+                bottom = -rectangle.Height;
                 top = 0;
             }
             else //(options.HasFlag(Box_Options.Middle))
             {
-                bottom = -r.Height / 2f;
-                top = r.Height / 2f;
+                bottom = -rectangle.Height / 2f;
+                top = rectangle.Height / 2f;
             }
 
             VertexPositionTexture[] v = new VertexPositionTexture[]
             {
-                new VertexPositionTexture(new Vector3(left+o.X,top+o.Y,z)*scale,new Vector2(r.Right*s.X/texture.Width,r.Top*s.Y/texture.Height)),
-                new VertexPositionTexture(new Vector3(right+o.X,top+o.Y,z)*scale,new Vector2(r.Left*s.X/texture.Width,r.Top*s.Y/texture.Height)),
-                new VertexPositionTexture(new Vector3(right+o.X,bottom+o.Y,z)*scale,new Vector2(r.Left*s.X/texture.Width,r.Bottom*s.Y/texture.Height)),
-                new VertexPositionTexture(new Vector3(left+o.X,bottom+o.Y,z)*scale,new Vector2(r.Right*s.X/texture.Width,r.Bottom*s.Y/texture.Height)),
+                new VertexPositionTexture(new Vector3(left+offset.X,top+offset.Y,z)*scale,new Vector2(rectangle.Right*scaleFactor.X/texture.Width,rectangle.Top*scaleFactor.Y/texture.Height)),
+                new VertexPositionTexture(new Vector3(right+offset.X,top+offset.Y,z)*scale,new Vector2(rectangle.Left*scaleFactor.X/texture.Width,rectangle.Top*scaleFactor.Y/texture.Height)),
+                new VertexPositionTexture(new Vector3(right+offset.X,bottom+offset.Y,z)*scale,new Vector2(rectangle.Left*scaleFactor.X/texture.Width,rectangle.Bottom*scaleFactor.Y/texture.Height)),
+                new VertexPositionTexture(new Vector3(left+offset.X,bottom+offset.Y,z)*scale,new Vector2(rectangle.Right*scaleFactor.X/texture.Width,rectangle.Bottom*scaleFactor.Y/texture.Height)),
             };
             vpt[0] = v[0];
             vpt[1] = v[1];
@@ -267,44 +258,40 @@ namespace OpenVIII
 
         protected virtual void InitEntries(ArchiveBase aw = null)
         {
-            if (Entries == null)
+            if (Entries != null) return;
+            if (aw == null)
+                aw = ArchiveWorker.Load(ArchiveString);
+            MemoryStream ms;
+
+            byte[] buffer = aw.GetBinaryFile(IndexFilename);
+            if (buffer == null) return;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
-                if (aw == null)
-                    aw = ArchiveWorker.Load(ArchiveString);
-                MemoryStream ms = null;
-
-                ushort[] locs;
-                byte[] buffer = aw.GetBinaryFile(IndexFilename);
-                if (buffer != null)
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                Count = br.ReadUInt32();
+                ushort[] locations = new ushort[Count];
+                Entries = new Dictionary<uint, Entry>((int)Count);
+                for (uint i = 0; i < Count; i++)
+                {
+                    locations[i] = br.ReadUInt16();
+                    ms.Seek(2, SeekOrigin.Current);
+                }
+                byte fid = 0;
+                Entry last = null;
+                for (uint i = 0; i < Count; i++)
+                {
+                    ms.Seek(locations[i] + 6, SeekOrigin.Begin);
+                    byte t = br.ReadByte();
+                    if (t == 0 || t == 96) // known invalid entries in sp2 files have this value. there might be more to it.
                     {
-                        Count = br.ReadUInt32();
-                        locs = new ushort[Count];//br.ReadUInt32(); 32 valid values in face.sp2 rest is invalid
-                        Entries = new Dictionary<uint, Entry>((int)Count);
-                        for (uint i = 0; i < Count; i++)
-                        {
-                            locs[i] = br.ReadUInt16();
-                            ms.Seek(2, SeekOrigin.Current);
-                        }
-                        byte fid = 0;
-                        Entry Last = null;
-                        for (uint i = 0; i < Count; i++)
-                        {
-                            ms.Seek(locs[i] + 6, SeekOrigin.Begin);
-                            byte t = br.ReadByte();
-                            if (t == 0 || t == 96) // known invalid entries in sp2 files have this value. there might be more to it.
-                            {
-                                Count = i;
-                                break;
-                            }
-
-                            Entries[i] = new Entry();
-                            Entries[i].LoadfromStreamSP2(br, locs[i], Last, ref fid);
-
-                            Last = Entries[i];
-                        }
-                        ms = null;
+                        Count = i;
+                        break;
                     }
+
+                    Entries[i] = new Entry();
+                    Entries[i].LoadfromStreamSP2(br, locations[i], last, ref fid);
+
+                    last = Entries[i];
+                }
             }
         }
 
@@ -329,7 +316,7 @@ namespace OpenVIII
                         {
                             tex.Load(buffer);
 
-                            if (Props[j].Big != null && FORCE_ORIGINAL == false && b < Props[j].Big.Count)
+                            if (Props[j].Big != null && ForceOriginal == false && b < Props[j].Big.Count)
                             {
                                 TextureHandler th = TextureHandler.Create(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
 

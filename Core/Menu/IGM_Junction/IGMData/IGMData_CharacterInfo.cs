@@ -54,11 +54,11 @@ namespace OpenVIII
                 //Dynamic items
                 ITEM[0, 0] = new IGMDataItem.Face { Pos = new Rectangle(X + 12, Y, 96, 144) };
                 ITEM[0, 2] = new IGMDataItem.Text { Pos = new Rectangle(X + 117, Y + 0, 0, 0) };
-                ITEM[0, 4] = new IGMDataItem.Integer { Pos = new Rectangle(X + 117 + 35, Y + 54, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 6 };
-                ITEM[0, 7] = new IGMDataItem.Integer { Pos = new Rectangle(X + 152, Y + 108, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 6 };
-                ITEM[0, 9] = new IGMDataItem.Integer { Pos = new Rectangle(X + 292, Y + 108, 0, 0), Palette = 13, NumType = Icons.NumType.sysFntBig, Padding = 1, Spaces = 5 };
-                ITEM[0, 11] = new IGMDataItem.Integer { Pos = new Rectangle(X + 192, Y + 198, 0, 0), Palette = 13, NumType = Icons.NumType.Num_8x8_2, Padding = 1, Spaces = 9 };
-                ITEM[0, 13] = new IGMDataItem.Integer { Pos = new Rectangle(X + 192, Y + 231, 0, 0), Palette = 13, NumType = Icons.NumType.Num_8x8_2, Padding = 1, Spaces = 9 };
+                ITEM[0, 4] = new IGMDataItem.Integer { Pos = new Rectangle(X + 117 + 35, Y + 54, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 6 };
+                ITEM[0, 7] = new IGMDataItem.Integer { Pos = new Rectangle(X + 152, Y + 108, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 6 };
+                ITEM[0, 9] = new IGMDataItem.Integer { Pos = new Rectangle(X + 292, Y + 108, 0, 0), Palette = 13, NumType = Icons.NumType.SysFntBig, Padding = 1, Spaces = 5 };
+                ITEM[0, 11] = new IGMDataItem.Integer { Pos = new Rectangle(X + 192, Y + 198, 0, 0), Palette = 13, NumType = Icons.NumType.Num8X8B, Padding = 1, Spaces = 9 };
+                ITEM[0, 13] = new IGMDataItem.Integer { Pos = new Rectangle(X + 192, Y + 231, 0, 0), Palette = 13, NumType = Icons.NumType.Num8X8B, Padding = 1, Spaces = 9 };
             }
 
             #endregion Methods

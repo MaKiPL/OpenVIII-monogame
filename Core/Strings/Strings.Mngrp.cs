@@ -64,10 +64,10 @@ namespace OpenVIII
             {
                 while (br.BaseStream.Position+8 < br.BaseStream.Length)
                 {
-                    Loc loc = new Loc() { seek = br.ReadUInt32(), length = br.ReadUInt32() };
-                    if (loc.seek != 0xFFFFFFFF && loc.length != 0x00000000)
+                    Loc loc = new Loc() { Seek = br.ReadUInt32(), Length = br.ReadUInt32() };
+                    if (loc.Seek != 0xFFFFFFFF && loc.Length != 0x00000000)
                     {
-                        loc.seek--;
+                        loc.Seek--;
                         Files.subPositions.Add(loc);
                     }
                 }
@@ -107,7 +107,7 @@ namespace OpenVIII
                                 Get_Strings_Offsets(br, Filenames[0], key, pad);
                             else if (BinMSG.ContainsKey(key))
                             {
-                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)BinMSG[key]].seek, 1, 6);
+                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)BinMSG[key]].Seek, 1, 6);
                             }
                             else if (ComplexStr.ContainsKey(key))
                             {

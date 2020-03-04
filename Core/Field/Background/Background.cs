@@ -932,7 +932,7 @@ namespace OpenVIII.Fields
                             if (!this.TextureIDs.ContainsKey(b))
                             {
                                 string alt = $"{Module.GetFieldName()}_{b + 13}.png";
-                                this.TextureIDs.Add(b, TextureHandler.CreateFromPNG(File.Exists(alt) ? alt : file.Value, 256, 256, 0, true, true));
+                                this.TextureIDs.Add(b, TextureHandler.CreateFromPng(File.Exists(alt) ? alt : file.Value, 256, 256, 0, true, true));
                             }
                         }
                     }
@@ -948,7 +948,7 @@ namespace OpenVIII.Fields
                             if (!this.TextureIDsPalettes.ContainsKey(tipi = new TextureIDPaletteID { PaletteID = b2, TextureID = b }))
                             {
                                 string alt = $"{Module.GetFieldName()}_{b + 13}_{b2}.png";
-                                this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPNG(File.Exists(alt) ? alt : file.Value, 256, 256, b2, true, true));
+                                this.TextureIDsPalettes.Add(tipi, TextureHandler.CreateFromPng(File.Exists(alt) ? alt : file.Value, 256, 256, b2, true, true));
                             }
                         }
                         foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, TextureHandler>> groups in TextureIDsPalettes.Where(x => TextureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))

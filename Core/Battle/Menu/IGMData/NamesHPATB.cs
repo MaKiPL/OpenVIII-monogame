@@ -257,7 +257,7 @@ namespace OpenVIII.IGMData
             // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
             Rectangle atbbarpos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);
             ITEM[0, (byte)DepthID.Name] = new IGMDataItem.Text { };
-            ITEM[0, (byte)DepthID.HP] = new IGMDataItem.Integer { Spaces = 4, NumType = Icons.NumType.Num_8x16_1 };
+            ITEM[0, (byte)DepthID.HP] = new IGMDataItem.Integer { Spaces = 4, NumType = Icons.NumType.Num8X16A };
             ITEM[0, (byte)DepthID.GFHPBox] = new IGMDataItem.Box { Options = Box_Options.Right | Box_Options.Middle };
             ITEM[0, (byte)DepthID.GFHPBox].Hide();
             ITEM[0, (byte)DepthID.GFNameBox] = new IGMDataItem.Box { Options = Box_Options.Center | Box_Options.Middle };

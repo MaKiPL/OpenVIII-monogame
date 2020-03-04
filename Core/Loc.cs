@@ -1,36 +1,42 @@
-﻿namespace OpenVIII
-{
+﻿// ReSharper disable NonReadonlyMemberInGetHashCode
 
+namespace OpenVIII
+{
     public struct Loc
     {
-        public uint seek;
+        #region Properties
+
         /// <summary>
         /// sometimes there is more than one entry at a location each is 8 bytes
         /// </summary>
-        public uint length;
-        public uint max => seek + length;
+        public uint Length { get; set; }
 
-        public static bool operator !=(Loc a, Loc b) => a.seek != b.seek && a.length != b.length;
-        public static bool operator ==(Loc a, Loc b) => a.seek == b.seek && a.length == b.length;
+        public uint Max => Seek + Length;
 
-        public override bool Equals(object obj)
-        {
-            if (!(obj is Loc))
-                return false;
+        public uint Seek { get; set; }
 
-            var loc = (Loc)obj;
-            return seek == loc.seek &&
-                   length == loc.length;
-        }
+        #endregion Properties
 
-        public static implicit operator uint(Loc @in) => @in.seek;
+        #region Methods
+
+        public static implicit operator uint(Loc @input) => @input.Seek;
+
+        public static bool operator !=(Loc a, Loc b) => a.Seek != b.Seek || a.Length != b.Length;
+
+        public static bool operator ==(Loc a, Loc b) => a.Seek == b.Seek && a.Length == b.Length;
+
+        public bool Equals(Loc other) => Seek == other.Seek && Length == other.Length;
+
+        public override bool Equals(object obj) => obj is Loc other && Equals(other);
 
         public override int GetHashCode()
         {
-            var hashCode = 202372718;
-            hashCode = hashCode * -1521134295 + seek.GetHashCode();
-            hashCode = hashCode * -1521134295 + length.GetHashCode();
-            return hashCode;
+            unchecked
+            {
+                return ((int)Seek * 397) ^ (int)Length;
+            }
         }
+
+        #endregion Methods
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
+    // ReSharper disable once InconsistentNaming
     public partial class IGM_Junction
     {
         #region Classes
@@ -192,11 +193,10 @@ namespace OpenVIII
             public override void UndoChange()
             {
                 //override this use it to take value of prevSetting and restore the setting unless default method works
-                if (GetPrevSetting() != null && Damageable.GetCharacterData(out Saves.CharacterData c) && GetPrevSetting().GetCharacterData(out Saves.CharacterData prevc))
-                {
-                    c.Magics = prevc.CloneMagic();
-                    c.Stat_J = prevc.CloneMagicJunction();
-                }
+                if (GetPrevSetting() == null || !Damageable.GetCharacterData(out Saves.CharacterData c) ||
+                    !GetPrevSetting().GetCharacterData(out Saves.CharacterData prev)) return;
+                c.Magics = prev.CloneMagic();
+                c.Stat_J = prev.CloneMagicJunction();
             }
 
             protected override void AddEventListener()
@@ -229,7 +229,7 @@ namespace OpenVIII
                     if (pos >= 5) pos++;
                     ITEM[pos, 0] = new IGMDataItem.Icon { Data = Stat2Icon[stat], Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                     ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0) };
-                    ITEM[pos, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.sysFntBig, Spaces = 10 };
+                    ITEM[pos, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.SysFntBig, Spaces = 10 };
                     ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
                                     ? new IGMDataItem.Text { Data = Strings.Name.Percent, Pos = new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0) }
                                     : null;
@@ -269,11 +269,11 @@ namespace OpenVIII
                     ((IGMDataItem.Text)ITEM[pos, 3]).FontColor = color;
             }
 
-            private void SetPalettes(int pos, byte StatIconPalette, byte ArrowPalette = 2, Icons.ID ArrowIconID = Icons.ID.None)
+            private void SetPalettes(int pos, byte statIconPalette, byte arrowPalette = 2, Icons.ID arrowIconId = Icons.ID.None)
             {
-                ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = StatIconPalette;
-                ((IGMDataItem.Icon)ITEM[pos, 4]).Data = ArrowIconID;
-                ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = ArrowPalette;
+                ((IGMDataItem.Icon)ITEM[pos, 0]).Palette = ((IGMDataItem.Icon)ITEM[pos, 0]).Faded_Palette = statIconPalette;
+                ((IGMDataItem.Icon)ITEM[pos, 4]).Data = arrowIconId;
+                ((IGMDataItem.Icon)ITEM[pos, 4]).Palette = arrowPalette;
             }
 
             private void UndoChangeEvent(object sender, Mode e) => UndoChange();
