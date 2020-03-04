@@ -54,7 +54,6 @@ namespace OpenVIII
 
             int[] textBuf = new int[N + F - 1];    // ring buffer of size N, with extra F-1 bytes to facilitate string comparison
 
-            for (i = 0; i < N - F; i++) textBuf[i] = 0;
             int r = N - F; int flags = 0;
             for (; ; )
             {

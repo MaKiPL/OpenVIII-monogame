@@ -8,7 +8,7 @@
 
         private static void Main(string[] args)
         {
-            Memory.Init(null, null, null);
+            Memory.Init(null, null, null, null);
             DumpEncounterInfo.Process();
             DumpMonsterAndCharacterDat.Process();
 
