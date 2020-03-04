@@ -849,7 +849,7 @@ namespace OpenVIII.AV.Midi
             }
 #if !_WINDOWS
             //Forces alsa driver- in future we should allow user to choose it by his will
-            fluid_settings_setstr(settings, "audio.driver", "alsa");
+            NativeMethods.fluid_settings_setstr(settings, "audio.driver", "alsa");
 #endif
             synth = NativeMethods.new_fluid_synth(settings);
             driver = NativeMethods.new_fluid_audio_driver(settings, synth);

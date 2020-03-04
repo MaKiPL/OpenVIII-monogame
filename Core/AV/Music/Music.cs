@@ -218,24 +218,17 @@ namespace OpenVIII.AV
                     break;
 
                 case ".sgt":
-#if _X64
+#if _X64 || !_WINDOWS
                     if (fluid_Midi == null)
                         fluid_Midi = new AV.Midi.Fluid();
                     fluid_Midi.ReadSegmentFileManually(filename);
                     fluid_Midi.Play();
 #else
-                    if (Extended.IsLinux)
-                    {
-                        fluid_Midi.ReadSegmentFileManually(filename);
-                        fluid_Midi.Play();
-                        break;
-                    }
-                    else
-                    {
+                    
                         if (dm_Midi == null)
                             dm_Midi = new AV.Midi.DirectMedia();
                         dm_Midi.Play(filename,loop);
-                    }
+                    
 #endif
 
                     break;
