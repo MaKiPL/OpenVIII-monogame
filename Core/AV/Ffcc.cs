@@ -788,12 +788,14 @@
                 }
                 else
                 {
+#if _WINDOWS
                     if (nAudioOut != null && useNaudio)
                     {
                         nAudioOut.Dispose();
                         nAudioOut = null;
                         bufferedWaveProvider.ClearBuffer();
                     }
+#endif
                     if (sourceToken != null)
                     {
                         sourceToken.Dispose();
