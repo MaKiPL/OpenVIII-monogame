@@ -12,7 +12,7 @@ namespace OpenVIII.PAK_Extractor
         private static void Main(string[] args)
         {
             
-            Memory.Init(null, null, null);
+            Memory.Init(null, null, null, null);
 
             string DestPath = Path.Combine(Memory.FF8DIRdata, "movies");
 //DestPath = Path.Combine(Path.GetTempPath(), "movies"); //comment out to default to ff8 folder.

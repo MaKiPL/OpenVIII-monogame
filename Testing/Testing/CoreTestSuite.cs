@@ -28,7 +28,7 @@ namespace OpenVIII.Tests
                 "chara.one"
             };
 
-            Memory.Init(null,null, null);
+            Memory.Init(null,null, null, null);
             //Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
             
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
@@ -50,7 +50,7 @@ namespace OpenVIII.Tests
         public void SimpleKernelTest()
         {
             
-            Memory.Init(null,null, null);
+            Memory.Init(null,null, null, null);
             //Memory.Archives.A_WORLD._Root = Memory.FF8DIRdata_lang;
             //Memory.Archives.A_MAIN._Root = Memory.FF8DIRdata_lang;
             //Memory.Archives.A_MENU._Root = Memory.FF8DIRdata_lang;
