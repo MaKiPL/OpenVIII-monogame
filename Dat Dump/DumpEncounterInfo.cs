@@ -241,12 +241,7 @@ namespace OpenVIII.Dat_Dump
                     IEnumerable<string> second = _fieldsWithBattleScripts.Where(x => x.Value == e.ID).Select(x => x.Key);
                     if (second.Any())
                     {
-                        if (fieldMatches.Any())
-                        {
-                            fieldMatches = fieldMatches.Concat(second).Distinct();
-                        }
-                        else
-                            fieldMatches = second;
+                        fieldMatches = fieldMatches.Any() ? fieldMatches.Concat(second).Distinct() : second;
                     }
 
                     if (fieldMatches.Any())
