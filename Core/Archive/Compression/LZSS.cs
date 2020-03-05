@@ -46,15 +46,12 @@ namespace OpenVIII
         }
 
         //Code borrowed from Java's implementation of LZSS by antiquechrono
-        private static void Decode(MemoryStream infile, out byte[] outFileArray)
+        private static void Decode(Stream infile, out byte[] outFileArray)
         {
-            int i;
-
             List<byte> outfile = new List<byte>();
 
             int[] textBuf = new int[N + F - 1];    // ring buffer of size N, with extra F-1 bytes to facilitate string comparison
 
-            for (i = 0; i < N - F; i++) textBuf[i] = 0;
             int r = N - F; int flags = 0;
             for (; ; )
             {
@@ -73,6 +70,7 @@ namespace OpenVIII
                 }
                 else
                 {
+                    int i;
                     if ((i = infile.ReadByte()) == EOF) break;
                     int j;
                     if ((j = infile.ReadByte()) == EOF) break;
