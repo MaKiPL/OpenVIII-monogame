@@ -10,16 +10,15 @@ namespace OpenVIII.Search
     {
         #region Fields
 
-        public List<Tuple<string, string, long>> results = new List<Tuple<string, string, long>>();
+        public List<Tuple<string, string, long>> Results = new List<Tuple<string, string, long>>();
 
-        private static readonly Memory.Archive[] ArchiveList = new Memory.Archive[]
-        {
-            //Memory.Archives.A_MENU,
-            //Memory.Archives.A_MAIN,
-            //Memory.Archives.A_FIELD, // need support for file in two archives.
-            //Memory.Archives.A_MAGIC,
-            //Memory.Archives.A_WORLD,
-            //Memory.Archives.A_BATTLE,
+        private static readonly Memory.Archive[] ArchiveList = {
+            Memory.Archives.A_MENU,
+            Memory.Archives.A_MAIN,
+            Memory.Archives.A_FIELD, // need support for file in two archives.
+            Memory.Archives.A_MAGIC,
+            Memory.Archives.A_WORLD,
+            Memory.Archives.A_BATTLE,
         };
 
         private static readonly string[] Files = new string[]
@@ -29,10 +28,9 @@ namespace OpenVIII.Search
             //Path.Combine(Memory.FF8DIR,"AF4DN.P")
         };
 
-        private byte[] s;
+        private readonly byte[] _s;
 
-        private string[] skipext = new string[]
-                {
+        private readonly string[] _skipExtension = {
             ".tim",
             ".tex",
             ".obj"
@@ -44,7 +42,7 @@ namespace OpenVIII.Search
 
         public Search(FF8String searchstring)
         {
-            s = searchstring;
+            _s = searchstring;
             foreach (Memory.Archive a in ArchiveList)
             {
                 ArchiveBase aw = ArchiveWorker.Load(a);
@@ -52,7 +50,7 @@ namespace OpenVIII.Search
                 foreach (string f in lof)
                 {
                     string ext = Path.GetExtension(f);
-                    if (skipext.Where(x => x.IndexOf(ext, StringComparison.OrdinalIgnoreCase) >= 0).Count() > 0) continue;
+                    if (_skipExtension.Any(x => ext != null && x.IndexOf(ext, StringComparison.OrdinalIgnoreCase) >= 0)) continue;
                     Debug.WriteLine($"Searching {f}, in {a} for {searchstring}");
                     //byte[] bf = aw.GetBinaryFile(f);
                     //SearchBin(bf, a.ToString(), f);
@@ -92,7 +90,7 @@ namespace OpenVIII.Search
             while ((offset = br.BaseStream.Position) < br.BaseStream.Length)
             {
                 int pos = 0;
-                foreach (byte i in s)
+                foreach (byte i in _s)
                 {
                     if (br.ReadByte() == i)
                     {
@@ -100,10 +98,10 @@ namespace OpenVIII.Search
                     }
                     else break;
                 }
-                if (pos == s.Length)
+                if (pos == _s.Length)
                 {
-                    Debug.WriteLine(string.Format("Found a match at: offset {0:X}", offset));
-                    results.Add(new Tuple<string, string, long>(a, f, offset));
+                    Debug.WriteLine($"Found a match at: offset {offset:X}");
+                    Results.Add(new Tuple<string, string, long>(a, f, offset));
                 }
             }
         }
@@ -119,44 +117,18 @@ namespace OpenVIII.Search
             int i = 0;
             do
             {
-                i = Array.FindIndex(bf, i, bf.Length - i, x => x == s[0]);
-                if (i >= 0 && bf != null)
+                i = Array.FindIndex(bf, i, bf.Length - i, x => x == _s[0]);
+                if (i < 0) continue;
+                byte[] full = bf.Skip(i).Take(_s.Length).ToArray();
+                if (full.SequenceEqual(_s))
                 {
-                    byte[] full = bf.Skip(i).Take(s.Length).ToArray();
-                    if (full.SequenceEqual(s))
-                    {
-                        Debug.WriteLine(string.Format("Found a match at: offset {0:X}", i));
-                        results.Add(new Tuple<string, string, long>(a, f, i));
-                    }
-                    i++;
+                    Debug.WriteLine($"Found a match at: offset {i:X}");
+                    Results.Add(new Tuple<string, string, long>(a, f, i));
                 }
+                i++;
             }
             while (i > 0);
-            //bf = bf.Reverse().ToArray();
-            //i = 0;
-            //do
-            //{
-            //    i = Array.FindIndex(bf, i, bf.Length - i, x => x == s[0]);
-            //    if (i >= 0 && bf != null)
-            //    {
-            //        var full = bf.Skip(i).Take(s.Length).ToArray();
-            //        if (full.SequenceEqual(s))
-            //        {
-            //            results.Add(new Tuple<string, string, long>(a, f, i));
-            //        }
-            //        i++;
-            //    }
-            //}
-            //while (i > 0);
-            //string decodedarchive = Memory.DirtyEncoding.GetString(aw.GetBinaryFile(f));
-            //Regex r = new Regex(searchstring, RegexOptions.IgnoreCase);
-            //Match m = r.Match(f);
-            //if(m.Success)
-            //{
-            //    results.Add(new Tuple<string, string, long>(a, f, m.Index));
-            //}
         }
-
         #endregion Methods
     }
 }
