@@ -77,7 +77,7 @@ namespace OpenVIII.Battle
 
             private float V => Memory.CameraScale;
 
-            private Vector3 offset => new Vector3(30, +40, 0);
+            private Vector3 offset => new Vector3(40, 40, -40);
 
             public Vector3 Camera_World(int i) => new Vector3(
                 Camera_World_X_s16[i],

@@ -84,10 +84,12 @@ namespace OpenVIII.Battle
 
             float fovDirector = MathHelper.SmoothStep(cam.startingFOV, cam.endingFOV, step);
 
+            float fovD = (float)(2 * Math.Atan(240.0 / (2 * fovDirector)) * 57.29577951);
+
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                   MathHelper.ToRadians(fovDirector / 8),
+                   MathHelper.ToRadians(fovD),
                    Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 1000f);
             //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
