@@ -24,37 +24,37 @@ namespace OpenVIII.PAK_Extractor
         /// <summary>
         /// If false don't extract low res videos!
         /// </summary>
-        private const bool enableExtractLowRes = false;
+        private const bool EnableExtractLowRes = false;
 
         /// <summary>
         /// Known valid Bink video formats
         /// </summary>
-        private readonly byte[] bik1 = new byte[] { 0x61, 0x64, 0x66, 0x67, 0x68, 0x69 };
+        private readonly byte[] _bik1 = { 0x61, 0x64, 0x66, 0x67, 0x68, 0x69 };
 
         /// <summary>
         /// Known valid Bink 2 video formats
         /// </summary>
-        private readonly byte[] bik2 = new byte[] { 0x62, 0x64, 0x66, 0x67, 0x68, 0x69 };
+        private readonly byte[] _bik2 = { 0x62, 0x64, 0x66, 0x67, 0x68, 0x69 };
 
         /// <summary>
         /// Each Movie has 1 cam and 2 versions of the video.
         /// </summary>
-        private List<MovieClip> _movies;
-
-        /// <summary>
-        /// Remembers detected disc number.
-        /// </summary>
-        private int discCache = -1;
-
-        /// <summary>
-        /// Current working tmp movie clip
-        /// </summary>
-        private MovieClip movie;
+        private readonly List<MovieClip> _movies;
 
         /// <summary>
         /// Depending on type you read it differently.
         /// </summary>
-        private Dictionary<_Type, Func<BinaryReader, _Type, FileSection>> ReadFunctions;
+        private readonly Dictionary<Type, Func<BinaryReader, Type, FileSection>> _readFunctions;
+
+        /// <summary>
+        /// Remembers detected disc number.
+        /// </summary>
+        private int _discCache = -1;
+
+        /// <summary>
+        /// Current working tmp movie clip
+        /// </summary>
+        private MovieClip _movie;
 
         #endregion Fields
 
@@ -63,11 +63,11 @@ namespace OpenVIII.PAK_Extractor
         public PAK(FileInfo info)
         {
             _movies = new List<MovieClip>(7);
-            ReadFunctions = new Dictionary<_Type, Func<BinaryReader, _Type, FileSection>>()
+            _readFunctions = new Dictionary<Type, Func<BinaryReader, Type, FileSection>>()
             {
-                {_Type.CAM, ReadCAM },
-                {_Type.BIK, ReadBIK },
-                {_Type.KB2, ReadKB2 },
+                {Type.Cam, ReadCam },
+                {Type.Bik, ReadBik },
+                {Type.Kb2, ReadKb2 },
             };
             Read(info);
         }
@@ -76,23 +76,23 @@ namespace OpenVIII.PAK_Extractor
 
         #region Enums
 
-        public enum _Type : uint
+        public enum Type : uint
         {
             /// <summary>
             /// Cam file
             /// </summary>
             /// <remarks>F8P</remarks>
-            CAM = 0x503846,
+            Cam = 0x503846,
 
             /// <summary>
             /// Bink Video
             /// </summary>
-            BIK = 0x4B4942,
+            Bik = 0x4B4942,
 
             /// <summary>
             /// Bink Video Version 2.
             /// </summary>
-            KB2 = 0X32424B,
+            Kb2 = 0X32424B,
 
             /// <summary>
             /// 3 Byte Mask to take uint and extract only the part we need.
@@ -105,6 +105,11 @@ namespace OpenVIII.PAK_Extractor
         #region Properties
 
         /// <summary>
+        /// Total number of movies detected
+        /// </summary>
+        public int Count => _movies.Count;
+
+        /// <summary>
         /// Current path
         /// </summary>
         public FileInfo FilePath { get; private set; }
@@ -113,11 +118,6 @@ namespace OpenVIII.PAK_Extractor
         /// Each Movie has 1 cam and 2 versions of the video.
         /// </summary>
         public IReadOnlyList<MovieClip> Movies => _movies;
-
-        /// <summary>
-        /// Total number of movies detected
-        /// </summary>
-        public int Count => _movies.Count;
 
         #endregion Properties
 
@@ -136,37 +136,39 @@ namespace OpenVIII.PAK_Extractor
         public void Extract(string destPath)
         {
             Console.WriteLine($"Extracting {FilePath.FullName}");
-            foreach (PAK.MovieClip item in this)
+            foreach (MovieClip item in this)
             {
                 using (BinaryReader br = new BinaryReader(File.OpenRead(FilePath.FullName)))
                 {
-                    Extract(br, item.CAM);
-                    Extract(br, item.BINK_HIGH);
-                    if (enableExtractLowRes)
-#pragma warning disable CS0162 // Unreachable code detected
-                        Extract(br, item.BINK_LOW);
-#pragma warning restore CS0162 // Unreachable code detected
+                    Extract(br, item.Cam);
+                    Extract(br, item.BinkHigh);
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                    if (EnableExtractLowRes)
+                        // ReSharper disable once HeuristicUnreachableCode
+#pragma warning disable 162
+                        Extract(br, item.BinkLow);
+#pragma warning restore 162
                 }
             }
-            void Extract(BinaryReader br, PAK.FileSection fs)
+            void Extract(BinaryReader br, FileSection fs)
             {
-                string outpath = Path.Combine(destPath, fs.FileName);
-                bool overwrite = true;
-                if (File.Exists(outpath))
+                string outPath = Path.Combine(destPath, fs.FileName);
+                if (File.Exists(outPath))
                 {
-                    using (FileStream s = File.OpenRead(outpath))
+                    bool overwrite;
+                    using (FileStream s = File.OpenRead(outPath))
                     {
-                        overwrite = !(s.Length == fs.Size);
+                        overwrite = s.Length != fs.Size;
                     }
 
-                    if (overwrite) File.Delete(outpath);
+                    if (overwrite) File.Delete(outPath);
                     else
                     {
                         Console.WriteLine($"File Exists {fs.FileName}");
                         return;
                     }
                 }
-                using (BinaryWriter bw = new BinaryWriter(File.Create(outpath)))
+                using (BinaryWriter bw = new BinaryWriter(File.Create(outPath)))
                 {
                     Console.WriteLine($"Extracting {fs.FileName}");
                     br.BaseStream.Seek(fs.Offset, SeekOrigin.Begin);
@@ -177,21 +179,21 @@ namespace OpenVIII.PAK_Extractor
 
         public IEnumerator GetEnumerator() => ((IEnumerable)_movies).GetEnumerator();
 
-        private string GenerateFileName(string extension, string suffux = "") =>
-            string.Format("disc{0:00}_{1:00}{2}.{3}", GetDiscNumber() - 1, Count, suffux, extension.Trim('.').ToLower());
+        private string GenerateFileName(string extension, string suffix = "") =>
+            $"disc{GetDiscNumber() - 1:00}_{Count:00}{suffix}.{extension.Trim('.').ToLower()}";
 
         private int GetDiscNumber()
         {
-            if (discCache == -1)
+            if (_discCache == -1)
             {
                 Regex re = new Regex(@"\d+");
                 Match m = re.Match(Path.GetFileNameWithoutExtension(FilePath.FullName));
 
                 if (m.Success)
                 {
-                    if (int.TryParse(m.Value, out discCache))
+                    if (int.TryParse(m.Value, out _discCache))
                     {
-                        return discCache;
+                        return _discCache;
                     }
                     else
                         throw new Exception($"{this} :: Could not parse number from: {m.Value}");
@@ -201,7 +203,7 @@ namespace OpenVIII.PAK_Extractor
                     throw new Exception($"{this} :: No number in filename: {FilePath}");
                 }
             }
-            return discCache;
+            return _discCache;
         }
 
         /// <summary>
@@ -213,13 +215,13 @@ namespace OpenVIII.PAK_Extractor
             FilePath = info;
             using (BinaryReader br = new BinaryReader(File.OpenRead(info.FullName)))
             {
-                movie = new MovieClip();
+                _movie = new MovieClip();
                 while (br.BaseStream.Position < br.BaseStream.Length)
                 {
-                    _Type header = (_Type)(br.ReadUInt32() & (uint)_Type._3B_MASK);
-                    if (ReadFunctions.ContainsKey(header))
+                    Type header = (Type)(br.ReadUInt32() & (uint)Type._3B_MASK);
+                    if (_readFunctions.ContainsKey(header))
                     {
-                        ReadFunctions[header](br, header);
+                        _readFunctions[header](br, header);
                     }
                     else throw new Exception($"{header} is invalid, reading from: {info}, offset {br.BaseStream.Position}");
                 }
@@ -231,45 +233,45 @@ namespace OpenVIII.PAK_Extractor
         /// </summary>
         /// <param name="br">Binary reader</param>
         /// <param name="type">Header of file type</param>
-        private FileSection ReadBIK(BinaryReader br, _Type type)
+        private FileSection ReadBik(BinaryReader br, Type type)
         {
             br.BaseStream.Seek(-1, SeekOrigin.Current);
             byte version = br.ReadByte();
-            if ((type == _Type.BIK && bik1.Contains(version)) || (type == _Type.KB2 && bik2.Contains(version)))
+            if ((type == Type.Bik && _bik1.Contains(version)) || (type == Type.Kb2 && _bik2.Contains(version)))
             {
             }
             else
                 throw new Exception($"_Type {type}, version {version}, is invalid");
             FileSection fs = new FileSection()
             {
-                _Type = type,
+                Type = type,
                 Offset = br.BaseStream.Position - 4,
                 Size = br.ReadUInt32() + 8,
                 Frames = br.ReadUInt32()
             };
             br.BaseStream.Seek(fs.Offset + fs.Size, SeekOrigin.Begin);
 
-            if (movie.BINK_HIGH == null)
+            if (_movie.BinkHigh == null)
             {
-                movie.BINK_HIGH = fs;
-                movie.BINK_HIGH.FileName = GenerateFileName(movie.BINK_HIGH._Type == _Type.BIK ? "bik" : "bk2", "h");
+                _movie.BinkHigh = fs;
+                _movie.BinkHigh.FileName = GenerateFileName(_movie.BinkHigh.Type == Type.Bik ? "bik" : "bk2", "h");
             }
             else
             {
-                if (fs.Size > movie.BINK_HIGH.Size)
+                if (fs.Size > _movie.BinkHigh.Size)
                 {
-                    movie.BINK_LOW = movie.BINK_HIGH;
-                    movie.BINK_HIGH = fs;
+                    _movie.BinkLow = _movie.BinkHigh;
+                    _movie.BinkHigh = fs;
                 }
                 else
                 {
-                    movie.BINK_LOW = fs;
+                    _movie.BinkLow = fs;
                 }
 
-                movie.BINK_HIGH.FileName = GenerateFileName(movie.BINK_LOW._Type == _Type.BIK ? "bik" : "bk2", "h");
-                movie.BINK_LOW.FileName = GenerateFileName(movie.BINK_LOW._Type == _Type.BIK ? "bik" : "bk2", "l");
-                _movies.Add(movie);
-                movie = new MovieClip();
+                _movie.BinkHigh.FileName = GenerateFileName(_movie.BinkLow.Type == Type.Bik ? "bik" : "bk2", "h");
+                _movie.BinkLow.FileName = GenerateFileName(_movie.BinkLow.Type == Type.Bik ? "bik" : "bk2", "l");
+                _movies.Add(_movie);
+                _movie = new MovieClip();
             }
             return fs;
         }
@@ -279,38 +281,38 @@ namespace OpenVIII.PAK_Extractor
         /// </summary>
         /// <param name="br">Binary reader</param>
         /// <param name="type">Header of file type</param>
-        private FileSection ReadCAM(BinaryReader br, _Type type)
+        private FileSection ReadCam(BinaryReader br, Type type)
         {
             long offset = br.BaseStream.Position - 4; // start of section
             br.BaseStream.Seek(2, SeekOrigin.Current); // skip 2 bytes
             ushort frames = br.ReadUInt16(); // get approx number of frames
             br.BaseStream.Seek((frames) * CamSectionSize, SeekOrigin.Current);
-            uint b = 0;
+            uint b;
             // there seems to be 1 or more extra frames. Check for those.
-            while ((b = br.ReadUInt32()) > 0 && !(((_Type)(b & (uint)_Type._3B_MASK)) == _Type.BIK || ((_Type)(b & (uint)_Type._3B_MASK)) == _Type.KB2))
+            while ((b = br.ReadUInt32()) > 0 && !(((Type)(b & (uint)Type._3B_MASK)) == Type.Bik || ((Type)(b & (uint)Type._3B_MASK)) == Type.Kb2))
             {
                 br.BaseStream.Seek(CamSectionSize - sizeof(uint), SeekOrigin.Current);
                 frames++;
             }
             // Found the end go back to it.
-            br.BaseStream.Seek(-sizeof(uint), SeekOrigin.Current); 
+            br.BaseStream.Seek(-sizeof(uint), SeekOrigin.Current);
 
             // There is only one cam per movie. Checking for possibility of only one video instead of the normal 2 per movie.
-            if (movie.CAM != null)
+            if (_movie.Cam != null)
             {
-                if (!_movies.Contains(movie))
+                if (!_movies.Contains(_movie))
                     //add existing movie to movies list.
-                    _movies.Add(movie);
+                    _movies.Add(_movie);
                 //start from scratch
-                movie = new MovieClip();
+                _movie = new MovieClip();
             }
 
-            FileSection fs = new FileSection() { _Type = type, Offset = offset, Size = br.BaseStream.Position - offset, Frames = frames, FileName = GenerateFileName("cam") };
-            movie.CAM = fs;
+            FileSection fs = new FileSection() { Type = type, Offset = offset, Size = br.BaseStream.Position - offset, Frames = frames, FileName = GenerateFileName("cam") };
+            _movie.Cam = fs;
             return fs;
         }
 
-        private FileSection ReadKB2(BinaryReader br, _Type header) => ReadBIK(br, header);
+        private FileSection ReadKb2(BinaryReader br, Type header) => ReadBik(br, header);
 
         #endregion Methods
 
@@ -318,26 +320,24 @@ namespace OpenVIII.PAK_Extractor
 
         public struct MovieClip
         {
-
             #region Fields
 
             /// <summary>
             /// High res bink video
             /// </summary>
-            public FileSection BINK_HIGH;
+            public FileSection BinkHigh;
 
             /// <summary>
             /// Low res bink video
             /// </summary>
-            public FileSection BINK_LOW;
+            public FileSection BinkLow;
 
             /// <summary>
             /// Cam file
             /// </summary>
-            public FileSection CAM;
+            public FileSection Cam;
 
             #endregion Fields
-
         }
 
         #endregion Structs
@@ -346,13 +346,7 @@ namespace OpenVIII.PAK_Extractor
 
         public class FileSection
         {
-
             #region Fields
-
-            /// <summary>
-            /// Type of file in Section
-            /// </summary>
-            public _Type _Type;
 
             /// <summary>
             /// Output FileName;
@@ -373,6 +367,11 @@ namespace OpenVIII.PAK_Extractor
             /// Size of Data
             /// </summary>
             public long Size;
+
+            /// <summary>
+            /// Type of file in Section
+            /// </summary>
+            public Type Type;
 
             #endregion Fields
         }
