@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Magic Data
@@ -22,13 +22,13 @@ namespace OpenVIII
                 {
                     switch (Attack_type)
                     {
-                        case Attack_Type.Curative_Item:
-                        case Attack_Type.Curative_Magic:
-                        case Attack_Type.Give_Percentage_HP:
-                        case Attack_Type.Revive:
-                        case Attack_Type.Revive_At_Full_HP:
-                        case Attack_Type.White_WindQuistis:
-                        case Attack_Type.Scan: //scan is kinda both.
+                        case AttackType.CurativeItem:
+                        case AttackType.CurativeMagic:
+                        case AttackType.GivePercentageHP:
+                        case AttackType.Revive:
+                        case AttackType.ReviveAtFullHP:
+                        case AttackType.WhiteWindQuistis:
+                        case AttackType.Scan: //scan is kinda both.
                             return true;
                     }
                     return false;
@@ -42,13 +42,13 @@ namespace OpenVIII
             public Magic_ID MagicID { get; private set; }     //0x0004	2 bytes Magic ID
 
             public byte Unknown { get; private set; }       //0x0006  1 byte  Unknown
-            public Attack_Type Attack_type { get; private set; }   //0x0007  1 byte  Attack type
+            public AttackType Attack_type { get; private set; }   //0x0007  1 byte  Attack type
             public byte Spellpower { get; private set; }    //0x0008  1 byte  Spell power(used in damage formula)
             public byte Unknown2 { get; private set; }      //0x0009  1 byte  Unknown
             public Target Target { get; private set; }//0x000A  1 byte  Default_target
-            public Attack_Flags Attack_flags { get; private set; }  //0x000B  1 byte  Attack Flags
+            public AttackFlags Attack_flags { get; private set; }  //0x000B  1 byte  Attack Flags
             public byte Draw_resist { get; private set; }   //0x000C  1 byte  Draw resist(how hard is the magic to draw)
-            public byte Hit_count { get; private set; }     //0x000D  1 byte  Hit count(works with meteor animation, not sure about others)
+            public byte Hit_count { get; private set; }     //0x000D  1 byte  Hit Count(works with meteor animation, not sure about others)
             public Element Element { get; private set; }       //0x000E  1 byte Element
             public byte Unknown3 { get; private set; }      //0x000F  1 byte  Unknown
             public Persistent_Statuses Statuses0 { get; private set; }   //0x0014  2 bytes Statuses 0
@@ -101,11 +101,11 @@ namespace OpenVIII
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();
                 Unknown = br.ReadByte();
-                Attack_type = (Attack_Type)br.ReadByte();
+                Attack_type = (AttackType)br.ReadByte();
                 Spellpower = br.ReadByte();
                 Unknown2 = br.ReadByte();
                 Target = (Target)br.ReadByte();
-                Attack_flags = (Attack_Flags)br.ReadByte();
+                Attack_flags = (AttackFlags)br.ReadByte();
                 Draw_resist = br.ReadByte();
                 Hit_count = br.ReadByte();
                 Element = (Element)br.ReadByte();

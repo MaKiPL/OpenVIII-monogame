@@ -27,7 +27,7 @@ namespace OpenVIII
         #region Enums
 
         /// <summary>
-        /// filenames of files with strings and id's for structs that hold the data.
+        /// filenames of files with strings and BattleID's for structs that hold the data.
         /// </summary>
         public enum FileID : uint
         {

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Command Abilities Data
@@ -17,9 +17,9 @@ namespace OpenVIII
             public Abilities Ability { get; private set; }
             public Magic_ID MagicID { get; private set; }
             public byte[] Unknown0 { get; private set; }
-            public Attack_Type Attack_Type { get; private set; }
+            public AttackType Attack_Type { get; private set; }
             public byte Attack_Power { get; private set; }
-            public Attack_Flags Attack_Flags { get; private set; }
+            public AttackFlags Attack_Flags { get; private set; }
             public byte Hit_Count { get; private set; }
             public Element Element { get; private set; }
             public byte Status_Attack { get; private set; }
@@ -36,8 +36,8 @@ namespace OpenVIII
                 {3,Abilities.MadRush},
                 {4,Abilities.Doom},
                 {5,Abilities.Absorb},
-                {6,Abilities.LVDown},
-                {7,Abilities.LVUp},
+                {6,Abilities.LvDown},
+                {7,Abilities.LvUp},
                 {8,Abilities.Kamikaze},
                 {9,Abilities.Devour},
                 {10,Abilities.Card},
@@ -63,11 +63,11 @@ namespace OpenVIII
                 //0x0000  2 bytes Magic ID
                 Unknown0 = br.ReadBytes(2);
                 //0x0002  2 bytes Unknown
-                Attack_Type = (Attack_Type)br.ReadByte();
+                Attack_Type = (AttackType)br.ReadByte();
                 //0x0004  1 byte Attack type
                 Attack_Power = br.ReadByte();
                 //0x0005  1 byte Attack power
-                Attack_Flags = (Attack_Flags)br.ReadByte();
+                Attack_Flags = (AttackFlags)br.ReadByte();
                 //0x0006  1 byte Attack flags
                 Hit_Count = br.ReadByte();
                 //0x0007  1 byte Hit Count

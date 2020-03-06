@@ -5,7 +5,7 @@ namespace OpenVIII.Fields.Scripts.Instructions.Abstract
     public abstract class REQ : JsmInstruction
     {
         /// <summary>
-        /// The ID of the target Entity.
+        /// The BattleID of the target Entity.
         /// </summary>
         protected readonly Int32 _objectIndex;
         /// <summary>

@@ -66,13 +66,13 @@ namespace OpenVIII
                 {
                     if (CURSOR_SELECT < Commands.Count)
                     {
-                        c.Commands[CURSOR_SELECT - 1] = Kernel_bin.Abilities.None;
+                        c.Commands[CURSOR_SELECT - 1] = Kernel.Abilities.None;
                         IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
                         IGM_Junction.Data[SectionName.Commands].Refresh();
                     }
                     else
                     {
-                        c.Abilities[CURSOR_SELECT - Commands.Count] = Kernel_bin.Abilities.None;
+                        c.Abilities[CURSOR_SELECT - Commands.Count] = Kernel.Abilities.None;
                         IGM_Junction.Refresh();
                     }
                 }

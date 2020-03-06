@@ -31,7 +31,7 @@ namespace OpenVIII.Fields
             public Bppflag Depth;
 
             /// <summary>
-            /// Layer ID, Used to control which parts draw.
+            /// Layer BattleID, Used to control which parts draw.
             /// </summary>
             public byte LayerID;
 
@@ -106,7 +106,7 @@ namespace OpenVIII.Fields
             public bool Is16Bit => Test16Bit(Depth);
 
             /// <summary>
-            /// Pupu goes in a loop and +1 the id when it detects an overlap.
+            /// Pupu goes in a loop and +1 the BattleID when it detects an overlap.
             /// There are some wasted bits
             /// </summary>
             public uint PupuID

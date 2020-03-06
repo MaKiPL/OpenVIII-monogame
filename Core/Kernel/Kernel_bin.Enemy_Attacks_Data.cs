@@ -4,7 +4,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Enemy Attacks Data
@@ -21,9 +21,9 @@ namespace OpenVIII
             public Magic_ID MagicID { get; private set; } //0x02	2 bytes Magic ID
             public byte CameraChange { get; private set; } //0x04	1 byte Camera Change
             public byte Unknown0 { get; private set; } //0x05	1 byte Unknown
-            public Attack_Type Attack_type { get; private set; }//0x06	1 byte Attack type
+            public AttackType Attack_type { get; private set; }//0x06	1 byte Attack type
             public byte Attack_power { get; private set; }//0x07	1 byte Attack power
-            public Attack_Flags Attack_flags { get; private set; }//0x08	1 byte Attack flags
+            public AttackFlags Attack_flags { get; private set; }//0x08	1 byte Attack flags
             public byte Unknown1 { get; private set; }//0x09	1 byte Unknown
             public Element Element { get; private set; }//0x0A	1 byte Element
             public byte Unknown2 { get; private set; }//0x0B	1 byte Unknown
@@ -38,7 +38,7 @@ namespace OpenVIII
                 ID = i;
                 if(i == 2)
                 {
-                    Name = Kernel_bin.BattleCommands[1].Name;
+                    Name = Memory.Kernel_Bin.BattleCommands[1].Name;
                 }
                 else
                     Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
@@ -46,9 +46,9 @@ namespace OpenVIII
                 MagicID = (Magic_ID)br.ReadUInt16(); //0x02	2 bytes Magic ID
                 CameraChange = br.ReadByte(); //0x04	1 byte Camera Change
                 Unknown0 = br.ReadByte(); //0x05	1 byte Unknown Maybe something similar to Target.
-                Attack_type = (Attack_Type) br.ReadByte();//0x06	1 byte Attack type
+                Attack_type = (AttackType) br.ReadByte();//0x06	1 byte Attack type
                 Attack_power = br.ReadByte();//0x07	1 byte Attack power
-                Attack_flags = (Attack_Flags)(br.ReadByte());//0x08	1 byte Attack flags
+                Attack_flags = (AttackFlags)(br.ReadByte());//0x08	1 byte Attack flags
                 Unknown1 = br.ReadByte();//0x09	1 byte Unknown
                 Element = (Element)br.ReadByte();//0x0A	1 byte Element
                 Unknown2 = br.ReadByte();//0x0B	1 byte Unknown

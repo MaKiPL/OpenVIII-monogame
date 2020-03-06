@@ -555,7 +555,7 @@ namespace OpenVIII
                 BoneID = boneID;
             }
 
-            public override string ToString() => $"Vector: {Vector}, Bone ID: {BoneID}";
+            public override string ToString() => $"Vector: {Vector}, Bone BattleID: {BoneID}";
         }
 
         public struct VertexPositionTexturePointersGRP
@@ -593,7 +593,7 @@ namespace OpenVIII
         /// <param name="rotation">a Quaternion to set the correct rotation. 1=90, 2=180 ...</param>
         /// <param name="animationId">an animation pointer. Animation 0 is always idle</param>
         /// <param name="animationFrame">
-        /// an animation frame from animation id. You should pass incrementing frame and reset to 0
+        /// an animation frame from animation BattleID. You should pass incrementing frame and reset to 0
         /// when frameCount max is hit
         /// </param>
         /// <param name="step">
@@ -632,12 +632,12 @@ namespace OpenVIII
                 _indicatorPoint.X = MathHelper.Lerp(lastoffsets.MidX, nextoffsets.MidX, (float)step);
                 _indicatorPoint.Y = MathHelper.Lerp(lastoffsets.HighY, nextoffsets.HighY, (float)step);
                 _indicatorPoint.Z = MathHelper.Lerp(lastoffsets.MidZ, nextoffsets.MidZ, (float)step);
-                // Move All Y axis down to 0 based on Lowest Y axis in Animation ID 0.
+                // Move All Y axis down to 0 based on Lowest Y axis in Animation BattleID 0.
                 if (OffsetY < 0)
                 {
                     translationPosition.Y += OffsetY;
                 }
-                // If any Y axis readings are lower than 0 in Animation ID >0. Bring it up to zero.
+                // If any Y axis readings are lower than 0 in Animation BattleID >0. Bring it up to zero.
             }
 
             //Triangle parsing
@@ -892,7 +892,7 @@ namespace OpenVIII
         public struct Textures
         {
             /// <summary>
-            /// TIM count
+            /// TIM Count
             /// </summary>
             public uint cTims;
 
@@ -928,9 +928,9 @@ namespace OpenVIII
 #endif
             br.BaseStream.Seek(start, SeekOrigin.Begin);
             //Begin create Textures struct
-            //populate the tim count;
+            //populate the tim Count;
             textures = new Textures() { cTims = br.ReadUInt32() };
-            //create arrays per count.
+            //create arrays per Count.
             textures.pTims = new uint[textures.cTims];
             textures.textures = new TextureHandler[textures.cTims];
             //Read pointers into array

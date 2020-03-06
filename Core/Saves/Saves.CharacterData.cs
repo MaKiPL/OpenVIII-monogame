@@ -1,9 +1,13 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.Battle;
+using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
@@ -13,8 +17,9 @@ namespace OpenVIII
 
         /// <summary>
         /// </summary>
-        /// <remarks>Hyne has switchlocked0 and 1</remarks>
+        /// <remarks>Hyne has switch locked 0 and 1</remarks>
         [Flags]
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public enum Exists : byte
         {
             Unavailable = 0x0,
@@ -35,29 +40,29 @@ namespace OpenVIII
             SwitchLocked1 = 0x4,
 
             /// <summary>
-            /// Many have this set. I donno what it does.
+            /// Many have this set. I don't know what it does.
             /// </summary>
             Unk8 = 0x8,
 
             /// <summary>
-            /// Many have this set. I donno what it does.
+            /// Many have this set. I don't know what it does.
             /// </summary>
             Unk10 = 0x10,
 
             /// <summary>
-            /// Many have this set. I donno what it does.
+            /// Many have this set. I don't know what it does.
             /// </summary>
             Unk20 = 0x20,
 
             /// <summary>
-            /// Many have this set. I donno what it does.
+            /// Many have this set. I don't know what it does.
             /// </summary>
             Unk30 = 0x40,
 
             /// <summary>
-            /// Many have this set. I donno what it does.
+            /// Many have this set. I don't know what it does.
             /// </summary>
-            Unk40 = 0x80,
+            Unk40 = 0x80
         }
 
         #endregion Enums
@@ -68,7 +73,7 @@ namespace OpenVIII
         /// Data for each Character
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php/FF8/GameSaveFormat#Characters"/>
-        public partial class CharacterData : Damageable, ICharacterData
+        public class CharacterData : Damageable, ICharacterData
         {
             #region Fields
 
@@ -80,71 +85,70 @@ namespace OpenVIII
             /// <summary>
             /// Total Exp
             /// </summary>
-            private uint experience;
+            private uint _experience;
 
             #endregion Fields
 
             #region Methods
 
-            private void Auto(IReadOnlyList<Kernel_bin.Stat> list)
+            private void Auto(IEnumerable<Stat> list)
             {
                 RemoveMagic();
 
-                List<Kernel_bin.Abilities> unlockedlist = UnlockedGFAbilities;
-                foreach (Kernel_bin.Stat stat in list)
+                List<Abilities> unlockedList = UnlockedGFAbilities;
+                foreach (Stat stat in list)
                 {
-                    if (Unlocked(unlockedlist, stat))
-                        foreach (Kernel_bin.Magic_Data spell in SortedMagic(stat))
-                        {
-                            if (!Stat_J.ContainsValue(spell.ID))
-                            {
-                                //TODO make smarter.
-                                //example if you can get max stat with a weaker spell use that first.
+                    if (!Unlocked(unlockedList, stat)) continue;
+                    foreach (Magic_Data spell in SortedMagic(stat))
+                    {
+                        if (StatJ.ContainsValue(spell.ID)) continue;
+                        //TODO make smarter.
+                        //example if you can get max stat with a weaker spell use that first.
 
-                                // if stat is max with out spell skip
-                                if (stat != Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.MAX_STAT_VALUE) break;
-                                // if hp is max without spell skip
-                                else if (stat == Kernel_bin.Stat.HP && TotalStat(stat) == Kernel_bin.MAX_HP_VALUE) break;
-                                // junction spell
-                                else Stat_J[stat] = spell.ID;
-                                break;
-                            }
-                        }
+                        // if stat is max with out spell skip
+                        if (stat != Stat.HP && TotalStat(stat) == KernelBin.MaxStatValue) break;
+                        // if hp is max without spell skip
+                        if (stat == Stat.HP && TotalStat(stat) == KernelBin.MaxHPValue) break;
+                        // junction spell
+                        StatJ[stat] = spell.ID;
+                        break;
+                    }
                 }
             }
 
             public OrderedDictionary<byte, byte> CloneMagic() => Magics.Clone();
 
-            public Dictionary<Kernel_bin.Stat, byte> CloneMagicJunction() => new Dictionary<Kernel_bin.Stat, byte>(Stat_J);
+            public Dictionary<Stat, byte> CloneMagicJunction() => new Dictionary<Stat, byte>(StatJ);
 
             #endregion Methods
 
             /// <summary>
             /// Raw HP buff from items.
             /// </summary>
+            // ReSharper disable once InconsistentNaming
             public ushort _HP;
 
             /// <summary>
             /// Junctioned Abilities
             /// </summary>
-            public List<Kernel_bin.Abilities> Abilities;
+            public List<Abilities> Abilities;
 
             /// <summary>
             /// <para>Alt Models/different costumes</para>
             /// <para>(Normal, SeeD, Soldier...)</para>
             /// </summary>
-            public byte Alternativemodel;
+            public byte AlternativeModel;
 
             /// <summary>
             /// Junctioned Commands
             /// </summary>
-            public List<Kernel_bin.Abilities> Commands;
+            public List<Abilities> Commands;
 
             /// <summary>
             /// <para>Compatibility With GFs</para>
             /// <para>Effects Summon speed and such.</para>
             /// </summary>
-            public Dictionary<GFs, CompatibilitywithGF> CompatibilitywithGFs;
+            public Dictionary<GFs, CompatibilitywithGF> CompatibilityWithGFs;
 
             /// <summary>
             /// Value determines if a character shows in menu and can be added to party.
@@ -155,18 +159,19 @@ namespace OpenVIII
             public Exists Exists;
 
             /// <summary>
-            /// Juctioned GFs - raw value
+            /// Junctioned GFs - raw value
             /// </summary>
-            private GFflags rawJunctionedGFs;
+            private GFflags _rawJunctionedGFs;
             /// <summary>
-            /// Juctioned GFs
+            /// Junctioned GFs
             /// </summary>
-            public IEnumerable<GFs> JunctionedGFs => Enum.GetValues(rawJunctionedGFs.GetType()).Cast<GFflags>().Where(x => rawJunctionedGFs.HasFlag(x) && ConvertGFEnum.ContainsKey(x)).Distinct().Select(x=> ConvertGFEnum[x]);
+            public IEnumerable<GFs> JunctionedGFs => Enum.GetValues(_rawJunctionedGFs.GetType()).Cast<GFflags>().Where(x => _rawJunctionedGFs.HasFlag(x) && ConvertGFEnum.ContainsKey(x)).Distinct().Select(x=> ConvertGFEnum[x]);
             
+            // ReSharper disable once UnusedMember.Global
             public void JunctionGF(GFs gf) =>
-                rawJunctionedGFs |= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == gf).Key;
+                _rawJunctionedGFs |= ConvertGFEnum.FirstOrDefault(x => x.Value == gf).Key;
             public void RemoveJunctionedGF(GFs gf) => 
-                rawJunctionedGFs ^= Saves.ConvertGFEnum.FirstOrDefault(x => x.Value == gf).Key;
+                _rawJunctionedGFs ^= ConvertGFEnum.FirstOrDefault(x => x.Value == gf).Key;
             //public byte _STR; //0x09
             //public byte _VIT; //0x0A
             //public byte _MAG; //0x0B
@@ -183,24 +188,24 @@ namespace OpenVIII
             /// <summary>
             /// Number of Kills
             /// </summary>
-            public ushort Numberofkills;
+            public ushort NumberOfKills;
 
             /// <summary>
             /// Number of KOs
             /// </summary>
-            public ushort NumberofKOs;
+            public ushort NumberOfKOs;
 
-            public byte Paddingorunusedcommand;
+            public byte PaddingOrUnusedCommand;
 
             /// <summary>
-            /// Stats that can be incrased via items. Except for HP because it's a ushort not a byte.
+            /// Stats that can be increased via items. Except for HP because it's a ushort not a byte.
             /// </summary>
-            public Dictionary<Kernel_bin.Stat, byte> RawStats;
+            public Dictionary<Stat, byte> RawStats;
 
             /// <summary>
             /// Junctioned Magic per stat.
             /// </summary>
-            public Dictionary<Kernel_bin.Stat, byte> Stat_J;
+            public Dictionary<Stat, byte> StatJ;
 
             public byte Unknown1;
 
@@ -216,18 +221,17 @@ namespace OpenVIII
             public byte WeaponID;
 
             //public CharacterData(BinaryReader br, Characters c) => Read(br, c);
-            public CharacterData() { }
 
             /// <summary>
-            /// 25.4% chance to cast automaticly on gameover, if used once in battle
+            /// 25.4% chance to cast automatically on game over, if used once in battle
             /// </summary>
             /// <remarks>
             /// Memory.State.FieldVars. has a value that tracks if PhoenixPinion is used just need to
             /// find it
             /// </remarks>
-            public bool CanPhoenixPinion => IsDead && !(IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0) && Memory.State.Items.Where(m => m.ID == 31 && m.QTY >= 1).Count() > 0;
+            public bool CanPhoenixPinion => IsDead && !(IsPetrify || (Statuses1 & (Battle_Only_Statuses.Eject)) != 0) && Memory.State.Items.Any(m => m.ID == 31 && m.QTY >= 1);
 
-            public Battle.CharacterInstanceInformation CII { get; private set; }
+            public CharacterInstanceInformation CII { get; private set; }
 
             /// <summary>
             /// Set by GenerateCrisisLevel(), -1 means no limit break. &gt;=0 has a limit break.
@@ -240,29 +244,29 @@ namespace OpenVIII
 
             public uint Experience
             {
-                get => experience; set
+                get => _experience; set
                 {
-                    if (experience == 0)
-                        experience = value;
-                    else if (!IsGameOver && experience != value)
-                        experience = value; //trying to give my self a good break point
+                    if (_experience == 0)
+                        _experience = value;
+                    else if (!IsGameOver && _experience != value)
+                        _experience = value; //trying to give my self a good break point
                 }
             }
 
             public ushort ExperienceToNextLevel => (ushort)(Level == 100 ? 0 : MathHelper.Clamp(CharacterStats.EXP((byte)(Level + 1)) - Experience, 0, CharacterStats.EXP(2)));
-            private Characters id;
+            private Characters _id;
 
             /// <summary>
-            /// If TeamLaguna the id will change to a Luguna Party member
+            /// If TeamLaguna the BattleID will change to a Laguna Party member
             /// </summary>
             public Characters ID
             {
                 get
                 {
-                    int ind = 0;
-                    if (Memory.State != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(x => x.Equals(id))) >= 0 && !Memory.State.Party.Contains(id))
+                    int ind;
+                    if (Memory.State != null && Memory.State.TeamLaguna && (ind = Memory.State.PartyData.FindIndex(x => x.Equals(_id))) >= 0 && !Memory.State.Party.Contains(_id))
                         return Memory.State.Party[ind];
-                    return id;
+                    return _id;
                 }
             }
 
@@ -279,7 +283,7 @@ namespace OpenVIII
             }
 
             /// <summary>
-            /// If TeamLaguna the name will change to a Luguna Party member
+            /// If TeamLaguna the name will change to a Laguna Party member
             /// </summary>
             public override FF8String Name
             {
@@ -294,12 +298,12 @@ namespace OpenVIII
                 set => base.Name = value;
             }
 
-            public List<Kernel_bin.Abilities> UnlockedGFAbilities
+            public List<Abilities> UnlockedGFAbilities
             {
                 get
                 {
                     BitArray total = new BitArray(16 * 8);
-                    List<Kernel_bin.Abilities> abilities = new List<Kernel_bin.Abilities>();
+                    List<Abilities> abilities = new List<Abilities>();
                     foreach (GFs gf in JunctionedGFs)
                     {
                         total.Or(Memory.State.GFs[gf].Complete);
@@ -307,7 +311,7 @@ namespace OpenVIII
                     for (int i = 1; i < total.Length; i++)//0 is none so skipping it.
                     {
                         if (total[i])
-                            abilities.Add((Kernel_bin.Abilities)i);
+                            abilities.Add((Abilities)i);
                     }
 
                     return abilities;
@@ -323,73 +327,74 @@ namespace OpenVIII
             /// <summary>
             /// Kernel Stats
             /// </summary>
-            public Kernel_bin.Character_Stats CharacterStats
+            public Character_Stats CharacterStats
             {
                 get
                 {
-                    if (Kernel_bin.CharacterStats != null && Kernel_bin.CharacterStats.TryGetValue(id, out Kernel_bin.Character_Stats value))
+                    if (Memory.Kernel_Bin?.CharacterStats != null && Memory.Kernel_Bin.CharacterStats.TryGetValue(_id, out Character_Stats value))
                         return value;
                     return null;
                 }
             }
 
-            public override byte EVA => checked((byte)TotalStat(Kernel_bin.Stat.EVA));
+            public override byte EVA => checked((byte)TotalStat(Stat.EVA));
 
-            public override byte HIT => checked((byte)TotalStat(Kernel_bin.Stat.HIT));
+            public override byte HIT => checked((byte)TotalStat(Stat.HIT));
 
-            public override byte LUCK => checked((byte)TotalStat(Kernel_bin.Stat.LUCK));
+            public override byte LUCK => checked((byte)TotalStat(Stat.LUCK));
 
-            public override byte MAG => checked((byte)TotalStat(Kernel_bin.Stat.MAG));
+            public override byte MAG => checked((byte)TotalStat(Stat.MAG));
 
-            public override byte SPD => checked((byte)TotalStat(Kernel_bin.Stat.SPD));
+            public override byte SPD => checked((byte)TotalStat(Stat.SPD));
 
-            public override byte SPR => checked((byte)TotalStat(Kernel_bin.Stat.SPR));
+            public override byte SPR => checked((byte)TotalStat(Stat.SPR));
 
-            public override byte STR => checked((byte)TotalStat(Kernel_bin.Stat.STR));
+            public override byte STR => checked((byte)TotalStat(Stat.STR));
 
             /// <summary>
             /// Cannot remove from party or add to party.
             /// </summary>
             public bool SwitchLocked => (Exists & (Exists.SwitchLocked0 | Exists.SwitchLocked1)) != 0;
 
-            public override byte VIT => checked((byte)TotalStat(Kernel_bin.Stat.VIT));
+            public override byte VIT => checked((byte)TotalStat(Stat.VIT));
 
-            public void AutoATK() => Auto(Kernel_bin.AutoATK);
+            public void AutoATK() => Auto(KernelBin.AutoAtk);
 
-            public void AutoDEF() => Auto(Kernel_bin.AutoDEF);
+            public void AutoDEF() => Auto(KernelBin.AutoDef);
 
-            public void AutoMAG() => Auto(Kernel_bin.AutoMAG);
+            public void AutoMAG() => Auto(KernelBin.AutoMAG);
 
-            public void BattleStart(Battle.CharacterInstanceInformation cii)
+            public void BattleStart(CharacterInstanceInformation cii)
             {
                 CII = cii;
-                Statuses1 = Kernel_bin.Battle_Only_Statuses.None;
-                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Haste))
-                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Haste;
-                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Protect))
-                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Protect;
-                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Reflect))
-                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
-                if (Abilities.Contains(Kernel_bin.Abilities.Auto_Shell))
-                    Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
+                Statuses1 = Battle_Only_Statuses.None;
+                if (Abilities.Contains(Kernel.Abilities.AutoHaste))
+                    Statuses1 |= Battle_Only_Statuses.Haste;
+                if (Abilities.Contains(Kernel.Abilities.AutoProtect))
+                    Statuses1 |= Battle_Only_Statuses.Protect;
+                if (Abilities.Contains(Kernel.Abilities.AutoReflect))
+                    Statuses1 |= Battle_Only_Statuses.Reflect;
+                if (Abilities.Contains(Kernel.Abilities.AutoShell))
+                    Statuses1 |= Battle_Only_Statuses.Shell;
                 //reset the ATB timer.
                 ATBTimer.FirstTurn();
             }
 
             public override Damageable Clone()
             {
-                //Shadowcopy
+                //Shadow copy
                 CharacterData c = (CharacterData)MemberwiseClone();
-                //Deepcopy
+                //Deep copy
                 c.Name = Name?.Clone();
-                c.CompatibilitywithGFs = CompatibilitywithGFs?.ToDictionary(e => e.Key, e => e.Value);
-                c.Stat_J = Stat_J?.ToDictionary(e => e.Key, e => e.Value);
+                c.CompatibilityWithGFs = CompatibilityWithGFs?.ToDictionary(e => e.Key, e => e.Value);
+                c.StatJ = StatJ?.ToDictionary(e => e.Key, e => e.Value);
                 c.Magics = new OrderedDictionary<byte, byte>(Magics?.Count??0);
-                foreach (KeyValuePair<byte, byte> magic in Magics)
-                    c.Magics.Add(magic.Key, magic.Value);
+                if (Magics != null)
+                    foreach (KeyValuePair<byte, byte> magic in Magics)
+                        c.Magics.Add(magic.Key, magic.Value);
                 c.RawStats = RawStats?.ToDictionary(e => e.Key, e => e.Value);
-                c.Commands = Commands?.ConvertAll(Item => Item);
-                c.Abilities = Abilities?.ConvertAll(Item => Item);
+                c.Commands = Commands?.ConvertAll(item => item);
+                c.Abilities = Abilities?.ConvertAll(item => item);
                 return c;
             }
 
@@ -404,7 +409,7 @@ namespace OpenVIII
                 return _CurrentHP;
             }
 
-            public override short ElementalResistance(Kernel_bin.Element @in) => throw new NotImplementedException();
+            public override short ElementalResistance(Element @in) => throw new NotImplementedException();
 
             /// <summary>
             /// <para>
@@ -420,47 +425,45 @@ namespace OpenVIII
             {
                 ushort current = CurrentHP();
                 ushort max = MaxHP();
-                //if ((id == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
+                //if ((BattleID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
                 //{
-                int HPMod = CharacterStats.Crisis * 10 * current / max;
-                int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
-                int StatusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
-                int RandomMod = Memory.Random.Next(byte.MaxValue + 1) + 160;
-                int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod; // better random number?
-                if (crisislevel == 5)
+                int hpMod = CharacterStats.Crisis * 10 * current / max;
+                int deathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
+                int statusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
+                int randomMod = Memory.Random.Next(byte.MaxValue + 1) + 160;
+                int crisisLevel = (statusBonus + deathBonus - hpMod) / randomMod; // better random number?
+                switch (crisisLevel)
                 {
-                    CurrentCrisisLevel = 0;
-                    return CurrentCrisisLevel;
+                    case 5:
+                        CurrentCrisisLevel = 0;
+                        return CurrentCrisisLevel;
+                    case 6:
+                        CurrentCrisisLevel = 1;
+                        return CurrentCrisisLevel;
+                    case 7:
+                        CurrentCrisisLevel = 2;
+                        return CurrentCrisisLevel;
+                    default:
+                    {
+                        if (crisisLevel < 8) return CurrentCrisisLevel = -1;
+                        CurrentCrisisLevel = 3;
+                        return CurrentCrisisLevel;
+
+                    }
                 }
-                else if (crisislevel == 6)
-                {
-                    CurrentCrisisLevel = 1;
-                    return CurrentCrisisLevel;
-                }
-                else if (crisislevel == 7)
-                {
-                    CurrentCrisisLevel = 2;
-                    return CurrentCrisisLevel;
-                }
-                else if (crisislevel >= 8)
-                {
-                    CurrentCrisisLevel = 3;
-                    return CurrentCrisisLevel;
-                }
-                //}
-                return CurrentCrisisLevel = -1;
+                
             }
 
-            public void JunctionSpell(Kernel_bin.Stat stat, byte spell)
+            public void JunctionSpell(Stat stat, byte spell)
             {
                 //see if magic is in use, if so remove it
-                if (Stat_J.ContainsValue(spell))
+                if (StatJ.ContainsValue(spell))
                 {
-                    Kernel_bin.Stat key = Stat_J.FirstOrDefault(x => x.Value == spell).Key;
-                    Stat_J[key] = 0;
+                    Stat key = StatJ.FirstOrDefault(x => x.Value == spell).Key;
+                    StatJ[key] = 0;
                 }
                 //junction magic
-                Stat_J[stat] = spell;
+                StatJ[stat] = spell;
             }
 
             /// <summary>
@@ -468,7 +471,7 @@ namespace OpenVIII
             /// </summary>
             /// <param name="c">Force another character's HP calculation</param>
             /// <returns></returns>
-            public ushort MaxHP(Characters c) => TotalStat(Kernel_bin.Stat.HP, c);
+            public ushort MaxHP(Characters c) => TotalStat(Stat.HP, c);
 
             public override ushort MaxHP() => MaxHP(ID);
 
@@ -480,172 +483,174 @@ namespace OpenVIII
             
             protected override void ReadData(BinaryReader br, Enum c)
             {
-                if (!c.GetType().Equals(typeof(Characters))) throw new ArgumentException($"Enum {c} is not Characters");
-                
-                id = (Characters)c;
-                Name = Memory.Strings.GetName(id, Data ?? Memory.State);
+                _id = c as Characters? ?? throw new ArgumentException($"Enum {c} is not Characters");
+                Name = Memory.Strings.GetName(_id, Data ?? Memory.State);
                 _CurrentHP = br.ReadUInt16();//0x00
                 _HP = br.ReadUInt16();//0x02
                 Experience = br.ReadUInt32();//0x04
                 ModelID = br.ReadByte();//0x08
                 WeaponID = br.ReadByte();//0x09
-                RawStats = new Dictionary<Kernel_bin.Stat, byte>(6)
+                RawStats = new Dictionary<Stat, byte>(6)
                 {
-                    [Kernel_bin.Stat.STR] = br.ReadByte(),//0x0A
-                    [Kernel_bin.Stat.VIT] = br.ReadByte(),//0x0B
-                    [Kernel_bin.Stat.MAG] = br.ReadByte(),//0x0C
-                    [Kernel_bin.Stat.SPR] = br.ReadByte(),//0x0D
-                    [Kernel_bin.Stat.SPD] = br.ReadByte(),//0x0E
-                    [Kernel_bin.Stat.LUCK] = br.ReadByte()//0x0F
+                    [Stat.STR] = br.ReadByte(),//0x0A
+                    [Stat.VIT] = br.ReadByte(),//0x0B
+                    [Stat.MAG] = br.ReadByte(),//0x0C
+                    [Stat.SPR] = br.ReadByte(),//0x0D
+                    [Stat.SPD] = br.ReadByte(),//0x0E
+                    [Stat.LUCK] = br.ReadByte()//0x0F
                 };
                 Magics = new OrderedDictionary<byte, byte>(MagicCapacity);
                 for (int i = 0; i < MagicCapacity; i++)
                 {
                     byte key = br.ReadByte();
                     byte val = br.ReadByte();
-                    if (key >= 0 && !Magics.ContainsKey(key))
+                    if (!Magics.ContainsKey(key))
                         Magics.Add(key, val);//0x10
                 }
-                Commands = Array.ConvertAll(br.ReadBytes(3), Item => (Kernel_bin.Abilities)Item).ToList();//0x50
-                Paddingorunusedcommand = br.ReadByte();//0x53
-                Abilities = Array.ConvertAll(br.ReadBytes(4), Item => (Kernel_bin.Abilities)Item).ToList();//0x54
-                rawJunctionedGFs = (GFflags)br.ReadUInt16();//0x58 each bit is one gf.
+                Commands = Array.ConvertAll(br.ReadBytes(3), item => (Abilities)item).ToList();//0x50
+                PaddingOrUnusedCommand = br.ReadByte();//0x53
+                Abilities = Array.ConvertAll(br.ReadBytes(4), item => (Abilities)item).ToList();//0x54
+                _rawJunctionedGFs = (GFflags)br.ReadUInt16();//0x58 each bit is one gf.
                 Unknown1 = br.ReadByte();//0x5A
-                Alternativemodel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
-                Stat_J = new Dictionary<Kernel_bin.Stat, byte>(9);
+                AlternativeModel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
+                StatJ = new Dictionary<Stat, byte>(9);
                 for (int i = 0; i < 19; i++)
                 {
-                    Kernel_bin.Stat key = (Kernel_bin.Stat)i;
+                    Stat key = (Stat)i;
                     byte val = br.ReadByte();
-                    if (!Stat_J.ContainsKey(key))
-                        Stat_J.Add(key, val);
+                    if (!StatJ.ContainsKey(key))
+                        StatJ.Add(key, val);
                 }
 
                 Unknown2 = br.ReadByte();//0x6F (padding?)
-                CompatibilitywithGFs = new Dictionary<GFs, CompatibilitywithGF>(16);
+                CompatibilityWithGFs = new Dictionary<GFs, CompatibilitywithGF>(16);
                 for (int i = 0; i < 16; i++)
-                    CompatibilitywithGFs.Add((GFs)i, br.ReadUInt16());//0x70
-                Numberofkills = br.ReadUInt16();//0x90
-                NumberofKOs = br.ReadUInt16();//0x92
+                    CompatibilityWithGFs.Add((GFs)i, br.ReadUInt16());//0x70
+                NumberOfKills = br.ReadUInt16();//0x90
+                NumberOfKOs = br.ReadUInt16();//0x92
                 Exists = (Exists)br.ReadByte();//0x94
                 Unknown3 = br.ReadByte();//0x95
-                Statuses0 = (Kernel_bin.Persistent_Statuses)br.ReadByte();//0x96
+                Statuses0 = (Persistent_Statuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
 
             public void RemoveAll()
             {
-                Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
-                Commands = Commands.ConvertAll(Item => Kernel_bin.Abilities.None);
-                Abilities = Abilities.ConvertAll(Item => Kernel_bin.Abilities.None);
-                rawJunctionedGFs = GFflags.None;
+                StatJ = StatJ.ToDictionary(e => e.Key, e => (byte)0);
+                Commands = Commands.ConvertAll(item => Kernel.Abilities.None);
+                Abilities = Abilities.ConvertAll(item => Kernel.Abilities.None);
+                _rawJunctionedGFs = GFflags.None;
             }
 
-            public void RemoveMagic() => Stat_J = Stat_J.ToDictionary(e => e.Key, e => (byte)0);
+            public void RemoveMagic() => StatJ = StatJ.ToDictionary(e => e.Key, e => (byte)0);
 
             /// <summary>
             /// Sorted Enumerable based on best to worst for Stat. Uses character's total magic and
             /// kernel bin's stat value.
             /// </summary>
-            /// <param name="Stat">Stat sorting by.</param>
-            /// <returns>Ordered Enumberable</returns>
-            public IOrderedEnumerable<Kernel_bin.Magic_Data> SortedMagic(Kernel_bin.Stat Stat) => Kernel_bin.MagicData.OrderBy(x => (-x.totalStatVal(Stat) * (Magics.ContainsKey(x.ID) ? Magics[x.ID] : 0)) / 100);
+            /// <param name="stat">Stat sorting by.</param>
+            /// <returns>Ordered Enumerable</returns>
+            public IOrderedEnumerable<Magic_Data> SortedMagic(Stat stat) => Memory.Kernel_Bin.MagicData.OrderBy(x => (-x.totalStatVal(stat) * (Magics.ContainsKey(x.ID) ? Magics[x.ID] : 0)) / 100);
 
-            public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) => throw new NotImplementedException();
+            public override sbyte StatusResistance(Battle_Only_Statuses s) => throw new NotImplementedException();
 
-            public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s) => throw new NotImplementedException();
+            public override sbyte StatusResistance(Persistent_Statuses s) => throw new NotImplementedException();
 
             public override string ToString() => Name.Length > 0 ? Name.ToString() : base.ToString();
 
-            public ushort TotalStat(Kernel_bin.Stat s, Characters c = Characters.Blank)
+            // ReSharper disable once MethodOverloadWithOptionalParameter
+            public ushort TotalStat(Stat s, Characters c = Characters.Blank)
             {
+                if (!Enum.IsDefined(typeof(Characters), c))
+                    throw new InvalidEnumArgumentException(nameof(c), (int)c, typeof(Characters));
                 if (c == Characters.Blank)
-                    c = id;
-                if (c != id && c < Characters.Laguna_Loire)
-                    throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({id}) unless Laguna Kiros or Ward!");
+                    c = _id;
+                if (c != _id && c < Characters.Laguna_Loire)
+                    throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({_id}) unless Laguna Kiros or Ward!");
+             
                 int total = 0;
-                if (Kernel_bin.Statpercentabilities != null)
-                    foreach (Kernel_bin.Abilities i in Abilities)
+                if (Memory.Kernel_Bin.StatPercentAbilities != null)
+                    foreach (Abilities i in Abilities)
                     {
-                        if (Kernel_bin.Statpercentabilities.TryGetValue(i, out Kernel_bin.Stat_percent_abilities ability) && ability.Stat == s)
+                        if (Memory.Kernel_Bin.StatPercentAbilities.TryGetValue(i, out StatPercentageAbilities ability) && ability.Stat == s)
                             total += ability.Value;
                     }
                 if (CharacterStats != null)
                     switch (s)
                     {
-                        case Kernel_bin.Stat.HP:
-                            return CharacterStats.HP((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], _HP, total);
+                        case Stat.HP:
+                            return CharacterStats.HP((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], _HP, total);
 
-                        case Kernel_bin.Stat.EVA:
+                        case Stat.EVA:
                             //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
-                            return CharacterStats.EVA((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], 0, TotalStat(Kernel_bin.Stat.SPD, c), total);
+                            return CharacterStats.EVA((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], 0, TotalStat(Stat.SPD, c), total);
 
-                        case Kernel_bin.Stat.SPD:
-                            return CharacterStats.SPD((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Stat.SPD:
+                            return CharacterStats.SPD((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], RawStats[s], total);
 
-                        case Kernel_bin.Stat.HIT:
-                            return CharacterStats.HIT(Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], WeaponID);
+                        case Stat.HIT:
+                            return CharacterStats.HIT(StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], WeaponID);
 
-                        case Kernel_bin.Stat.LUCK:
-                            return CharacterStats.LUCK((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Stat.LUCK:
+                            return CharacterStats.LUCK((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], RawStats[s], total);
 
-                        case Kernel_bin.Stat.MAG:
-                            return CharacterStats.MAG((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Stat.MAG:
+                            return CharacterStats.MAG((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], RawStats[s], total);
 
-                        case Kernel_bin.Stat.SPR:
-                            return CharacterStats.SPR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Stat.SPR:
+                            return CharacterStats.SPR((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], RawStats[s], total);
 
-                        case Kernel_bin.Stat.STR:
-                            return CharacterStats.STR((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total, WeaponID);
+                        case Stat.STR:
+                            return CharacterStats.STR((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], RawStats[s], total, WeaponID);
 
-                        case Kernel_bin.Stat.VIT:
-                            return CharacterStats.VIT((sbyte)Level, Stat_J[s], Stat_J[s] == 0 ? 0 : Magics[Stat_J[s]], RawStats[s], total);
+                        case Stat.VIT:
+                            return CharacterStats.VIT((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], RawStats[s], total);
                     }
                 return 0;
             }
 
-            public override ushort TotalStat(Kernel_bin.Stat s) => TotalStat(s, ID);
+            public override ushort TotalStat(Stat s) => TotalStat(s, ID);
 
-            public bool Unlocked(Kernel_bin.Stat stat) => Unlocked(UnlockedGFAbilities, stat);
+            public bool Unlocked(Stat stat) => Unlocked(UnlockedGFAbilities, stat);
 
-            public bool Unlocked(List<Kernel_bin.Abilities> unlocked, Kernel_bin.Stat stat)
+            public bool Unlocked(List<Abilities> unlocked, Stat stat)
             {
                 switch (stat)
                 {
                     default:
-                        return unlocked.Contains(Kernel_bin.Stat2Ability[stat]);
+                        return unlocked.Contains(KernelBin.Stat2Ability[stat]);
 
-                    case Kernel_bin.Stat.EL_Atk:
-                        return unlocked.Contains(Kernel_bin.Abilities.EL_Atk_J);
+                    case Stat.EL_Atk:
+                        return unlocked.Contains(Kernel.Abilities.ElAtkJ);
 
-                    case Kernel_bin.Stat.EL_Def_1:
-                        return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx1) ||
-                            unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
+                    case Stat.EL_Def_1:
+                        return unlocked.Contains(Kernel.Abilities.ElDefJ) ||
+                            unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
+                            unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
-                    case Kernel_bin.Stat.EL_Def_2:
-                        return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
+                    case Stat.EL_Def_2:
+                        return unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
+                            unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
-                    case Kernel_bin.Stat.EL_Def_3:
-                    case Kernel_bin.Stat.EL_Def_4:
-                        return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
+                    case Stat.EL_Def_3:
+                    case Stat.EL_Def_4:
+                        return unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
-                    case Kernel_bin.Stat.ST_Atk:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J);
+                    case Stat.ST_Atk:
+                        return unlocked.Contains(Kernel.Abilities.StAtkJ);
 
-                    case Kernel_bin.Stat.ST_Def_1:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+                    case Stat.ST_Def_1:
+                        return unlocked.Contains(Kernel.Abilities.StDefJ) ||
+                            unlocked.Contains(Kernel.Abilities.StDefJ2) ||
+                            unlocked.Contains(Kernel.Abilities.StDefJ4);
 
-                    case Kernel_bin.Stat.ST_Def_2:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+                    case Stat.ST_Def_2:
+                        return unlocked.Contains(Kernel.Abilities.StDefJ2) ||
+                            unlocked.Contains(Kernel.Abilities.StDefJ4);
 
-                    case Kernel_bin.Stat.ST_Def_3:
-                    case Kernel_bin.Stat.ST_Def_4:
-                        return unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4);
+                    case Stat.ST_Def_3:
+                    case Stat.ST_Def_4:
+                        return unlocked.Contains(Kernel.Abilities.StDefJ4);
                 }
             }
         }

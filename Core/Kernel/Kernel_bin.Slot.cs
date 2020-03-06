@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Slot Magic Data
@@ -12,7 +12,7 @@ namespace OpenVIII
         {
             private byte _count;
             private byte _magicID;
-            public Magic_Data Magic_Data => MagicData != null && _magicID < MagicData.Count ? MagicData[_magicID] : null;
+            public Magic_Data Magic_Data => Memory.Kernel_Bin.MagicData != null && _magicID < Memory.Kernel_Bin.MagicData.Count ? Memory.Kernel_Bin.MagicData[_magicID] : null;
 
             public byte Casts => checked((byte)(Memory.Random.Next(_count) + 1));
 

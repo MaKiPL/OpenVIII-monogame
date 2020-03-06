@@ -58,7 +58,7 @@ namespace OpenVIII.IGMData.Pool
                 for (byte i = 0; pos < Rows && i < Contents.Length; i++)
                 {
                     bool unlocked = Source.UnlockedGFs.Contains(Contents[i].GF);
-                    bool junctioned = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.Stat_J.ContainsValue(Contents[i].ID));
+                    bool junctioned = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.StatJ.ContainsValue(Contents[i].ID));
                     ((IGMDataItem.Text)(ITEM[pos, 0])).Data = Contents[i].Name;
                     ((IGMDataItem.Text)(ITEM[pos, 0])).Show();
                     if (junctioned)

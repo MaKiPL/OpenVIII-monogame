@@ -98,7 +98,7 @@ namespace OpenVIII
                 }
             }
 
-            protected Dictionary<T, byte> getTotal<T>(out Enum[] availableFlagsarray, byte max, Kernel_bin.Stat stat, params byte[] spells) where T : Enum
+            protected Dictionary<T, byte> getTotal<T>(out Enum[] availableFlagsarray, byte max, Kernel.Stat stat, params byte[] spells) where T : Enum
             {
                 const int maxspellcount = 100;
                 Dictionary<T, byte> total = new Dictionary<T, byte>(8);
@@ -109,28 +109,28 @@ namespace OpenVIII
                 {
                     Enum flags = null;
                     byte spell = spells[i];
-                    Kernel_bin.Magic_Data magic_Data = Kernel_bin.MagicData[spell];
+                    Kernel.Magic_Data magic_Data = Memory.Kernel_Bin.MagicData[spell];
                     switch (stat)
                     {
-                        case Kernel_bin.Stat.EL_Atk:
+                        case Kernel.Stat.EL_Atk:
                             flags = magic_Data.EL_Atk;
                             break;
 
-                        case Kernel_bin.Stat.EL_Def_1:
-                        case Kernel_bin.Stat.EL_Def_2:
-                        case Kernel_bin.Stat.EL_Def_3:
-                        case Kernel_bin.Stat.EL_Def_4:
+                        case Kernel.Stat.EL_Def_1:
+                        case Kernel.Stat.EL_Def_2:
+                        case Kernel.Stat.EL_Def_3:
+                        case Kernel.Stat.EL_Def_4:
                             flags = magic_Data.EL_Def;
                             break;
 
-                        case Kernel_bin.Stat.ST_Atk:
+                        case Kernel.Stat.ST_Atk:
                             flags = magic_Data.ST_Atk;
                             break;
 
-                        case Kernel_bin.Stat.ST_Def_1:
-                        case Kernel_bin.Stat.ST_Def_2:
-                        case Kernel_bin.Stat.ST_Def_3:
-                        case Kernel_bin.Stat.ST_Def_4:
+                        case Kernel.Stat.ST_Def_1:
+                        case Kernel.Stat.ST_Def_2:
+                        case Kernel.Stat.ST_Def_3:
+                        case Kernel.Stat.ST_Def_4:
                             flags = magic_Data.ST_Def;
                             break;
                     }

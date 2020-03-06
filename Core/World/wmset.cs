@@ -687,7 +687,7 @@ namespace OpenVIII.World
             public byte animTimeout;
 
             /// <summary>
-            /// Frames count- controls how many frames are valid. Usually 4
+            /// Frames Count- controls how many frames are valid. Usually 4
             /// </summary>
             public byte framesCount;
 

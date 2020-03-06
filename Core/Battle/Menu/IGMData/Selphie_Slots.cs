@@ -7,7 +7,7 @@ namespace OpenVIII.IGMData
     {
         #region Fields
 
-        private Kernel_bin.Magic_Data _magicData;
+        private Kernel.Magic_Data _magicData;
 
         #endregion Fields
 
@@ -15,7 +15,7 @@ namespace OpenVIII.IGMData
 
         public int Casts { get => Number.Data; private set => Number.Data = value; }
 
-        public Kernel_bin.Magic_Data MagicData
+        public Kernel.Magic_Data MagicData
         {
             get => _magicData; private set
             {
@@ -34,13 +34,13 @@ namespace OpenVIII.IGMData
 
         private IGMDataItem.Text Spell { get => (IGMDataItem.Text)ITEM[0, 0]; set => ITEM[0, 0] = value; }
 
-        private Kernel_bin.Slot Spell_Data
+        private Kernel.Slot Spell_Data
         {
             get
             {
                 if (Spells != null)
                 {
-                    IReadOnlyList<Kernel_bin.Slot> spells = Spells;
+                    IReadOnlyList<Kernel.Slot> spells = Spells;
                     return spells[Memory.Random.Next(spells.Count)];
                 }
                 return default;
@@ -50,25 +50,17 @@ namespace OpenVIII.IGMData
         /// <summary>
         /// List of Spells
         /// </summary>
-        private IReadOnlyList<Kernel_bin.Slot> Spells
-        {
-            get
-            {
-                if ((SpellSet?.SlotID ?? -1) != -1)
-                    return Kernel_bin.Selphielimitbreaksets[SpellSet.SlotID]?.Slots;
-                return null;
-            }
-        }
+        private IReadOnlyList<Kernel.Slot> Spells => (SpellSet?.SlotID ?? -1) == -1 ? null : Memory.Kernel_Bin.SelphieLimitBreakSets[SpellSet.SlotID]?.Slots;
 
         /// <summary>
         /// Spell set
         /// </summary>
-        private Kernel_bin.Slot_array SpellSet
+        private Kernel.Slot_array SpellSet
         {
             get
             {
-                if (Kernel_bin.Slotarray != null)
-                    return Kernel_bin.Slotarray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Kernel_bin.Slotarray.Count - 1)];
+                if (Memory.Kernel_Bin.SlotArray != null)
+                    return Memory.Kernel_Bin.SlotArray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Memory.Kernel_Bin.SlotArray.Count - 1)];
                 return null;
             }
         }
@@ -143,7 +135,7 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            Kernel_bin.Slot spell_data = Spell_Data;
+            Kernel.Slot spell_data = Spell_Data;
             MagicData = spell_data.Magic_Data;
             Casts = spell_data.Casts;
             SetCursor_select(3);

@@ -215,7 +215,7 @@ namespace OpenVIII
                 byte pal = buffer[++i];
                 Memory.Icons.Trim((Icons.ID)ic, pal);
                 EntryGroup icon = Memory.Icons[(Icons.ID)ic];
-                //Vector2 scale = Memory.Icons.GetTexture((Icons.ID)ic).ScaleFactor;
+                //Vector2 scale = Memory.Icons.GetTexture((Icons.BattleID)ic).ScaleFactor;
                 if (icon != null)
                 {
                     float adj = (12 / (float)(icon.Height));

@@ -19,7 +19,7 @@
 
         byte MugRate { get; }
 
-        Kernel_bin.Devour Devour { get; }
+        Kernel.Devour Devour { get; }
 
         #endregion Properties
 

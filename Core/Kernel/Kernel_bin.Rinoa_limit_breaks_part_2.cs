@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Rinoa limit breaks (part 2)
@@ -19,9 +19,9 @@ namespace OpenVIII
 
             public FF8String Name { get; private set; }
             public Magic_ID MagicID { get; private set; }
-            public Attack_Type Attack_Type { get; private set; }
+            public AttackType Attack_Type { get; private set; }
             public byte Attack_Power { get; private set; }
-            public Attack_Flags Attack_Flags { get; private set; }
+            public AttackFlags Attack_Flags { get; private set; }
             public byte Unknown0 { get; private set; }
             public Target Target { get; private set; }
             public byte Unknown1 { get; private set; }
@@ -65,11 +65,11 @@ namespace OpenVIII
                 //br.BaseStream.Seek(2, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();
                 //0x0002  2 bytes Magic ID
-                Attack_Type = (Attack_Type)br.ReadByte();
+                Attack_Type = (AttackType)br.ReadByte();
                 //0x0004  1 byte Attack type
                 Attack_Power = br.ReadByte();
                 //0x0005  1 byte Attack power
-                Attack_Flags = (Attack_Flags)br.ReadByte();
+                Attack_Flags = (AttackFlags)br.ReadByte();
                 //0x0006  1 byte Attack flags
                 Unknown0 = br.ReadByte();
                 //0x0007  1 byte Unknown

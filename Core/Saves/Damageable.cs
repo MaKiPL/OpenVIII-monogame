@@ -14,10 +14,10 @@ namespace OpenVIII
 
         protected ushort _CurrentHP;
         private Enum _battlemode;
-        private Dictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> _damageActions;
-        private Kernel_bin.Persistent_Statuses _statuses0;
-        private Kernel_bin.Battle_Only_Statuses _statuses1;
-        private Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistent_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> _statusesActions;
+        private Dictionary<Kernel.AttackType, Func<int, Kernel.AttackFlags, int>> _damageActions;
+        private Kernel.Persistent_Statuses _statuses0;
+        private Kernel.Battle_Only_Statuses _statuses1;
+        private Dictionary<Kernel.AttackType, Func<Kernel.Persistent_Statuses, Kernel.Battle_Only_Statuses, Kernel.AttackFlags, int>> _statusesActions;
         protected ATBTimer ATBTimer;
 
         #endregion Fields
@@ -81,62 +81,62 @@ namespace OpenVIII
 
         public bool Charging() => SetBattleMode(BattleMode.ATB_Charging);
 
-        public IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>> DamageActions
+        public IReadOnlyDictionary<Kernel.AttackType, Func<int, Kernel.AttackFlags, int>> DamageActions
         {
             get
             {
                 if (_damageActions == null)
-                    _damageActions = new Dictionary<Kernel_bin.Attack_Type, Func<int, Kernel_bin.Attack_Flags, int>>
-            {   { Kernel_bin.Attack_Type.Physical_Attack, Damage_Physical_Attack_Action},
-                { Kernel_bin.Attack_Type.Magic_Attack, Damage_Magic_Attack_Action},
-                { Kernel_bin.Attack_Type.Curative_Magic, Damage_Curative_Magic_Action },
-                { Kernel_bin.Attack_Type.Curative_Item, Damage_Curative_Item_Action },
-                { Kernel_bin.Attack_Type.Revive, Damage_Revive_Action },
-                { Kernel_bin.Attack_Type.Revive_At_Full_HP, Damage_Revive_At_Full_HP_Action },
-                { Kernel_bin.Attack_Type.Physical_Damage, Damage_Physical_Damage_Action },
-                { Kernel_bin.Attack_Type.Magic_Damage, Damage_Magic_Damage_Action },
-                { Kernel_bin.Attack_Type.Renzokuken_Finisher, Damage_Renzokuken_Finisher_Action },
-                { Kernel_bin.Attack_Type.Squall_Gunblade_Attack, Damage_Squall_Gunblade_Attack_Action },
-                { Kernel_bin.Attack_Type.GF, Damage_GF_Action },
-                { Kernel_bin.Attack_Type.Scan, Damage_Scan_Action },
-                { Kernel_bin.Attack_Type.LV_Down, Damage_LV_Down_Action },
-                { Kernel_bin.Attack_Type.Summon_Item, Damage_Summon_Item_Action },
-                { Kernel_bin.Attack_Type.GF_Ignore_Target_SPR, Damage_GF_Ignore_Target_SPR_Action },
-                { Kernel_bin.Attack_Type.LV_Up, Damage_LV_Up_Action },
-                { Kernel_bin.Attack_Type.Card, Damage_Card_Action },
-                { Kernel_bin.Attack_Type.Kamikaze, Damage_Kamikaze_Action },
-                { Kernel_bin.Attack_Type.Devour, Damage_Devour_Action },
-                { Kernel_bin.Attack_Type.GF_Damage, Damage_GF_Damage_Action },
-                { Kernel_bin.Attack_Type.Unknown_1, Damage_Unknown_1_Action },
-                { Kernel_bin.Attack_Type.Magic_Attack_Ignore_Target_SPR, Damage_Magic_Attack_Ignore_Target_SPR_Action },
-                { Kernel_bin.Attack_Type.Angelo_Search, Damage_Angelo_Search_Action },
-                { Kernel_bin.Attack_Type.Moogle_Dance, Damage_Moogle_Dance_Action },
-                { Kernel_bin.Attack_Type.White_WindQuistis, Damage_White_WindQuistis_Action },
-                { Kernel_bin.Attack_Type.LV_Attack, Damage_LV_Attack_Action },
-                { Kernel_bin.Attack_Type.Fixed_Damage, Damage_Fixed_Damage_Action },
-                { Kernel_bin.Attack_Type.Target_Current_HP_1, Damage_Target_Current_HP_1_Action },
-                { Kernel_bin.Attack_Type.Fixed_Magic_Damage_Based_on_GF_Level, Damage_Fixed_Magic_Damage_Based_on_GF_Level_Action },
-                { Kernel_bin.Attack_Type.Unknown_2, Damage_Unknown_2_Action },
-                { Kernel_bin.Attack_Type.Unknown_3, Damage_Unknown_3_Action },
-                { Kernel_bin.Attack_Type.Give_Percentage_HP, Damage_Give_Percentage_HP_Action },
-                { Kernel_bin.Attack_Type.Unknown_4, Damage_Unknown_4_Action },
-                { Kernel_bin.Attack_Type.Everyones_Grudge, Damage_Everyones_Grudge_Action },
-                { Kernel_bin.Attack_Type._1_HP_Damage, Damage__1_HP_Damage_Action },
-                { Kernel_bin.Attack_Type.Physical_AttackIgnore_Target_VIT, Damage_Physical_AttackIgnore_Target_VIT_Action },
+                    _damageActions = new Dictionary<Kernel.AttackType, Func<int, Kernel.AttackFlags, int>>
+            {   { Kernel.AttackType.PhysicalAttack, Damage_Physical_Attack_Action},
+                { Kernel.AttackType.MagicAttack, Damage_Magic_Attack_Action},
+                { Kernel.AttackType.CurativeMagic, Damage_Curative_Magic_Action },
+                { Kernel.AttackType.CurativeItem, Damage_Curative_Item_Action },
+                { Kernel.AttackType.Revive, Damage_Revive_Action },
+                { Kernel.AttackType.ReviveAtFullHP, Damage_Revive_At_Full_HP_Action },
+                { Kernel.AttackType.PhysicalDamage, Damage_Physical_Damage_Action },
+                { Kernel.AttackType.MagicDamage, Damage_Magic_Damage_Action },
+                { Kernel.AttackType.RenzokukenFinisher, Damage_Renzokuken_Finisher_Action },
+                { Kernel.AttackType.SquallGunbladeAttack, Damage_Squall_Gunblade_Attack_Action },
+                { Kernel.AttackType.GF, Damage_GF_Action },
+                { Kernel.AttackType.Scan, Damage_Scan_Action },
+                { Kernel.AttackType.LvDown, Damage_LV_Down_Action },
+                { Kernel.AttackType.SummonItem, Damage_Summon_Item_Action },
+                { Kernel.AttackType.GFIgnoreTargetSPR, Damage_GF_Ignore_Target_SPR_Action },
+                { Kernel.AttackType.LvUp, Damage_LV_Up_Action },
+                { Kernel.AttackType.Card, Damage_Card_Action },
+                { Kernel.AttackType.Kamikaze, Damage_Kamikaze_Action },
+                { Kernel.AttackType.Devour, Damage_Devour_Action },
+                { Kernel.AttackType.GFDamage, Damage_GF_Damage_Action },
+                { Kernel.AttackType.Unknown1, Damage_Unknown_1_Action },
+                { Kernel.AttackType.MagicAttackIgnoreTargetSPR, Damage_Magic_Attack_Ignore_Target_SPR_Action },
+                { Kernel.AttackType.AngeloSearch, Damage_Angelo_Search_Action },
+                { Kernel.AttackType.MoogleDance, Damage_Moogle_Dance_Action },
+                { Kernel.AttackType.WhiteWindQuistis, Damage_White_WindQuistis_Action },
+                { Kernel.AttackType.LvAttack, Damage_LV_Attack_Action },
+                { Kernel.AttackType.FixedDamage, Damage_Fixed_Damage_Action },
+                { Kernel.AttackType.TargetCurrentHP1, Damage_Target_Current_HP_1_Action },
+                { Kernel.AttackType.FixedMagicDamageBasedOnGFLevel, Damage_Fixed_Magic_Damage_Based_on_GF_Level_Action },
+                { Kernel.AttackType.Unknown2, Damage_Unknown_2_Action },
+                { Kernel.AttackType.Unknown3, Damage_Unknown_3_Action },
+                { Kernel.AttackType.GivePercentageHP, Damage_Give_Percentage_HP_Action },
+                { Kernel.AttackType.Unknown4, Damage_Unknown_4_Action },
+                { Kernel.AttackType.EveryoneGrudge, Damage_Everyones_Grudge_Action },
+                { Kernel.AttackType._1_HP_Damage, Damage__1_HP_Damage_Action },
+                { Kernel.AttackType.PhysicalAttackIgnoreTargetVIT, Damage_Physical_AttackIgnore_Target_VIT_Action },
             };
 
                 return _damageActions;
-                int Damage__1_HP_Damage_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage__1_HP_Damage_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Angelo_Search_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Angelo_Search_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Card_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Card_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Curative_Item_Action(int dmg, Kernel_bin.Attack_Flags flags)
+                int Damage_Curative_Item_Action(int dmg, Kernel.AttackFlags flags)
                 {
                     //ChangeHP(-dmg);
-                    bool noheal = (Statuses0 & (Kernel_bin.Persistent_Statuses.Death | Kernel_bin.Persistent_Statuses.Petrify)) != 0 || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Summon_GF)) != 0 || _CurrentHP == 0;
-                    bool healisdmg = (Statuses0 & (Kernel_bin.Persistent_Statuses.Zombie)) != 0;
+                    bool noheal = (Statuses0 & (Kernel.Persistent_Statuses.Death | Kernel.Persistent_Statuses.Petrify)) != 0 || (Statuses1 & (Kernel.Battle_Only_Statuses.Summon_GF)) != 0 || _CurrentHP == 0;
+                    bool healisdmg = (Statuses0 & (Kernel.Persistent_Statuses.Zombie)) != 0;
                     if (!noheal)
                     {
                         dmg = (healisdmg ? dmg : -dmg);
@@ -144,53 +144,53 @@ namespace OpenVIII
                     return ChangeHP(dmg) ? dmg : 0;
                 }
 
-                int Damage_Curative_Magic_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Curative_Magic_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Devour_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Devour_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Everyones_Grudge_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Everyones_Grudge_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Fixed_Damage_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Fixed_Damage_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Fixed_Magic_Damage_Based_on_GF_Level_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Fixed_Magic_Damage_Based_on_GF_Level_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_GF_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_GF_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_GF_Damage_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_GF_Damage_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_GF_Ignore_Target_SPR_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_GF_Ignore_Target_SPR_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Give_Percentage_HP_Action(int dmg, Kernel_bin.Attack_Flags flags) => Damage_Curative_Item_Action(MaxHP() * dmg / 100, flags);
+                int Damage_Give_Percentage_HP_Action(int dmg, Kernel.AttackFlags flags) => Damage_Curative_Item_Action(MaxHP() * dmg / 100, flags);
 
-                int Damage_Kamikaze_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Kamikaze_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_LV_Attack_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_LV_Attack_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_LV_Down_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_LV_Down_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_LV_Up_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_LV_Up_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Magic_Attack_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Magic_Attack_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Magic_Attack_Ignore_Target_SPR_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Magic_Attack_Ignore_Target_SPR_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Magic_Damage_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Magic_Damage_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Moogle_Dance_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Moogle_Dance_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Physical_Attack_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Physical_Attack_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Physical_AttackIgnore_Target_VIT_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Physical_AttackIgnore_Target_VIT_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Physical_Damage_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Physical_Damage_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Renzokuken_Finisher_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Renzokuken_Finisher_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Revive_Action(int dmg, Kernel_bin.Attack_Flags flags)
+                int Damage_Revive_Action(int dmg, Kernel.AttackFlags flags)
                 {
                     ushort r = ReviveHP();
 
-                    if ((Statuses0 & Kernel_bin.Persistent_Statuses.Zombie) != 0)
+                    if ((Statuses0 & Kernel.Persistent_Statuses.Zombie) != 0)
                     {
                         r = MaxHP();
                         //Debug.WriteLine($"{this}: Dealt {r}, previous hp: {_CurrentHP}, current hp: {_CurrentHP - r}");
@@ -204,10 +204,10 @@ namespace OpenVIII
                     return 0;
                 }
 
-                int Damage_Revive_At_Full_HP_Action(int dmg, Kernel_bin.Attack_Flags flags)
+                int Damage_Revive_At_Full_HP_Action(int dmg, Kernel.AttackFlags flags)
                 {
                     ushort r = MaxHP();
-                    if ((Statuses0 & Kernel_bin.Persistent_Statuses.Zombie) != 0)
+                    if ((Statuses0 & Kernel.Persistent_Statuses.Zombie) != 0)
                     {
                         //Debug.WriteLine($"{this}: Dealt {r}, previous hp: {_CurrentHP}, current hp: {_CurrentHP-r}");
                         return Damage_Curative_Item_Action(MaxHP(), flags);
@@ -220,23 +220,23 @@ namespace OpenVIII
                     return 0;
                 }
 
-                int Damage_Scan_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Scan_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Squall_Gunblade_Attack_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Squall_Gunblade_Attack_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Summon_Item_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Summon_Item_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Target_Current_HP_1_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Target_Current_HP_1_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Unknown_1_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Unknown_1_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Unknown_2_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Unknown_2_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Unknown_3_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Unknown_3_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_Unknown_4_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_Unknown_4_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Damage_White_WindQuistis_Action(int dmg, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Damage_White_WindQuistis_Action(int dmg, Kernel.AttackFlags flags) => throw new NotImplementedException();
             }
         }
 
@@ -248,27 +248,27 @@ namespace OpenVIII
 
         public ushort HP => CurrentHP();
 
-        public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0;
+        public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel.Persistent_Statuses.Death) != 0;
 
         /// <summary>
         /// If all partymemembers are in gameover trigger Phoenix Pinion if CanPhoenixPinion or
         /// trigger Game over
         /// </summary>
-        public bool IsGameOver => IsDead || IsPetrify || (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Eject)) != 0;
+        public bool IsGameOver => IsDead || IsPetrify || (Statuses1 & (Kernel.Battle_Only_Statuses.Eject)) != 0;
 
         /// <summary>
         /// ATB frozen
         /// </summary>
         public bool IsInactive => IsGameOver ||
-            (Statuses1 & (Kernel_bin.Battle_Only_Statuses.Stop)) != 0;
+            (Statuses1 & (Kernel.Battle_Only_Statuses.Stop)) != 0;
 
         /// <summary>
         /// Menu disabled
         /// </summary>
         public bool IsNonInteractive => IsInactive ||
-            (Statuses0 & Kernel_bin.Persistent_Statuses.Berserk) != 0;
+            (Statuses0 & Kernel.Persistent_Statuses.Berserk) != 0;
 
-        public bool IsPetrify => (Statuses0 & (Kernel_bin.Persistent_Statuses.Petrify)) != 0;
+        public bool IsPetrify => (Statuses0 & (Kernel.Persistent_Statuses.Petrify)) != 0;
 
         public abstract byte Level { get; }
 
@@ -289,14 +289,14 @@ namespace OpenVIII
         /// <summary>
         /// Persistant_Statuses are saved and last between battles.
         /// </summary>
-        public virtual Kernel_bin.Persistent_Statuses Statuses0
+        public virtual Kernel.Persistent_Statuses Statuses0
         {
             get
             {
                 if (!StatusImmune)
                     return _statuses0;
                 else
-                    return Kernel_bin.Persistent_Statuses.None;
+                    return Kernel.Persistent_Statuses.None;
             }
 
             set
@@ -309,14 +309,14 @@ namespace OpenVIII
         /// <summary>
         /// Battle_Only_Statuses only exist in battle. Please set to None at end and/or start of battle.
         /// </summary>
-        public virtual Kernel_bin.Battle_Only_Statuses Statuses1
+        public virtual Kernel.Battle_Only_Statuses Statuses1
         {
             get
             {
                 if (!StatusImmune)
                     return _statuses1;
                 else
-                    return Kernel_bin.Battle_Only_Statuses.None;
+                    return Kernel.Battle_Only_Statuses.None;
             }
             set
             {
@@ -325,62 +325,62 @@ namespace OpenVIII
             }
         }
 
-        public IReadOnlyDictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistent_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>> StatusesActions
+        public IReadOnlyDictionary<Kernel.AttackType, Func<Kernel.Persistent_Statuses, Kernel.Battle_Only_Statuses, Kernel.AttackFlags, int>> StatusesActions
         {
             get
             {
                 if (_statusesActions == null)
-                    _statusesActions = new Dictionary<Kernel_bin.Attack_Type, Func<Kernel_bin.Persistent_Statuses, Kernel_bin.Battle_Only_Statuses, Kernel_bin.Attack_Flags, int>>
+                    _statusesActions = new Dictionary<Kernel.AttackType, Func<Kernel.Persistent_Statuses, Kernel.Battle_Only_Statuses, Kernel.AttackFlags, int>>
             {
-                { Kernel_bin.Attack_Type.Physical_Attack, Statuses_Physical_Attack_Action },
-                { Kernel_bin.Attack_Type.Magic_Attack, Statuses_Magic_Attack_Action },
-                { Kernel_bin.Attack_Type.Curative_Magic, Statuses_Curative_Magic_Action },
-                { Kernel_bin.Attack_Type.Curative_Item, Statuses_Curative_Item_Action },
-                { Kernel_bin.Attack_Type.Revive, Statuses_Revive_Action },
-                { Kernel_bin.Attack_Type.Revive_At_Full_HP, Statuses_Revive_At_Full_HP_Action },
-                { Kernel_bin.Attack_Type.Physical_Damage, Statuses_Physical_Statuses_Action },
-                { Kernel_bin.Attack_Type.Magic_Damage, Statuses_Magic_Statuses_Action },
-                { Kernel_bin.Attack_Type.Renzokuken_Finisher, Statuses_Renzokuken_Finisher_Action },
-                { Kernel_bin.Attack_Type.Squall_Gunblade_Attack, Statuses_Squall_Gunblade_Attack_Action },
-                { Kernel_bin.Attack_Type.GF, Statuses_GF_Action },
-                { Kernel_bin.Attack_Type.Scan, Statuses_Scan_Action },
-                { Kernel_bin.Attack_Type.LV_Down, Statuses_LV_Down_Action },
-                { Kernel_bin.Attack_Type.Summon_Item, Statuses_Summon_Item_Action },
-                { Kernel_bin.Attack_Type.GF_Ignore_Target_SPR, Statuses_GF_Ignore_Target_SPR_Action },
-                { Kernel_bin.Attack_Type.LV_Up, Statuses_LV_Up_Action },
-                { Kernel_bin.Attack_Type.Card, Statuses_Card_Action },
-                { Kernel_bin.Attack_Type.Kamikaze, Statuses_Kamikaze_Action },
-                { Kernel_bin.Attack_Type.Devour, Statuses_Devour_Action },
-                { Kernel_bin.Attack_Type.GF_Damage, Statuses_GF_Statuses_Action },
-                { Kernel_bin.Attack_Type.Unknown_1, Statuses_Unknown_1_Action },
-                { Kernel_bin.Attack_Type.Magic_Attack_Ignore_Target_SPR, Statuses_Magic_Attack_Ignore_Target_SPR_Action },
-                { Kernel_bin.Attack_Type.Angelo_Search, Statuses_Angelo_Search_Action },
-                { Kernel_bin.Attack_Type.Moogle_Dance, Statuses_Moogle_Dance_Action },
-                { Kernel_bin.Attack_Type.White_WindQuistis, Statuses_White_WindQuistis_Action },
-                { Kernel_bin.Attack_Type.LV_Attack, Statuses_LV_Attack_Action },
-                { Kernel_bin.Attack_Type.Fixed_Damage, Statuses_Fixed_Statuses_Action },
-                { Kernel_bin.Attack_Type.Target_Current_HP_1, Statuses_Target_Current_HP_1_Action },
-                { Kernel_bin.Attack_Type.Fixed_Magic_Damage_Based_on_GF_Level, Statuses_Fixed_Magic_Statuses_Based_on_GF_Level_Action },
-                { Kernel_bin.Attack_Type.Unknown_2, Statuses_Unknown_2_Action },
-                { Kernel_bin.Attack_Type.Unknown_3, Statuses_Unknown_3_Action },
-                { Kernel_bin.Attack_Type.Give_Percentage_HP, Statuses_Give_Percentage_HP_Action },
-                { Kernel_bin.Attack_Type.Unknown_4, Statuses_Unknown_4_Action },
-                { Kernel_bin.Attack_Type.Everyones_Grudge, Statuses_Everyones_Grudge_Action },
-                { Kernel_bin.Attack_Type._1_HP_Damage, Statuses__1_HP_Statuses_Action },
-                { Kernel_bin.Attack_Type.Physical_AttackIgnore_Target_VIT, Statuses_Physical_AttackIgnore_Target_VIT_Action },
+                { Kernel.AttackType.PhysicalAttack, Statuses_Physical_Attack_Action },
+                { Kernel.AttackType.MagicAttack, Statuses_Magic_Attack_Action },
+                { Kernel.AttackType.CurativeMagic, Statuses_Curative_Magic_Action },
+                { Kernel.AttackType.CurativeItem, Statuses_Curative_Item_Action },
+                { Kernel.AttackType.Revive, Statuses_Revive_Action },
+                { Kernel.AttackType.ReviveAtFullHP, Statuses_Revive_At_Full_HP_Action },
+                { Kernel.AttackType.PhysicalDamage, Statuses_Physical_Statuses_Action },
+                { Kernel.AttackType.MagicDamage, Statuses_Magic_Statuses_Action },
+                { Kernel.AttackType.RenzokukenFinisher, Statuses_Renzokuken_Finisher_Action },
+                { Kernel.AttackType.SquallGunbladeAttack, Statuses_Squall_Gunblade_Attack_Action },
+                { Kernel.AttackType.GF, Statuses_GF_Action },
+                { Kernel.AttackType.Scan, Statuses_Scan_Action },
+                { Kernel.AttackType.LvDown, Statuses_LV_Down_Action },
+                { Kernel.AttackType.SummonItem, Statuses_Summon_Item_Action },
+                { Kernel.AttackType.GFIgnoreTargetSPR, Statuses_GF_Ignore_Target_SPR_Action },
+                { Kernel.AttackType.LvUp, Statuses_LV_Up_Action },
+                { Kernel.AttackType.Card, Statuses_Card_Action },
+                { Kernel.AttackType.Kamikaze, Statuses_Kamikaze_Action },
+                { Kernel.AttackType.Devour, Statuses_Devour_Action },
+                { Kernel.AttackType.GFDamage, Statuses_GF_Statuses_Action },
+                { Kernel.AttackType.Unknown1, Statuses_Unknown_1_Action },
+                { Kernel.AttackType.MagicAttackIgnoreTargetSPR, Statuses_Magic_Attack_Ignore_Target_SPR_Action },
+                { Kernel.AttackType.AngeloSearch, Statuses_Angelo_Search_Action },
+                { Kernel.AttackType.MoogleDance, Statuses_Moogle_Dance_Action },
+                { Kernel.AttackType.WhiteWindQuistis, Statuses_White_WindQuistis_Action },
+                { Kernel.AttackType.LvAttack, Statuses_LV_Attack_Action },
+                { Kernel.AttackType.FixedDamage, Statuses_Fixed_Statuses_Action },
+                { Kernel.AttackType.TargetCurrentHP1, Statuses_Target_Current_HP_1_Action },
+                { Kernel.AttackType.FixedMagicDamageBasedOnGFLevel, Statuses_Fixed_Magic_Statuses_Based_on_GF_Level_Action },
+                { Kernel.AttackType.Unknown2, Statuses_Unknown_2_Action },
+                { Kernel.AttackType.Unknown3, Statuses_Unknown_3_Action },
+                { Kernel.AttackType.GivePercentageHP, Statuses_Give_Percentage_HP_Action },
+                { Kernel.AttackType.Unknown4, Statuses_Unknown_4_Action },
+                { Kernel.AttackType.EveryoneGrudge, Statuses_Everyones_Grudge_Action },
+                { Kernel.AttackType._1_HP_Damage, Statuses__1_HP_Statuses_Action },
+                { Kernel.AttackType.PhysicalAttackIgnoreTargetVIT, Statuses_Physical_AttackIgnore_Target_VIT_Action },
             };
                 return _statusesActions;
 
-                int Statuses__1_HP_Statuses_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses__1_HP_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Angelo_Search_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Angelo_Search_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Card_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Card_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Curative_Item_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags)
+                int Statuses_Curative_Item_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags)
                 {
-                    Kernel_bin.Persistent_Statuses bak0 = Statuses0;
-                    Kernel_bin.Battle_Only_Statuses bak1 = Statuses1;
+                    Kernel.Persistent_Statuses bak0 = Statuses0;
+                    Kernel.Battle_Only_Statuses bak1 = Statuses1;
                     Statuses0 &= ~statuses0;
                     Statuses1 &= ~statuses1;
                     if (!bak0.Equals(Statuses0) || !bak1.Equals(Statuses1))
@@ -388,81 +388,81 @@ namespace OpenVIII
                     return 0;
                 }
 
-                int Statuses_Curative_Magic_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Curative_Magic_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Devour_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Devour_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Everyones_Grudge_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Everyones_Grudge_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Fixed_Magic_Statuses_Based_on_GF_Level_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Fixed_Magic_Statuses_Based_on_GF_Level_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Fixed_Statuses_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Fixed_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_GF_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_GF_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_GF_Ignore_Target_SPR_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_GF_Ignore_Target_SPR_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_GF_Statuses_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_GF_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Give_Percentage_HP_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) =>
+                int Statuses_Give_Percentage_HP_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) =>
                            Statuses_Curative_Item_Action(statuses0, Statuses1, flags);
 
-                int Statuses_Kamikaze_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Kamikaze_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_LV_Attack_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_LV_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_LV_Down_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_LV_Down_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_LV_Up_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_LV_Up_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Magic_Attack_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Magic_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Magic_Attack_Ignore_Target_SPR_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Magic_Attack_Ignore_Target_SPR_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Magic_Statuses_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Magic_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Moogle_Dance_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Moogle_Dance_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Physical_Attack_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Physical_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Physical_AttackIgnore_Target_VIT_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Physical_AttackIgnore_Target_VIT_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Physical_Statuses_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Physical_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Renzokuken_Finisher_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Renzokuken_Finisher_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Revive_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags)
+                int Statuses_Revive_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags)
                 {
-                    if ((Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0 || _CurrentHP == 0)
+                    if ((Statuses0 & Kernel.Persistent_Statuses.Death) != 0 || _CurrentHP == 0)
                     {
-                        Statuses0 = Kernel_bin.Persistent_Statuses.None;
-                        Statuses1 = Kernel_bin.Battle_Only_Statuses.None;
+                        Statuses0 = Kernel.Persistent_Statuses.None;
+                        Statuses1 = Kernel.Battle_Only_Statuses.None;
                         _CurrentHP = 0;
                         return 1;
                     }
                     return 0;
                 }
 
-                int Statuses_Revive_At_Full_HP_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) =>
+                int Statuses_Revive_At_Full_HP_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) =>
                            Statuses_Revive_Action(statuses0, statuses1, flags);
 
-                int Statuses_Scan_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Scan_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Squall_Gunblade_Attack_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Squall_Gunblade_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Summon_Item_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Summon_Item_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Target_Current_HP_1_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Target_Current_HP_1_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_1_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_1_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_2_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_2_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_3_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_3_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_4_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_4_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_White_WindQuistis_Action(Kernel_bin.Persistent_Statuses statuses0, Kernel_bin.Battle_Only_Statuses statuses1, Kernel_bin.Attack_Flags flags) => throw new NotImplementedException();
+                int Statuses_White_WindQuistis_Action(Kernel.Persistent_Statuses statuses0, Kernel.Battle_Only_Statuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
             }
         }
 
@@ -548,20 +548,20 @@ namespace OpenVIII
 
         public bool ChangeHP(int dmg)
         {
-            if (dmg == 0 || (Statuses1 & Kernel_bin.Battle_Only_Statuses.Invincible) != 0)
+            if (dmg == 0 || (Statuses1 & Kernel.Battle_Only_Statuses.Invincible) != 0)
                 return false;
             int hp = _CurrentHP - dmg;
             ushort lasthp = _CurrentHP;
             if (hp <= 0)
             {
-                Statuses0 |= (Kernel_bin.Persistent_Statuses.Death);
+                Statuses0 |= (Kernel.Persistent_Statuses.Death);
                 _CurrentHP = 0;
             }
             else
             {
                 _CurrentHP = (ushort)(hp > ushort.MaxValue ? ushort.MaxValue : hp);
                 //use a CurrentHP method or property to adjust this to correct maxhp.
-                //if teamlaguna the max hp can be different and each gf has there own.
+                //if team Laguna the max hp can be different and each gf has there own.
             }
             CurrentHP();
             if (lasthp == _CurrentHP) return false;
@@ -571,12 +571,10 @@ namespace OpenVIII
 
         public virtual bool ChargeGF()
         {
-            if (GetBattleMode().Equals(BattleMode.YourTurn) && (this.GetType().Equals(typeof(Saves.CharacterData))))
-            {
-                SetBattleMode(BattleMode.ATB_Charged);
-                return true;
-            }
-            return false;
+            if (!GetBattleMode().Equals(BattleMode.YourTurn) ||
+                (!(this is Saves.CharacterData))) return false;
+            SetBattleMode(BattleMode.ATB_Charged);
+            return true;
         }
 
         public abstract Damageable Clone();
@@ -596,40 +594,37 @@ namespace OpenVIII
             return _CurrentHP;
         }
 
-        public bool DealDamage(int dmg, Kernel_bin.Attack_Type type, Kernel_bin.Attack_Flags? flags)
+        public bool DealDamage(int dmg, Kernel.AttackType type, Kernel.AttackFlags? flags)
         {
-            if (DamageActions.ContainsKey(type))
-            {
-                //ChangeHP(-dmg);
-                // check max and min values
-                if (dmg > Kernel_bin.MAX_HP_VALUE && type != Kernel_bin.Attack_Type.Give_Percentage_HP) dmg = Kernel_bin.MAX_HP_VALUE;
-                if (dmg < 0) return false;
-                // depending on damage type see if damage is correct
-                dmg = DamageActions[type](dmg, flags ?? Kernel_bin.Attack_Flags.None);
+            if (!DamageActions.ContainsKey(type)) return false;
+            //ChangeHP(-dmg);
+            // check max and min values
+            if (dmg > Kernel.KernelBin.MaxHPValue && type != Kernel.AttackType.GivePercentageHP) dmg = Kernel.KernelBin.MaxHPValue;
+            if (dmg < 0) return false;
+            // depending on damage type see if damage is correct
+            dmg = DamageActions[type](dmg, flags ?? Kernel.AttackFlags.None);
 
-                return dmg != 0;
-            }
-            return false;
+            return dmg != 0;
         }
 
         public bool DealStatus(
-            Kernel_bin.Persistent_Statuses? statuses0,
-            Kernel_bin.Battle_Only_Statuses? statuses1,
-            Kernel_bin.Attack_Type type,
-            Kernel_bin.Attack_Flags? flags)
+            Kernel.Persistent_Statuses? statuses0,
+            Kernel.Battle_Only_Statuses? statuses1,
+            Kernel.AttackType type,
+            Kernel.AttackFlags? flags)
         {
             if (StatusesActions.ContainsKey(type))
             {
                 int total = StatusesActions[type](
-                statuses0 ?? Kernel_bin.Persistent_Statuses.None,
-                statuses1 ?? Kernel_bin.Battle_Only_Statuses.None,
-                flags ?? Kernel_bin.Attack_Flags.None);
+                statuses0 ?? Kernel.Persistent_Statuses.None,
+                statuses1 ?? Kernel.Battle_Only_Statuses.None,
+                flags ?? Kernel.AttackFlags.None);
                 return total != 0;
             }
             return false;
         }
 
-        public abstract short ElementalResistance(Kernel_bin.Element @in);
+        public abstract short ElementalResistance(Kernel.Element @in);
 
         public virtual bool EndTurn(bool force = false)
         {
@@ -671,11 +666,11 @@ namespace OpenVIII
 
         public SpeedMod GetSpeedMod()
         {
-            if ((Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)
+            if ((Statuses1 & Kernel.Battle_Only_Statuses.Haste) != 0)
                 return SpeedMod.Haste;
-            else if ((Statuses1 & Kernel_bin.Battle_Only_Statuses.Stop) != 0 || IsGameOver)
+            else if ((Statuses1 & Kernel.Battle_Only_Statuses.Stop) != 0 || IsGameOver)
                 return SpeedMod.Stop;
-            else if ((Statuses1 & Kernel_bin.Battle_Only_Statuses.Slow) != 0)
+            else if ((Statuses1 & Kernel.Battle_Only_Statuses.Slow) != 0)
                 return SpeedMod.Slow;
             return SpeedMod.Normal;
         }
@@ -756,9 +751,9 @@ namespace OpenVIII
             return false;
         }
 
-        public abstract sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s);
+        public abstract sbyte StatusResistance(Kernel.Battle_Only_Statuses s);
 
-        public abstract sbyte StatusResistance(Kernel_bin.Persistent_Statuses s);
+        public abstract sbyte StatusResistance(Kernel.Persistent_Statuses s);
 
         public virtual bool Switch()
         {
@@ -791,7 +786,7 @@ namespace OpenVIII
 
         public int TimeToFillBarGF() => TimeToFillBarGF(SPD);
 
-        public abstract ushort TotalStat(Kernel_bin.Stat s);
+        public abstract ushort TotalStat(Kernel.Stat s);
 
         public virtual bool Update(bool force = false)
         {

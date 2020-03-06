@@ -13,7 +13,7 @@ namespace OpenVIII.Fields.Scripts.Instructions.Abstract
         }
 
         /// <summary>
-        /// The ID of the current party member Entity (0, 1 or 2).
+        /// The BattleID of the current party member Entity (0, 1 or 2).
         /// </summary>
         protected Int32 _partyId => checked((byte)_objectIndex);
     }

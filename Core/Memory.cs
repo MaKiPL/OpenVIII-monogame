@@ -98,7 +98,7 @@ namespace OpenVIII
         public static Faces Faces;
         public static Icons Icons;
         public static Strings Strings;
-        public static Kernel_bin Kernel_Bin;
+        public static Kernel.KernelBin Kernel_Bin;
 
         public static Texture2D shadowTexture;
         public static VertexPositionTexture[] shadowGeometry;
@@ -359,7 +359,7 @@ namespace OpenVIII
             // requires strings because it uses an array generated in strings.
             // saves data will reference kernel_bin.
             if (!token.IsCancellationRequested)
-                Kernel_Bin = new Kernel_bin();
+                Kernel_Bin = new Kernel.KernelBin();
             List<Action> actions = new List<Action>()
             {
                 // this has a soft requirement on kernel_bin. It checks for null so should work without it.

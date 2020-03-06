@@ -4,14 +4,14 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// <para>Unlock walkmesh ID</para>
+    /// <para>Unlock walkmesh BattleID</para>
     /// <para>Unlocks a walkmesh triangle so things can walk over it.</para>
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/020_IDUNLOCK"/>
     public sealed class IDUNLOCK : JsmInstruction
     {
         /// <summary>
-        /// Walkmesh triangle ID
+        /// Walkmesh triangle BattleID
         /// </summary>
         private Int32 _parameter;
 

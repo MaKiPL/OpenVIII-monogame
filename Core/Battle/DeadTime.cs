@@ -70,11 +70,11 @@ namespace OpenVIII
                     case Angelo.Search:
                         Saves.CharacterData c = Memory.State[Characters.Rinoa_Heartilly];
                         if (!(c.IsGameOver ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) ||
-                            c.Statuses0.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Angel_Wing)))
+                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Sleep) ||
+                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Stop) ||
+                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Confuse) ||
+                            c.Statuses0.HasFlag(Kernel.Persistent_Statuses.Berserk) ||
+                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Angel_Wing)))
                             return Memory.Random.Next(256) < 8;
                         break;
                 }
@@ -121,7 +121,7 @@ namespace OpenVIII
             //Will Angelo Search be used?
             else if (TestAngeloAbilityTriggers(Angelo.Search))
             {
-                //Real game has a counter that count to 255 and resets to 0
+                //Real game has a counter that Count to 255 and resets to 0
                 //instead of a random number. The counter counts up every 1 tick.
                 //60 ticks per second.
                 byte rnd = checked((byte)Memory.Random.Next(256));

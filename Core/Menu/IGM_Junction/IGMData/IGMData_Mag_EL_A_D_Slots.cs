@@ -45,9 +45,9 @@ namespace OpenVIII
                 skipdata = true;
                 base.Inputs_Menu();
                 skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Contents[CURSOR_SELECT] == Kernel.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
+                    c.StatJ[Contents[CURSOR_SELECT]] = 0;
                     IGM_Junction.Refresh();
                 }
             }
@@ -75,7 +75,7 @@ namespace OpenVIII
                 if (Memory.State?.Characters != null && Damageable != null)
                 {
                     base.Refresh();
-                    FillData(Icons.ID.Icon_Elemental_Attack, Kernel_bin.Stat.EL_Atk, Kernel_bin.Stat.EL_Def_1);
+                    FillData(Icons.ID.Icon_Elemental_Attack, Kernel.Stat.EL_Atk, Kernel.Stat.EL_Def_1);
                 }
             }
 
@@ -85,7 +85,7 @@ namespace OpenVIII
                 if (GetPrevSetting() != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     c.Magics = GetPrevSetting().CloneMagic();
-                    c.Stat_J = GetPrevSetting().CloneMagicJunction();
+                    c.StatJ = GetPrevSetting().CloneMagicJunction();
                 }
             }
 
@@ -127,20 +127,20 @@ namespace OpenVIII
                     switch (pos)
                     {
                         case 0:
-                            return unlocked.Contains(Kernel_bin.Abilities.EL_Atk_J);
+                            return unlocked.Contains(Kernel.Abilities.ElAtkJ);
 
                         case 1:
-                            return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx1) ||
-                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
-                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
+                            return unlocked.Contains(Kernel.Abilities.ElDefJ) ||
+                                unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
+                                unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
                         case 2:
-                            return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
-                                unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
+                            return unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
+                                unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
                         case 3:
                         case 4:
-                            return unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4);
+                            return unlocked.Contains(Kernel.Abilities.ElDefJ4);
                     }
                 return false;
             }

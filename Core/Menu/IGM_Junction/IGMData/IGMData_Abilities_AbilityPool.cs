@@ -7,17 +7,17 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Abilities_AbilityPool : IGMData.Pool.Base<IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.Equipable_Ability>, Kernel_bin.Abilities>
+        private class IGMData_Abilities_AbilityPool : IGMData.Pool.Base<IReadOnlyDictionary<Kernel.Abilities, Kernel.EquippableAbility>, Kernel.Abilities>
         {
             #region Methods
 
             public static IGMData_Abilities_AbilityPool Create()
             {
                 IGMData_Abilities_AbilityPool r = null;
-                if (Kernel_bin.EquipableAbilities != null)
+                if (Memory.Kernel_Bin.EquippableAbilities != null)
                 {
-                    r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.ABILITY }, 11, Kernel_bin.EquipableAbilities.Count / 11 + (Kernel_bin.EquipableAbilities.Count % 11 > 0 ? 1 : 0));
-                    r.Source = Kernel_bin.EquipableAbilities;
+                    r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.ABILITY }, 11, Memory.Kernel_Bin.EquippableAbilities.Count / 11 + (Memory.Kernel_Bin.EquippableAbilities.Count % 11 > 0 ? 1 : 0));
+                    r.Source = Memory.Kernel_Bin.EquippableAbilities;
                 }
                 return r;
             }
@@ -31,7 +31,7 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && !BLANKS[CURSOR_SELECT] && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Contents[CURSOR_SELECT] != Kernel.Abilities.None && !BLANKS[CURSOR_SELECT] && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     skipsnd = true;
                     AV.Sound.Play(31);
@@ -59,9 +59,9 @@ namespace OpenVIII
                         i < c.UnlockedGFAbilities.Count &&
                         pos < Rows; i++)
                     {
-                        if (c.UnlockedGFAbilities[i] != Kernel_bin.Abilities.None)
+                        if (c.UnlockedGFAbilities[i] != Kernel.Abilities.None)
                         {
-                            Kernel_bin.Abilities j = c.UnlockedGFAbilities[i];
+                            Kernel.Abilities j = c.UnlockedGFAbilities[i];
                             if (Source.ContainsKey(j))
                             {
                                 if (skip > 0)
@@ -95,16 +95,16 @@ namespace OpenVIII
                 {
                     ITEM[pos, 0].Hide();
                     BLANKS[pos] = true;
-                    Contents[pos] = Kernel_bin.Abilities.None;
+                    Contents[pos] = Kernel.Abilities.None;
                 }
-                if (Contents[CURSOR_SELECT] != Kernel_bin.Abilities.None && IGM_Junction.GetMode().Equals(Mode.Abilities_Abilities))
+                if (Contents[CURSOR_SELECT] != Kernel.Abilities.None && IGM_Junction.GetMode().Equals(Mode.Abilities_Abilities))
                     IGM_Junction.ChangeHelp(Source[Contents[CURSOR_SELECT]].Description);
                 UpdateTitle();
-                if (Contents[CURSOR_SELECT] == Kernel_bin.Abilities.None)
+                if (Contents[CURSOR_SELECT] == Kernel.Abilities.None)
                     CURSOR_NEXT();
                 if (Pages > 1)
                 {
-                    if (Contents[0] == Kernel_bin.Abilities.None)
+                    if (Contents[0] == Kernel.Abilities.None)
                     {
                         //Pages = Page;
                         PAGE_NEXT();

@@ -1,25 +1,27 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Attack Flags effects how the attack can be treated.
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/blob/master/Doomtrain/MainForm.cs"/>
         [Flags]
-        public enum Attack_Flags
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        public enum AttackFlags
         {
             None = 0x0,
             Shelled = 0x1,
-            UNK0x2 = 0x2,
-            UNK0x4 = 0x4,
-            Break_Damage_Limit = 0x8,
+            Unk0X2 = 0x2,
+            Unk0X4 = 0x4,
+            BreakDamageLimit = 0x8,
             Reflected = 0x10,
-            UNK0x20 = 0x20,
-            UNK0x40 = 0x40,
-            Revive_ = 0x80
+            Unk0X20 = 0x20,
+            Unk0X40 = 0x40,
+            Revive = 0x80
         }
     }
 }

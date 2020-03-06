@@ -60,7 +60,7 @@ namespace OpenVIII
                 {
                     if ((c = infile.ReadByte()) == EOF) break;
                     flags = c | 0xff00;     // uses higher byte cleverly
-                }                           // to count eight
+                }                           // to Count eight
                 if ((flags & 1) == 1)
                 {
                     if ((c = infile.ReadByte()) == EOF) break;

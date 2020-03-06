@@ -48,7 +48,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static event EventHandler<IGM_Junction.Mode> SlotUndoListener;
 
-        public static event EventHandler<Kernel_bin.Stat> StatEventListener;
+        public static event EventHandler<Kernel.Stat> StatEventListener;
 
         #endregion Events
 
@@ -60,13 +60,13 @@ namespace OpenVIII.IGMData.Pool
 
         public int LastPage { get; private set; }
 
-        public Kernel_bin.Stat LastStat { get; private set; }
+        public Kernel.Stat LastStat { get; private set; }
 
-        public IEnumerable<Kernel_bin.Magic_Data> Sort { get; private set; }
+        public IEnumerable<Kernel.Magic_Data> Sort { get; private set; }
 
         public IGM_Junction.Mode SortMode { get; private set; }
 
-        public Kernel_bin.Stat Stat { get; private set; }
+        public Kernel.Stat Stat { get; private set; }
 
         public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Targets_Window, 0]));
 
@@ -76,7 +76,7 @@ namespace OpenVIII.IGMData.Pool
 
         #region Methods
 
-        public static void ChangeStat(Kernel_bin.Stat stat) => StatEventListener?.Invoke(null, stat);
+        public static void ChangeStat(Kernel.Stat stat) => StatEventListener?.Invoke(null, stat);
 
         public static Magic Create(Rectangle pos, Damageable damageable, bool battle = false)
         {
@@ -93,7 +93,7 @@ namespace OpenVIII.IGMData.Pool
             if (Battle || Sort == null)
                 if (Damageable.GetEnemy(out Enemy e))
                 {
-                    bool add(Kernel_bin.Magic_Data magic)
+                    bool add(Kernel.Magic_Data magic)
                     {
                         if (pos >= Rows)
                             return false;
@@ -103,7 +103,7 @@ namespace OpenVIII.IGMData.Pool
                         }
                         return true;
                     }
-                    HashSet<Kernel_bin.Magic_Data> Unique_Magic = new HashSet<Kernel_bin.Magic_Data>();
+                    HashSet<Kernel.Magic_Data> Unique_Magic = new HashSet<Kernel.Magic_Data>();
                     foreach (var m in e.Abilities.Where(x => x.MAGIC != null))
                         Unique_Magic.Add(m.MAGIC);
                     foreach (var m in e.DrawList.Where(x => x.DATA != null))
@@ -120,14 +120,14 @@ namespace OpenVIII.IGMData.Pool
                 else
                     for (int i = 0; pos < Rows && Source?.Magics != null && i < Source.Magics.Count; i++)
                     {
-                        // magic id and count
+                        // Magic ID and Count
                         KeyValuePair<byte, byte> dat = Source.Magics[i];
                         // if invalid
-                        if (dat.Key == 0 || Kernel_bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
-                        addMagic(ref pos, Kernel_bin.MagicData[dat.Key], @default);
+                        if (dat.Key == 0 || Memory.Kernel_Bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
+                        addMagic(ref pos, Memory.Kernel_Bin.MagicData[dat.Key], @default);
                     }
             else
-                foreach (Kernel_bin.Magic_Data i in Sort)
+                foreach (Kernel.Magic_Data i in Sort)
                 {
                     if (pos >= Rows) break;
                     if (skip-- > 0) continue;
@@ -188,10 +188,10 @@ namespace OpenVIII.IGMData.Pool
 
         public void Generate_Preview(bool skipundo = false)
         {
-            if (Stat != Kernel_bin.Stat.None && CURSOR_SELECT < Contents.Length)
+            if (Stat != Kernel.Stat.None && CURSOR_SELECT < Contents.Length)
             {
                 Cursor_Status |= Cursor_Status.Enabled;
-                if (Source.Stat_J[Stat] != Contents[CURSOR_SELECT])
+                if (Source.StatJ[Stat] != Contents[CURSOR_SELECT])
                 {
                     if (!skipundo)
                     {
@@ -216,28 +216,28 @@ namespace OpenVIII.IGMData.Pool
                 switch (SortMode)
                 {
                     case IGM_Junction.Mode.Mag_Pool_Stat:
-                        if (Stat != Kernel_bin.Stat.None)
+                        if (Stat != Kernel.Stat.None)
                             Sort = Source.SortedMagic(Stat);
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_EL_D:
-                        Sort = Source.SortedMagic(Kernel_bin.Stat.EL_Def_1);
+                        Sort = Source.SortedMagic(Kernel.Stat.EL_Def_1);
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_EL_A:
-                        Sort = Source.SortedMagic(Kernel_bin.Stat.EL_Atk);
+                        Sort = Source.SortedMagic(Kernel.Stat.EL_Atk);
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_ST_D:
-                        Sort = Source.SortedMagic(Kernel_bin.Stat.ST_Def_1);
+                        Sort = Source.SortedMagic(Kernel.Stat.ST_Def_1);
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_ST_A:
-                        Sort = Source.SortedMagic(Kernel_bin.Stat.ST_Atk);
+                        Sort = Source.SortedMagic(Kernel.Stat.ST_Atk);
                         break;
 
                     default:
-                        Sort = Kernel_bin.MagicData.AsEnumerable();
+                        Sort = Memory.Kernel_Bin.MagicData.AsEnumerable();
                         break;
                 }
         }
@@ -308,7 +308,7 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Battle)
             {
-                Target_Group.SelectTargetWindows(Kernel_bin.MagicData[Contents[CURSOR_SELECT]]);
+                Target_Group.SelectTargetWindows(Memory.Kernel_Bin.MagicData[Contents[CURSOR_SELECT]]);
                 Target_Group.ShowTargetWindows();
             }
             else
@@ -474,14 +474,14 @@ namespace OpenVIII.IGMData.Pool
             }
         }
 
-        private void addMagic(ref int pos, Kernel_bin.Magic_Data spell, Font.ColorID color = @default)
+        private void addMagic(ref int pos, Kernel.Magic_Data spell, Font.ColorID color = @default)
         {
             if (!Damageable.GetEnemy(out Enemy e))
             {
                 e = null;
             }
             bool j = false;
-            if (color == @default && e == null && Source != null && Source.Stat_J.ContainsValue(spell.ID))
+            if (color == @default && e == null && Source != null && Source.StatJ.ContainsValue(spell.ID))
             {
                 //spell is junctioned
                 if (!Battle)
@@ -532,7 +532,7 @@ namespace OpenVIII.IGMData.Pool
                     case IGM_Junction.Mode.Mag_ST_A:
                     case IGM_Junction.Mode.Mag_Pool_ST_A:
                         SortMode = IGM_Junction.Mode.Mag_Pool_ST_A;
-                        Stat = Kernel_bin.Stat.ST_Atk;
+                        Stat = Kernel.Stat.ST_Atk;
                         break;
 
                     case IGM_Junction.Mode.Mag_EL_D:
@@ -543,13 +543,13 @@ namespace OpenVIII.IGMData.Pool
                     case IGM_Junction.Mode.Mag_EL_A:
                     case IGM_Junction.Mode.Mag_Pool_EL_A:
                         SortMode = IGM_Junction.Mode.Mag_Pool_EL_A;
-                        Stat = Kernel_bin.Stat.EL_Atk;
+                        Stat = Kernel.Stat.EL_Atk;
                         break;
                 }
             }
         }
 
-        private void StatChangeEvent(object sender, Kernel_bin.Stat e) => UpdateOnEvent(sender, null, e);
+        private void StatChangeEvent(object sender, Kernel.Stat e) => UpdateOnEvent(sender, null, e);
 
         private bool Undo()
         {
@@ -559,7 +559,7 @@ namespace OpenVIII.IGMData.Pool
             return true;
         }
 
-        private void UpdateOnEvent(object sender, IGM_Junction.Mode? mode = null, Kernel_bin.Stat? stat = null)
+        private void UpdateOnEvent(object sender, IGM_Junction.Mode? mode = null, Kernel.Stat? stat = null)
         {
             mode = mode ?? (IGM_Junction.Mode)Menu.IGM_Junction.GetMode();
             if ((

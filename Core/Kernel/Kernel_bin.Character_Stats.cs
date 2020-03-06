@@ -5,7 +5,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Character Stats from Kernel
@@ -30,8 +30,8 @@ namespace OpenVIII
             public byte Crisis { get; private set; } //0x0002; 1 byte; Crisis level hp multiplier
 
             public Gender Gender { get; private set; } //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-            private byte _limitid; //0x0004; 1 byte; Limit Break ID
-            public Battle_Commands Limit => BattleCommands[_limitid];
+            private byte _limitid; //0x0004; 1 byte; Limit Break BattleID
+            public BattleCommand Limit => Memory.Kernel_Bin.BattleCommands[_limitid];
             public byte LimitParam { get; private set; } //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
             private byte[] _EXP { get; set; } //0x0006; 2 bytes; EXP modifier
             private byte[] _HP { get; set; } //0x0008; 4 bytes; HP modifiers
@@ -50,7 +50,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 Crisis = br.ReadByte(); //0x0002; 1 byte; Crisis level hp multiplier
                 Gender = br.ReadByte() == 0 ? Gender.Male : Gender.Female; //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-                _limitid = br.ReadByte(); //0x0004; 1 byte; Limit Break ID
+                _limitid = br.ReadByte(); //0x0004; 1 byte; Limit Break BattleID
                 LimitParam = br.ReadByte(); //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
                 _EXP = br.ReadBytes(2); //0x0006; 2 bytes; EXP modifier
                 _HP = br.ReadBytes(4); //0x0008; 4 bytes; HP modifiers
@@ -78,9 +78,9 @@ namespace OpenVIII
 
             //public static Character_Stats[] Read(BinaryReader br)
             //{
-            //    Character_Stats[] ret = new Character_Stats[count];
+            //    Character_Stats[] ret = new Character_Stats[Count];
 
-            //    for (int i = 0; i < count; i++)
+            //    for (int i = 0; i < Count; i++)
             //    {
             //        Character_Stats tmp = new Character_Stats();
             //        tmp.Read(br, (Characters)i);
@@ -116,51 +116,51 @@ namespace OpenVIII
             /// <returns></returns>
             public ushort HP(sbyte lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = 0)
             {
-                int value = (((MagicData[MagicID].J_Val[Stat.HP] * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
-                return (ushort)MathHelper.Clamp(value, 0, MAX_HP_VALUE);
+                int value = (((Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.HP] * magic_count) + stat_bonus + (lvl * _HP[0]) - ((10 * lvl * lvl) / _HP[1]) + _HP[2]) * (percent_mod + _percent_mod)) / 100;
+                return (ushort)MathHelper.Clamp(value, 0, KernelBin.MaxHPValue);
             }
 
             public byte STR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod, int weapon = 0)
-                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, MagicData[MagicID].J_Val[Stat.STR], magic_count, stat_bonus, percent_mod, weapon);
+                => STR_VIT_MAG_SPR(_STR[0], _STR[1], _STR[2], _STR[3], lvl, Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.STR], magic_count, stat_bonus, percent_mod, weapon);
 
             public byte VIT(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, MagicData[MagicID].J_Val[Stat.VIT], magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_VIT[0], _VIT[1], _VIT[2], _VIT[3], lvl, Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.VIT], magic_count, stat_bonus, percent_mod);
 
             public byte MAG(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, MagicData[MagicID].J_Val[Stat.MAG], magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_MAG[0], _MAG[1], _MAG[2], _MAG[3], lvl, Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.MAG], magic_count, stat_bonus, percent_mod);
 
             public byte SPR(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, MagicData[MagicID].J_Val[Stat.SPR], magic_count, stat_bonus, percent_mod);
+                => STR_VIT_MAG_SPR(_SPR[0], _SPR[1], _SPR[2], _SPR[3], lvl, Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.SPR], magic_count, stat_bonus, percent_mod);
 
             private byte STR_VIT_MAG_SPR(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0)
             {
                 int value = ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + ((lvl * a) / 10 + lvl / b - (lvl * lvl) / d / 2 + c) / 4) * (percent_mod + _percent_mod)) / 100;
 
-                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
+                return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
 
             public byte SPD(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, MagicData[MagicID].J_Val[Stat.SPD], magic_count, stat_bonus, percent_mod);
+                => SPD_LUCK(_SPD[0], _SPD[1], _SPD[2], _SPD[3], lvl, Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.SPD], magic_count, stat_bonus, percent_mod);
 
             public byte LUCK(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int percent_mod = _percent_mod)
-                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, MagicData[MagicID].J_Val[Stat.LUCK], magic_count, stat_bonus, percent_mod);
+                => SPD_LUCK(_LUCK[0], _LUCK[1], _LUCK[2], _LUCK[3], lvl, Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.LUCK], magic_count, stat_bonus, percent_mod);
 
             private byte SPD_LUCK(int a, int b, int c, int d, int lvl, int magic_J_val, int magic_count, int stat_bonus, int percent_mod = 0, int UNK = 0)
             {
                 int value = ((UNK + (magic_J_val * magic_count) / 100 + stat_bonus + lvl / b - lvl / d + lvl * a + c) * (percent_mod + _percent_mod)) / 100;
-                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
+                return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
 
             public byte EVA(int lvl, int MagicID = 0, int magic_count = 0, int stat_bonus = 0, int spd = 0, int percent_mod = 0)
             {
-                int value = (((MagicData[MagicID].J_Val[Stat.EVA] * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
-                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
+                int value = (((Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.EVA] * magic_count) / 100 + spd / 4) * (percent_mod + _percent_mod)) / 100;
+                return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
 
             public byte HIT(int MagicID = 0, int magic_count = 0, int weapon = 0)
             {
-                int value = MagicData[MagicID].J_Val[Stat.HIT] * magic_count + WeaponsData[weapon].HIT;
-                return (byte)MathHelper.Clamp(value, 0, MAX_STAT_VALUE);
+                int value = Memory.Kernel_Bin.MagicData[MagicID].J_Val[Stat.HIT] * magic_count + Memory.Kernel_Bin.WeaponsData[weapon].HIT;
+                return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
         }
     }

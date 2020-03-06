@@ -73,7 +73,7 @@
         /// increase memory load The goal is to keep the dynamicsoundeffectinterface fed. If it plays
         /// the audio before you give it more, then you get sound skips.
         /// </summary>
-        /// <value>The goal buffer count.</value>
+        /// <value>The goal buffer Count.</value>
         /// <remarks>
         /// Will want to be as low as possible without sound skipping. 91.875 is 1 second of audio at
         /// 44100 hz @ 15 fps; 99.9001 is 1 second of audio at 48000 hz @ 15 fps;
@@ -375,7 +375,7 @@
         public bool IsDisposed { get; private set; } = false;
 
         /// <summary>
-        /// Sample count that loop starts from.
+        /// Sample Count that loop starts from.
         /// </summary>
         public int LOOPSTART { get => _loopstart; set => _loopstart = value; }
 

@@ -17,19 +17,19 @@ namespace OpenVIII.IGMData.Slots
                 for (int i = 0; i < Count; i++)
                 {
                     int slots = 2;
-                    if (c.UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx3))
+                    if (c.UnlockedGFAbilities.Contains(Kernel.Abilities.Ability3))
                         slots = 3;
-                    if (c.UnlockedGFAbilities.Contains(Kernel_bin.Abilities.Abilityx4))
+                    if (c.UnlockedGFAbilities.Contains(Kernel.Abilities.Ability4))
                         slots = 4;
                     if (i < slots)
                     {
                         ITEM[i, 0].Show();
-                        if (c.Abilities[i] != Kernel_bin.Abilities.None)
+                        if (c.Abilities[i] != Kernel.Abilities.None)
                         {
-                            ((IGMDataItem.Text)ITEM[i, 1]).Icon = Kernel_bin.EquipableAbilities[c.Abilities[i]].Icon;
-                            ((IGMDataItem.Text)ITEM[i, 1]).Data = Kernel_bin.EquipableAbilities[c.Abilities[i]].Name;
+                            ((IGMDataItem.Text)ITEM[i, 1]).Icon = Memory.Kernel_Bin.EquippableAbilities[c.Abilities[i]].Icon;
+                            ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.Kernel_Bin.EquippableAbilities[c.Abilities[i]].Name;
                             ((IGMDataItem.Text)ITEM[i, 1]).Show();
-                            Descriptions[i] = Kernel_bin.EquipableAbilities[c.Abilities[i]].Description;
+                            Descriptions[i] = Memory.Kernel_Bin.EquippableAbilities[c.Abilities[i]].Description;
                         }
                         else
                         {

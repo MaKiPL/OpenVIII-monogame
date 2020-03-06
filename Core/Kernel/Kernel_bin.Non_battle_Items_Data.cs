@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Non battle Items Mame and Description Offsets Data
@@ -23,7 +23,7 @@ namespace OpenVIII
 
             //0x0002	2 bytes Offset to item description
             public int ID { get; private set; }
-            //public Icons.ID Icon { get; private set; }
+            //public Icons.BattleID Icon { get; private set; }
             public void Read(int i)
             {
                 Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);

@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         [Flags]
-        private enum StatFlags :byte
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        public enum StatFlags :byte
         {
             None = 0x00,
             STR = 0x01,

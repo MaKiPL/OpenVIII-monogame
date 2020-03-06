@@ -71,26 +71,26 @@ namespace OpenVIII.IGMData.Pool
                 }
                 return true;
             }
-            if (Kernel_bin.Rinoalimitbreakspart1 != null)
-                foreach (Kernel_bin.Rinoa_limit_breaks_part_1 lb in Kernel_bin.Rinoalimitbreakspart1)
+            if (Memory.Kernel_Bin.RinoaLimitBreaksPart1 != null)
+                foreach (Kernel.Rinoa_limit_breaks_part_1 lb in Memory.Kernel_Bin.RinoaLimitBreaksPart1)
                     if (!AddAngelo(new KernelItem
                     {
                         rinoa_Limit_Breaks_Part_1 = lb,
                         rinoa_Limit_Breaks_Part_2 = lb.Angelo == Angelo.Angel_Wing ?
-                        Kernel_bin.Rinoalimitbreakspart2.First(x => x.Angelo == lb.Angelo) : null
+                        Memory.Kernel_Bin.RinoaLimitBreaksPart2.First(x => x.Angelo == lb.Angelo) : null
                     })) break;
-            if (Kernel_bin.Rinoalimitbreakspart2 != null)
-                foreach (Kernel_bin.Rinoa_limit_breaks_part_2 lb in Kernel_bin.Rinoalimitbreakspart2)
+            if (Memory.Kernel_Bin.RinoaLimitBreaksPart2 != null)
+                foreach (Kernel.Rinoa_limit_breaks_part_2 lb in Memory.Kernel_Bin.RinoaLimitBreaksPart2)
                     if (lb.Angelo != Angelo.Angel_Wing && !AddAngelo(
                         new KernelItem { rinoa_Limit_Breaks_Part_2 = lb })) break;
-            IEnumerable<Kernel_bin.Non_Junctionable_GFs_Attacks_Data> non_Junctionable_GFs_Attacks_Datas =
-                Kernel_bin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
+            IEnumerable<Kernel.Non_Junctionable_GFs_Attacks_Data> non_Junctionable_GFs_Attacks_Datas =
+                Memory.Kernel_Bin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
             if (non_Junctionable_GFs_Attacks_Datas != null)
-                foreach (Kernel_bin.Non_Junctionable_GFs_Attacks_Data lb in non_Junctionable_GFs_Attacks_Datas)
+                foreach (Kernel.Non_Junctionable_GFs_Attacks_Data lb in non_Junctionable_GFs_Attacks_Datas)
                     if (!AddAngelo(
                         new KernelItem { non_Junctionable_GFs_Attacks_Data = lb })) break;
-            DefaultPages = ((Kernel_bin.Rinoalimitbreakspart1?.Count ?? 0) +
-                (Kernel_bin.Rinoalimitbreakspart2?.Count ?? 0) +
+            DefaultPages = ((Memory.Kernel_Bin.RinoaLimitBreaksPart1?.Count ?? 0) +
+                (Memory.Kernel_Bin.RinoaLimitBreaksPart2?.Count ?? 0) +
                 (non_Junctionable_GFs_Attacks_Datas?.Count() ?? 1) - 1) / Rows;
             for (; i < Rows; i++)
             {
@@ -180,9 +180,9 @@ namespace OpenVIII.IGMData.Pool
         {
             #region Fields
 
-            public Kernel_bin.Non_Junctionable_GFs_Attacks_Data non_Junctionable_GFs_Attacks_Data;
-            public Kernel_bin.Rinoa_limit_breaks_part_1 rinoa_Limit_Breaks_Part_1;
-            public Kernel_bin.Rinoa_limit_breaks_part_2 rinoa_Limit_Breaks_Part_2;
+            public Kernel.Non_Junctionable_GFs_Attacks_Data non_Junctionable_GFs_Attacks_Data;
+            public Kernel.Rinoa_limit_breaks_part_1 rinoa_Limit_Breaks_Part_1;
+            public Kernel.Rinoa_limit_breaks_part_2 rinoa_Limit_Breaks_Part_2;
 
             #endregion Fields
 
@@ -220,11 +220,11 @@ namespace OpenVIII.IGMData.Pool
                 }
             }
 
-            public Kernel_bin.Target Target
+            public Kernel.Target Target
             {
                 get
                 {
-                    Kernel_bin.Target r = 0;
+                    Kernel.Target r = 0;
                     if (rinoa_Limit_Breaks_Part_1 != null)
                         r |= rinoa_Limit_Breaks_Part_1.Target;
                     if (rinoa_Limit_Breaks_Part_2 != null)
@@ -232,9 +232,9 @@ namespace OpenVIII.IGMData.Pool
                     // there is no target from njGFs so must be set in battle scripts.
                     // setting a base default for those.
                     if (non_Junctionable_GFs_Attacks_Data != null)
-                        r |= Kernel_bin.Target.Enemy |
-                            Kernel_bin.Target.Ally |
-                            Kernel_bin.Target.Single_Target;
+                        r |= Kernel.Target.Enemy |
+                            Kernel.Target.Ally |
+                            Kernel.Target.Single_Target;
                     //non_Junctionable_GFs_Attacks_Data.Target;
                     return r;
                 }

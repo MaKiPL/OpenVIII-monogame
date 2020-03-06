@@ -1,6 +1,6 @@
 ﻿namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         public enum CharacterAbilityFlags : uint
         {

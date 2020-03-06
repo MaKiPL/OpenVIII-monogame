@@ -16,7 +16,7 @@ namespace OpenVIII.IGMData
         private readonly FF8String str_GF_AP;
         private readonly FF8String str_Learn;
         private readonly FF8String str_Levelup;
-        private ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> _abilities;
+        private ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>> _abilities;
         private uint _ap;
         private GFs _gf;
 
@@ -49,7 +49,7 @@ namespace OpenVIII.IGMData
 
         #region Properties
 
-        public ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> Abilities { get => _abilities; set => _abilities = value; }
+        public ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>> Abilities { get => _abilities; set => _abilities = value; }
 
         public uint AP
         {
@@ -118,18 +118,18 @@ namespace OpenVIII.IGMData
 
         public void Learn()
         {
-            if (Abilities.TryDequeue(out KeyValuePair<GFs, Kernel_bin.Abilities> Ability))
+            if (Abilities.TryDequeue(out KeyValuePair<GFs, Kernel.Abilities> Ability))
             {
                 GF = Ability.Key;
                 ((IGMData.Dialog.Small)ITEM[0, 3]).Data =
                     str_Learn.Clone()
                     .Replace(DialogSelectedGF, Memory.Strings.GetName(GF))
                     .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] {
-                            (byte)((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF),
-                            (byte)(((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
-                            (Kernel_bin.AllAbilities[Ability.Value].Palette)
+                            (byte)((short)Memory.Kernel_Bin.AllAbilities[Ability.Value].Icon & 0xFF),
+                            (byte)(((short)Memory.Kernel_Bin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
+                            (Memory.Kernel_Bin.AllAbilities[Ability.Value].Palette)
                     })
-                    .Replace(DialogSelectedAbility, Kernel_bin.AllAbilities[Ability.Value].Name);
+                    .Replace(DialogSelectedAbility, Memory.Kernel_Bin.AllAbilities[Ability.Value].Name);
                 skipsnd = true;
                 AV.Sound.Play(0x28);
             }

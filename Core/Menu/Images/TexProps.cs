@@ -40,20 +40,20 @@ namespace OpenVIII
 
             #endregion Properties
 
-            //public TexProps(string filename, uint count, params BigTexProps[] big)
+            //public TexProps(string filename, uint Count, params BigTexProps[] big)
             //{
             //    Filename = filename;
-            //    Count = count;
+            //    Count = Count;
             //    if (big != null && Count != big.Length && big.Length > 0)
             //        throw new Exception($"Count of big textures should match small ones {Count} != {big.Length}");
             //    Big = big.ToList();
             //    Colors = null;
             //}
 
-            //public TexProps(string filename, uint count, Color[] colors, params BigTexProps[] big)
+            //public TexProps(string filename, uint Count, Color[] colors, params BigTexProps[] big)
             //{
             //    Filename = filename;
-            //    Count = count;
+            //    Count = Count;
             //    if (big != null && Count != big.Length && big.Length > 0)
             //        throw new Exception($"Count of big textures should match small ones {Count} != {big.Length}");
             //    Big = big.ToList();

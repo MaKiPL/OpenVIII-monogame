@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Shot (Irvine limit break)
@@ -20,11 +20,11 @@ namespace OpenVIII
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public Magic_ID MagicID { get; private set; }
-            public Attack_Type Attack_Type { get; private set; }
+            public AttackType Attack_Type { get; private set; }
             public byte Attack_Power { get; private set; }
             public byte[] Unknown0 { get; private set; }
             public Target Target { get; private set; }
-            public Attack_Flags Attack_Flags { get; private set; }
+            public AttackFlags Attack_Flags { get; private set; }
             public byte Hit_Count { get; private set; }
             public Element Element { get; private set; }
             public byte Element_Percent { get; private set; }
@@ -43,7 +43,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();
                 //0x0004  2 bytes Magic ID
-                Attack_Type = (Attack_Type)br.ReadByte();
+                Attack_Type = (AttackType)br.ReadByte();
                 //0x0006  1 byte Attack Type
                 Attack_Power = br.ReadByte();
                 //0x0007  1 byte Attack Power
@@ -51,7 +51,7 @@ namespace OpenVIII
                 //0x0008  2 bytes Unknown
                 Target = (Target)br.ReadByte();
                 //0x000A  1 byte Target Info
-                Attack_Flags = (Attack_Flags)br.ReadByte();
+                Attack_Flags = (AttackFlags)br.ReadByte();
                 //0x000B  1 byte Attack Flags
                 Hit_Count = br.ReadByte();
                 //0x000C  1 byte Hit Count

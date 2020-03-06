@@ -461,7 +461,7 @@ namespace OpenVIII
             {
                 exp += e.EXP;
                 ap += e.AP;
-                Saves.Item drop = e.Drop(Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
+                Saves.Item drop = e.Drop(Memory.State.PartyHasAbility(Kernel.Abilities.RareItem));
                 Cards.ID carddrop = e.CardDrop();
                 if (drop.QTY > 0 && drop.ID > 0)
                     if (!items.TryAdd(drop.ID, drop.QTY))

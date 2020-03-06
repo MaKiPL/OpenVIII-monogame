@@ -179,7 +179,7 @@ namespace OpenVIII.Battle
             if (pGeometry == 0) return;
             br.BaseStream.Seek(pGeometry, SeekOrigin.Begin);
             if (!br.Read(out int count)) return;
-            //count = count > 0x24 ? 0x24 : count; // unsure why.
+            //Count = Count > 0x24 ? 0x24 : Count; // unsure why.
             List<uint> positions = new List<uint>();
             while (count-- > 0 && br.Read(out uint pos))
             {

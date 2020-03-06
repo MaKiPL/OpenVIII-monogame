@@ -481,7 +481,7 @@ namespace OpenVIII.AV.Midi
                 GEN_VOLENVRELEASE,      /**< Volume envelope release */
                 GEN_KEYTOVOLENVHOLD,        /**< Key to volume envelope hold */
                 GEN_KEYTOVOLENVDECAY,       /**< Key to volume envelope decay */
-                GEN_INSTRUMENT,     /**< Instrument ID (shouldn't be set by user) */
+                GEN_INSTRUMENT,     /**< Instrument BattleID (shouldn't be set by user) */
                 GEN_RESERVED1,      /**< Reserved */
                 GEN_KEYRANGE,           /**< MIDI note range */
                 GEN_VELRANGE,           /**< MIDI velocity range */
@@ -493,7 +493,7 @@ namespace OpenVIII.AV.Midi
                 GEN_ENDLOOPADDRCOARSEOFS,   /**< Sample end loop address coarse offset (X 32768) */
                 GEN_COARSETUNE,     /**< Coarse tuning */
                 GEN_FINETUNE,           /**< Fine tuning */
-                GEN_SAMPLEID,           /**< Sample ID (shouldn't be set by user) */
+                GEN_SAMPLEID,           /**< Sample BattleID (shouldn't be set by user) */
                 GEN_SAMPLEMODE,     /**< Sample mode flags */
                 GEN_RESERVED3,      /**< Reserved */
                 GEN_SCALETUNE,      /**< Scale tuning */
@@ -598,7 +598,7 @@ namespace OpenVIII.AV.Midi
                 FLUID_IIR_DISABLED = 0, /**< Custom IIR filter is not operating */
                 FLUID_IIR_LOWPASS, /**< Custom IIR filter is operating as low-pass filter */
                 FLUID_IIR_HIGHPASS, /**< Custom IIR filter is operating as high-pass filter */
-                FLUID_IIR_LAST /**< @internal Value defines the count of filter types (#fluid_iir_filter_type) @warning This symbol is not part of the public API and ABI stability guarantee and may change at any time! */
+                FLUID_IIR_LAST /**< @internal Value defines the Count of filter types (#fluid_iir_filter_type) @warning This symbol is not part of the public API and ABI stability guarantee and may change at any time! */
             };
 
             /**
@@ -663,7 +663,7 @@ namespace OpenVIII.AV.Midi
             {
                 FLUID_CHANNEL_LEGATO_MODE_RETRIGGER, /**< Mode 0 - Release previous note, start a new note */
                 FLUID_CHANNEL_LEGATO_MODE_MULTI_RETRIGGER, /**< Mode 1 - On contiguous notes retrigger in attack section using current value, shape attack using current dynamic and make use of previous voices if any */
-                FLUID_CHANNEL_LEGATO_MODE_LAST /**< @internal Value defines the count of legato modes (#fluid_channel_legato_mode) @warning This symbol is not part of the public API and ABI stability guarantee and may change at any time! */
+                FLUID_CHANNEL_LEGATO_MODE_LAST /**< @internal Value defines the Count of legato modes (#fluid_channel_legato_mode) @warning This symbol is not part of the public API and ABI stability guarantee and may change at any time! */
             };
 
             [DllImport(fluidLibName)]
@@ -682,7 +682,7 @@ namespace OpenVIII.AV.Midi
                 FLUID_CHANNEL_PORTAMENTO_MODE_EACH_NOTE, /**< Mode 0 - Portamento on each note (staccato or legato) */
                 FLUID_CHANNEL_PORTAMENTO_MODE_LEGATO_ONLY, /**< Mode 1 - Portamento only on legato note */
                 FLUID_CHANNEL_PORTAMENTO_MODE_STACCATO_ONLY, /**< Mode 2 - Portamento only on staccato note */
-                FLUID_CHANNEL_PORTAMENTO_MODE_LAST /**< @internal Value defines the count of portamento modes (#fluid_channel_portamento_mode) @warning This symbol is not part of the public API and ABI stability guarantee and may change at any time! */
+                FLUID_CHANNEL_PORTAMENTO_MODE_LAST /**< @internal Value defines the Count of portamento modes (#fluid_channel_portamento_mode) @warning This symbol is not part of the public API and ABI stability guarantee and may change at any time! */
             };
 
             [DllImport(fluidLibName)]

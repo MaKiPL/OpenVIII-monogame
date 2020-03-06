@@ -82,7 +82,7 @@ namespace OpenVIII
         public int? NumberValue { get; set; } = null;
 
         /// <summary>
-        /// If set this has ID, default behavior is to leave unset.
+        /// If set this has BattleID, default behavior is to leave unset.
         /// </summary>
         public Enum ID { get; set; } = null;
 

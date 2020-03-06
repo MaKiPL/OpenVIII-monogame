@@ -15,7 +15,7 @@ namespace OpenVIII
 
             protected bool eventAdded = false;
 
-            protected List<Kernel_bin.Abilities> unlocked;
+            protected List<Kernel.Abilities> unlocked;
 
             private C _prevSetting;
 
@@ -31,7 +31,7 @@ namespace OpenVIII
 
             #region Properties
 
-            public Kernel_bin.Stat[] Contents { get; protected set; }
+            public Kernel.Stat[] Contents { get; protected set; }
 
             #endregion Properties
 
@@ -40,7 +40,7 @@ namespace OpenVIII
             public static T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Slots<C>, new()
             {
                 T r = IGMData.Base.Create<T>(count, depth, container, cols, rows);
-                r.Contents = new Kernel_bin.Stat[r.Count];
+                r.Contents = new Kernel.Stat[r.Count];
                 return r;
             }
 
@@ -135,20 +135,20 @@ namespace OpenVIII
                 }
             }
 
-            protected void FillData(Icons.ID starticon, Kernel_bin.Stat statatk, Kernel_bin.Stat statdef)
+            protected void FillData(Icons.ID starticon, Kernel.Stat statatk, Kernel.Stat statdef)
             {
                 if (Damageable.GetCharacterData(out Saves.CharacterData c))
                     for (byte pos = 0; pos < Count; pos++)
                     {
-                        Kernel_bin.Stat stat = pos != 0 ? statdef + pos - 1 : statatk;
+                        Kernel.Stat stat = pos != 0 ? statdef + pos - 1 : statatk;
                         Contents[pos] = stat;
                         getColor(pos, out byte palette, out Font.ColorID _colorid, out bool unlocked);
                         FF8String name = GetName(stat);
                         UpdateItems();
 
-                        FF8String GetName(Kernel_bin.Stat key)
+                        FF8String GetName(Kernel.Stat key)
                         {
-                            FF8String _name = Kernel_bin.MagicData[c.Stat_J[key]].Name;
+                            FF8String _name = Memory.Kernel_Bin.MagicData[c.StatJ[key]].Name;
                             if (_name == null || _name.Length == 0)
                                 _name = Strings.Name._;
                             return _name;

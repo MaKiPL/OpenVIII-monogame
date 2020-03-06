@@ -196,8 +196,8 @@ namespace OpenVIII.Battle
             if ((Animations == null || Animations.Count == 0) && (TextureAnimations == null || TextureAnimations.Count == 0))
             {
                 //Seems most animations skip the first frame. Can override with skip:0
-                //count defaults to rows * cols. Can override this to be less than that.
-                //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y =0, int skip =1)
+                //Count defaults to rows * cols. Can override this to be less than that.
+                //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int Count = 0, int x = 0, int y =0, int skip =1)
                 if (Scenario == 8)//need to update the source texture with the animation frames or add new verts and uvs because first frame is 3x larger
                     TextureAnimations = new List<TextureAnimation> { new TextureAnimation(textures[1], 32, 96, 2, 6, 1, skip: 3,y: 128) };
                 else if (Scenario == 31 || Scenario == 30)

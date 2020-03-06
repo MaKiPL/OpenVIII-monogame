@@ -57,7 +57,7 @@ namespace OpenVIII
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Entry this[int id] => list[id]; /*set { if (list.Count - 1 < id) Add(value); else list[id] = value; }*/
+        public Entry this[int id] => list[id]; /*set { if (list.Count - 1 < BattleID) Add(value); else list[BattleID] = value; }*/
 
         #endregion Indexers
 

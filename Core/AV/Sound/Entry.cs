@@ -13,7 +13,7 @@ namespace OpenVIII.AV
         {
             public UInt32 Size;
             public UInt32 Offset;
-            private UInt32 output_TotalSize => Size + 70; // Total bytes of file -8 because for some reason 8 bytes don't count
+            private UInt32 output_TotalSize => Size + 70; // Total bytes of file -8 because for some reason 8 bytes don't Count
             private const UInt32 output_HeaderSize = 50; //Total bytes of Header
             private UInt32 output_DataSize => Size; //Total bytes of Data Section
 

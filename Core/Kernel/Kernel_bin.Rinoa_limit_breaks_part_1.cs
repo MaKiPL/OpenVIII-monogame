@@ -4,7 +4,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Rinoa limit breaks (part 1)
@@ -44,7 +44,7 @@ namespace OpenVIII
                 Target = (Target)br.ReadByte();
                 //0x0005  1 byte Target
                 AbilityID = br.ReadByte();
-                //0x0006  1 byte Ability data ID
+                //0x0006  1 byte Ability data BattleID
                 Unknown1 = br.ReadByte();
                 //0x0007  1 byte Unknown / Unused
             }

@@ -3,7 +3,7 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 { 
 /// <summary>
-/// Make this entity face the entity with the ID of the first parameter.
+/// Make this entity face the entity with the BattleID of the first parameter.
 /// </summary>
 internal sealed class CTURN : JsmInstruction
     {

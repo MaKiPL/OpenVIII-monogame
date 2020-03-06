@@ -14,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// </summary>
         private readonly Int32 _channel;
         /// <summary>
-        /// Field message ID
+        /// Field message BattleID
         /// </summary>
         private readonly Int32 _messageId;
         /// <summary>

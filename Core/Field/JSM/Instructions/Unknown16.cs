@@ -4,13 +4,13 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Set Draw Point ID / Assigns this draw point an ID. Draw points with identical IDs share Full/Drained status.
+    /// Set Draw Point BattleID / Assigns this draw point an BattleID. Draw points with identical IDs share Full/Drained status.
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/181_UNKNOWN16"/>
     public sealed class Unknown16 : JsmInstruction
     {
         /// <summary>
-        /// Draw point ID
+        /// Draw point BattleID
         /// </summary>
         private readonly IJsmExpression _drawPointID;
 

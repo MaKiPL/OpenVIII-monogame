@@ -170,8 +170,8 @@ namespace OpenVIII.Fields
                 int Height = (int)(tiles.Height * scale.Y);
                 //Matrix backup = projectionMatrix;
                 //projectionMatrix = Matrix.CreateOrthographic(tiles.Width, tiles.Height, 0f, 100f);
-                tiles.UniquePupuIDs();// make sure each layer has it's own id.
-                foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu id.
+                tiles.UniquePupuIDs();// make sure each layer has it's own BattleID.
+                foreach (IGrouping<uint, TileQuadTexture> pupuIDgroup in quads.GroupBy(x => x.GetTile.PupuID)) //group the quads by their pupu BattleID.
                 {
                     using (RenderTarget2D outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, Width, Height))
                     {
@@ -254,7 +254,7 @@ namespace OpenVIII.Fields
 
         public void Reswizzle()
         {
-            tiles.UniquePupuIDs();// make sure each layer has it's own id.
+            tiles.UniquePupuIDs();// make sure each layer has it's own BattleID.
 
             string fieldname = Module.GetFieldName();
             string folder = Module.GetFolder(fieldname, "deswizzle"); //goes from deswizzle folder

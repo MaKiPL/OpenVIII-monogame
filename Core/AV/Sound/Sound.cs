@@ -98,7 +98,7 @@ namespace OpenVIII.AV
         /// Play sound effect
         /// </summary>
         /// <param name="soundId">
-        /// ID number of sound
+        /// BattleID number of sound
         /// <para>The real game uses soundID + 1, so you may need to -1 from any scripts.</para>
         /// </param>
         /// <param name="persist">

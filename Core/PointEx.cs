@@ -120,55 +120,55 @@ namespace OpenVIII
         /// Count how many flags set in enum.
         /// </summary>
         /// <param name="statuses">varible you need to number of flags set.</param>
-        /// <returns>count</returns>
+        /// <returns>Count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel_bin.J_Statuses statuses)
+        public static uint Count(this Kernel.J_Statuses statuses)
         {
             uint v = (uint)statuses;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
-            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count
         }
 
         /// <summary>
         /// Count how many flags set in enum.
         /// </summary>
         /// <param name="element">varible you need to number of flags set.</param>
-        /// <returns>count</returns>
+        /// <returns>Count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel_bin.Element element)
+        public static uint Count(this Kernel.Element element)
         {
             uint v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
-            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count
         }
         /// <summary>
         /// Count how many flags set in enum.
         /// </summary>
         /// <param name="element">varible you need to number of flags set.</param>
-        /// <returns>count</returns>
+        /// <returns>Count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel_bin.Battle_Only_Statuses element)
+        public static uint Count(this Kernel.Battle_Only_Statuses element)
         {
             uint v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
-            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count
         }
 
         /// <summary>
         /// Count how many flags set in enum.
         /// </summary>
         /// <param name="element">varible you need to number of flags set.</param>
-        /// <returns>count</returns>
+        /// <returns>Count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel_bin.Persistent_Statuses element)
+        public static uint Count(this Kernel.Persistent_Statuses element)
         {
             uint v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
-            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+            return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count
         }
         public static Characters ToCharacters(this Faces.ID id)
         {

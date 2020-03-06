@@ -6,11 +6,11 @@ namespace OpenVIII.IGMData.Pool
     /// <summary>
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
-    public class BlueMagic : IGMData.Pool.Base<Saves.Data, Kernel_bin.Blue_magic_Quistis_limit_break>
+    public class BlueMagic : IGMData.Pool.Base<Saves.Data, Kernel.Blue_Magic_Quistis_limit_break>
     {
         #region Fields
 
-        private List<Kernel_bin.Blue_Magic> unlocked = new List<Kernel_bin.Blue_Magic>();
+        private List<Kernel.Blue_Magic> unlocked = new List<Kernel.Blue_Magic>();
 
         #endregion Fields
 
@@ -49,7 +49,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs_OKAY()
         {
-            Kernel_bin.Blue_magic_Quistis_limit_break c = Contents[CURSOR_SELECT];
+            Kernel.Blue_Magic_Quistis_limit_break c = Contents[CURSOR_SELECT];
             //c.Target;
             Target_Group.SelectTargetWindows(c);
             Target_Group.ShowTargetWindows();
@@ -59,8 +59,8 @@ namespace OpenVIII.IGMData.Pool
         public override void Refresh()
         {
             if (Memory.State == null || Memory.State.LimitBreakQuistisUnlockedBlueMagic == null) return;
-            Kernel_bin.Blue_Magic bm = 0;
-            unlocked = new List<Kernel_bin.Blue_Magic>();
+            Kernel.Blue_Magic bm = 0;
+            unlocked = new List<Kernel.Blue_Magic>();
             foreach (bool b in Memory.State.LimitBreakQuistisUnlockedBlueMagic)
             {
                 if (b)
@@ -75,7 +75,7 @@ namespace OpenVIII.IGMData.Pool
                 int j = i % Rows;
                 ITEM[j, 0].Show();
                 BLANKS[j] = false;
-                Contents[j] = Kernel_bin.BluemagicQuistislimitbreak[unlocked[i]];
+                Contents[j] = Memory.Kernel_Bin.BlueMagicQuistisLimitBreak[unlocked[i]];
                 ((IGMDataItem.Text)ITEM[j, 0]).Data = Contents[j].Name;
             }
             for (; i < Rows + skip; i++)

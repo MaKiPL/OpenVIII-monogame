@@ -13,7 +13,7 @@ namespace OpenVIII.IGMData
         private bool disposedValue = false;
         private bool EventAdded;
 
-        private Kernel_bin.Battle_Commands[] commands;
+        private Kernel.BattleCommand[] commands;
         private Debug_battleDat.Abilities[] enemycommands;
         private int nonbattleWidth;
         private sbyte page = 0;
@@ -69,10 +69,10 @@ namespace OpenVIII.IGMData
         {
             get => s_cidoff; set
             {
-                if (value >= Kernel_bin.BattleCommands.Count)
+                if (value >= Memory.Kernel_Bin.BattleCommands.Count)
                     value = 0;
                 else if (value < 0)
-                    value = Kernel_bin.BattleCommands.Count - 1;
+                    value = Memory.Kernel_Bin.BattleCommands.Count - 1;
                 s_cidoff = value;
             }
         }
@@ -158,16 +158,16 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs_OKAY()
         {
-            Kernel_bin.Battle_Commands c = commands[CURSOR_SELECT];
+            Kernel.BattleCommand c = commands[CURSOR_SELECT];
             if (c == null) return false;
             base.Inputs_OKAY();
             TargetGroup.SelectTargetWindows(c);
-            if (c.ID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
+            if (c.BattleID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
                 IEnumerable<Debug_battleDat.Abilities> ecattacks = e.Abilities.Where(x => x.MONSTER != null);
                 if (ecattacks.Count() == 1)
                 {
-                    Kernel_bin.Enemy_Attacks_Data monster = ecattacks.First().MONSTER;
+                    Kernel.Enemy_Attacks_Data monster = ecattacks.First().MONSTER;
                     TargetGroup.SelectTargetWindows(monster);
                     TargetGroup.ShowTargetWindows();
                 }
@@ -180,11 +180,11 @@ namespace OpenVIII.IGMData
                 return true;
             }
             else
-                switch (c.ID)
+                switch (c.BattleID)
                 {
                     default:
                         // ITEM[Targets_Window, 0].Show();
-                        throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.ID}) doesn't have explict operation defined!");
+                        throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.BattleID}) doesn't have explict operation defined!");
                     case 1: //ATTACK
                     case 5: //Renzokuken
                     case 12: //MUG
@@ -267,7 +267,7 @@ namespace OpenVIII.IGMData
                         return true;
 
                     case 23: //Defend
-                        Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.ID})");
+                        Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.BattleID})");
                         Damageable.EndTurn();
                         return true;
                 }
@@ -348,15 +348,15 @@ namespace OpenVIII.IGMData
                         if (Attack)
                         {
                             IEnumerable<Debug_battleDat.Abilities> ecattacks = enemycommands.Where(x => x.MONSTER != null);
-                            AddCommand(Kernel_bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().MONSTER.Name : null));
+                            AddCommand(Memory.Kernel_Bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().MONSTER.Name : null));
                         }
                         if (Magic || e.DrawList.Any(x => x.DATA != null))
-                            AddCommand(Kernel_bin.BattleCommands[2]);
+                            AddCommand(Memory.Kernel_Bin.BattleCommands[2]);
                         if (Item || e.DropList.Any(x => x.DATA?.Battle != null) || e.MugList.Any(x => x.DATA?.Battle != null))
-                            AddCommand(Kernel_bin.BattleCommands[4]);
+                            AddCommand(Memory.Kernel_Bin.BattleCommands[4]);
                         if (e.JunctionedGFs?.Any() ?? false)
-                            AddCommand(Kernel_bin.BattleCommands[3]);
-                        void AddCommand(Kernel_bin.Battle_Commands c, FF8String alt = null)
+                            AddCommand(Memory.Kernel_Bin.BattleCommands[3]);
+                        void AddCommand(Kernel.BattleCommand c, FF8String alt = null)
                         {
                             commands[pos] = c;
                             ((IGMDataItem.Text)ITEM[pos, 0]).Data = alt ?? c.Name;
@@ -378,7 +378,7 @@ namespace OpenVIII.IGMData
                         Rectangle DataSize = Rectangle.Empty;
                         page = 0;
                         Cursor_Status &= ~Cursor_Status.Horizontal;
-                        commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
+                        commands[0] = Memory.Kernel_Bin.BattleCommands[(c.Abilities.Contains(Kernel.Abilities.Mug) ? 12 : 1)];
                         ITEM[0, 0] = new IGMDataItem.Text
                         {
                             Data = commands[0].Name,
@@ -387,17 +387,17 @@ namespace OpenVIII.IGMData
 
                         for (int pos = 1; pos < Rows; pos++)
                         {
-                            Kernel_bin.Abilities cmd = c.Commands[pos - 1];
+                            Kernel.Abilities cmd = c.Commands[pos - 1];
 
-                            if (cmd != Kernel_bin.Abilities.None)
+                            if (cmd != Kernel.Abilities.None)
                             {
-                                if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                                if (!Memory.Kernel_Bin.CommandAbilities.TryGetValue(cmd, out Kernel.CommandAbilities cmdval))
                                 {
                                     continue;
                                 }
 #if DEBUG
                                 if (!Battle) commands[pos] = cmdval.BattleCommand;
-                                else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
+                                else commands[pos] = Memory.Kernel_Bin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
@@ -472,7 +472,7 @@ namespace OpenVIII.IGMData
             LimitArrow.Hide();
             TargetGroup = Target.Group.Create(Damageable);
             TargetGroup.Hide();
-            commands = new Kernel_bin.Battle_Commands[Rows];
+            commands = new Kernel.BattleCommand[Rows];
             enemycommands = null;
             PointerZIndex = Offsets.Limit_Arrow;
             nonbattleWidth = Width;

@@ -74,7 +74,7 @@ namespace OpenVIII
 
         public static new string ToString()
         {
-            string output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
+            string output = "{Enum Name},{Enum BattleID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
             for (uint i = 0; i < Memory.Icons.Count; i++)
             {
                 EntryGroup eg = Memory.Icons.GetEntryGroup((Icons.ID)i);
@@ -141,8 +141,8 @@ namespace OpenVIII
                 {
                     if (icon <= 0)
                         icon = Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
-                    //else if (Memory.Icons.GetEntry(icon) != null && Memory.Icons.GetEntry(icon).GetLoc.count > 1)
-                    //    icon -= Memory.Icons.GetEntry(icon).GetLoc.count;
+                    //else if (Memory.Icons.GetEntry(icon) != null && Memory.Icons.GetEntry(icon).GetLoc.Count > 1)
+                    //    icon -= Memory.Icons.GetEntry(icon).GetLoc.Count;
                     else
                         icon--;
                 }
@@ -195,7 +195,7 @@ namespace OpenVIII
             Memory.Icons.Draw(icon, palette, dst, scale);
             Memory.font.RenderBasicText(
                 $"{(icon).ToString().Replace('_', ' ')}\n" +
-                $"id: {(ushort)icon}\n\n" +
+                $"BattleID: {(ushort)icon}\n\n" +
                 $"palette: {palette}\n\n" +
                 $"width: {Memory.Icons[icon].Width}\n" +
                 $"height: {Memory.Icons[icon].Height}",

@@ -164,7 +164,7 @@ namespace OpenVIII
             
 
             /// <summary>
-            /// 0x0CEC 4 bytes Battle: victory count
+            /// 0x0CEC 4 bytes Battle: victory Count
             /// </summary>
             public uint BattleVictoryCount { get; set; }
 
@@ -274,9 +274,9 @@ namespace OpenVIII
             public FF8String GrieverName { get; set; }
 
             /// <summary>
-            /// <para>0x0B54 396 bytes Items 198 items (Item ID and Quantity)</para>
+            /// <para>0x0B54 396 bytes Items 198 items (Item BattleID and Quantity)</para>
             /// <para>
-            /// The order of items out of battle and Each item uses 2 bytes 1 for ID and 1 for Quantity
+            /// The order of items out of battle and Each item uses 2 bytes 1 for BattleID and 1 for Quantity
             /// </para>
             /// </summary>
             public List<Item> Items { get; private set; }
@@ -338,7 +338,7 @@ namespace OpenVIII
             public TimeSpan LoadTime { get; set; }
 
             /// <summary>
-            /// 0x0004 2 bytes Preview: Location ID
+            /// 0x0004 2 bytes Preview: Location BattleID
             /// </summary>
             public ushort LocationID { get; set; }
 
@@ -382,7 +382,7 @@ namespace OpenVIII
             public FF8String RinoaName { get; set; }
 
             /// <summary>
-            /// 0x000A 2 bytes Preview: save count
+            /// 0x000A 2 bytes Preview: save Count
             /// </summary>
             public ushort SaveCount { get; set; }
 
@@ -428,7 +428,7 @@ namespace OpenVIII
             public TimeSpan TimePlayed { get; set; }
 
             /// <summary>
-            /// 0x0D62 3*2 bytes Triangle ID (party1, party2, party3)
+            /// 0x0D62 3*2 bytes Triangle BattleID (party1, party2, party3)
             /// </summary>
             public ushort[] TriangleID { get; set; }
 
@@ -569,7 +569,7 @@ namespace OpenVIII
             public int DeadCharacters() =>
                 Characters?.Count(m =>
                     m.Value.Available && m.Value.CurrentHP() == 0 ||
-                    (m.Value.Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0) ?? 0;
+                    (m.Value.Statuses0 & Kernel.Persistent_Statuses.Death) != 0) ?? 0;
 
             /// <summary>
             /// How many dead party members there are.
@@ -578,18 +578,18 @@ namespace OpenVIII
             public int DeadPartyMembers() =>
                 PartyData?.Count(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead) ?? 0;
 
-            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
+            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>> abilities)
             {
                 ConcurrentQueue<GFs> ret = new ConcurrentQueue<GFs>();
                 abilities = null;
                 if (GFs == null) return ret;
-                abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
+                abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>>();
                 foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value != null && i.Value.Exists))
                 {
-                    if (!g.Value.EarnExp(ap, out Kernel_bin.Abilities ability)) continue;
-                    if (ability != Kernel_bin.Abilities.None)
+                    if (!g.Value.EarnExp(ap, out Kernel.Abilities ability)) continue;
+                    if (ability != Kernel.Abilities.None)
                     {
-                        abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
+                        abilities.Enqueue(new KeyValuePair<GFs, Kernel.Abilities>(g.Key, ability));
                     }
                     ret.Enqueue(g.Key);
                 }
@@ -648,7 +648,7 @@ namespace OpenVIII
 
             public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) && GFs[gf].MaxGFAbilities;
 
-            public bool PartyHasAbility(Kernel_bin.Abilities a)
+            public bool PartyHasAbility(Kernel.Abilities a)
             {
                 if (PartyData == null) return false;
                 foreach (Characters c in PartyData)
@@ -766,7 +766,7 @@ namespace OpenVIII
                 ItemsBattleOrder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
                 for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < Items.Capacity; i++)
-                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
+                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item BattleID and Quantity)
             }
 
             /// <summary>

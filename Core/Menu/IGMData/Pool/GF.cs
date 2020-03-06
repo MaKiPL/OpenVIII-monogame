@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMData.Pool
 {
@@ -77,76 +78,76 @@ namespace OpenVIII.IGMData.Pool
                     else
                     {
                         //Purge everything that you can't have anymore. Because the GF provided for you.
-                        List<Kernel_bin.Abilities> a = (characterdata).UnlockedGFAbilities;
+                        List<Kernel.Abilities> a = (characterdata).UnlockedGFAbilities;
                         characterdata.RemoveJunctionedGF(select);
-                        List<Kernel_bin.Abilities> b = (characterdata).UnlockedGFAbilities;
-                        foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => !Kernel_bin.Junctionabilities.ContainsKey(v)))
+                        List<Kernel.Abilities> b = (characterdata).UnlockedGFAbilities;
+                        foreach (Kernel.Abilities r in a.Except(b).Where(v => !Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
                         {
-                            if (Kernel_bin.Commandabilities.ContainsKey(r))
+                            if (Memory.Kernel_Bin.CommandAbilities.ContainsKey(r))
                             {
                                 characterdata.Commands.Remove(r);
-                                characterdata.Commands.Add(Kernel_bin.Abilities.None);
+                                characterdata.Commands.Add(Kernel.Abilities.None);
                             }
-                            else if (Kernel_bin.EquipableAbilities.ContainsKey(r))
+                            else if (Memory.Kernel_Bin.EquippableAbilities.ContainsKey(r))
                             {
                                 characterdata.Abilities.Remove(r);
-                                characterdata.Abilities.Add(Kernel_bin.Abilities.None);
+                                characterdata.Abilities.Add(Kernel.Abilities.None);
                             }
                         }
-                        foreach (Kernel_bin.Abilities r in a.Except(b).Where(v => Kernel_bin.Junctionabilities.ContainsKey(v)))
+                        foreach (Kernel.Abilities r in a.Except(b).Where(v => Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
                         {
-                            if (Kernel_bin.Stat2Ability.Any(item => item.Value == r))
+                            if (KernelBin.Stat2Ability.Any(item => item.Value == r))
                                 switch (r)
                                 {
-                                    case Kernel_bin.Abilities.ST_Atk_J:
-                                        characterdata.Stat_J[Kernel_bin.Stat.ST_Atk] = 0;
+                                    case Kernel.Abilities.StAtkJ:
+                                        characterdata.StatJ[Kernel.Stat.ST_Atk] = 0;
                                         break;
 
-                                    case Kernel_bin.Abilities.EL_Atk_J:
-                                        characterdata.Stat_J[Kernel_bin.Stat.EL_Atk] = 0;
+                                    case Kernel.Abilities.ElAtkJ:
+                                        characterdata.StatJ[Kernel.Stat.EL_Atk] = 0;
                                         break;
 
-                                    case Kernel_bin.Abilities.EL_Def_Jx1:
-                                    case Kernel_bin.Abilities.EL_Def_Jx2:
-                                    case Kernel_bin.Abilities.EL_Def_Jx4:
+                                    case Kernel.Abilities.ElDefJ:
+                                    case Kernel.Abilities.ElDefJ2:
+                                    case Kernel.Abilities.ElDefJ4:
                                         byte count = 0;
-                                        if (b.Contains(Kernel_bin.Abilities.EL_Def_Jx4))
+                                        if (b.Contains(Kernel.Abilities.ElDefJ4))
                                             count = 4;
-                                        else if (b.Contains(Kernel_bin.Abilities.EL_Def_Jx2))
+                                        else if (b.Contains(Kernel.Abilities.ElDefJ2))
                                             count = 2;
-                                        else if (b.Contains(Kernel_bin.Abilities.EL_Def_Jx1))
+                                        else if (b.Contains(Kernel.Abilities.ElDefJ))
                                             count = 1;
                                         for (; count < 4; count++)
-                                            characterdata.Stat_J[Kernel_bin.Stat.EL_Def_1 + count] = 0;
+                                            characterdata.StatJ[Kernel.Stat.EL_Def_1 + count] = 0;
                                         break;
 
-                                    case Kernel_bin.Abilities.ST_Def_Jx1:
-                                    case Kernel_bin.Abilities.ST_Def_Jx2:
-                                    case Kernel_bin.Abilities.ST_Def_Jx4:
+                                    case Kernel.Abilities.StDefJ:
+                                    case Kernel.Abilities.StDefJ2:
+                                    case Kernel.Abilities.StDefJ4:
                                         count = 0;
-                                        if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx4))
+                                        if (b.Contains(Kernel.Abilities.StDefJ4))
                                             count = 4;
-                                        else if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx2))
+                                        else if (b.Contains(Kernel.Abilities.StDefJ2))
                                             count = 2;
-                                        else if (b.Contains(Kernel_bin.Abilities.ST_Def_Jx1))
+                                        else if (b.Contains(Kernel.Abilities.StDefJ))
                                             count = 1;
                                         for (; count < 4; count++)
-                                            characterdata.Stat_J[Kernel_bin.Stat.ST_Def_1 + count] = 0;
+                                            characterdata.StatJ[Kernel.Stat.ST_Def_1 + count] = 0;
                                         break;
 
-                                    case Kernel_bin.Abilities.Abilityx3:
-                                    case Kernel_bin.Abilities.Abilityx4:
+                                    case Kernel.Abilities.Ability3:
+                                    case Kernel.Abilities.Ability4:
                                         count = 2;
-                                        if (b.Contains(Kernel_bin.Abilities.Abilityx4))
+                                        if (b.Contains(Kernel.Abilities.Ability4))
                                             count = 4;
-                                        else if (b.Contains(Kernel_bin.Abilities.Abilityx3))
+                                        else if (b.Contains(Kernel.Abilities.Ability3))
                                             count = 3;
                                         for (; count < characterdata.Abilities.Count; count++)
-                                            characterdata.Abilities[count] = Kernel_bin.Abilities.None;
+                                            characterdata.Abilities[count] = Kernel.Abilities.None;
                                         break;
 
                                     default:
-                                        characterdata.Stat_J[Kernel_bin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
+                                        characterdata.StatJ[KernelBin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
                                         break;
                                 }
                         }

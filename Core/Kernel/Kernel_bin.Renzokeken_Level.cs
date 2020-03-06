@@ -2,7 +2,7 @@
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         [Flags]
         public enum Renzokeken_Finisher : byte

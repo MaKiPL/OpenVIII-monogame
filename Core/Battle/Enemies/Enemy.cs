@@ -87,23 +87,23 @@ namespace OpenVIII
             r._CurrentHP = startinghp ?? r.MaxHP();
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
             {
-                r.Statuses0 |= Kernel_bin.Persistent_Statuses.Zombie;
+                r.Statuses0 |= Kernel.Persistent_Statuses.Zombie;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
             {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Protect;
+                r.Statuses1 |= Kernel.Battle_Only_Statuses.Protect;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0)
             {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
+                r.Statuses1 |= Kernel.Battle_Only_Statuses.Reflect;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0)
             {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
+                r.Statuses1 |= Kernel.Battle_Only_Statuses.Shell;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0)
             {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Float;
+                r.Statuses1 |= Kernel.Battle_Only_Statuses.Float;
             }
             r.Init();
             return r;
@@ -112,7 +112,7 @@ namespace OpenVIII
         #endregion Constructors
 
         #region Properties
-        public IEnumerable<Kernel_bin.Enemy_Attacks_Data> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
+        public IEnumerable<Kernel.Enemy_Attacks_Data> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
         public IEnumerable<GFs> JunctionedGFs => Memory.State != null? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
         public static List<Enemy> Party { get; set; }
 
@@ -189,9 +189,9 @@ namespace OpenVIII
 
         public override byte VIT => convert2(Info.vit);
 
-        public Kernel_bin.Devour Devour => Info.devour[levelgroup()] >= Kernel_bin.Devour_.Count ?
-            Kernel_bin.Devour_[Kernel_bin.Devour_.Count - 1] :
-            Kernel_bin.Devour_[Info.devour[levelgroup()]];
+        public Kernel.Devour Devour => Info.devour[levelgroup()] >= Memory.Kernel_Bin.Devour.Count ?
+            Memory.Kernel_Bin.Devour[Memory.Kernel_Bin.Devour.Count - 1] :
+            Memory.Kernel_Bin.Devour[Info.devour[levelgroup()]];
 
         public Debug_battleDat.Information Info => EII.Data.information;
 
@@ -261,10 +261,10 @@ namespace OpenVIII
             return default;
         }
 
-        public override short ElementalResistance(Kernel_bin.Element @in)
+        public override short ElementalResistance(Kernel.Element @in)
         {
-            List<Kernel_bin.Element> l = (Enum.GetValues(typeof(Kernel_bin.Element))).Cast<Kernel_bin.Element>().ToList();
-            if (@in == Kernel_bin.Element.Non_Elemental)
+            List<Kernel.Element> l = (Enum.GetValues(typeof(Kernel.Element))).Cast<Kernel.Element>().ToList();
+            if (@in == Kernel.Element.Non_Elemental)
                 return 100;
             // I wonder if i should average the resistances in cases of multiple elements.
             else
@@ -331,36 +331,36 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s)
+        public override sbyte StatusResistance(Kernel.Persistent_Statuses s)
         {
             byte r = 100;
             switch (s)
             {
-                case Kernel_bin.Persistent_Statuses.Death:
+                case Kernel.Persistent_Statuses.Death:
                     r = Info.deathResistanceMental;
                     break;
 
-                case Kernel_bin.Persistent_Statuses.Poison:
+                case Kernel.Persistent_Statuses.Poison:
                     r = Info.poisonResistanceMental;
                     break;
 
-                case Kernel_bin.Persistent_Statuses.Petrify:
+                case Kernel.Persistent_Statuses.Petrify:
                     r = Info.petrifyResistanceMental;
                     break;
 
-                case Kernel_bin.Persistent_Statuses.Darkness:
+                case Kernel.Persistent_Statuses.Darkness:
                     r = Info.darknessResistanceMental;
                     break;
 
-                case Kernel_bin.Persistent_Statuses.Silence:
+                case Kernel.Persistent_Statuses.Silence:
                     r = Info.silenceResistanceMental;
                     break;
 
-                case Kernel_bin.Persistent_Statuses.Berserk:
+                case Kernel.Persistent_Statuses.Berserk:
                     r = Info.berserkResistanceMental;
                     break;
 
-                case Kernel_bin.Persistent_Statuses.Zombie:
+                case Kernel.Persistent_Statuses.Zombie:
                     r = Info.zombieResistanceMental;
                     break;
             }
@@ -374,71 +374,71 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s)
+        public override sbyte StatusResistance(Kernel.Battle_Only_Statuses s)
         {
             byte r = statusdefault;
             switch (s)
             {
-                case Kernel_bin.Battle_Only_Statuses.Sleep:
+                case Kernel.Battle_Only_Statuses.Sleep:
                     r = Info.sleepResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Haste:
+                case Kernel.Battle_Only_Statuses.Haste:
                     r = Info.hasteResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Slow:
+                case Kernel.Battle_Only_Statuses.Slow:
                     r = Info.slowResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Stop:
+                case Kernel.Battle_Only_Statuses.Stop:
                     r = Info.stopResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Regen:
+                case Kernel.Battle_Only_Statuses.Regen:
                     r = Info.regenResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Protect:
+                case Kernel.Battle_Only_Statuses.Protect:
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Shell:
+                case Kernel.Battle_Only_Statuses.Shell:
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Reflect:
+                case Kernel.Battle_Only_Statuses.Reflect:
                     r = Info.reflectResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Aura:
+                case Kernel.Battle_Only_Statuses.Aura:
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Curse:
+                case Kernel.Battle_Only_Statuses.Curse:
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Doom:
+                case Kernel.Battle_Only_Statuses.Doom:
                     r = Info.doomResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Invincible:
+                case Kernel.Battle_Only_Statuses.Invincible:
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Petrifying:
+                case Kernel.Battle_Only_Statuses.Petrifying:
                     r = Info.slowPetrifyResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Float:
+                case Kernel.Battle_Only_Statuses.Float:
                     r = Info.floatResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Confuse:
+                case Kernel.Battle_Only_Statuses.Confuse:
                     r = Info.confuseResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Drain:
+                case Kernel.Battle_Only_Statuses.Drain:
                     r = Info.drainResistanceMental;
                     break;
 
-                case Kernel_bin.Battle_Only_Statuses.Eject:
+                case Kernel.Battle_Only_Statuses.Eject:
                     r = Info.explusionResistanceMental;
                     break;
             }
@@ -451,36 +451,36 @@ namespace OpenVIII
         /// <see cref="https://finalfantasy.fandom.com/wiki/Level#Enemy_levels"/>
         public override string ToString() => Name.Value_str;
 
-        public override ushort TotalStat(Kernel_bin.Stat s)
+        public override ushort TotalStat(Kernel.Stat s)
         {
             switch (s)
             {
-                case Kernel_bin.Stat.HP:
+                case Kernel.Stat.HP:
                     return CurrentHP();
 
-                case Kernel_bin.Stat.EVA:
+                case Kernel.Stat.EVA:
                     //TODO confirm if there is no flat stat buff for eva. If there isn't then remove from function.
                     return EVA;
 
-                case Kernel_bin.Stat.SPD:
+                case Kernel.Stat.SPD:
                     return SPD;
 
-                case Kernel_bin.Stat.HIT:
+                case Kernel.Stat.HIT:
                     return HIT;
 
-                case Kernel_bin.Stat.LUCK:
+                case Kernel.Stat.LUCK:
                     return LUCK;
 
-                case Kernel_bin.Stat.MAG:
+                case Kernel.Stat.MAG:
                     return MAG;
 
-                case Kernel_bin.Stat.SPR:
+                case Kernel.Stat.SPR:
                     return SPR;
 
-                case Kernel_bin.Stat.STR:
+                case Kernel.Stat.STR:
                     return STR;
 
-                case Kernel_bin.Stat.VIT:
+                case Kernel.Stat.VIT:
                     return VIT;
             }
             return 0;

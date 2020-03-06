@@ -4,7 +4,7 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// <para>This is some kind of weird wait command. UNKNOWN12 is probably the waitsync for it. The second parameter is definitely a frame count, but I have no ides what the first parameter is (it's usually 0).</para>
+    /// <para>This is some kind of weird wait command. UNKNOWN12 is probably the waitsync for it. The second parameter is definitely a frame Count, but I have no ides what the first parameter is (it's usually 0).</para>
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/176_UNKNOWN11"/>
     internal sealed class Unknown11 : JsmInstruction
@@ -14,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// </summary>
         private IJsmExpression _arg0;
         /// <summary>
-        /// Frame count
+        /// Frame Count
         /// </summary>
         private IJsmExpression _frames;
 

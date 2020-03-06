@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public class Enemy_Attacks : Base<Enemy, Kernel_bin.Enemy_Attacks_Data>
+    public class Enemy_Attacks : Base<Enemy, Kernel.Enemy_Attacks_Data>
     {
         #region Properties
 
@@ -45,7 +45,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            Kernel_bin.Enemy_Attacks_Data enemy_Attacks_Data = Contents[CURSOR_SELECT];
+            Kernel.Enemy_Attacks_Data enemy_Attacks_Data = Contents[CURSOR_SELECT];
             if (enemy_Attacks_Data != null)
             {
                 Target_Group?.SelectTargetWindows(enemy_Attacks_Data);
@@ -58,11 +58,11 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
-                IEnumerable<Kernel_bin.Enemy_Attacks_Data> enemy_attacks_datas = e.Enemy_Attacks_Datas;
+                IEnumerable<Kernel.Enemy_Attacks_Data> enemy_attacks_datas = e.Enemy_Attacks_Datas;
                 DefaultPages = enemy_attacks_datas.Count() / Rows;
                 int i = 0;
                 int skip = Page * Rows;
-                foreach (Kernel_bin.Enemy_Attacks_Data enemy_attacks_data in enemy_attacks_datas)
+                foreach (Kernel.Enemy_Attacks_Data enemy_attacks_data in enemy_attacks_datas)
                 {
                     if (i >= Rows) break;
                     if (skip-- > 0) continue;

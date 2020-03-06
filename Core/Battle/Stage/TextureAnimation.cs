@@ -33,7 +33,7 @@ namespace OpenVIII.Battle
 
             #region Constructors
 
-            //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y = 0, int skip = 1)
+            //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int Count = 0, int x = 0, int y = 0, int skip = 1)
             public TextureAnimation(TextureHandler tex, int width, int height, int texturePage, int cols, int rows, int count = 0, int x = 0, int y = 0, int skip = 1)
             {
                 this.tex = tex;

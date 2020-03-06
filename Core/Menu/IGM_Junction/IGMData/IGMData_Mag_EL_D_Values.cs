@@ -15,19 +15,19 @@ namespace OpenVIII
             public static IGMData_Mag_EL_D_Values Create() =>
                             Create<IGMData_Mag_EL_D_Values>(8, 5, new IGMDataItem.Box { Title = Icons.ID.Elemental_Defense, Pos = new Rectangle(280, 423, 545, 201) }, 2, 4);
 
-            public Dictionary<Kernel_bin.Element, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
-                    => getTotal<Kernel_bin.Element>(out availableFlagsarray, 200, Kernel_bin.Stat.EL_Def_1,
-                        source.Stat_J[Kernel_bin.Stat.EL_Def_1],
-                        source.Stat_J[Kernel_bin.Stat.EL_Def_2],
-                        source.Stat_J[Kernel_bin.Stat.EL_Def_3],
-                        source.Stat_J[Kernel_bin.Stat.EL_Def_4]);
+            public Dictionary<Kernel.Element, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
+                    => getTotal<Kernel.Element>(out availableFlagsarray, 200, Kernel.Stat.EL_Def_1,
+                        source.StatJ[Kernel.Stat.EL_Def_1],
+                        source.StatJ[Kernel.Stat.EL_Def_2],
+                        source.StatJ[Kernel.Stat.EL_Def_3],
+                        source.StatJ[Kernel.Stat.EL_Def_4]);
 
             public override bool Update()
             {
                 if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    Dictionary<Kernel_bin.Element, byte> oldtotal = (prevSetting != null) ? getTotal(prevSetting, out Enum[] availableFlagsarray) : null;
-                    Dictionary<Kernel_bin.Element, byte> total = getTotal(c, out availableFlagsarray);
+                    Dictionary<Kernel.Element, byte> oldtotal = (prevSetting != null) ? getTotal(prevSetting, out Enum[] availableFlagsarray) : null;
+                    Dictionary<Kernel.Element, byte> total = getTotal(c, out availableFlagsarray);
                     FillData(oldtotal, total, availableFlagsarray, Icons.ID.Element_Fire, palette: 9);
                 }
                 return base.Update();

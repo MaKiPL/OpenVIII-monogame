@@ -55,10 +55,10 @@ namespace OpenVIII.Dat_Dump
                         $"Number{ls}" +
                         $"{nameof(Debug_battleDat.Abilities.animation)}{ls}" +
                         $"Type{ls}" +
-                        $"ID{ls}" +
+                        $"BattleID{ls}" +
                         $"Name{ls}");
                     //header for animation info
-                    csvFile.WriteLine($"Type{ls}Type ID{ls}Name{ls}Animation Count{ls}Sequence Count{ls}Sequence ID{ls}Offset{ls}Bytes");
+                    csvFile.WriteLine($"Type{ls}Type BattleID{ls}Name{ls}Animation Count{ls}Sequence Count{ls}Sequence BattleID{ls}Offset{ls}Bytes");
                     using (XmlWriter xmlWriter = XmlWriter.Create("SequenceDump.xml", xmlWriterSettings))
                     {
                         xmlWriter.WriteStartDocument();
@@ -81,7 +81,7 @@ namespace OpenVIII.Dat_Dump
         {
             string count = $"{_BattleDat.animHeader.animations?.Length ?? 0}";
             xmlWriter.WriteStartElement("animations");
-            xmlWriter.WriteAttributeString("count", count);
+            xmlWriter.WriteAttributeString("Count", count);
             xmlWriter.WriteEndElement();
             return count;
         }
@@ -100,7 +100,7 @@ namespace OpenVIII.Dat_Dump
                     const string type = "character";
                     xmlWriter.WriteStartElement(type);
                     string id = i.ToString();
-                    xmlWriter.WriteAttributeString("id", id);
+                    xmlWriter.WriteAttributeString("BattleID", id);
                     FF8String name = Memory.Strings.GetName((Characters)i);
                     xmlWriter.WriteAttributeString("name", name);
                     string prefix0 = $"{type}{ls}{id}{ls}";
@@ -126,7 +126,7 @@ namespace OpenVIII.Dat_Dump
                     FF8String name = _BattleDat.information.name ?? new FF8String("");
                     string prefix = $"{type}{ls}{id}{ls}{name}";
                     xmlWriter.WriteStartElement(type);
-                    xmlWriter.WriteAttributeString("id", id);
+                    xmlWriter.WriteAttributeString("BattleID", id);
                     xmlWriter.WriteAttributeString("name", name);
                     prefix += $"{ls}{XMLAnimations(xmlWriter, _BattleDat)}";
                     XMLSequences(xmlWriter, _BattleDat, csvFile, prefix);
@@ -164,7 +164,7 @@ namespace OpenVIII.Dat_Dump
         {
             xmlWriter.WriteStartElement("sequences");
             string count = $"{_BattleDat.Sequences?.Count ?? 0}";
-            xmlWriter.WriteAttributeString("count", count);
+            xmlWriter.WriteAttributeString("Count", count);
             if (_BattleDat.Sequences != null)
                 foreach (Debug_battleDat.AnimationSequence s in _BattleDat.Sequences)
                 {
@@ -173,7 +173,7 @@ namespace OpenVIII.Dat_Dump
                     string offset = s.offset.ToString("X");
                     string bytes = s.data.Length.ToString();
 
-                    xmlWriter.WriteAttributeString("id", id);
+                    xmlWriter.WriteAttributeString("BattleID", id);
                     xmlWriter.WriteAttributeString("offset", offset);
                     xmlWriter.WriteAttributeString("bytes", bytes);
 
@@ -209,9 +209,9 @@ namespace OpenVIII.Dat_Dump
                     const string type = "weapon";
                     string id = i.ToString();
                     xmlWriter.WriteStartElement(type);
-                    xmlWriter.WriteAttributeString("id", id);
+                    xmlWriter.WriteAttributeString("BattleID", id);
                     int index = Module_battle_debug.Weapons[(Characters)character_id].FindIndex(v => v == i);
-                    Kernel_bin.Weapons_Data weapondata = Kernel_bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)character_id &&
+                    Kernel.Weapons_Data weapondata = Memory.Kernel_Bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)character_id &&
                     v.AltID == index);
 
                     if (weapondata != default)

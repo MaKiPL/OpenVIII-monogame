@@ -53,16 +53,16 @@ namespace OpenVIII
             public KernelFlag kernelId; //0x2 magic, 0x4 item, 0x8 monsterAbility;
 
             [FieldOffset(1)]
-            public byte animation; // ifrit states one of theses is an animation id.
+            public byte animation; // ifrit states one of theses is an animation BattleID.
 
             [FieldOffset(2)]
             public ushort abilityId;
 
             private const string unk = "Unknown";
 
-            public Kernel_bin.Magic_Data MAGIC => (kernelId & KernelFlag.magic) != 0 && Kernel_bin.MagicData.Count > abilityId ? Kernel_bin.MagicData[abilityId] : null;
+            public Kernel.Magic_Data MAGIC => (kernelId & KernelFlag.magic) != 0 && Memory.Kernel_Bin.MagicData.Count > abilityId ? Memory.Kernel_Bin.MagicData[abilityId] : null;
             public Item_In_Menu? ITEM => (kernelId & KernelFlag.item) != 0 && Memory.MItems != null && Memory.MItems.Items.Count > abilityId ? Memory.MItems?.Items[abilityId] : null;
-            public Kernel_bin.Enemy_Attacks_Data MONSTER => (kernelId & KernelFlag.monster) != 0 && Kernel_bin.EnemyAttacksData.Count > abilityId ? Kernel_bin.EnemyAttacksData[abilityId] : null;
+            public Kernel.Enemy_Attacks_Data MONSTER => (kernelId & KernelFlag.monster) != 0 && Memory.Kernel_Bin.EnemyAttacksData.Count > abilityId ? Memory.Kernel_Bin.EnemyAttacksData[abilityId] : null;
 
             public override string ToString()
             {
@@ -283,10 +283,10 @@ namespace OpenVIII
             public byte ID;
             public byte unk;
 
-            public Kernel_bin.Magic_Data DATA => Kernel_bin.MagicData.Count > ID ? Kernel_bin.MagicData[ID] : null;
-            public Kernel_bin.Junctionable_GFs_Data JGFDATA => Kernel_bin.JunctionableGFsData.ContainsKey(GF) ? Kernel_bin.JunctionableGFsData[GF] : null;
+            public Kernel.Magic_Data DATA => Memory.Kernel_Bin.MagicData.Count > ID ? Memory.Kernel_Bin.MagicData[ID] : null;
+            public Kernel.Junctionable_GFs_Data JGFDATA => Memory.Kernel_Bin.JunctionableGFsData.ContainsKey(GF) ? Memory.Kernel_Bin.JunctionableGFsData[GF] : null;
 
-            // per IFRIT gf's id is between 0x40 and 0x4F. And they seem to be in order of GFs enum.
+            // per IFRIT gf's BattleID is between 0x40 and 0x4F. And they seem to be in order of GFs enum.
             public GFs GF => ID > 0x4F || ID < 0x40 ? GFs.Blank : (GFs)(ID - 0x40);
 
             public FF8String Name => GF != GFs.Blank ? Memory.Strings.GetName(GF) : DATA?.Name;

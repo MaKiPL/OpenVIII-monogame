@@ -195,7 +195,7 @@ namespace OpenVIII.Card
         {
             const int pages = 3;
             List<TextureHandler> th = new List<TextureHandler>(pages);
-            //3 pages, 256x256; inside () is palette id +1.
+            //3 pages, 256x256; inside () is palette BattleID +1.
             //page 1 = 5 rows. first 3 rows are 16x16 grid, last 2 rows are a 24x24 grid
             //          row 1 has 11 hex numbers: 0-A (1)
             //          row 2 4 of 4 frame animations: fire(4), ice(7), lightning(10), earth(13)

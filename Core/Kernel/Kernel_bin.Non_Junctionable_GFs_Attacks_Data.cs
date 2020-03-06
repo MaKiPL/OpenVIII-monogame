@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Non-Junctionable GFs Attacks data
@@ -21,7 +21,7 @@ namespace OpenVIII
             public Magic_ID MagicID { get; private set; }
 
             //0x0002	2 bytes Magic ID(decides what animation to play)
-            public Attack_Type Attack_Type { get; private set; }
+            public AttackType Attack_Type { get; private set; }
 
             //0x0004	1 byte Attack type
             public byte GF_Power { get; private set; }
@@ -149,7 +149,7 @@ namespace OpenVIII
                 //0x0000	2 bytes Offset to GF attack name
                 MagicID = (Magic_ID)br.ReadUInt16();
                 //0x0002	2 bytes Magic ID(decides what animation to play)
-                Attack_Type = (Attack_Type)br.ReadByte();
+                Attack_Type = (AttackType)br.ReadByte();
                 //0x0004	1 byte Attack type
                 GF_Power = br.ReadByte();
                 //0x0005	1 byte GF power(used in damage formula)

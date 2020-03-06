@@ -14,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// </summary>
         private IJsmExpression _arg0;
         /// <summary>
-        /// Frame count
+        /// Frame Count
         /// </summary>
         private IJsmExpression _arg1;
 

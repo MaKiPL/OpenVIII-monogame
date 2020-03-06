@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
@@ -15,19 +16,19 @@ namespace OpenVIII
             #region Properties
 
             /// <summary>
-            /// Convert stat to correct icon id.
+            /// Convert stat to correct icon BattleID.
             /// </summary>
-            private static IReadOnlyDictionary<Kernel_bin.Stat, Icons.ID> Stat2Icon { get; } = new Dictionary<Kernel_bin.Stat, Icons.ID>
+            private static IReadOnlyDictionary<Kernel.Stat, Icons.ID> Stat2Icon { get; } = new Dictionary<Kernel.Stat, Icons.ID>
                 {
-                    { Kernel_bin.Stat.HP, Icons.ID.Stats_Hit_Points },
-                    { Kernel_bin.Stat.STR, Icons.ID.Stats_Strength },
-                    { Kernel_bin.Stat.VIT, Icons.ID.Stats_Vitality },
-                    { Kernel_bin.Stat.MAG, Icons.ID.Stats_Magic },
-                    { Kernel_bin.Stat.SPR, Icons.ID.Stats_Spirit },
-                    { Kernel_bin.Stat.SPD, Icons.ID.Stats_Speed },
-                    { Kernel_bin.Stat.EVA, Icons.ID.Stats_Evade },
-                    { Kernel_bin.Stat.LUCK, Icons.ID.Stats_Luck },
-                    { Kernel_bin.Stat.HIT, Icons.ID.Stats_Hit_Percent },
+                    { Kernel.Stat.HP, Icons.ID.Stats_Hit_Points },
+                    { Kernel.Stat.STR, Icons.ID.Stats_Strength },
+                    { Kernel.Stat.VIT, Icons.ID.Stats_Vitality },
+                    { Kernel.Stat.MAG, Icons.ID.Stats_Magic },
+                    { Kernel.Stat.SPR, Icons.ID.Stats_Spirit },
+                    { Kernel.Stat.SPD, Icons.ID.Stats_Speed },
+                    { Kernel.Stat.EVA, Icons.ID.Stats_Evade },
+                    { Kernel.Stat.LUCK, Icons.ID.Stats_Luck },
+                    { Kernel.Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
 
             #endregion Properties
@@ -80,9 +81,9 @@ namespace OpenVIII
                 skipdata = true;
                 base.Inputs_Menu();
                 skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel_bin.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Contents[CURSOR_SELECT] == Kernel.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
-                    c.Stat_J[Contents[CURSOR_SELECT]] = 0;
+                    c.StatJ[Contents[CURSOR_SELECT]] = 0;
                     IGM_Junction.Refresh();
                 }
             }
@@ -132,27 +133,27 @@ namespace OpenVIII
                     if (unlocked != null)
                     {
                         ((IGMDataItem.Icon)ITEM[5, 0]).Palette =
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Atk_J) ? 2 : 7);
+                            (byte)(unlocked.Contains(Kernel.Abilities.StAtkJ) ? 2 : 7);
                         ((IGMDataItem.Icon)ITEM[5, 1]).Palette =
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx1) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.ST_Def_Jx4) ? 2 : 7);
+                            (byte)(unlocked.Contains(Kernel.Abilities.StDefJ) ||
+                            unlocked.Contains(Kernel.Abilities.StDefJ2) ||
+                            unlocked.Contains(Kernel.Abilities.StDefJ4) ? 2 : 7);
                         ((IGMDataItem.Icon)ITEM[5, 2]).Palette =
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.EL_Atk_J) ? 2 : 7);
+                            (byte)(unlocked.Contains(Kernel.Abilities.ElAtkJ) ? 2 : 7);
                         ((IGMDataItem.Icon)ITEM[5, 3]).Palette =
-                            (byte)(unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx1) ||
-                            unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx2) ||
-                            unlocked.Contains(Kernel_bin.Abilities.EL_Def_Jx4) ? 2 : 7);
+                            (byte)(unlocked.Contains(Kernel.Abilities.ElDefJ) ||
+                            unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
+                            unlocked.Contains(Kernel.Abilities.ElDefJ4) ? 2 : 7);
                         BLANKS[5] = true;
-                        foreach (Kernel_bin.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
+                        foreach (Kernel.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                         {
                             if (Damageable.GetCharacterData(out Saves.CharacterData c))
                             {
-                                bool isUnlocked = unlocked.Contains(Kernel_bin.Stat2Ability[stat]);
+                                bool isUnlocked = unlocked.Contains(KernelBin.Stat2Ability[stat]);
                                 int pos = (int)stat;
                                 if (pos >= 5) pos++;
                                 Contents[pos] = stat;
-                                FF8String name = Kernel_bin.MagicData[c.Stat_J[stat]].Name;
+                                FF8String name = Memory.Kernel_Bin.MagicData[c.StatJ[stat]].Name;
                                 if (name == null || name.Length == 0) name = Strings.Name._;
                                 ushort currentValue = Damageable.TotalStat(stat);
                                 ushort previousValue = GetPrevSetting()?.TotalStat(stat) ?? currentValue;
@@ -196,7 +197,7 @@ namespace OpenVIII
                 if (GetPrevSetting() == null || !Damageable.GetCharacterData(out Saves.CharacterData c) ||
                     !GetPrevSetting().GetCharacterData(out Saves.CharacterData prev)) return;
                 c.Magics = prev.CloneMagic();
-                c.Stat_J = prev.CloneMagicJunction();
+                c.StatJ = prev.CloneMagicJunction();
             }
 
             protected override void AddEventListener()
@@ -215,7 +216,7 @@ namespace OpenVIII
             /// </summary>
             protected override void Init()
             {
-                Contents = new Kernel_bin.Stat[Count];
+                Contents = new Kernel.Stat[Count];
                 base.Init();
 
                 ITEM[5, 0] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Status_Attack, Pos = new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0) };
@@ -223,14 +224,14 @@ namespace OpenVIII
                 ITEM[5, 2] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Attack, Pos = new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0) };
                 ITEM[5, 3] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Defense, Pos = new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0) };
 
-                foreach (Kernel_bin.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
+                foreach (Kernel.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                 {
                     int pos = (int)stat;
                     if (pos >= 5) pos++;
                     ITEM[pos, 0] = new IGMDataItem.Icon { Data = Stat2Icon[stat], Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                     ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0) };
                     ITEM[pos, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.SysFntBig, Spaces = 10 };
-                    ITEM[pos, 3] = stat == Kernel_bin.Stat.HIT || stat == Kernel_bin.Stat.EVA
+                    ITEM[pos, 3] = stat == Kernel.Stat.HIT || stat == Kernel.Stat.EVA
                                     ? new IGMDataItem.Text { Data = Strings.Name.Percent, Pos = new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0) }
                                     : null;
                     ITEM[pos, 4] = new IGMDataItem.Icon { Pos = new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), Palette = 16 };

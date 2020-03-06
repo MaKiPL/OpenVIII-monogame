@@ -124,7 +124,7 @@ namespace OpenVIII.Fields
             if (flags.HasFlag(Sections.CA | Sections.ID))
             {
                 Cameras = Cameras.Load(getfile(".ca"));
-                WalkMesh = WalkMesh.Load(getfile(".id"), Cameras);
+                WalkMesh = WalkMesh.Load(getfile(".BattleID"), Cameras);
             }
 
             //let's start with scripts

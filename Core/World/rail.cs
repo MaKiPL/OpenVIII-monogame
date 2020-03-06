@@ -76,20 +76,20 @@ namespace OpenVIII.World
         }
 
         /// <summary>
-        /// Gets count of all keypoints associated with provided trackId
+        /// Gets Count of all keypoints associated with provided trackId
         /// </summary>
         /// <param name="trackId"></param>
         /// <returns></returns>
         public int GetTrainTrackFrameCount(int trackId) => railEntries[trackId].keypoints.Length;
 
         /// <summary>
-        /// Gets count of all available tracks
+        /// Gets Count of all available tracks
         /// </summary>
         /// <returns></returns>
         public int GetTrainTrackCount() => railEntries.Length;
 
         /// <summary>
-        /// Gets Vector3 translated to openviii coordinates from given track animation's frame id
+        /// Gets Vector3 translated to openviii coordinates from given track animation's frame BattleID
         /// </summary>
         /// <param name="trackId"></param>
         /// <param name="frameId"></param>

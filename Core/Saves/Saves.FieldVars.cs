@@ -31,14 +31,14 @@ namespace OpenVIII
 
             public Dictionary<Characters, ushort> DeathCounter = new Dictionary<Characters, ushort>((int)Characters.Edea_Kramer + 1);
 
-            //ushort ushort44; //[44]Squall death count
-            //ushort ushort46; //[46]Zell death count
-            //ushort ushort48; //[48]Irvine death count
-            //ushort ushort50; //[50]Quistis death count
-            //ushort ushort52; //[52]Rinoa death count
-            //ushort ushort54; //[54]Selphie death count
-            //ushort ushort56; //[56]Seifer death count
-            //ushort ushort58; //[58]Edea death count
+            //ushort ushort44; //[44]Squall death Count
+            //ushort ushort46; //[46]Zell death Count
+            //ushort ushort48; //[48]Irvine death Count
+            //ushort ushort50; //[50]Quistis death Count
+            //ushort ushort52; //[52]Rinoa death Count
+            //ushort ushort54; //[54]Selphie death Count
+            //ushort ushort56; //[56]Seifer death Count
+            //ushort ushort58; //[58]Edea death Count
 
             public byte[] byte6067; //[60-67]unused in fields
             public ulong EnemiesKilledTotal; //[68]Enemies killed
@@ -322,14 +322,14 @@ namespace OpenVIII
                 for (int i = 0; i < (int)Characters.Edea_Kramer + 1; i++)
                     DeathCounter.Add((Characters)i, br.ReadUInt16());
 
-                //ushort44 = br.ReadUInt16(); //[44]Squall death count
-                //ushort46 = br.ReadUInt16(); //[46]Zell death count
-                //ushort48 = br.ReadUInt16(); //[48]Irvine death count
-                //ushort50 = br.ReadUInt16(); //[50]Quistis death count
-                //ushort52 = br.ReadUInt16(); //[52]Rinoa death count
-                //ushort54 = br.ReadUInt16(); //[54]Selphie death count
-                //ushort56 = br.ReadUInt16(); //[56]Seifer death count
-                //ushort58 = br.ReadUInt16(); //[58]Edea death count
+                //ushort44 = br.ReadUInt16(); //[44]Squall death Count
+                //ushort46 = br.ReadUInt16(); //[46]Zell death Count
+                //ushort48 = br.ReadUInt16(); //[48]Irvine death Count
+                //ushort50 = br.ReadUInt16(); //[50]Quistis death Count
+                //ushort52 = br.ReadUInt16(); //[52]Rinoa death Count
+                //ushort54 = br.ReadUInt16(); //[54]Selphie death Count
+                //ushort56 = br.ReadUInt16(); //[56]Seifer death Count
+                //ushort58 = br.ReadUInt16(); //[58]Edea death Count
 
                 byte6067 = br.ReadBytes(8); //[60-67]unused in fields
                 EnemiesKilledTotal = br.ReadUInt32(); //[68]Enemies killed

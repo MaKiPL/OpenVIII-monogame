@@ -10,7 +10,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class PREMAPJUMP2 : JsmInstruction
     {
         /// <summary>
-        /// Field map ID
+        /// Field map BattleID
         /// </summary>
         private readonly int _fieldMapId;
 

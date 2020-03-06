@@ -49,7 +49,7 @@ namespace OpenVIII
             public byte[] u2;
             public ulong associatedSaveID;
             public byte u3;
-            public BokuAttackFlags boko_attack;// star count (chocobraise | chocoflammes | chocométéore | grochocobo)
+            public BokuAttackFlags boko_attack;// star Count (chocobraise | chocoflammes | chocométéore | grochocobo)
             public byte u4;
             public byte home_walking;
             public byte[] u5;
@@ -85,7 +85,7 @@ namespace OpenVIII
                 u2 = br.ReadBytes(16);
                 associatedSaveID = br.ReadUInt32();
                 u3 = br.ReadByte();
-                boko_attack = (BokuAttackFlags)br.ReadByte();// star count (chocobraise | chocoflammes | chocométéore | grochocobo)
+                boko_attack = (BokuAttackFlags)br.ReadByte();// star Count (chocobraise | chocoflammes | chocométéore | grochocobo)
                 u4 = br.ReadByte();
                 home_walking = br.ReadByte();
                 u5 = br.ReadBytes(16);

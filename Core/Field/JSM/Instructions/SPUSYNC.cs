@@ -5,13 +5,13 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>SPU Sync</para>
-    /// <para>Pauses this script until frame count frames have passed since SPUREADY was called.</para>
+    /// <para>Pauses this script until frame Count frames have passed since SPUREADY was called.</para>
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/164_SPUSYNC"/>
     public sealed class SPUSYNC : JsmInstruction
     {
         /// <summary>
-        /// Frame count
+        /// Frame Count
         /// </summary>
         private IJsmExpression _frameCount;
 

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Renzokuken Finishers Data
@@ -21,13 +21,13 @@ namespace OpenVIII
             public override string ToString() => Name;
 
             public Magic_ID MagicID { get; private set; }          //0x0004	2 bytes Magic ID
-            public Attack_Type Attack_Type { get; private set; }   //0x0006	1 byte Attack Type
+            public AttackType Attack_Type { get; private set; }   //0x0006	1 byte Attack Type
             public byte Unknown0 { get; private set; }             //0x0007	1 byte Unknown
             public byte Attack_Power { get; private set; }         //0x0008	1 byte Attack power
             public byte Unknown1 { get; private set; }             //0x0009	1 byte Unknown
             public Target Target { get; private set; }             //0x000A	1 byte Target info
-            public Attack_Flags Attack_Flags { get; private set; } //0x000B	1 byte Attack Flags
-            public byte Hit_Count { get; private set; }            //0x000C	1 byte Hit count
+            public AttackFlags Attack_Flags { get; private set; } //0x000B	1 byte Attack Flags
+            public byte Hit_Count { get; private set; }            //0x000C	1 byte Hit Count
             public Element Element { get; private set; }           //0x000D	1 byte Element Attack
             public byte Element_Percent { get; private set; }      //0x000E	1 byte Element Attack %
             public byte Status_Attack { get; private set; }        //0x000F	1 byte Status Attack Enabler
@@ -41,13 +41,13 @@ namespace OpenVIII
                 Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();          //0x0004	2 bytes Magic ID
-                Attack_Type = (Attack_Type)br.ReadByte();   //0x0006	1 byte Attack Type
+                Attack_Type = (AttackType)br.ReadByte();   //0x0006	1 byte Attack Type
                 Unknown0 = br.ReadByte();             //0x0007	1 byte Unknown
                 Attack_Power = br.ReadByte();         //0x0008	1 byte Attack power
                 Unknown1 = br.ReadByte();             //0x0009	1 byte Unknown
                 Target = (Target)br.ReadByte();             //0x000A	1 byte Target info
-                Attack_Flags = (Attack_Flags)br.ReadByte(); //0x000B	1 byte Attack Flags
-                Hit_Count = br.ReadByte();            //0x000C	1 byte Hit count
+                Attack_Flags = (AttackFlags)br.ReadByte(); //0x000B	1 byte Attack Flags
+                Hit_Count = br.ReadByte();            //0x000C	1 byte Hit Count
                 Element = (Element)br.ReadByte();           //0x000D	1 byte Element Attack
                 Element_Percent = br.ReadByte();      //0x000E	1 byte Element Attack %
                 Status_Attack = br.ReadByte();        //0x000F	1 byte Status Attack Enabler
@@ -58,8 +58,8 @@ namespace OpenVIII
 
             public static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> Read(BinaryReader br)
             {
-                List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
-                   .Cast<Kernel_bin.Renzokeken_Finisher>()
+                List<Kernel.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel.Renzokeken_Finisher))
+                   .Cast<Kernel.Renzokeken_Finisher>()
                    .ToList();
                 var ret = new Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data>(count);
 

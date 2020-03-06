@@ -85,7 +85,7 @@ namespace OpenVIII.Movie
             {
                 return null; // doesn't work.
                 //ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
-                //var fd = a.ArchiveMap.GetFileData(Files[ID]);
+                //var fd = a.ArchiveMap.GetFileData(Files[BattleID]);
 
                 //AV.Audio ffccAudioFromZZZ = AV.Audio.Load(
                 //    new AV.BufferData
@@ -111,7 +111,7 @@ namespace OpenVIII.Movie
 
                 //Player = new Player()
                 //{
-                //    ID = ID,
+                //    BattleID = BattleID,
                 //    STATE = STATE.LOAD,
                 //    Video = ffccVideoFromZZZ,
                 //    Audio = ffccAudioFromZZZ,

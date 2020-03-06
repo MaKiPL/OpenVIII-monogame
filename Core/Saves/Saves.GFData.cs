@@ -105,25 +105,25 @@ namespace OpenVIII
             /// <summary>
             /// Gf ability data
             /// </summary>
-            private IReadOnlyDictionary<Kernel_bin.Abilities, Kernel_bin.GF_abilities> GFabilities => Kernel_bin.GFabilities;
+            private IReadOnlyDictionary<Kernel.Abilities, Kernel.GFAbilities> GFabilities => Memory.Kernel_Bin.GFAbilities;
 
             public override byte HIT => 0;
 
             /// <summary>
-            /// Enum ID for this GF
+            /// Enum BattleID for this GF
             /// </summary>
             public GFs ID { get; private set; }
 
             /// <summary>
             /// Kernel bin data on this GF
             /// </summary>
-            private Kernel_bin.Junctionable_GFs_Data JunctionableGFsData
+            private Kernel.Junctionable_GFs_Data JunctionableGFsData
             {
                 get
                 {
                     if (
-                        Kernel_bin.JunctionableGFsData != null &&
-                        Kernel_bin.JunctionableGFsData.TryGetValue(ID, out Kernel_bin.Junctionable_GFs_Data value))
+                        Memory.Kernel_Bin.JunctionableGFsData != null &&
+                        Memory.Kernel_Bin.JunctionableGFsData.TryGetValue(ID, out Kernel.Junctionable_GFs_Data value))
                     {
                         return value;
                     }
@@ -134,7 +134,7 @@ namespace OpenVIII
             /// <summary>
             /// This is the ability that will gain AP from battles.
             /// </summary>
-            public Kernel_bin.Abilities Learning { get; private set; }
+            public Kernel.Abilities Learning { get; private set; }
 
             /// <summary>
             /// Current Level for this GF
@@ -143,7 +143,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    Kernel_bin.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
+                    Kernel.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
                     if (junctionableGFsData != null)
                     {
                         uint ret = (Experience / junctionableGFsData.EXPperLevel) + 1;
@@ -172,14 +172,14 @@ namespace OpenVIII
                 get
                 {
                     int p = 0;
-                    List<Kernel_bin.Abilities> unlocked = UnlockedAbilities;
-                    if (unlocked.Contains(Kernel_bin.Abilities.GFHP_10))
+                    List<Kernel.Abilities> unlocked = UnlockedAbilities;
+                    if (unlocked.Contains(Kernel.Abilities.GFHP10))
                         p += 10;
-                    if (unlocked.Contains(Kernel_bin.Abilities.GFHP_20))
+                    if (unlocked.Contains(Kernel.Abilities.GFHP20))
                         p += 20;
-                    if (unlocked.Contains(Kernel_bin.Abilities.GFHP_30))
+                    if (unlocked.Contains(Kernel.Abilities.GFHP30))
                         p += 30;
-                    if (unlocked.Contains(Kernel_bin.Abilities.GFHP_40))
+                    if (unlocked.Contains(Kernel.Abilities.GFHP40))
                         p += 40;
                     return p;
                 }
@@ -190,7 +190,7 @@ namespace OpenVIII
                 get
                 {
                     if (Memory.State.JunctionedGFs().TryGetValue(ID, out Characters c) &&
-                        Memory.State[c].CompatibilitywithGFs.TryGetValue(ID, out Saves.CompatibilitywithGF value))
+                        Memory.State[c].CompatibilityWithGFs.TryGetValue(ID, out Saves.CompatibilitywithGF value))
                     {
                         return value;
                     }
@@ -207,15 +207,15 @@ namespace OpenVIII
             /// <summary>
             /// Unlocked abilities
             /// </summary>
-            public List<Kernel_bin.Abilities> UnlockedAbilities
+            public List<Kernel.Abilities> UnlockedAbilities
             {
                 get
                 {
-                    List<Kernel_bin.Abilities> abilities = new List<Kernel_bin.Abilities>();
+                    List<Kernel.Abilities> abilities = new List<Kernel.Abilities>();
                     for (int i = 1; Complete != null && i < Complete.Length; i++)//0 is none so skipping it.
                     {
                         if (Complete[i])
-                            abilities.Add((Kernel_bin.Abilities)i);
+                            abilities.Add((Kernel.Abilities)i);
                     }
 
                     return abilities;
@@ -245,19 +245,19 @@ namespace OpenVIII
                 return c;
             }
 
-            public bool EarnExp(uint ap, out Kernel_bin.Abilities ability)
+            public bool EarnExp(uint ap, out Kernel.Abilities ability)
             {
                 bool ret = false;
-                ability = Kernel_bin.Abilities.None;
+                ability = Kernel.Abilities.None;
 
                 if (!IsGameOver)
                 {
                     if (EXPtoNextLevel <= ap && Level < 100)
                         ret = true;
                     Experience += ap;
-                    if (!Learning.Equals(Kernel_bin.Abilities.None) && Kernel_bin.AllAbilities.ContainsKey(Learning))
+                    if (!Learning.Equals(Kernel.Abilities.None) && Memory.Kernel_Bin.AllAbilities.ContainsKey(Learning))
                     {
-                        byte ap_tolearn = Kernel_bin.AllAbilities[Learning].AP;
+                        byte ap_tolearn = Memory.Kernel_Bin.AllAbilities[Learning].AP;
                         if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out int ind) && TestGFCanLearn(Learning, false))
                         {
                             if (ap_tolearn < APs[ind] + ap)
@@ -276,14 +276,14 @@ namespace OpenVIII
                 return ret;
             }
 
-            public override short ElementalResistance(Kernel_bin.Element @in) => throw new System.NotImplementedException();
+            public override short ElementalResistance(Kernel.Element @in) => throw new System.NotImplementedException();
 
             /// <summary>
             /// Learn this ability
             /// </summary>
             /// <param name="ability"></param>
             /// <returns></returns>
-            public bool Learn(Kernel_bin.Abilities ability)
+            public bool Learn(Kernel.Abilities ability)
             {
                 if (!MaxGFAbilities)
                 {
@@ -305,11 +305,11 @@ namespace OpenVIII
             /// </summary>
             public override ushort MaxHP()
             {
-                Kernel_bin.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
+                Kernel.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
                 if (junctionableGFsData != null)
                 {
                     int max = ((Level * Level / 25) + 250 + junctionableGFsData.HP_MOD * Level) * (Percent + 100) / 100;
-                    return (ushort)(max > Kernel_bin.MAX_HP_VALUE ? Kernel_bin.MAX_HP_VALUE : max);
+                    return (ushort)(max > Kernel.KernelBin.MaxHPValue ? Kernel.KernelBin.MaxHPValue : max);
                 }
                 return 0;
             }
@@ -319,13 +319,13 @@ namespace OpenVIII
             /// <para>Could actually be a byte to corrispond to APs and Forgotten.</para>
             /// </summary>
             /// <param name="ability">If null sets to first in learnable list</param>
-            public void SetLearning(Kernel_bin.Abilities? _ability = null)
+            public void SetLearning(Kernel.Abilities? _ability = null)
             {
-                Kernel_bin.Abilities a = _ability ?? Kernel_bin.Abilities.None;
+                Kernel.Abilities a = _ability ?? Kernel.Abilities.None;
                 bool _set = false;
-                if (a == Kernel_bin.Abilities.None)
+                if (a == Kernel.Abilities.None)
                 {
-                    foreach (KeyValuePair<Kernel_bin.Abilities, Kernel_bin.Unlocker> kvp in JunctionableGFsData.Ability)
+                    foreach (KeyValuePair<Kernel.Abilities, Kernel.Unlocker> kvp in JunctionableGFsData.Ability)
                     {
                         if (TestGFCanLearn(kvp.Key, false))
                         {
@@ -342,12 +342,12 @@ namespace OpenVIII
                 }
 
                 if (!_set)
-                    Learning = Kernel_bin.Abilities.None;
+                    Learning = Kernel.Abilities.None;
             }
 
-            public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) => sbyte.MaxValue;
+            public override sbyte StatusResistance(Kernel.Battle_Only_Statuses s) => sbyte.MaxValue;
 
-            public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s) => sbyte.MaxValue;
+            public override sbyte StatusResistance(Kernel.Persistent_Statuses s) => sbyte.MaxValue;
 
             /// <summary>
             /// False if gf knows ability, True if can learn it.
@@ -356,18 +356,18 @@ namespace OpenVIII
             /// <param name="item">
             /// If using an Item you don't need the prereq, set to false if need prereq
             /// </param>
-            public bool TestGFCanLearn(Kernel_bin.Abilities ability, bool item = true) => !Complete[(int)ability] && ((item) || UnlockerTest(ability));
+            public bool TestGFCanLearn(Kernel.Abilities ability, bool item = true) => !Complete[(int)ability] && ((item) || UnlockerTest(ability));
 
             /// <summary>
             /// If converting to string display GF's Name.
             /// </summary>
             public override string ToString() => Name.ToString();
 
-            public override ushort TotalStat(Kernel_bin.Stat s) => 0;
+            public override ushort TotalStat(Kernel.Stat s) => 0;
 
-            public bool UnlockerTest(Kernel_bin.Abilities a)
+            public bool UnlockerTest(Kernel.Abilities a)
             {
-                if (JunctionableGFsData.Ability.TryGetByKey(a, out Kernel_bin.Unlocker u))
+                if (JunctionableGFsData.Ability.TryGetByKey(a, out Kernel.Unlocker u))
                 {
                     return UnlockerTest(u);
                 }
@@ -375,20 +375,20 @@ namespace OpenVIII
                 return true;
             }
 
-            public bool UnlockerTest(Kernel_bin.Unlocker u)
+            public bool UnlockerTest(Kernel.Unlocker u)
             {
-                if (u == Kernel_bin.Unlocker.None)
+                if (u == Kernel.Unlocker.None)
                 {
                     return true;
                 }
-                else if (u < Kernel_bin.Unlocker.GFLevel100)
+                else if (u < Kernel.Unlocker.GFLevel100)
                 {
                     return ((byte)u <= Level);
                 }
                 else
                 {
-                    int ind = (u - Kernel_bin.Unlocker.GFLevel100);
-                    if (JunctionableGFsData.Ability.TryGetKeyByIndex(ind, out Kernel_bin.Abilities key))
+                    int ind = (u - Kernel.Unlocker.GFLevel100);
+                    if (JunctionableGFsData.Ability.TryGetKeyByIndex(ind, out Kernel.Abilities key))
                         return Complete[(int)key];
                     else
                         return false;
@@ -416,7 +416,7 @@ namespace OpenVIII
                 APs = br.ReadBytes(24);//0x24 (1 byte = 1 ability of the GF, 2 bytes unused)
                 NumberKills = br.ReadUInt16();//0x3C of kills
                 NumberKOs = br.ReadUInt16();//0x3E of KOs
-                Learning = (Kernel_bin.Abilities)br.ReadByte();//0x41 ability
+                Learning = (Kernel.Abilities)br.ReadByte();//0x41 ability
                 Forgotten = new BitArray(br.ReadBytes(3));//0x42 abilities (1 bit = 1 ability of the GF forgotten, 2 bits unused)
             }
 

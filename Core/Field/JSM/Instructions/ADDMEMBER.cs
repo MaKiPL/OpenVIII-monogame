@@ -10,7 +10,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class ADDMEMBER : JsmInstruction
     {
         /// <summary>
-        /// Character ID
+        /// Character BattleID
         /// </summary>
         private readonly Characters _characterId;
 

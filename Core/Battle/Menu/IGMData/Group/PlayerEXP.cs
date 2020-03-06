@@ -12,7 +12,7 @@ namespace OpenVIII.IGMData.Group
         /// <summary>
         /// <para>The Speed the exp counts down.</para>
         /// <para>Cannot be 0.</para>
-        /// The smaller the number the faster it'll count down.
+        /// The smaller the number the faster it'll Count down.
         /// </summary>
         /// <list type="bullet">
         /// <item>

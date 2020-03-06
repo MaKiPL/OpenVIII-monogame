@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Weapon Data
@@ -21,8 +21,8 @@ namespace OpenVIII
             public Renzokeken_Finisher Renzokuken { get; private set; } //0x0002	1 byte Renzokuken finishers
 
             public byte Unknown0 { get; private set; } //0x0003	1 byte Unknown
-            public Characters Character { get; private set; }//0x0004	1 byte Character ID
-            public Attack_Type Attack_type { get; private set; }//0x0005	1 bytes Attack Type
+            public Characters Character { get; private set; }//0x0004	1 byte Character BattleID
+            public AttackType Attack_type { get; private set; }//0x0005	1 bytes Attack Type
             public byte Attack_power { get; private set; }//0x0006	1 byte Attack Power
             public byte HIT { get; private set; }//0x0007	1 byte Attack Parameter
             public byte STR { get; private set; }//0x0008	1 byte STR Bonus
@@ -40,13 +40,13 @@ namespace OpenVIII
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 Renzokuken = (Renzokeken_Finisher)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
                 Unknown0 = br.ReadByte(); //0x0003	1 byte Unknown
-                Character = (Characters)br.ReadByte();//0x0004	1 byte Character ID
+                Character = (Characters)br.ReadByte();//0x0004	1 byte Character BattleID
                 if (lastCharacter != Character) {
                     AltID = Counter = 0;
                     lastCharacter = Character;
                 }
                 else AltID = ++Counter;
-                Attack_type = (Attack_Type)br.ReadByte();//0x0005	1 bytes Attack Type
+                Attack_type = (AttackType)br.ReadByte();//0x0005	1 bytes Attack Type
                 Attack_power = br.ReadByte();//0x0006	1 byte Attack Power
                 HIT = br.ReadByte();//0x0007	1 byte Attack Parameter
                 STR = br.ReadByte();//0x0008	1 byte STR Bonus

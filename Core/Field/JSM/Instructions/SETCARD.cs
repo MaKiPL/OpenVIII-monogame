@@ -4,7 +4,7 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Set Card? Card ID and NPC?
+    /// Set Card? Card BattleID and NPC?
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/15E_SETCARD&action=edit&redlink=1"/>
     public sealed class SETCARD : JsmInstruction
@@ -14,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// </summary>
         private readonly IJsmExpression _maybeNPC;
         /// <summary>
-        /// I think this is the card id.
+        /// I think this is the card BattleID.
         /// </summary>
         private readonly IJsmExpression _cardID; 
 
@@ -26,7 +26,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public SETCARD(Int32 parameter, IStack<IJsmExpression> stack)
             : this(
-                cardID: stack.Pop(), //can't cast to card ID with out doing something first
+                cardID: stack.Pop(), //can't cast to card BattleID with out doing something first
                 maybeNPC: stack.Pop())
         {
         }

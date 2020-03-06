@@ -499,7 +499,7 @@ namespace OpenVIII.IGMData
             {
                 if (CONTAINER.Pos == Rectangle.Empty)
                 {
-                    Debug.WriteLine($"{this}:: count {Count} or depth {Depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
+                    Debug.WriteLine($"{this}:: Count {Count} or depth {Depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
                     return;
                 }
             }
@@ -573,10 +573,10 @@ namespace OpenVIII.IGMData
                 _cursor_select = value;
         }
 
-        //protected Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        //protected Base(int Count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
         //{
         //    Init(damageable, partypos);
-        //    Init(count, depth, container, cols, rows);
+        //    Init(Count, depth, container, cols, rows);
         //}
         private static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
         {

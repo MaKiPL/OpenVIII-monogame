@@ -35,7 +35,7 @@ namespace OpenVIII.Fields
             }
 
             if (!isFound)
-                throw new NotSupportedException($"Unknown movie id: {movieId}");
+                throw new NotSupportedException($"Unknown movie BattleID: {movieId}");
         }
 
         private static readonly String[] Disk1 =

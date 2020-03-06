@@ -1,52 +1,92 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
+        #region Classes
+
         /// <summary>
         /// GF Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/GF-abilities"/>
-        public class GF_abilities : Equipable_Ability
+        public sealed class GFAbilities : EquippableAbility
         {
-            public new const int count = 9;
-            public new const int id = 16;
+            #region Fields
 
-            public byte Boost { get; private set; }
-            public Stat Stat { get; private set; }
-            public byte Value { get; private set; }
+            /// <summary>
+            /// Section Count
+            /// </summary>
+            public const int Count = 9;
 
-            public override void Read(BinaryReader br, int i)
+            /// <summary>
+            /// Icon for this type.
+            /// </summary>
+            public new const Icons.ID Icon = Icons.ID.Ability_GF;
+
+            /// <summary>
+            /// Section ID
+            /// </summary>
+            public const int ID = 16;
+
+            #endregion Fields
+
+            #region Constructors
+
+            private GFAbilities(FF8String name, FF8String description, byte ap, bool boost, Stat stat, byte value) :
+                base(name, description, ap, Icon) => (Boost, Stat, Value) = (boost, stat, value);
+
+            #endregion Constructors
+
+            #region Properties
+
+            /// <summary>
+            /// Boost Enable
+            /// </summary>
+            public bool Boost { get; }
+
+            /// <summary>
+            /// Stat to increase
+            /// </summary>
+            public Stat Stat { get; }
+
+            /// <summary>
+            /// Increase value
+            /// </summary>
+            public byte Value { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public static Dictionary<Abilities, GFAbilities> Read(BinaryReader br)
+
+                => Enumerable.Range(0, Count)
+                    .ToDictionary(i => (Abilities)(i + (int)Abilities.SumMag10), i => CreateInstance(br, i));
+
+            private static GFAbilities CreateInstance(BinaryReader br, int i)
             {
-                Icon = Icons.ID.Ability_GF;
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
                 //0x0000	2 bytes Offset to name
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                FF8StringReference name = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2);
                 //0x0002	2 bytes Offset to description
+                FF8StringReference description = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2 + 1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
-                AP = br.ReadByte();
                 //0x0004 1 byte AP needed to learn the ability
-                Boost = br.ReadByte();
-                //0x0005 Enable Boost
-                Stat = (Stat)br.ReadByte();
-                //0x0006  1 byte Stat to increase
-                Value = br.ReadByte();
-                //0x0007  1 byte Increase value
+                byte ap = br.ReadByte();
+                //0x0005  1 byte
+                bool boost = br.ReadByte() != 0;
+                //0x0006  1 byte
+                Stat stat = (Stat)br.ReadByte();
+                //0x0007  1 byte
+                byte value = br.ReadByte();
+                return new GFAbilities(name, description, ap, boost, stat, value);
             }
-            public static Dictionary<Abilities, GF_abilities> Read(BinaryReader br)
-            {
-                Dictionary<Abilities, GF_abilities> ret = new Dictionary<Abilities, GF_abilities>(count);
 
-                for (int i = 0; i < count; i++)
-                {
-                    var tmp = new GF_abilities();
-                    tmp.Read(br, i);
-                    ret[(Abilities)(i+(int)Abilities.SumMag_10)] = tmp;
-                }
-                return ret;
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

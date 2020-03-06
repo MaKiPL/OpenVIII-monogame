@@ -206,14 +206,14 @@ namespace OpenVIII.IGMData.Limit
             //float totalx = 0;
             //for (byte i = 0; i <= 7; i++)
             //{
-            //    e = Memory.Icons[Icons.ID._0_Hit_ + i];
+            //    e = Memory.Icons[Icons.BattleID._0_Hit_ + i];
             //    if(e!=null)
             //        totalx += e[0].Offset.X;
             //}
             //float avgx = (float)Math.Round(totalx / 8);
             //for (byte i = 0; i <= 7; i++)
             //{
-            //    e = Memory.Icons[Icons.ID._0_Hit_ + i];
+            //    e = Memory.Icons[Icons.BattleID._0_Hit_ + i];
             //    if (e != null)
             //        e[0].Offset.X = avgx;
             //}

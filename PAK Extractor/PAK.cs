@@ -354,7 +354,7 @@ namespace OpenVIII.PAK_Extractor
             public string FileName;
 
             /// <summary>
-            /// Frame count
+            /// Frame Count
             /// </summary>
             public uint Frames;
 

@@ -206,7 +206,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}\n");
             ImGuiNET.ImGui.Text($"Camera.Mode: {Camera.cam.control_word & 1}\n");
             ImGuiNET.ImGui.Text($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}\n");
-            ImGuiNET.ImGui.Text($"Sequence ID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++");
+            ImGuiNET.ImGui.Text($"Sequence BattleID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++");
             ImGuiNET.ImGui.End();
             Memory.imgui.AfterLayout();
         }
@@ -730,7 +730,7 @@ namespace OpenVIII
 
         private static Vector3 GetCharPos(int _n) => new Vector3(-10 + _n * 10, Yoffset, -30);
 
-        private static byte GetCostume(Characters c) => Memory.State[c].Alternativemodel != 0 ? Costumes[c].First() : Costumes[c].Last();
+        private static byte GetCostume(Characters c) => Memory.State[c].AlternativeModel != 0 ? Costumes[c].First() : Costumes[c].Last();
 
         private static Vector3 GetEnemyPos(int n) =>
             //Memory.Encounters.enemyCoordinates[Enemy.Party[n].EII.index];
@@ -746,9 +746,9 @@ namespace OpenVIII
         {
             byte weaponId = 0;
             if (Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) &&
-                characterData.WeaponID < Kernel_bin.WeaponsData.Count)
+                characterData.WeaponID < Memory.Kernel_Bin.WeaponsData.Count)
             {
-                byte altID = Kernel_bin.WeaponsData[characterData.WeaponID].AltID;
+                byte altID = Memory.Kernel_Bin.WeaponsData[characterData.WeaponID].AltID;
                 if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
                     weaponId = weapons[altID];
             }
@@ -767,7 +767,7 @@ namespace OpenVIII
                 }
             if (CROSSHAIR == null || ForceReload)
                 CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
-            //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
+            //testQuad = Memory.Icons.Quad(Icons.BattleID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             //InputMouse.Mode = MouseLockMode.Center;

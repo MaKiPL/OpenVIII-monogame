@@ -1,11 +1,14 @@
-﻿namespace OpenVIII
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// 115 abilities. GF unlockable ones only.
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junctionable-Abilities"/>
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public enum Abilities :byte
         {
             // https://github.com/alexfilth/doomtrain/wiki/Junction-abilities
@@ -13,81 +16,82 @@
             /// <summary>
             /// Enables HP junction
             /// </summary>
-            HP_J,
+            // ReSharper disable once InconsistentNaming
+            HPJ,
             /// <summary>
             /// Enables Strength junction
             /// </summary>
-            Str_J,
+            StrJ,
             /// <summary>
             /// Enables Vitality junction
             /// </summary>
-            Vit_J,
+            VitJ,
             /// <summary>
             /// Enables Magic junction
             /// </summary>
-            Mag_J,
+            MagJ,
             /// <summary>
             /// Enables Spirit junction
             /// </summary>
-            Spr_J,
+            SprJ,
             /// <summary>
             /// Enables Speed junction
             /// </summary>
-            Spd_J,
+            SpdJ,
             /// <summary>
             /// Enables Evasion junction
             /// </summary>
-            Eva_J,
+            EvaJ,
             /// <summary>
             /// Enables Hit junction
             /// </summary>
-            Hit_J,
+            HitJ,
             /// <summary>
             /// Enables Luck junction
             /// </summary>
-            Luck_J,
+            LuckJ,
             /// <summary>
-            /// Increased elemental attack slot count to 1
+            /// Increased elemental attack slot Count to 1
             /// </summary>
-            EL_Atk_J,
+            ElAtkJ,
             /// <summary>
-            /// Increased status attack slot count to 1
+            /// Increased status attack slot Count to 1
             /// </summary>
-            ST_Atk_J,
+            StAtkJ,
             /// <summary>
-            /// Increased elemental defense slot count to 1
+            /// Increased elemental defense slot Count to 1
             /// </summary>
-            EL_Def_Jx1,
+            ElDefJ,
             /// <summary>
-            /// Increased status defense slot count to 1
+            /// Increased status defense slot Count to 1
             /// </summary>
-            ST_Def_Jx1,
+            StDefJ,
             /// <summary>
-            /// Increased elemental defense slot count to 2
+            /// Increased elemental defense slot Count to 2
             /// </summary>
-            EL_Def_Jx2,
+            ElDefJ2,
             /// <summary>
-            /// Increased elemental defense slot count to 4
+            /// Increased elemental defense slot Count to 4
             /// </summary>
-            EL_Def_Jx4,
+            ElDefJ4,
             /// <summary>
-            /// Increased status defense slot count to 2
+            /// Increased status defense slot Count to 2
             /// </summary>
-            ST_Def_Jx2,
+            StDefJ2,
             /// <summary>
-            /// Increased status defense slot count to 4
+            /// Increased status defense slot Count to 4
             /// </summary>
-            ST_Def_Jx4,
+            StDefJ4,
             /// <summary>
-            /// Increases ability slot count to 3
+            /// Increases ability slot Count to 3
             /// </summary>
-            Abilityx3,
+            Ability3,
             /// <summary>
-            /// Increases ability slot count to 4
+            /// Increases ability slot Count to 4
             /// </summary>
-            Abilityx4,
+            Ability4,
 
-            //Equipable commands start here
+            //Equippable commands start here
             // https://github.com/alexfilth/doomtrain/wiki/Command-abilities
             Magic,
             GF,
@@ -103,100 +107,100 @@
             Recover,
             Absorb,
             Revive,
-            LVDown,
-            LVUp,
+            LvDown,
+            LvUp,
             Kamikaze,
             Devour,
             MiniMog,
-            //Equipable commands end here
+            //Equippable commands end here
 
-            //Equipable abilities start here
+            //Equippable abilities start here
             // https://github.com/alexfilth/doomtrain/wiki/Stat-percentage-increasing-abilities
-            HP_20,
-            HP_40,
-            HP_80,
-            STR_20,
-            STR_40,
-            STR_60,
-            VIT_20,
-            VIT_40,
-            VIT_60,
-            MAG_20,
-            MAG_40,
-            MAG_60,
-            SPR_20,
-            SPR_40,
-            SPR_60,
-            SPD_20,
-            SPD_40,
-            EVA_30,
-            LUCK_50,
+            HP20,
+            HP40,
+            HP80,
+            Str20,
+            Str40,
+            Str60,
+            Vit20,
+            Vit40,
+            Vit60,
+            Mag20,
+            Mag40,
+            Mag60,
+            Spr20,
+            Spr40,
+            Spr60,
+            Spd20,
+            Spd40,
+            Eva30,
+            Luck50,
 
             //https://github.com/alexfilth/doomtrain/wiki/Character-abilities
             Mug,
             MedData,
             Counter,
-            Return_Damage,
+            ReturnDamage,
             Cover,
             Initiative,
-            Move_HPUp,
+            MoveHPUp,
             HPBonus,
             StrBonus,
             VitBonus,
             MagBonus,
             SprBonus,
-            Auto_Protect,
-            Auto_Shell,
-            Auto_Reflect,
-            Auto_Haste,
+            AutoProtect,
+            AutoShell,
+            AutoReflect,
+            AutoHaste,
             AutoPotion,
-            Expendx2_1,
-            Expendx3_1,
+            Expend2,
+            Expend3,
             Ribbon,
 
             // https://github.com/alexfilth/doomtrain/wiki/Party-abilities
             Alert,
-            Move_Find,
-            Enc_Half,
-            Enc_None,
+            MoveFind,
+            EncHalf,
+            EncNone,
             RareItem,
 
             // https://github.com/alexfilth/doomtrain/wiki/GF-abilities
-            SumMag_10,
-            SumMag_20,
-            SumMag_30,
-            SumMag_40,
-            GFHP_10,
-            GFHP_20,
-            GFHP_30,
-            GFHP_40,
+            SumMag10,
+            SumMag20,
+            SumMag30,
+            SumMag40,
+            GFHP10,
+            GFHP20,
+            GFHP30,
+            GFHP40,
             Boost,
-            //Equipable abilities end here
+            //Equippable abilities end here
 
             // https://github.com/alexfilth/doomtrain/wiki/Menu-abilities
             Haggle,
-            Sell_High,
+            SellHigh,
             Familiar,
             CallShop,
             JunkShop,
-            TMag_RF,
-            IMag_RF,
-            FMag_RF,
-            LMag_RF,
-            TimeMag_RF,
-            STMag_RF,
-            SuptMag_RF,
-            ForbidMag_RF,
-            RecovMed_RF,
-            STMed_RF,
-            Ammo_RF,
-            Tool_RF,
-            ForbidMed_RF,
-            GFRecovMed_RF,
-            GFAblMed_RF,
-            MidMag_RF,
-            HighMag_RF,
-            MedLVUp,
+            ThunderMagRF,
+            IceMagRF,
+            FireMagRF,
+            LifeMagRF,
+            TimeMagRF,
+            StatusMagRF,
+            SuptMagRF,
+            ForbidMagRF,
+            RecoveryMedRF,
+            StatusMedRF,
+            AmmoRF,
+            ToolRF,
+            ForbidMedRF,
+            GFRecoveryMedRF,
+            GFAblMedRF,
+            MidMagRF,
+            HighMagRF,
+            MedLvUp,
             CardMod,
         }
     }
