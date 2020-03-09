@@ -140,7 +140,7 @@ namespace OpenVIII.Dat_Dump
                             $"{number}{ls}" +
                             $"{a.animation}{ls}" +
                             $"{(a.ITEM != null ? nameof(a.ITEM) : a.MAGIC != null ? nameof(a.MAGIC) : a.MONSTER != null ? nameof(a.MONSTER) : "")}{ls}" +
-                            $"{(a.ITEM != null ? a.ITEM.Value.ID : a.MAGIC != null ? a.MAGIC.ID : a.MONSTER != null ? a.MONSTER.ID : 0)}{ls}" +
+                            $"{(a.ITEM != null ? a.ITEM.Value.ID : a.MAGIC != null ? a.MAGIC.MagicDataID : a.MONSTER != null ? a.MONSTER.EnemyAttackID : 0)}{ls}" +
                         $"\"{(a.ITEM != null ? a.ITEM.Value.Name : a.MAGIC != null ? a.MAGIC.Name : a.MONSTER != null ? a.MONSTER.Name : new FF8String(""))}\"{ls}");
                     }
                     void addabilities(string fieldname, Debug_battleDat.Abilities[] abilites)

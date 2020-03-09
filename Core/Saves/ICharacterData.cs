@@ -16,7 +16,7 @@ namespace OpenVIII
     public interface ICharacterData : IDamageable, IJunctionTo, IUnlockable
     {
         bool CanPhoenixPinion { get; }
-        Kernel.Character_Stats CharacterStats { get; }
+        Kernel.CharacterStats CharacterStats { get; }
         Battle.CharacterInstanceInformation CII { get; }
         sbyte CurrentCrisisLevel { get; }
         uint Experience { get; set; }
@@ -31,7 +31,7 @@ namespace OpenVIII
         sbyte GenerateCrisisLevel();
         ushort MaxHP(Characters c);
         float PercentFullHP(Characters c);
-        IOrderedEnumerable<Kernel.Magic_Data> SortedMagic(Kernel.Stat Stat);
+        IOrderedEnumerable<Kernel.MagicData> SortedMagic(Kernel.Stat Stat);
         string ToString();
         bool Unlocked(List<Kernel.Abilities> unlocked, Kernel.Stat stat);
         bool Unlocked(Kernel.Stat stat);

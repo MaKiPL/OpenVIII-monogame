@@ -18,8 +18,8 @@
 
             #region Properties
 
-            public int Anim { get; private set; }
-            public int Set { get; private set; }
+            public int Anim { get;  }
+            public int Set { get;  }
 
             #endregion Properties
         }

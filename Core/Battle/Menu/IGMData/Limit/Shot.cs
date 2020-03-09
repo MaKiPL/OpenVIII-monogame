@@ -10,7 +10,7 @@ namespace OpenVIII.IGMData.Limit
 
         private Item_In_Menu ammo;
         private bool skipupdate;
-        public Damageable[] Targets { get; private set; }
+        public Damageable[] Targets { get; set; }
         private Slide<float> timeSlide;
 
         #endregion Fields
@@ -19,7 +19,7 @@ namespace OpenVIII.IGMData.Limit
         private IGMDataItem.Gradient.GF BLUEBAR { get => (IGMDataItem.Gradient.GF)ITEM[3, 0]; set => ITEM[3, 0] = value; }
         private IGMDataItem.Icon BRACKET { get => (IGMDataItem.Icon)ITEM[4, 0]; set => ITEM[4, 0] = value; }
         private IGMDataItem.Icon BULLET { get => (IGMDataItem.Icon)ITEM[0, 0]; set => ITEM[0, 0] = value; }
-        public float CriticalPercent { get; private set; }
+        public float CriticalPercent { get; set; }
         private IGMDataItem.Integer QTY { get => (IGMDataItem.Integer)ITEM[1, 0]; set => ITEM[1, 0] = value; }
 
         public IGMDataItem.Icon TIME { get => (IGMDataItem.Icon)ITEM[2, 0]; set => ITEM[2, 0] = value; }

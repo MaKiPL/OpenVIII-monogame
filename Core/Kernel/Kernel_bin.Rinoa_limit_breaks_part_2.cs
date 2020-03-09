@@ -18,7 +18,7 @@ namespace OpenVIII
             public override string ToString() => Name;
 
             public FF8String Name { get; private set; }
-            public Magic_ID MagicID { get; private set; }
+            public MagicID MagicID { get; private set; }
             public AttackType Attack_Type { get; private set; }
             public byte Attack_Power { get; private set; }
             public AttackFlags Attack_Flags { get; private set; }
@@ -30,7 +30,7 @@ namespace OpenVIII
             public byte Element_Percent { get; private set; }
             public byte Status_Attack { get; private set; }
             public Persistent_Statuses Statuses0 { get; private set; }
-            public Battle_Only_Statuses Statuses1 { get; private set; }
+            public BattleOnlyStatuses Statuses1 { get; private set; }
             public Angelo Angelo { get; private set; }
             public int ID { get; private set; }
 
@@ -58,12 +58,12 @@ namespace OpenVIII
                         Angelo = Angelo.None;
                         break;
                 }
-                var offset = br.ReadUInt16();
-                Name = new FF8StringReference(Memory.Strings[Strings.FileID.KERNEL].GetArchive(), Memory.Strings[Strings.FileID.KERNEL].GetFilenames()[0],
-                    Memory.Strings[Strings.FileID.KERNEL].GetFiles().subPositions[(int)((Strings.Kernel)Memory.Strings[Strings.FileID.KERNEL]).StringLocations[id].Item1]+offset,settings: (FF8StringReference.Settings.Namedic | FF8StringReference.Settings.MultiCharByte));
+                ushort offset = br.ReadUInt16();
+                Name = new FF8StringReference(Memory.Strings[Strings.FileID.Kernel].GetArchive(), Memory.Strings[Strings.FileID.Kernel].GetFileNames()[0],
+                    Memory.Strings[Strings.FileID.Kernel].GetFiles().SubPositions[(int)((Strings.Kernel)Memory.Strings[Strings.FileID.Kernel]).StringLocations[id].Item1]+offset,settings: (FF8StringReference.Settings.Namedic | FF8StringReference.Settings.MultiCharByte));
                 //0x0000	2 bytes Offset to name
                 //br.BaseStream.Seek(2, SeekOrigin.Current);
-                MagicID = (Magic_ID)br.ReadUInt16();
+                MagicID = (MagicID)br.ReadUInt16();
                 //0x0002  2 bytes Magic ID
                 Attack_Type = (AttackType)br.ReadByte();
                 //0x0004  1 byte Attack type
@@ -87,7 +87,7 @@ namespace OpenVIII
                 //0x000D  1 byte Status Attack Enabler
                 Statuses0 = (Persistent_Statuses)br.ReadUInt16();
                 //0x000E  2 bytes status_0; //statuses 0-7
-                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
+                Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
                 //0x0010  4 bytes status_1; //statuses 8-39
             }
             public static List<Rinoa_limit_breaks_part_2> Read(BinaryReader br)

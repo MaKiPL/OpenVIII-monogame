@@ -33,8 +33,8 @@ namespace OpenVIII.Fields
             return r;
         }
 
-        public List<Access> Accesses { get; private set; }
-        public List<VertexPositionColor> Vertices { get; private set; }
+        public List<Access> Accesses { get; set; }
+        public List<VertexPositionColor> Vertices { get; set; }
 
         public int Count => Vertices?.Count / 3 ?? 0;
 
@@ -63,8 +63,8 @@ namespace OpenVIII.Fields
                 Vertices = vs.Select((x, i) => new VertexPositionColor(Vector3.Transform(Vector3.Transform(Vector3.Transform(new Vector3(x.x, x.y , x.z), Cameras[0].RotationMatrix),move), scale), i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
             }
         }
-        public Vector3 max { get; private set; }
-        public Vector3 min { get; private set; }
-        public Vector3 distance { get; private set; }
+        public Vector3 max { get; set; }
+        public Vector3 min { get; set; }
+        public Vector3 distance { get; set; }
     }
 }

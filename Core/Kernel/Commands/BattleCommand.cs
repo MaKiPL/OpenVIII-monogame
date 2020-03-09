@@ -10,7 +10,7 @@ namespace OpenVIII
         /// Battle Commands
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Battle-commands"/>
-        public class BattleCommand
+        public sealed class BattleCommand
         {
             #region Fields
 
@@ -79,7 +79,8 @@ namespace OpenVIII
 
             #region Methods
 
-            public static IReadOnlyList<BattleCommand> Read(BinaryReader br) => Enumerable.Range(0, Count).Select(i => CreateInstance(br, i)).ToList();
+            public static IReadOnlyList<BattleCommand> Read(BinaryReader br) =>
+                Enumerable.Range(0, Count).Select(i => CreateInstance(br, i)).ToList();
 
             public override string ToString() => Name;
 
@@ -91,33 +92,33 @@ namespace OpenVIII
                 {
                     //No Mercy
                     case 17:
-                        name = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 0); //Fire Cross
-                        description = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 1);
+                        name = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 0); //Fire Cross
+                        description = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 1);
                         break;
                     //Sorcery
                     case 18:
-                        name = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 2); //Ice Strike
-                        description = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 3);
+                        name = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 2); //Ice Strike
+                        description = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 3);
                         break;
                     //Limit #1
                     case 20:
-                        name = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 4); //Desperado
-                        description = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 5);
+                        name = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 4); //Desperado
+                        description = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 5);
                         break;
                     //Limit #2
                     case 21:
-                        name = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 6); //Blood Pain
-                        description = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 7);
+                        name = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 6); //Blood Pain
+                        description = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 7);
                         break;
                     //Limit #3
                     case 22:
-                        name = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 8); //Massive Anchor
-                        description = Memory.Strings.Read(Strings.FileID.KERNEL, AltLimitID, 9);
+                        name = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 8); //Massive Anchor
+                        description = Memory.Strings.Read(Strings.FileID.Kernel, AltLimitID, 9);
                         break;
 
                     default:
-                        name = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2);
-                        description = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2 + 1);
+                        name = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2);
+                        description = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2 + 1);
                         break;
                 }
 

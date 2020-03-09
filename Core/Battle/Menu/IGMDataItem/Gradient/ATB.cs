@@ -103,7 +103,12 @@ namespace OpenVIII.IGMDataItem.Gradient
                     {
                         Color = Faded_Color = Color.Gray * .8f;
                     }
+<<<<<<< Updated upstream
                     else if ((Damageable.Statuses1 & Kernel.Battle_Only_Statuses.Stop) != 0)
+=======
+<<<<<<< Updated upstream
+                    else if ((Damageable.Statuses1 & Kernel_bin.Battle_Only_Statuses.Stop) != 0)
+>>>>>>> Stashed changes
                     {
                         Color = Faded_Color = Color.DarkBlue * .8f;
                     }
@@ -111,7 +116,22 @@ namespace OpenVIII.IGMDataItem.Gradient
                     {
                         Color = Faded_Color = Color.DarkCyan * .8f;
                     }
+<<<<<<< Updated upstream
                     else if ((Damageable.Statuses1 & Kernel.Battle_Only_Statuses.Haste) != 0)
+=======
+                    else if ((Damageable.Statuses1 & Kernel_bin.Battle_Only_Statuses.Haste) != 0)
+=======
+                    else if ((Damageable.Statuses1 & Kernel.BattleOnlyStatuses.Stop) != 0)
+                    {
+                        Color = Faded_Color = Color.DarkBlue * .8f;
+                    }
+                    else if ((Damageable.Statuses1 & Kernel.BattleOnlyStatuses.Slow) != 0)
+                    {
+                        Color = Faded_Color = Color.DarkCyan * .8f;
+                    }
+                    else if ((Damageable.Statuses1 & Kernel.BattleOnlyStatuses.Haste) != 0)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
                     {
                         Color = Faded_Color = Color.Violet * .8f;
                     }

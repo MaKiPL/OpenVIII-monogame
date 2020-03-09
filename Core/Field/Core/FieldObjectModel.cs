@@ -4,8 +4,8 @@ namespace OpenVIII.Fields
 {
     public sealed class FieldObjectModel
     {
-        public Int32 ModelId { get; private set; }
-        public Boolean IsVisible { get; private set; }
+        public Int32 ModelId { get;  }
+        public Boolean IsVisible { get;  }
 
         public void Change(Int32 modelId)
         {

@@ -216,9 +216,9 @@ namespace OpenVIII
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
         public struct Vertex
         {
-            public short x { get; private set; }
-            public short y { get; private set; }
-            public short z { get; private set; }
+            public short x { get;  }
+            public short y { get;  }
+            public short z { get;  }
 
             public Vertex(short x, short y, short z)
             {
@@ -542,7 +542,7 @@ namespace OpenVIII
         public struct VectorBoneGRP
         {
             private Vector3 Vector { get; set; }
-            public int BoneID { get; private set; }
+            public int BoneID { get;  }
             public float X => Vector.X;
             public float Y => Vector.Y;
             public float Z => Vector.Z;
@@ -566,8 +566,8 @@ namespace OpenVIII
                 this.TexturePointers = texturepointers;
             }
 
-            public VertexPositionTexture[] VPT { get; private set; }
-            public byte[] TexturePointers { get; private set; }
+            public VertexPositionTexture[] VPT { get;  }
+            public byte[] TexturePointers { get;  }
         }
 
         public Vector3 IndicatorPoint(Vector3 translationPosition)
@@ -1053,12 +1053,12 @@ namespace OpenVIII
 
         public struct AnimationYOffset
         {
-            public int ID { get; private set; }
-            public int Frame { get; private set; }
-            public float LowY { get; private set; }
-            public float HighY { get; private set; }
-            public float MidX { get; private set; }
-            public float MidZ { get; private set; }
+            public int ID { get;  }
+            public int Frame { get;  }
+            public float LowY { get;  }
+            public float HighY { get;  }
+            public float MidX { get;  }
+            public float MidZ { get;  }
 
             public AnimationYOffset(int iD, int frame, Vector4 lowhigh)
                 : this(iD, frame, lowhigh.X, lowhigh.Y, lowhigh.Z, lowhigh.W)
@@ -1259,7 +1259,7 @@ namespace OpenVIII
             }
         }
 
-        public List<AnimationSequence> Sequences { get; private set; }
+        public List<AnimationSequence> Sequences { get;  }
 
         public struct AnimationSequence
         {
@@ -1493,10 +1493,10 @@ namespace OpenVIII
 
         public int GetId => id;
 
-        public int altid { get; private set; }
-        public int id { get; private set; }
-        public EntityType entityType { get; private set; }
-        public string fileName { get; private set; }
-        public static Sections Flags { get; private set; }
+        public int altid { get;  }
+        public int id { get;  }
+        public EntityType entityType { get;  }
+        public string fileName { get;  }
+        public static Sections Flags { get;  }
     }
 }

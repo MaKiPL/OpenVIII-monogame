@@ -18,23 +18,23 @@ namespace OpenVIII.Fields
 
         #region Properties
 
-        public Background Background { get; private set; }
-        public Cameras Cameras { get; private set; }
-        public EventEngine EventEngine { get; private set; }
-        public Sections Flags { get; private set; }
-        public INF inf { get; private set; }
+        public Background Background { get;  }
+        public Cameras Cameras { get;  }
+        public EventEngine EventEngine { get;  }
+        public Sections Flags { get;  }
+        public INF inf { get;  }
         public Field_modes Mod { get; set; } = 0;
-        public MrtRat MrtRat { get; private set; }
-        public MSK msk { get; private set; }
-        public PMP pmp { get; private set; }
-        public IServices services { get; private set; }
-        public SFX sfx { get; private set; }
-        public TDW tdw { get; private set; }
-        public WalkMesh WalkMesh { get; private set; }
-        public ushort ID { get; private set; }
-        public string FileName { get; private set; }
-        public string ArchiveName { get; private set; }
-        public List<Scripts.Jsm.GameObject> jsmObjects { get; private set; } = null;
+        public MrtRat MrtRat { get;  }
+        public MSK msk { get;  }
+        public PMP pmp { get;  }
+        public IServices services { get;  }
+        public SFX sfx { get;  }
+        public TDW tdw { get;  }
+        public WalkMesh WalkMesh { get;  }
+        public ushort ID { get;  }
+        public string FileName { get;  }
+        public string ArchiveName { get;  }
+        public List<Scripts.Jsm.GameObject> jsmObjects { get;  } = null;
 
         #endregion Properties
 

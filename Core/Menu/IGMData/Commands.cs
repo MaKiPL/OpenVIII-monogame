@@ -167,7 +167,7 @@ namespace OpenVIII.IGMData
                 IEnumerable<Debug_battleDat.Abilities> ecattacks = e.Abilities.Where(x => x.MONSTER != null);
                 if (ecattacks.Count() == 1)
                 {
-                    Kernel.Enemy_Attacks_Data monster = ecattacks.First().MONSTER;
+                    Kernel.EnemyAttacksData monster = ecattacks.First().MONSTER;
                     TargetGroup.SelectTargetWindows(monster);
                     TargetGroup.ShowTargetWindows();
                 }

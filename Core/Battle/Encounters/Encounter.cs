@@ -38,10 +38,10 @@ namespace OpenVIII.Battle
 
         public string Filename => $"a0stg{Scenario.ToString("000")}.x";
 
-        public Vector3 AverageVector { get; private set; }
-        public Vector3 MinVector { get; private set; }
-        public Vector3 MaxVector { get; private set; }
-        public Vector3 MidVector { get; private set; }
+        public Vector3 AverageVector { get;  }
+        public Vector3 MinVector { get;  }
+        public Vector3 MaxVector { get;  }
+        public Vector3 MidVector { get;  }
 
         #endregion Properties
 

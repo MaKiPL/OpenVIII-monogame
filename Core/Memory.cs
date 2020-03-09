@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using OpenVIII.Kernel;
 
 #pragma warning disable CS0649
 
@@ -359,7 +360,7 @@ namespace OpenVIII
             // requires strings because it uses an array generated in strings.
             // saves data will reference kernel_bin.
             if (!token.IsCancellationRequested)
-                Kernel_Bin = new Kernel.KernelBin();
+                Kernel_Bin = KernelBin.CreateInstance();
             List<Action> actions = new List<Action>()
             {
                 // this has a soft requirement on kernel_bin. It checks for null so should work without it.

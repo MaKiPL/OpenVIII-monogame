@@ -11,7 +11,7 @@ namespace OpenVIII.Fields
     {
         private readonly OrderedDictionary<Int32, FieldObject> _objects = new OrderedDictionary<Int32, FieldObject>();
 
-        public FieldObject CurrentObject { get; private set; }
+        public FieldObject CurrentObject { get;  }
 
         public EventEngine()
         {

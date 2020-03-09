@@ -229,9 +229,9 @@ namespace OpenVIII
                     IGMData.Pool.GF.Create(),
                     new IGMDataItem.Box { Pos = new Rectangle(440, 345, 385, 66) }
                     )),
-                () => Data.TryAdd(SectionName.RemMag, IGMData_ConfirmRemMag.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 280), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(180, 174, 477, 216))),
-                () => Data.TryAdd(SectionName.RemAll, IGMData_ConfirmRemAll.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 279), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(170, 174, 583, 216))),
-                () => Data.TryAdd(SectionName.ConfirmChanges, IGMData_ConfirmChanges.Create(data: Memory.Strings.Read(Strings.FileID.MNGRP, 0, 73), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Memory.Strings.Read(Strings.FileID.MNGRP, 2, 268), pos: new Rectangle(280, 174, 367, 216))),
+                () => Data.TryAdd(SectionName.RemMag, IGMData_ConfirmRemMag.Create(data: Memory.Strings.Read(Strings.FileID.MenuGroup, 2, 280), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(180, 174, 477, 216))),
+                () => Data.TryAdd(SectionName.RemAll, IGMData_ConfirmRemAll.Create(data: Memory.Strings.Read(Strings.FileID.MenuGroup, 2, 279), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Strings.Name.No, pos: new Rectangle(170, 174, 583, 216))),
+                () => Data.TryAdd(SectionName.ConfirmChanges, IGMData_ConfirmChanges.Create(data: Memory.Strings.Read(Strings.FileID.MenuGroup, 0, 73), title: Icons.ID.NOTICE, opt1: Strings.Name.Yes, opt2: Memory.Strings.Read(Strings.FileID.MenuGroup, 2, 268), pos: new Rectangle(280, 174, 367, 216))),
             };
             Memory.ProcessActions(actions);
 

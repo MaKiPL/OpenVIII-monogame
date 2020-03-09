@@ -61,7 +61,7 @@ namespace OpenVIII
             private static string[] Extensions;
             private static List<string> _files;
 
-            public static bool Zzz { get; private set; }
+            public static bool Zzz { get;  }
 
             #endregion Fields
 

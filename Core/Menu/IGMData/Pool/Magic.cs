@@ -62,7 +62,9 @@ namespace OpenVIII.IGMData.Pool
 
         public Kernel.Stat LastStat { get; private set; }
 
-        public IEnumerable<Kernel.Magic_Data> Sort { get; private set; }
+
+        public IEnumerable<Kernel.MagicData> Sort { get; private set; }
+
 
         public IGM_Junction.Mode SortMode { get; private set; }
 
@@ -93,7 +95,9 @@ namespace OpenVIII.IGMData.Pool
             if (Battle || Sort == null)
                 if (Damageable.GetEnemy(out Enemy e))
                 {
-                    bool add(Kernel.Magic_Data magic)
+
+                    bool add(Kernel.MagicData magic)
+
                     {
                         if (pos >= Rows)
                             return false;
@@ -103,7 +107,9 @@ namespace OpenVIII.IGMData.Pool
                         }
                         return true;
                     }
-                    HashSet<Kernel.Magic_Data> Unique_Magic = new HashSet<Kernel.Magic_Data>();
+
+                    HashSet<Kernel.MagicData> Unique_Magic = new HashSet<Kernel.MagicData>();
+
                     foreach (var m in e.Abilities.Where(x => x.MAGIC != null))
                         Unique_Magic.Add(m.MAGIC);
                     foreach (var m in e.DrawList.Where(x => x.DATA != null))
@@ -127,44 +133,47 @@ namespace OpenVIII.IGMData.Pool
                         addMagic(ref pos, Memory.Kernel_Bin.MagicData[dat.Key], @default);
                     }
             else
-                foreach (Kernel.Magic_Data i in Sort)
+
+                foreach (Kernel_bin.Magic_Data i in Sort)
+
+
                 {
                     if (pos >= Rows) break;
                     if (skip-- > 0) continue;
-                    if (Source.Magics.ContainsKey(i.ID) && i.ID > 0 && skip-- <= 0)
+                    if (Source.Magics.ContainsKey(i.MagicDataID) && i.MagicDataID > 0 && skip-- <= 0)
                     {
                         switch (SortMode)
                         {
                             case IGM_Junction.Mode.Mag_Pool_Stat:
-                                if (i.J_Val[Stat] == 0)
+                                if (i.JVal[Stat] == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
                             case IGM_Junction.Mode.Mag_Pool_EL_D:
-                                if (i.J_Val[Stat] * i.EL_Def.Count() == 0)
+                                if (i.JVal[Stat] * i.ElDef.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
                             case IGM_Junction.Mode.Mag_Pool_EL_A:
-                                if (i.J_Val[Stat] * i.EL_Atk.Count() == 0)
+                                if (i.JVal[Stat] * i.ElAtk.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
                             case IGM_Junction.Mode.Mag_Pool_ST_D:
-                                if (i.J_Val[Stat] * i.ST_Def.Count() == 0)
+                                if (i.JVal[Stat] * i.StDef.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
                             case IGM_Junction.Mode.Mag_Pool_ST_A:
-                                if (i.J_Val[Stat] * i.ST_Atk.Count() == 0)
+                                if (i.JVal[Stat] * i.StAtk.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
@@ -474,14 +483,18 @@ namespace OpenVIII.IGMData.Pool
             }
         }
 
-        private void addMagic(ref int pos, Kernel.Magic_Data spell, Font.ColorID color = @default)
+
+        private void addMagic(ref int pos, Kernel.MagicData spell, Font.ColorID color = @default)
+
         {
             if (!Damageable.GetEnemy(out Enemy e))
             {
                 e = null;
             }
             bool j = false;
-            if (color == @default && e == null && Source != null && Source.StatJ.ContainsValue(spell.ID))
+
+            if (color == @default && e == null && Source != null && Source.StatJ.ContainsValue(spell.MagicDataID))
+
             {
                 //spell is junctioned
                 if (!Battle)
@@ -495,7 +508,7 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[pos, 1].Show();
             else
                 ITEM[pos, 1].Hide();
-            int count = Source?.Magics[spell.ID] ?? 0;
+            int count = Source?.Magics[spell.MagicDataID] ?? 0;
             ((IGMDataItem.Integer)ITEM[pos, 2]).Data = count;
             if (count <= 0)
                 ITEM[pos, 2].Hide();
@@ -503,7 +516,7 @@ namespace OpenVIII.IGMData.Pool
                 ITEM[pos, 2].Show();
             //makes it so you cannot junction a magic to a stat that does nothing.
             BLANKS[pos] = color == nostat ? true : false;
-            Contents[pos] = spell.ID;
+            Contents[pos] = spell.MagicDataID;
             pos++;
         }
 

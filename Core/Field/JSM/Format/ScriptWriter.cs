@@ -9,7 +9,7 @@ namespace OpenVIII.Fields.Scripts
 
         private readonly StringBuilder _sb;
         private Boolean _newLine;
-        public Boolean HasWhiteLine { get; private set; }
+        public Boolean HasWhiteLine { get; set; }
 
         public ScriptWriter(Int32 capacity = 8096)
         {
@@ -94,7 +94,7 @@ namespace OpenVIII.Fields.Scripts
                 _hasEmptyLine = _sw.HasWhiteLine;
             }
 
-            public Boolean IsChanged => _length != _sw._sb.Length;
+            public bool IsChanged => _length != _sw._sb.Length;
 
             public void Cancel()
             {

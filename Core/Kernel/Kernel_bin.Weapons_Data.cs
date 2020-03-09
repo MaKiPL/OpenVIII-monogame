@@ -27,7 +27,7 @@ namespace OpenVIII
             public byte HIT { get; private set; }//0x0007	1 byte Attack Parameter
             public byte STR { get; private set; }//0x0008	1 byte STR Bonus
             public byte Tier { get; private set; }//0x0009	1 byte Weapon Tier
-            public byte CRIT { get; private set; }//0x000A	1 byte Crit Bonus
+            public byte CRIT { get; private set; }//0x000A	1 byte Critical Bonus
             public bool Melee { get; private set; }//0x000B	1 byte Melee Weapon?
             public byte AltID { get; private set; }
             public byte ID { get; private set; }
@@ -36,7 +36,7 @@ namespace OpenVIII
             public void Read(BinaryReader br, int string_id = 0)
             {
                 ID = checked((byte)string_id);
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, string_id);
+                Name = Memory.Strings.Read(Strings.FileID.Kernel, id, string_id);
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 Renzokuken = (Renzokeken_Finisher)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
                 Unknown0 = br.ReadByte(); //0x0003	1 byte Unknown
@@ -51,7 +51,7 @@ namespace OpenVIII
                 HIT = br.ReadByte();//0x0007	1 byte Attack Parameter
                 STR = br.ReadByte();//0x0008	1 byte STR Bonus
                 Tier = br.ReadByte();//0x0009	1 byte Weapon Tier
-                CRIT = br.ReadByte();//0x000A	1 byte Crit Bonus
+                CRIT = br.ReadByte();//0x000A	1 byte Critical Bonus
                 Melee = br.ReadByte() == 0 ? false : true;//0x000B	1 byte Melee Weapon?
             }
 

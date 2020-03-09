@@ -100,7 +100,7 @@ namespace OpenVIII
             /// Total exp to the next level up
             /// </summary>
             public ushort EXPtoNextLevel => Level >= 100 ? (ushort)0 :
-                (ushort)Math.Abs((Level * JunctionableGFsData.EXPperLevel) - Experience);
+                (ushort)Math.Abs((Level * JunctionableGFsData.ExpPerLevel) - Experience);
 
             /// <summary>
             /// Gf ability data
@@ -117,13 +117,13 @@ namespace OpenVIII
             /// <summary>
             /// Kernel bin data on this GF
             /// </summary>
-            private Kernel.Junctionable_GFs_Data JunctionableGFsData
+            private Kernel.JunctionableGFsData JunctionableGFsData
             {
                 get
                 {
                     if (
                         Memory.Kernel_Bin.JunctionableGFsData != null &&
-                        Memory.Kernel_Bin.JunctionableGFsData.TryGetValue(ID, out Kernel.Junctionable_GFs_Data value))
+                        Memory.Kernel_Bin.JunctionableGFsData.TryGetValue(ID, out Kernel.JunctionableGFsData value))
                     {
                         return value;
                     }
@@ -143,10 +143,10 @@ namespace OpenVIII
             {
                 get
                 {
-                    Kernel.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
+                    Kernel.JunctionableGFsData junctionableGFsData = JunctionableGFsData;
                     if (junctionableGFsData != null)
                     {
-                        uint ret = (Experience / junctionableGFsData.EXPperLevel) + 1;
+                        uint ret = (Experience / junctionableGFsData.ExpPerLevel) + 1;
                         return ret > 100 ? (byte)100 : (byte)ret;
                     }
                     return 0;
@@ -305,10 +305,10 @@ namespace OpenVIII
             /// </summary>
             public override ushort MaxHP()
             {
-                Kernel.Junctionable_GFs_Data junctionableGFsData = JunctionableGFsData;
+                Kernel.JunctionableGFsData junctionableGFsData = JunctionableGFsData;
                 if (junctionableGFsData != null)
                 {
-                    int max = ((Level * Level / 25) + 250 + junctionableGFsData.HP_MOD * Level) * (Percent + 100) / 100;
+                    int max = ((Level * Level / 25) + 250 + junctionableGFsData.HPMod * Level) * (Percent + 100) / 100;
                     return (ushort)(max > Kernel.KernelBin.MaxHPValue ? Kernel.KernelBin.MaxHPValue : max);
                 }
                 return 0;
@@ -345,7 +345,7 @@ namespace OpenVIII
                     Learning = Kernel.Abilities.None;
             }
 
-            public override sbyte StatusResistance(Kernel.Battle_Only_Statuses s) => sbyte.MaxValue;
+            public override sbyte StatusResistance(Kernel.BattleOnlyStatuses s) => sbyte.MaxValue;
 
             public override sbyte StatusResistance(Kernel.Persistent_Statuses s) => sbyte.MaxValue;
 

@@ -22,9 +22,9 @@ namespace OpenVIII.Battle
 
             #region Properties
 
-            public List<Vector4> Quads { get; private set; }
-            public List<Vector3> Triangles { get; private set; }
-            public List<Vector3> Vertices { get; private set; }
+            public List<Vector4> Quads { get;  }
+            public List<Vector3> Triangles { get;  }
+            public List<Vector3> Vertices { get;  }
 
             #endregion Properties
         }

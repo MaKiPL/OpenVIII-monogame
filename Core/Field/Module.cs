@@ -41,7 +41,7 @@ namespace OpenVIII.Fields
         public static Background Background => Archive?.Background;
         public static Cameras Cameras => Archive?.Cameras;
         private static EventEngine EventEngine => Archive?.EventEngine;
-        public static FieldMenu FieldMenu { get; private set; }
+        public static FieldMenu FieldMenu { get;  }
         private static INF inf => Archive?.inf;
         public static FF8String AreaName => Archive?.GetAreaNames()?.FirstOrDefault();
 

@@ -16,7 +16,7 @@ namespace OpenVIII
             {
                 base.Refresh();
                 if (CONTAINER != null && Memory.State != null)
-                    ((IGMDataItem.Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Memory.State.LocationID);
+                    ((IGMDataItem.Box)CONTAINER).Data = Memory.Strings.Read(Strings.FileID.AreaNames, 0, Memory.State.LocationID);
             }
 
             #endregion Methods

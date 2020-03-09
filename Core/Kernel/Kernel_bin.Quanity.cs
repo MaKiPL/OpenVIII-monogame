@@ -5,7 +5,7 @@ namespace OpenVIII
     namespace Kernel
     {
         [Flags]
-        public enum Quanity : byte
+        public enum Quantity : byte
         {
             //0% = 0x00,
             //6.25% = 0x01,

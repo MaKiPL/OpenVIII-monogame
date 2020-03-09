@@ -7,7 +7,11 @@ namespace OpenVIII.IGMData
     {
         #region Fields
 
+<<<<<<< Updated upstream
         private Kernel.Magic_Data _magicData;
+=======
+        private Kernel.MagicData _magicData;
+>>>>>>> Stashed changes
 
         #endregion Fields
 
@@ -15,7 +19,11 @@ namespace OpenVIII.IGMData
 
         public int Casts { get => Number.Data; private set => Number.Data = value; }
 
+<<<<<<< Updated upstream
         public Kernel.Magic_Data MagicData
+=======
+        public Kernel.MagicData MagicData
+>>>>>>> Stashed changes
         {
             get => _magicData; private set
             {
@@ -153,10 +161,10 @@ namespace OpenVIII.IGMData
             BLANKS.SetAll(true);
             Spell = new IGMDataItem.Text { Pos = SIZE[0] };
             Number = new IGMDataItem.Integer { Pos = SIZE[1], Spaces = 3, NumType = Icons.NumType.SysFntBig };
-            Times = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 65], Pos = SIZE[2] };
-            Do_Over = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 67], Pos = SIZE[3] };
+            Times = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.Kernel][30, 65], Pos = SIZE[2] };
+            Do_Over = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.Kernel][30, 67], Pos = SIZE[3] };
             BLANKS[3] = false;
-            Cast = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 66], Pos = SIZE[6] };
+            Cast = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.Kernel][30, 66], Pos = SIZE[6] };
             BLANKS[6] = false;
             TargetGroup = Target.Group.Create(Damageable);
             TargetGroup.Hide();

@@ -4,7 +4,7 @@ namespace OpenVIII.Fields
 {
     public sealed class FieldObjectAnimation
     {
-        public Int32 BaseAnimationId { get; private set; }
+        public Int32 BaseAnimationId { get;  }
         public Int32 FirstFrame { get; set; }
         public Int32 LastFrame { get; set; }
 

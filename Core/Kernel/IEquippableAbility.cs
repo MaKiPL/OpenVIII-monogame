@@ -2,8 +2,11 @@
 {
     namespace Kernel
     {
+<<<<<<< Updated upstream:Core/Kernel/Kernel_bin.Equipable_Abilities.cs
         #region Classes
 
+=======
+>>>>>>> Stashed changes:Core/Kernel/IEquippableAbility.cs
         /// <summary>
         /// Equippable Abilities that don't go in the 3 command slots.
         /// </summary>
@@ -12,7 +15,11 @@
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Character-abilities"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Party-abilities"/>
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/GF-abilities"/>
+<<<<<<< Updated upstream:Core/Kernel/Kernel_bin.Equipable_Abilities.cs
         public abstract class EquippableAbility : Ability
+=======
+        public interface IEquippableAbility : IAbility
+>>>>>>> Stashed changes:Core/Kernel/IEquippableAbility.cs
         {
             #region Constructors
 
@@ -22,7 +29,5 @@
 
             #endregion Constructors
         }
-
-        #endregion Classes
     }
 }

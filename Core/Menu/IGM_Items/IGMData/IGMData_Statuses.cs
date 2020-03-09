@@ -69,9 +69,9 @@ namespace OpenVIII
             protected override void Init()
             {
                 Misc = new Dictionary<Items, FF8String> {
-                { Items.HP,Memory.Strings.Read(Strings.FileID.MNGRP,0,26)},
-                { Items.LV,Memory.Strings.Read(Strings.FileID.MNGRP,0,27)},
-                { Items.ForwardSlash,Memory.Strings.Read(Strings.FileID.MNGRP,0,25)},
+                { Items.HP,Memory.Strings.Read(Strings.FileID.MenuGroup,0,26)},
+                { Items.LV,Memory.Strings.Read(Strings.FileID.MenuGroup,0,27)},
+                { Items.ForwardSlash,Memory.Strings.Read(Strings.FileID.MenuGroup,0,25)},
                 };
                 base.Init();
                 Target = Faces.ID.Blank;

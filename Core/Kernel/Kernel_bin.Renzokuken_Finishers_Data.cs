@@ -20,7 +20,7 @@ namespace OpenVIII
 
             public override string ToString() => Name;
 
-            public Magic_ID MagicID { get; private set; }          //0x0004	2 bytes Magic ID
+            public MagicID MagicID { get; private set; }          //0x0004	2 bytes Magic ID
             public AttackType Attack_Type { get; private set; }   //0x0006	1 byte Attack Type
             public byte Unknown0 { get; private set; }             //0x0007	1 byte Unknown
             public byte Attack_Power { get; private set; }         //0x0008	1 byte Attack power
@@ -33,14 +33,14 @@ namespace OpenVIII
             public byte Status_Attack { get; private set; }        //0x000F	1 byte Status Attack Enabler
             public byte[] Unknown2 { get; private set; }           //0x0010	2 bytes Unknown
             public Persistent_Statuses Statuses0 { get; private set; }       //0x0012	2 bytes status_0; //statuses 0-7
-            public Battle_Only_Statuses Statuses1 { get; private set; }       //0x0014	4 bytes status_1; //statuses 8-39
+            public BattleOnlyStatuses Statuses1 { get; private set; }       //0x0014	4 bytes status_1; //statuses 8-39
 
             public void Read(BinaryReader br, int i)
             {
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                Name = Memory.Strings.Read(Strings.FileID.Kernel, id, i * 2);
+                Description = Memory.Strings.Read(Strings.FileID.Kernel, id, i * 2 + 1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
-                MagicID = (Magic_ID)br.ReadUInt16();          //0x0004	2 bytes Magic ID
+                MagicID = (MagicID)br.ReadUInt16();          //0x0004	2 bytes Magic ID
                 Attack_Type = (AttackType)br.ReadByte();   //0x0006	1 byte Attack Type
                 Unknown0 = br.ReadByte();             //0x0007	1 byte Unknown
                 Attack_Power = br.ReadByte();         //0x0008	1 byte Attack power
@@ -53,7 +53,7 @@ namespace OpenVIII
                 Status_Attack = br.ReadByte();        //0x000F	1 byte Status Attack Enabler
                 Unknown2 = br.ReadBytes(2);             //0x0010	2 bytes Unknown
                 Statuses0 = (Persistent_Statuses)br.ReadUInt16();       //0x0012	2 bytes status_0; //statuses 0-7
-                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();       //0x0014	4 bytes status_1; //statuses 8-39
+                Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();       //0x0014	4 bytes status_1; //statuses 8-39
             }
 
             public static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> Read(BinaryReader br)

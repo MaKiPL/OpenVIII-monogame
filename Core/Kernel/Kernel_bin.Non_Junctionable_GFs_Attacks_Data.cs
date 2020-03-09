@@ -18,7 +18,7 @@ namespace OpenVIII
             public FF8String Name { get; private set; }
 
             //0x0000	2 bytes Offset to GF attack name
-            public Magic_ID MagicID { get; private set; }
+            public MagicID MagicID { get; private set; }
 
             //0x0002	2 bytes Magic ID(decides what animation to play)
             public AttackType Attack_Type { get; private set; }
@@ -52,7 +52,7 @@ namespace OpenVIII
             //0x20 - Wind
             //0x40 - Water
             //0x80 - Holy
-            public Battle_Only_Statuses Statuses1 { get; private set; }
+            public BattleOnlyStatuses Statuses1 { get; private set; }
 
             //0x000C	1 byte Status 1
 
@@ -143,11 +143,11 @@ namespace OpenVIII
                         Angelo = Angelo.None;
                         break;
                 }
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i);
+                Name = Memory.Strings.Read(Strings.FileID.Kernel, id, i);
                 int n =Name.Length;
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 //0x0000	2 bytes Offset to GF attack name
-                MagicID = (Magic_ID)br.ReadUInt16();
+                MagicID = (MagicID)br.ReadUInt16();
                 //0x0002	2 bytes Magic ID(decides what animation to play)
                 Attack_Type = (AttackType)br.ReadByte();
                 //0x0004	1 byte Attack type
@@ -163,7 +163,7 @@ namespace OpenVIII
                 //0x0009	2 bytes Unknown
                 Element = (Element)br.ReadByte();
                 //0x000B	1 byte Element
-                Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();
+                Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
                 //0x000C	1 byte Status 1
                 //0x000D	1 byte Status 2
                 //0x000E	1 byte Status 3

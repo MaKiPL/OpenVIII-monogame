@@ -62,7 +62,7 @@ namespace OpenVIII.Battle
 
             #region Properties
 
-            public int Frames { get; private set; }
+            public int Frames { get;  }
 
             #endregion Properties
 

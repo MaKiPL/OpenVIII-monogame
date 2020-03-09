@@ -70,11 +70,13 @@ namespace OpenVIII
                     case Angelo.Search:
                         Saves.CharacterData c = Memory.State[Characters.Rinoa_Heartilly];
                         if (!(c.IsGameOver ||
-                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Sleep) ||
-                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Stop) ||
-                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Confuse) ||
+
+                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Sleep) ||
+                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Stop) ||
+                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Confuse) ||
                             c.Statuses0.HasFlag(Kernel.Persistent_Statuses.Berserk) ||
-                            c.Statuses1.HasFlag(Kernel.Battle_Only_Statuses.Angel_Wing)))
+                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.AngelWing)))
+
                             return Memory.Random.Next(256) < 8;
                         break;
                 }

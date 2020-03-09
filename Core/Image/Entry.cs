@@ -12,8 +12,8 @@ namespace OpenVIII
         public Vector2 Location;
         public Vector2 Offset;
         public Vector2 Size;
-        public byte[] UNK;
-        private Loc loc;
+        public byte[] Unk;
+        private Loc _loc;
 
         #endregion Fields
 
@@ -21,7 +21,7 @@ namespace OpenVIII
 
         public Entry()
         {
-            UNK = new byte[2];
+            Unk = new byte[2];
             File = 0;
             Part = 1;
         }
@@ -103,7 +103,7 @@ namespace OpenVIII
             Location.X = br.ReadByte();
             Location.Y = br.ReadByte();
 
-            UNK = br.ReadBytes(2);
+            Unk = br.ReadBytes(2);
             Size.X = br.ReadByte();
             Offset.X = br.ReadSByte();
             Size.Y = br.ReadByte();
@@ -117,7 +117,7 @@ namespace OpenVIII
             CurrentPos = loc;
             Location.X = br.ReadByte();
             Location.Y = br.ReadByte();
-            UNK = br.ReadBytes(2);
+            Unk = br.ReadBytes(2);
             Size.X = br.ReadByte();
             Offset.X = br.ReadSByte();
             Size.Y = br.ReadByte();
@@ -127,7 +127,7 @@ namespace OpenVIII
             File = fid;
         }
 
-        public void SetLoc(Loc value) => loc = value;
+        public void SetLoc(Loc value) => _loc = value;
 
         public void SetTrim_1stPass(Rectangle value, bool skipoffset = false)
         {

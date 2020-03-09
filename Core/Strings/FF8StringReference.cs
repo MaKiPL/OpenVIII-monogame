@@ -178,7 +178,7 @@ namespace OpenVIII
                     if (i >= 0)
                     {
                         byte id = (byte)(value[i + 1] - 0x20);
-                        byte[] newdata = Memory.Strings.Read(Strings.FileID.NAMEDIC, 0, id);
+                        byte[] newdata = Memory.Strings.Read(Strings.FileID.Namedic, 0, id);
                         byte[] end = value.Skip(2 + i).ToArray();
 
                         Array.Resize(ref value, Length + newdata.Length - 2);

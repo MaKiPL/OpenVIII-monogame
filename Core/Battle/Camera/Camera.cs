@@ -44,14 +44,14 @@ namespace OpenVIII.Battle
 
         #region Properties
 
-        public Vector3 camPosition { get; private set; }
-        public Vector3 camTarget { get; private set; }
-        public Matrix projectionMatrix { get; private set; }
+        public Vector3 camPosition { get;  }
+        public Vector3 camTarget { get;  }
+        public Matrix projectionMatrix { get;  }
 
-        //public Matrix worldMatrix { get; private set; }
-        public Matrix viewMatrix { get; private set; }
+        //public Matrix worldMatrix { get;  }
+        public Matrix viewMatrix { get;  }
 
-        public uint EndOffset { get; private set; }
+        public uint EndOffset { get;  }
 
         #endregion Properties
 

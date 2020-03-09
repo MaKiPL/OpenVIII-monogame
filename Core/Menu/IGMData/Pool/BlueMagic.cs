@@ -6,11 +6,19 @@ namespace OpenVIII.IGMData.Pool
     /// <summary>
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
+<<<<<<< Updated upstream
     public class BlueMagic : IGMData.Pool.Base<Saves.Data, Kernel.Blue_Magic_Quistis_limit_break>
     {
         #region Fields
 
         private List<Kernel.Blue_Magic> unlocked = new List<Kernel.Blue_Magic>();
+=======
+    public class BlueMagic : IGMData.Pool.Base<Saves.Data, Kernel.BlueMagicQuistisLimitBreak>
+    {
+        #region Fields
+
+        private List<Kernel.BlueMagic> unlocked = new List<Kernel.BlueMagic>();
+>>>>>>> Stashed changes
 
         #endregion Fields
 
@@ -49,7 +57,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs_OKAY()
         {
-            Kernel.Blue_Magic_Quistis_limit_break c = Contents[CURSOR_SELECT];
+            Kernel.BlueMagicQuistisLimitBreak c = Contents[CURSOR_SELECT];
             //c.Target;
             Target_Group.SelectTargetWindows(c);
             Target_Group.ShowTargetWindows();
@@ -59,8 +67,8 @@ namespace OpenVIII.IGMData.Pool
         public override void Refresh()
         {
             if (Memory.State == null || Memory.State.LimitBreakQuistisUnlockedBlueMagic == null) return;
-            Kernel.Blue_Magic bm = 0;
-            unlocked = new List<Kernel.Blue_Magic>();
+            Kernel.BlueMagic bm = 0;
+            unlocked = new List<Kernel.BlueMagic>();
             foreach (bool b in Memory.State.LimitBreakQuistisUnlockedBlueMagic)
             {
                 if (b)

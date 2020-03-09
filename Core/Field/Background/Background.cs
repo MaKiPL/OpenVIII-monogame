@@ -89,7 +89,7 @@ namespace OpenVIII.Fields
 
         #region Properties
 
-        public TimeSpan CurrentTime { get; private set; }
+        public TimeSpan CurrentTime { get;  }
         public Tiles GetTiles => tiles;
         public bool HasSpriteBatchTexturesLoaded => GetTexturesReadyToDrawClassicSpriteBatch()?.Count > 0;
         public int Height { get => OutputDims.Height; private set => OutputDims.Height = value; }
@@ -98,8 +98,8 @@ namespace OpenVIII.Fields
         public bool IsHalfBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.halfadd) ?? false;
         public bool IsQuarterBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.quarteradd) ?? false;
         public bool IsSubtractBlendMode => tiles?.Any(x => x.BlendMode == BlendMode.subtract) ?? false;
-        public Vector3 MouseLocation { get; private set; }
-        public TimeSpan TotalTime { get; private set; }
+        public Vector3 MouseLocation { get;  }
+        public TimeSpan TotalTime { get;  }
         public int Width { get => OutputDims.Width; private set => OutputDims.Width = value; }
 
         #endregion Properties

@@ -20,7 +20,7 @@ namespace OpenVIII
 
             protected override void DefaultValues() => SetValues(Memory.Archives.A_MENU, "areames.dc1");
 
-            protected override void GetFileLocations(BinaryReader br)
+            protected virtual void GetFileLocations(BinaryReader br)
             {
             }
 

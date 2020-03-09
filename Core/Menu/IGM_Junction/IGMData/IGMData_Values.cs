@@ -109,35 +109,35 @@ namespace OpenVIII
                 {
                     Enum flags = null;
                     byte spell = spells[i];
-                    Kernel.Magic_Data magic_Data = Memory.Kernel_Bin.MagicData[spell];
+                    Kernel.MagicData magic_Data = Memory.Kernel_Bin.MagicData[spell];
                     switch (stat)
                     {
                         case Kernel.Stat.EL_Atk:
-                            flags = magic_Data.EL_Atk;
+                            flags = magic_Data.ElAtk;
                             break;
 
                         case Kernel.Stat.EL_Def_1:
                         case Kernel.Stat.EL_Def_2:
                         case Kernel.Stat.EL_Def_3:
                         case Kernel.Stat.EL_Def_4:
-                            flags = magic_Data.EL_Def;
+                            flags = magic_Data.ElDef;
                             break;
 
                         case Kernel.Stat.ST_Atk:
-                            flags = magic_Data.ST_Atk;
+                            flags = magic_Data.StAtk;
                             break;
 
                         case Kernel.Stat.ST_Def_1:
                         case Kernel.Stat.ST_Def_2:
                         case Kernel.Stat.ST_Def_3:
                         case Kernel.Stat.ST_Def_4:
-                            flags = magic_Data.ST_Def;
+                            flags = magic_Data.StDef;
                             break;
                     }
                     if (flags != null && Damageable.GetCharacterData(out Saves.CharacterData c))
                         foreach (Enum flag in availableFlags.Where(flags.HasFlag))
                         {
-                            if (c.Magics.TryGetByKey(spell, out byte count) && magic_Data.J_Val.TryGetValue(stat, out byte value))
+                            if (c.Magics.TryGetByKey(spell, out byte count) && magic_Data.JVal.TryGetValue(stat, out byte value))
                             {
                                 int t = total[(T)flag] + (value * count / maxspellcount);
                                 total[(T)flag] = (byte)MathHelper.Clamp(t, 0, max);

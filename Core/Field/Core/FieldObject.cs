@@ -20,7 +20,7 @@ namespace OpenVIII.Fields
         }
 
         public Boolean IsActive { get; set; } = true;
-        public Characters CharacterId { get; private set; }
+        public Characters CharacterId { get;  }
 
         public void BindChracter(Characters characterId)
         {

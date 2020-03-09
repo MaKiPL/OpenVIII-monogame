@@ -101,7 +101,7 @@ namespace OpenVIII
                     Data.TryAdd(SectionName.TopMenu, IGMData_TopMenu.Create((from i in Enumerable.Range(0,keys.Length) select i).ToDictionary(x=>keys[x],x=>values[x])));
                     else Data.TryAdd(SectionName.TopMenu, null);
                 },
-                () => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MNGRP, 0, 2), Pos = new Rectangle(615, 0, 225, 66)}),
+                () => Data.TryAdd(SectionName.Title, new IGMDataItem.Box { Data = Memory.Strings.Read(Strings.FileID.MenuGroup, 0, 2), Pos = new Rectangle(615, 0, 225, 66)}),
                 () => Data.TryAdd(SectionName.UseItemGroup, IGMData.Group.Base.Create(IGMData_Statuses.Create(),IGMData.Pool.Item.Create(),IGMData_TargetPool.Create()))
                 
             };

@@ -60,9 +60,10 @@ namespace OpenVIII
 
             private const string unk = "Unknown";
 
-            public Kernel.Magic_Data MAGIC => (kernelId & KernelFlag.magic) != 0 && Memory.Kernel_Bin.MagicData.Count > abilityId ? Memory.Kernel_Bin.MagicData[abilityId] : null;
+            public Kernel.MagicData MAGIC => (kernelId & KernelFlag.magic) != 0 && Memory.Kernel_Bin.MagicData.Count > abilityId ? Memory.Kernel_Bin.MagicData[abilityId] : null;
             public Item_In_Menu? ITEM => (kernelId & KernelFlag.item) != 0 && Memory.MItems != null && Memory.MItems.Items.Count > abilityId ? Memory.MItems?.Items[abilityId] : null;
-            public Kernel.Enemy_Attacks_Data MONSTER => (kernelId & KernelFlag.monster) != 0 && Memory.Kernel_Bin.EnemyAttacksData.Count > abilityId ? Memory.Kernel_Bin.EnemyAttacksData[abilityId] : null;
+            public Kernel.EnemyAttacksData MONSTER => (kernelId & KernelFlag.monster) != 0 && Memory.Kernel_Bin.EnemyAttacksData.Count > abilityId ? Memory.Kernel_Bin.EnemyAttacksData[abilityId] : null;
+
 
             public override string ToString()
             {
@@ -283,8 +284,9 @@ namespace OpenVIII
             public byte ID;
             public byte unk;
 
-            public Kernel.Magic_Data DATA => Memory.Kernel_Bin.MagicData.Count > ID ? Memory.Kernel_Bin.MagicData[ID] : null;
-            public Kernel.Junctionable_GFs_Data JGFDATA => Memory.Kernel_Bin.JunctionableGFsData.ContainsKey(GF) ? Memory.Kernel_Bin.JunctionableGFsData[GF] : null;
+            public Kernel.MagicData DATA => Memory.Kernel_Bin.MagicData.Count > ID ? Memory.Kernel_Bin.MagicData[ID] : null;
+            public Kernel.JunctionableGFsData JGFDATA => Memory.Kernel_Bin.JunctionableGFsData.ContainsKey(GF) ? Memory.Kernel_Bin.JunctionableGFsData[GF] : null;
+
 
             // per IFRIT gf's BattleID is between 0x40 and 0x4F. And they seem to be in order of GFs enum.
             public GFs GF => ID > 0x4F || ID < 0x40 ? GFs.Blank : (GFs)(ID - 0x40);

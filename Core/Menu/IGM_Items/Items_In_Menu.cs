@@ -156,9 +156,9 @@ namespace OpenVIII
         /// </summary>
         public Kernel.Abilities Learn => Type == _Type.GF_Learn ? (Kernel.Abilities)b2 : Kernel.Abilities.None;
 
-        public Kernel.Blue_Magic Learned_Blue_Magic => Type == _Type.Blue_Magic ? (Kernel.Blue_Magic)b2 : Kernel.Blue_Magic.None;
+        public Kernel.BlueMagic Learned_Blue_Magic => Type == _Type.Blue_Magic ? (Kernel.BlueMagic)b2 : Kernel.BlueMagic.None;
         public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
-        public Kernel.Non_battle_Items_Data Non_Battle => Battle == null ? Memory.Kernel_Bin.NonBattleItemsData[ID - (Memory.Kernel_Bin.BattleItemsData?.Count ?? 0)] : null;
+        public Kernel.NonBattleItemsData Non_Battle => Battle == null ? Memory.Kernel_Bin.NonBattleItemsData[ID - (Memory.Kernel_Bin.BattleItemsData?.Count ?? 0)] : null;
         public byte Palette => 9;
         public Kernel.Stat Stat => Type == _Type.Stat ? (Kernel.Stat)b3 : Kernel.Stat.None;
         public byte Stat_Increase => (byte)(Type == _Type.Stat ? b2 : 0);
@@ -327,7 +327,7 @@ namespace OpenVIII
         /// <returns></returns>
         public bool TestBlueMagic()
         {
-            if (Learned_Blue_Magic != Kernel.Blue_Magic.None)
+            if (Learned_Blue_Magic != Kernel.BlueMagic.None)
                 return !Memory.State.LimitBreakQuistisUnlockedBlueMagic[(int)Learned_Blue_Magic];
             return false;
         }

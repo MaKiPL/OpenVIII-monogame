@@ -313,7 +313,7 @@
         /// <summary>
         /// Path and filename of file.
         /// </summary>
-        public string DecodedFileName { get; private set; }
+        public string DecodedFileName { get;  }
 
         /// <summary>
         /// Dynamic Sound Effect Interface for class allows control out of class. Mode must be in STATE_MACH
@@ -330,7 +330,7 @@
         /// <summary>
         /// True if file is open.
         /// </summary>
-        public bool FileOpened { get; private set; }
+        public bool FileOpened { get;  }
 
         /// <summary>
         /// returns Frames per second or if that is 0. it will return the Time_Base ratio. This is
@@ -372,7 +372,7 @@
         /// <summary>
         /// Is the class disposed of. If true calling Dispose() does nothing.
         /// </summary>
-        public bool IsDisposed { get; private set; } = false;
+        public bool IsDisposed { get;  } = false;
 
         /// <summary>
         /// Sample Count that loop starts from.
@@ -382,22 +382,22 @@
         /// <summary>
         /// Current media type being processed.
         /// </summary>
-        public AVMediaType MediaType { get; private set; }
+        public AVMediaType MediaType { get;  }
 
         /// <summary>
         /// Metadata container for tags.
         /// </summary>
-        public Dictionary<String, String> Metadata { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<String, String> Metadata { get;  } = new Dictionary<string, string>();
 
         /// <summary>
         /// SoundEffect for class allows control out of class. Mode must be in PROCESS_ALL
         /// </summary>
-        public SoundEffect SoundEffect { get; private set; }
+        public SoundEffect SoundEffect { get;  }
 
         /// <summary>
         /// SoundEffectInterface for class. allows for more control than just playing the above soundeffect.
         /// </summary>
-        public SoundEffectInstance SoundEffectInstance { get; private set; }
+        public SoundEffectInstance SoundEffectInstance { get;  }
 
         /// <summary>
         /// Stopwatch tracks the time audio has played so video can sync or loops can be looped.

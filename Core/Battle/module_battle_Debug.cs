@@ -112,7 +112,7 @@ namespace OpenVIII
         public static Camera Camera { get; private set; }
         public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
 
-        //Natively the game we are rewritting works in 15 FPS per second
+        //Natively the game we are rewriting works in 15 FPS per second
         //-10;
         public static Vector3 CamTarget { get => camTarget; private set => camTarget = value; }
 

@@ -204,8 +204,7 @@ namespace OpenVIII
                 Loc[] locations = new Loc[br.ReadUInt32()];
                 for (int i = 0; i < locations.Length; i++)
                 {
-                    locations[i].Seek = br.ReadUInt16();
-                    locations[i].Length = br.ReadUInt16();
+                    locations[i] = (br.ReadUInt16(), br.ReadUInt16());
                 }
                 Entries = new Dictionary<ID, EntryGroup>(locations.Length + 10);
                 for (int i = 0; i < locations.Length; i++)

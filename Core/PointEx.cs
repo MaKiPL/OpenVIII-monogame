@@ -122,7 +122,7 @@ namespace OpenVIII
         /// <param name="statuses">varible you need to number of flags set.</param>
         /// <returns>Count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel.J_Statuses statuses)
+        public static uint Count(this Kernel.JunctionStatuses statuses)
         {
             uint v = (uint)statuses;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
@@ -149,7 +149,7 @@ namespace OpenVIII
         /// <param name="element">varible you need to number of flags set.</param>
         /// <returns>Count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel.Battle_Only_Statuses element)
+        public static uint Count(this Kernel.BattleOnlyStatuses element)
         {
             uint v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary

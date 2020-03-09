@@ -8,8 +8,8 @@ namespace OpenVIII.Fields.Scripts
     {
         public sealed class IndexedInstruction
         {
-            public Int32 Index { get; private set; }
-            public JsmInstruction Instruction { get; private set; }
+            public Int32 Index { get;  }
+            public JsmInstruction Instruction { get;  }
 
             public IndexedInstruction(Int32 index, JsmInstruction instruction)
             {

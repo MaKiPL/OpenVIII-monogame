@@ -37,7 +37,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public FF8String AreaName()
         {
-            FF8StringReference s = Memory.Strings[Strings.FileID.AREAMES][0, _areaId];
+            FF8StringReference s = Memory.Strings[Strings.FileID.AreaNames][0, _areaId];
             if (s.Length > 0)
                 return s;
             return null;

@@ -91,19 +91,20 @@ namespace OpenVIII
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
             {
-                r.Statuses1 |= Kernel.Battle_Only_Statuses.Protect;
+
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Protect;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0)
             {
-                r.Statuses1 |= Kernel.Battle_Only_Statuses.Reflect;
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Reflect;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0)
             {
-                r.Statuses1 |= Kernel.Battle_Only_Statuses.Shell;
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Shell;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0)
             {
-                r.Statuses1 |= Kernel.Battle_Only_Statuses.Float;
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Float;
             }
             r.Init();
             return r;
@@ -112,7 +113,9 @@ namespace OpenVIII
         #endregion Constructors
 
         #region Properties
-        public IEnumerable<Kernel.Enemy_Attacks_Data> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
+
+        public IEnumerable<Kernel.EnemyAttacksData> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
+
         public IEnumerable<GFs> JunctionedGFs => Memory.State != null? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
         public static List<Enemy> Party { get; set; }
 
@@ -263,8 +266,10 @@ namespace OpenVIII
 
         public override short ElementalResistance(Kernel.Element @in)
         {
+
             List<Kernel.Element> l = (Enum.GetValues(typeof(Kernel.Element))).Cast<Kernel.Element>().ToList();
-            if (@in == Kernel.Element.Non_Elemental)
+            if (@in == Kernel.Element.NonElemental)
+
                 return 100;
             // I wonder if i should average the resistances in cases of multiple elements.
             else
@@ -374,12 +379,14 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel.Battle_Only_Statuses s)
+
+        public override sbyte StatusResistance(Kernel.BattleOnlyStatuses s)
+
         {
             byte r = statusdefault;
             switch (s)
             {
-                case Kernel.Battle_Only_Statuses.Sleep:
+                case Kernel_bin.Battle_Only_Statuses.Sleep:
                     r = Info.sleepResistanceMental;
                     break;
 
@@ -438,7 +445,68 @@ namespace OpenVIII
                     r = Info.drainResistanceMental;
                     break;
 
-                case Kernel.Battle_Only_Statuses.Eject:
+                case Kernel_bin.Battle_Only_Statuses.Eject:
+=======
+                case Kernel.BattleOnlyStatuses.Sleep:
+                    r = Info.sleepResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Haste:
+                    r = Info.hasteResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Slow:
+                    r = Info.slowResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Stop:
+                    r = Info.stopResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Regen:
+                    r = Info.regenResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Protect:
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Shell:
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Reflect:
+                    r = Info.reflectResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Aura:
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Curse:
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Doom:
+                    r = Info.doomResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Invincible:
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Petrifying:
+                    r = Info.slowPetrifyResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Float:
+                    r = Info.floatResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Confuse:
+                    r = Info.confuseResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Drain:
+                    r = Info.drainResistanceMental;
+                    break;
+
+                case Kernel.BattleOnlyStatuses.Eject:
                     r = Info.explusionResistanceMental;
                     break;
             }

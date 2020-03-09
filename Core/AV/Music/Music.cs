@@ -91,9 +91,9 @@ namespace OpenVIII.AV
         /// <summary>
         /// contains files from other.zzz
         /// </summary>
-        public static bool ZZZ { get; private set; } = false;
+        public static bool ZZZ { get;  } = false;
 
-        public static object MusicTask { get; private set; }
+        public static object MusicTask { get;  }
 
         /// <summary>
         /// <para>checks to see if music buffer is running low and getframe triggers a refill.</para>

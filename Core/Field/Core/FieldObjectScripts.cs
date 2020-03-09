@@ -124,7 +124,7 @@ namespace OpenVIII.Fields
                 _executer = executer;
             }
 
-            public Boolean IsCompleted { get; private set; }
+            public Boolean IsCompleted { get;  }
             public void Complete() => IsCompleted = true;
 
             public void Execute(IServices services)

@@ -135,8 +135,8 @@ namespace OpenVIII.IGMData.Pool
             protected override void Init()
             {
                 base.Init();
-                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
-                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
+                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.Kernel, 0, 12), Pos = SIZE[_Draw] };
+                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.Kernel, 0, 18), Pos = SIZE[Cast] };
                 ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable, false);
                 Cursor_Status = Cursor_Status.Enabled;
                 OKAY_Actions = new Dictionary<int, Func<bool>>

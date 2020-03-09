@@ -34,9 +34,9 @@ namespace OpenVIII
                     Angelo = Angelo.Angel_Wing;
                 else
                     Angelo = Angelo.None;
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
+                Name = Memory.Strings.Read(Strings.FileID.Kernel, id, i * 2);
                 //0x0000	2 bytes Offset to name
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
+                Description = Memory.Strings.Read(Strings.FileID.Kernel, id, i * 2 + 1);
                 //0x0002	2 bytes Offset to description
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 Unknown0 = new BitArray(br.ReadBytes(1));

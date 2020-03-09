@@ -12,7 +12,7 @@ namespace OpenVIII
         /// Stat Percentage Increasing Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Stat-percentage-increasing-abilities"/>
-        public class StatPercentageAbilities : EquippableAbility
+        public class StatPercentageAbilities : IEquippableAbility
         {
             #region Fields
 
@@ -24,35 +24,51 @@ namespace OpenVIII
             /// <summary>
             /// Icon for this type.
             /// </summary>
-            public new const Icons.ID Icon = Icons.ID.Ability_Character;
-
-            /// <summary>
-            /// Icon for this type.
-            /// </summary>
             public const int ID = 13;
 
             #endregion Fields
 
             #region Constructors
 
-            private StatPercentageAbilities(FF8String name, FF8String description, byte ap, Stat stat,
-                                                    byte value, byte unknown0)
-                : base(name, description, ap, Icon)
-                => (Stat, Value, Unknown0) = (stat, value, unknown0);
+            private StatPercentageAbilities(BinaryReader br, int i)
+            {
+                //0x0000	2 bytes Offset
+                Name = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2);
+                //0x0002	2 bytes Offset
+                Description = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2 + 1);
+                br.BaseStream.Seek(4, SeekOrigin.Current);
+                //0x0004  1 byte
+                AP = br.ReadByte();
+                //0x0005  1 byte
+                Stat = (Stat)br.ReadByte();
+                //0x0006  1 byte
+                Value = br.ReadByte();
+                //0x0007  1 byte
+                Unknown0 = br.ReadByte();
+            }
 
             #endregion Constructors
 
             #region Properties
+
+            public byte AP { get; }
+
+            public FF8String Description { get; }
+
+            public Icons.ID Icon { get; } = Icons.ID.Ability_Character;
+
+            public FF8String Name { get; }
+
+            public byte Palette { get; } = Ability.DefaultPalette;
 
             /// <summary>
             /// Stat increased
             /// </summary>
             public Stat Stat { get; }
 
-            /// <summary>
-            /// Unknown byte
-            /// </summary>
-            public byte Unknown0 { get; }
+            public Stat Stat { get; private set; }
+            public byte Value { get; private set; }
+            public byte Unknown0 { get; private set; }
 
             /// <summary>
             /// AmountIncreased
@@ -69,24 +85,20 @@ namespace OpenVIII
                     .ToDictionary(i => (Abilities)(i + (int)Abilities.HP20), i => CreateInstance(br, i));
 
             private static StatPercentageAbilities CreateInstance(BinaryReader br, int i)
-            {
-                //0x0000	2 bytes Offset
-                FF8StringReference name = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2);
-                //0x0002	2 bytes Offset
-                FF8StringReference description = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2 + 1);
-                br.BaseStream.Seek(4, SeekOrigin.Current);
-                //0x0004  1 byte
-                byte ap = br.ReadByte();
-                //0x0005  1 byte
-                Stat stat = (Stat)br.ReadByte();
-                //0x0006  1 byte
-                byte value = br.ReadByte();
-                //0x0007  1 byte
-                byte unknown0 = br.ReadByte();
-                return new StatPercentageAbilities(name, description, ap, stat, value, unknown0);
-            }
+                => new StatPercentageAbilities(br, i);
 
-            #endregion Methods
+            public static Dictionary<Abilities, Stat_percent_abilities> Read(BinaryReader br)
+            {
+                Dictionary<Abilities, Stat_percent_abilities> ret = new Dictionary<Abilities, Stat_percent_abilities>(count);
+
+                for (int i = 0; i < count; i++)
+                {
+                    Stat_percent_abilities tmp = new Stat_percent_abilities();
+                    tmp.Read(br, i);
+                    ret[(Abilities)(i+ (int)Abilities.HP_20)] = tmp;
+                }
+                return ret;
+            }
         }
 
         #endregion Classes

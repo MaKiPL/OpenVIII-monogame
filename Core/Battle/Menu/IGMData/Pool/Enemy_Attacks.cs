@@ -4,7 +4,15 @@ using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
+<<<<<<< Updated upstream
     public class Enemy_Attacks : Base<Enemy, Kernel.Enemy_Attacks_Data>
+=======
+<<<<<<< Updated upstream
+    public class Enemy_Attacks : Base<Enemy, Kernel_bin.Enemy_Attacks_Data>
+=======
+    public class Enemy_Attacks : Base<Enemy, Kernel.EnemyAttacksData>
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     {
         #region Properties
 
@@ -45,7 +53,15 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
+<<<<<<< Updated upstream
             Kernel.Enemy_Attacks_Data enemy_Attacks_Data = Contents[CURSOR_SELECT];
+=======
+<<<<<<< Updated upstream
+            Kernel_bin.Enemy_Attacks_Data enemy_Attacks_Data = Contents[CURSOR_SELECT];
+=======
+            Kernel.EnemyAttacksData enemy_Attacks_Data = Contents[CURSOR_SELECT];
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
             if (enemy_Attacks_Data != null)
             {
                 Target_Group?.SelectTargetWindows(enemy_Attacks_Data);
@@ -58,11 +74,27 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
+<<<<<<< Updated upstream
                 IEnumerable<Kernel.Enemy_Attacks_Data> enemy_attacks_datas = e.Enemy_Attacks_Datas;
                 DefaultPages = enemy_attacks_datas.Count() / Rows;
                 int i = 0;
                 int skip = Page * Rows;
                 foreach (Kernel.Enemy_Attacks_Data enemy_attacks_data in enemy_attacks_datas)
+=======
+<<<<<<< Updated upstream
+                IEnumerable<Kernel_bin.Enemy_Attacks_Data> enemy_attacks_datas = e.Enemy_Attacks_Datas;
+                DefaultPages = enemy_attacks_datas.Count() / Rows;
+                int i = 0;
+                int skip = Page * Rows;
+                foreach (Kernel_bin.Enemy_Attacks_Data enemy_attacks_data in enemy_attacks_datas)
+=======
+                IEnumerable<Kernel.EnemyAttacksData> enemy_attacks_datas = e.Enemy_Attacks_Datas;
+                DefaultPages = enemy_attacks_datas.Count() / Rows;
+                int i = 0;
+                int skip = Page * Rows;
+                foreach (Kernel.EnemyAttacksData enemy_attacks_data in enemy_attacks_datas)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
                 {
                     if (i >= Rows) break;
                     if (skip-- > 0) continue;

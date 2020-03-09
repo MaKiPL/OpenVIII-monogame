@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace OpenVIII
@@ -13,20 +12,13 @@ namespace OpenVIII
 
         /// <summary>
         /// <para>Kernel.bin Strings</para>
-        /// <para>Has Multibyte Characters, Requires Namedic</para>
+        /// <para>Has Multi-byte Characters, Requires Namedic</para>
         /// </summary>
-        public class Kernel : StringsBase
+        public sealed class Kernel : StringsBase
         {
-            #region Fields
-
-            protected uint[] StringsPadLoc;
-
-            #endregion Fields
 
             #region Constructors
 
-            public Kernel()
-            { }
 
             public static Kernel Load() => Load<Kernel>();
 
@@ -45,8 +37,35 @@ namespace OpenVIII
             /// </summary>
             /// <remarks>Colly's list of string pointers. Adapted.</remarks>
             /// <see cref="http://www.balamb.pl/qh/kernel-pointers.htm"/>
-            public Dictionary<uint, Tuple<uint, uint, uint>> StringLocations
-            { get; private set; }
+            public IReadOnlyDictionary<int, (uint StringLocation, uint Get, uint Skip)> StringLocations
+            { get; } = new Dictionary<int, (uint StringLocation, uint Get, uint Skip)>(){
+
+                {0, (31,2,4)},
+                {1, (32,2,56) },
+                {2, (33,2,128) },
+                {3, (34,1,18) },//38,58,178, or 78
+                {4, (35,1,10) },
+                {5, (36,2,20) },
+                {6, (37,1,34) },//+1interval 70 //character names here.
+                {7, (38,2,20) },
+                {8, (39,1,0) },
+                {9, (40,1,18) },
+                {11, (41,2,4) },
+                {12, (42,2,4) },
+                {13, (43,2,4) },
+                {14, (44,2,4) },
+                {15, (45,2,4) },
+                {16, (46,2,4) },
+                {17, (47,2,4) },
+                {18, (48,2,20) },
+                {19, (49,2,12) },
+                {21, (50,2,20) },
+                {22, (51,2,28) },
+                {24, (52,2,4) },
+                {25, (53,1,18) },
+                {28, (54,1,10) },
+                {30, (55,1,0) },
+            };
 
             #endregion Properties
 
@@ -56,19 +75,20 @@ namespace OpenVIII
             /// Read Section Pointers
             /// </summary>
             /// <param name="br"></param>
-            protected override void GetFileLocations(BinaryReader br)
+            private void GetFileLocations(BinaryReader br)
             {
                 uint count = br.ReadUInt32();
                 while (count-- > 0)
                 {
-                    Loc l = new Loc { Seek = br.ReadUInt32() };
-                    if (count <= 0) l.Length = (uint)br.BaseStream.Length - l.Seek;
+                    uint seek = br.ReadUInt32();
+                    uint length;
+                    if (count <= 0) length = (uint)br.BaseStream.Length - seek;
                     else
                     {
-                        l.Length = br.ReadUInt32() - l.Seek;
+                        length = br.ReadUInt32() - seek;
                         br.BaseStream.Seek(-4, SeekOrigin.Current);
                     }
-                    Files.subPositions.Add(l);
+                    StringFiles.SubPositions.Add(Loc.CreateInstance(seek, length));
                 }
             }
 
@@ -80,53 +100,21 @@ namespace OpenVIII
             {
                 Settings = (FF8StringReference.Settings.MultiCharByte | FF8StringReference.Settings.Namedic);
                 ArchiveBase aw = ArchiveWorker.Load(Archive);
-                Files = new StringFile(56);
-                MemoryStream ms = null;
-                byte[] buffer = aw.GetBinaryFile(Filenames[0], true);
-                if (buffer != null)
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
-                    {
-                        GetFileLocations(br);
-                        //index, grab, skip
-                        StringLocations = new Dictionary<uint, Tuple<uint, uint, uint>> {
-                        //working
-                        {0, new Tuple<uint, uint, uint>(31,2,4) },
-                        {1, new Tuple<uint, uint, uint>(32,2,56) },
-                        {2, new Tuple<uint, uint, uint>(33,2,128) },
-                        {3, new Tuple<uint, uint, uint>(34,1,18) },//38,58,178, or 78
-                        {4, new Tuple<uint, uint, uint>(35,1,10) },
-                        {5, new Tuple<uint, uint, uint>(36,2,20) },
-                        {6, new Tuple<uint, uint, uint>(37,1,34) },//+1interval 70 //character names here.
-                        {7, new Tuple<uint, uint, uint>(38,2,20) },
-                        {8, new Tuple<uint, uint, uint>(39,1,0) },
-                        {9, new Tuple<uint, uint, uint>(40,1,18) },
-                        {11, new Tuple<uint, uint, uint>(41,2,4) },
-                        {12, new Tuple<uint, uint, uint>(42,2,4) },
-                        {13, new Tuple<uint, uint, uint>(43,2,4) },
-                        {14, new Tuple<uint, uint, uint>(44,2,4) },
-                        {15, new Tuple<uint, uint, uint>(45,2,4) },
-                        {16, new Tuple<uint, uint, uint>(46,2,4) },
-                        {17, new Tuple<uint, uint, uint>(47,2,4) },
-                        {18, new Tuple<uint, uint, uint>(48,2,20) },
-                        {19, new Tuple<uint, uint, uint>(49,2,12) },
-                        {21, new Tuple<uint, uint, uint>(50,2,20) },
-                        {22, new Tuple<uint, uint, uint>(51,2,28) },
-                        {24, new Tuple<uint, uint, uint>(52,2,4) },
-                        {25, new Tuple<uint, uint, uint>(53,1,18) },
-                        {28, new Tuple<uint, uint, uint>(54,1,10) },
-                        {30, new Tuple<uint, uint, uint>(55,1,0) },
-                    };
+                StringFiles = new StringFile(56);
+                byte[] buffer = aw.GetBinaryFile(FileNames[0], true);
+                if (buffer == null) return;
+                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                {
+                    GetFileLocations(br);
 
-                        for (uint key = 0; key < Files.subPositions.Count; key++)
+                    for (int key = 0; key < StringFiles.SubPositions.Count; key++)
+                    {
+                        if (StringLocations.ContainsKey(key))
                         {
-                            Loc fpos = Files.subPositions[(int)key];
-                            if (StringLocations.ContainsKey(key))
-                            {
-                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)(StringLocations[key].Item1)].Seek, StringLocations[key].Item2, StringLocations[key].Item3);
-                            }
+                            Get_Strings_BinMSG(br, FileNames[0], key, StringFiles.SubPositions[(int)(StringLocations[key].Item1)].Seek, StringLocations[key].Item2, StringLocations[key].Item3);
                         }
-                        ms = null;
                     }
+                }
             }
 
             #endregion Methods

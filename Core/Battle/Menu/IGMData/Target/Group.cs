@@ -19,14 +19,14 @@ namespace OpenVIII.IGMData.Target
 
         #region Properties
 
-        public Kernel.Blue_Magic_Quistis_limit_break BlueMagic { get; private set; }
+        public Kernel.BlueMagicQuistisLimitBreak BlueMagic { get; private set; }
 
         public Kernel.BattleCommand Command { get; private set; }
         public Combine.KernelItem CombineKernelItem { get; private set; }
-        public Kernel.Enemy_Attacks_Data EnemyAttack { get; private set; }
+        public Kernel.EnemyAttacksData EnemyAttack { get; private set; }
         public Item_In_Menu Item { get; private set; }
 
-        public Kernel.Magic_Data Magic { get; private set; }
+        public Kernel.MagicData Magic { get; private set; }
         public Random RandomTarget { get; private set; } = false;
         public int Casts { get; private set; }
         public Kernel.Target Target { get; private set; }
@@ -158,7 +158,7 @@ namespace OpenVIII.IGMData.Target
             CombineKernelItem = c;
         }
 
-        public void SelectTargetWindows(Kernel.Enemy_Attacks_Data c)
+        public void SelectTargetWindows(Kernel.EnemyAttacksData c)
         {
             // we don't know what the enemy attacks default target is. Setting a general default here.
             // The battle AI script sets the target for the enemies
@@ -188,7 +188,7 @@ namespace OpenVIII.IGMData.Target
             BlueMagic = null;
         }
 
-        public void SelectTargetWindows(Kernel.Magic_Data c, int casts = 1, Random random = default)
+        public void SelectTargetWindows(Kernel.MagicData c, int casts = 1, Random random = default)
         {
             Kernel.Target t = c.Target;
             SelectTargetWindows(t, casts, random);
@@ -196,7 +196,7 @@ namespace OpenVIII.IGMData.Target
             Magic = c;
         }
 
-        public void SelectTargetWindows(Kernel.Blue_Magic_Quistis_limit_break c)
+        public void SelectTargetWindows(Kernel.BlueMagicQuistisLimitBreak c)
         {
             //not sure if target data is missing for blue magic.
             //The target box does show up in game so I imagine the target data is in there somewhere.
@@ -279,7 +279,7 @@ namespace OpenVIII.IGMData.Target
             bool Command02_MAGIC()
             {
                 Neededvaribles(out Damageable[] d, Magic.PositiveMagic);
-                Debug.WriteLine($"{Damageable.Name} casts {Magic.Name}({Magic.ID}) spell on { DebugMessageSuffix(d) }");
+                Debug.WriteLine($"{Damageable.Name} casts {Magic.Name}({Magic.MagicDataID}) spell on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return true;
             }
@@ -410,7 +410,7 @@ namespace OpenVIII.IGMData.Target
             bool Command15_BLUE_MAGIC()
             {
                 Neededvaribles(out Damageable[] d);
-                Debug.WriteLine($"{Damageable.Name} casts {BlueMagic.Name}({BlueMagic.ID}) spell on { DebugMessageSuffix(d) }");
+                Debug.WriteLine($"{Damageable.Name} casts {BlueMagic.Name}({BlueMagic.BlueMagic}) spell on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return false;
             }

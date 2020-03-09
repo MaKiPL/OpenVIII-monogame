@@ -109,7 +109,7 @@ namespace OpenVIII
                     else
                         Mins.Data = 99;
                     Gil.Data = checked((int)Data.AmountOfGil);
-                    Location.Data = Memory.Strings.Read(Strings.FileID.AREAMES, 0, Data.LocationID);
+                    Location.Data = Memory.Strings.Read(Strings.FileID.AreaNames, 0, Data.LocationID);
                     foreach (Menu_Base i in ITEM)
                         i?.Show();
                 }

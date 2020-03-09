@@ -132,24 +132,24 @@ namespace OpenVIII.Battle
 
         public byte DataType => getValue(2);
 
-        public string FileName { get; private set; }
+        public string FileName { get;  }
 
         public byte IDnumber => getValue(1);
 
-        public bool isPackedMag { get; private set; } = false;
+        public bool isPackedMag { get;  } = false;
 
-        public bool isTIM { get; private set; } = false;
+        public bool isTIM { get;  } = false;
 
         public byte SequenceNumber => getValue(3);
 
-        public TIM2[] TIM { get; private set; }
+        public TIM2[] TIM { get;  }
 
         private bool bFileNameTest => FileName != null && Path.GetExtension(FileName).Trim('.').Length == 3;
 
         /// <summary>
         /// if quit loop because unknown type.
         /// </summary>
-        public int UnknownType { get; private set; } = int.MinValue;
+        public int UnknownType { get;  } = int.MinValue;
 
         #endregion Properties
 

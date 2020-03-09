@@ -11,24 +11,40 @@ namespace OpenVIII
     {
         #region Classes
 
-        public class Mngrp : StringsBase
+        public class MenuGroup : StringsBase
         {
             #region Fields
 
-            private Dictionary<uint, uint> BinMSG;
-            private Dictionary<uint, List<uint>> ComplexStr;
-            private uint[] StringsLoc;
-            private uint[] StringsPadLoc;
+            private readonly IReadOnlyDictionary<int, uint> _binMsg;
+            private readonly IReadOnlyDictionary<int, IReadOnlyList<int>> _complexStr;
+            private readonly uint[] _stringsLoc;
+            private readonly uint[] _stringsPadLoc;
 
             #endregion Fields
 
             #region Constructors
 
-            public Mngrp()
+            public MenuGroup()
             {
+
+                //string contain padding values at start of file
+                //then location data before strings
+                _stringsPadLoc = new[] { (uint)SectionID.Tkmnmes1, (uint)SectionID.Tkmnmes2, (uint)SectionID.Tkmnmes3 };
+                //only location data before strings
+                _stringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
+                    55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+                    71, 72, 73, 81, 82, 83, 84, 85, 86, 87, 88, 116};
+                //complex str has locations in first file,
+                //and they have 8 bytes of stuff at the start of each entry, 6 bytes UNK and ushort length?
+                //also can have multiple null ending strings per entry.
+                _complexStr = new Dictionary<int, IReadOnlyList<int>> { { 74, new List<int> { 75, 76, 77, 78, 79, 80 } } };
+                //these files come in pairs. the bin has string offsets and 6 bytes of other data
+                //msg is where the strings are.
+                _binMsg = new Dictionary<int, uint>
+                    {{106,111},{107,112},{108,113},{109,114},{110,115}};
             }
 
-            public static Mngrp Load() => Load<Mngrp>();
+            public static MenuGroup Load() => Load<MenuGroup>();
 
             protected override void DefaultValues() => SetValues(Memory.Archives.A_MENU, "mngrp.bin", "mngrphd.bin");
 
@@ -38,9 +54,9 @@ namespace OpenVIII
 
             private enum SectionID
             {
-                tkmnmes1,
-                tkmnmes2,
-                tkmnmes3,
+                Tkmnmes1,
+                Tkmnmes2,
+                Tkmnmes3,
             }
 
             #endregion Enums
@@ -50,72 +66,49 @@ namespace OpenVIII
             protected void GetFileLocations()
             {
                 ArchiveBase aw = ArchiveWorker.Load(Archive, true);
-                MemoryStream ms = null;
-                byte[] buffer = aw.GetBinaryFile(Filenames[1], true);
-                if (buffer != null)
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
-                    {
-                        GetFileLocations(br);
-                        ms = null;
-                    }
+                byte[] buffer = aw.GetBinaryFile(FileNames[1], true);
+                if (buffer == null) return;
+                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                {
+                    GetFileLocations(br);
+                }
             }
 
-            protected override void GetFileLocations(BinaryReader br)
+            protected virtual void GetFileLocations(BinaryReader br)
             {
                 while (br.BaseStream.Position+8 < br.BaseStream.Length)
                 {
-                    Loc loc = new Loc() { Seek = br.ReadUInt32(), Length = br.ReadUInt32() };
-                    if (loc.Seek != 0xFFFFFFFF && loc.Length != 0x00000000)
-                    {
-                        loc.Seek--;
-                        Files.subPositions.Add(loc);
-                    }
+                    (uint seek, uint length) = ((br.ReadUInt32(), br.ReadUInt32()));
+                    if (seek == 0xFFFFFFFF || length == 0x00000000) continue;
+                    seek--;
+                    StringFiles.SubPositions.Add(Loc.CreateInstance(seek,length));
                 }
             }
 
             protected override void LoadArchiveFiles()
             {
-                Files = new StringFile(118);
+                StringFiles = new StringFile(118);
                 GetFileLocations();
                 ArchiveBase aw = ArchiveWorker.Load(Archive, true);
-                MemoryStream ms = null;
-                byte[] buffer = aw.GetBinaryFile(Filenames[0], true);
-                if (buffer != null)
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                byte[] buffer = aw.GetBinaryFile(FileNames[0], true);
+                if (buffer == null) return;
+                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                {
+                    for (int key = 0; key < StringFiles.SubPositions.Count; key++)
                     {
-                        //string contain padding values at start of file
-                        //then location data before strings
-                        StringsPadLoc = new uint[] { (uint)SectionID.tkmnmes1, (uint)SectionID.tkmnmes2, (uint)SectionID.tkmnmes3 };
-                        //only location data before strings
-                        StringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
-                            55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
-                            71, 72, 73, 81, 82, 83, 84, 85, 86, 87, 88, 116};
-                        //complexstr has locations in first file,
-                        //and they have 8 bytes of stuff at the start of each entry, 6 bytes UNK and ushort length?
-                        //also can have multiple null ending strings per entry.
-                        ComplexStr = new Dictionary<uint, List<uint>> { { 74, new List<uint> { 75, 76, 77, 78, 79, 80 } } };
-                        //these files come in pairs. the bin has string offsets and 6 bytes of other data
-                        //msg is where the strings are.
-                        BinMSG = new Dictionary<uint, uint>
-                            {{106,111},{107,112},{108,113},{109,114},{110,115}};
-
-                        for (uint key = 0; key < Files.subPositions.Count; key++)
+                        bool pad = (Array.IndexOf(_stringsPadLoc, key) >= 0);
+                        if (pad || Array.IndexOf(_stringsLoc, key) >= 0)
+                            Get_Strings_Offsets(br, FileNames[0], key, pad);
+                        else if (_binMsg.ContainsKey(key))
                         {
-                            Loc fpos = Files.subPositions[(int)key];
-                            bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
-                            if (pad || Array.IndexOf(StringsLoc, key) >= 0)
-                                Get_Strings_Offsets(br, Filenames[0], key, pad);
-                            else if (BinMSG.ContainsKey(key))
-                            {
-                                Get_Strings_BinMSG(br, Filenames[0], key, Files.subPositions[(int)BinMSG[key]].Seek, 1, 6);
-                            }
-                            else if (ComplexStr.ContainsKey(key))
-                            {
-                                Get_Strings_ComplexStr(br, Filenames[0], key, ComplexStr[key]);
-                            }
+                            Get_Strings_BinMSG(br, FileNames[0], key, StringFiles.SubPositions[(int)_binMsg[key]].Seek, 1, 6);
                         }
-                        ms = null;
+                        else if (_complexStr.ContainsKey(key))
+                        {
+                            Get_Strings_ComplexStr(br, FileNames[0], key, _complexStr[key]);
+                        }
                     }
+                }
             }
 
             #endregion Methods

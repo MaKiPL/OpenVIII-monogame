@@ -121,7 +121,7 @@ namespace OpenVIII.Fields
 
             private short Z { get; set; }
 
-            public float Zoom { get; private set; }
+            public float Zoom { get;  }
 
             private float Zoom2 { get; set; }
             public Vector3 Space { get => space; private set => space = value; }

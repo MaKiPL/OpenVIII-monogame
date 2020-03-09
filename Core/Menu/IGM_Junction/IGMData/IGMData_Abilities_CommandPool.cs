@@ -62,29 +62,25 @@ namespace OpenVIII
                         i < c.UnlockedGFAbilities.Count &&
                         pos < Rows; i++)
                     {
-                        if (c.UnlockedGFAbilities[i] != Kernel.Abilities.None)
+                        if (c.UnlockedGFAbilities[i] == Kernel.Abilities.None) continue;
+                        Kernel.Abilities j = (c.UnlockedGFAbilities[i]);
+                        if (!Source.ContainsKey(j) || skip-- > 0) continue;
+                        Font.ColorID cid;
+                        if (c.Commands.Contains(j))
                         {
-                            Kernel.Abilities j = (c.UnlockedGFAbilities[i]);
-                            if (Source.ContainsKey(j) && skip-- <= 0)
-                            {
-                                Font.ColorID cid;
-                                if (c.Commands.Contains(j))
-                                {
-                                    cid = Font.ColorID.Grey;
-                                    BLANKS[pos] = true;
-                                }
-                                else
-                                {
-                                    cid = Font.ColorID.White;
-                                    BLANKS[pos] = false;
-                                }
-                                ((IGMDataItem.Text)ITEM[pos, 0]).Data = Source[j].Name;
-                                ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = cid;
-                                ITEM[pos, 0].Show();
-                                Contents[pos] = j;
-                                pos++;
-                            }
+                            cid = Font.ColorID.Grey;
+                            BLANKS[pos] = true;
                         }
+                        else
+                        {
+                            cid = Font.ColorID.White;
+                            BLANKS[pos] = false;
+                        }
+                        ((IGMDataItem.Text)ITEM[pos, 0]).Data = Source[j].Name;
+                        ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = cid;
+                        ITEM[pos, 0].Show();
+                        Contents[pos] = j;
+                        pos++;
                     }
                 for (; pos < Rows; pos++)
                 {

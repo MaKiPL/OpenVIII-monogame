@@ -118,7 +118,7 @@ namespace OpenVIII.IGMData
             else
             if (_cards != null && _cards.TryPeek(out card))
             {
-                FF8StringReference name = Memory.Strings.Read(Strings.FileID.MNGRP, 110, (int)card.Key);
+                FF8StringReference name = Memory.Strings.Read(Strings.FileID.MenuGroup, 110, (int)card.Key);
                 int pos = 0;
                 for (; pos < name.Length; pos++)
                     if (name.Value[pos] == 2) break;

@@ -15,16 +15,16 @@ namespace OpenVIII.Fields
     {
         #region Properties
 
-        public short CameraHeight { get; private set; }
-        public Rectangle[] CamerasRanges { get; private set; }
-        public byte ControlDirection { get; private set; }
+        public short CameraHeight { get;  }
+        public Rectangle[] CamerasRanges { get;  }
+        public byte ControlDirection { get;  }
         public Gateways Gateways { get; set; }
-        public ushort LikePVP { get; private set; }
-        public FF8String Name { get; private set; }
-        public Rectangle[] ScreenRanges { get; private set; }
+        public ushort LikePVP { get;  }
+        public FF8String Name { get;  }
+        public Rectangle[] ScreenRanges { get;  }
         public Triggers Triggers { get; set; }
-        public int Type { get; private set; }
-        public byte[] Unknown { get; private set; }
+        public int Type { get;  }
+        public byte[] Unknown { get;  }
 
         #endregion Properties
 

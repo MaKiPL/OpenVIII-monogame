@@ -47,7 +47,7 @@ namespace OpenVIII.Movie
 
         #region Properties
 
-        public int Id { get; private set; }
+        public int Id { get;  }
 
         // To detect redundant calls
         public bool IsDisposed => _disposedValue;
