@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.Kernel
 {
-    public partial class KernelBin
-    {
         /// <summary>
         /// GF Abilities Data
         /// </summary>
@@ -87,5 +86,4 @@ namespace OpenVIII
 
             #endregion Methods
         }
-    }
 }

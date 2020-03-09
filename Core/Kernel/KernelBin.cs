@@ -7,48 +7,13 @@ namespace OpenVIII.Kernel
 {
     public class KernelBin
     {
-        public const ushort MAX_HP_VALUE = 9999;
-        public const byte MAX_STAT_VALUE = 255;
 
-        private static List<MagicData> s_magicData;
-        private static Dictionary<GFs, JunctionableGFsData> s_junctionableGFsData;
-        private static List<EnemyAttacksData> s_enemyAttacksData;
-        private static List<BattleCommand> s_battleCommands;
-        private static List<Weapons_Data> s_weaponsData;
-        private static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> s_renzokukenFinishersData;
-        private static Dictionary<Characters, CharacterStats> s_characterStats;
-        private static List<BattleItemData> s_battleItemsData;
-        public static List<NonBattleItemsData> s_nonbattleItemsData;
-        private static List<Non_Junctionable_GFs_Attacks_Data> s_nonJunctionableGFsAttacksData;
-        private static Dictionary<Abilities, CommandAbilityData> s_commandabilitydata;
-        private static Dictionary<Abilities, JunctionAbilities> s_junctionabilities;
-        private static Dictionary<Abilities, Commandabilities> s_commandabilities;
-        private static Dictionary<Abilities, Stat_percent_abilities> s_statpercentabilities;
-        private static Dictionary<Abilities, Character_abilities> s_characterabilities;
-        private static Dictionary<Abilities, Party_abilities> s_partyabilities;
-        private static Dictionary<Abilities, GF_abilities> s_gFabilities;
-        private static Dictionary<Abilities, Menu_abilities> s_menuabilities;
-        private static List<Temporary_character_limit_breaks> s_temporarycharacterlimitbreaks;
-        private static Dictionary<Blue_Magic, Blue_magic_Quistis_limit_break> s_bluemagicQuistislimitbreak;
-        private static List<Shot_Irvine_limit_break> s_shotIrvinelimitbreak;
-        private static List<Duel_Zell_limit_break> s_duelZelllimitbreak;
-        private static List<Zell_limit_break_parameters> s_zelllimitbreakparameters;
-        private static List<Rinoa_limit_breaks_part_1> s_rinoalimitbreakspart1;
-        private static List<Rinoa_limit_breaks_part_2> s_rinoalimitbreakspart2;
-        private static List<Slot_array> s_slotarray;
-        private static List<Selphie_limit_break_sets> s_selphielimitbreaksets;
-        private static List<Devour> s_devour_;
-        private static List<Misc_section> s_miscsection;
-        private static List<Misc_text_pointers> s_misctextpointers;
-        private static Dictionary<Abilities, Ability> s_allAbilities;
-        private static Dictionary<Abilities, Equipable_Ability> s_equipableAbilities;
 
         public const ushort MaxHPValue = 9999;
 
         public const byte MaxStatValue = 255;
 
-        #endregion Fields
-
+     
         #region Constructors
 
         /// <summary>
@@ -76,7 +41,7 @@ namespace OpenVIII.Kernel
                 ms.Seek(subPositions[Kernel.JunctionableGFsData.ID], SeekOrigin.Begin);
                 JunctionableGFsData = Kernel.JunctionableGFsData.Read(br);
                 ms.Seek(subPositions[Kernel.EnemyAttacksData.ID], SeekOrigin.Begin);
-                EnemyAttacksData = Kernel.EnemyAttacksData.Read(br,BattleCommands);
+                EnemyAttacksData = Kernel.EnemyAttacksData.Read(br, BattleCommands);
                 ms.Seek(subPositions[Weapons_Data.id], SeekOrigin.Begin);
                 WeaponsData = Weapons_Data.Read(br);
                 ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
@@ -132,8 +97,11 @@ namespace OpenVIII.Kernel
                 MiscSection = Kernel.MiscSection.Read(br);
                 MiscTextPointers = Kernel.MiscTextPointers.Read();
 
-                Dictionary<Abilities, IAbility> allAbilities = new Dictionary<Abilities, IAbility>(Kernel.MenuAbilities.Count + Kernel.JunctionAbilities.Count + Kernel.CommandAbilities.Count + StatPercentageAbilities.Count + Kernel.CharacterAbilities.Count + Kernel.PartyAbilities.Count + Kernel.GFAbilities.Count);
-                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
+                Dictionary<Abilities, IAbility> allAbilities = new Dictionary<Abilities, IAbility>(
+                    Kernel.MenuAbilities.Count + Kernel.JunctionAbilities.Count + Kernel.CommandAbilities.Count +
+                    StatPercentageAbilities.Count + Kernel.CharacterAbilities.Count + Kernel.PartyAbilities.Count +
+                    Kernel.GFAbilities.Count);
+                foreach (Abilities ability in (Abilities[]) (Enum.GetValues(typeof(Abilities))))
                 {
                     combine(MenuAbilities);
                     combine(StatPercentAbilities);
@@ -142,6 +110,7 @@ namespace OpenVIII.Kernel
                     combine(CharacterAbilities);
                     combine(PartyAbilities);
                     combine(GFAbilities);
+
                     void combine<T>(IReadOnlyDictionary<Abilities, T> dict)
                         where T : IAbility
                     {
@@ -152,6 +121,7 @@ namespace OpenVIII.Kernel
                         combine(Characterabilities);
                         combine(Partyabilities);
                         combine(GFabilities);
+
                         bool combine<T>(IReadOnlyDictionary<Abilities, T> dict)
                             where T : Ability
                         {
@@ -160,27 +130,31 @@ namespace OpenVIII.Kernel
                                 s_allAbilities.Add(ability, a);
                                 return true;
                             }
+
                             return false;
                         }
                     }
 
-                AllAbilities = allAbilities;
-                Dictionary<Abilities, IEquippableAbility> equippableAbilities = new Dictionary<Abilities, IEquippableAbility>(
-                    StatPercentageAbilities.Count +
-                    Kernel.CharacterAbilities.Count +
-                    Kernel.PartyAbilities.Count +
-                    Kernel.GFAbilities.Count);
-                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
-                {
-                    if (StatPercentAbilities.ContainsKey(ability))
-                        equippableAbilities[ability] = StatPercentAbilities[ability];
-                    else if (CharacterAbilities.ContainsKey(ability))
-                        equippableAbilities[ability] = CharacterAbilities[ability];
-                    else if (PartyAbilities.ContainsKey(ability))
-                        equippableAbilities[ability] = PartyAbilities[ability];
-                    else if (CharacterAbilities.ContainsKey(ability))
-                        equippableAbilities[ability] = CharacterAbilities[ability];
+                    AllAbilities = allAbilities;
+                    Dictionary<Abilities, IEquippableAbility> equippableAbilities =
+                        new Dictionary<Abilities, IEquippableAbility>(
+                            StatPercentageAbilities.Count +
+                            Kernel.CharacterAbilities.Count +
+                            Kernel.PartyAbilities.Count +
+                            Kernel.GFAbilities.Count);
+                    foreach (Abilities ability in (Abilities[]) (Enum.GetValues(typeof(Abilities))))
+                    {
+                        if (StatPercentAbilities.ContainsKey(ability))
+                            equippableAbilities[ability] = StatPercentAbilities[ability];
+                        else if (CharacterAbilities.ContainsKey(ability))
+                            equippableAbilities[ability] = CharacterAbilities[ability];
+                        else if (PartyAbilities.ContainsKey(ability))
+                            equippableAbilities[ability] = PartyAbilities[ability];
+                        else if (CharacterAbilities.ContainsKey(ability))
+                            equippableAbilities[ability] = CharacterAbilities[ability];
+                    }
                 }
+            }
         }
 
         #endregion Constructors

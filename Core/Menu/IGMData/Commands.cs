@@ -25,7 +25,7 @@ namespace OpenVIII.IGMData
         #region Properties
 
         //Selphie_Slots
-        private Selphie_Slots Selphie_Slots { get => (Selphie_Slots)ITEM[Offsets.Selphie_Slots, 0]; set => ITEM[Offsets.Selphie_Slots, 0] = value; }
+        private SelphieSlots Selphie_Slots { get => (SelphieSlots)ITEM[Offsets.Selphie_Slots, 0]; set => ITEM[Offsets.Selphie_Slots, 0] = value; }
 
         private Pool.GF GFPool { get => (Pool.GF)ITEM[Offsets.GF_Pool, 0]; set => ITEM[Offsets.GF_Pool, 0] = value; }
         private Pool.Item ItemPool { get => (Pool.Item)ITEM[Offsets.Item_Pool, 0]; set => ITEM[Offsets.Item_Pool, 0] = value; }
@@ -466,7 +466,7 @@ namespace OpenVIII.IGMData
             CombinePool.Hide();
             BulletPool = Pool.Bullet.Create(new Rectangle(X + 50, Y - 22, 400, 168), Damageable, true);
             BulletPool.Hide();
-            Selphie_Slots = Selphie_Slots.Create(new Rectangle(X + 50, Y - 22, 300, 168), Damageable, true);
+            Selphie_Slots = SelphieSlots.Create(new Rectangle(X + 50, Y - 22, 300, 168), Damageable, true);
             Selphie_Slots.Hide();
             LimitArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
             LimitArrow.Hide();

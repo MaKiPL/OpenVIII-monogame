@@ -386,12 +386,12 @@ namespace OpenVIII
                 ushort max = MaxHP();
                 //if ((BattleID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
                 //{
-                int HPMod = CharacterStats.Crisis * 10 * current / max;
-                int DeathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
-                int StatusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
-                int RandomMod = Memory.Random.Next(byte.MaxValue + 1) + 160;
-                int crisislevel = (StatusBonus + DeathBonus - HPMod) / RandomMod; // better random number?
-                if (crisislevel == 5)
+                int hpMod = CharacterStats.Crisis * 10 * current / max;
+                int deathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
+                int statusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
+                int randomMod = Memory.Random.Next(byte.MaxValue + 1) + 160;
+                int crisisLevel = (statusBonus + deathBonus - hpMod) / randomMod; // better random number?
+                switch (crisisLevel)
                 {
                     case 5:
                         CurrentCrisisLevel = 0;

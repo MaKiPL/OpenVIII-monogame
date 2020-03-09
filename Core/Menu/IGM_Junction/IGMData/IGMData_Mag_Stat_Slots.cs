@@ -1,8 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.Kernel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
@@ -11,31 +13,32 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Mag_Stat_Slots : IGMData_Slots<Saves.CharacterData>
+        [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
+        private class IgmDataMagStatSlots : IGMData_Slots<Saves.CharacterData>
         {
             #region Properties
 
             /// <summary>
             /// Convert stat to correct icon BattleID.
             /// </summary>
-            private static IReadOnlyDictionary<Kernel.Stat, Icons.ID> Stat2Icon { get; } = new Dictionary<Kernel.Stat, Icons.ID>
+            private static IReadOnlyDictionary<Stat, Icons.ID> Stat2Icon { get; } = new Dictionary<Stat, Icons.ID>
                 {
-                    { Kernel.Stat.HP, Icons.ID.Stats_Hit_Points },
-                    { Kernel.Stat.STR, Icons.ID.Stats_Strength },
-                    { Kernel.Stat.VIT, Icons.ID.Stats_Vitality },
-                    { Kernel.Stat.MAG, Icons.ID.Stats_Magic },
-                    { Kernel.Stat.SPR, Icons.ID.Stats_Spirit },
-                    { Kernel.Stat.SPD, Icons.ID.Stats_Speed },
-                    { Kernel.Stat.EVA, Icons.ID.Stats_Evade },
-                    { Kernel.Stat.LUCK, Icons.ID.Stats_Luck },
-                    { Kernel.Stat.HIT, Icons.ID.Stats_Hit_Percent },
+                    { Stat.HP, Icons.ID.Stats_Hit_Points },
+                    { Stat.STR, Icons.ID.Stats_Strength },
+                    { Stat.VIT, Icons.ID.Stats_Vitality },
+                    { Stat.MAG, Icons.ID.Stats_Magic },
+                    { Stat.SPR, Icons.ID.Stats_Spirit },
+                    { Stat.SPD, Icons.ID.Stats_Speed },
+                    { Stat.EVA, Icons.ID.Stats_Evade },
+                    { Stat.LUCK, Icons.ID.Stats_Luck },
+                    { Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
 
             #endregion Properties
 
             #region Methods
 
-            public static IGMData_Mag_Stat_Slots Create() => Create<IGMData_Mag_Stat_Slots>(10, 5, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 2, 5);
+            public static IgmDataMagStatSlots Create() => Create<IgmDataMagStatSlots>(10, 5, new IGMDataItem.Box { Pos = new Rectangle(0, 414, 840, 216) }, 2, 5);
 
             public override void BackupSetting()
             {
@@ -47,7 +50,7 @@ namespace OpenVIII
                CheckMode(-1, Mode.None, Mode.Mag_Stat,
                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_Stat)),
                    IGM_Junction != null && (IGM_Junction.GetMode().Equals(Mode.Mag_Pool_Stat)),
-                   (IGM_Junction.GetMode().Equals(Mode.Mag_Stat) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_Stat)) && cursor);
+                   IGM_Junction != null && ((IGM_Junction.GetMode().Equals(Mode.Mag_Stat) || IGM_Junction.GetMode().Equals(Mode.Mag_Pool_Stat)) && cursor));
 
             public override bool Inputs()
             {
@@ -81,7 +84,7 @@ namespace OpenVIII
                 skipdata = true;
                 base.Inputs_Menu();
                 skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Contents[CURSOR_SELECT] == Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     c.StatJ[Contents[CURSOR_SELECT]] = 0;
                     IGM_Junction.Refresh();
@@ -125,67 +128,70 @@ namespace OpenVIII
             /// </summary>
             public override void Refresh()
             {
-                if (Memory.State?.Characters != null)
+                if (Memory.State?.Characters == null) return;
+                Contents = Array.ConvertAll(Contents, c =>
                 {
-                    Contents = Array.ConvertAll(Contents, c => c = default);
-                    base.Refresh();
+                    if (!Enum.IsDefined(typeof(Stat), c))
+                        throw new InvalidEnumArgumentException(nameof(c), (int)c, typeof(Stat));
+                    return Stat.None;
+                });
+                base.Refresh();
 
-                    if (unlocked != null)
+                if (unlocked == null) return;
+                {
+                    ((IGMDataItem.Icon)ITEM[5, 0]).Palette =
+                        (byte)(unlocked.Contains(Abilities.StAtkJ) ? 2 : 7);
+                    ((IGMDataItem.Icon)ITEM[5, 1]).Palette =
+                        (byte)(unlocked.Contains(Abilities.StDefJ) ||
+                               unlocked.Contains(Abilities.StDefJ2) ||
+                               unlocked.Contains(Abilities.StDefJ4) ? 2 : 7);
+                    ((IGMDataItem.Icon)ITEM[5, 2]).Palette =
+                        (byte)(unlocked.Contains(Abilities.ElAtkJ) ? 2 : 7);
+                    ((IGMDataItem.Icon)ITEM[5, 3]).Palette =
+                        (byte)(unlocked.Contains(Abilities.ElDefJ) ||
+                               unlocked.Contains(Abilities.ElDefJ2) ||
+                               unlocked.Contains(Abilities.ElDefJ4) ? 2 : 7);
+                    BLANKS[5] = true;
+                    foreach (Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                     {
-                        ((IGMDataItem.Icon)ITEM[5, 0]).Palette =
-                            (byte)(unlocked.Contains(Kernel.Abilities.StAtkJ) ? 2 : 7);
-                        ((IGMDataItem.Icon)ITEM[5, 1]).Palette =
-                            (byte)(unlocked.Contains(Kernel.Abilities.StDefJ) ||
-                            unlocked.Contains(Kernel.Abilities.StDefJ2) ||
-                            unlocked.Contains(Kernel.Abilities.StDefJ4) ? 2 : 7);
-                        ((IGMDataItem.Icon)ITEM[5, 2]).Palette =
-                            (byte)(unlocked.Contains(Kernel.Abilities.ElAtkJ) ? 2 : 7);
-                        ((IGMDataItem.Icon)ITEM[5, 3]).Palette =
-                            (byte)(unlocked.Contains(Kernel.Abilities.ElDefJ) ||
-                            unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
-                            unlocked.Contains(Kernel.Abilities.ElDefJ4) ? 2 : 7);
-                        BLANKS[5] = true;
-                        foreach (Kernel.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
+                        if (Damageable.GetCharacterData(out Saves.CharacterData c))
                         {
-                            if (Damageable.GetCharacterData(out Saves.CharacterData c))
-                            {
-                                bool isUnlocked = unlocked.Contains(KernelBin.Stat2Ability[stat]);
-                                int pos = (int)stat;
-                                if (pos >= 5) pos++;
-                                Contents[pos] = stat;
-                                FF8String name = Memory.Kernel_Bin.MagicData[c.StatJ[stat]].Name;
-                                if (name == null || name.Length == 0) name = Strings.Name._;
-                                ushort currentValue = Damageable.TotalStat(stat);
-                                ushort previousValue = GetPrevSetting()?.TotalStat(stat) ?? currentValue;
-                                ((IGMDataItem.Text)ITEM[pos, 1]).Data = name;
-                                ((IGMDataItem.Integer)ITEM[pos, 2]).Data = currentValue;
+                            bool isUnlocked = unlocked.Contains(Kernel.KernelBin.Stat2Ability[stat]);
+                            int pos = (int)stat;
+                            if (pos >= 5) pos++;
+                            Contents[pos] = stat;
+                            FF8String name = Memory.Kernel_Bin.MagicData[c.StatJ[stat]].Name;
+                            if (name == null || name.Length == 0) name = Strings.Name._;
+                            ushort currentValue = Damageable.TotalStat(stat);
+                            ushort previousValue = GetPrevSetting()?.TotalStat(stat) ?? currentValue;
+                            ((IGMDataItem.Text)ITEM[pos, 1]).Data = name;
+                            ((IGMDataItem.Integer)ITEM[pos, 2]).Data = currentValue;
 
-                                if (previousValue == currentValue)
+                            if (previousValue == currentValue)
+                            {
+                                ITEM[pos, 4].Hide();
+                                if (isUnlocked)
                                 {
-                                    ITEM[pos, 4].Hide();
-                                    if (isUnlocked)
-                                    {
-                                        SetPalettes(pos, 2);
-                                        SetFontColor(pos, Font.ColorID.White);
-                                    }
-                                    else
-                                    {
-                                        SetPalettes(pos, 7);
-                                        SetFontColor(pos, Font.ColorID.Grey);
-                                    }
-                                }
-                                else if (previousValue > currentValue)
-                                {
-                                    SetPalettes(pos, 5, 16, Icons.ID.Arrow_Down);
-                                    SetFontColor(pos, Font.ColorID.Red);
+                                    SetPalettes(pos, 2);
+                                    SetFontColor(pos, Font.ColorID.White);
                                 }
                                 else
                                 {
-                                    SetPalettes(pos, 6, 17, Icons.ID.Arrow_Up);
-                                    SetFontColor(pos, Font.ColorID.Yellow);
+                                    SetPalettes(pos, 7);
+                                    SetFontColor(pos, Font.ColorID.Grey);
                                 }
-                                BLANKS[pos] = !isUnlocked;
                             }
+                            else if (previousValue > currentValue)
+                            {
+                                SetPalettes(pos, 5, 16, Icons.ID.Arrow_Down);
+                                SetFontColor(pos, Font.ColorID.Red);
+                            }
+                            else
+                            {
+                                SetPalettes(pos, 6, 17, Icons.ID.Arrow_Up);
+                                SetFontColor(pos, Font.ColorID.Yellow);
+                            }
+                            BLANKS[pos] = !isUnlocked;
                         }
                     }
                 }
@@ -216,7 +222,7 @@ namespace OpenVIII
             /// </summary>
             protected override void Init()
             {
-                Contents = new Kernel.Stat[Count];
+                Contents = new Stat[Count];
                 base.Init();
 
                 ITEM[5, 0] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Status_Attack, Pos = new Rectangle(SIZE[5].X + 200, SIZE[5].Y, 0, 0) };
@@ -224,14 +230,14 @@ namespace OpenVIII
                 ITEM[5, 2] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Attack, Pos = new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0) };
                 ITEM[5, 3] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Defense, Pos = new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0) };
 
-                foreach (Kernel.Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
+                foreach (Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                 {
                     int pos = (int)stat;
                     if (pos >= 5) pos++;
                     ITEM[pos, 0] = new IGMDataItem.Icon { Data = Stat2Icon[stat], Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                     ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0) };
                     ITEM[pos, 2] = new IGMDataItem.Integer { Pos = new Rectangle(SIZE[pos].X + 152, SIZE[pos].Y, 0, 0), NumType = Icons.NumType.SysFntBig, Spaces = 10 };
-                    ITEM[pos, 3] = stat == Kernel.Stat.HIT || stat == Kernel.Stat.EVA
+                    ITEM[pos, 3] = stat == Stat.HIT || stat == Stat.EVA
                                     ? new IGMDataItem.Text { Data = Strings.Name.Percent, Pos = new Rectangle(SIZE[pos].X + 350, SIZE[pos].Y, 0, 0) }
                                     : null;
                     ITEM[pos, 4] = new IGMDataItem.Icon { Pos = new Rectangle(SIZE[pos].X + 250, SIZE[pos].Y, 0, 0), Palette = 16 };

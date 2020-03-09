@@ -2,11 +2,8 @@
 using System.IO;
 using System.Linq;
 
-namespace OpenVIII
-{
-    namespace Kernel
-    {
-        #region Classes
+namespace OpenVIII.Kernel
+{ 
 
         /// <summary>
         /// Stat Percentage Increasing Abilities Data
@@ -47,6 +44,8 @@ namespace OpenVIII
                 Unknown0 = br.ReadByte();
             }
 
+            public byte Unknown0 { get; }
+
             #endregion Constructors
 
             #region Properties
@@ -65,11 +64,7 @@ namespace OpenVIII
             /// Stat increased
             /// </summary>
             public Stat Stat { get; }
-
-            public Stat Stat { get; private set; }
-            public byte Value { get; private set; }
-            public byte Unknown0 { get; private set; }
-
+            
             /// <summary>
             /// AmountIncreased
             /// </summary>
@@ -87,20 +82,8 @@ namespace OpenVIII
             private static StatPercentageAbilities CreateInstance(BinaryReader br, int i)
                 => new StatPercentageAbilities(br, i);
 
-            public static Dictionary<Abilities, Stat_percent_abilities> Read(BinaryReader br)
-            {
-                Dictionary<Abilities, Stat_percent_abilities> ret = new Dictionary<Abilities, Stat_percent_abilities>(count);
-
-                for (int i = 0; i < count; i++)
-                {
-                    Stat_percent_abilities tmp = new Stat_percent_abilities();
-                    tmp.Read(br, i);
-                    ret[(Abilities)(i+ (int)Abilities.HP_20)] = tmp;
-                }
-                return ret;
-            }
         }
 
         #endregion Classes
-    }
+    
 }

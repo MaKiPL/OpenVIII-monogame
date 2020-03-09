@@ -197,7 +197,7 @@ namespace OpenVIII
             Menu_Base[] tmp = new Menu_Base[9];
             Action[] actions = new Action[]
             {
-                () =>tmp[0] = IGMData_Mag_Stat_Slots.Create(),
+                () =>tmp[0] = IgmDataMagStatSlots.Create(),
                 () =>tmp[1] = IGMData_Mag_PageTitle.Create(),
                 () =>tmp[3] = IGMData_Mag_EL_A_D_Slots.Create(),
                 () =>tmp[2] = IGMData.Pool.Magic.Create(),
