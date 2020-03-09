@@ -976,17 +976,20 @@ namespace OpenVIII.World
         public sec33SkyEntry[] skyColors;
         private void Section33()
         {
-            using MemoryStream ms = new MemoryStream(buffer); //didn't know you can skip braces with using
-            using BinaryReader br = new BinaryReader(ms);
-            ms.Seek(sectionPointers[33 - 1], SeekOrigin.Begin);
-            var innerSec = GetInnerPointers(br);
-            List<sec33SkyEntry> skyEntries = new List<sec33SkyEntry>();
-            for (int i = 0; i < innerSec.Length; i++)
+            using (MemoryStream ms = new MemoryStream(buffer)) //didn't know you can skip braces with using
+            using (BinaryReader br = new BinaryReader(ms))
             {
-                ms.Seek(sectionPointers[33 - 1] + innerSec[i], SeekOrigin.Begin);
-                skyEntries.Add(Extended.ByteArrayToStructure<sec33SkyEntry>(br.ReadBytes(52)));
+                ms.Seek(sectionPointers[33 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                List<sec33SkyEntry> skyEntries = new List<sec33SkyEntry>();
+                for (int i = 0; i < innerSec.Length; i++)
+                {
+                    ms.Seek(sectionPointers[33 - 1] + innerSec[i], SeekOrigin.Begin);
+                    skyEntries.Add(Extended.ByteArrayToStructure<sec33SkyEntry>(br.ReadBytes(52)));
+                }
+
+                skyColors = skyEntries.ToArray();
             }
-            skyColors = skyEntries.ToArray();
         }
         #endregion
 
