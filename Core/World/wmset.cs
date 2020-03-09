@@ -918,9 +918,9 @@ namespace OpenVIII.World
         [StructLayout(LayoutKind.Sequential,Pack =1, Size =52)]
         public struct sec33SkyEntry
         {
-            public float positionX;
-            public float positionY;
-            public float positionZ;
+            public int positionX;
+            public int positionY;
+            public int positionZ;
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public byte[] shadows;
@@ -932,19 +932,26 @@ namespace OpenVIII.World
             public byte[] skyGradientCenter;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public byte[] skyGradientBottom;
+            
+            public byte unk1_1; 
+            public byte unk1_2; //unk1_2 - R value [0-127]
+            public byte unk1_3;
+            public byte unk1_4; //unk1_4 = R value [0-127]
+
+            public byte unk2_1;
+            public byte unk2_2; //unk2_2 - G value [0-127]
+            public byte unk2_3;
+            public byte unk2_4; //unk2_4 = G value [0-127]
+
+            public byte unk3_1;
+            public byte unk3_2; //unk3_2 - B value [0-127]
+            public byte unk3_3;
+            public byte unk3_4; //unk3_4 = B value [0-127]
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] unk1;
+            public byte[] unk4; //wrong place- one of the byte was switch for full colorization of wm
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] unk2;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] unk3;
-            public byte unk4_1;
-            public byte unk4_2;
-            public byte unk4_3;
-            public byte bUseGlobalColorization; //this is wrong
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] globalColor; //wrong place- one of the byte was switch for full colorization of wm
+            public byte[] unk5; //wrong place- one of the byte was switch for full colorization of wm
 
             public Color GetShadowsColor() =>
                 new Color(shadows[0], shadows[1], shadows[2], (byte)255);
@@ -956,8 +963,14 @@ namespace OpenVIII.World
                 new Color(skyGradientCenter[0], skyGradientCenter[1], skyGradientCenter[2], (byte)255);
             public Color GetBottomBGColor() =>
                 new Color(skyGradientBottom[0], skyGradientBottom[1], skyGradientBottom[2], (byte)255);
-            public Color GetGlobalColor() =>
-                new Color(globalColor[0], globalColor[1], globalColor[2], (byte)255);
+
+            public Vector3 GetLocation() =>
+                new Vector3()
+                {
+                    X = Extended.ConvertVanillaWorldXAxisToOpenVIII(positionX),
+                    Y = Extended.ConvertVanillaWorldYAxisToOpenVIII(positionZ),
+                    Z = Extended.ConvertVanillaWorldZAxisToOpenVIII(positionY)
+                };
         }
 
         public sec33SkyEntry[] skyColors;
