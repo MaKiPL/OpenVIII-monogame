@@ -1,11 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
+using OpenVIII.Kernel;
 using System.Collections.Generic;
 using System.Linq;
-using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public class GF : IGMData.Pool.Base<Saves.Data, GFs>
+    public class GF : Base<Saves.Data, GFs>
     {
         #region Properties
 
@@ -32,7 +32,7 @@ namespace OpenVIII.IGMData.Pool
                 DefaultPages = 4,
                 Battle = battle
             };
-            r.SetDamageable(damageable, null);
+            r.SetDamageable(damageable);
             r.Init();
             r.Refresh();
             r.Update();
@@ -66,94 +66,409 @@ namespace OpenVIII.IGMData.Pool
                 AV.Sound.Play(31);
                 base.Inputs_OKAY();
                 GFs select = Contents[CURSOR_SELECT];
-                Characters characterid = Damageable.GetCharacterData(out Saves.CharacterData characterdata) && JunctionedGFs.ContainsKey(select) ?
-                    JunctionedGFs[select] : characterdata?.ID ?? Characters.Blank;
+                Characters characterID = Damageable.GetCharacterData(out Saves.CharacterData characterData) && JunctionedGFs.ContainsKey(select) ?
+                    JunctionedGFs[select] : characterData?.ID ?? Characters.Blank;
 
-                if (characterid != Characters.Blank)
+                if (characterID == Characters.Blank) return false;
+                if (characterData != null && characterID == characterData.ID)
                 {
-                    if (characterid != characterdata.ID)
+                    //Purge everything that you can't have anymore. Because the GF provided for you.
+                    List<Abilities> a = (characterData).UnlockedGFAbilities;
+                    characterData.RemoveJunctionedGF(select);
+                    List<Abilities> b = (characterData).UnlockedGFAbilities;
+                    foreach (Abilities r in a.Except(b).Where(v => !Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
                     {
-                        //show error msg
-                    }
-                    else
-                    {
-                        //Purge everything that you can't have anymore. Because the GF provided for you.
-                        List<Kernel.Abilities> a = (characterdata).UnlockedGFAbilities;
-                        characterdata.RemoveJunctionedGF(select);
-                        List<Kernel.Abilities> b = (characterdata).UnlockedGFAbilities;
-                        foreach (Kernel.Abilities r in a.Except(b).Where(v => !Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
+                        if (Memory.Kernel_Bin.CommandAbilities.ContainsKey(r))
                         {
-                            if (Memory.Kernel_Bin.CommandAbilities.ContainsKey(r))
-                            {
-                                characterdata.Commands.Remove(r);
-                                characterdata.Commands.Add(Kernel.Abilities.None);
-                            }
-                            else if (Memory.Kernel_Bin.EquippableAbilities.ContainsKey(r))
-                            {
-                                characterdata.Abilities.Remove(r);
-                                characterdata.Abilities.Add(Kernel.Abilities.None);
-                            }
+                            characterData.Commands.Remove(r);
+                            characterData.Commands.Add(Abilities.None);
                         }
-                        foreach (Kernel.Abilities r in a.Except(b).Where(v => Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
+                        else if (Memory.Kernel_Bin.EquippableAbilities.ContainsKey(r))
                         {
-                            if (KernelBin.Stat2Ability.Any(item => item.Value == r))
-                                switch (r)
-                                {
-                                    case Kernel.Abilities.StAtkJ:
-                                        characterdata.StatJ[Kernel.Stat.ST_Atk] = 0;
-                                        break;
+                            characterData.Abilities.Remove(r);
+                            characterData.Abilities.Add(Abilities.None);
+                        }
+                    }
 
-                                    case Kernel.Abilities.ElAtkJ:
-                                        characterdata.StatJ[Kernel.Stat.EL_Atk] = 0;
-                                        break;
+                    foreach (Abilities r in a.Except(b).Where(v => Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
+                    {
+                        if (Kernel.KernelBin.Stat2Ability.Any(item => item.Value == r))
+                            switch (r)
+                            {
+                                case Abilities.StAtkJ:
+                                    characterData.StatJ[Stat.ST_Atk] = 0;
+                                    break;
 
-                                    case Kernel.Abilities.ElDefJ:
-                                    case Kernel.Abilities.ElDefJ2:
-                                    case Kernel.Abilities.ElDefJ4:
-                                        byte count = 0;
-                                        if (b.Contains(Kernel.Abilities.ElDefJ4))
-                                            count = 4;
-                                        else if (b.Contains(Kernel.Abilities.ElDefJ2))
-                                            count = 2;
-                                        else if (b.Contains(Kernel.Abilities.ElDefJ))
-                                            count = 1;
-                                        for (; count < 4; count++)
-                                            characterdata.StatJ[Kernel.Stat.EL_Def_1 + count] = 0;
-                                        break;
+                                case Abilities.ElAtkJ:
+                                    characterData.StatJ[Stat.EL_Atk] = 0;
+                                    break;
 
-                                    case Kernel.Abilities.StDefJ:
-                                    case Kernel.Abilities.StDefJ2:
-                                    case Kernel.Abilities.StDefJ4:
-                                        count = 0;
-                                        if (b.Contains(Kernel.Abilities.StDefJ4))
-                                            count = 4;
-                                        else if (b.Contains(Kernel.Abilities.StDefJ2))
-                                            count = 2;
-                                        else if (b.Contains(Kernel.Abilities.StDefJ))
-                                            count = 1;
-                                        for (; count < 4; count++)
-                                            characterdata.StatJ[Kernel.Stat.ST_Def_1 + count] = 0;
-                                        break;
-
-                                    case Kernel.Abilities.Ability3:
-                                    case Kernel.Abilities.Ability4:
+                                case Abilities.ElDefJ:
+                                case Abilities.ElDefJ2:
+                                case Abilities.ElDefJ4:
+                                    byte count = 0;
+                                    if (b.Contains(Abilities.ElDefJ4))
+                                        count = 4;
+                                    else if (b.Contains(Abilities.ElDefJ2))
                                         count = 2;
-                                        if (b.Contains(Kernel.Abilities.Ability4))
-                                            count = 4;
-                                        else if (b.Contains(Kernel.Abilities.Ability3))
-                                            count = 3;
-                                        for (; count < characterdata.Abilities.Count; count++)
-                                            characterdata.Abilities[count] = Kernel.Abilities.None;
-                                        break;
+                                    else if (b.Contains(Abilities.ElDefJ))
+                                        count = 1;
+                                    for (; count < 4; count++)
+                                        characterData.StatJ[Stat.EL_Def_1 + count] = 0;
+                                    break;
 
-                                    default:
-                                        characterdata.StatJ[KernelBin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
-                                        break;
-                                }
-                        }
-                        Menu.IGM_Junction.Refresh();
-                        return true;
+                                case Abilities.StDefJ:
+                                case Abilities.StDefJ2:
+                                case Abilities.StDefJ4:
+                                    count = 0;
+                                    if (b.Contains(Abilities.StDefJ4))
+                                        count = 4;
+                                    else if (b.Contains(Abilities.StDefJ2))
+                                        count = 2;
+                                    else if (b.Contains(Abilities.StDefJ))
+                                        count = 1;
+                                    for (; count < 4; count++)
+                                        characterData.StatJ[Stat.ST_Def_1 + count] = 0;
+                                    break;
+
+                                case Abilities.Ability3:
+                                case Abilities.Ability4:
+                                    count = 2;
+                                    if (b.Contains(Abilities.Ability4))
+                                        count = 4;
+                                    else if (b.Contains(Abilities.Ability3))
+                                        count = 3;
+                                    for (; count < characterData.Abilities.Count; count++)
+                                        characterData.Abilities[count] = Abilities.None;
+                                    break;
+
+                                case Abilities.None:
+                                    break;
+
+                                case Abilities.HPJ:
+                                    break;
+
+                                case Abilities.StrJ:
+                                    break;
+
+                                case Abilities.VitJ:
+                                    break;
+
+                                case Abilities.MagJ:
+                                    break;
+
+                                case Abilities.SprJ:
+                                    break;
+
+                                case Abilities.SpdJ:
+                                    break;
+
+                                case Abilities.EvaJ:
+                                    break;
+
+                                case Abilities.HitJ:
+                                    break;
+
+                                case Abilities.LuckJ:
+                                    break;
+
+                                case Abilities.Magic:
+                                    break;
+
+                                case Abilities.GF:
+                                    break;
+
+                                case Abilities.Draw:
+                                    break;
+
+                                case Abilities.Item:
+                                    break;
+
+                                case Abilities.Empty:
+                                    break;
+
+                                case Abilities.Card:
+                                    break;
+
+                                case Abilities.Doom:
+                                    break;
+
+                                case Abilities.MadRush:
+                                    break;
+
+                                case Abilities.Treatment:
+                                    break;
+
+                                case Abilities.Defend:
+                                    break;
+
+                                case Abilities.Darkside:
+                                    break;
+
+                                case Abilities.Recover:
+                                    break;
+
+                                case Abilities.Absorb:
+                                    break;
+
+                                case Abilities.Revive:
+                                    break;
+
+                                case Abilities.LvDown:
+                                    break;
+
+                                case Abilities.LvUp:
+                                    break;
+
+                                case Abilities.Kamikaze:
+                                    break;
+
+                                case Abilities.Devour:
+                                    break;
+
+                                case Abilities.MiniMog:
+                                    break;
+
+                                case Abilities.HP20:
+                                    break;
+
+                                case Abilities.HP40:
+                                    break;
+
+                                case Abilities.HP80:
+                                    break;
+
+                                case Abilities.Str20:
+                                    break;
+
+                                case Abilities.Str40:
+                                    break;
+
+                                case Abilities.Str60:
+                                    break;
+
+                                case Abilities.Vit20:
+                                    break;
+
+                                case Abilities.Vit40:
+                                    break;
+
+                                case Abilities.Vit60:
+                                    break;
+
+                                case Abilities.Mag20:
+                                    break;
+
+                                case Abilities.Mag40:
+                                    break;
+
+                                case Abilities.Mag60:
+                                    break;
+
+                                case Abilities.Spr20:
+                                    break;
+
+                                case Abilities.Spr40:
+                                    break;
+
+                                case Abilities.Spr60:
+                                    break;
+
+                                case Abilities.Spd20:
+                                    break;
+
+                                case Abilities.Spd40:
+                                    break;
+
+                                case Abilities.Eva30:
+                                    break;
+
+                                case Abilities.Luck50:
+                                    break;
+
+                                case Abilities.Mug:
+                                    break;
+
+                                case Abilities.MedData:
+                                    break;
+
+                                case Abilities.Counter:
+                                    break;
+
+                                case Abilities.ReturnDamage:
+                                    break;
+
+                                case Abilities.Cover:
+                                    break;
+
+                                case Abilities.Initiative:
+                                    break;
+
+                                case Abilities.MoveHPUp:
+                                    break;
+
+                                case Abilities.HPBonus:
+                                    break;
+
+                                case Abilities.StrBonus:
+                                    break;
+
+                                case Abilities.VitBonus:
+                                    break;
+
+                                case Abilities.MagBonus:
+                                    break;
+
+                                case Abilities.SprBonus:
+                                    break;
+
+                                case Abilities.AutoProtect:
+                                    break;
+
+                                case Abilities.AutoShell:
+                                    break;
+
+                                case Abilities.AutoReflect:
+                                    break;
+
+                                case Abilities.AutoHaste:
+                                    break;
+
+                                case Abilities.AutoPotion:
+                                    break;
+
+                                case Abilities.Expend2:
+                                    break;
+
+                                case Abilities.Expend3:
+                                    break;
+
+                                case Abilities.Ribbon:
+                                    break;
+
+                                case Abilities.Alert:
+                                    break;
+
+                                case Abilities.MoveFind:
+                                    break;
+
+                                case Abilities.EncHalf:
+                                    break;
+
+                                case Abilities.EncNone:
+                                    break;
+
+                                case Abilities.RareItem:
+                                    break;
+
+                                case Abilities.SumMag10:
+                                    break;
+
+                                case Abilities.SumMag20:
+                                    break;
+
+                                case Abilities.SumMag30:
+                                    break;
+
+                                case Abilities.SumMag40:
+                                    break;
+
+                                case Abilities.GFHP10:
+                                    break;
+
+                                case Abilities.GFHP20:
+                                    break;
+
+                                case Abilities.GFHP30:
+                                    break;
+
+                                case Abilities.GFHP40:
+                                    break;
+
+                                case Abilities.Boost:
+                                    break;
+
+                                case Abilities.Haggle:
+                                    break;
+
+                                case Abilities.SellHigh:
+                                    break;
+
+                                case Abilities.Familiar:
+                                    break;
+
+                                case Abilities.CallShop:
+                                    break;
+
+                                case Abilities.JunkShop:
+                                    break;
+
+                                case Abilities.ThunderMagRF:
+                                    break;
+
+                                case Abilities.IceMagRF:
+                                    break;
+
+                                case Abilities.FireMagRF:
+                                    break;
+
+                                case Abilities.LifeMagRF:
+                                    break;
+
+                                case Abilities.TimeMagRF:
+                                    break;
+
+                                case Abilities.StatusMagRF:
+                                    break;
+
+                                case Abilities.SuptMagRF:
+                                    break;
+
+                                case Abilities.ForbidMagRF:
+                                    break;
+
+                                case Abilities.RecoveryMedRF:
+                                    break;
+
+                                case Abilities.StatusMedRF:
+                                    break;
+
+                                case Abilities.AmmoRF:
+                                    break;
+
+                                case Abilities.ToolRF:
+                                    break;
+
+                                case Abilities.ForbidMedRF:
+                                    break;
+
+                                case Abilities.GFRecoveryMedRF:
+                                    break;
+
+                                case Abilities.GFAblMedRF:
+                                    break;
+
+                                case Abilities.MidMagRF:
+                                    break;
+
+                                case Abilities.HighMagRF:
+                                    break;
+
+                                case Abilities.MedLvUp:
+                                    break;
+
+                                case Abilities.CardMod:
+                                    break;
+
+                                default:
+                                    characterData.StatJ[
+                                        Kernel.KernelBin.Stat2Ability.FirstOrDefault(x => x.Value == r).Key] = 0;
+                                    break;
+                            }
                     }
+
+                    Menu.IGM_Junction.Refresh();
+                    return true;
                 }
             }
             return false;
@@ -174,12 +489,12 @@ namespace OpenVIII.IGMData.Pool
                 {
                     if (Battle)
                     {
-                        AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID && !Source[g].IsDead, Font.ColorID.White);
+                        AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID && !Source[g].IsDead);
                         AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID && Source[g].IsDead, Font.ColorID.Red, true);
                     }
                     else
                     {
-                        AddGFs(ref pos, ref skip, g => !JunctionedGFs.ContainsKey(g), Font.ColorID.White);
+                        AddGFs(ref pos, ref skip, g => !JunctionedGFs.ContainsKey(g));
                         AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] == c.ID, Font.ColorID.Grey);
                         AddGFs(ref pos, ref skip, g => JunctionedGFs.ContainsKey(g) && JunctionedGFs[g] != c.ID, Font.ColorID.Dark_Grey);
                         UpdateCharacter();
@@ -187,10 +502,10 @@ namespace OpenVIII.IGMData.Pool
                 }
                 else if (Damageable.GetEnemy(out Enemy e))
                 {
-                    var gfs = e.JunctionedGFs;
+                    IEnumerable<GFs> gfs = e.JunctionedGFs;
                     foreach (GFs g in gfs)
                     {
-                        if(!AddGF(ref pos, ref skip, g, Source[g].IsDead ? Font.ColorID.Red : Font.ColorID.White, Source[g].IsDead)) break;
+                        if (!AddGF(ref pos, ref skip, g, Source[g].IsDead ? Font.ColorID.Red : Font.ColorID.White, Source[g].IsDead)) break;
                     }
                 }
                 for (; pos < Rows; pos++)
@@ -199,7 +514,7 @@ namespace OpenVIII.IGMData.Pool
             base.Refresh();
             UpdateTitle();
         }
-        
+
         public override void UpdateTitle()
         {
             base.UpdateTitle();
@@ -291,23 +606,23 @@ namespace OpenVIII.IGMData.Pool
             pos++;
         }
 
-        private void AddGFs(ref int pos, ref int skip, System.Func<GFs, bool> predicate, Font.ColorID colorid = Font.ColorID.White, bool blank = false)
-        {
-            foreach (GFs g in UnlockedGFs.Where(predicate))
-            {
-                if (!AddGF(ref pos, ref skip, g, colorid, blank)) break;
-            }
-        }
-
-        private bool AddGF(ref int pos, ref int skip, GFs g, Font.ColorID colorid, bool blank)
+        private bool AddGF(ref int pos, ref int skip, GFs g, Font.ColorID colorID, bool blank)
         {
             if (pos >= Rows) return false;
             if (skip-- <= 0)
             {
                 BLANKS[pos] = blank;
-                AddGF(ref pos, g, colorid);
+                AddGF(ref pos, g, colorID);
             }
             return true;
+        }
+
+        private void AddGFs(ref int pos, ref int skip, System.Func<GFs, bool> predicate, Font.ColorID colorID = Font.ColorID.White, bool blank = false)
+        {
+            foreach (GFs g in UnlockedGFs.Where(predicate))
+            {
+                if (!AddGF(ref pos, ref skip, g, colorID, blank)) break;
+            }
         }
 
         private void HideChild(int pos)
@@ -322,7 +637,7 @@ namespace OpenVIII.IGMData.Pool
         {
             BLANKS[pos] = false;
             ITEM[pos, 0].Show();
-            if (JunctionedGFs?.ContainsKey(g) ?? false && !Battle)
+            if (JunctionedGFs?.ContainsKey(g) ?? false)
                 ITEM[pos, 1].Show();
             else
                 ITEM[pos, 1].Hide();

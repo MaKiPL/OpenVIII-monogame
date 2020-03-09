@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
@@ -16,110 +17,25 @@ namespace OpenVIII
 
         #endregion Fields
 
-        #region Methods
-
-        private byte convert1(byte[] @in)
-        {
-            //from Ifrit's help file
-            byte level = Level;
-            int i = level * @in[0] / 10 + level / @in[1] - level * level / 2 / (@in[3] + @in[2]) / 4;
-            //PLEASE NOTE: I'm not 100% sure on the STR/MAG formula, but it should be accurate enough to get the general idea.
-            // wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
-
-            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
-        }
-
-        private byte convert2(byte[] @in)
-        {
-            //from Ifrit's help file
-            byte level = Level;
-            int i = level / @in[1] - level / @in[3] + level * @in[0] + @in[2];
-            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
-        }
-
-        private int convert3(ushort @in, byte inLevel)
-        {
-            //from Ifrit's help file
-            byte level = Level;
-            if (inLevel == 0)
-                return 0;
-            else
-                return @in * (5 * (level - inLevel) / inLevel + 4);
-        }
-
-        private T hml<T>(T h, T m, T l)
-        {
-            byte level = Level;
-            if (level > Info.highLevelStart)
-                return h;
-            else if (level > Info.medLevelStart)
-                return m;
-            else return l;
-        }
-
-        private int levelgroup()
-        {
-            byte l = Level;
-            if (l > Info.highLevelStart)
-                return 2;
-            if (l > Info.medLevelStart)
-                return 1;
-            else return 0;
-        }
-
-        #endregion Methods
-
         #region Constructors
 
         private Enemy()
         {
         }
 
-        protected override void ReadData(BinaryReader br, Enum @enum) => throw new NotImplementedException("This method is not used by Enemy");
-
-        public static Enemy Load(Battle.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
-        {
-            Enemy r = new Enemy
-            {
-                EII = eII,
-                FixedLevel = fixedLevel
-            };
-            r._CurrentHP = startinghp ?? r.MaxHP();
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
-            {
-                r.Statuses0 |= Kernel.Persistent_Statuses.Zombie;
-            }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
-            {
-
-                r.Statuses1 |= Kernel.BattleOnlyStatuses.Protect;
-            }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0)
-            {
-                r.Statuses1 |= Kernel.BattleOnlyStatuses.Reflect;
-            }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0)
-            {
-                r.Statuses1 |= Kernel.BattleOnlyStatuses.Shell;
-            }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0)
-            {
-                r.Statuses1 |= Kernel.BattleOnlyStatuses.Float;
-            }
-            r.Init();
-            return r;
-        }
-
         #endregion Constructors
 
         #region Properties
 
-        public IEnumerable<Kernel.EnemyAttacksData> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
-
-        public IEnumerable<GFs> JunctionedGFs => Memory.State != null? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
         public static List<Enemy> Party { get; set; }
 
+        public Debug_battleDat.Abilities[] Abilities => hml(Info.abilitiesHigh, Info.abilitiesMed, Info.abilitiesLow);
+
         public byte AP => Info.ap;
+
+        public Kernel.Devour Devour => Info.devour[levelgroup()] >= Memory.Kernel_Bin.Devour.Count ?
+            Memory.Kernel_Bin.Devour[Memory.Kernel_Bin.Devour.Count - 1] :
+            Memory.Kernel_Bin.Devour[Info.devour[levelgroup()]];
 
         public Debug_battleDat.Magic[] DrawList => hml(Info.drawhigh, Info.drawmed, Info.drawlow);
 
@@ -127,11 +43,12 @@ namespace OpenVIII
         /// Randomly gain 1 or 0 from this list.
         /// </summary>
         public Saves.Item[] DropList => hml(Info.drophigh, Info.dropmed, Info.droplow);
-        public Debug_battleDat.Abilities[] Abilities => hml(Info.abilitiesHigh, Info.abilitiesMed, Info.abilitiesLow);
 
         public byte DropRate => (byte)(MathHelper.Clamp(Info.dropRate * 100 / byte.MaxValue, 0, 100));
 
         public Battle.EnemyInstanceInformation EII { get; set; }
+
+        public IEnumerable<Kernel.EnemyAttacksData> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
 
         public override byte EVA => convert2(Info.eva);
 
@@ -151,6 +68,10 @@ namespace OpenVIII
         /// a miss chance
         /// </remarks>
         public override byte HIT => 0;
+
+        public Debug_battleDat.Information Info => EII.Data.information;
+
+        public IEnumerable<GFs> JunctionedGFs => Memory.State != null ? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
 
         /// <summary>
         /// Level of enemy based on average of party or fixed value.
@@ -192,15 +113,45 @@ namespace OpenVIII
 
         public override byte VIT => convert2(Info.vit);
 
-        public Kernel.Devour Devour => Info.devour[levelgroup()] >= Memory.Kernel_Bin.Devour.Count ?
-            Memory.Kernel_Bin.Devour[Memory.Kernel_Bin.Devour.Count - 1] :
-            Memory.Kernel_Bin.Devour[Info.devour[levelgroup()]];
-
-        public Debug_battleDat.Information Info => EII.Data.information;
-
         #endregion Properties
 
+        #region Methods
+
+        public static implicit operator Battle.EnemyInstanceInformation(Enemy @in) => @in.EII;
+
         public static implicit operator Enemy(Battle.EnemyInstanceInformation @in) => Load(@in);
+
+        public static Enemy Load(Battle.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
+        {
+            Enemy r = new Enemy
+            {
+                EII = eII,
+                FixedLevel = fixedLevel
+            };
+            r._CurrentHP = startinghp ?? r.MaxHP();
+            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
+            {
+                r.Statuses0 |= Kernel.Persistent_Statuses.Zombie;
+            }
+            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
+            {
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Protect;
+            }
+            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0)
+            {
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Reflect;
+            }
+            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0)
+            {
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Shell;
+            }
+            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0)
+            {
+                r.Statuses1 |= Kernel.BattleOnlyStatuses.Float;
+            }
+            r.Init();
+            return r;
+        }
 
         /// <summary>
         /// Return card if succeed at roll
@@ -266,7 +217,6 @@ namespace OpenVIII
 
         public override short ElementalResistance(Kernel.Element @in)
         {
-
             List<Kernel.Element> l = (Enum.GetValues(typeof(Kernel.Element))).Cast<Kernel.Element>().ToList();
             if (@in == Kernel.Element.NonElemental)
 
@@ -373,80 +323,12 @@ namespace OpenVIII
             return (sbyte)MathHelper.Clamp(r - 100, -100, 100);
         }
 
-        /// <summary>
-        /// I notice that the resistance reported on the wiki is 100 less than the number in the data.
-        /// </summary>
-        /// <param name="s">status effect</param>
-        /// <returns>percent of resistance</returns>
-        /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-
         public override sbyte StatusResistance(Kernel.BattleOnlyStatuses s)
 
         {
             byte r = statusdefault;
             switch (s)
             {
-                case Kernel_bin.Battle_Only_Statuses.Sleep:
-                    r = Info.sleepResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Haste:
-                    r = Info.hasteResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Slow:
-                    r = Info.slowResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Stop:
-                    r = Info.stopResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Regen:
-                    r = Info.regenResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Protect:
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Shell:
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Reflect:
-                    r = Info.reflectResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Aura:
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Curse:
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Doom:
-                    r = Info.doomResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Invincible:
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Petrifying:
-                    r = Info.slowPetrifyResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Float:
-                    r = Info.floatResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Confuse:
-                    r = Info.confuseResistanceMental;
-                    break;
-
-                case Kernel.Battle_Only_Statuses.Drain:
-                    r = Info.drainResistanceMental;
-                    break;
-
-                case Kernel_bin.Battle_Only_Statuses.Eject:
-=======
                 case Kernel.BattleOnlyStatuses.Sleep:
                     r = Info.sleepResistanceMental;
                     break;
@@ -509,10 +391,50 @@ namespace OpenVIII
                 case Kernel.BattleOnlyStatuses.Eject:
                     r = Info.explusionResistanceMental;
                     break;
+                case BattleOnlyStatuses.None:
+                    break;
+                case BattleOnlyStatuses.Double:
+                    break;
+                case BattleOnlyStatuses.Triple:
+                    break;
+                case BattleOnlyStatuses.Defend:
+                    break;
+                case BattleOnlyStatuses.Unk0X100000:
+                    break;
+                case BattleOnlyStatuses.Unk0X200000:
+                    break;
+                case BattleOnlyStatuses.Charged:
+                    break;
+                case BattleOnlyStatuses.BackAttack:
+                    break;
+                case BattleOnlyStatuses.Vit0:
+                    break;
+                case BattleOnlyStatuses.AngelWing:
+                    break;
+                case BattleOnlyStatuses.Unk0X4000000:
+                    break;
+                case BattleOnlyStatuses.Unk0X8000000:
+                    break;
+                case BattleOnlyStatuses.Unk0X10000000:
+                    break;
+                case BattleOnlyStatuses.Unk0X20000000:
+                    break;
+                case BattleOnlyStatuses.HasMagic:
+                    break;
+                case BattleOnlyStatuses.SummonGF:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(s), s, null);
             }
             return (sbyte)MathHelper.Clamp(r - 100, -100, 100);
         }
 
+        /// <summary>
+        /// I notice that the resistance reported on the wiki is 100 less than the number in the data.
+        /// </summary>
+        /// <param name="s">status effect</param>
+        /// <returns>percent of resistance</returns>
+        /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
         /// <summary>
         /// The wiki says some areas have forced or random levels. This lets you override the level.
         /// </summary>
@@ -554,6 +476,57 @@ namespace OpenVIII
             return 0;
         }
 
-        public static implicit operator Battle.EnemyInstanceInformation(Enemy @in) => @in.EII;
+        protected override void ReadData(BinaryReader br, Enum @enum) => throw new NotImplementedException("This method is not used by Enemy");
+
+        private byte convert1(byte[] @in)
+        {
+            //from Ifrit's help file
+            byte level = Level;
+            int i = level * @in[0] / 10 + level / @in[1] - level * level / 2 / (@in[3] + @in[2]) / 4;
+            //PLEASE NOTE: I'm not 100% sure on the STR/MAG formula, but it should be accurate enough to get the general idea.
+            // wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
+
+            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+        }
+
+        private byte convert2(byte[] @in)
+        {
+            //from Ifrit's help file
+            byte level = Level;
+            int i = level / @in[1] - level / @in[3] + level * @in[0] + @in[2];
+            return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
+        }
+
+        private int convert3(ushort @in, byte inLevel)
+        {
+            //from Ifrit's help file
+            byte level = Level;
+            if (inLevel == 0)
+                return 0;
+            else
+                return @in * (5 * (level - inLevel) / inLevel + 4);
+        }
+
+        private T hml<T>(T h, T m, T l)
+        {
+            byte level = Level;
+            if (level > Info.highLevelStart)
+                return h;
+            else if (level > Info.medLevelStart)
+                return m;
+            else return l;
+        }
+
+        private int levelgroup()
+        {
+            byte l = Level;
+            if (l > Info.highLevelStart)
+                return 2;
+            if (l > Info.medLevelStart)
+                return 1;
+            else return 0;
+        }
+
+        #endregion Methods
     }
 }

@@ -1,85 +1,81 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
-namespace OpenVIII
+namespace OpenVIII.Kernel
 {
-    public partial class Kernel_bin
+    /// <summary>
+    /// Characters Abilities Data
+    /// </summary>
+    /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Character-abilities"/>
+    public sealed class CharacterAbilities : IEquippableAbility
     {
+        #region Fields
+
         /// <summary>
-        /// Characters Abilities Data
+        /// Section Count
         /// </summary>
-        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Character-abilities"/>
-        public sealed class CharacterAbilities : IEquippableAbility
+        public const int Count = 20;
+
+        /// <summary>
+        /// Section ID
+        /// </summary>
+        public const int ID = 14;
+
+        #endregion Fields
+
+        /// <summary>
+        /// Icon for this type.
+        /// </summary>
+
+        #region Constructors
+
+        private CharacterAbilities(BinaryReader br, int i)
         {
-            #region Fields
+            //0x0000	2 bytes
+            Name = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2);
+            //0x0002	2 bytes
+            Description = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2 + 1);
+            br.BaseStream.Seek(4, SeekOrigin.Current);
+            //0x0004  1 byte
+            AP = br.ReadByte();
+            //0x0005  3 byte
+            byte[] tmp = br.ReadBytes(3);
+            Flags = (CharacterAbilityFlags)(tmp[2] << (16) | tmp[1] << (8) | tmp[0]);
+        }
 
-            /// <summary>
-            /// Section Count
-            /// </summary>
-            public const int Count = 20;
+        #endregion Constructors
 
-            /// <summary>
-            /// Section ID
-            /// </summary>
-            public const int ID = 14;
+        #region Properties
 
-            #endregion Fields
+        public byte AP { get; }
 
-            /// <summary>
-            /// Icon for this type.
-            /// </summary>
+        public FF8String Description { get; }
 
-            #region Constructors
+        /// <summary>
+        /// Ability Flags that are enabled by this
+        /// </summary>
+        public CharacterAbilityFlags Flags { get; }
 
-            private CharacterAbilities(BinaryReader br, int i)
-            {
-                //0x0000	2 bytes
-                Name = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2);
-                //0x0002	2 bytes
-                Description = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2 + 1);
-                br.BaseStream.Seek(4, SeekOrigin.Current);
-                //0x0004  1 byte
-                AP = br.ReadByte();
-                //0x0005  3 byte
-                byte[] tmp = br.ReadBytes(3);
-                Flags = (CharacterAbilityFlags)(tmp[2] << (16) | tmp[1] << (8) | tmp[0]);
-            }
+        public Icons.ID Icon { get; } = Icons.ID.Ability_Character2;
 
-            #endregion Constructors
+        public FF8String Name { get; }
 
-            #region Properties
+        public byte Palette { get; } = Ability.DefaultPalette;
 
-            public byte AP { get; }
+        #endregion Properties
 
-            public FF8String Description { get; }
+        #region Methods
 
-            /// <summary>
-            /// Ability Flags that are enabled by this
-            /// </summary>
-            public CharacterAbilityFlags Flags { get; }
-
-            public Icons.ID Icon { get; } = Icons.ID.Ability_Character2;
-
-            public FF8String Name { get; }
-
-            public byte Palette { get; } = Ability.DefaultPalette;
-
-            #endregion Properties
-
-            #region Methods
-
-            public static IReadOnlyDictionary<Abilities, CharacterAbilities> Read(BinaryReader br) =>
+        public static IReadOnlyDictionary<Abilities, CharacterAbilities> Read(BinaryReader br) =>
                 Enumerable.Range(0, Count)
                     .ToDictionary(i => (Abilities)(i + (int)Abilities.Mug), i => CreateInstance(br, i));
 
-            public override string ToString() => Name;
+        public override string ToString() => Name;
 
-            private static CharacterAbilities CreateInstance(BinaryReader br, int i)
-                        => new CharacterAbilities(br, i);
+        private static CharacterAbilities CreateInstance(BinaryReader br, int i)
+                    => new CharacterAbilities(br, i);
 
-            #endregion Methods
-        }
+        #endregion Methods
     }
-
 }

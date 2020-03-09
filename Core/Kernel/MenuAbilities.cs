@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    public partial class KernelBin
     {
         /// <summary>
         /// Menu Abilities Data

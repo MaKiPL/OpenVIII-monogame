@@ -4,7 +4,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    public partial class KernelBin
     {
         /// <summary>
         /// Command Abilities

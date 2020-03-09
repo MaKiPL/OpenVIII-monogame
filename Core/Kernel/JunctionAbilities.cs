@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Junction Abilities Data
@@ -60,8 +61,7 @@ namespace OpenVIII
 
             public byte Palette { get; } = Ability.DefaultPalette;
 
-            //public BitArray J_Flags { get; private set; }
-            public JunctionAbilityFlags J_Flags { get; private set; }
+            #endregion Properties
 
             #region Methods
 
@@ -73,19 +73,7 @@ namespace OpenVIII
             private static JunctionAbilities CreateInstance(BinaryReader br, int i)
                 => new JunctionAbilities(br, i);
 
-            public static Dictionary<Abilities,Junction_abilities> Read(BinaryReader br)
-            {
-                Dictionary<Abilities, Junction_abilities> ret = new Dictionary<Abilities, Junction_abilities>(count);
-
-                for (int i = 0; i < count; i++)
-                {
-
-                    Junction_abilities tmp = new Junction_abilities();
-                    tmp.Read(br, i);
-                    ret[(Abilities)i] = tmp;
-                }
-                return ret;
-            }
+            #endregion Methods
         }
     }
 }

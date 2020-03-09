@@ -41,9 +41,9 @@ namespace OpenVIII.IGMData
             protected set => ITEM[Offsets.Targets_Window, 0] = value;
         }
 
-        public IGMData.Pool.Enemy_Attacks EnemyAttacks
+        public IGMData.Pool.EnemyAttacks EnemyAttacks
         {
-            get => ((IGMData.Pool.Enemy_Attacks)ITEM[Offsets.Enemy_Attacks_Pool, 0]);
+            get => ((IGMData.Pool.EnemyAttacks)ITEM[Offsets.Enemy_Attacks_Pool, 0]);
             protected set => ITEM[Offsets.Enemy_Attacks_Pool, 0] = value;
         }
 
@@ -460,7 +460,7 @@ namespace OpenVIII.IGMData
             MagPool.Hide();
             ItemPool = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             ItemPool.Hide();
-            EnemyAttacks = Pool.Enemy_Attacks.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
+            EnemyAttacks = Pool.EnemyAttacks.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             EnemyAttacks.Hide();
             CombinePool = Pool.Combine.Create(new Rectangle(X + 50, Y - 22, 300, 112), Damageable, true);
             CombinePool.Hide();

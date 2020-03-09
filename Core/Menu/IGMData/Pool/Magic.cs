@@ -134,7 +134,7 @@ namespace OpenVIII.IGMData.Pool
                     }
             else
 
-                foreach (Kernel_bin.Magic_Data i in Sort)
+                foreach (KernelBin.Magic_Data i in Sort)
 
 
                 {

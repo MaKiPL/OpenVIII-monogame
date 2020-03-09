@@ -3,26 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Permissions;
 
-namespace OpenVIII
+namespace OpenVIII.Kernel
 {
-    public partial class Kernel_bin
+    public class KernelBin
     {
         public const ushort MAX_HP_VALUE = 9999;
         public const byte MAX_STAT_VALUE = 255;
 
-        private static List<Magic_Data> s_magicData;
-        private static Dictionary<GFs, Junctionable_GFs_Data> s_junctionableGFsData;
-        private static List<Enemy_Attacks_Data> s_enemyAttacksData;
-        private static List<Battle_Commands> s_battleCommands;
+        private static List<MagicData> s_magicData;
+        private static Dictionary<GFs, JunctionableGFsData> s_junctionableGFsData;
+        private static List<EnemyAttacksData> s_enemyAttacksData;
+        private static List<BattleCommand> s_battleCommands;
         private static List<Weapons_Data> s_weaponsData;
         private static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> s_renzokukenFinishersData;
-        private static Dictionary<Characters, Character_Stats> s_characterStats;
-        private static List<Battle_Items_Data> s_battleItemsData;
-        public static List<Non_battle_Items_Data> s_nonbattleItemsData;
+        private static Dictionary<Characters, CharacterStats> s_characterStats;
+        private static List<BattleItemData> s_battleItemsData;
+        public static List<NonBattleItemsData> s_nonbattleItemsData;
         private static List<Non_Junctionable_GFs_Attacks_Data> s_nonJunctionableGFsAttacksData;
-        private static Dictionary<Abilities, Command_ability_data> s_commandabilitydata;
-        private static Dictionary<Abilities, Junction_abilities> s_junctionabilities;
-        private static Dictionary<Abilities, Command_abilities> s_commandabilities;
+        private static Dictionary<Abilities, CommandAbilityData> s_commandabilitydata;
+        private static Dictionary<Abilities, JunctionAbilities> s_junctionabilities;
+        private static Dictionary<Abilities, Commandabilities> s_commandabilities;
         private static Dictionary<Abilities, Stat_percent_abilities> s_statpercentabilities;
         private static Dictionary<Abilities, Character_abilities> s_characterabilities;
         private static Dictionary<Abilities, Party_abilities> s_partyabilities;
@@ -60,7 +60,7 @@ namespace OpenVIII
         private KernelBin()
         {
 
-            Memory.Log.WriteLine($"{nameof(Kernel_bin)} :: new ");
+            Memory.Log.WriteLine($"{nameof(KernelBin)} :: new ");
             ArchiveBase aw = ArchiveWorker.Load(ArchiveString);
             byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.Kernel].GetFileNames()[0]);
             List<Loc> subPositions = Memory.Strings[Strings.FileID.Kernel].GetFiles().SubPositions;
