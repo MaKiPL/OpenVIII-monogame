@@ -1358,6 +1358,28 @@ namespace OpenVIII
                     }
                 }
             }
+            if (ImGuiNET.ImGui.CollapsingHeader("fullscreenmap debugger"))
+            {
+                ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
+                ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
+                for (int i = 0; i < screenMapLocations.Length; i++)
+                {
+                    ImGuiNET.ImGui.InputFloat($"lA{i}", ref screenMapLocations[i].x);
+                    ImGuiNET.ImGui.SameLine();
+                    ImGuiNET.ImGui.InputFloat($"lB{i}", ref screenMapLocations[i].y);
+                }
+            }
+            if (ImGuiNET.ImGui.CollapsingHeader("wmset33"))
+            {
+                for(int i = 0; i<wmset.skyColors.Length; i++)
+                {
+                    var col = wmset.skyColors[i].GetLocation();
+                    ImGuiNET.ImGui.Text($"sec33: {i}={col}");
+                    ImGuiNET.ImGui.SameLine();
+                    if(ImGuiNET.ImGui.Button($"sec33WARP{i}"))
+                        playerPosition = col;
+                }
+            }
             //ImGuiNET.ImGui.Begin("!Texture lister!");
             //ImGuiNET.ImGui.Image(Memory.imgui.BindTexture((Texture2D)wmset.GetWorldMapTexture(wmset.Section38_textures.minimapFullScreenPointer, 0)),
             //    new System.Numerics.Vector2(64,64));

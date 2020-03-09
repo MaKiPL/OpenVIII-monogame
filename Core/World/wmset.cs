@@ -46,7 +46,7 @@ namespace OpenVIII.World
             //Section19(); //=something with regions: it's that island with many drawpoints- regions setting
             //Section31(); //????? - referenced by FullScreen map - prob. 12 bytes per entry, where 3rd byte is locationPointer
             Section32(); //======FINISHED [location names]
-            //Section33(); //=SKY GRADIENT/REGION COLOURING
+            Section33(); //=SKY GRADIENT/REGION COLOURING
             //Section34(); //related to 14- something with side quests
             //Section35(); //=draw points
             //Section36(); //?????????
@@ -913,6 +913,85 @@ namespace OpenVIII.World
         public int GetlocationNamesLength => locationsNames.Length;
 
         #endregion Section 32 - World map location names
+
+        #region Section 33 - Sky and ambient colour
+        [StructLayout(LayoutKind.Sequential,Pack =1, Size =52)]
+        public struct sec33SkyEntry
+        {
+            public int positionX;
+            public int positionY;
+            public int positionZ;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] shadows;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] vehicles;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] skyGradientTop;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] skyGradientCenter;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] skyGradientBottom;
+            
+            public byte unk1_1; 
+            public byte unk1_2; //unk1_2 - R value [0-127]
+            public byte unk1_3;
+            public byte unk1_4; //unk1_4 = R value [0-127]
+
+            public byte unk2_1;
+            public byte unk2_2; //unk2_2 - G value [0-127]
+            public byte unk2_3;
+            public byte unk2_4; //unk2_4 = G value [0-127]
+
+            public byte unk3_1;
+            public byte unk3_2; //unk3_2 - B value [0-127]
+            public byte unk3_3;
+            public byte unk3_4; //unk3_4 = B value [0-127]
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] unk4; //wrong place- one of the byte was switch for full colorization of wm
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] unk5; //wrong place- one of the byte was switch for full colorization of wm
+
+            public Color GetShadowsColor() =>
+                new Color(shadows[0], shadows[1], shadows[2], (byte)255);
+            public Color GetVehiclesColor() =>
+                new Color(vehicles[0], vehicles[1], vehicles[2], (byte)255);
+            public Color GetTopBGColor() =>
+                new Color(skyGradientTop[0], skyGradientTop[1], skyGradientTop[2], (byte)255);
+            public Color GetCenterBGColor() =>
+                new Color(skyGradientCenter[0], skyGradientCenter[1], skyGradientCenter[2], (byte)255);
+            public Color GetBottomBGColor() =>
+                new Color(skyGradientBottom[0], skyGradientBottom[1], skyGradientBottom[2], (byte)255);
+
+            public Vector3 GetLocation() =>
+                new Vector3()
+                {
+                    X = Extended.ConvertVanillaWorldXAxisToOpenVIII(positionX),
+                    Y = Extended.ConvertVanillaWorldYAxisToOpenVIII(positionZ),
+                    Z = Extended.ConvertVanillaWorldZAxisToOpenVIII(positionY)
+                };
+        }
+
+        public sec33SkyEntry[] skyColors;
+        private void Section33()
+        {
+            using (MemoryStream ms = new MemoryStream(buffer)) //didn't know you can skip braces with using
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                ms.Seek(sectionPointers[33 - 1], SeekOrigin.Begin);
+                var innerSec = GetInnerPointers(br);
+                List<sec33SkyEntry> skyEntries = new List<sec33SkyEntry>();
+                for (int i = 0; i < innerSec.Length; i++)
+                {
+                    ms.Seek(sectionPointers[33 - 1] + innerSec[i], SeekOrigin.Begin);
+                    skyEntries.Add(Extended.ByteArrayToStructure<sec33SkyEntry>(br.ReadBytes(52)));
+                }
+
+                skyColors = skyEntries.ToArray();
+            }
+        }
+        #endregion
 
         #region Section 38 - World map textures archive
 
