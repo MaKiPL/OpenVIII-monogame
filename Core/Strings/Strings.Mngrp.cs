@@ -11,44 +11,37 @@ namespace OpenVIII
     {
         #region Classes
 
-        public class MenuGroup : StringsBase
+        public sealed class MenuGroup : StringsBase
         {
             #region Fields
 
-            private readonly IReadOnlyDictionary<int, uint> _binMsg;
-            private readonly IReadOnlyDictionary<int, IReadOnlyList<int>> _complexStr;
-            private readonly uint[] _stringsLoc;
-            private readonly uint[] _stringsPadLoc;
+            /// <summary>
+            /// these files come in pairs. the bin has string offsets and 6 bytes of other data
+            /// msg is where the strings are.
+            /// </summary>
+            private static readonly IReadOnlyDictionary<int, uint> BinMsg = new Dictionary<int, uint>
+            {{106,111},{107,112},{108,113},{109,114},{110,115}};
+
+            /// <summary>
+            /// complex str has locations in first file, and they have 8 bytes of stuff at the start
+            /// of each entry, 6 bytes UNK and ushort length? also can have multiple null ending
+            /// strings per entry.
+            /// </summary>
+            private static readonly IReadOnlyDictionary<int, IReadOnlyList<int>> ComplexStr = new Dictionary<int, IReadOnlyList<int>> { { 74, new List<int> { 75, 76, 77, 78, 79, 80 } } };
+
+            /// <summary>
+            /// only location data before strings
+            /// </summary>
+            private static readonly int[] StringsLoc = { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
+                55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+                71, 72, 73, 81, 82, 83, 84, 85, 86, 87, 88, 116};
+
+            /// <summary>
+            /// string contain padding values at start of file then location data before strings
+            /// </summary>
+            private static readonly int[] StringsPadLoc = { (int)SectionID.Tkmnmes1, (int)SectionID.Tkmnmes2, (int)SectionID.Tkmnmes3 };
 
             #endregion Fields
-
-            #region Constructors
-
-            public MenuGroup()
-            {
-
-                //string contain padding values at start of file
-                //then location data before strings
-                _stringsPadLoc = new[] { (uint)SectionID.Tkmnmes1, (uint)SectionID.Tkmnmes2, (uint)SectionID.Tkmnmes3 };
-                //only location data before strings
-                _stringsLoc = new uint[] { 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
-                    55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
-                    71, 72, 73, 81, 82, 83, 84, 85, 86, 87, 88, 116};
-                //complex str has locations in first file,
-                //and they have 8 bytes of stuff at the start of each entry, 6 bytes UNK and ushort length?
-                //also can have multiple null ending strings per entry.
-                _complexStr = new Dictionary<int, IReadOnlyList<int>> { { 74, new List<int> { 75, 76, 77, 78, 79, 80 } } };
-                //these files come in pairs. the bin has string offsets and 6 bytes of other data
-                //msg is where the strings are.
-                _binMsg = new Dictionary<int, uint>
-                    {{106,111},{107,112},{108,113},{109,114},{110,115}};
-            }
-
-            public static MenuGroup Load() => Load<MenuGroup>();
-
-            protected override void DefaultValues() => SetValues(Memory.Archives.A_MENU, "mngrp.bin", "mngrphd.bin");
-
-            #endregion Constructors
 
             #region Enums
 
@@ -63,27 +56,9 @@ namespace OpenVIII
 
             #region Methods
 
-            protected void GetFileLocations()
-            {
-                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
-                byte[] buffer = aw.GetBinaryFile(FileNames[1], true);
-                if (buffer == null) return;
-                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
-                {
-                    GetFileLocations(br);
-                }
-            }
+            public static MenuGroup Load() => Load<MenuGroup>();
 
-            protected virtual void GetFileLocations(BinaryReader br)
-            {
-                while (br.BaseStream.Position+8 < br.BaseStream.Length)
-                {
-                    (uint seek, uint length) = ((br.ReadUInt32(), br.ReadUInt32()));
-                    if (seek == 0xFFFFFFFF || length == 0x00000000) continue;
-                    seek--;
-                    StringFiles.SubPositions.Add(Loc.CreateInstance(seek,length));
-                }
-            }
+            protected override void DefaultValues() => SetValues(Memory.Archives.A_MENU, "mngrp.bin", "mngrphd.bin");
 
             protected override void LoadArchiveFiles()
             {
@@ -96,18 +71,40 @@ namespace OpenVIII
                 {
                     for (int key = 0; key < StringFiles.SubPositions.Count; key++)
                     {
-                        bool pad = (Array.IndexOf(_stringsPadLoc, key) >= 0);
-                        if (pad || Array.IndexOf(_stringsLoc, key) >= 0)
+                        bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
+                        if (pad || Array.IndexOf(StringsLoc, key) >= 0)
                             Get_Strings_Offsets(br, FileNames[0], key, pad);
-                        else if (_binMsg.ContainsKey(key))
+                        else if (BinMsg.ContainsKey(key))
                         {
-                            Get_Strings_BinMSG(br, FileNames[0], key, StringFiles.SubPositions[(int)_binMsg[key]].Seek, 1, 6);
+                            Get_Strings_BinMSG(br, FileNames[0], key, StringFiles.SubPositions[(int)BinMsg[key]].Seek, 1, 6);
                         }
-                        else if (_complexStr.ContainsKey(key))
+                        else if (ComplexStr.ContainsKey(key))
                         {
-                            Get_Strings_ComplexStr(br, FileNames[0], key, _complexStr[key]);
+                            Get_Strings_ComplexStr(br, FileNames[0], key, ComplexStr[key]);
                         }
                     }
+                }
+            }
+
+            private void GetFileLocations()
+            {
+                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
+                byte[] buffer = aw.GetBinaryFile(FileNames[1], true);
+                if (buffer == null) return;
+                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                {
+                    GetFileLocations(br);
+                }
+            }
+
+            private void GetFileLocations(BinaryReader br)
+            {
+                while (br.BaseStream.Position + 8 < br.BaseStream.Length)
+                {
+                    (uint seek, uint length) = ((br.ReadUInt32(), br.ReadUInt32()));
+                    if (seek == 0xFFFFFFFF || length == 0x00000000) continue;
+                    seek--;
+                    StringFiles.SubPositions.Add(Loc.CreateInstance(seek, length));
                 }
             }
 
