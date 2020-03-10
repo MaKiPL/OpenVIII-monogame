@@ -35,7 +35,7 @@ namespace OpenVIII.Battle
 
         public static Encounters Read(byte[] enc)
         {
-            Memory.Log.WriteLine($"{nameof(Init_debugger_battle)} :: {nameof(Encounters)} :: {nameof(Read)}");
+            Memory.Log.WriteLine($"{nameof(InitDebuggerBattle)} :: {nameof(Encounters)} :: {nameof(Read)}");
             if (enc == null || enc.Length == 0) return null;
             int encounterCount = enc.Length / 128;
             Encounters e = new Encounters(encounterCount);

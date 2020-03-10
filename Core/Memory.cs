@@ -372,7 +372,7 @@ namespace OpenVIII
                 //this initializes the field module, it's worth to have this at the beginning
                 Fields.Initializer.Init,
                 //this initializes the encounters
-                Init_debugger_battle.Init,
+                InitDebuggerBattle.Init,
             };
 
             if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.

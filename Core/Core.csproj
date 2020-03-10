@@ -251,7 +251,7 @@
     <Compile Include="Battle\Mag\BinReaderExt.cs" />
     <Compile Include="BinaryReaderExt.cs" />
     <Compile Include="Battle\Mag\Geometry.cs" />
-    <Compile Include="Battle\init_debugger_battle.cs" />
+    <Compile Include="Battle\InitDebuggerBattle.cs" />
     <Compile Include="Battle\Mag\Mag.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />
@@ -961,7 +961,7 @@
     <Compile Include="Kernel\MenuAbilities.cs" />
     <Compile Include="Kernel\MiscSection.cs" />
     <Compile Include="Kernel\MiscTextPointers.cs" />
-    <Compile Include="Kernel\Kernel_bin.Non_battle_Items_Data.cs" />
+    <Compile Include="Kernel\NonBattleItemsData.cs" />
     <Compile Include="Kernel\Kernel_bin.Non_Junctionable_GFs_Attacks_Data.cs" />
     <Compile Include="Kernel\Kernel_bin.Party_abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Persistant_Statuses.cs" />
@@ -979,9 +979,9 @@
     <Compile Include="Kernel\Kernel_bin.StatFlags.cs" />
     <Compile Include="Kernel\Kernel_bin.Stat_percent_abilities.cs" />
     <Compile Include="Kernel\Kernel_bin.Target.cs" />
-    <Compile Include="Kernel\Kernel_bin.Temporary_character_limit_breaks.cs" />
-    <Compile Include="Kernel\Kernel_bin.Weapons_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Zell_limit_break_parameters.cs" />
+    <Compile Include="Kernel\TemporaryCharacterLimitBreaks.cs" />
+    <Compile Include="Kernel\WeaponsData.cs" />
+    <Compile Include="Kernel\ZellLimitBreakParameters.cs" />
     <Compile Include="Loc.cs" />
     <Compile Include="Archive\Compression\LZSS.cs" />
     <Compile Include="Memory.cs" />

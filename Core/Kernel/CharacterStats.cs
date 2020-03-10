@@ -113,7 +113,7 @@ namespace OpenVIII
 
             public byte Hit(int magicID = 0, int magicCount = 0, int weapon = 0)
             {
-                int value = Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.HIT] * magicCount + Memory.Kernel_Bin.WeaponsData[weapon].HIT;
+                int value = Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.HIT] * magicCount + Memory.Kernel_Bin.WeaponsData[weapon].Hit;
                 return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
 

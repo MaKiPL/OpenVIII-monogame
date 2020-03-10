@@ -211,7 +211,7 @@ namespace OpenVIII.Dat_Dump
                     xmlWriter.WriteStartElement(type);
                     xmlWriter.WriteAttributeString("BattleID", id);
                     int index = Module_battle_debug.Weapons[(Characters)character_id].FindIndex(v => v == i);
-                    Kernel.Weapons_Data weapondata = Memory.Kernel_Bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)character_id &&
+                    Kernel.WeaponsData weapondata = Memory.Kernel_Bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)character_id &&
                     v.AltID == index);
 
                     if (weapondata != default)

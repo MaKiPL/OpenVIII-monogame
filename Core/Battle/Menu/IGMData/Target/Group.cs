@@ -310,7 +310,7 @@ namespace OpenVIII.IGMData.Target
                     int finisherchance = (c.CurrentCrisisLevel + 1) * 60;
                     bool willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
                     int choosefinish = Memory.Random.Next(3 + 1);
-                    Kernel.Weapons_Data weapondata = Memory.Kernel_Bin.WeaponsData[weaponid];
+                    Kernel.WeaponsData weapondata = Memory.Kernel_Bin.WeaponsData[weaponid];
                     Kernel.Renzokeken_Finisher renzokekenfinisher = weapondata.Renzokuken;
                     if (renzokekenfinisher == 0)
                         willfinish = false;

@@ -41,8 +41,8 @@ namespace OpenVIII.Kernel
                 JunctionableGFsData = Kernel.JunctionableGFsData.Read(br);
                 ms.Seek(subPositions[Kernel.EnemyAttacksData.ID], SeekOrigin.Begin);
                 EnemyAttacksData = Kernel.EnemyAttacksData.Read(br, BattleCommands);
-                ms.Seek(subPositions[Weapons_Data.id], SeekOrigin.Begin);
-                WeaponsData = Weapons_Data.Read(br);
+                ms.Seek(subPositions[Kernel.WeaponsData.ID], SeekOrigin.Begin);
+                WeaponsData = Kernel.WeaponsData.Read(br);
                 ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
                 RenzokukenFinishersData = Renzokuken_Finishers_Data.Read(br);
                 ms.Seek(subPositions[Kernel.CharacterStats.ID], SeekOrigin.Begin);
@@ -68,8 +68,8 @@ namespace OpenVIII.Kernel
                 GFAbilities = Kernel.GFAbilities.Read(br);
                 ms.Seek(subPositions[Kernel.MenuAbilities.ID], SeekOrigin.Begin);
                 MenuAbilities = Kernel.MenuAbilities.Read(br);
-                ms.Seek(subPositions[Temporary_character_limit_breaks.id], SeekOrigin.Begin);
-                TemporaryCharacterLimitBreaks = Temporary_character_limit_breaks.Read(br);
+                ms.Seek(subPositions[Kernel.TemporaryCharacterLimitBreaks.ID], SeekOrigin.Begin);
+                TemporaryCharacterLimitBreaks = Kernel.TemporaryCharacterLimitBreaks.Read(br);
                 ms.Seek(subPositions[Kernel.BlueMagicQuistisLimitBreak.ID], SeekOrigin.Begin);
                 BlueMagicQuistisLimitBreak = Kernel.BlueMagicQuistisLimitBreak.Read(br);
                 //ms.Seek(subPositions[Quistis_limit_break_parameters.BattleID], SeekOrigin.Begin);
@@ -78,8 +78,8 @@ namespace OpenVIII.Kernel
                 ShotIrvineLimitBreak = Shot_Irvine_limit_break.Read(br);
                 ms.Seek(subPositions[Kernel.DuelZellLimitBreak.ID], SeekOrigin.Begin);
                 DuelZellLimitBreak = Kernel.DuelZellLimitBreak.Read(br);
-                ms.Seek(subPositions[Zell_limit_break_parameters.id], SeekOrigin.Begin);
-                ZellLimitBreakParameters = Zell_limit_break_parameters.Read(br);
+                ms.Seek(subPositions[Kernel.ZellLimitBreakParameters.ID], SeekOrigin.Begin);
+                ZellLimitBreakParameters = Kernel.ZellLimitBreakParameters.Read(br);
                 ms.Seek(subPositions[Rinoa_limit_breaks_part_1.id], SeekOrigin.Begin);
                 RinoaLimitBreaksPart1 = Rinoa_limit_breaks_part_1.Read(br);
                 ms.Seek(subPositions[Rinoa_limit_breaks_part_2.id], SeekOrigin.Begin);
@@ -289,11 +289,11 @@ namespace OpenVIII.Kernel
 
         public IReadOnlyDictionary<Abilities, StatPercentageAbilities> StatPercentAbilities { get; }
 
-        public IReadOnlyList<Temporary_character_limit_breaks> TemporaryCharacterLimitBreaks { get; }
+        public IReadOnlyList<TemporaryCharacterLimitBreaks> TemporaryCharacterLimitBreaks { get; }
 
-        public IReadOnlyList<Weapons_Data> WeaponsData { get; }
+        public IReadOnlyList<WeaponsData> WeaponsData { get; }
 
-        public IReadOnlyList<Zell_limit_break_parameters> ZellLimitBreakParameters { get; }
+        public IReadOnlyList<ZellLimitBreakParameters> ZellLimitBreakParameters { get; }
 
         private Memory.Archive ArchiveString { get; } = Memory.Archives.A_MAIN;
 
