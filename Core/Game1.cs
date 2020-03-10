@@ -28,10 +28,13 @@ namespace OpenVIII
                 Memory.CurrentGraphicMode = Memory.GraphicModes.DirectX;
             }
             else Memory.CurrentGraphicMode = Memory.GraphicModes.OpenGL;
-            Content.RootDirectory = "Content";
+
+            if (Content != null) Content.RootDirectory = "Content";
+            else throw new NullReferenceException($"{nameof(Game1)}::{nameof(Content)} Maybe running linux build on windows. As is null.");
             _graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             _graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
-            Window.AllowUserResizing = true;
+            if (Window != null) Window.AllowUserResizing = true;
+            else throw new NullReferenceException($"{nameof(Game1)}::{nameof(Window)} Maybe running linux build on windows. As is null.");
             IsFixedTimeStep = false;
             _graphics.SynchronizeWithVerticalRetrace = false;
         }
