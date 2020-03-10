@@ -16,11 +16,11 @@ namespace OpenVIII
             public static IGMData_Mag_ST_D_Values Create() => Create<IGMData_Mag_ST_D_Values>(14, 5, new IGMDataItem.Box { Title = Icons.ID.Status_Defense, Pos = new Rectangle(280, 342, 545, 288) }, 2, 7);
 
             public Dictionary<Kernel.JunctionStatuses, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
-                    => getTotal<Kernel.JunctionStatuses>(out availableFlagsarray, 100, Kernel.Stat.ST_Def_1,
-                            source.StatJ[Kernel.Stat.ST_Def_1],
-                            source.StatJ[Kernel.Stat.ST_Def_2],
-                            source.StatJ[Kernel.Stat.ST_Def_3],
-                            source.StatJ[Kernel.Stat.ST_Def_4]);
+                    => getTotal<Kernel.JunctionStatuses>(out availableFlagsarray, 100, Kernel.Stat.StDef1,
+                            source.StatJ[Kernel.Stat.StDef1],
+                            source.StatJ[Kernel.Stat.StDef2],
+                            source.StatJ[Kernel.Stat.StDef3],
+                            source.StatJ[Kernel.Stat.StDef4]);
 
             public override bool Update()
             {

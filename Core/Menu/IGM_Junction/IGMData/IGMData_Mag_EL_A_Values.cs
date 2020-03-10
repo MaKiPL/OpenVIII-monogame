@@ -15,7 +15,7 @@ namespace OpenVIII
             public static IGMData_Mag_EL_A_Values Create() => Create<IGMData_Mag_EL_A_Values>(8, 5, new IGMDataItem.Box { Title = Icons.ID.Elemental_Attack, Pos = new Rectangle(280, 423, 545, 201) }, 2, 4);
 
             public Dictionary<Kernel.Element, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
-                    => getTotal<Kernel.Element>(out availableFlagsarray, 200, Kernel.Stat.EL_Atk, source.StatJ[Kernel.Stat.EL_Atk]);
+                    => getTotal<Kernel.Element>(out availableFlagsarray, 200, Kernel.Stat.ElAtk, source.StatJ[Kernel.Stat.ElAtk]);
 
             public override bool Update()
             {

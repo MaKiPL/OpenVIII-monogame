@@ -38,7 +38,7 @@ namespace OpenVIII
                 StatusAttack = br.ReadByte();//0x0C	1 byte Status attack enabler
                 AttackParameter = br.ReadByte();//0x0D	1 byte Attack Parameter
                 //Statuses = new BitArray(br.ReadBytes(6));
-                Statuses0 = (Persistent_Statuses)br.ReadUInt16();//0x0E	2 bytes status_0; //statuses 0-7
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();//0x0E	2 bytes status_0; //statuses 0-7
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();//0x10	4 bytes status_1; //statuses 8-31
             }
 
@@ -99,7 +99,7 @@ namespace OpenVIII
             /// <summary>
             /// 0x0E	2 bytes status_0; //statuses 0-7
             /// </summary>
-            public Persistent_Statuses Statuses0 { get; }
+            public PersistentStatuses Statuses0 { get; }
 
             /// <summary>
             /// 0x10	4 bytes status_1; //statuses 8-31

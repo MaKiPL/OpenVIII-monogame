@@ -43,15 +43,15 @@ namespace OpenVIII.Kernel
                 EnemyAttacksData = Kernel.EnemyAttacksData.Read(br, BattleCommands);
                 ms.Seek(subPositions[Kernel.WeaponsData.ID], SeekOrigin.Begin);
                 WeaponsData = Kernel.WeaponsData.Read(br);
-                ms.Seek(subPositions[Renzokuken_Finishers_Data.id], SeekOrigin.Begin);
-                RenzokukenFinishersData = Renzokuken_Finishers_Data.Read(br);
+                ms.Seek(subPositions[Kernel.RenzokukenFinishersData.ID], SeekOrigin.Begin);
+                RenzokukenFinishersData = Kernel.RenzokukenFinishersData.Read(br);
                 ms.Seek(subPositions[Kernel.CharacterStats.ID], SeekOrigin.Begin);
                 CharacterStats = Kernel.CharacterStats.Read(br);
                 ms.Seek(subPositions[BattleItemData.ID], SeekOrigin.Begin);
                 BattleItemsData = BattleItemData.Read(br);
                 NonBattleItemsData = Kernel.NonBattleItemsData.Read();
-                ms.Seek(subPositions[Non_Junctionable_GFs_Attacks_Data.id], SeekOrigin.Begin);
-                NonJunctionableGFsAttacksData = Non_Junctionable_GFs_Attacks_Data.Read(br);
+                ms.Seek(subPositions[Kernel.NonJunctionableGFsAttacksData.ID], SeekOrigin.Begin);
+                NonJunctionableGFsAttacksData = Kernel.NonJunctionableGFsAttacksData.Read(br);
                 ms.Seek(subPositions[Kernel.CommandAbilityData.ID], SeekOrigin.Begin);
                 CommandAbilityData = Kernel.CommandAbilityData.Read(br);
                 ms.Seek(subPositions[Kernel.JunctionAbilities.ID], SeekOrigin.Begin);
@@ -74,20 +74,20 @@ namespace OpenVIII.Kernel
                 BlueMagicQuistisLimitBreak = Kernel.BlueMagicQuistisLimitBreak.Read(br);
                 //ms.Seek(subPositions[Quistis_limit_break_parameters.BattleID], SeekOrigin.Begin);
                 //QuistisLimitBreakParameters = Quistis_limit_break_parameters.Read(br);
-                ms.Seek(subPositions[Shot_Irvine_limit_break.id], SeekOrigin.Begin);
-                ShotIrvineLimitBreak = Shot_Irvine_limit_break.Read(br);
+                ms.Seek(subPositions[Kernel.ShotIrvineLimitBreak.ID], SeekOrigin.Begin);
+                ShotIrvineLimitBreak = Kernel.ShotIrvineLimitBreak.Read(br);
                 ms.Seek(subPositions[Kernel.DuelZellLimitBreak.ID], SeekOrigin.Begin);
                 DuelZellLimitBreak = Kernel.DuelZellLimitBreak.Read(br);
                 ms.Seek(subPositions[Kernel.ZellLimitBreakParameters.ID], SeekOrigin.Begin);
                 ZellLimitBreakParameters = Kernel.ZellLimitBreakParameters.Read(br);
-                ms.Seek(subPositions[Rinoa_limit_breaks_part_1.id], SeekOrigin.Begin);
-                RinoaLimitBreaksPart1 = Rinoa_limit_breaks_part_1.Read(br);
-                ms.Seek(subPositions[Rinoa_limit_breaks_part_2.id], SeekOrigin.Begin);
-                RinoaLimitBreaksPart2 = Rinoa_limit_breaks_part_2.Read(br);
-                ms.Seek(subPositions[Slot_array.id], SeekOrigin.Begin);
-                SlotArray = Slot_array.Read(br);
-                ms.Seek(subPositions[Selphie_limit_break_sets.id], SeekOrigin.Begin);
-                SelphieLimitBreakSets = Selphie_limit_break_sets.Read(br);
+                ms.Seek(subPositions[Kernel.RinoaLimitBreaksPart1.ID], SeekOrigin.Begin);
+                RinoaLimitBreaksPart1 = Kernel.RinoaLimitBreaksPart1.Read(br);
+                ms.Seek(subPositions[Kernel.RinoaLimitBreaksPart2.ID], SeekOrigin.Begin);
+                RinoaLimitBreaksPart2 = Kernel.RinoaLimitBreaksPart2.Read(br);
+                ms.Seek(subPositions[Kernel.SlotArray.ID], SeekOrigin.Begin);
+                SlotArray = Kernel.SlotArray.Read(br);
+                ms.Seek(subPositions[Kernel.SelphieLimitBreakSets.ID], SeekOrigin.Begin);
+                SelphieLimitBreakSets = Kernel.SelphieLimitBreakSets.Read(br);
                 ms.Seek(subPositions[Kernel.Devour.ID], SeekOrigin.Begin);
                 //List<Devour> tmp = Kernel.Devour.Read(br);
                 //tmp.Add(new Devour { Description = Memory.Strings.Read(Strings.FileID.KERNEL, 30, 112) });
@@ -150,23 +150,23 @@ namespace OpenVIII.Kernel
         {
             Stat.STR,
             Stat.HIT,
-            Stat.EL_Atk,
-            Stat.ST_Atk,
+            Stat.ElAtk,
+            Stat.StAtk,
             Stat.MAG,
             Stat.SPD,
-            Stat.LUCK,
+            Stat.Luck,
             Stat.HP,
             Stat.VIT,
             Stat.SPR,
             Stat.EVA,
-            Stat.EL_Def_1,
-            Stat.ST_Def_1,
-            Stat.EL_Def_2,
-            Stat.ST_Def_2,
-            Stat.EL_Def_3,
-            Stat.ST_Def_3,
-            Stat.EL_Def_4,
-            Stat.ST_Def_4
+            Stat.ElDef1,
+            Stat.StDef1,
+            Stat.ElDef2,
+            Stat.StDef2,
+            Stat.ElDef3,
+            Stat.StDef3,
+            Stat.ElDef4,
+            Stat.StDef4
         };
 
         public static IReadOnlyList<Stat> AutoDef { get; } = new List<Stat>
@@ -175,21 +175,21 @@ namespace OpenVIII.Kernel
             Stat.VIT,
             Stat.SPR,
             Stat.EVA,
-            Stat.EL_Def_1,
-            Stat.ST_Def_1,
-            Stat.EL_Def_2,
-            Stat.ST_Def_2,
-            Stat.EL_Def_3,
-            Stat.ST_Def_3,
-            Stat.EL_Def_4,
-            Stat.ST_Def_4,
+            Stat.ElDef1,
+            Stat.StDef1,
+            Stat.ElDef2,
+            Stat.StDef2,
+            Stat.ElDef3,
+            Stat.StDef3,
+            Stat.ElDef4,
+            Stat.StDef4,
             Stat.SPD,
-            Stat.LUCK,
+            Stat.Luck,
             Stat.MAG,
             Stat.STR,
             Stat.HIT,
-            Stat.EL_Atk,
-            Stat.ST_Atk
+            Stat.ElAtk,
+            Stat.StAtk
         };
 
         public static IReadOnlyList<Stat> AutoMAG { get; } = new List<Stat>
@@ -197,22 +197,22 @@ namespace OpenVIII.Kernel
             Stat.MAG,
             Stat.SPR,
             Stat.SPD,
-            Stat.LUCK,
+            Stat.Luck,
             Stat.HP,
             Stat.VIT,
             Stat.EVA,
-            Stat.EL_Def_1,
-            Stat.ST_Def_1,
-            Stat.EL_Def_2,
-            Stat.ST_Def_2,
-            Stat.EL_Def_3,
-            Stat.ST_Def_3,
-            Stat.EL_Def_4,
-            Stat.ST_Def_4,
+            Stat.ElDef1,
+            Stat.StDef1,
+            Stat.ElDef2,
+            Stat.StDef2,
+            Stat.ElDef3,
+            Stat.StDef3,
+            Stat.ElDef4,
+            Stat.StDef4,
             Stat.STR,
             Stat.HIT,
-            Stat.EL_Atk,
-            Stat.ST_Atk
+            Stat.ElAtk,
+            Stat.StAtk
         };
 
         /// <summary>
@@ -227,18 +227,18 @@ namespace OpenVIII.Kernel
             { Stat.SPR, Abilities.SprJ },
             { Stat.SPD, Abilities.SpdJ },
             { Stat.EVA, Abilities.EvaJ },
-            { Stat.LUCK, Abilities.LuckJ },
+            { Stat.Luck, Abilities.LuckJ },
             { Stat.HIT, Abilities.HitJ },
-            { Stat.EL_Atk, Abilities.ElAtkJ },
-            { Stat.ST_Atk, Abilities.StAtkJ },
-            { Stat.EL_Def_1, Abilities.ElDefJ },//or Elem_Def_Jx2 or Elem_Def_Jx4
-            { Stat.EL_Def_2, Abilities.ElDefJ2 },//or Elem_Def_Jx4
-            { Stat.EL_Def_3, Abilities.ElDefJ4 },
-            { Stat.EL_Def_4, Abilities.ElDefJ4 },
-            { Stat.ST_Def_1, Abilities.StDefJ },//or ST_Def_Jx2 or ST_Def_Jx4
-            { Stat.ST_Def_2, Abilities.StDefJ2 },//or ST_Def_Jx4
-            { Stat.ST_Def_3, Abilities.StDefJ4 },
-            { Stat.ST_Def_4, Abilities.StDefJ4 }
+            { Stat.ElAtk, Abilities.ElAtkJ },
+            { Stat.StAtk, Abilities.StAtkJ },
+            { Stat.ElDef1, Abilities.ElDefJ },//or Elem_Def_Jx2 or Elem_Def_Jx4
+            { Stat.ElDef2, Abilities.ElDefJ2 },//or Elem_Def_Jx4
+            { Stat.ElDef3, Abilities.ElDefJ4 },
+            { Stat.ElDef4, Abilities.ElDefJ4 },
+            { Stat.StDef1, Abilities.StDefJ },//or ST_Def_Jx2 or ST_Def_Jx4
+            { Stat.StDef2, Abilities.StDefJ2 },//or ST_Def_Jx4
+            { Stat.StDef3, Abilities.StDefJ4 },
+            { Stat.StDef4, Abilities.StDefJ4 }
         };
 
         public IReadOnlyDictionary<Abilities, IAbility> AllAbilities { get; }
@@ -274,18 +274,18 @@ namespace OpenVIII.Kernel
         public IReadOnlyList<MiscSection> MiscSection { get; }
         public IReadOnlyList<MiscTextPointers> MiscTextPointers { get; }
         public IReadOnlyList<NonBattleItemsData> NonBattleItemsData { get; }
-        public IReadOnlyList<Non_Junctionable_GFs_Attacks_Data> NonJunctionableGFsAttacksData { get; }
+        public IReadOnlyList<NonJunctionableGFsAttacksData> NonJunctionableGFsAttacksData { get; }
         public IReadOnlyDictionary<Abilities, PartyAbilities> PartyAbilities { get; }
 
-        public IReadOnlyDictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> RenzokukenFinishersData { get; }
+        public IReadOnlyDictionary<RenzokukenFinisher, RenzokukenFinishersData> RenzokukenFinishersData { get; }
 
-        public IReadOnlyList<Rinoa_limit_breaks_part_1> RinoaLimitBreaksPart1 { get; }
-        public IReadOnlyList<Rinoa_limit_breaks_part_2> RinoaLimitBreaksPart2 { get; }
+        public IReadOnlyList<RinoaLimitBreaksPart1> RinoaLimitBreaksPart1 { get; }
+        public IReadOnlyList<RinoaLimitBreaksPart2> RinoaLimitBreaksPart2 { get; }
 
-        public IReadOnlyList<Selphie_limit_break_sets> SelphieLimitBreakSets { get; }
-        public IReadOnlyList<Shot_Irvine_limit_break> ShotIrvineLimitBreak { get; }
+        public IReadOnlyList<SelphieLimitBreakSets> SelphieLimitBreakSets { get; }
+        public IReadOnlyList<ShotIrvineLimitBreak> ShotIrvineLimitBreak { get; }
 
-        public IReadOnlyList<Slot_array> SlotArray { get; }
+        public IReadOnlyList<SlotArray> SlotArray { get; }
 
         public IReadOnlyDictionary<Abilities, StatPercentageAbilities> StatPercentAbilities { get; }
 

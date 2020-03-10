@@ -112,25 +112,25 @@ namespace OpenVIII
                     Kernel.MagicData magic_Data = Memory.Kernel_Bin.MagicData[spell];
                     switch (stat)
                     {
-                        case Kernel.Stat.EL_Atk:
+                        case Kernel.Stat.ElAtk:
                             flags = magic_Data.ElAtk;
                             break;
 
-                        case Kernel.Stat.EL_Def_1:
-                        case Kernel.Stat.EL_Def_2:
-                        case Kernel.Stat.EL_Def_3:
-                        case Kernel.Stat.EL_Def_4:
+                        case Kernel.Stat.ElDef1:
+                        case Kernel.Stat.ElDef2:
+                        case Kernel.Stat.ElDef3:
+                        case Kernel.Stat.ElDef4:
                             flags = magic_Data.ElDef;
                             break;
 
-                        case Kernel.Stat.ST_Atk:
+                        case Kernel.Stat.StAtk:
                             flags = magic_Data.StAtk;
                             break;
 
-                        case Kernel.Stat.ST_Def_1:
-                        case Kernel.Stat.ST_Def_2:
-                        case Kernel.Stat.ST_Def_3:
-                        case Kernel.Stat.ST_Def_4:
+                        case Kernel.Stat.StDef1:
+                        case Kernel.Stat.StDef2:
+                        case Kernel.Stat.StDef3:
+                        case Kernel.Stat.StDef4:
                             flags = magic_Data.StDef;
                             break;
                     }

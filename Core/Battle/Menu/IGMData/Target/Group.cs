@@ -163,7 +163,7 @@ namespace OpenVIII.IGMData.Target
             // we don't know what the enemy attacks default target is. Setting a general default here.
             // The battle AI script sets the target for the enemies
             // http://forums.qhimm.com/index.php?topic=18384.0
-            Kernel.Target t = Kernel.Target.Ally | Kernel.Target.Enemy | Kernel.Target.Single_Target;
+            Kernel.Target t = Kernel.Target.Ally | Kernel.Target.Enemy | Kernel.Target.SingleTarget;
             SelectTargetWindows(t);
             Command = Memory.Kernel_Bin.BattleCommands[1];
             EnemyAttack = c;
@@ -171,7 +171,7 @@ namespace OpenVIII.IGMData.Target
 
         public void SelectTargetWindows(Item_In_Menu c, bool shot = false)
         {
-            Kernel.Target t = c.Battle?.Target ?? Kernel.Target.Enemy | Kernel.Target.Single_Target;
+            Kernel.Target t = c.Battle?.Target ?? Kernel.Target.Enemy | Kernel.Target.SingleTarget;
             if (shot)
                 t = c.Shot.Target;
             SelectTargetWindows(t);
@@ -311,7 +311,7 @@ namespace OpenVIII.IGMData.Target
                     bool willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
                     int choosefinish = Memory.Random.Next(3 + 1);
                     Kernel.WeaponsData weapondata = Memory.Kernel_Bin.WeaponsData[weaponid];
-                    Kernel.Renzokeken_Finisher renzokekenfinisher = weapondata.Renzokuken;
+                    Kernel.RenzokukenFinisher renzokekenfinisher = weapondata.Renzokuken;
                     if (renzokekenfinisher == 0)
                         willfinish = false;
 
@@ -326,11 +326,11 @@ namespace OpenVIII.IGMData.Target
                     Menu.BattleMenus.GetCurrentBattleMenu().Renzokeken.Show();
                     if (willfinish)
                     {
-                        List<Kernel.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel.Renzokeken_Finisher))
-                            .Cast<Kernel.Renzokeken_Finisher>()
+                        List<Kernel.RenzokukenFinisher> flags = Enum.GetValues(typeof(Kernel.RenzokukenFinisher))
+                            .Cast<Kernel.RenzokukenFinisher>()
                             .Where(f => (f & renzokekenfinisher) != 0)
                             .ToList();
-                        Kernel.Renzokeken_Finisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
+                        Kernel.RenzokukenFinisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
                         Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.BattleID}) then uses {Memory.Kernel_Bin.RenzokukenFinishersData[finisher].Name}.");
                     }
                     else
@@ -651,7 +651,7 @@ namespace OpenVIII.IGMData.Target
             Damageable[] e = null;
             Damageable[] vc = null;
             IEnumerable<Saves.CharacterData> party = Memory.State.Party.Where(x => x != Characters.Blank).Select(y => Memory.State[y]);
-            if (Target.HasFlag(Kernel.Target.Single_Target))
+            if (Target.HasFlag(Kernel.Target.SingleTarget))
             {
                 if (TargetEnemies.Enabled && TargetParty.Enabled && RandomTarget.Single && RandomTarget.Side)
                 {
@@ -739,7 +739,7 @@ namespace OpenVIII.IGMData.Target
             RandomTarget = random ?? new Random(false);
             Casts = casts;
             Target = t;
-            if ((t & Kernel.Target.Ally) != 0 || t == Kernel.Target.None || ((t & Kernel.Target.Enemy) == 0 && (t & Kernel.Target.Single_Side) != 0))
+            if ((t & Kernel.Target.Ally) != 0 || t == Kernel.Target.None || ((t & Kernel.Target.Enemy) == 0 && (t & Kernel.Target.SingleSide) != 0))
             {
                 TargetParty.Show();
                 TargetAll(TargetParty);
@@ -755,7 +755,7 @@ namespace OpenVIII.IGMData.Target
                 TargetEnemies.Hide();
             void TargetAll(IGMData.Base i)
             {
-                if (Target.HasFlag(Kernel.Target.Single_Target))
+                if (Target.HasFlag(Kernel.Target.SingleTarget))
                 {
                     i.Cursor_Status &= ~Cursor_Status.All;
                 }

@@ -32,7 +32,7 @@ namespace OpenVIII
                 WeaponID = checked((byte)stringID);
                 Name = Memory.Strings.Read(Strings.FileID.Kernel, ID, stringID);
                 br.BaseStream.Seek(2, SeekOrigin.Current);
-                Renzokuken = (Renzokeken_Finisher)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
+                Renzokuken = (RenzokukenFinisher)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
                 Unknown0 = br.ReadByte(); //0x0003	1 byte Unknown
                 Character = (Characters)br.ReadByte();//0x0004	1 byte Character BattleID
                 if (_lastCharacter != Character)
@@ -94,7 +94,7 @@ namespace OpenVIII
             /// <summary>
             ///0x0002	1 byte Renzokuken finishers
             /// </summary>
-            public Renzokeken_Finisher Renzokuken { get; }
+            public RenzokukenFinisher Renzokuken { get; }
 
             /// <summary>
             ///0x0008	1 byte STR Bonus

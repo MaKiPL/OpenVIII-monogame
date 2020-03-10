@@ -24,7 +24,7 @@ namespace OpenVIII
             public byte HitCount { get;  }
             public Element Element { get;  }
             public byte StatusAttack { get;  }
-            public Persistent_Statuses Statuses0 { get;  }
+            public PersistentStatuses Statuses0 { get;  }
             public BattleOnlyStatuses Statuses1 { get;  }
             /// <summary>
             /// order is different so conversation is required.
@@ -69,7 +69,7 @@ namespace OpenVIII
                 //0x0008  1 byte Element
                 StatusAttack = br.ReadByte();
                 //0x0009  1 byte Status attack enabler
-                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
                 //0x000A  6 bytes Statuses
             }

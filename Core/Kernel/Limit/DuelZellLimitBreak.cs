@@ -63,7 +63,7 @@ namespace OpenVIII
                 //0x0014  2 bytes Sequence Button 3
                 //0x0016  2 bytes Sequence Button 4
                 //0x0018  2 bytes Sequence Button 5
-                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();
                 //0x001A  2 bytes status_0; //statuses 0-7
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
                 //0x001C  4 bytes status_1; //statuses 8-39
@@ -95,7 +95,7 @@ namespace OpenVIII
 
             public byte StatusAttack { get; }
 
-            public Persistent_Statuses Statuses0 { get; }
+            public PersistentStatuses Statuses0 { get; }
 
             public BattleOnlyStatuses Statuses1 { get; }
 

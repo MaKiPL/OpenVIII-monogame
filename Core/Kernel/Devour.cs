@@ -53,7 +53,7 @@ namespace OpenVIII
                 //0x10 - 100 %
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
                 //0x0004  4 bytes status_1; //statuses 8-39
-                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();
                 //0x0008  2 bytes status_0; //statuses 0-7
 
                 StatFlags = (StatFlags)br.ReadByte();
@@ -124,7 +124,7 @@ namespace OpenVIII
             public StatFlags StatFlags { get; }
 
             [field: FieldOffset(0x8)]
-            public Persistent_Statuses Statuses0 { get; }
+            public PersistentStatuses Statuses0 { get; }
 
             [field: FieldOffset(0x4)]
             public BattleOnlyStatuses Statuses1 { get; }

@@ -163,7 +163,7 @@ namespace OpenVIII
         /// <param name="element">varible you need to number of flags set.</param>
         /// <returns>Count</returns>
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
-        public static uint Count(this Kernel.Persistent_Statuses element)
+        public static uint Count(this Kernel.PersistentStatuses element)
         {
             uint v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary

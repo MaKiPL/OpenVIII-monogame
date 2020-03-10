@@ -347,7 +347,7 @@ namespace OpenVIII
 
             public override sbyte StatusResistance(Kernel.BattleOnlyStatuses s) => sbyte.MaxValue;
 
-            public override sbyte StatusResistance(Kernel.Persistent_Statuses s) => sbyte.MaxValue;
+            public override sbyte StatusResistance(Kernel.PersistentStatuses s) => sbyte.MaxValue;
 
             /// <summary>
             /// False if gf knows ability, True if can learn it.

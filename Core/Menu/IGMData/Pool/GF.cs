@@ -96,11 +96,11 @@ namespace OpenVIII.IGMData.Pool
                             switch (r)
                             {
                                 case Abilities.StAtkJ:
-                                    characterData.StatJ[Stat.ST_Atk] = 0;
+                                    characterData.StatJ[Stat.StAtk] = 0;
                                     break;
 
                                 case Abilities.ElAtkJ:
-                                    characterData.StatJ[Stat.EL_Atk] = 0;
+                                    characterData.StatJ[Stat.ElAtk] = 0;
                                     break;
 
                                 case Abilities.ElDefJ:
@@ -114,7 +114,7 @@ namespace OpenVIII.IGMData.Pool
                                     else if (b.Contains(Abilities.ElDefJ))
                                         count = 1;
                                     for (; count < 4; count++)
-                                        characterData.StatJ[Stat.EL_Def_1 + count] = 0;
+                                        characterData.StatJ[Stat.ElDef1 + count] = 0;
                                     break;
 
                                 case Abilities.StDefJ:
@@ -128,7 +128,7 @@ namespace OpenVIII.IGMData.Pool
                                     else if (b.Contains(Abilities.StDefJ))
                                         count = 1;
                                     for (; count < 4; count++)
-                                        characterData.StatJ[Stat.ST_Def_1 + count] = 0;
+                                        characterData.StatJ[Stat.StDef1 + count] = 0;
                                     break;
 
                                 case Abilities.Ability3:

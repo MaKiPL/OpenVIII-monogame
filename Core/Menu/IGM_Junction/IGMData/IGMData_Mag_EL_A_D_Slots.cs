@@ -75,7 +75,7 @@ namespace OpenVIII
                 if (Memory.State?.Characters != null && Damageable != null)
                 {
                     base.Refresh();
-                    FillData(Icons.ID.Icon_Elemental_Attack, Kernel.Stat.EL_Atk, Kernel.Stat.EL_Def_1);
+                    FillData(Icons.ID.Icon_Elemental_Attack, Kernel.Stat.ElAtk, Kernel.Stat.ElDef1);
                 }
             }
 

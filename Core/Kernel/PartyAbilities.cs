@@ -7,8 +7,6 @@ namespace OpenVIII
 {
     namespace Kernel
     {
-        #region Classes
-
         /// <summary>
         /// Party Abilities Data
         /// </summary>
@@ -84,7 +82,5 @@ namespace OpenVIII
 
             #endregion Methods
         }
-
-        #endregion Classes
     }
 }

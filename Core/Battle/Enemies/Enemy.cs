@@ -131,7 +131,7 @@ namespace OpenVIII
             r._CurrentHP = startinghp ?? r.MaxHP();
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
             {
-                r.Statuses0 |= Kernel.Persistent_Statuses.Zombie;
+                r.Statuses0 |= Kernel.PersistentStatuses.Zombie;
             }
             if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
             {
@@ -286,36 +286,36 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel.Persistent_Statuses s)
+        public override sbyte StatusResistance(Kernel.PersistentStatuses s)
         {
             byte r = 100;
             switch (s)
             {
-                case Kernel.Persistent_Statuses.Death:
+                case Kernel.PersistentStatuses.Death:
                     r = Info.deathResistanceMental;
                     break;
 
-                case Kernel.Persistent_Statuses.Poison:
+                case Kernel.PersistentStatuses.Poison:
                     r = Info.poisonResistanceMental;
                     break;
 
-                case Kernel.Persistent_Statuses.Petrify:
+                case Kernel.PersistentStatuses.Petrify:
                     r = Info.petrifyResistanceMental;
                     break;
 
-                case Kernel.Persistent_Statuses.Darkness:
+                case Kernel.PersistentStatuses.Darkness:
                     r = Info.darknessResistanceMental;
                     break;
 
-                case Kernel.Persistent_Statuses.Silence:
+                case Kernel.PersistentStatuses.Silence:
                     r = Info.silenceResistanceMental;
                     break;
 
-                case Kernel.Persistent_Statuses.Berserk:
+                case Kernel.PersistentStatuses.Berserk:
                     r = Info.berserkResistanceMental;
                     break;
 
-                case Kernel.Persistent_Statuses.Zombie:
+                case Kernel.PersistentStatuses.Zombie:
                     r = Info.zombieResistanceMental;
                     break;
             }
@@ -458,7 +458,7 @@ namespace OpenVIII
                 case Kernel.Stat.HIT:
                     return HIT;
 
-                case Kernel.Stat.LUCK:
+                case Kernel.Stat.Luck:
                     return LUCK;
 
                 case Kernel.Stat.MAG:

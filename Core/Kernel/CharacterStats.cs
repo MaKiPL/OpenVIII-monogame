@@ -141,7 +141,7 @@ namespace OpenVIII
             }
 
             public byte Luck(int lvl, int magicID = 0, int magicCount = 0, int statBonus = 0, int percentMod = PercentMod)
-                => SPD_LUCK(_luck[0], _luck[1], _luck[2], _luck[3], lvl, Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.LUCK], magicCount, statBonus, percentMod);
+                => SPD_LUCK(_luck[0], _luck[1], _luck[2], _luck[3], lvl, Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.Luck], magicCount, statBonus, percentMod);
 
             public byte MAG(int lvl, int magicID = 0, int magicCount = 0, int statBonus = 0, int percentMod = PercentMod)
                 => STR_VIT_MAG_SPR(_mag[0], _mag[1], _mag[2], _mag[3], lvl, Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.MAG], magicCount, statBonus, percentMod);

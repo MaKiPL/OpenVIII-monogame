@@ -15,9 +15,9 @@ namespace OpenVIII
         protected ushort _CurrentHP;
         private Enum _battlemode;
         private Dictionary<Kernel.AttackType, Func<int, Kernel.AttackFlags, int>> _damageActions;
-        private Kernel.Persistent_Statuses _statuses0;
+        private Kernel.PersistentStatuses _statuses0;
         private Kernel.BattleOnlyStatuses _statuses1;
-        private Dictionary<Kernel.AttackType, Func<Kernel.Persistent_Statuses, Kernel.BattleOnlyStatuses, Kernel.AttackFlags, int>> _statusesActions;
+        private Dictionary<Kernel.AttackType, Func<Kernel.PersistentStatuses, Kernel.BattleOnlyStatuses, Kernel.AttackFlags, int>> _statusesActions;
         protected ATBTimer ATBTimer;
 
         #endregion Fields
@@ -135,8 +135,8 @@ namespace OpenVIII
                 int Damage_Curative_Item_Action(int dmg, Kernel.AttackFlags flags)
                 {
                     //ChangeHP(-dmg);
-                    bool noheal = (Statuses0 & (Kernel.Persistent_Statuses.Death | Kernel.Persistent_Statuses.Petrify)) != 0 || (Statuses1 & (Kernel.BattleOnlyStatuses.SummonGF)) != 0 || _CurrentHP == 0;
-                    bool healisdmg = (Statuses0 & (Kernel.Persistent_Statuses.Zombie)) != 0;
+                    bool noheal = (Statuses0 & (Kernel.PersistentStatuses.Death | Kernel.PersistentStatuses.Petrify)) != 0 || (Statuses1 & (Kernel.BattleOnlyStatuses.SummonGF)) != 0 || _CurrentHP == 0;
+                    bool healisdmg = (Statuses0 & (Kernel.PersistentStatuses.Zombie)) != 0;
                     if (!noheal)
                     {
                         dmg = (healisdmg ? dmg : -dmg);
@@ -190,7 +190,7 @@ namespace OpenVIII
                 {
                     ushort r = ReviveHP();
 
-                    if ((Statuses0 & Kernel.Persistent_Statuses.Zombie) != 0)
+                    if ((Statuses0 & Kernel.PersistentStatuses.Zombie) != 0)
                     {
                         r = MaxHP();
                         //Debug.WriteLine($"{this}: Dealt {r}, previous hp: {_CurrentHP}, current hp: {_CurrentHP - r}");
@@ -207,7 +207,7 @@ namespace OpenVIII
                 int Damage_Revive_At_Full_HP_Action(int dmg, Kernel.AttackFlags flags)
                 {
                     ushort r = MaxHP();
-                    if ((Statuses0 & Kernel.Persistent_Statuses.Zombie) != 0)
+                    if ((Statuses0 & Kernel.PersistentStatuses.Zombie) != 0)
                     {
                         //Debug.WriteLine($"{this}: Dealt {r}, previous hp: {_CurrentHP}, current hp: {_CurrentHP-r}");
                         return Damage_Curative_Item_Action(MaxHP(), flags);
@@ -248,7 +248,7 @@ namespace OpenVIII
 
         public ushort HP => CurrentHP();
 
-        public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel.Persistent_Statuses.Death) != 0;
+        public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel.PersistentStatuses.Death) != 0;
 
         /// <summary>
         /// If all partymemembers are in gameover trigger Phoenix Pinion if CanPhoenixPinion or
@@ -266,9 +266,9 @@ namespace OpenVIII
         /// Menu disabled
         /// </summary>
         public bool IsNonInteractive => IsInactive ||
-            (Statuses0 & Kernel.Persistent_Statuses.Berserk) != 0;
+            (Statuses0 & Kernel.PersistentStatuses.Berserk) != 0;
 
-        public bool IsPetrify => (Statuses0 & (Kernel.Persistent_Statuses.Petrify)) != 0;
+        public bool IsPetrify => (Statuses0 & (Kernel.PersistentStatuses.Petrify)) != 0;
 
         public abstract byte Level { get; }
 
@@ -289,14 +289,14 @@ namespace OpenVIII
         /// <summary>
         /// Persistant_Statuses are saved and last between battles.
         /// </summary>
-        public virtual Kernel.Persistent_Statuses Statuses0
+        public virtual Kernel.PersistentStatuses Statuses0
         {
             get
             {
                 if (!StatusImmune)
                     return _statuses0;
                 else
-                    return Kernel.Persistent_Statuses.None;
+                    return Kernel.PersistentStatuses.None;
             }
 
             set
@@ -325,12 +325,12 @@ namespace OpenVIII
             }
         }
 
-        public IReadOnlyDictionary<Kernel.AttackType, Func<Kernel.Persistent_Statuses, Kernel.BattleOnlyStatuses, Kernel.AttackFlags, int>> StatusesActions
+        public IReadOnlyDictionary<Kernel.AttackType, Func<Kernel.PersistentStatuses, Kernel.BattleOnlyStatuses, Kernel.AttackFlags, int>> StatusesActions
         {
             get
             {
                 if (_statusesActions == null)
-                    _statusesActions = new Dictionary<Kernel.AttackType, Func<Kernel.Persistent_Statuses, Kernel.BattleOnlyStatuses, Kernel.AttackFlags, int>>
+                    _statusesActions = new Dictionary<Kernel.AttackType, Func<Kernel.PersistentStatuses, Kernel.BattleOnlyStatuses, Kernel.AttackFlags, int>>
             {
                 { Kernel.AttackType.PhysicalAttack, Statuses_Physical_Attack_Action },
                 { Kernel.AttackType.MagicAttack, Statuses_Magic_Attack_Action },
@@ -371,15 +371,15 @@ namespace OpenVIII
             };
                 return _statusesActions;
 
-                int Statuses__1_HP_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses__1_HP_Statuses_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Angelo_Search_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Angelo_Search_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Card_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Card_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Curative_Item_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags)
+                int Statuses_Curative_Item_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags)
                 {
-                    Kernel.Persistent_Statuses bak0 = Statuses0;
+                    Kernel.PersistentStatuses bak0 = Statuses0;
                     Kernel.BattleOnlyStatuses bak1 = Statuses1;
                     Statuses0 &= ~statuses0;
                     Statuses1 &= ~statuses1;
@@ -388,54 +388,54 @@ namespace OpenVIII
                     return 0;
                 }
 
-                int Statuses_Curative_Magic_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Curative_Magic_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Devour_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Devour_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Everyones_Grudge_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Everyones_Grudge_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Fixed_Magic_Statuses_Based_on_GF_Level_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Fixed_Magic_Statuses_Based_on_GF_Level_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Fixed_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Fixed_Statuses_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_GF_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_GF_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_GF_Ignore_Target_SPR_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_GF_Ignore_Target_SPR_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_GF_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_GF_Statuses_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Give_Percentage_HP_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) =>
+                int Statuses_Give_Percentage_HP_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) =>
                            Statuses_Curative_Item_Action(statuses0, Statuses1, flags);
 
-                int Statuses_Kamikaze_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Kamikaze_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_LV_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_LV_Attack_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_LV_Down_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_LV_Down_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_LV_Up_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_LV_Up_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Magic_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Magic_Attack_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Magic_Attack_Ignore_Target_SPR_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Magic_Attack_Ignore_Target_SPR_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Magic_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Magic_Statuses_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Moogle_Dance_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Moogle_Dance_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Physical_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Physical_Attack_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Physical_AttackIgnore_Target_VIT_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Physical_AttackIgnore_Target_VIT_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Physical_Statuses_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Physical_Statuses_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Renzokuken_Finisher_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Renzokuken_Finisher_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Revive_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags)
+                int Statuses_Revive_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags)
                 {
-                    if ((Statuses0 & Kernel.Persistent_Statuses.Death) != 0 || _CurrentHP == 0)
+                    if ((Statuses0 & Kernel.PersistentStatuses.Death) != 0 || _CurrentHP == 0)
                     {
-                        Statuses0 = Kernel.Persistent_Statuses.None;
+                        Statuses0 = Kernel.PersistentStatuses.None;
                         Statuses1 = Kernel.BattleOnlyStatuses.None;
                         _CurrentHP = 0;
                         return 1;
@@ -443,26 +443,26 @@ namespace OpenVIII
                     return 0;
                 }
 
-                int Statuses_Revive_At_Full_HP_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) =>
+                int Statuses_Revive_At_Full_HP_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) =>
                            Statuses_Revive_Action(statuses0, statuses1, flags);
 
-                int Statuses_Scan_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Scan_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Squall_Gunblade_Attack_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Squall_Gunblade_Attack_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Summon_Item_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Summon_Item_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Target_Current_HP_1_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Target_Current_HP_1_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_1_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_1_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_2_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_2_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_3_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_3_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_Unknown_4_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_Unknown_4_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
 
-                int Statuses_White_WindQuistis_Action(Kernel.Persistent_Statuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
+                int Statuses_White_WindQuistis_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags) => throw new NotImplementedException();
             }
         }
 
@@ -554,7 +554,7 @@ namespace OpenVIII
             ushort lasthp = _CurrentHP;
             if (hp <= 0)
             {
-                Statuses0 |= (Kernel.Persistent_Statuses.Death);
+                Statuses0 |= (Kernel.PersistentStatuses.Death);
                 _CurrentHP = 0;
             }
             else
@@ -608,7 +608,7 @@ namespace OpenVIII
         }
 
         public bool DealStatus(
-            Kernel.Persistent_Statuses? statuses0,
+            Kernel.PersistentStatuses? statuses0,
             Kernel.BattleOnlyStatuses? statuses1,
             Kernel.AttackType type,
             Kernel.AttackFlags? flags)
@@ -616,7 +616,7 @@ namespace OpenVIII
             if (StatusesActions.ContainsKey(type))
             {
                 int total = StatusesActions[type](
-                statuses0 ?? Kernel.Persistent_Statuses.None,
+                statuses0 ?? Kernel.PersistentStatuses.None,
                 statuses1 ?? Kernel.BattleOnlyStatuses.None,
                 flags ?? Kernel.AttackFlags.None);
                 return total != 0;
@@ -753,7 +753,7 @@ namespace OpenVIII
 
         public abstract sbyte StatusResistance(Kernel.BattleOnlyStatuses s);
 
-        public abstract sbyte StatusResistance(Kernel.Persistent_Statuses s);
+        public abstract sbyte StatusResistance(Kernel.PersistentStatuses s);
 
         public virtual bool Switch()
         {

@@ -43,7 +43,7 @@ namespace OpenVIII
             public byte AttackPower { get; }
 
             [field: FieldOffset(4)]
-            public Persistent_Statuses Statuses0 { get; }
+            public PersistentStatuses Statuses0 { get; }
 
             [field: FieldOffset(0)]
             public BattleOnlyStatuses Statuses1 { get; }
@@ -62,7 +62,7 @@ namespace OpenVIII
             {
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
                 //0x0000  4 bytes Status 1
-                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();
                 //0x0004  2 bytes Status 0
                 AttackPower = br.ReadByte();
                 //0x0006  1 bytes Attack Power

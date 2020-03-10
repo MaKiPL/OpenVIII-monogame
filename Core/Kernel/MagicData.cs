@@ -41,7 +41,7 @@ namespace OpenVIII
                 Element = (Element)br.ReadByte();
                 Unknown3 = br.ReadByte();
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
-                Statuses0 = (Persistent_Statuses)br.ReadUInt16();
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();
                 StatusAttack = br.ReadByte();
                 Dictionary<Stat, byte> jVal = new Dictionary<Stat, byte>()
                 {
@@ -53,20 +53,20 @@ namespace OpenVIII
                     {Stat.SPD, br.ReadByte()},
                     {Stat.EVA, br.ReadByte()},
                     {Stat.HIT, br.ReadByte()},
-                    {Stat.LUCK, br.ReadByte()}
+                    {Stat.Luck, br.ReadByte()}
                 };
                 ElAtk = (Element)br.ReadByte();
-                jVal.Add(Stat.EL_Atk, br.ReadByte());
+                jVal.Add(Stat.ElAtk, br.ReadByte());
                 ElDef = (Element)br.ReadByte();
-                jVal.Add(Stat.EL_Def_1, br.ReadByte());
-                jVal.Add(Stat.EL_Def_2, jVal[Stat.EL_Def_1]);
-                jVal.Add(Stat.EL_Def_3, jVal[Stat.EL_Def_1]);
-                jVal.Add(Stat.EL_Def_4, jVal[Stat.EL_Def_1]);
-                jVal.Add(Stat.ST_Atk, br.ReadByte());
-                jVal.Add(Stat.ST_Def_1, br.ReadByte());
-                jVal.Add(Stat.ST_Def_2, jVal[Stat.ST_Def_1]);
-                jVal.Add(Stat.ST_Def_3, jVal[Stat.ST_Def_1]);
-                jVal.Add(Stat.ST_Def_4, jVal[Stat.ST_Def_1]);
+                jVal.Add(Stat.ElDef1, br.ReadByte());
+                jVal.Add(Stat.ElDef2, jVal[Stat.ElDef1]);
+                jVal.Add(Stat.ElDef3, jVal[Stat.ElDef1]);
+                jVal.Add(Stat.ElDef4, jVal[Stat.ElDef1]);
+                jVal.Add(Stat.StAtk, br.ReadByte());
+                jVal.Add(Stat.StDef1, br.ReadByte());
+                jVal.Add(Stat.StDef2, jVal[Stat.StDef1]);
+                jVal.Add(Stat.StDef3, jVal[Stat.StDef1]);
+                jVal.Add(Stat.StDef4, jVal[Stat.StDef1]);
                 JVal = jVal;
                 StAtk = (JunctionStatuses)br.ReadUInt16();
                 StDef = (JunctionStatuses)br.ReadUInt16();
@@ -211,7 +211,7 @@ namespace OpenVIII
             public byte StatusAttack { get; }
 
             ///0x0014  2 bytes Statuses 0
-            public Persistent_Statuses Statuses0 { get; }
+            public PersistentStatuses Statuses0 { get; }
 
             ///0x0010  4 bytes Statuses 1
             public BattleOnlyStatuses Statuses1 { get; }
@@ -258,25 +258,25 @@ namespace OpenVIII
                     case Stat.SPD:
                     case Stat.EVA:
                     case Stat.HIT:
-                    case Stat.LUCK:
+                    case Stat.Luck:
                         return JVal[stat];
 
-                    case Stat.EL_Atk:
+                    case Stat.ElAtk:
                         return JVal[stat] * ElAtk.Count();
 
-                    case Stat.ST_Atk:
+                    case Stat.StAtk:
                         return JVal[stat] * StAtk.Count();
 
-                    case Stat.EL_Def_1:
-                    case Stat.EL_Def_2:
-                    case Stat.EL_Def_3:
-                    case Stat.EL_Def_4:
+                    case Stat.ElDef1:
+                    case Stat.ElDef2:
+                    case Stat.ElDef3:
+                    case Stat.ElDef4:
                         return JVal[stat] * ElDef.Count();
 
-                    case Stat.ST_Def_1:
-                    case Stat.ST_Def_2:
-                    case Stat.ST_Def_3:
-                    case Stat.ST_Def_4:
+                    case Stat.StDef1:
+                    case Stat.StDef2:
+                    case Stat.StDef3:
+                    case Stat.StDef4:
                         return JVal[stat] * StDef.Count();
 
                     case Stat.None:

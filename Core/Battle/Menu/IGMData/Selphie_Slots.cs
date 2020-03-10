@@ -56,7 +56,7 @@ namespace OpenVIII.IGMData
         /// <summary>
         /// Spell set
         /// </summary>
-        private Slot_array SpellSet => Memory.Kernel_Bin.SlotArray != null ? Memory.Kernel_Bin.SlotArray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Memory.Kernel_Bin.SlotArray.Count - 1)] : null;
+        private SlotArray SpellSet => Memory.Kernel_Bin.SlotArray != null ? Memory.Kernel_Bin.SlotArray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Memory.Kernel_Bin.SlotArray.Count - 1)] : null;
 
         private Target.Group TargetGroup { get => (Target.Group)ITEM[8, 0]; set => ITEM[8, 0] = value; }
 
@@ -129,7 +129,7 @@ namespace OpenVIII.IGMData
         public override void Refresh()
         {
             Slot spell_data = SpellData;
-            MagicData = spell_data.Magic_Data;
+            MagicData = spell_data.MagicData;
             Casts = spell_data.Casts;
             SetCursor_select(3);
             base.Refresh();

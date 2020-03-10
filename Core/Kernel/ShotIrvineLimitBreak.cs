@@ -7,54 +7,58 @@ namespace OpenVIII
     namespace Kernel
     {
         /// <summary>
-        /// Temporary Characters Limit Breaks
+        /// Shot (Irvine limit break)
         /// </summary>
-        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Temporary-character-limit-breaks"/>
-        public sealed class TemporaryCharacterLimitBreaks
+        /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Shot-%28Irvine-limit-break%29"/>
+        public sealed class ShotIrvineLimitBreak
         {
             #region Fields
 
-            public const int Count = 5;
+            public const int Count = 8;
 
-            public const int ID = 18;
+            public const int ID = 21;
+
+            public const int Size = 24;
 
             #endregion Fields
 
             #region Constructors
 
-            private TemporaryCharacterLimitBreaks(BinaryReader br, int i)
+            private ShotIrvineLimitBreak(BinaryReader br, int i)
             {
-                Name = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2);
                 //0x0000	2 bytes Offset to name
-                Description = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2 + 1);
+                Name = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2);
                 //0x0002	2 bytes Offset to description
+                Description = Memory.Strings.Read(Strings.FileID.Kernel, ID, i * 2 + 1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
-                MagicID = (MagicID)br.ReadUInt16();
                 //0x0004  2 bytes Magic ID
-                AttackType = (AttackType)br.ReadByte();
+                MagicID = (MagicID)br.ReadUInt16();
                 //0x0006  1 byte Attack Type
-                AttackPower = br.ReadByte();
+                AttackType = (AttackType)br.ReadByte();
                 //0x0007  1 byte Attack Power
-                Unknown0 = br.ReadBytes(2);
+                AttackPower = br.ReadByte();
                 //0x0008  2 bytes Unknown
-                Target = (Target)br.ReadByte();
+                Unknown0 = br.ReadBytes(2);
                 //0x000A  1 byte Target Info
-                AttackFlags = (AttackFlags)br.ReadByte();
+                Target = (Target)br.ReadByte();
                 //0x000B  1 byte Attack Flags
-                HitCount = br.ReadByte();
+                AttackFlags = (AttackFlags)br.ReadByte();
                 //0x000C  1 byte Hit Count
-                Element = (Element)br.ReadByte();
+                HitCount = br.ReadByte();
                 //0x000D  1 byte Element Attack
-                ElementPercent = br.ReadByte();
+                Element = (Element)br.ReadByte();
                 //0x000E  1 byte Element Attack %
-                StatusAttack = br.ReadByte();
+                ElementPercent = br.ReadByte();
                 //0x000F  1 byte Status Attack Enabler
-                Statuses0 = (PersistentStatuses)br.ReadUInt16();
+                StatusAttack = br.ReadByte();
                 //0x0010  2 bytes status_0; //statuses 0-7
-                Unknown1 = br.ReadBytes(2);
-                //0x0012  2 bytes Unknown
-                Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();
+                //0x0012  1 byte Used item index
+                ItemIndex = br.ReadByte();
+                //0x0013  1 byte Critical increase
+                Critical = br.ReadByte();
                 //0x0014  4 bytes status_1; //statuses 8-39
+                Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
             }
 
             #endregion Constructors
@@ -67,6 +71,8 @@ namespace OpenVIII
 
             public AttackType AttackType { get; }
 
+            public byte Critical { get; }
+
             public FF8String Description { get; }
 
             public Element Element { get; }
@@ -74,6 +80,8 @@ namespace OpenVIII
             public byte ElementPercent { get; }
 
             public byte HitCount { get; }
+
+            public byte ItemIndex { get; }
 
             public MagicID MagicID { get; }
 
@@ -89,18 +97,16 @@ namespace OpenVIII
 
             public byte[] Unknown0 { get; }
 
-            public byte[] Unknown1 { get; }
-
             #endregion Properties
 
             #region Methods
 
-            public static IReadOnlyList<TemporaryCharacterLimitBreaks> Read(BinaryReader br)
+            public static ShotIrvineLimitBreak CreateInstance(BinaryReader br, int i) => new ShotIrvineLimitBreak(br, i);
+
+            public static IReadOnlyList<ShotIrvineLimitBreak> Read(BinaryReader br)
                 => Enumerable.Range(0, Count).Select(x => CreateInstance(br, x)).ToList().AsReadOnly();
 
             public override string ToString() => Name;
-
-            private static TemporaryCharacterLimitBreaks CreateInstance(BinaryReader br, int i) => new TemporaryCharacterLimitBreaks(br, i);
 
             #endregion Methods
         }

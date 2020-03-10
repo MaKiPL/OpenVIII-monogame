@@ -569,7 +569,7 @@ namespace OpenVIII
             public int DeadCharacters() =>
                 Characters?.Count(m =>
                     m.Value.Available && m.Value.CurrentHP() == 0 ||
-                    (m.Value.Statuses0 & Kernel.Persistent_Statuses.Death) != 0) ?? 0;
+                    (m.Value.Statuses0 & Kernel.PersistentStatuses.Death) != 0) ?? 0;
 
             /// <summary>
             /// How many dead party members there are.

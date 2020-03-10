@@ -104,19 +104,19 @@ namespace OpenVIII
         private Kernel.AttackType Attack_Type => Battle?.AttackType ?? Kernel.AttackType.None;
 
         public Kernel.BattleItemData Battle => (Memory.Kernel_Bin.BattleItemsData?.Count ?? 0) > ID ? Memory.Kernel_Bin.BattleItemsData[ID] : null;
-        public Kernel.Shot_Irvine_limit_break Shot => (Memory.Kernel_Bin.ShotIrvineLimitBreak?.Count ?? 0) < ID - bulletoffset || ID - bulletoffset < 0 ? null : Memory.Kernel_Bin.ShotIrvineLimitBreak[ID - bulletoffset];
+        public Kernel.ShotIrvineLimitBreak Shot => (Memory.Kernel_Bin.ShotIrvineLimitBreak?.Count ?? 0) < ID - bulletoffset || ID - bulletoffset < 0 ? null : Memory.Kernel_Bin.ShotIrvineLimitBreak[ID - bulletoffset];
 
         /// <summary>
         /// Which persistant statuses are removed.
         /// </summary>
-        public Kernel.Persistent_Statuses Cleansed_Statuses
+        public Kernel.PersistentStatuses Cleansed_Statuses
         {
             get
             {
-                Kernel.Persistent_Statuses ret = Kernel.Persistent_Statuses.None;
+                Kernel.PersistentStatuses ret = Kernel.PersistentStatuses.None;
                 if (Type == _Type.HealGF || Type == _Type.Heal || Type == _Type.Revive || Type == _Type.ReviveGF ||
                     Type == _Type.Cure_Abnormal_Status || Type == _Type.SavePointHeal)
-                    ret = (Kernel.Persistent_Statuses)b3;
+                    ret = (Kernel.PersistentStatuses)b3;
                 return ret;
             }
         }
@@ -502,7 +502,7 @@ namespace OpenVIII
 
             if (c != null && !ZombieCheck(c.Statuses0, battle))
             {
-                if (!c.StatusImmune && Cleansed_Statuses != Kernel.Persistent_Statuses.None)
+                if (!c.StatusImmune && Cleansed_Statuses != Kernel.PersistentStatuses.None)
                     ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.AttackType ?? Kernel.AttackType.CurativeItem, Battle?.AttackFlags);
                 ret = c.DealDamage(Heals, Battle?.AttackType ?? Kernel.AttackType.CurativeItem, Battle?.AttackFlags) || ret;
             }
@@ -526,7 +526,7 @@ namespace OpenVIII
             bool ret = false;
             if (c != null && !ZombieCheck(c.Statuses0, battle))
             {
-                if (!c.StatusImmune && Cleansed_Statuses != Kernel.Persistent_Statuses.None)
+                if (!c.StatusImmune && Cleansed_Statuses != Kernel.PersistentStatuses.None)
                     ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.AttackType ?? Kernel.AttackType.CurativeItem, Battle?.AttackFlags);
                 ret = c.DealDamage(0, Battle?.AttackType ?? Kernel.AttackType.Revive, Battle?.AttackFlags) || ret;
             }
@@ -541,9 +541,9 @@ namespace OpenVIII
 
         private bool StatAction(Faces.ID obj, bool battle = false) => false;
 
-        private bool ZombieCheck(Kernel.Persistent_Statuses statuses0, bool battle = false) =>
-                                                                                                    (statuses0 & Kernel.Persistent_Statuses.Zombie) != 0 &&
-            (Cleansed_Statuses & Kernel.Persistent_Statuses.Zombie) == 0 &&
+        private bool ZombieCheck(Kernel.PersistentStatuses statuses0, bool battle = false) =>
+                                                                                                    (statuses0 & Kernel.PersistentStatuses.Zombie) != 0 &&
+            (Cleansed_Statuses & Kernel.PersistentStatuses.Zombie) == 0 &&
             !battle;
 
         #endregion Methods

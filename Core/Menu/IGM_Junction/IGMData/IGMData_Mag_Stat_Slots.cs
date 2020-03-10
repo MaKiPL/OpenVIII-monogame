@@ -30,7 +30,7 @@ namespace OpenVIII
                     { Stat.SPR, Icons.ID.Stats_Spirit },
                     { Stat.SPD, Icons.ID.Stats_Speed },
                     { Stat.EVA, Icons.ID.Stats_Evade },
-                    { Stat.LUCK, Icons.ID.Stats_Luck },
+                    { Stat.Luck, Icons.ID.Stats_Luck },
                     { Stat.HIT, Icons.ID.Stats_Hit_Percent },
                 };
 

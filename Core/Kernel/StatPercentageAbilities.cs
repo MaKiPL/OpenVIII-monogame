@@ -9,7 +9,7 @@ namespace OpenVIII.Kernel
         /// Stat Percentage Increasing Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Stat-percentage-increasing-abilities"/>
-        public class StatPercentageAbilities : IEquippableAbility
+        public sealed class StatPercentageAbilities : IEquippableAbility
         {
             #region Fields
 
@@ -74,7 +74,7 @@ namespace OpenVIII.Kernel
 
             #region Methods
 
-            public static Dictionary<Abilities, StatPercentageAbilities> Read(BinaryReader br)
+            public static IReadOnlyDictionary<Abilities, StatPercentageAbilities> Read(BinaryReader br)
 
                 => Enumerable.Range(0, Count)
                     .ToDictionary(i => (Abilities)(i + (int)Abilities.HP20), i => CreateInstance(br, i));

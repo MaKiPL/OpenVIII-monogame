@@ -15,7 +15,7 @@ namespace OpenVIII
             public static IGMData_Mag_ST_A_Values Create() => Create<IGMData_Mag_ST_A_Values>(12, 5, new IGMDataItem.Box { Title = Icons.ID.Status_Attack, Pos = new Rectangle(280, 363, 545, 267) }, 2, 6);
 
             public Dictionary<Kernel.JunctionStatuses, byte> getTotal(Saves.CharacterData source, out Enum[] availableFlagsarray)
-                    => getTotal<Kernel.JunctionStatuses>(out availableFlagsarray, 100, Kernel.Stat.ST_Atk, source.StatJ[Kernel.Stat.ST_Atk]);
+                    => getTotal<Kernel.JunctionStatuses>(out availableFlagsarray, 100, Kernel.Stat.StAtk, source.StatJ[Kernel.Stat.StAtk]);
 
             public override bool Update()
             {

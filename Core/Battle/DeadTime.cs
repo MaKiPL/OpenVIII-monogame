@@ -74,7 +74,7 @@ namespace OpenVIII
                             c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Sleep) ||
                             c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Stop) ||
                             c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Confuse) ||
-                            c.Statuses0.HasFlag(Kernel.Persistent_Statuses.Berserk) ||
+                            c.Statuses0.HasFlag(Kernel.PersistentStatuses.Berserk) ||
                             c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.AngelWing)))
 
                             return Memory.Random.Next(256) < 8;

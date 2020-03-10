@@ -230,19 +230,19 @@ namespace OpenVIII.IGMData.Pool
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_EL_D:
-                        Sort = Source.SortedMagic(Kernel.Stat.EL_Def_1);
+                        Sort = Source.SortedMagic(Kernel.Stat.ElDef1);
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_EL_A:
-                        Sort = Source.SortedMagic(Kernel.Stat.EL_Atk);
+                        Sort = Source.SortedMagic(Kernel.Stat.ElAtk);
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_ST_D:
-                        Sort = Source.SortedMagic(Kernel.Stat.ST_Def_1);
+                        Sort = Source.SortedMagic(Kernel.Stat.StDef1);
                         break;
 
                     case IGM_Junction.Mode.Mag_Pool_ST_A:
-                        Sort = Source.SortedMagic(Kernel.Stat.ST_Atk);
+                        Sort = Source.SortedMagic(Kernel.Stat.StAtk);
                         break;
 
                     default:
@@ -545,7 +545,7 @@ namespace OpenVIII.IGMData.Pool
                     case IGM_Junction.Mode.Mag_ST_A:
                     case IGM_Junction.Mode.Mag_Pool_ST_A:
                         SortMode = IGM_Junction.Mode.Mag_Pool_ST_A;
-                        Stat = Kernel.Stat.ST_Atk;
+                        Stat = Kernel.Stat.StAtk;
                         break;
 
                     case IGM_Junction.Mode.Mag_EL_D:
@@ -556,7 +556,7 @@ namespace OpenVIII.IGMData.Pool
                     case IGM_Junction.Mode.Mag_EL_A:
                     case IGM_Junction.Mode.Mag_Pool_EL_A:
                         SortMode = IGM_Junction.Mode.Mag_Pool_EL_A;
-                        Stat = Kernel.Stat.EL_Atk;
+                        Stat = Kernel.Stat.ElAtk;
                         break;
                 }
             }

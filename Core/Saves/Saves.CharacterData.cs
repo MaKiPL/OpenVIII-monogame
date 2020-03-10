@@ -254,7 +254,7 @@ namespace OpenVIII
 
             public override byte Level => CharacterStats?.Level(Experience) ?? 0;
 
-            public override byte LUCK => checked((byte)TotalStat(Stat.LUCK));
+            public override byte LUCK => checked((byte)TotalStat(Stat.Luck));
 
             public override byte MAG => checked((byte)TotalStat(Stat.MAG));
 
@@ -466,7 +466,7 @@ namespace OpenVIII
 
             public override sbyte StatusResistance(BattleOnlyStatuses s) => throw new NotImplementedException();
 
-            public override sbyte StatusResistance(Persistent_Statuses s) => throw new NotImplementedException();
+            public override sbyte StatusResistance(PersistentStatuses s) => throw new NotImplementedException();
 
             public override string ToString() => Name.Length > 0 ? Name.ToString() : base.ToString();
 
@@ -505,7 +505,7 @@ namespace OpenVIII
                     case Stat.HIT:
                         return CharacterStats.Hit(StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], WeaponID);
 
-                    case Stat.LUCK:
+                    case Stat.Luck:
                         return CharacterStats.Luck((sbyte)Level, StatJ[s], StatJ[s] == 0 ? 0 : Magics[StatJ[s]], RawStats[s], total);
 
                     case Stat.MAG:
@@ -541,42 +541,42 @@ namespace OpenVIII
                     case Stat.SPD:
                     case Stat.EVA:
                     case Stat.HIT:
-                    case Stat.LUCK:
+                    case Stat.Luck:
                     case Stat.None:
                         throw new ArgumentOutOfRangeException(nameof(stat), stat, null);
                     default:
                         return unlocked.Contains(KernelBin.Stat2Ability[stat]);
 
-                    case Stat.EL_Atk:
+                    case Stat.ElAtk:
                         return unlocked.Contains(Kernel.Abilities.ElAtkJ);
 
-                    case Stat.EL_Def_1:
+                    case Stat.ElDef1:
                         return unlocked.Contains(Kernel.Abilities.ElDefJ) ||
                             unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
                             unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
-                    case Stat.EL_Def_2:
+                    case Stat.ElDef2:
                         return unlocked.Contains(Kernel.Abilities.ElDefJ2) ||
                             unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
-                    case Stat.EL_Def_3:
-                    case Stat.EL_Def_4:
+                    case Stat.ElDef3:
+                    case Stat.ElDef4:
                         return unlocked.Contains(Kernel.Abilities.ElDefJ4);
 
-                    case Stat.ST_Atk:
+                    case Stat.StAtk:
                         return unlocked.Contains(Kernel.Abilities.StAtkJ);
 
-                    case Stat.ST_Def_1:
+                    case Stat.StDef1:
                         return unlocked.Contains(Kernel.Abilities.StDefJ) ||
                             unlocked.Contains(Kernel.Abilities.StDefJ2) ||
                             unlocked.Contains(Kernel.Abilities.StDefJ4);
 
-                    case Stat.ST_Def_2:
+                    case Stat.StDef2:
                         return unlocked.Contains(Kernel.Abilities.StDefJ2) ||
                             unlocked.Contains(Kernel.Abilities.StDefJ4);
 
-                    case Stat.ST_Def_3:
-                    case Stat.ST_Def_4:
+                    case Stat.StDef3:
+                    case Stat.StDef4:
                         return unlocked.Contains(Kernel.Abilities.StDefJ4);
                 }
             }
@@ -597,7 +597,7 @@ namespace OpenVIII
                     [Stat.MAG] = br.ReadByte(),//0x0C
                     [Stat.SPR] = br.ReadByte(),//0x0D
                     [Stat.SPD] = br.ReadByte(),//0x0E
-                    [Stat.LUCK] = br.ReadByte()//0x0F
+                    [Stat.Luck] = br.ReadByte()//0x0F
                 };
                 Magics = new OrderedDictionary<byte, byte>(MagicCapacity);
                 for (int i = 0; i < MagicCapacity; i++)
@@ -630,7 +630,7 @@ namespace OpenVIII
                 NumberOfKOs = br.ReadUInt16();//0x92
                 Exists = (Exists)br.ReadByte();//0x94
                 Unknown3 = br.ReadByte();//0x95
-                Statuses0 = (Persistent_Statuses)br.ReadByte();//0x96
+                Statuses0 = (PersistentStatuses)br.ReadByte();//0x96
                 Unknown4 = br.ReadByte();//0x97
             }
 

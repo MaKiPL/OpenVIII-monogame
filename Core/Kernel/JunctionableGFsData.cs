@@ -37,7 +37,7 @@ namespace OpenVIII
                 AttackFlags = (AttackFlags)(br.ReadByte());          //0x000A  1 byte  Attack Flags
                 Unknown1 = br.ReadBytes(2);            //0x000B  2 bytes Unknown
                 Element = (Element)br.ReadByte();               //0x000D  1 byte[[Element
-                Statuses0 = (Persistent_Statuses)br.ReadUInt16();           //0x000E  2 bytes[[Statuses 0
+                Statuses0 = (PersistentStatuses)br.ReadUInt16();           //0x000E  2 bytes[[Statuses 0
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();           //0x0010  4 bytes[[Statuses 1
                 HPMod = br.ReadByte();         //0x0014  1 byte  GF HP Modifier(used in GF HP formula)
                 Unknown21 = br.ReadBytes(3);            //0x0015  3 bytes Unknown
@@ -124,7 +124,7 @@ namespace OpenVIII
             public byte StatusAttack { get; }
 
             ///0x000E  2 bytes[[Statuses 0
-            public Persistent_Statuses Statuses0 { get; }
+            public PersistentStatuses Statuses0 { get; }
 
             ///0x0010  4 bytes[[Statuses 1
             public BattleOnlyStatuses Statuses1 { get; }
