@@ -56,8 +56,8 @@ namespace OpenVIII.Kernel
                 CommandAbilityData = Kernel.CommandAbilityData.Read(br);
                 ms.Seek(subPositions[Kernel.JunctionAbilities.ID], SeekOrigin.Begin);
                 JunctionAbilities = Kernel.JunctionAbilities.Read(br);
-                ms.Seek(subPositions[Kernel.CommandAbilities.ID], SeekOrigin.Begin);
-                CommandAbilities = Kernel.CommandAbilities.Read(br, BattleCommands);
+                ms.Seek(subPositions[Kernel.CommandAbility.ID], SeekOrigin.Begin);
+                CommandAbilities = Kernel.CommandAbility.Read(br, BattleCommands);
                 ms.Seek(subPositions[StatPercentageAbilities.ID], SeekOrigin.Begin);
                 StatPercentAbilities = StatPercentageAbilities.Read(br);
                 ms.Seek(subPositions[Kernel.CharacterAbilities.ID], SeekOrigin.Begin);
@@ -97,7 +97,7 @@ namespace OpenVIII.Kernel
                 MiscTextPointers = Kernel.MiscTextPointers.Read();
 
                 Dictionary<Abilities, IAbility> allAbilities = new Dictionary<Abilities, IAbility>(
-                    Kernel.MenuAbilities.Count + Kernel.JunctionAbilities.Count + Kernel.CommandAbilities.Count +
+                    Kernel.MenuAbilities.Count + Kernel.JunctionAbilities.Count + Kernel.CommandAbility.Count +
                     StatPercentageAbilities.Count + Kernel.CharacterAbilities.Count + Kernel.PartyAbilities.Count +
                     Kernel.GFAbilities.Count);
 
@@ -253,7 +253,7 @@ namespace OpenVIII.Kernel
 
         public IReadOnlyDictionary<Characters, CharacterStats> CharacterStats { get; }
 
-        public IReadOnlyDictionary<Abilities, CommandAbilities> CommandAbilities { get; }
+        public IReadOnlyDictionary<Abilities, CommandAbility> CommandAbilities { get; }
 
         public IReadOnlyDictionary<Abilities, CommandAbilityData> CommandAbilityData { get; }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -26,6 +27,15 @@ namespace OpenVIII
             public byte StatusAttack { get;  }
             public PersistentStatuses Statuses0 { get;  }
             public BattleOnlyStatuses Statuses1 { get;  }
+
+            public static explicit operator CommandAbility(CommandAbilityData commandAbilityData)
+            {
+                CommandAbility value = null;
+                if (Memory.Kernel_Bin?.CommandAbilities?.TryGetValue(commandAbilityData.Ability, out value) ?? false)
+                { }
+                return value;
+            }
+
             /// <summary>
             /// order is different so conversation is required.
             /// </summary>

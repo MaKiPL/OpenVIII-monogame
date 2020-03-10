@@ -7,7 +7,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Abilities_CommandPool : IGMData.Pool.Base<IReadOnlyDictionary<Kernel.Abilities, Kernel.CommandAbilities>, Kernel.Abilities>
+        private class IGMData_Abilities_CommandPool : IGMData.Pool.Base<IReadOnlyDictionary<Kernel.Abilities, Kernel.CommandAbility>, Kernel.Abilities>
         {
             #region Methods
 

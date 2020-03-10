@@ -9,7 +9,7 @@ namespace OpenVIII.Kernel
     /// Command Abilities
     /// </summary>
     /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Command-abilities"/>
-    public sealed class CommandAbilities : IAbility
+    public sealed class CommandAbility : IAbility, ICommand
     {
         #region Fields
 
@@ -27,7 +27,10 @@ namespace OpenVIII.Kernel
 
         #region Constructors
 
-        private CommandAbilities(BinaryReader br, int i, BattleCommand battleCommand)
+        public static explicit operator BattleCommand(CommandAbility commandAbility) =>
+            commandAbility.BattleCommand;
+
+        private CommandAbility(BinaryReader br, int i, BattleCommand battleCommand)
         {
             //set a reference to it.
             BattleCommand = battleCommand;
@@ -102,7 +105,7 @@ namespace OpenVIII.Kernel
 
         #region Methods
 
-        public static IReadOnlyDictionary<Abilities, CommandAbilities> Read(BinaryReader br,
+        public static IReadOnlyDictionary<Abilities, CommandAbility> Read(BinaryReader br,
                 IEnumerable<BattleCommand> battleCommands)
         {
             Debug.Assert(Convert.Count == Count);
@@ -111,8 +114,8 @@ namespace OpenVIII.Kernel
                     i => CreateInstance(br, i.Key, battleCommands.ElementAtOrDefault(i.Value)));
         }
 
-        private static CommandAbilities CreateInstance(BinaryReader br, int i, BattleCommand battleCommand)
-        => new CommandAbilities(br, i, battleCommand);
+        private static CommandAbility CreateInstance(BinaryReader br, int i, BattleCommand battleCommand)
+        => new CommandAbility(br, i, battleCommand);
 
         #endregion Methods
     }

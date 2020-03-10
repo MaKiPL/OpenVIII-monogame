@@ -10,7 +10,7 @@ namespace OpenVIII
         /// Battle Commands
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Battle-commands"/>
-        public sealed class BattleCommand
+        public sealed class BattleCommand : ICommand
         {
             #region Fields
 
@@ -133,4 +133,8 @@ namespace OpenVIII
             #endregion Methods
         }
     }
+}
+
+namespace OpenVIII.Kernel
+{
 }

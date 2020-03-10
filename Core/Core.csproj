@@ -364,6 +364,7 @@
     <Compile Include="Kernel\Abilities\Ability.cs" />
     <Compile Include="Kernel\Abilities\AbilityFlags4.cs" />
     <Compile Include="Kernel\Abilities\IAbility.cs" />
+    <Compile Include="Kernel\Commands\ICommand.cs" />
     <Compile Include="Kernel\Limit\BlueMagic.cs" />
     <Compile Include="Kernel\Unlocker.cs" />
     <Compile Include="Log.cs" />
@@ -942,8 +943,8 @@
     <Compile Include="Kernel\Abilities\CharacterAbilityFlags.cs" />
     <Compile Include="Kernel\Abilities\CharacterAbilities.cs" />
     <Compile Include="Kernel\CharacterStats.cs" />
-    <Compile Include="Kernel\Abilities\CommandAbilities.cs" />
-    <Compile Include="Kernel\Commands\CommandAbilityData.cs" />
+    <Compile Include="Kernel\Abilities\CommandAbility.cs" />
+    <Compile Include="Kernel\Abilities\CommandAbilityData.cs" />
     <Compile Include="Kernel\KernelBin.cs" />
     <Compile Include="Kernel\Devour.cs" />
     <Compile Include="Kernel\Limit\DuelZellLimitBreak.cs" />

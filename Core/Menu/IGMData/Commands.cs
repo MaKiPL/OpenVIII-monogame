@@ -391,7 +391,7 @@ namespace OpenVIII.IGMData
 
                             if (cmd != Kernel.Abilities.None)
                             {
-                                if (!Memory.Kernel_Bin.CommandAbilities.TryGetValue(cmd, out Kernel.CommandAbilities cmdval))
+                                if (!Memory.Kernel_Bin.CommandAbilities.TryGetValue(cmd, out Kernel.CommandAbility cmdval))
                                 {
                                     continue;
                                 }
