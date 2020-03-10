@@ -13,7 +13,7 @@ namespace OpenVIII
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Characters"/>
         /// <seealso cref="http://forums.qhimm.com/index.php?topic=16923.msg240609#msg240609"/>
-        public class CharacterStats
+        public sealed class CharacterStats
         {
             #region Fields
 
@@ -23,7 +23,6 @@ namespace OpenVIII
             private const int PercentMod = 100;
             private readonly byte[] _exp;
 
-            //0x0006; 2 bytes; EXP modifier
             private readonly byte[] _hp;
 
             private readonly byte _limitID;
@@ -31,20 +30,17 @@ namespace OpenVIII
             private readonly byte[] _mag;
             private readonly byte[] _spd;
 
-            //0x0014; 4 bytes; MAG modifiers
             private readonly byte[] _spr;
 
-            //0x0008; 4 bytes; HP modifiers
             private readonly byte[] _str;
 
-            //0x000C; 4 bytes; STR modifiers
             private readonly byte[] _vit;
 
             #endregion Fields
 
             #region Constructors
 
-            public CharacterStats(BinaryReader br, Characters charID)
+            private CharacterStats(BinaryReader br, Characters charID)
             {
                 CharID = charID;
                 //Offset = br.ReadUInt16(); //0x0000; 2 bytes; Offset to character name
@@ -63,16 +59,12 @@ namespace OpenVIII
                 _spr = br.ReadBytes(4); //0x0018; 4 bytes; SPR modifiers
                 _spd = br.ReadBytes(4); //0x001C; 4 bytes; SPD modifiers
                 _luck = br.ReadBytes(4); //0x0020; 4 bytes; LUCK modifiers
-                //int hp = HP(8);
             }
 
             #endregion Constructors
 
             #region Properties
 
-            //public ushort Offset; //0x0000; 2 bytes; Offset to character name
-            // ReSharper disable once CommentTypo
-            //Squall and Rinoa have name offsets of 0xFFFF because their name is in the save game data rather than kernel.bin.
             /// <summary>
             /// Crisis level modifier
             /// </summary>
@@ -81,11 +73,8 @@ namespace OpenVIII
 
             public Gender Gender { get; }
 
-            //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-            //0x0004; 1 byte; Limit Break BattleID
             public BattleCommand Limit => Memory.Kernel_Bin.BattleCommands[_limitID];
 
-            //0x0002; 1 byte; Crisis level hp multiplier
             public byte LimitParam { get; }
 
             public FF8String Name => Memory.Strings.GetName((Faces.ID)CharID);
@@ -100,7 +89,8 @@ namespace OpenVIII
 
             public byte Eva(int lvl, int magicID = 0, int magicCount = 0, int statBonus = 0, int spd = 0, int percentMod = 0)
             {
-                int value = (((Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.EVA] * magicCount) / 100 + spd / 4) * (percentMod + PercentMod)) / 100;
+                int value = (((Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.EVA] * magicCount) / 100 + spd / 4) *
+                             (percentMod + PercentMod)) / 100;
                 return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
 
@@ -127,7 +117,6 @@ namespace OpenVIII
             /// <returns></returns>
             public ushort HP(sbyte lvl, int magicID = 0, int magicCount = 0, int statBonus = 0, int percentMod = 0)
             {
-                //TODO fix null
                 if (Memory.Kernel_Bin == null) return 0;
                 int value = (((Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.HP] * magicCount) + statBonus + (lvl * _hp[0]) - ((10 * lvl * lvl) / _hp[1]) + _hp[2]) * (percentMod + PercentMod)) / 100;
                 return (ushort)MathHelper.Clamp(value, 0, KernelBin.MaxHPValue);
@@ -157,17 +146,11 @@ namespace OpenVIII
 
             public override string ToString() => Name;
 
-            //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
-            //0x0010; 4 bytes; VIT modifiers
-            //0x0018; 4 bytes; SPR modifiers
-            //0x001C; 4 bytes; SPD modifiers
-            //0x0020; 4 bytes; LUCK modifiers
-
             public byte VIT(int lvl, int magicID = 0, int magicCount = 0, int statBonus = 0, int percentMod = PercentMod)
                 => STR_VIT_MAG_SPR(_vit[0], _vit[1], _vit[2], _vit[3], lvl, Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.VIT], magicCount, statBonus, percentMod);
 
             private static CharacterStats CreateInstance(BinaryReader br, Characters charID)
-                            => new CharacterStats(br, charID);
+                => new CharacterStats(br, charID);
 
             private static byte SPD_LUCK(int a, int b, int c, int d, int lvl, int magicJVal, int magicCount, int statBonus, int percentMod = 0, int unk = 0)
             {
