@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace OpenVIII
     /// <summary>
     /// Loads strings from FF8 files
     /// </summary>
-    public partial class Strings
+    public partial class Strings : IReadOnlyDictionary<Strings.FileID, Strings.StringsBase>
     {
         #region Fields
 
@@ -125,7 +126,20 @@ namespace OpenVIII
             return r.Length>0 ? r : null;
         }
 
+        public bool ContainsKey(FileID key)
+        {
+            return _files.ContainsKey(key);
+        }
+
+        public bool TryGetValue(FileID key, out StringsBase value)
+        {
+            return _files.TryGetValue(key, out value);
+        }
+
         public StringsBase this[FileID id] => _files[id];
+        public IEnumerable<FileID> Keys => ((IReadOnlyDictionary<Strings.FileID, Strings.StringsBase>) _files).Keys;
+
+        public IEnumerable<StringsBase> Values => ((IReadOnlyDictionary<Strings.FileID, Strings.StringsBase>) _files).Values;
 
         private void Init()
         {
@@ -149,5 +163,17 @@ namespace OpenVIII
         }
 
         #endregion Methods
+
+        public IEnumerator<KeyValuePair<FileID, StringsBase>> GetEnumerator()
+        {
+            return _files.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable) _files).GetEnumerator();
+        }
+
+        public int Count => _files.Count;
     }
 }

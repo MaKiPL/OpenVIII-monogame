@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace OpenVIII
@@ -10,7 +11,7 @@ namespace OpenVIII
     {
         #region Classes
 
-        public abstract class StringsBase
+        public abstract class StringsBase : IReadOnlyDictionary<int, List<FF8StringReference>>
         {
             #region Fields
 
@@ -201,6 +202,34 @@ namespace OpenVIII
                     Get_Strings_Offsets(br, FileNames[0], 0);
                 }
             }
+
+            public IEnumerator<KeyValuePair<int, List<FF8StringReference>>> GetEnumerator()
+            {
+                return StringFiles.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((IEnumerable) StringFiles).GetEnumerator();
+            }
+
+            public int Count => StringFiles.Count;
+
+            public bool ContainsKey(int key)
+            {
+                return StringFiles.ContainsKey(key);
+            }
+
+            public bool TryGetValue(int key, out List<FF8StringReference> value)
+            {
+                return StringFiles.TryGetValue(key, out value);
+            }
+
+            public List<FF8StringReference> this[int key] => ((IReadOnlyDictionary<int, List<FF8StringReference>>) StringFiles)[key];
+
+            public IEnumerable<int> Keys => StringFiles.Keys;
+
+            public IEnumerable<List<FF8StringReference>> Values => StringFiles.Values;
         }
 
         #endregion Methods

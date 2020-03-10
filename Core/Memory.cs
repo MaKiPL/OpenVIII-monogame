@@ -559,7 +559,6 @@ namespace OpenVIII
             Memory.content = content;
             Memory.Arguments = arguments;
 
-            FF8StringReference.Init();
             TokenSource = new CancellationTokenSource();
             Token = TokenSource.Token;
             Threaded = false;
