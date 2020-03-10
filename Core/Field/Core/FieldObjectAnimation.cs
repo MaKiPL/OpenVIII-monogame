@@ -4,13 +4,13 @@ namespace OpenVIII.Fields
 {
     public sealed class FieldObjectAnimation
     {
-        public Int32 BaseAnimationId { get;  }
-        public Int32 FirstFrame { get; set; }
-        public Int32 LastFrame { get; set; }
+        public int BaseAnimationId { get; set; }
+        public int FirstFrame { get; set; }
+        public int LastFrame { get; set; }
 
-        public Int32 FPS { get; set; }
+        public int FPS { get; set; }
 
-        public void ChangeBaseAnimation(Int32 animationId, Int32 firstFrame, Int32 lastFrame)
+        public void ChangeBaseAnimation(int animationId, int firstFrame, int lastFrame)
         {
             BaseAnimationId = animationId;
             FirstFrame = firstFrame;
@@ -28,7 +28,7 @@ namespace OpenVIII.Fields
             return DummyAwaitable.Instance;
         }
 
-        public IAwaitable Play(Int32 animationId, Boolean freeze)
+        public IAwaitable Play(int animationId, bool freeze)
         {
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(FieldObjectAnimation)}.{nameof(Play)}({nameof(animationId)}: {animationId}, {nameof(freeze)}: {freeze})");
@@ -36,7 +36,7 @@ namespace OpenVIII.Fields
             return DummyAwaitable.Instance;
         }
 
-        public IAwaitable Play(Int32 animationId, Int32 firstFrame, Int32 lastFrame, Boolean freeze)
+        public IAwaitable Play(int animationId, int firstFrame, int lastFrame, bool freeze)
         {
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(FieldObjectAnimation)}.{nameof(Play)}({nameof(animationId)}: {animationId}, {nameof(firstFrame)}: {firstFrame}, {nameof(lastFrame)}: {lastFrame}, {nameof(freeze)}: {freeze})");

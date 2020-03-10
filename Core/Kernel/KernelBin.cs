@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Permissions;
 
 namespace OpenVIII.Kernel
 {
     public class KernelBin
     {
-
+        #region Fields
 
         public const ushort MaxHPValue = 9999;
 
         public const byte MaxStatValue = 255;
 
-     
+        #endregion Fields
+
         #region Constructors
 
         /// <summary>
@@ -24,7 +24,6 @@ namespace OpenVIII.Kernel
         /// <seealso cref="https://github.com/alexfilth/doomtrain/wiki/Kernel.bin"/>
         private KernelBin()
         {
-
             Memory.Log.WriteLine($"{nameof(KernelBin)} :: new ");
             ArchiveBase aw = ArchiveWorker.Load(ArchiveString);
             byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.Kernel].GetFileNames()[0]);
@@ -101,7 +100,15 @@ namespace OpenVIII.Kernel
                     Kernel.MenuAbilities.Count + Kernel.JunctionAbilities.Count + Kernel.CommandAbilities.Count +
                     StatPercentageAbilities.Count + Kernel.CharacterAbilities.Count + Kernel.PartyAbilities.Count +
                     Kernel.GFAbilities.Count);
-                foreach (Abilities ability in (Abilities[]) (Enum.GetValues(typeof(Abilities))))
+
+                Dictionary<Abilities, IEquippableAbility> equippableAbilities =
+                    new Dictionary<Abilities, IEquippableAbility>(
+                        StatPercentageAbilities.Count +
+                        Kernel.CharacterAbilities.Count +
+                        Kernel.PartyAbilities.Count +
+                        Kernel.GFAbilities.Count);
+
+                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
                 {
                     combine(MenuAbilities);
                     combine(StatPercentAbilities);
@@ -111,49 +118,27 @@ namespace OpenVIII.Kernel
                     combine(PartyAbilities);
                     combine(GFAbilities);
 
+                    combine2(StatPercentAbilities);
+                    combine2(CharacterAbilities);
+                    combine2(PartyAbilities);
+                    combine2(CharacterAbilities);
+
                     void combine<T>(IReadOnlyDictionary<Abilities, T> dict)
-                        where T : IAbility
+                            where T : IAbility
                     {
-                        combine(Menuabilities);
-                        combine(Statpercentabilities);
-                        combine(Junctionabilities);
-                        combine(Commandabilities);
-                        combine(Characterabilities);
-                        combine(Partyabilities);
-                        combine(GFabilities);
-
-                        bool combine<T>(IReadOnlyDictionary<Abilities, T> dict)
-                            where T : Ability
-                        {
-                            if (dict.TryGetValue(ability, out T a))
-                            {
-                                s_allAbilities.Add(ability, a);
-                                return true;
-                            }
-
-                            return false;
-                        }
+                        if (!dict.TryGetValue(ability, out T a) || allAbilities.ContainsKey(ability)) return;
+                        allAbilities.Add(ability, a);
                     }
 
-                    AllAbilities = allAbilities;
-                    Dictionary<Abilities, IEquippableAbility> equippableAbilities =
-                        new Dictionary<Abilities, IEquippableAbility>(
-                            StatPercentageAbilities.Count +
-                            Kernel.CharacterAbilities.Count +
-                            Kernel.PartyAbilities.Count +
-                            Kernel.GFAbilities.Count);
-                    foreach (Abilities ability in (Abilities[]) (Enum.GetValues(typeof(Abilities))))
+                    void combine2<T>(IReadOnlyDictionary<Abilities, T> dict)
+                        where T : IEquippableAbility
                     {
-                        if (StatPercentAbilities.ContainsKey(ability))
-                            equippableAbilities[ability] = StatPercentAbilities[ability];
-                        else if (CharacterAbilities.ContainsKey(ability))
-                            equippableAbilities[ability] = CharacterAbilities[ability];
-                        else if (PartyAbilities.ContainsKey(ability))
-                            equippableAbilities[ability] = PartyAbilities[ability];
-                        else if (CharacterAbilities.ContainsKey(ability))
-                            equippableAbilities[ability] = CharacterAbilities[ability];
+                        if (!dict.TryGetValue(ability, out T a) || equippableAbilities.ContainsKey(ability)) return;
+                        equippableAbilities.Add(ability, a);
                     }
                 }
+                AllAbilities = allAbilities;
+                EquippableAbilities = equippableAbilities;
             }
         }
 
@@ -317,7 +302,6 @@ namespace OpenVIII.Kernel
         #region Methods
 
         public static KernelBin CreateInstance() => new KernelBin();
-
 
         #endregion Methods
     }

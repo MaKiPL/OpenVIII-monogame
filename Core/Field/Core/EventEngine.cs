@@ -11,7 +11,7 @@ namespace OpenVIII.Fields
     {
         private readonly OrderedDictionary<Int32, FieldObject> _objects = new OrderedDictionary<Int32, FieldObject>();
 
-        public FieldObject CurrentObject { get;  }
+        public FieldObject CurrentObject { get; set; }
 
         public EventEngine()
         {
@@ -39,7 +39,7 @@ namespace OpenVIII.Fields
         {
             Stopwatch sw = Stopwatch.StartNew();
 
-            foreach (var obj in _objects.Values)
+            foreach (FieldObject obj in _objects.Values)
             {
                 Console.WriteLine("Object: {0}", obj.InternalName);
                 CurrentObject = obj;

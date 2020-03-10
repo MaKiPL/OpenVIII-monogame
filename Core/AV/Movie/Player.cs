@@ -47,7 +47,7 @@ namespace OpenVIII.Movie
 
         #region Properties
 
-        public int Id { get;  }
+        public int Id { get; set; }
 
         // To detect redundant calls
         public bool IsDisposed => _disposedValue;
@@ -81,7 +81,7 @@ namespace OpenVIII.Movie
                     _suppressDraw = !overlayingModels
                 };
             }
-            else if (Files.Zzz)
+            else if (Files.ZZZ)
             {
                 return null; // doesn't work.
                 //ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);

@@ -18,23 +18,23 @@ namespace OpenVIII.Fields
 
         #region Properties
 
-        public Background Background { get;  }
-        public Cameras Cameras { get;  }
-        public EventEngine EventEngine { get;  }
-        public Sections Flags { get;  }
-        public INF inf { get;  }
+        public Background Background { get; set; }
+        public Cameras Cameras { get; set; }
+        public EventEngine EventEngine { get; set; }
+        public Sections Flags { get; set; }
+        public INF inf { get; set; }
         public Field_modes Mod { get; set; } = 0;
-        public MrtRat MrtRat { get;  }
-        public MSK msk { get;  }
-        public PMP pmp { get;  }
-        public IServices services { get;  }
-        public SFX sfx { get;  }
-        public TDW tdw { get;  }
-        public WalkMesh WalkMesh { get;  }
-        public ushort ID { get;  }
-        public string FileName { get;  }
-        public string ArchiveName { get;  }
-        public List<Scripts.Jsm.GameObject> jsmObjects { get;  } = null;
+        public MrtRat MrtRat { get; set; }
+        public MSK msk { get; set; }
+        public PMP pmp { get; set; }
+        public IServices services { get; set; }
+        public SFX sfx { get; set; }
+        public TDW tdw { get; set; }
+        public WalkMesh WalkMesh { get; set; }
+        public ushort ID { get; set; }
+        public string FileName { get; set; }
+        public string ArchiveName { get; set; }
+        public List<Scripts.Jsm.GameObject> jsmObjects { get; set; } = null;
 
         #endregion Properties
 
@@ -105,48 +105,38 @@ namespace OpenVIII.Fields
             }
 
             ArchiveBase fieldArchive = aw.GetArchive(ArchiveName);
-            string[] filelist = fieldArchive.GetListOfFiles();
-            string findstr(string s) =>
-                filelist.FirstOrDefault(x => x.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
+            string[] listOfFiles = fieldArchive.GetListOfFiles();
+            string findString(string s) =>
+                listOfFiles.FirstOrDefault(x => x.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
 
-            byte[] getfile(string s)
+            byte[] getFile(string s)
             {
-                s = findstr(s);
-                if (!string.IsNullOrWhiteSpace(s))
-                    return fieldArchive.GetBinaryFile(s);
-                else
-                    return null;
+                s = findString(s);
+                return !string.IsNullOrWhiteSpace(s) ? fieldArchive.GetBinaryFile(s) : null;
             }
-            if (!flags.HasFlag(Sections.MIM | Sections.MAP) || (Background = Background.Load(getfile(".mim"), getfile(".map"))) == null)
+            if (!flags.HasFlag(Sections.MIM | Sections.MAP) ||
+                (Background = Background.Load(getFile(".mim"), getFile(".map"))) == null)
             {
                 Mod = Field_modes.DISABLED;
             }
             if (flags.HasFlag(Sections.CA | Sections.ID))
             {
-                Cameras = Cameras.Load(getfile(".ca"));
-                WalkMesh = WalkMesh.Load(getfile(".BattleID"), Cameras);
+                Cameras = Cameras.Load(getFile(".ca"));
+                WalkMesh = WalkMesh.Load(getFile(".BattleID"), Cameras);
             }
 
             //let's start with scripts
-            string s_jsm = findstr(".jsm");
-            string s_sy = findstr(".sy");
-            if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(s_jsm)&& (FileName != "test3"))
+            string sJsm = findString(".jsm");
+            string sSy = findString(".sy");
+            if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(sJsm)&& (FileName != "test3"))
             {
-                //try
-                //{
-                    jsmObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(s_jsm));
-                //}
-                //catch (Exception e)
-                //{
-                 //   Debug.WriteLine(e);
-                    //Mod = Field_modes.NOJSM;
-                //}
+                    jsmObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(sJsm));
+             
                 if (Mod != Field_modes.NOJSM)
                 {
-                    Sym.GameObjects symObjects;
-                    if (!string.IsNullOrWhiteSpace(s_sy))
+                    if (!string.IsNullOrWhiteSpace(sSy))
                     {
-                        symObjects = Sym.Reader.FromBytes(fieldArchive.GetBinaryFile(s_sy));
+                        Sym.GameObjects symObjects = Sym.Reader.FromBytes(fieldArchive.GetBinaryFile(sSy));
 
                         services = Initializer.GetServices();
                         EventEngine = ServiceId.Field[services].Engine;
@@ -193,30 +183,30 @@ namespace OpenVIII.Fields
             //}
             if (flags.HasFlag(Sections.INF))
             {
-                byte[] infb = getfile(".inf");//gateways
-                if (infb != null && infb.Length > 0)
-                    inf = INF.Load(infb);
+                byte[] infData = getFile(".inf");//gateways
+                if (infData != null && infData.Length > 0)
+                    inf = INF.Load(infData);
             }
 
             if (flags.HasFlag(Sections.TDW))
             {
-                byte[] tdwb = getfile(".tdw");//extra font
-                if (tdwb != null && tdwb.Length > 0)
-                    tdw = new TDW(tdwb);
+                byte[] tdwData = getFile(".tdw");//extra font
+                if (tdwData != null && tdwData.Length > 0)
+                    tdw = new TDW(tdwData);
             }
 
             if (flags.HasFlag(Sections.MSK))
             {
-                byte[] mskb = getfile(".msk");//movie cam
-                if (mskb != null && mskb.Length > 0)
-                    msk = new MSK(mskb);
+                byte[] mskData = getFile(".msk");//movie cam
+                if (mskData != null && mskData.Length > 0)
+                    msk = new MSK(mskData);
             }
             if (flags.HasFlag(Sections.RAT | Sections.MRT))
             {
-                byte[] ratb = getfile(".rat");//battle on field
-                byte[] mrtb = getfile(".mrt");//battle on field
-                if (ratb != null && mrtb != null && ratb.Length > 0 && mrtb.Length > 0)
-                    MrtRat = new MrtRat(mrtb, ratb);
+                byte[] ratData = getFile(".rat");//battle on field
+                byte[] mrtData = getFile(".mrt");//battle on field
+                if (ratData != null && mrtData != null && ratData.Length > 0 && mrtData.Length > 0)
+                    MrtRat = new MrtRat(mrtData, ratData);
             }
             //if (flags.HasFlag(Sections.PMD))
             //{
@@ -228,35 +218,24 @@ namespace OpenVIII.Fields
             //}
             if (flags.HasFlag(Sections.PMP))
             {
-                byte[] pmpb = getfile(".pmp");//particle graphic?
-                if (pmpb != null && pmpb.Length > 4)
-                    pmp = new PMP(pmpb);
+                byte[] pmpData = getFile(".pmp");//particle graphic?
+                if (pmpData != null && pmpData.Length > 4)
+                    pmp = new PMP(pmpData);
             }
             if (flags.HasFlag(Sections.SFX))
             {
-                byte[] sfxb = getfile(".sfx");//sound effects
-                if (sfxb != null && sfxb.Length > 0)
-                    sfx = new SFX(sfxb);
+                byte[] sfxData = getFile(".sfx");//sound effects
+                if (sfxData != null && sfxData.Length > 0)
+                    sfx = new SFX(sfxData);
             }
 
             if (Mod == Field_modes.NOJSM && Background == null)
             {
                 Mod = Field_modes.DISABLED;
             }
-            if (sfx == null &&
-                pmp == null &&
-                MrtRat == null &&
-                msk == null &&
-                tdw == null &&
-                inf == null &&
-                jsmObjects == null &&
-                EventEngine == null &&
-                Cameras == null &&
-                WalkMesh == null &&
-                Background == null &&
-                services == null)
-                return false;
-            return true;
+            return sfx != null || pmp != null || MrtRat != null || msk != null || tdw != null || inf != null ||
+                   jsmObjects != null || EventEngine != null || Cameras != null || WalkMesh != null ||
+                   Background != null || services != null;
         }
 
         public void Update()
@@ -275,10 +254,12 @@ namespace OpenVIII.Fields
                     break; //await events here
                 case Field_modes.DISABLED:
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void UpdateScript()
+        private static void UpdateScript()
         {
             //We do not know every instruction and it's not possible for now to play field with unknown instruction
             //eventEngine.Update(services);

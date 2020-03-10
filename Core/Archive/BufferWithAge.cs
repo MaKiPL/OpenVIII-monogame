@@ -26,7 +26,7 @@ namespace OpenVIII
 
         public int Count => ((IReadOnlyList<byte>)_buffer).Count;
         public DateTime Created { get; }
-        public DateTime Used { get;  }
+        public DateTime Used { get; set; }
 
         #endregion Properties
 

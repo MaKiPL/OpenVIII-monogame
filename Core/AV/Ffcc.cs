@@ -313,7 +313,7 @@
         /// <summary>
         /// Path and filename of file.
         /// </summary>
-        public string DecodedFileName { get;  }
+        public string DecodedFileName { get; set; }
 
         /// <summary>
         /// Dynamic Sound Effect Interface for class allows control out of class. Mode must be in STATE_MACH
@@ -330,7 +330,7 @@
         /// <summary>
         /// True if file is open.
         /// </summary>
-        public bool FileOpened { get;  }
+        public bool FileOpened { get; set; }
 
         /// <summary>
         /// returns Frames per second or if that is 0. it will return the Time_Base ratio. This is
@@ -372,7 +372,7 @@
         /// <summary>
         /// Is the class disposed of. If true calling Dispose() does nothing.
         /// </summary>
-        public bool IsDisposed { get;  } = false;
+        public bool IsDisposed { get; set; } = false;
 
         /// <summary>
         /// Sample Count that loop starts from.
@@ -382,7 +382,7 @@
         /// <summary>
         /// Current media type being processed.
         /// </summary>
-        public AVMediaType MediaType { get;  }
+        public AVMediaType MediaType { get; set; }
 
         /// <summary>
         /// Metadata container for tags.
@@ -392,12 +392,12 @@
         /// <summary>
         /// SoundEffect for class allows control out of class. Mode must be in PROCESS_ALL
         /// </summary>
-        public SoundEffect SoundEffect { get;  }
+        public SoundEffect SoundEffect { get; set; }
 
         /// <summary>
         /// SoundEffectInterface for class. allows for more control than just playing the above soundeffect.
         /// </summary>
-        public SoundEffectInstance SoundEffectInstance { get;  }
+        public SoundEffectInstance SoundEffectInstance { get; set; }
 
         /// <summary>
         /// Stopwatch tracks the time audio has played so video can sync or loops can be looped.

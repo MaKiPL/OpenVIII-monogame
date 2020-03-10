@@ -28,7 +28,7 @@ namespace OpenVIII.AV
 
         #region Properties
 
-        public static string DataFileName { get;  }
+        public static string DataFileName { get; set; }
 
         #endregion Properties
 

@@ -45,7 +45,7 @@ namespace OpenVIII.Fields
 
         public override int GetWidth => width;
 
-        public byte[] Unknown { get;  }
+        public byte[] Unknown { get; set; }
 
         #endregion Properties
 

@@ -26,7 +26,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
             sw.Format(formatterContext, services)
-                .Method(nameof(FieldObject.BindChracter))
+                .Method(nameof(FieldObject.BindCharacter))
                 .Enum(_characterId)
                 .Comment(nameof(SETPC));
         }
@@ -34,7 +34,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         public override IAwaitable TestExecute(IServices services)
         {
             FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
-            currentObject.BindChracter(_characterId);
+            currentObject.BindCharacter(_characterId);
             return DummyAwaitable.Instance;
         }
     }

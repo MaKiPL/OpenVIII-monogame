@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace OpenVIII.Fields
 {
-
     /// <summary>
     /// Gateways, Triggers, Camera Limits
     /// </summary>
@@ -15,35 +14,35 @@ namespace OpenVIII.Fields
     {
         #region Properties
 
-        public short CameraHeight { get;  }
-        public Rectangle[] CamerasRanges { get;  }
-        public byte ControlDirection { get;  }
+        public short CameraHeight { get; set; }
+        public Rectangle[] CamerasRanges { get; set; }
+        public byte ControlDirection { get; set; }
         public Gateways Gateways { get; set; }
-        public ushort LikePVP { get;  }
-        public FF8String Name { get;  }
-        public Rectangle[] ScreenRanges { get;  }
+        public ushort LikePVP { get; set; }
+        public FF8String Name { get; set; }
+        public Rectangle[] ScreenRanges { get; set; }
         public Triggers Triggers { get; set; }
-        public int Type { get;  }
-        public byte[] Unknown { get;  }
+        public int Type { get; set; }
+        public byte[] Unknown { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        public static INF Load(byte[] infb)
+        public static INF Load(byte[] inf)
         {
-            if (infb == null || infb.Length == 0) return default;
+            if (inf == null || inf.Length == 0) return default;
 
             INF r = new INF();
-            r.ReadData(infb);
+            r.ReadData(inf);
             return r;
         }
 
-        private void ReadData(byte[] infb)
+        private void ReadData(byte[] inf)
         {
-            using (BinaryReader br = new BinaryReader(new MemoryStream(infb)))
+            using (BinaryReader br = new BinaryReader(new MemoryStream(inf)))
             {
-                switch (infb.Length)
+                switch (inf.Length)
                 {
                     case 676:
                         Type = 0;

@@ -7,15 +7,15 @@ namespace OpenVIII
     {
         public static class Archives
         {
-            public static Archive ZZZ_MAIN { get;  }
-            public static Archive ZZZ_OTHER { get;  }
-            public static Archive A_BATTLE { get;  }
-            public static Archive A_FIELD { get;  }
-            public static Archive A_MAGIC { get;  }
-            public static Archive A_MAIN { get;  }
-            public static Archive A_MENU { get;  }
-            public static Archive A_WORLD { get;  }
-            public static Archive A_MOVIES { get;  }
+            public static Archive ZZZ_MAIN { get; set; }
+            public static Archive ZZZ_OTHER { get; set; }
+            public static Archive A_BATTLE { get; set; }
+            public static Archive A_FIELD { get; set; }
+            public static Archive A_MAGIC { get; set; }
+            public static Archive A_MAIN { get; set; }
+            public static Archive A_MENU { get; set; }
+            public static Archive A_WORLD { get; set; }
+            public static Archive A_MOVIES { get; set; }
 
             public static void Init()
             {

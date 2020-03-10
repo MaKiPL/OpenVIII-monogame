@@ -1259,7 +1259,7 @@ namespace OpenVIII
             }
         }
 
-        public List<AnimationSequence> Sequences { get;  }
+        public List<AnimationSequence> Sequences { get; set; }
 
         public struct AnimationSequence
         {
@@ -1493,10 +1493,10 @@ namespace OpenVIII
 
         public int GetId => id;
 
-        public int altid { get;  }
-        public int id { get;  }
-        public EntityType entityType { get;  }
-        public string fileName { get;  }
-        public static Sections Flags { get;  }
+        public int altid { get; set; }
+        public int id { get; set; }
+        public EntityType entityType { get; set; }
+        public string fileName { get; set; }
+        public static Sections Flags { get; set; }
     }
 }

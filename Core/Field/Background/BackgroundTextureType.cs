@@ -22,9 +22,9 @@ namespace OpenVIII.Fields
 
             #region Properties
 
-            public int BytesSkippedPalettes => bytesPerPalette * SkippedPalettes;
+            public int BytesSkippedPalettes => BytesPerPalette * SkippedPalettes;
             public uint FileSize => checked((uint)(PaletteSectionSize + (Width * THeight)));
-            public uint PaletteSectionSize => checked((uint)(bytesPerPalette * Palettes));
+            public uint PaletteSectionSize => checked((uint)(BytesPerPalette * Palettes));
             public ushort Width => checked((ushort)(TWidth * TexturePages));
 
             #endregion Properties

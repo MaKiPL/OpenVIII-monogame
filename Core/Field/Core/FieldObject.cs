@@ -5,29 +5,29 @@ namespace OpenVIII.Fields
 {
     public sealed class FieldObject
     {
-        public Int32 Id { get; }
-        public String InternalName { get; }
+        public int Id { get; }
+        public string InternalName { get; }
 
         public FieldObjectScripts Scripts { get; } = new FieldObjectScripts();
         public FieldObjectModel Model { get; } = new FieldObjectModel();
         public FieldObjectInteraction Interaction { get; } = new FieldObjectInteraction();
         public FieldObjectAnimation Animation { get; } = new FieldObjectAnimation();
 
-        public FieldObject(Int32 objId, String internalName)
+        public FieldObject(int objId, string internalName)
         {
             Id = objId;
             InternalName = internalName;
         }
 
-        public Boolean IsActive { get; set; } = true;
-        public Characters CharacterId { get;  }
+        public bool IsActive { get; set; } = true;
+        public Characters CharacterId { get; set; }
 
-        public void BindChracter(Characters characterId)
+        public void BindCharacter(Characters characterId)
         {
             CharacterId = characterId;
 
             // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(FieldObject)}.{nameof(BindChracter)}({characterId})");
+            Console.WriteLine($"NotImplemented: {nameof(FieldObject)}.{nameof(BindCharacter)}({characterId})");
         }
     }
 }

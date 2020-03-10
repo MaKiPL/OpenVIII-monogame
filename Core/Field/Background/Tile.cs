@@ -19,7 +19,7 @@ namespace OpenVIII.Fields
             /// <summary>
             /// Size of Texture Segment
             /// </summary>
-            public static readonly Vector2 TextureSize = new Vector2(fourBitTexturePageWidth, fourBitTexturePageWidth);
+            public static readonly Vector2 TextureSize = new Vector2(FourBitTexturePageWidth, FourBitTexturePageWidth);
 
             public byte AnimationID = 0xFF;
 

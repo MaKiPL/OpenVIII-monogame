@@ -38,7 +38,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
             sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
-                .Method(nameof(FieldObjectModel.SetHitbox))
+                .Method(nameof(FieldObjectModel.SetHitBox))
                 .Argument("p1", _p1.ToString())
                 .Argument("p2", _p2.ToString())
                 .Comment(nameof(SETLINE));
@@ -47,7 +47,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         public override IAwaitable TestExecute(IServices services)
         {
             FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
-            currentObject.Model.SetHitbox(_p1, _p2);
+            currentObject.Model.SetHitBox(_p1, _p2);
             return DummyAwaitable.Instance;
         }
     }

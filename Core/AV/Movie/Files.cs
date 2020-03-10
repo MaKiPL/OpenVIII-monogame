@@ -14,18 +14,18 @@ namespace OpenVIII
             {
 
                 if (_files != null) return;
-                if(Extensions == null)
-                    Extensions = new [] { ".avi", ".mkv", ".mp4", ".bik" };
+                if(_extensions == null)
+                    _extensions = new [] { ".avi", ".mkv", ".mp4", ".bik" };
                 ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
                 if (a != null)
                 {
                     string[] listOfFiles = a.GetListOfFiles();
                     _files = (from file in listOfFiles
-                              from extension in Extensions
+                              from extension in _extensions
                               where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
                               orderby Path.GetFileNameWithoutExtension(file)
                               select file).ToList();
-                    Zzz = true;
+                    ZZZ = true;
                 }
                 else
                 {
@@ -34,7 +34,7 @@ namespace OpenVIII
                     _files = (from directory in d
                               where Directory.Exists(directory)
                               from file in Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
-                              from extension in Extensions
+                              from extension in _extensions
                               where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
                               orderby Path.GetFileNameWithoutExtension(file)
                               select file).ToList();
@@ -58,10 +58,10 @@ namespace OpenVIII
 
             #region Fields
 
-            private static string[] Extensions;
+            private static string[] _extensions;
             private static List<string> _files;
 
-            public static bool Zzz { get;  }
+            public static bool ZZZ { get; set; }
 
             #endregion Fields
 

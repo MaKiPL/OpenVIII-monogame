@@ -84,45 +84,43 @@ namespace OpenVIII.Battle
                 FileName = filename
             };
 
-            if (m.TryReadTIM(br) == null)
+            if (m.TryReadTIM(br) != null) return m;
+            m.isTIM = false;
+            br.BaseStream.Seek(0, SeekOrigin.Begin);
+            //Offset Description
+            //0x00    Probably always null
+            if (!br.Read(out uint pPadding)) return null;
+            if (pPadding != 0)
+                return m;
+            //0x04    Probably bones/ animation data, might be 0x00
+            if (!br.Read(out m.pBones)) return null;
+            //0x08    Unknown(used to determinate texture size *), might be 0x64
+            if (!br.Read(out m.pTextureLimit)) return null;
+            //0x0C    Geometry pointer, might be 0xAC
+            if (!br.Read(out m.pGeometry)) return null;
+            //0x10    SCOT pointer, might be 0x00
+            if (!br.Read(out m.pSCOT)) return null;
+            //0x14    Texture pointer, might be 0x30
+            if (!br.Read(out m.pTexture)) return null;
+            //0x18 == 0x98
+            //0x1C == 0xAC
+            if (m.pBones > br.BaseStream.Length ||
+                m.pTextureLimit > br.BaseStream.Length ||
+                m.pGeometry > br.BaseStream.Length ||
+                m.pSCOT > br.BaseStream.Length ||
+                m.pTexture > br.BaseStream.Length)
             {
-                m.isTIM = false;
-                br.BaseStream.Seek(0, SeekOrigin.Begin);
-                //Offset Description
-                //0x00    Probably always null
-                if (!br.Read(out uint pPadding)) return null;
-                if (pPadding != 0)
-                    return m;
-                //0x04    Probably bones/ animation data, might be 0x00
-                if (!br.Read(out m.pBones)) return null;
-                //0x08    Unknown(used to determinate texture size *), might be 0x64
-                if (!br.Read(out m.pTextureLimit)) return null;
-                //0x0C    Geometry pointer, might be 0xAC
-                if (!br.Read(out m.pGeometry)) return null;
-                //0x10    SCOT pointer, might be 0x00
-                if (!br.Read(out m.pSCOT)) return null;
-                //0x14    Texture pointer, might be 0x30
-                if (!br.Read(out m.pTexture)) return null;
-                //0x18 == 0x98
-                //0x1C == 0xAC
-                if (m.pBones > br.BaseStream.Length ||
-                    m.pTextureLimit > br.BaseStream.Length ||
-                    m.pGeometry > br.BaseStream.Length ||
-                    m.pSCOT > br.BaseStream.Length ||
-                    m.pTexture > br.BaseStream.Length)
-                {
-                    return m;
-                }
-                if (m.FileName == "c:\\ff8\\data\\eng\\battle\\mag201_b.19")
-                {
-                }
-                else if (m.FileName == "c:\\ff8\\data\\eng\\battle\\mag204_b.04")
-                {
-                }
-                m.isPackedMag = true;
-                m.ReadGeometry(br);
-                m.ReadTextures(br);
+                return m;
             }
+            if (m.FileName == "c:\\ff8\\data\\eng\\battle\\mag201_b.19")
+            {
+            }
+            else if (m.FileName == "c:\\ff8\\data\\eng\\battle\\mag204_b.04")
+            {
+            }
+            m.isPackedMag = true;
+            m.ReadGeometry(br);
+            m.ReadTextures(br);
             return m;
         }
 
@@ -132,24 +130,24 @@ namespace OpenVIII.Battle
 
         public byte DataType => getValue(2);
 
-        public string FileName { get;  }
+        public string FileName { get; set; }
 
         public byte IDnumber => getValue(1);
 
-        public bool isPackedMag { get;  } = false;
+        public bool isPackedMag { get; set; } = false;
 
-        public bool isTIM { get;  } = false;
+        public bool isTIM { get; set; } = false;
 
         public byte SequenceNumber => getValue(3);
 
-        public TIM2[] TIM { get;  }
+        public TIM2[] TIM { get; set; }
 
         private bool bFileNameTest => FileName != null && Path.GetExtension(FileName).Trim('.').Length == 3;
 
         /// <summary>
         /// if quit loop because unknown type.
         /// </summary>
-        public int UnknownType { get;  } = int.MinValue;
+        public int UnknownType { get; set; } = int.MinValue;
 
         #endregion Properties
 

@@ -361,7 +361,9 @@
     <Compile Include="Input\Inputs_FF8Steam.cs" />
     <Compile Include="Input\Inputs_OpenVIII.cs" />
     <Compile Include="Input\MouseLockMode.cs" />
+    <Compile Include="Kernel\Abilities\Ability.cs" />
     <Compile Include="Kernel\Abilities\AbilityFlags4.cs" />
+    <Compile Include="Kernel\Abilities\IAbility.cs" />
     <Compile Include="Kernel\BlueMagic.cs" />
     <Compile Include="Kernel\Unlocker.cs" />
     <Compile Include="Log.cs" />
@@ -389,7 +391,7 @@
     <Compile Include="Menu\IGMData\Group\Base.cs" />
     <Compile Include="Menu\IGMData\Group\TopMenu.cs" />
     <Compile Include="Menu\IGMData\Pool\Base.cs" />
-    <Compile Include="Battle\Menu\IGMData\Pool\Enemy_Attacks.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\EnemyAttacks.cs" />
     <Compile Include="Menu\IGMData\Pool\GF.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic.cs" />
@@ -930,7 +932,6 @@
     <Compile Include="Game1.cs" />
     <Compile Include="GFs.cs" />
     <Compile Include="Kernel\Abilities\Abilities.cs" />
-    <Compile Include="Kernel\Abilities\Ability.cs" />
     <Compile Include="Kernel\Abilities\AbilityFlags2.cs" />
     <Compile Include="Kernel\AttackFlags.cs" />
     <Compile Include="Kernel\AttackType.cs" />

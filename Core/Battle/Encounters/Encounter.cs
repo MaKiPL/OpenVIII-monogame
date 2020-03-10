@@ -38,10 +38,10 @@ namespace OpenVIII.Battle
 
         public string Filename => $"a0stg{Scenario.ToString("000")}.x";
 
-        public Vector3 AverageVector { get;  }
-        public Vector3 MinVector { get;  }
-        public Vector3 MaxVector { get;  }
-        public Vector3 MidVector { get;  }
+        public Vector3 AverageVector { get; set; }
+        public Vector3 MinVector { get; set; }
+        public Vector3 MaxVector { get; set; }
+        public Vector3 MidVector { get; set; }
 
         #endregion Properties
 
@@ -81,7 +81,7 @@ namespace OpenVIII.Battle
             
             Vector3 total = Vector3.Zero;
             List<Vector3> enabledCoordinates = e.enemyCoordinates.Select((x, i) => new { i, x }).Where(x => e.EnabledEnemy[7 - x.i]).Select(x => new Vector3(x.x.x, x.x.y, x.x.z)).ToList();
-            if (enabledCoordinates.Count > 0)
+            if (enabledCoordinates.Count <= 0) return e;
             {
                 enabledCoordinates.ForEach(x => total += x);
                 e.AverageVector = total / 8f / Memory.EnemyCoordinateScale;

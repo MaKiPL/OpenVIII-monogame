@@ -6,22 +6,22 @@ namespace OpenVIII.Fields
 {
     public sealed class FieldObjectScripts
     {
-        private readonly OrderedDictionary<Int32, IScriptExecuter> _dic = new OrderedDictionary<Int32, IScriptExecuter>();
+        private readonly OrderedDictionary<int, IScriptExecuter> _dic = new OrderedDictionary<int, IScriptExecuter>();
         private readonly PriorityQueue<Executer> _executionQueue = new PriorityQueue<Executer>();
 
-        private Boolean _isInitialized;
+        private bool _isInitialized;
         private IAwaiter _currentState;
-        private Executer _currentExecuter;
+        private Executer _currentExecutor;
 
-        public void Add(Int32 scriptId, IScriptExecuter executer)
+        public void Add(int scriptId, IScriptExecuter executor)
         {
-            _dic.Add(scriptId, executer);
+            _dic.Add(scriptId, executor);
         }
 
         public void CancelAll()
         {
-            while (_executionQueue.TryDequeue(out var executer))
-                executer.Complete();
+            while (_executionQueue.TryDequeue(out Executer executor))
+                executor.Complete();
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace OpenVIII.Fields
         /// The request is asynchronous and returns immediately without waiting for the remote execution to start or finish.
         /// If the specified priority is already busy executing, the request will block until it becomes available and only then return
         /// </summary>
-        public IAwaitable Execute(Int32 scriptId, Int32 priority)
+        public IAwaitable Execute(int scriptId, int priority)
         {
             Executer executer = new Executer(GetScriptExecuter(scriptId));
             _executionQueue.Enqueue(executer, priority);
@@ -41,7 +41,7 @@ namespace OpenVIII.Fields
         /// The request is asynchronous and returns immediately without waiting for the remote execution to start or finish.
         /// If the specified priority is already busy executing, the request will fail silently. 
         /// </summary>
-        public IAwaitable TryExecute(Int32 scriptId, Int32 priority)
+        public IAwaitable TryExecute(int scriptId, int priority)
         {
             if (_executionQueue.HasPriority(priority))
                 return DummyAwaitable.Instance;
@@ -63,9 +63,9 @@ namespace OpenVIII.Fields
                     _currentState = null;
                 }
 
-                if (_currentExecuter != null)
+                if (_currentExecutor != null)
                 {
-                    while (_currentExecuter.Next(out IAwaitable current))
+                    while (_currentExecutor.Next(out IAwaitable current))
                     {
                         if (current == null)
                             throw new InvalidOperationException();
@@ -83,15 +83,15 @@ namespace OpenVIII.Fields
 
                     _currentState = null;
 
-                    _currentExecuter.Complete();
-                    _currentExecuter = null;
+                    _currentExecutor.Complete();
+                    _currentExecutor = null;
                 }
 
                 if (_executionQueue.Count <= 0)
                     break;
 
-                _currentExecuter = _executionQueue.Dequeue();
-                _currentExecuter.Execute(services);
+                _currentExecutor = _executionQueue.Dequeue();
+                _currentExecutor.Execute(services);
             }
         }
 
@@ -106,7 +106,7 @@ namespace OpenVIII.Fields
             _isInitialized = true;
         }
 
-        private IScriptExecuter GetScriptExecuter(Int32 scriptId)
+        private IScriptExecuter GetScriptExecuter(int scriptId)
         {
             if (_dic.TryGetByKey(scriptId, out var obj))
                 return obj;
@@ -124,7 +124,7 @@ namespace OpenVIII.Fields
                 _executer = executer;
             }
 
-            public Boolean IsCompleted { get;  }
+            public bool IsCompleted { get; set; }
             public void Complete() => IsCompleted = true;
 
             public void Execute(IServices services)
@@ -135,7 +135,7 @@ namespace OpenVIII.Fields
                 _en = _executer.Execute(services).GetEnumerator();
             }
 
-            public Boolean Next(out IAwaitable awaitable)
+            public bool Next(out IAwaitable awaitable)
             {
                 if (_en == null)
                     throw new InvalidOperationException("The script hasn't yet started.");

@@ -91,7 +91,7 @@ namespace OpenVIII.AV
         /// <summary>
         /// contains files from other.zzz
         /// </summary>
-        public static bool ZZZ { get;  } = false;
+        public static bool ZZZ { get; set; } = false;
 
         public static object MusicTask { get;  }
 

@@ -121,7 +121,7 @@ namespace OpenVIII.Fields
 
             private short Z { get; set; }
 
-            public float Zoom { get;  }
+            public float Zoom { get; set; }
 
             private float Zoom2 { get; set; }
             public Vector3 Space { get => space; private set => space = value; }
@@ -161,7 +161,7 @@ namespace OpenVIII.Fields
                     Zoom = br.ReadUInt16();
                     Zoom2 = br.ReadUInt16();
                     Zoom = Zoom2 = Math.Max(Zoom, Zoom2);
-                    var r = RotationMatrix;
+                    Matrix r = RotationMatrix;
                     space /= 4096f;
                     _position = -(space * xyz[0] + space * xyz[1] + space * xyz[2]);
                     //_position = -(space * r.Right + space * r.Up + space * r.Backward);
