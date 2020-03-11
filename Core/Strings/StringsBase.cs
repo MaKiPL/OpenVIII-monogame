@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -153,7 +154,18 @@ namespace OpenVIII
                         uint c = br.ReadUInt16();
                         if (c >= br.BaseStream.Length || c == 0) continue;
                         c += fPad;
-                        StringFiles.SPositions[key].Add(new FF8StringReference(Archive, filename, c, settings: Settings));
+
+                        //long loc =br.BaseStream.Position;
+                        //try
+                        //{
+                        //    br.BaseStream.Seek(c, SeekOrigin.Begin);
+                        //    if(br.ReadByte()!=0)
+                                StringFiles.SPositions[key].Add(new FF8StringReference(Archive, filename, c, settings: Settings));
+                       // }
+                       // finally
+                        //{
+                        //    br.BaseStream.Seek(loc,SeekOrigin.Begin);
+                        //}
                     }
                 }
             }

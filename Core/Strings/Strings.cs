@@ -15,7 +15,7 @@ namespace OpenVIII
 
         private static ConcurrentDictionary<FileID, StringsBase> _files;
 
-        private static readonly object FilesLoc = new object();
+        private static readonly object Lock = new object();
 
         #endregion Fields
 
@@ -102,8 +102,10 @@ namespace OpenVIII
 
                 case Faces.ID.MiniMog:
                     return Read(FileID.Kernel, 0, 72); // also in KERNEL, 12, 36
-                default:
+                case Faces.ID.Blank:
                     return new FF8String();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(id), id, null);
             }
         }
 
@@ -137,13 +139,13 @@ namespace OpenVIII
         }
 
         public StringsBase this[FileID id] => _files[id];
-        public IEnumerable<FileID> Keys => ((IReadOnlyDictionary<Strings.FileID, Strings.StringsBase>) _files).Keys;
+        public IEnumerable<FileID> Keys => ((IReadOnlyDictionary<FileID, StringsBase>) _files).Keys;
 
-        public IEnumerable<StringsBase> Values => ((IReadOnlyDictionary<Strings.FileID, Strings.StringsBase>) _files).Values;
+        public IEnumerable<StringsBase> Values => ((IReadOnlyDictionary<FileID, StringsBase>) _files).Values;
 
         private void Init()
         {
-            lock (FilesLoc)
+            lock (Lock)
                 if (_files == null)
                 {
                     Memory.Log.WriteLine($"{nameof(Strings)} :: {nameof(Init)}");
