@@ -225,7 +225,7 @@
     <Compile Include="AV\Music\Midi\Fluid.cs" />
     <Compile Include="AV\Music\Midi\DirectMedia.cs" />
     <Compile Include="AV\Movie\Player.cs" />
-    <Compile Include="AV\Movie\STATE.cs" />
+    <Compile Include="AV\Movie\State.cs" />
     <Compile Include="AV\Music\Music.cs" />
     <Compile Include="AV\Sound\ADPCMCOEFSET.cs" />
     <Compile Include="AV\Sound\Entry.cs" />
@@ -1046,7 +1046,7 @@
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
-    <Compile Include="AV\Movie\module_movie_test.cs" />
+    <Compile Include="AV\Movie\ModuleMovieTest.cs" />
     <Compile Include="module_overture_debug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Saves\Saves.CharacterData.cs" />

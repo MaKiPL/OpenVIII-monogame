@@ -9,14 +9,14 @@ namespace OpenVIII.Fields
 
         public void PrepareToPlay(Int32 movieId, Boolean flag)
         {
-            Module_movie_test.Index = movieId;
+            ModuleMovieTest.Index = movieId;
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(MovieService)}.{nameof(PrepareToPlay)}({nameof(movieId)}: {movieId}, {nameof(flag)}: {flag})");
         }
 
         public void Play()
         {
-            Module_movie_test.Play();
+            ModuleMovieTest.Play();
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(MovieService)}.{nameof(Play)}()");
         }

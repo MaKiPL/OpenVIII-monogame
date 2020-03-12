@@ -86,7 +86,7 @@ namespace OpenVIII
             Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
             Memory.Module = MODULE.OVERTURE_DEBUG;
             publicModule = OverturepublicModule._4Squaresoft;
-            Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
+            ModuleMovieTest.ReturnState = MODULE.OVERTURE_DEBUG;
         }
 
         public static void SplashUpdate(ref int _splashIndex)
@@ -193,8 +193,8 @@ namespace OpenVIII
 
                 case OverturepublicModule._4Squaresoft:
                     publicModule = OverturepublicModule._0InitSound;
-                    Module_movie_test.Index = 104;//104 is SE logo in steam release.
-                    Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
+                    ModuleMovieTest.Index = 104;//104 is SE logo in steam release.
+                    ModuleMovieTest.ReturnState = MODULE.OVERTURE_DEBUG;
                     Memory.Module = MODULE.MOVIETEST;
                     break;
                 case OverturepublicModule._5Reset:

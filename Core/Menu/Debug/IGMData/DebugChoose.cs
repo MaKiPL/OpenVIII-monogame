@@ -188,7 +188,7 @@ namespace OpenVIII.IGMData
                 { DebugItems.Movie, ()=> {
                     Menu.FadeIn();
                     Memory.Module = MODULE.MOVIETEST;
-                    Module_movie_test.Play();
+                    ModuleMovieTest.Play();
                     Memory.IsMouseVisible = false;
                     return true;
                 }  },
@@ -238,10 +238,10 @@ namespace OpenVIII.IGMData
             _inputsLeft = new Dictionary<DebugItems, Func<bool>>()
             {
                 { DebugItems.Movie, ()=> {
-                    if(Module_movie_test.Index>0)
-                        Module_movie_test.Index--;
+                    if(ModuleMovieTest.Index>0)
+                        ModuleMovieTest.Index--;
                     else
-                        Module_movie_test.Index = files.Count - 1;
+                        ModuleMovieTest.Index = files.Count - 1;
                     return true;
                 }  },
                 { DebugItems.Music, ()=> {
@@ -263,10 +263,10 @@ namespace OpenVIII.IGMData
             _inputsRight = new Dictionary<DebugItems, Func<bool>>()
             {
                 { DebugItems.Movie, ()=> {
-                    if(Module_movie_test.Index<files.Count - 1)
-                        Module_movie_test.Index++;
+                    if(ModuleMovieTest.Index<files.Count - 1)
+                        ModuleMovieTest.Index++;
                     else
-                        Module_movie_test.Index = 0;
+                        ModuleMovieTest.Index = 0;
                     return true;
                 }  },
                 { DebugItems.Music, ()=> {
@@ -288,12 +288,12 @@ namespace OpenVIII.IGMData
             _dynamicDebugStrings = new Dictionary<DebugItems, Func<FF8String>>
             {
                 { DebugItems.Movie, ()=> {
-                    if (files.Count<=Module_movie_test.Index)
-                        Module_movie_test.Index=0;
+                    if (files.Count<=ModuleMovieTest.Index)
+                        ModuleMovieTest.Index=0;
                     if(files.Count ==0)
                         return "";
-                    if (files.Count <= Module_movie_test.Index) return "";
-                    string end=Path.GetFileNameWithoutExtension(files[Module_movie_test.Index]);
+                    if (files.Count <= ModuleMovieTest.Index) return "";
+                    string end=Path.GetFileNameWithoutExtension(files[ModuleMovieTest.Index]);
                     if(StrDebugLobby[DebugItems.Movie]!=null)
                         return StrDebugLobby[DebugItems.Movie].Clone().Append(end);
                     return end;

@@ -232,7 +232,7 @@ namespace OpenVIII
         {
             Memory.TokenSource.Cancel(); // tell task we are done
             //step0. dispose stop sounds
-            Module_movie_test.Reset();
+            ModuleMovieTest.Reset();
             AV.Music.Stop();
             AV.Music.KillAudio();
             AV.Sound.KillAudio();

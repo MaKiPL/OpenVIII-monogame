@@ -63,8 +63,8 @@ namespace OpenVIII
                                                  //the module changes to 1 now
                 Fields.Module.ResetField();
 
-                Module_movie_test.Index = 30;
-                Module_movie_test.ReturnState = MODULE.FIELD_DEBUG;
+                ModuleMovieTest.Index = 30;
+                ModuleMovieTest.ReturnState = MODULE.FIELD_DEBUG;
                 Memory.Module = MODULE.MOVIETEST;
                 Menu.Module.State = MenuModule.Mode.MainLobby;
                 Memory.IsMouseVisible = false;

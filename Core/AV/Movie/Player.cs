@@ -14,7 +14,7 @@ namespace OpenVIII.Movie
         public static readonly int[] LetterBox = { 101, 103, 104 };
         private static Files _files;
 
-        private STATE _state;
+        private State _state;
 
         private Audio _audio;
 
@@ -41,7 +41,7 @@ namespace OpenVIII.Movie
 
         #region Events
 
-        public event EventHandler<STATE> StateChanged;
+        public event EventHandler<State> StateChanged;
 
         #endregion Events
 
@@ -52,7 +52,7 @@ namespace OpenVIII.Movie
         // To detect redundant calls
         public bool IsDisposed => _disposedValue;
 
-        public STATE State
+        public State State
         {
             get => _state; private set
             {
@@ -75,13 +75,13 @@ namespace OpenVIII.Movie
                 player = new Player
                 {
                     Id = id,
-                    State = STATE.LOAD,
+                    State = State.Load,
                     _video = Video.Load(_files[id]),
                     _audio = Audio.Load(_files[id]),
                     _suppressDraw = !overlayingModels
                 };
             }
-            else if (Files.ZZZ)
+            else if (_files.ZZZ)
             {
                 return null; // doesn't work.
                 //ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
@@ -135,30 +135,30 @@ namespace OpenVIII.Movie
         {
             switch (State)
             {
-                case STATE.LOAD:
+                case State.Load:
                     break;
 
-                case STATE.CLEAR:
+                case State.Clear:
                     State++;
                     ClearScreen();
                     break;
 
-                case STATE.STARTPLAY:
-                case STATE.PLAYING:
+                case State.StartPlay:
+                case State.Playing:
                     PlayingDraw();
                     break;
 
-                case STATE.PAUSED:
+                case State.Paused:
                     break;
 
-                case STATE.FINISHED:
+                case State.Finished:
                     State++;
                     PlayingDraw();
                     break;
 
-                case STATE.RESET:
+                case State.Reset:
                     break;
-                case STATE.RETURN:
+                case State.Return:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -184,20 +184,20 @@ namespace OpenVIII.Movie
         {
             _audio.Dispose();
             _video.Dispose();
-            State = STATE.RETURN;
+            State = State.Return;
         }
 
         public void Update()
         {
             switch (State)
             {
-                case STATE.LOAD:
+                case State.Load:
                     break;
 
-                case STATE.CLEAR:
+                case State.Clear:
                     break;
 
-                case STATE.STARTPLAY:
+                case State.StartPlay:
                     State++;
                     if (_audio != null)
                     {
@@ -210,18 +210,18 @@ namespace OpenVIII.Movie
                     _video?.Play();
                     break;
 
-                case STATE.PLAYING:
+                case State.Playing:
                     if (_audio != null && !Memory.Threaded)
                     {
                         _audio.NextLoop();
                     }
                     if (_video == null)
-                        State = STATE.FINISHED;
+                        State = State.Finished;
                     else if (_video.Behind)
                     {
                         if (_video.Next() < 0)
                         {
-                            State = STATE.FINISHED;
+                            State = State.Finished;
                             //Memory.SuppressDraw = true;
                             break;
                         }
@@ -250,15 +250,15 @@ namespace OpenVIII.Movie
                     }
                     break;
 
-                case STATE.PAUSED:
+                case State.Paused:
                     //todo add a function to pause sound
                     //pausing the stopwatch will cause the video to pause because it calculates the current frame based on time.
                     break;
 
-                case STATE.FINISHED:
+                case State.Finished:
                     break;
 
-                case STATE.RESET:
+                case State.Reset:
                     break;
             }
         }

@@ -67,7 +67,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.MOVIETEST:
-                    Module_movie_test.Update();
+                    ModuleMovieTest.Update();
                     break;
 
                 case MODULE.FIELD_DEBUG:
@@ -138,7 +138,7 @@ namespace OpenVIII
                     break;
 
                 case MODULE.MOVIETEST:
-                    Module_movie_test.Draw();
+                    ModuleMovieTest.Draw();
                     break;
 
                 case MODULE.FIELD_DEBUG:

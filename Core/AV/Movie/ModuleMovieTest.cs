@@ -5,7 +5,7 @@ using OpenVIII.Movie;
 
 namespace OpenVIII
 {
-    public static class Module_movie_test
+    public static class ModuleMovieTest
     {
         private const MODULE DefaultReturnState = MODULE.MAINMENU_DEBUG;
         private static Player _player;
@@ -25,7 +25,7 @@ namespace OpenVIII
                 Return();
             }
 #if DEBUG
-            // lets you move through all the feilds just holding left or right. it will just loop
+            // lets you move through all the fields just holding left or right. it will just loop
             // when it runs out.
             else if (Input2.DelayedButton(FF8TextTagKey.Left))
             {
@@ -61,9 +61,9 @@ namespace OpenVIII
                 _player.StateChanged += Player_StateChanged;
         }
 
-        private static void Player_StateChanged(object sender, STATE e)
+        private static void Player_StateChanged(object sender, State e)
         {
-            if (e == STATE.RETURN)
+            if (e == State.Return)
                 Return();
         }
 
