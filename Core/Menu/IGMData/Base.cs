@@ -573,9 +573,9 @@ namespace OpenVIII.IGMData
                 _cursor_select = value;
         }
 
-        //protected Base(int Count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        //protected Base(int Count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? PartyPos = null)
         //{
-        //    Init(damageable, partypos);
+        //    Init(damageable, PartyPos);
         //    Init(Count, depth, container, cols, rows);
         //}
         private static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()

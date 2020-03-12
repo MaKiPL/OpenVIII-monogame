@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public partial class Draw : IGMData.Pool.Base<Saves.Data, DebugBattleDat.Magic>
+    public partial class Draw : IGMData.Pool.Base<Saves.Data, Battle.Dat.Magic>
     {
         #region Fields
 
@@ -41,7 +41,7 @@ namespace OpenVIII.IGMData.Pool
             return base.Inputs_OKAY();
         }
 
-        public void Refresh(DebugBattleDat.Magic[] magics)
+        public void Refresh(Battle.Dat.Magic[] magics)
         {
             Contents = magics;
             Refresh();

@@ -1,5 +1,4 @@
-﻿using OpenVIII.Fields.Scripts.Instructions;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -7,6 +6,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using OpenVIII.Battle;
+using OpenVIII.Battle.Dat;
+using OpenVIII.Fields;
+using OpenVIII.Fields.Scripts.Instructions;
+using OpenVIII.World;
+using Sections = OpenVIII.Fields.Sections;
 
 namespace OpenVIII.Dat_Dump
 {
@@ -14,7 +19,7 @@ namespace OpenVIII.Dat_Dump
     {
         #region Fields
 
-        public static ConcurrentDictionary<int, Fields.Archive> FieldData;
+        public static ConcurrentDictionary<int, Archive> FieldData;
         private static HashSet<KeyValuePair<string, ushort>> _fieldsWithBattleScripts;
         private static HashSet<ushort> _worldEncounters;
 
@@ -206,13 +211,13 @@ namespace OpenVIII.Dat_Dump
             using (StreamWriter csvFile = new StreamWriter(new FileStream("BattleEncounters.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite), System.Text.Encoding.UTF8))
             {
                 string header =
-                $"{nameof(Battle.Encounter.ID)}{Ls}" +
-                $"{nameof(Battle.Encounter.Filename)}{Ls}" +
+                $"{nameof(Encounter.ID)}{Ls}" +
+                $"{nameof(Encounter.Filename)}{Ls}" +
                 $"{nameof(BattleStageNames)}{Ls}" +
-                $"{nameof(Battle.Encounter.BEnemies)}{Ls}" +
+                $"{nameof(Encounter.BEnemies)}{Ls}" +
                 $"{nameof(Fields)}{Ls}";
                 csvFile.WriteLine(header);
-                foreach (Battle.Encounter e in Memory.Encounters)
+                foreach (Encounter e in Memory.Encounters)
                 {
                     //wip
                     string data =
@@ -272,13 +277,13 @@ namespace OpenVIII.Dat_Dump
         {
             if (FieldData == null)
             {
-                FieldData = new ConcurrentDictionary<int, Fields.Archive>();
+                FieldData = new ConcurrentDictionary<int, Archive>();
 
                 Task[] tasks = new Task[Memory.FieldHolder.fields.Length];
                 void process(ushort i)
                 {
                     if (FieldData.ContainsKey(i)) return;
-                    Fields.Archive archive = Fields.Archive.Load(i, Fields.Sections.MRT | Fields.Sections.RAT | Fields.Sections.JSM | Fields.Sections.SYM);
+                    Archive archive = Archive.Load(i, Sections.MRT | Sections.RAT | Sections.JSM | Sections.SYM);
 
                     if (archive != null)
                         FieldData.TryAdd(i, archive);
@@ -324,7 +329,7 @@ namespace OpenVIII.Dat_Dump
             // ReSharper disable once StringLiteralTypo
             string wmPath = $"wmset{Extended.GetLanguageShort(true)}.obj";
 
-            using (World.Wmset worldMapSettings = new World.Wmset(aw.GetBinaryFile(wmPath)))
+            using (Wmset worldMapSettings = new Wmset(aw.GetBinaryFile(wmPath)))
             {
                 _worldEncounters = worldMapSettings.Encounters.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
                 WorldEncountersLunar = worldMapSettings.EncountersLunar.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();

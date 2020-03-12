@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using OpenVIII.Battle;
 using OpenVIII.Battle.Dat;
 using OpenVIII.IGMData.Limit;
 using OpenVIII.IGMDataItem;
+using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
@@ -155,12 +157,12 @@ namespace OpenVIII
             switch (entityType)
             {
                 case EntityType.Monster:
-                    Enemy.Party[nIndex].EII.animationSystem.AnimationQueue.Enqueue(newAnimId);
+                    Enemy.Party[nIndex].EII.AnimationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 case EntityType.Character:
                 case EntityType.Weapon:
-                    CharacterInstances[nIndex].animationSystem.AnimationQueue.Enqueue(newAnimId);
+                    CharacterInstances[nIndex].AnimationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 default:
@@ -245,17 +247,19 @@ namespace OpenVIII
 
         public static Vector3 GetIndicatorPoint(int n)
         {
-            if ((CharacterInstances == null && n >= 0) || ((Enemy.Party == null || Enemy.Party.Count == 0) && n < 0))
-                return Vector3.Zero;
-            if (n < 0)
+            if (n >= 0)
             {
-                EnemyInstanceInformation eII = Enemy.Party.FirstOrDefault(x => x.EII.partypos == n)?.EII;
-                if(eII != null)
-                    return eII.Data.IndicatorPoint(eII.Location) + PyramidOffset;
-                return Vector3.Zero;
+                if ((CharacterInstances == null))
+                    return Vector3.Zero;
+
+                return CharacterInstances[n].Data.Character.IndicatorPoint(CharacterInstances[n].Data.Location) +
+                       PyramidOffset;
             }
 
-            return CharacterInstances[n].Data.character.IndicatorPoint(CharacterInstances[n].Data.Location) + PyramidOffset;
+            if (Enemy.Party == null) return Vector3.Zero;
+                EnemyInstanceInformation enemyInstanceInformation = Enemy.Party.FirstOrDefault(x => x.EII.PartyPos == n)?.EII;
+                if (enemyInstanceInformation == null) return Vector3.Zero;
+                return enemyInstanceInformation.Data.IndicatorPoint(enemyInstanceInformation.Location) + PyramidOffset;
         }
 
         public static void Inputs()
@@ -360,21 +364,22 @@ namespace OpenVIII
         /// Index of entityTypeInstance. Monster is monsterInstances, character is CharacterInstances
         /// </param>
         /// <param name="newAnimId">self explanatory</param>
-        public static void PlayAnimationImmidiately(EntityType entityType, int nIndex, int newAnimId)
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        public static void PlayAnimationImmediately(EntityType entityType, int nIndex, int newAnimId)
         {
             switch (entityType)
             {
                 case EntityType.Monster:
-                    EnemyInstanceInformation MInstanceInformationProvider = Enemy.Party[nIndex].EII;
-                    MInstanceInformationProvider.animationSystem.AnimationId = newAnimId;
-                    Enemy.Party[nIndex].EII = MInstanceInformationProvider;
+                    EnemyInstanceInformation mInstanceInformationProvider = Enemy.Party[nIndex].EII;
+                    mInstanceInformationProvider.AnimationSystem.AnimationId = newAnimId;
+                    Enemy.Party[nIndex].EII = mInstanceInformationProvider;
                     return;
 
                 case EntityType.Character:
                 case EntityType.Weapon:
-                    CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
-                    CInstanceInformationProvider.animationSystem.AnimationId = newAnimId;
-                    CharacterInstances[nIndex] = CInstanceInformationProvider;
+                    CharacterInstanceInformation cInstanceInformationProvider = CharacterInstances[nIndex];
+                    cInstanceInformationProvider.AnimationSystem.AnimationId = newAnimId;
+                    CharacterInstances[nIndex] = cInstanceInformationProvider;
                     return;
 
                 default:
@@ -391,14 +396,13 @@ namespace OpenVIII
                 {
                     Saves.CharacterData c = Memory.State?[cii.VisibleCharacter];
                     c.Update(); //updates ATB for Character.
-                    if (c != null && cii.animationSystem.AnimationId >= 0 && cii.animationSystem.AnimationId <= 2)
-                    {
-                        // this would probably interfeer with other animations. I am hoping the limits above will keep it good.
-                        if (c.IsDead)
-                            cii.SetAnimationID((int)AnimID.Dead);
-                        else if (c.IsCritical)
-                            cii.SetAnimationID((int)AnimID.Critical);
-                    }
+                    if (cii.AnimationSystem.AnimationId < 0 ||
+                        cii.AnimationSystem.AnimationId > 2) continue;
+                    // this would probably interfere with other animations. I am hoping the limits above will keep it good.
+                    if (c.IsDead)
+                        cii.SetAnimationID((int)AnimID.Dead);
+                    else if (c.IsCritical)
+                        cii.SetAnimationID((int)AnimID.Critical);
                 }
             if (Enemy.Party != null)
                 foreach (Enemy e in Enemy.Party)
@@ -423,15 +427,15 @@ namespace OpenVIII
                     Stage?.Update();
                     DeadTime?.Update();
                     Menu.BattleMenus.Update();
-                    sbyte? partypos = Menu.BattleMenus.PartyPos;
-                    RegularPyramid.Set(GetIndicatorPoint(partypos ?? 0));
-                    if (partypos != ModuleBattleDebug.partypos)
+                    sbyte? partyPos = Menu.BattleMenus.PartyPos;
+                    RegularPyramid.Set(GetIndicatorPoint(partyPos ?? 0));
+                    if (partyPos != partypos)
                     {
-                        if (partypos == null)
+                        if (partyPos == null)
                             RegularPyramid.FadeOut();
                         else
                             RegularPyramid.FadeIn();
-                        ModuleBattleDebug.partypos = partypos;
+                        partypos = partyPos;
                     }
                     if (bUseFPSCamera)
                     {
@@ -440,9 +444,13 @@ namespace OpenVIII
                     }
                     else
                     {
-                        Camera?.Update();
-                        viewMatrix = Camera.viewMatrix;
-                        projectionMatrix = Camera.projectionMatrix;
+                        if (Camera != null)
+                        {
+                            Camera.Update();
+                            viewMatrix = Camera.viewMatrix;
+                            projectionMatrix = Camera.projectionMatrix;
+                        }
+
                         ret = Menu.BattleMenus.Inputs();
                     }
                     break;
@@ -479,8 +487,8 @@ namespace OpenVIII
             }
             for (int i = 0; i < CharacterInstances.Count; i++)
             {
-                DebugBattleDat weapon = CharacterInstances[i].Data.weapon;
-                DebugBattleDat character = CharacterInstances[i].Data.character;
+                DebugBattleDat weapon = CharacterInstances[i].Data.Weapon;
+                DebugBattleDat character = CharacterInstances[i].Data.Character;
                 List<AnimationSequence> sequences;
                 if ((weapon?.Sequences.Count ?? 0) == 0)
                 {
@@ -498,9 +506,9 @@ namespace OpenVIII
         }
 
         private static bool CharacterInstanceAnimationStopped(int n) =>
-            CharacterInstances[n].animationSystem.AnimationStopped ||
-            ((Memory.State?[(Characters)CharacterInstances[n].characterId]?.IsPetrify ?? false) &&
-            CharacterInstances[n].animationSystem.StopAnimation());
+            CharacterInstances[n].AnimationSystem.AnimationStopped ||
+            ((Memory.State?[(Characters)CharacterInstances[n].CharacterId]?.IsPetrify ?? false) &&
+            CharacterInstances[n].AnimationSystem.StopAnimation());
 
         private static double CharacterInstanceGenerateStep(int n) => GenerateStep(CharacterInstanceAnimationStopped(n));
 
@@ -515,36 +523,32 @@ namespace OpenVIII
             switch (type)
             {
                 case EntityType.Monster:
-                    animationSystem = Enemy.Party[n].EII.Data.animHeader.animations[Enemy.Party[n].EII.animationSystem.AnimationId];
-                    if (Enemy.Party[n].EII.animationSystem.AnimationFrame >= animationSystem.cFrames)
+                    animationSystem = Enemy.Party[n].EII.Data.animHeader.animations[Enemy.Party[n].EII.AnimationSystem.AnimationId];
+                    if (Enemy.Party[n].EII.AnimationSystem.AnimationFrame < animationSystem.CFrames) return;
+                    EnemyInstanceInformation eInstanceInformationProvider = Enemy.Party[n].EII;
+                    if (Enemy.Party[n].EII.AnimationSystem.AnimationQueue.TryDequeue(out int animationID) &&
+                        animationID < eInstanceInformationProvider.Data.animHeader.animations.Length &&
+                        animationID >= 0
+                    )
                     {
-                        EnemyInstanceInformation InstanceInformationProvider = Enemy.Party[n].EII;
-                        if (Enemy.Party[n].EII.animationSystem.AnimationQueue.TryDequeue(out int animid) &&
-                           animid < InstanceInformationProvider.Data.animHeader.animations.Length &&
-                           animid >= 0
-                            )
-                        {
-                            InstanceInformationProvider.animationSystem.AnimationId = animid;
-                        }
-                        Enemy.Party[n].EII = InstanceInformationProvider;
+                        eInstanceInformationProvider.AnimationSystem.AnimationId = animationID;
                     }
+                    Enemy.Party[n].EII = eInstanceInformationProvider;
                     return;
 
                 case EntityType.Character:
                 case EntityType.Weapon:
-                    animationSystem = CharacterInstances[n].Data.character.animHeader.animations[CharacterInstances[n].animationSystem.AnimationId];
-                    if (CharacterInstances[n].animationSystem.AnimationFrame >= animationSystem.cFrames)
+                    animationSystem = CharacterInstances[n].Data.Character.animHeader.animations[CharacterInstances[n].AnimationSystem.AnimationId];
+                    if (CharacterInstances[n].AnimationSystem.AnimationFrame < animationSystem.CFrames) return;
+                    CharacterInstanceInformation cInstanceInformationProvider = CharacterInstances[n];
+                    if (CharacterInstances[n].AnimationSystem.AnimationQueue.TryDequeue(out animationID) &&
+                        (animationID < cInstanceInformationProvider.Data.Character.animHeader.animations.Length ||
+                         animationID < (cInstanceInformationProvider.Data.Weapon?.animHeader.animations.Length ?? 0)) &&
+                        animationID >= 0)
                     {
-                        CharacterInstanceInformation InstanceInformationProvider = CharacterInstances[n];
-                        if (CharacterInstances[n].animationSystem.AnimationQueue.TryDequeue(out int animid) &&
-                           (animid < InstanceInformationProvider.Data.character.animHeader.animations.Length ||
-                           animid < (InstanceInformationProvider.Data.weapon?.animHeader.animations.Length ?? 0)) &&
-                           animid >= 0)
-                        {
-                            InstanceInformationProvider.animationSystem.AnimationId = animid;
-                        }
-                        CharacterInstances[n] = InstanceInformationProvider;
+                        cInstanceInformationProvider.AnimationSystem.AnimationId = animationID;
                     }
+                    CharacterInstances[n] = cInstanceInformationProvider;
                     return;
 
                 default:
@@ -554,12 +558,12 @@ namespace OpenVIII
 
         
 
-        private static void DrawBattleDat(DebugBattleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
+        private static void DrawBattleDat(DebugBattleDat battleDat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
         {
-            for (int i = 0; /*i<1 &&*/ i < battledat.geometry.CObjects; i++)
+            for (int i = 0; /*i<1 &&*/ i < battleDat.Geometry.CObjects; i++)
             {
                 Quaternion rotation = _rotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
-                VertexPositionTexturePointersGRP vptpg = battledat.GetVertexPositions(
+                VertexPositionTexturePointersGRP vptpg = battleDat.GetVertexPositions(
                     i,
                     ref position,
                     rotation,
@@ -569,7 +573,7 @@ namespace OpenVIII
                     return;
                 for (int k = 0; k < vptpg.VPT.Length / 3; k++)
                 {
-                    ate.Texture = (Texture2D)battledat.textures.textures[vptpg.TexturePointers[k]];
+                    ate.Texture = (Texture2D)battleDat.textures.textures[vptpg.TexturePointers[k]];
                     foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
@@ -599,14 +603,14 @@ namespace OpenVIII
             {
                 CheckAnimationFrame(EntityType.Character, n);
                 Vector3 charaPosition = CharacterInstances[n].Data.Location = GetCharPos(n);
-                DrawBattleDat(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
+                DrawBattleDat(CharacterInstances[n].Data.Character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].AnimationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
 
                 //WEAPON
-                if (CharacterInstances[n].Data.weapon != null)
+                if (CharacterInstances[n].Data.Weapon != null)
                 {
                     CheckAnimationFrame(EntityType.Weapon, n);
-                    DrawBattleDat(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
+                    DrawBattleDat(CharacterInstances[n].Data.Weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].AnimationSystem, ref charaPosition);
                 }
             }
         }
@@ -633,8 +637,8 @@ namespace OpenVIII
                 CheckAnimationFrame(EntityType.Monster, n);
                 Vector3 enemyPosition = GetEnemyPos(n);
                 enemyPosition.Y += Yoffset;
-                DrawBattleDat(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
-                DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.skeleton.GetScale.X / 5);
+                DrawBattleDat(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.AnimationSystem, ref enemyPosition, Quaternion.Identity);
+                DrawShadow(enemyPosition, ate, Enemy.Party[n].EII.Data.Skeleton.GetScale.X / 5);
                 DrawCrosshair(Enemy.Party[n]);
             }
         }
@@ -662,9 +666,9 @@ namespace OpenVIII
         }
 
         private static bool EnemyInstanceAnimationStopped(int n) =>
-            Enemy.Party[n].EII.animationSystem.AnimationStopped ||
+            Enemy.Party[n].EII.AnimationSystem.AnimationStopped ||
             (Enemy.Party[n].IsPetrify &&
-            Enemy.Party[n].EII.animationSystem.StopAnimation());
+            Enemy.Party[n].EII.AnimationSystem.StopAnimation());
 
         private static void FillCostumes()
         {
@@ -815,8 +819,8 @@ namespace OpenVIII
             CharacterInstanceInformation cii = new CharacterInstanceInformation
             {
                 Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
-                animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
-                characterId = cid++
+                AnimationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
+                CharacterId = cid++
             };
             //cii.animationSystem.animationId = 4;
             Memory.State[c].BattleStart(cii);
@@ -833,8 +837,8 @@ namespace OpenVIII
             else weapon = null;
             return new CharacterData
             {
-                character = character,
-                weapon = weapon
+                Character = character,
+                Weapon = weapon
             };
         }
 
@@ -850,7 +854,7 @@ namespace OpenVIII
                 FillWeapons();
                 if (CharacterInstances != null && !ForceReload)
                 {
-                    var test = CharacterInstances.Select((x, i) => new { cii = x, index = i, id = (Characters)x.Data.character.ID, alt = x.Data.character.AltID, weapon = x.Data.weapon.AltID });
+                    var test = CharacterInstances.Select((x, i) => new { cii = x, index = i, id = (Characters)x.Data.Character.ID, alt = x.Data.Character.AltID, weapon = x.Data.Weapon.AltID }).ToArray();
                     //where characters haven't changed
                     foreach (var x in test.Where(x => Memory.State.Party[x.index] == x.id && (GetCostume(x.id) == x.alt) && x.weapon == GetWeaponID(x.id)))
                     {
@@ -882,20 +886,20 @@ namespace OpenVIII
                 new CharacterInstanceInformation
                 {
                     Data = ReadCharacterData(0,0,0),
-                    animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
-                    characterId = 0
+                    AnimationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
+                    CharacterId = 0
                 },
                 new CharacterInstanceInformation
                 {
                     Data = ReadCharacterData(1,3,8),
-                    animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
-                    characterId = 1
+                    AnimationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
+                    CharacterId = 1
                 },
                 new CharacterInstanceInformation
                 {
                     Data = ReadCharacterData(2,6,13),
-                    animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
-                    characterId = 2
+                    AnimationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
+                    CharacterId = 2
                 }
             };
         }
@@ -937,11 +941,11 @@ namespace OpenVIII
                     : (Enemy)new EnemyInstanceInformation
                     {
                         Data = debug_battleDat,
-                        bIsHidden = encounter.HiddenEnemies[i],
-                        bIsActive = true,
-                        partypos = (sbyte)(-1 - x.i),
-                        bIsUntargetable = encounter.UntargetableEnemy[i],
-                        animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
+                        BIsHidden = encounter.HiddenEnemies[i],
+                        BIsActive = true,
+                        PartyPos = (sbyte)(-1 - x.i),
+                        BIsUntargetable = encounter.UntargetableEnemy[i],
+                        AnimationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
                         Location = encounter.enemyCoordinates[i], //each instance needs own location.
                         FixedLevel = encounter.bLevels[i]
                     };
@@ -953,17 +957,17 @@ namespace OpenVIII
         private static void StartAnimations()
         {
             foreach (CharacterInstanceInformation c in CharacterInstances)
-                c.animationSystem.StartAnimation();
+                c.AnimationSystem.StartAnimation();
             foreach (Enemy e in Enemy.Party)
-                e.EII.animationSystem.StartAnimation();
+                e.EII.AnimationSystem.StartAnimation();
         }
 
         private static void StopAnimations()
         {
             foreach (CharacterInstanceInformation c in CharacterInstances)
-                c.animationSystem.StopAnimation();
+                c.AnimationSystem.StopAnimation();
             foreach (Enemy e in Enemy.Party)
-                e.EII.animationSystem.StopAnimation();
+                e.EII.AnimationSystem.StopAnimation();
         }
         
 
@@ -981,15 +985,15 @@ namespace OpenVIII
                 if (Enemy.Party != null)
                     foreach (Enemy e in Enemy.Party)
                     {
-                        if (!e.EII.animationSystem.AnimationStopped && !e.IsPetrify)
-                            e.EII.animationSystem.NextFrame();
+                        if (!e.EII.AnimationSystem.AnimationStopped && !e.IsPetrify)
+                            e.EII.AnimationSystem.NextFrame();
                     }
 
                 if (CharacterInstances != null)
                     foreach (CharacterInstanceInformation cii in CharacterInstances)
                     {
-                        if (!cii.animationSystem.AnimationStopped && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
-                            cii.animationSystem.NextFrame();
+                        if (!cii.AnimationSystem.AnimationStopped && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true))
+                            cii.AnimationSystem.NextFrame();
                     }
 
                 ResetTime();

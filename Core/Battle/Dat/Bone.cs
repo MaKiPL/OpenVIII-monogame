@@ -19,6 +19,7 @@ namespace OpenVIII.Battle.Dat
         public Bone(ushort parentId, short boneSize, short rotX, short rotY, short rotZ, short unk4, short unk5, short unk6, byte[] unk)
             => (this.parentId, this.boneSize, this.rotX, this.rotY, this.rotZ, this.unk4, this.unk5, this.unk6, Unk) =
                 (parentId, boneSize, rotX, rotY, rotZ, unk4, unk5, unk6, unk);
+
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 28)]
         public byte[] Unk;
 

@@ -33,7 +33,7 @@ namespace OpenVIII
 
             #region Constructors
 
-            public BattleCommand(FF8String name, FF8String description, byte ability, DebugBattleDat.Information.UnkFlag flags, Target target, byte unknown, int battleID)
+            public BattleCommand(FF8String name, FF8String description, byte ability, Battle.Dat.Information.UnkFlag flags, Target target, byte unknown, int battleID)
             => (Name, Description, Ability, Flags, Target, Unknown, BattleID) = (name, description, ability, flags, target, unknown, battleID);
 
             #endregion Constructors
@@ -58,7 +58,7 @@ namespace OpenVIII
             /// <summary>
             /// Unknown Flags
             /// </summary>
-            public DebugBattleDat.Information.UnkFlag Flags { get; }
+            public Battle.Dat.Information.UnkFlag Flags { get; }
 
             /// <summary>
             /// Name of Command
@@ -124,7 +124,7 @@ namespace OpenVIII
 
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 byte ability = br.ReadByte();
-                DebugBattleDat.Information.UnkFlag flags = (DebugBattleDat.Information.UnkFlag)br.ReadByte();
+                Battle.Dat.Information.UnkFlag flags = (Battle.Dat.Information.UnkFlag)br.ReadByte();
                 Target target = (Target)br.ReadByte();
                 byte unknown = br.ReadByte();
                 return new BattleCommand(name, description, ability, flags, target, unknown, i);
@@ -133,8 +133,4 @@ namespace OpenVIII
             #endregion Methods
         }
     }
-}
-
-namespace OpenVIII.Kernel
-{
 }

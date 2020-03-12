@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace OpenVIII.Battle
+namespace OpenVIII.Battle.Dat
 {
     public struct CharacterData
     {
         #region Fields
 
-        public DebugBattleDat character, weapon;
+        public DebugBattleDat Character, Weapon;
 
         #endregion Fields
 

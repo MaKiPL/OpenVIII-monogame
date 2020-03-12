@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Magic = OpenVIII.Battle.Dat.Magic;
 
 namespace OpenVIII.IGMData.Target
 {
@@ -267,7 +268,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command01_ATTACK()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 if (EnemyAttack != null && Damageable.GetEnemy(out Enemy e))
                 {
                     Debug.WriteLine($"{Damageable.Name} uses {EnemyAttack.Name}({EnemyAttack.MagicID}) enemy attack on { DebugMessageSuffix(d) }");
@@ -278,7 +279,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command02_MAGIC()
             {
-                Neededvaribles(out Damageable[] d, Magic.PositiveMagic);
+                NeededVariables(out Damageable[] d, Magic.PositiveMagic);
                 Debug.WriteLine($"{Damageable.Name} casts {Magic.Name}({Magic.MagicDataID}) spell on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return true;
@@ -288,7 +289,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command04_ITEM()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 Debug.WriteLine($"{Damageable.Name} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return true;
@@ -296,7 +297,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command05_RENZOKUKEN()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 if (d.First().GetType() == typeof(Enemy) && Damageable.GetCharacterData(out Saves.CharacterData c))
                 {
                     Saves.CharacterData squall = Memory.State[Characters.Squall_Leonhart];
@@ -341,7 +342,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command06_DRAW()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 //draw
                 //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
                 if (d.First().GetType() == typeof(Enemy))
@@ -356,7 +357,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command07_DEVOUR()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 //TODO add devour commands
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -372,7 +373,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command11_DUEL()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -382,7 +383,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command12_MUG()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 if (d.First().GetType() == typeof(Enemy))
                 {
                     Enemy e = (Enemy)d.First();
@@ -398,7 +399,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command14_SHOT()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Menu.BattleMenus.GetCurrentBattleMenu().Shot.Refresh(Item,d);
                 Menu.BattleMenus.GetCurrentBattleMenu().Shot.Show();
@@ -409,7 +410,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command15_BLUE_MAGIC()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 Debug.WriteLine($"{Damageable.Name} casts {BlueMagic.Name}({BlueMagic.BlueMagic}) spell on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return false;
@@ -419,7 +420,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command17_FIRE_CROSS_NO_MERCY()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -429,7 +430,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command18_SORCERY_ICE_STRIKE()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -440,7 +441,7 @@ namespace OpenVIII.IGMData.Target
             bool Command19_COMBINE()
             {
                 //perform angelo attack unless angel wing is unlocked and chosen in menu.
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {CombineKernelItem.Name}({CombineKernelItem.ID}) - Combine Limit Break on { DebugMessageSuffix(d) }");
 
@@ -451,7 +452,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command20_DESPERADO()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -461,7 +462,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command21_BLOOD_PAIN()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -471,7 +472,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command22_MASSIVE_ANCHOR()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -483,7 +484,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command24_MADRUSH()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -493,7 +494,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command25_TREATMENT()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -503,7 +504,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command26_RECOVERY()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -513,7 +514,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command27_REVIVE()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -522,14 +523,14 @@ namespace OpenVIII.IGMData.Target
             }
             bool Command28_DARKSIDE()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 EndTurn();
                 return true;
             }
 
             bool Command29_CARD()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 if (d.First().GetType() == typeof(Enemy))
                 {
                     Enemy e = (Enemy)d.First();
@@ -548,14 +549,14 @@ namespace OpenVIII.IGMData.Target
 
             bool Command30_DOOM()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
                 EndTurn();
                 return true;
             }
 
             bool Command31_KAMIKAZI()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -565,7 +566,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command32_ABSORB()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -575,7 +576,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command33_LVL_DOWN()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -585,7 +586,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command34_LVL_UP()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -608,7 +609,7 @@ namespace OpenVIII.IGMData.Target
             }
             bool Command38_MINIMOG()
             {
-                Neededvaribles(out Damageable[] d);
+                NeededVariables(out Damageable[] d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -644,9 +645,9 @@ namespace OpenVIII.IGMData.Target
         /// Display pool with list
         /// </summary>
         /// <param name="drawList"></param>
-        private void DrawMagic(DebugBattleDat.Magic[] drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
+        private static void DrawMagic(IEnumerable<Magic> drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
 
-        private void Neededvaribles(out Damageable[] d, bool positive = false)
+        private void NeededVariables(out Damageable[] d, bool positive = false)
         {
             Damageable[] e = null;
             Damageable[] vc = null;

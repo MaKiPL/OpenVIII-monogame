@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using OpenVIII.Battle.Dat;
 using OpenVIII.Kernel;
 
 namespace OpenVIII
@@ -29,7 +30,7 @@ namespace OpenVIII
 
         public static List<Enemy> Party { get; set; }
 
-        public DebugBattleDat.Abilities[] Abilities => hml(Info.abilitiesHigh, Info.abilitiesMed, Info.abilitiesLow);
+        public Battle.Dat.Abilities[] Abilities => hml(Info.abilitiesHigh, Info.abilitiesMed, Info.abilitiesLow);
 
         public byte AP => Info.ap;
 
@@ -37,7 +38,7 @@ namespace OpenVIII
             Memory.Kernel_Bin.Devour[Memory.Kernel_Bin.Devour.Count - 1] :
             Memory.Kernel_Bin.Devour[Info.devour[levelgroup()]];
 
-        public DebugBattleDat.Magic[] DrawList => hml(Info.drawhigh, Info.drawmed, Info.drawlow);
+        public Magic[] DrawList => hml(Info.drawhigh, Info.drawmed, Info.drawlow);
 
         /// <summary>
         /// Randomly gain 1 or 0 from this list.
@@ -69,7 +70,7 @@ namespace OpenVIII
         /// </remarks>
         public override byte HIT => 0;
 
-        public DebugBattleDat.Information Info => EII.Data.information;
+        public Information Info => EII.Data.information;
 
         public IEnumerable<GFs> JunctionedGFs => Memory.State != null ? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
 
@@ -129,23 +130,23 @@ namespace OpenVIII
                 FixedLevel = fixedLevel
             };
             r._CurrentHP = startinghp ?? r.MaxHP();
-            if ((r.Info.bitSwitch & DebugBattleDat.Information.Flag1.Zombie) != 0)
+            if ((r.Info.bitSwitch & Information.Flag1.Zombie) != 0)
             {
                 r.Statuses0 |= Kernel.PersistentStatuses.Zombie;
             }
-            if ((r.Info.bitSwitch & DebugBattleDat.Information.Flag1.Auto_Protect) != 0)
+            if ((r.Info.bitSwitch & Information.Flag1.Auto_Protect) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Protect;
             }
-            if ((r.Info.bitSwitch & DebugBattleDat.Information.Flag1.Auto_Reflect) != 0)
+            if ((r.Info.bitSwitch & Information.Flag1.Auto_Reflect) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Reflect;
             }
-            if ((r.Info.bitSwitch & DebugBattleDat.Information.Flag1.Auto_Shell) != 0)
+            if ((r.Info.bitSwitch & Information.Flag1.Auto_Shell) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Shell;
             }
-            if ((r.Info.bitSwitch & DebugBattleDat.Information.Flag1.Fly) != 0)
+            if ((r.Info.bitSwitch & Information.Flag1.Fly) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Float;
             }

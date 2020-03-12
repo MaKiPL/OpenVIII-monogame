@@ -1,5 +1,5 @@
-using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
+using System.Runtime.InteropServices;
 
 namespace OpenVIII.Battle.Dat
 {

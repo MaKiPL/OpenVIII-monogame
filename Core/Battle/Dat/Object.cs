@@ -2,12 +2,16 @@ namespace OpenVIII.Battle.Dat
 {
     public struct Object
     {
-        public ushort CVertices;
-        public VertexData[] VertexData;
-        public ushort CTriangles;
+        #region Fields
+
         public ushort CQuads;
+        public ushort CTriangles;
+        public ushort CVertices;
         public ulong Padding;
-        public Triangle[] Triangles;
         public Quad[] Quads;
+        public Triangle[] Triangles;
+        public VertexData[] VertexData;
+
+        #endregion Fields
     }
 }

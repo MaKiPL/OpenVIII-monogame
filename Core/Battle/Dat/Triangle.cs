@@ -1,9 +1,9 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII.Battle.Dat
 {
@@ -102,9 +102,9 @@ namespace OpenVIII.Battle.Dat
                 TempVPT = new VertexPositionTexture[Count];
             VertexPositionTexture GetVPT(ref Triangle triangle, byte i)
             {
-                Vector3 GetVertex(ref Triangle _triangle, byte _i)
+                Vector3 GetVertex(ref Triangle refTriangle, byte j)
                 {
-                    return TransformVertex(vertices[_triangle.GetIndex(_i)], translationPosition, rotation);
+                    return DebugBattleDat.TransformVertex(vertices[refTriangle.GetIndex(j)], translationPosition, rotation);
                 }
                 return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
             }

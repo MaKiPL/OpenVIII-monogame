@@ -1,9 +1,9 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace OpenVIII.Battle.Dat
 {
@@ -105,6 +105,7 @@ namespace OpenVIII.Battle.Dat
                 throw new IndexOutOfRangeException($"{this} :: 0-5 are only valid values");
             }
         }
+
         public byte[] Indices => new[] { this[0], this[1], this[2], this[3], this[4], this[5] };
         public static byte Count => 6;
 
@@ -114,9 +115,9 @@ namespace OpenVIII.Battle.Dat
                 TempVPT = new VertexPositionTexture[Count];
             VertexPositionTexture GetVPT(ref Quad quad, byte i)
             {
-                Vector3 GetVertex(ref Quad _quad, byte _i)
+                Vector3 GetVertex(ref Quad refQuad, byte j)
                 {
-                    return TransformVertex(vertices[_quad.GetIndex(_i)], translationPosition, rotation);
+                    return DebugBattleDat.TransformVertex(vertices[refQuad.GetIndex(j)], translationPosition, rotation);
                 }
                 return new VertexPositionTexture(GetVertex(ref quad, i), quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
             }

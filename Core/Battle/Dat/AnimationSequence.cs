@@ -4,14 +4,24 @@ namespace OpenVIII.Battle.Dat
 {
     public struct AnimationSequence
     {
+        #region Fields
+
+        public byte[] Data;
         public int ID;
         public uint Offset;
-        public byte[] Data;
+
+        #endregion Fields
+
+        #region Properties
 
         /// <summary>
         /// Test-Reason for list is so i can go read the data with out removing it.
         /// </summary>
         public List<byte> AnimationQueue { get; set; }
+
+        #endregion Properties
+
+        #region Methods
 
         //public static Dictionary<byte, Action<byte[], int>> ParseData = new Dictionary<byte, Action<byte[], int>>{
         //    { 0xA3, (byte[] data, int i) => { } } };
@@ -60,5 +70,7 @@ namespace OpenVIII.Battle.Dat
                 //}
             }
         }
+
+        #endregion Methods
     }
 }

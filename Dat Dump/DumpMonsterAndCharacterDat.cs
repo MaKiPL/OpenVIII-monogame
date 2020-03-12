@@ -6,6 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using OpenVIII.Battle;
+using OpenVIII.Battle.Dat;
+using OpenVIII.Kernel;
+using Abilities = OpenVIII.Battle.Dat.Abilities;
 
 namespace OpenVIII.Dat_Dump
 {
@@ -33,7 +37,7 @@ namespace OpenVIII.Dat_Dump
             // so the sequence dump is probably less useful or broken.
             Task<bool> addMonster(int i)
             => Task.Run(() => MonsterData.TryAdd(i,
-                        DebugBattleDat.Load(i, Battle.Dat.EntityType.Monster,
+                        DebugBattleDat.Load(i, EntityType.Monster,
                             flags: Sections.AnimationSequences | Sections.Information)));
 
             await Task.WhenAll(Enumerable.Range(0, 200).Select(addMonster));
@@ -46,7 +50,7 @@ namespace OpenVIII.Dat_Dump
                 Indent = true,
                 IndentChars = "\t", // note: default is two spaces
                 NewLineOnAttributes = true,
-                OmitXmlDeclaration = false,
+                OmitXmlDeclaration = false
             };
             using (StreamWriter csv2File = new StreamWriter(new FileStream("MonsterAttacks.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite), System.Text.Encoding.UTF8))
             {
@@ -56,9 +60,9 @@ namespace OpenVIII.Dat_Dump
                     //header for monster attacks
                     csv2File.WriteLine($"{nameof(Enemy)}{Ls}" +
                         $"{nameof(Enemy.EII.Data.FileName)}{Ls}" +
-                        $"{nameof(DebugBattleDat.Abilities)}{Ls}" +
+                        $"{nameof(Abilities)}{Ls}" +
                         $"Number{Ls}" +
-                        $"{nameof(DebugBattleDat.Abilities.animation)}{Ls}" +
+                        $"{nameof(Abilities.animation)}{Ls}" +
                         $"Type{Ls}" +
                         $"BattleID{Ls}" +
                         $"Name{Ls}");
@@ -96,7 +100,7 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteStartElement("characters");
             for (int i = 0; i <= 10; i++)
             {
-                DebugBattleDat test = DebugBattleDat.Load(i, Battle.Dat.EntityType.Character, 0);
+                DebugBattleDat test = DebugBattleDat.Load(i, EntityType.Character, 0);
                 if (test != null && CharacterData.TryAdd(i, test))
                 {
                 }
@@ -134,8 +138,8 @@ namespace OpenVIII.Dat_Dump
                 prefix += $"{Ls}{XmlAnimations(xmlWriter, battleDat)}";
                 XmlSequences(xmlWriter, battleDat, csvFile, prefix);
                 xmlWriter.WriteEndElement();
-                Enemy e = Enemy.Load(new Battle.EnemyInstanceInformation { Data = battleDat });
-                void addAbility(string fieldName, DebugBattleDat.Abilities a, int number)
+                Enemy e = Enemy.Load(new EnemyInstanceInformation { Data = battleDat });
+                void addAbility(string fieldName, Abilities a, int number)
                 {
                     csv2File.WriteLine($"{name}{Ls}" +
                                        $"{battleDat.FileName}{Ls}" +
@@ -146,12 +150,12 @@ namespace OpenVIII.Dat_Dump
                                        $"{a.ITEM?.ID ?? (a.MAGIC?.MagicDataID ?? (a.MONSTER?.EnemyAttackID ?? 0))}{Ls}" +
                                        $"\"{(a.ITEM != null ? a.ITEM.Value.Name : a.MAGIC != null ? a.MAGIC.Name : a.MONSTER != null ? a.MONSTER.Name : new FF8String(""))}\"{Ls}");
                 }
-                void addAbilities(string fieldName, IReadOnlyList<DebugBattleDat.Abilities> abilities)
+                void addAbilities(string fieldName, IReadOnlyList<Abilities> abilities)
                 {
                     if (abilities == null) return;
                     for (int number = 0; number < e.Info.abilitiesLow.Length; number++)
                     {
-                        DebugBattleDat.Abilities a = abilities[number];
+                        Abilities a = abilities[number];
                         addAbility(fieldName, a, number);
                     }
                 }
@@ -168,7 +172,7 @@ namespace OpenVIII.Dat_Dump
             string count = $"{battleDat.Sequences?.Count ?? 0}";
             xmlWriter.WriteAttributeString("Count", count);
             if (battleDat.Sequences != null)
-                foreach (DebugBattleDat.AnimationSequence s in battleDat.Sequences)
+                foreach (AnimationSequence s in battleDat.Sequences)
                 {
                     xmlWriter.WriteStartElement("sequence");
                     string id = s.ID.ToString();
@@ -200,9 +204,9 @@ namespace OpenVIII.Dat_Dump
             {
                 DebugBattleDat test;
                 if (characterID == 1 || characterID == 9)
-                    test = DebugBattleDat.Load(characterID, Battle.Dat.EntityType.Weapon, i, r);
+                    test = DebugBattleDat.Load(characterID, EntityType.Weapon, i, r);
                 else
-                    test = DebugBattleDat.Load(characterID, Battle.Dat.EntityType.Weapon, i);
+                    test = DebugBattleDat.Load(characterID, EntityType.Weapon, i);
                 if (test != null && weaponData.TryAdd(i, test))
                 {
                 }
@@ -213,8 +217,8 @@ namespace OpenVIII.Dat_Dump
                 xmlWriter.WriteStartElement(type);
                 xmlWriter.WriteAttributeString("BattleID", id);
                 int index = ModuleBattleDebug.Weapons[(Characters)characterID].FindIndex(v => v == i);
-                Kernel.WeaponsData currentWeaponData = Memory.Kernel_Bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)characterID &&
-                                                                                                         v.AltID == index);
+                WeaponsData currentWeaponData = Memory.Kernel_Bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)characterID &&
+                                                                                                  v.AltID == index);
 
                 if (currentWeaponData != default)
                 {

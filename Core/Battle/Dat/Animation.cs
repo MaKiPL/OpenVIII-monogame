@@ -2,7 +2,11 @@ namespace OpenVIII.Battle.Dat
 {
     public struct Animation
     {
-        public byte cFrames;
-        public AnimationFrame[] animationFrames;
+        #region Fields
+
+        public AnimationFrame[] AnimationFrames;
+        public byte CFrames;
+
+        #endregion Fields
     }
 }

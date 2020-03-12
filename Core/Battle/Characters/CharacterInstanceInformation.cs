@@ -1,4 +1,6 @@
-﻿namespace OpenVIII.Battle
+﻿using OpenVIII.Battle.Dat;
+
+namespace OpenVIII.Battle
 {
     /// <summary>
     /// CharacterInstanceInformation should only be used for battle-exclusive data. Manipulating
@@ -11,9 +13,9 @@
     {
         #region Fields
 
-        public AnimationSystem animationSystem;
-        public bool bIsHidden;
-        public int characterId;
+        public AnimationSystem AnimationSystem;
+        public bool BIsHidden;
+        public int CharacterId;
         public CharacterData Data;
 
         #endregion Fields
@@ -21,7 +23,7 @@
         #region Properties
 
         //0 is Whatever guy
-        public Characters VisibleCharacter => (Characters)Data.character.GetId;
+        public Characters VisibleCharacter => (Characters)Data.Character.GetId;
 
         #endregion Properties
 
@@ -30,12 +32,12 @@
         //GF sequences, magic...
         public void SetAnimationID(int id)
         {
-            if (animationSystem.AnimationId != id &&
-                id < Data.character.animHeader.animations.Length &&
-                id < Data.weapon.animHeader.animations.Length &&
+            if (AnimationSystem.AnimationId != id &&
+                id < Data.Character.animHeader.animations.Length &&
+                id < Data.Weapon.animHeader.animations.Length &&
                 id >= 0)
             {
-                animationSystem.AnimationId = id;
+                AnimationSystem.AnimationId = id;
             }
         }
 
