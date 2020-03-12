@@ -1,19 +1,17 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII.AV
 {
-    public static partial  class Sound
+    public static partial class Sound
     {
         #region Fields
 
         public const int MaxChannels = 20;
 
-        public static int EntriesCount => _entries?.Length ?? 0;
-
         private static int _currentChannel;
-
-        private static Entry[] _entries;
+        private static IReadOnlyList<Entry> _entries;
 
         #endregion Fields
 
@@ -36,6 +34,8 @@ namespace OpenVIII.AV
                 _currentChannel = value;
             }
         }
+
+        public static int EntriesCount => _entries?.Count ?? 0;
 
         /// <summary>
         /// This is for short lived sound effects. The Larger the array is the more sounds can be
@@ -64,32 +64,10 @@ namespace OpenVIII.AV
                 if (other.GetBinaryFile("audio.dat", true) != null) //cache's audio.dat
                     s = new MemoryStream(other.GetBinaryFile("audio.fmt"), false);
             }
-            if (s != null)
-            {
 
-                // fs is disposed by binary reader
-                using (BinaryReader br = new BinaryReader(s))
-                {
-                    _entries = new Entry[br.ReadUInt32()];
-                    s.Seek(36, SeekOrigin.Current);
-                    for (int i = 0; i < _entries.Length - 1; i++)
-                    {
-                        uint sz = br.ReadUInt32();
-                        if (sz == 0)
-                        {
-                            s.Seek(34, SeekOrigin.Current); continue;
-                        }
-
-                        _entries[i] = new Entry
-                        {
-                            Size = sz,
-                            Offset = br.ReadUInt32()
-                        };
-                        s.Seek(12, SeekOrigin.Current);
-                        _entries[i].fillHeader(br);
-                    }
-                }
-            }
+            if (s == null) return;
+            _entries = Entry.Read(s);
+            Memory.Log.WriteLine($"{nameof(Sound)} :: {nameof(Init)} loaded {EntriesCount} {nameof(Entry)}(s)");
         }
 
         public static void KillAudio() => SoundChannels?.Where(x => x != null && !x.IsDisposed).ForEach(action => action.Dispose());
@@ -114,14 +92,7 @@ namespace OpenVIII.AV
             {
                 return null;
             }
-            Audio ffcc = Audio.Load(
-                new BufferData
-                {
-                    DataSeekLoc = _entries[soundId].Offset,
-                    DataSize = _entries[soundId].Size,
-                    HeaderSize = (uint)_entries[soundId].HeaderData.Length,
-                },
-                _entries[soundId].HeaderData, loop ? 0 : -1);
+            Audio ffcc = Audio.Load(_entries[soundId], loop ? 0 : -1);
             if (!persist)
                 SoundChannels[CurrentChannel++] = ffcc;
             ffcc.Play(volume, pitch, pan);

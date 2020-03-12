@@ -227,10 +227,8 @@
     <Compile Include="AV\Movie\Player.cs" />
     <Compile Include="AV\Movie\State.cs" />
     <Compile Include="AV\Music\Music.cs" />
-    <Compile Include="AV\Sound\ADPCMCOEFSET.cs" />
     <Compile Include="AV\Sound\Entry.cs" />
     <Compile Include="AV\Sound\Sound.cs" />
-    <Compile Include="AV\Sound\WAVEFORMATEX.cs" />
     <Compile Include="AV\Video.cs" />
     <Compile Include="Battle\AnimationSystem.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />

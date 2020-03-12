@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 
 namespace OpenVIII.AV
 {
@@ -9,7 +10,6 @@ namespace OpenVIII.AV
     using NAudio.Wave.SampleProviders;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -941,28 +941,23 @@ namespace OpenVIII.AV
                 }
 
                 Metadata[key.Trim().ToUpper()] = val;
-                Debug.WriteLine($"{key} = {val}");
+                Memory.Log.WriteLine($"{key} = {val}");
                 if (key.Trim().IndexOf("LoopStart", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     if (int.TryParse(val, out _loopStart)) continue;
                     _loopStart = 0;
-                    Debug.WriteLine($"Failed Parse {key} = {val}");
+                    Memory.Log.WriteLine($"Failed Parse {key} = {val}");
                 }
                 else if (key.Trim().IndexOf("LoopEnd", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (int.TryParse(val, out int _))
-                    {
-                    }
-                    else
-                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                    if (!int.TryParse(val, out int _))
+                        Memory.Log.WriteLine($"Failed Parse {key} = {val}");
+                    
                 }
                 else if (key.Trim().IndexOf("LoopLength", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (int.TryParse(val, out int _))
-                    {
-                    }
-                    else
-                        Debug.WriteLine($"Failed Parse {key} = {val}");
+                    if (!int.TryParse(val, out int _))
+                        Memory.Log.WriteLine($"Failed Parse {key} = {val}");
                 }
             }
         }
