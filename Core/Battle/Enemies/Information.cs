@@ -1,301 +1,205 @@
 ﻿using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
-namespace OpenVIII
+namespace OpenVIII.Battle.Dat
 {
-    public partial class Debug_battleDat
+    /// <summary>
+    /// </summary>
+    /// <see cref="http://forums.qhimm.com/index.php?topic=8741.0"/>
+    /// <seealso cref="http://wiki.ffrtt.ru/index.php/FF8/FileFormat_DAT#Section_7:_Informations_.26_stats"/>
+    /// <seealso cref="http://www.gjoerulv.com/"/>
+    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = DebugBattleDat.Section7Size)]
+    public struct Information
     {
-        #region Fields
+        [Flags]
+        public enum Flag1 : byte
+        {
+            None = 0,
+            Zombie = 0x1,
+            Fly = 0x2,
+            zz1 = 0x4,
+            zz2 = 0x8,
+            zz3 = 0x10,
+            Auto_Reflect = 0x20,
+            Auto_Shell = 0x40,
+            Auto_Protect = 0x80,
+        }
 
-        public Information information;
+        [Flags]
+        public enum Flag2 : byte
+        {
+            None = 0,
+            zz1 = 0x1,
+            zz2 = 0x2,
+            unused1 = 0x4,
+            unused2 = 0x8,
+            unused3 = 0x10,
+            unused4 = 0x20,
+            DiablosMissed = 0x40,
+            AlwaysCard = 0x80,
+        }
 
-        private const int Section7Size = 380;
+        [Flags]
+        public enum UnkFlag : byte
+        {
+            None = 0,
+            unk0 = 0x1,
+            unk1 = 0x2,
+            unk2 = 0x4,
+            unk3 = 0x8,
+            unk4 = 0x10,
+            unk5 = 0x20,
+            unk6 = 0x40,
+            unk7 = 0x80,
+        }
 
-        #endregion Fields
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
+        private byte[] _name;
 
-        #region Methods
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] hp;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] str;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] vit;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] mag;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] spr;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] spd;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public byte[] eva;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public Abilities[] abilitiesLow;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public Abilities[] abilitiesMed;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public Abilities[] abilitiesHigh;
 
         /// <summary>
-        /// Information
+        /// Level med stats start
         /// </summary>
-        /// <param name="start"></param>
-        /// <param name="br"></param>
-        /// <param name="fileName"></param>
-        private void ReadSection7(uint start)
-        {
-            br.BaseStream.Seek(start, SeekOrigin.Begin);
-            information = Extended.ByteArrayToStructure<Information>(br.ReadBytes(Section7Size));
-        }
 
-        #endregion Methods
-
-        #region Structs
-
-        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 4)]
-        public struct Abilities
-        {
-            [Flags]
-            public enum KernelFlag : byte
-            {
-                None = 0,
-                unk0 = 0x1,
-                magic = 0x2,
-                item = 0x4,
-                monster = 0x8,
-                unk1 = 0x10,
-                unk2 = 0x20,
-                unk3 = 0x40,
-                unk4 = 0x80,
-            }
-
-            [FieldOffset(0)]
-            public KernelFlag kernelId; //0x2 magic, 0x4 item, 0x8 monsterAbility;
-
-            [FieldOffset(1)]
-            public byte animation; // ifrit states one of theses is an animation BattleID.
-
-            [FieldOffset(2)]
-            public ushort abilityId;
-
-            private const string unk = "Unknown";
-
-            public Kernel.MagicData MAGIC => (kernelId & KernelFlag.magic) != 0 && Memory.Kernel_Bin.MagicData.Count > abilityId ? Memory.Kernel_Bin.MagicData[abilityId] : null;
-            public Item_In_Menu? ITEM => (kernelId & KernelFlag.item) != 0 && Memory.MItems != null && Memory.MItems.Items.Count > abilityId ? Memory.MItems?.Items[abilityId] : null;
-            public Kernel.EnemyAttacksData MONSTER => (kernelId & KernelFlag.monster) != 0 && Memory.Kernel_Bin.EnemyAttacksData.Count > abilityId ? Memory.Kernel_Bin.EnemyAttacksData[abilityId] : null;
-
-
-            public override string ToString()
-            {
-                if (MAGIC != null)
-                    return MAGIC.Name ?? unk;
-                if (ITEM != null)
-                    return ITEM.Value.Name ?? unk;
-                if (MONSTER != null)
-                    return MONSTER.Name ?? unk;
-
-                return "";
-            }
-        }
+        public byte medLevelStart;
 
         /// <summary>
+        /// Level high stats start
         /// </summary>
-        /// <see cref="http://forums.qhimm.com/index.php?topic=8741.0"/>
-        /// <seealso cref="http://wiki.ffrtt.ru/index.php/FF8/FileFormat_DAT#Section_7:_Informations_.26_stats"/>
-        /// <seealso cref="http://www.gjoerulv.com/"/>
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = Section7Size)]
-        public struct Information
-        {
-            [Flags]
-            public enum Flag1 : byte
-            {
-                None = 0,
-                Zombie = 0x1,
-                Fly = 0x2,
-                zz1 = 0x4,
-                zz2 = 0x8,
-                zz3 = 0x10,
-                Auto_Reflect = 0x20,
-                Auto_Shell = 0x40,
-                Auto_Protect = 0x80,
-            }
-
-            [Flags]
-            public enum Flag2 : byte
-            {
-                None = 0,
-                zz1 = 0x1,
-                zz2 = 0x2,
-                unused1 = 0x4,
-                unused2 = 0x8,
-                unused3 = 0x10,
-                unused4 = 0x20,
-                DiablosMissed = 0x40,
-                AlwaysCard = 0x80,
-            }
-
-            [Flags]
-            public enum UnkFlag : byte
-            {
-                None = 0,
-                unk0 = 0x1,
-                unk1 = 0x2,
-                unk2 = 0x4,
-                unk3 = 0x8,
-                unk4 = 0x10,
-                unk5 = 0x20,
-                unk6 = 0x40,
-                unk7 = 0x80,
-            }
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
-            private byte[] _name;
+        public byte highLevelStart;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] hp;
+        public UnkFlag unkflag;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] str;
+        public Flag1 bitSwitch;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] vit;
+        /// <summary>
+        /// Cards per ifrit this is more of a drop, mod and rare mod
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public Cards.ID[] card;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] mag;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public byte[] devour;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] spr;
+        public Flag2 bitSwitch2;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] spd;
+        public UnkFlag unkflag2;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public byte[] eva;
+        public ushort expExtra;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-            public Abilities[] abilitiesLow;
+        public ushort exp;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-            public Abilities[] abilitiesMed;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Magic[] drawlow;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-            public Abilities[] abilitiesHigh;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Magic[] drawmed;
 
-            /// <summary>
-            /// Level med stats start
-            /// </summary>
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Magic[] drawhigh;
 
-            public byte medLevelStart;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Saves.Item[] muglow;
 
-            /// <summary>
-            /// Level high stats start
-            /// </summary>
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Saves.Item[] mugmed;
 
-            public byte highLevelStart;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Saves.Item[] mughigh;
 
-            public UnkFlag unkflag;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Saves.Item[] droplow;
 
-            public Flag1 bitSwitch;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Saves.Item[] dropmed;
 
-            /// <summary>
-            /// Cards per ifrit this is more of a drop, mod and rare mod
-            /// </summary>
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-            public Cards.ID[] card;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public Saves.Item[] drophigh;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-            public byte[] devour;
+        public byte mugRate;
 
-            public Flag2 bitSwitch2;
+        public byte dropRate;
 
-            public UnkFlag unkflag2;
+        public byte padding;
 
-            public ushort expExtra;
+        public byte ap;
 
-            public ushort exp;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public byte[] unk3;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Magic[] drawlow;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+        public byte[] resistance;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Magic[] drawmed;
+        public byte deathResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Magic[] drawhigh;
+        public byte poisonResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Saves.Item[] muglow;
+        public byte petrifyResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Saves.Item[] mugmed;
+        public byte darknessResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Saves.Item[] mughigh;
+        public byte silenceResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Saves.Item[] droplow;
+        public byte berserkResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Saves.Item[] dropmed;
+        public byte zombieResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-            public Saves.Item[] drophigh;
+        public byte sleepResistanceMental;
 
-            public byte mugRate;
+        public byte hasteResistanceMental;
 
-            public byte dropRate;
+        public byte slowResistanceMental;
 
-            public byte padding;
+        public byte stopResistanceMental;
 
-            public byte ap;
+        public byte regenResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-            public byte[] unk3;
+        public byte reflectResistanceMental;
 
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            public byte[] resistance;
+        public byte doomResistanceMental;
 
-            public byte deathResistanceMental;
+        public byte slowPetrifyResistanceMental;
 
-            public byte poisonResistanceMental;
+        public byte floatResistanceMental;
 
-            public byte petrifyResistanceMental;
+        public byte confuseResistanceMental;
 
-            public byte darknessResistanceMental;
+        public byte drainResistanceMental;
 
-            public byte silenceResistanceMental;
+        public byte explusionResistanceMental;
 
-            public byte berserkResistanceMental;
+        public byte percentResistanceMental;
 
-            public byte zombieResistanceMental;
-
-            public byte sleepResistanceMental;
-
-            public byte hasteResistanceMental;
-
-            public byte slowResistanceMental;
-
-            public byte stopResistanceMental;
-
-            public byte regenResistanceMental;
-
-            public byte reflectResistanceMental;
-
-            public byte doomResistanceMental;
-
-            public byte slowPetrifyResistanceMental;
-
-            public byte floatResistanceMental;
-
-            public byte confuseResistanceMental;
-
-            public byte drainResistanceMental;
-
-            public byte explusionResistanceMental;
-
-            public byte percentResistanceMental;
-
-            public FF8String name => _name;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 2)]
-        public struct Magic
-        {
-            public byte ID;
-            public byte unk;
-
-            public Kernel.MagicData DATA => Memory.Kernel_Bin.MagicData.Count > ID ? Memory.Kernel_Bin.MagicData[ID] : null;
-            public Kernel.JunctionableGFsData JGFDATA => Memory.Kernel_Bin.JunctionableGFsData.ContainsKey(GF) ? Memory.Kernel_Bin.JunctionableGFsData[GF] : null;
-
-
-            // per IFRIT gf's BattleID is between 0x40 and 0x4F. And they seem to be in order of GFs enum.
-            public GFs GF => ID > 0x4F || ID < 0x40 ? GFs.Blank : (GFs)(ID - 0x40);
-
-            public FF8String Name => GF != GFs.Blank ? Memory.Strings.GetName(GF) : DATA?.Name;
-
-            public override string ToString() => Name;
-        }
-
-        #endregion Structs
+        public FF8String name => _name;
     }
 }

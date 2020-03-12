@@ -6,7 +6,7 @@ namespace OpenVIII.Battle
     {
         #region Fields
 
-        public Debug_battleDat character, weapon;
+        public DebugBattleDat character, weapon;
 
         #endregion Fields
 

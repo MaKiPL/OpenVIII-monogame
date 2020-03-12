@@ -1,18 +1,22 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using OpenVIII.Battle;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ImGuiNET;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using OpenVIII.Battle;
+using OpenVIII.Battle.Dat;
+using OpenVIII.IGMData.Limit;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII
 {
-    public static partial class Module_battle_debug
+    public static class ModuleBattleDebug
     {
         #region Fields
 
@@ -37,7 +41,7 @@ namespace OpenVIII
         //parses battle stage and all monsters
         //draw geometry also supports updateCamera
         private static readonly TimeSpan FPS = TimeSpan.FromMilliseconds(1000.0d / 15d);
-        private static bool bUseFPSCamera = false;
+        private static bool bUseFPSCamera;
         private static Vector3 camPosition, camTarget;
 
         //private static List<EnemyInstanceInformation> EnemyInstances;
@@ -46,16 +50,16 @@ namespace OpenVIII
         private static DeadTime DeadTime;
         private static float degrees = 90;
         private static BasicEffect effect;
-        private static bool ForceReload = false;
+        private static bool ForceReload;
         private static FPS_Camera fps_camera;
         private static TimeSpan FrameTime = TimeSpan.Zero;
-        private static Debug_battleDat[] monstersData;
-        private static sbyte? partypos = null;
+        private static DebugBattleDat[] monstersData;
+        private static sbyte? partypos;
         private static Matrix projectionMatrix, viewMatrix, worldMatrix;
         private static Vector3 PyramidOffset = new Vector3(0, 3f, 0);
-        private static Battle.RegularPyramid RegularPyramid;
+        private static RegularPyramid RegularPyramid;
         private static ConcurrentDictionary<Characters, List<byte>> s_weapons;
-        private static byte SID = 0;
+        private static byte SID;
 
         #endregion Fields
 
@@ -66,11 +70,11 @@ namespace OpenVIII
         /// </summary>
         /// <remarks>more beyond this maybe part of attacking and such.</remarks>
         /// <see cref="http://forums.qhimm.com/index.php?topic=19362.msg269777#msg269777"/>
-        private enum AnimID : int
+        private enum AnimID
         {
             Idle = 0,
             Critical = 1,
-            Dead = 2,
+            Dead = 2
             //These seem to be referring to something else.
             //Like he says theres another section with 30 sequences.
             //where it tells how to chain the animations together.
@@ -108,7 +112,7 @@ namespace OpenVIII
 
         #region Properties
 
-        public static int battleModule { get; set; } = 0;
+        public static int battleModule { get; set; }
         public static Camera Camera { get; private set; }
         public static Vector3 CamPosition { get => camPosition; private set => camPosition = value; }
 
@@ -119,10 +123,10 @@ namespace OpenVIII
         //basic init stuff; renderer; core
         public static ConcurrentDictionary<Characters, SortedSet<byte>> Costumes { get; private set; }
 
-        public static int DEBUGframe { get; private set; } = 0;
+        public static int DEBUGframe { get; private set; }
         public static BasicEffect Effect { get => effect; private set => effect = value; }
         public static Matrix ProjectionMatrix { get => projectionMatrix; private set => projectionMatrix = value; }
-        public static Battle.Stage Stage { get; set; }
+        public static Stage Stage { get; set; }
         public static Matrix ViewMatrix { get => viewMatrix; private set => viewMatrix = value; }
 
         public static ConcurrentDictionary<Characters, List<byte>> Weapons
@@ -139,23 +143,23 @@ namespace OpenVIII
 
         private static Vector3 CenterOfScreen => Memory.graphics.GraphicsDevice.Viewport.Unproject(new Vector3(Memory.graphics.GraphicsDevice.Viewport.Width / 2f, Memory.graphics.GraphicsDevice.Viewport.Height / 2f, 0f), ProjectionMatrix, ViewMatrix, WorldMatrix);
 
-        private static IGMDataItem.Icon CROSSHAIR { get; set; }
+        private static Icon CROSSHAIR { get; set; }
 
 
         #endregion Properties
 
         #region Methods
 
-        public static void AddAnimationToQueue(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
+        public static void AddAnimationToQueue(EntityType entityType, int nIndex, int newAnimId)
         {
             switch (entityType)
             {
-                case Debug_battleDat.EntityType.Monster:
+                case EntityType.Monster:
                     Enemy.Party[nIndex].EII.animationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
-                case Debug_battleDat.EntityType.Character:
-                case Debug_battleDat.EntityType.Weapon:
+                case EntityType.Character:
+                case EntityType.Weapon:
                     CharacterInstances[nIndex].animationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
@@ -164,7 +168,7 @@ namespace OpenVIII
             }
         }
 
-        public static void AddSequenceToQueue(Debug_battleDat.EntityType entityType, int nIndex, Debug_battleDat.AnimationSequence section5)
+        public static void AddSequenceToQueue(EntityType entityType, int nIndex, AnimationSequence section5)
         {
             foreach (byte newAnimId in section5.AnimationQueue)
             {
@@ -195,25 +199,25 @@ namespace OpenVIII
             }
 
             Memory.imgui.BeforeLayout(Memory.GameTime);
-            ImGuiNET.ImGui.Begin("BATTLE DEBUG INFO");
-            ImGuiNET.ImGui.Text($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}");
-            ImGuiNET.ImGui.Text($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})\n");
-            ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds > 0 ? 1d / Memory.ElapsedGameTime.TotalSeconds : 0d)}\n");
-            ImGuiNET.ImGui.Text($"Average FrameRate: {FPSCounter.AverageFramesPerSecond}\n");
-            ImGuiNET.ImGui.Text($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}\n");
-            ImGuiNET.ImGui.Text($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}\n");
-            ImGuiNET.ImGui.Text($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}\n");
-            ImGuiNET.ImGui.Text($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}\n");
-            ImGuiNET.ImGui.Text($"Camera.Mode: {Camera.cam.control_word & 1}\n");
-            ImGuiNET.ImGui.Text($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}\n");
-            ImGuiNET.ImGui.Text($"Sequence BattleID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++");
-            ImGuiNET.ImGui.End();
+            ImGui.Begin("BATTLE DEBUG INFO");
+            ImGui.Text($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}");
+            ImGui.Text($"Debug variable: {DEBUGframe} ({DEBUGframe >> 4},{DEBUGframe & 0b1111})\n");
+            ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds > 0 ? 1d / Memory.ElapsedGameTime.TotalSeconds : 0d)}\n");
+            ImGui.Text($"Average FrameRate: {FPSCounter.AverageFramesPerSecond}\n");
+            ImGui.Text($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}\n");
+            ImGui.Text($"Camera.World.Position: {Extended.RemoveBrackets(camPosition.ToString())}\n");
+            ImGui.Text($"Camera.World.Target: {Extended.RemoveBrackets(camTarget.ToString())}\n");
+            ImGui.Text($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}\n");
+            ImGui.Text($"Camera.Mode: {Camera.cam.control_word & 1}\n");
+            ImGui.Text($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {bUseFPSCamera}\n");
+            ImGui.Text($"Sequence BattleID: {SID}, press F10 to activate sequence, F11 SID--, F12 SID++");
+            ImGui.End();
             Memory.imgui.AfterLayout();
         }
 
         public static void DrawCrosshair(Enemy enemy)
         {
-            IGMData.Limit.Shot shot = Menu.BattleMenus.GetCurrentBattleMenu()?.Shot;
+            Shot shot = Menu.BattleMenus.GetCurrentBattleMenu()?.Shot;
             if (shot != null && shot.Enabled)
             {
                 Damageable[] targets = shot?.Targets;
@@ -243,18 +247,15 @@ namespace OpenVIII
         {
             if ((CharacterInstances == null && n >= 0) || ((Enemy.Party == null || Enemy.Party.Count == 0) && n < 0))
                 return Vector3.Zero;
-            else
+            if (n < 0)
             {
-                if (n < 0)
-                {
-                    EnemyInstanceInformation eII = Enemy.Party.FirstOrDefault(x => x.EII.partypos == n)?.EII;
-                    if(eII != null)
-                        return eII.Data.IndicatorPoint(eII.Location) + PyramidOffset;
-                    return Vector3.Zero;
-                }
-                else
-                return CharacterInstances[n].Data.character.IndicatorPoint(CharacterInstances[n].Data.Location) + PyramidOffset;
+                EnemyInstanceInformation eII = Enemy.Party.FirstOrDefault(x => x.EII.partypos == n)?.EII;
+                if(eII != null)
+                    return eII.Data.IndicatorPoint(eII.Location) + PyramidOffset;
+                return Vector3.Zero;
             }
+
+            return CharacterInstances[n].Data.character.IndicatorPoint(CharacterInstances[n].Data.Location) + PyramidOffset;
         }
 
         public static void Inputs()
@@ -302,8 +303,8 @@ namespace OpenVIII
             }
             else if (Input2.Button(Keys.D5))
             {
-                AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 3);
-                AddAnimationToQueue(Debug_battleDat.EntityType.Monster, 0, 0);
+                AddAnimationToQueue(EntityType.Monster, 0, 3);
+                AddAnimationToQueue(EntityType.Monster, 0, 0);
             }
             else if (Input2.Button(Keys.F12))
             {
@@ -323,7 +324,7 @@ namespace OpenVIII
             }
             else if (Input2.Button(Keys.F9))
             {
-                AddSequenceToAllQueues(new Debug_battleDat.AnimationSequence
+                AddSequenceToAllQueues(new AnimationSequence
                 {
                     AnimationQueue = new List<byte> {
                     //0x2,
@@ -359,18 +360,18 @@ namespace OpenVIII
         /// Index of entityTypeInstance. Monster is monsterInstances, character is CharacterInstances
         /// </param>
         /// <param name="newAnimId">self explanatory</param>
-        public static void PlayAnimationImmidiately(Debug_battleDat.EntityType entityType, int nIndex, int newAnimId)
+        public static void PlayAnimationImmidiately(EntityType entityType, int nIndex, int newAnimId)
         {
             switch (entityType)
             {
-                case Debug_battleDat.EntityType.Monster:
+                case EntityType.Monster:
                     EnemyInstanceInformation MInstanceInformationProvider = Enemy.Party[nIndex].EII;
                     MInstanceInformationProvider.animationSystem.AnimationId = newAnimId;
                     Enemy.Party[nIndex].EII = MInstanceInformationProvider;
                     return;
 
-                case Debug_battleDat.EntityType.Character:
-                case Debug_battleDat.EntityType.Weapon:
+                case EntityType.Character:
+                case EntityType.Weapon:
                     CharacterInstanceInformation CInstanceInformationProvider = CharacterInstances[nIndex];
                     CInstanceInformationProvider.animationSystem.AnimationId = newAnimId;
                     CharacterInstances[nIndex] = CInstanceInformationProvider;
@@ -424,13 +425,13 @@ namespace OpenVIII
                     Menu.BattleMenus.Update();
                     sbyte? partypos = Menu.BattleMenus.PartyPos;
                     RegularPyramid.Set(GetIndicatorPoint(partypos ?? 0));
-                    if (partypos != Module_battle_debug.partypos)
+                    if (partypos != ModuleBattleDebug.partypos)
                     {
                         if (partypos == null)
                             RegularPyramid.FadeOut();
                         else
                             RegularPyramid.FadeIn();
-                        Module_battle_debug.partypos = partypos;
+                        ModuleBattleDebug.partypos = partypos;
                     }
                     if (bUseFPSCamera)
                     {
@@ -451,36 +452,36 @@ namespace OpenVIII
             UpdateFrames();
         }
 
-        private static void AddSequenceToAllQueues(Debug_battleDat.AnimationSequence section5)
+        private static void AddSequenceToAllQueues(AnimationSequence section5)
         {
             for (int i = 0; i < Enemy.Party.Count; i++)
             {
-                AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
+                AddSequenceToQueue(EntityType.Monster, i, section5);
             }
             for (int i = 0; i < CharacterInstances.Count; i++)
             {
-                AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
+                AddSequenceToQueue(EntityType.Character, i, section5);
             }
         }
 
         private static void AddSequenceToAllQueues(byte sid)
         {
-            Debug_battleDat.AnimationSequence section5;
+            AnimationSequence section5;
             for (int i = 0; i < Enemy.Party.Count; i++)
             {
                 if (Enemy.Party[i].EII.Data.Sequences.Count > sid)
                 {
-                    section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x => x.id == sid);
+                    section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x => x.ID == sid);
                     if (section5.AnimationQueue != null)
-                        AddSequenceToQueue(Debug_battleDat.EntityType.Monster, i, section5);
+                        AddSequenceToQueue(EntityType.Monster, i, section5);
                     //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
                 }
             }
             for (int i = 0; i < CharacterInstances.Count; i++)
             {
-                Debug_battleDat weapon = CharacterInstances[i].Data.weapon;
-                Debug_battleDat character = CharacterInstances[i].Data.character;
-                List<Debug_battleDat.AnimationSequence> sequences;
+                DebugBattleDat weapon = CharacterInstances[i].Data.weapon;
+                DebugBattleDat character = CharacterInstances[i].Data.character;
+                List<AnimationSequence> sequences;
                 if ((weapon?.Sequences.Count ?? 0) == 0)
                 {
                     sequences = character.Sequences;
@@ -488,9 +489,9 @@ namespace OpenVIII
                 else sequences = weapon.Sequences;
                 if (sequences.Count > sid)
                 {
-                    section5 = sequences.FirstOrDefault(x => x.id == sid);
+                    section5 = sequences.FirstOrDefault(x => x.ID == sid);
                     if (section5.AnimationQueue != null)
-                        AddSequenceToQueue(Debug_battleDat.EntityType.Character, i, section5);
+                        AddSequenceToQueue(EntityType.Character, i, section5);
                     //AddAnimationToQueue(Debug_battleDat.EntityType.Character, i, 0);
                 }
             }
@@ -508,12 +509,12 @@ namespace OpenVIII
         /// </summary>
         /// <param name="type"></param>
         /// <param name="n"></param>
-        private static void CheckAnimationFrame(Debug_battleDat.EntityType type, int n)
+        private static void CheckAnimationFrame(EntityType type, int n)
         {
-            Debug_battleDat.Animation animationSystem;
+            Animation animationSystem;
             switch (type)
             {
-                case Debug_battleDat.EntityType.Monster:
+                case EntityType.Monster:
                     animationSystem = Enemy.Party[n].EII.Data.animHeader.animations[Enemy.Party[n].EII.animationSystem.AnimationId];
                     if (Enemy.Party[n].EII.animationSystem.AnimationFrame >= animationSystem.cFrames)
                     {
@@ -529,8 +530,8 @@ namespace OpenVIII
                     }
                     return;
 
-                case Debug_battleDat.EntityType.Character:
-                case Debug_battleDat.EntityType.Weapon:
+                case EntityType.Character:
+                case EntityType.Weapon:
                     animationSystem = CharacterInstances[n].Data.character.animHeader.animations[CharacterInstances[n].animationSystem.AnimationId];
                     if (CharacterInstances[n].animationSystem.AnimationFrame >= animationSystem.cFrames)
                     {
@@ -553,12 +554,12 @@ namespace OpenVIII
 
         
 
-        private static void DrawBattleDat(Debug_battleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
+        private static void DrawBattleDat(DebugBattleDat battledat, double step, ref AnimationSystem animationSystem, ref Vector3 position, Quaternion? _rotation = null)
         {
-            for (int i = 0; /*i<1 &&*/ i < battledat.geometry.cObjects; i++)
+            for (int i = 0; /*i<1 &&*/ i < battledat.geometry.CObjects; i++)
             {
                 Quaternion rotation = _rotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
-                Debug_battleDat.VertexPositionTexturePointersGRP vptpg = battledat.GetVertexPositions(
+                VertexPositionTexturePointersGRP vptpg = battledat.GetVertexPositions(
                     i,
                     ref position,
                     rotation,
@@ -577,7 +578,6 @@ namespace OpenVIII
                     }
                 }
             }
-            return;
         }
 
         /// <summary>
@@ -597,7 +597,7 @@ namespace OpenVIII
 
             for (int n = 0; n < CharacterInstances.Count; n++)
             {
-                CheckAnimationFrame(Debug_battleDat.EntityType.Character, n);
+                CheckAnimationFrame(EntityType.Character, n);
                 Vector3 charaPosition = CharacterInstances[n].Data.Location = GetCharPos(n);
                 DrawBattleDat(CharacterInstances[n].Data.character, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 DrawShadow(charaPosition, ate, .5f);
@@ -605,7 +605,7 @@ namespace OpenVIII
                 //WEAPON
                 if (CharacterInstances[n].Data.weapon != null)
                 {
-                    CheckAnimationFrame(Debug_battleDat.EntityType.Weapon, n);
+                    CheckAnimationFrame(EntityType.Weapon, n);
                     DrawBattleDat(CharacterInstances[n].Data.weapon, CharacterInstanceGenerateStep(n), ref CharacterInstances[n].animationSystem, ref charaPosition);
                 }
             }
@@ -630,7 +630,7 @@ namespace OpenVIII
                     continue;
                 }
 
-                CheckAnimationFrame(Debug_battleDat.EntityType.Monster, n);
+                CheckAnimationFrame(EntityType.Monster, n);
                 Vector3 enemyPosition = GetEnemyPos(n);
                 enemyPosition.Y += Yoffset;
                 DrawBattleDat(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.animationSystem, ref enemyPosition, Quaternion.Identity);
@@ -766,7 +766,7 @@ namespace OpenVIII
                     Stage = Stage.Read(Camera.EndOffset, br);
                 }
             if (CROSSHAIR == null || ForceReload)
-                CROSSHAIR = new IGMDataItem.Icon { Data = Icons.ID.Cross_Hair1 };
+                CROSSHAIR = new Icon { Data = Icons.ID.Cross_Hair1 };
             //testQuad = Memory.Icons.Quad(Icons.BattleID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
@@ -781,7 +781,7 @@ namespace OpenVIII
                 fps_camera = new FPS_Camera();
             if (RegularPyramid == null)
             {
-                RegularPyramid = new Battle.RegularPyramid();
+                RegularPyramid = new RegularPyramid();
                 RegularPyramid.Set(-2.5f, 2f, Color.Yellow);
             }
             RegularPyramid.Hide();
@@ -808,7 +808,6 @@ namespace OpenVIII
                     View = viewMatrix,
                     World = worldMatrix
                 };
-            return;
         }
 
         private static CharacterInstanceInformation ReadCharacter(ref int cid, Characters c)
@@ -816,8 +815,8 @@ namespace OpenVIII
             CharacterInstanceInformation cii = new CharacterInstanceInformation
             {
                 Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
-                animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
-                characterId = cid++,
+                animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
+                characterId = cid++
             };
             //cii.animationSystem.animationId = 4;
             Memory.State[c].BattleStart(cii);
@@ -826,13 +825,13 @@ namespace OpenVIII
 
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
         {
-            Debug_battleDat character = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Character, alternativeCostumeId);
-            Debug_battleDat weapon;
+            DebugBattleDat character = DebugBattleDat.Load(characterId, EntityType.Character, alternativeCostumeId);
+            DebugBattleDat weapon;
             if (characterId == 1 || characterId == 9)
-                weapon = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Weapon, weaponId, character);
-            else if (weaponId != -1) weapon = Debug_battleDat.Load(characterId, Debug_battleDat.EntityType.Weapon, weaponId);
+                weapon = DebugBattleDat.Load(characterId, EntityType.Weapon, weaponId, character);
+            else if (weaponId != -1) weapon = DebugBattleDat.Load(characterId, EntityType.Weapon, weaponId);
             else weapon = null;
-            return new CharacterData()
+            return new CharacterData
             {
                 character = character,
                 weapon = weapon
@@ -851,7 +850,7 @@ namespace OpenVIII
                 FillWeapons();
                 if (CharacterInstances != null && !ForceReload)
                 {
-                    var test = CharacterInstances.Select((x, i) => new { cii = x, index = i, id = (Characters)x.Data.character.id, alt = x.Data.character.altid, weapon = x.Data.weapon.altid });
+                    var test = CharacterInstances.Select((x, i) => new { cii = x, index = i, id = (Characters)x.Data.character.ID, alt = x.Data.character.AltID, weapon = x.Data.weapon.AltID });
                     //where characters haven't changed
                     foreach (var x in test.Where(x => Memory.State.Party[x.index] == x.id && (GetCostume(x.id) == x.alt) && x.weapon == GetWeaponID(x.id)))
                     {
@@ -880,22 +879,22 @@ namespace OpenVIII
             else
                 CharacterInstances = new List<CharacterInstanceInformation>
             {
-                new CharacterInstanceInformation()
+                new CharacterInstanceInformation
                 {
                     Data = ReadCharacterData(0,0,0),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new ConcurrentQueue<int>()},
-                    characterId = 0,
+                    animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
+                    characterId = 0
                 },
-                new CharacterInstanceInformation()
+                new CharacterInstanceInformation
                 {
                     Data = ReadCharacterData(1,3,8),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new ConcurrentQueue<int>()},
+                    animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
                     characterId = 1
                 },
-                new CharacterInstanceInformation()
+                new CharacterInstanceInformation
                 {
                     Data = ReadCharacterData(2,6,13),
-                    animationSystem = new AnimationSystem(){ AnimationQueue = new ConcurrentQueue<int>()},
+                    animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>()},
                     characterId = 2
                 }
             };
@@ -921,28 +920,28 @@ namespace OpenVIII
 
             if (encounter.EnabledEnemy.Cast<bool>().Any(x => x))
             {
-                monstersData = encounter.UniqueMonstersList?.Select(x => Debug_battleDat.Load(x, Debug_battleDat.EntityType.Monster)).ToArray();
+                monstersData = encounter.UniqueMonstersList?.Select(x => DebugBattleDat.Load(x, EntityType.Monster)).ToArray();
             }
             else
             {
-                monstersData = new Debug_battleDat[0];
+                monstersData = new DebugBattleDat[0];
                 return;
             }
 
             Enemy.Party = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)]).Select(x =>
             {
-                Debug_battleDat debug_battleDat = monstersData.FirstOrDefault(mon => mon.GetId == x.x);
+                DebugBattleDat debug_battleDat = monstersData.FirstOrDefault(mon => mon.GetId == x.x);
                 int i = r(x.i);
                 return debug_battleDat == default
                     ? null
-                    : (Enemy)new EnemyInstanceInformation()
+                    : (Enemy)new EnemyInstanceInformation
                     {
                         Data = debug_battleDat,
                         bIsHidden = encounter.HiddenEnemies[i],
                         bIsActive = true,
                         partypos = (sbyte)(-1 - x.i),
                         bIsUntargetable = encounter.UntargetableEnemy[i],
-                        animationSystem = new AnimationSystem() { AnimationQueue = new ConcurrentQueue<int>() },
+                        animationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
                         Location = encounter.enemyCoordinates[i], //each instance needs own location.
                         FixedLevel = encounter.bLevels[i]
                     };

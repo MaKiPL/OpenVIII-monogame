@@ -8,7 +8,7 @@
         public bool bIsActive;
         public bool bIsHidden;
         public bool bIsUntargetable;
-        public Debug_battleDat Data;
+        public DebugBattleDat Data;
 
         /// <summary>
         /// bit position of the enemy in encounter data. Use to pair the information with

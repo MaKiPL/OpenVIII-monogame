@@ -58,12 +58,12 @@ namespace OpenVIII
             switch (module)
             {
                 case MODULE.BATTLE:
-                    Module_battle.Update();
+                    ModuleBattle.Update();
                     break;
 
                 case MODULE.BATTLE_DEBUG:
                     Menu.UpdateOnce();
-                    Module_battle_debug.Update();
+                    ModuleBattleDebug.Update();
                     break;
 
                 case MODULE.MOVIETEST:
@@ -130,11 +130,11 @@ namespace OpenVIII
             switch (module)
             {
                 case MODULE.BATTLE:
-                    Module_battle.Draw();
+                    ModuleBattle.Draw();
                     break;
 
                 case MODULE.BATTLE_DEBUG:
-                    Module_battle_debug.Draw();
+                    ModuleBattleDebug.Draw();
                     break;
 
                 case MODULE.MOVIETEST:
@@ -180,6 +180,6 @@ namespace OpenVIII
         }
 
         public static void ResetBS()
-            => Module_battle_debug.ResetState();
+            => ModuleBattleDebug.ResetState();
     }
 }

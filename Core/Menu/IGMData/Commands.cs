@@ -14,7 +14,7 @@ namespace OpenVIII.IGMData
         private bool EventAdded;
 
         private Kernel.BattleCommand[] commands;
-        private Debug_battleDat.Abilities[] enemycommands;
+        private DebugBattleDat.Abilities[] enemycommands;
         private int nonbattleWidth;
         private sbyte page = 0;
         private bool skipRefresh;
@@ -164,7 +164,7 @@ namespace OpenVIII.IGMData
             TargetGroup.SelectTargetWindows(c);
             if (c.BattleID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
-                IEnumerable<Debug_battleDat.Abilities> ecattacks = e.Abilities.Where(x => x.MONSTER != null);
+                IEnumerable<DebugBattleDat.Abilities> ecattacks = e.Abilities.Where(x => x.MONSTER != null);
                 if (ecattacks.Count() == 1)
                 {
                     Kernel.EnemyAttacksData monster = ecattacks.First().MONSTER;
@@ -314,7 +314,7 @@ namespace OpenVIII.IGMData
                         int pos = 0;
                         bool Item, Magic, Attack;
                         Item = Magic = Attack = false;
-                        foreach (Debug_battleDat.Abilities a in enemycommands)
+                        foreach (DebugBattleDat.Abilities a in enemycommands)
                         {
                             if (pos >= Rows) break;
                             ((IGMDataItem.Text)ITEM[pos, 0]).Hide();
@@ -347,7 +347,7 @@ namespace OpenVIII.IGMData
 
                         if (Attack)
                         {
-                            IEnumerable<Debug_battleDat.Abilities> ecattacks = enemycommands.Where(x => x.MONSTER != null);
+                            IEnumerable<DebugBattleDat.Abilities> ecattacks = enemycommands.Where(x => x.MONSTER != null);
                             AddCommand(Memory.Kernel_Bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().MONSTER.Name : null));
                         }
                         if (Magic || e.DrawList.Any(x => x.DATA != null))

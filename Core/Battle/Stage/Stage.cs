@@ -43,11 +43,11 @@ namespace OpenVIII.Battle
 
         public int Width { get; set; }
 
-        private static Matrix ProjectionMatrix => Module_battle_debug.ProjectionMatrix;
+        private static Matrix ProjectionMatrix => ModuleBattleDebug.ProjectionMatrix;
 
-        private static Matrix ViewMatrix => Module_battle_debug.ViewMatrix;
+        private static Matrix ViewMatrix => ModuleBattleDebug.ViewMatrix;
 
-        private static Matrix WorldMatrix => Module_battle_debug.WorldMatrix;
+        private static Matrix WorldMatrix => ModuleBattleDebug.WorldMatrix;
 
         #endregion Properties
 
@@ -72,7 +72,7 @@ namespace OpenVIII.Battle
             if (sectionCounter != 6)
             {
                 Memory.Log.WriteLine($"BS_PARSER_PRE_OBJECT SECTION: Main geometry section has no 6 pointers at: {br.BaseStream.Position}");
-                Module_battle_debug.battleModule++;
+                ModuleBattleDebug.battleModule++;
                 return null;
             }
             MainGeometrySection mainSection = MainGeometrySection.Read(br);

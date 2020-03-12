@@ -10,10 +10,6 @@ namespace OpenVIII.Fields
     {
         #region Constructors
 
-        public Archive()
-        {
-        }
-
         #endregion Constructors
 
         #region Properties
@@ -22,19 +18,19 @@ namespace OpenVIII.Fields
         public Cameras Cameras { get; set; }
         public EventEngine EventEngine { get; set; }
         public Sections Flags { get; set; }
-        public INF inf { get; set; }
-        public Field_modes Mod { get; set; } = 0;
+        public INF INF { get; set; }
+        public FieldModes Mod { get; set; } = 0;
         public MrtRat MrtRat { get; set; }
-        public MSK msk { get; set; }
-        public PMP pmp { get; set; }
-        public IServices services { get; set; }
-        public SFX sfx { get; set; }
-        public TDW tdw { get; set; }
+        public MSK MSK { get; set; }
+        public PMP PMP { get; set; }
+        public IServices Services { get; set; }
+        public SFX SFX { get; set; }
+        public TDW TDW { get; set; }
         public WalkMesh WalkMesh { get; set; }
         public ushort ID { get; set; }
         public string FileName { get; set; }
         public string ArchiveName { get; set; }
-        public List<Scripts.Jsm.GameObject> jsmObjects { get; set; } = null;
+        public List<Scripts.Jsm.GameObject> JSMObjects { get; set; }
 
         #endregion Properties
 
@@ -45,41 +41,41 @@ namespace OpenVIII.Fields
         public static Archive Load(ushort inputFieldID, Sections flags = Sections.ALL)
         {
             Archive r = new Archive();
-            if (!r.Init(inputFieldID, flags))
-                return null;
-            return r;
+            return !r.Init(inputFieldID, flags) ? null : r;
         }
 
-        public HashSet<ushort> GetForcedBattleEncounters() => jsmObjects != null && jsmObjects.Count > 0 ?
+        public HashSet<ushort> GetForcedBattleEncounters() => JSMObjects != null && JSMObjects.Count > 0 ?
             (
-             from jsmObject in jsmObjects
-             from Script in jsmObject.Scripts
-             from Instruction in Script.Segment.Flatten()
-             where Instruction is BATTLE
-             let battle = ((BATTLE)Instruction)
+             from jsmObject in JSMObjects
+             from script in jsmObject.Scripts
+             from instruction in script.Segment.Flatten()
+             where instruction is BATTLE
+             let battle = ((BATTLE)instruction)
              select battle.Encounter).ToHashSet() : null;
 
-        public HashSet<FF8String> GetAreaNames() => jsmObjects != null && jsmObjects.Count > 0 ?
+        public HashSet<FF8String> GetAreaNames() => JSMObjects != null && JSMObjects.Count > 0 ?
             (
-             from jsmObject in jsmObjects
-             from Script in jsmObject.Scripts
-             from Instruction in Script.Segment.Flatten()
-             where Instruction is SETPLACE
-             let setplace = ((SETPLACE)Instruction)
-             select setplace.AreaName()).ToHashSet() : null;
+             from jsmObject in JSMObjects
+             from script in jsmObject.Scripts
+             from instruction in script.Segment.Flatten()
+             where instruction is SETPLACE
+             let setPlace = ((SETPLACE)instruction)
+             select setPlace.AreaName()).ToHashSet() : null;
 
         public void Draw()
         {
             switch (Mod)
             {
-                case Field_modes.INIT:
-                    break; //null
-                default:
+                case FieldModes.Init:
+                    break;
+                case FieldModes.Disabled:
+                    break;
+                case FieldModes.DebugRender:
+                case FieldModes.NoJSM:
                     Background.Draw();
                     break;
-
-                case Field_modes.DISABLED:
-                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -92,15 +88,14 @@ namespace OpenVIII.Fields
             //TODO fix endless look on FieldID 50.
             ID = inputFieldID ?? Memory.FieldHolder.FieldID;
             int count = (Memory.FieldHolder.fields?.Length ?? 0);
-            if (ID >= count ||
-                ID < 0)
+            if (ID >= count)
                 return false;
             FileName = Memory.FieldHolder.GetString(ID);
             ArchiveName = test.FirstOrDefault(x => x.IndexOf(FileName, StringComparison.OrdinalIgnoreCase) >= 0);
             if (string.IsNullOrWhiteSpace(ArchiveName))
             {
-                Debug.WriteLine($"FileNotFound :: {ID} - {FileName.ToUpper()}");
-                Mod = Field_modes.DISABLED;
+                Memory.Log.WriteLine($"FileNotFound :: {ID} - {FileName.ToUpper()}");
+                Mod = FieldModes.Disabled;
                 return false;
             }
 
@@ -117,7 +112,7 @@ namespace OpenVIII.Fields
             if (!flags.HasFlag(Sections.MIM | Sections.MAP) ||
                 (Background = Background.Load(getFile(".mim"), getFile(".map"))) == null)
             {
-                Mod = Field_modes.DISABLED;
+                Mod = FieldModes.Disabled;
             }
             if (flags.HasFlag(Sections.CA | Sections.ID))
             {
@@ -130,20 +125,20 @@ namespace OpenVIII.Fields
             string sSy = findString(".sy");
             if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(sJsm)&& (FileName != "test3"))
             {
-                    jsmObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(sJsm));
+                    JSMObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(sJsm));
              
-                if (Mod != Field_modes.NOJSM)
+                if (Mod != FieldModes.NoJSM)
                 {
                     if (!string.IsNullOrWhiteSpace(sSy))
                     {
                         Sym.GameObjects symObjects = Sym.Reader.FromBytes(fieldArchive.GetBinaryFile(sSy));
 
-                        services = Initializer.GetServices();
-                        EventEngine = ServiceId.Field[services].Engine;
+                        Services = Initializer.GetServices();
+                        EventEngine = ServiceId.Field[Services].Engine;
                         EventEngine.Reset();
-                        for (int objIndex = 0; objIndex < jsmObjects.Count; objIndex++)
+                        for (int objIndex = 0; objIndex < JSMObjects.Count; objIndex++)
                         {
-                            Scripts.Jsm.GameObject obj = jsmObjects[objIndex];
+                            Scripts.Jsm.GameObject obj = JSMObjects[objIndex];
                             FieldObject fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
 
                             foreach (Scripts.Jsm.GameScript script in obj.Scripts)
@@ -164,7 +159,7 @@ namespace OpenVIII.Fields
             }
             else
             {
-                Mod = Field_modes.NOJSM;
+                Mod = FieldModes.NoJSM;
                 //goto end;
             }
 
@@ -185,21 +180,21 @@ namespace OpenVIII.Fields
             {
                 byte[] infData = getFile(".inf");//gateways
                 if (infData != null && infData.Length > 0)
-                    inf = INF.Load(infData);
+                    INF = INF.Load(infData);
             }
 
             if (flags.HasFlag(Sections.TDW))
             {
                 byte[] tdwData = getFile(".tdw");//extra font
                 if (tdwData != null && tdwData.Length > 0)
-                    tdw = new TDW(tdwData);
+                    TDW = new TDW(tdwData);
             }
 
             if (flags.HasFlag(Sections.MSK))
             {
                 byte[] mskData = getFile(".msk");//movie cam
                 if (mskData != null && mskData.Length > 0)
-                    msk = new MSK(mskData);
+                    MSK = new MSK(mskData);
             }
             if (flags.HasFlag(Sections.RAT | Sections.MRT))
             {
@@ -220,39 +215,39 @@ namespace OpenVIII.Fields
             {
                 byte[] pmpData = getFile(".pmp");//particle graphic?
                 if (pmpData != null && pmpData.Length > 4)
-                    pmp = new PMP(pmpData);
+                    PMP = new PMP(pmpData);
             }
             if (flags.HasFlag(Sections.SFX))
             {
                 byte[] sfxData = getFile(".sfx");//sound effects
                 if (sfxData != null && sfxData.Length > 0)
-                    sfx = new SFX(sfxData);
+                    SFX = new SFX(sfxData);
             }
 
-            if (Mod == Field_modes.NOJSM && Background == null)
+            if (Mod == FieldModes.NoJSM && Background == null)
             {
-                Mod = Field_modes.DISABLED;
+                Mod = FieldModes.Disabled;
             }
-            return sfx != null || pmp != null || MrtRat != null || msk != null || tdw != null || inf != null ||
-                   jsmObjects != null || EventEngine != null || Cameras != null || WalkMesh != null ||
-                   Background != null || services != null;
+            return SFX != null || PMP != null || MrtRat != null || MSK != null || TDW != null || INF != null ||
+                   JSMObjects != null || EventEngine != null || Cameras != null || WalkMesh != null ||
+                   Background != null || Services != null;
         }
 
         public void Update()
         {
             switch (Mod)
             {
-                case Field_modes.INIT:
+                case FieldModes.Init:
                     break;
 
-                case Field_modes.DEBUGRENDER:
+                case FieldModes.DebugRender:
                     UpdateScript();
                     Background?.Update();
                     break; //await events here
-                case Field_modes.NOJSM://no scripts but has background.
+                case FieldModes.NoJSM://no scripts but has background.
                     Background?.Update();
                     break; //await events here
-                case Field_modes.DISABLED:
+                case FieldModes.Disabled:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

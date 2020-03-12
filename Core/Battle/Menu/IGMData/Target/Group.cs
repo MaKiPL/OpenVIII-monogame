@@ -644,7 +644,7 @@ namespace OpenVIII.IGMData.Target
         /// Display pool with list
         /// </summary>
         /// <param name="drawList"></param>
-        private void DrawMagic(Debug_battleDat.Magic[] drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
+        private void DrawMagic(DebugBattleDat.Magic[] drawList) => Debug.WriteLine($"Display draw pool: {string.Join(", ", drawList)}");
 
         private void Neededvaribles(out Damageable[] d, bool positive = false)
         {

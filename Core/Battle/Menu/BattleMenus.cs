@@ -291,7 +291,7 @@ namespace OpenVIII
             Menu.Module.State = lastmenu;
             Memory.Module = lastgamestate;
             Menu.IGM.Refresh(); // else the menu stats won't update.
-            Module_battle_debug.ResetState();
+            ModuleBattleDebug.ResetState();
             if (lastmusicplaying)
                 AV.Music.Play(lastmusic);
             else

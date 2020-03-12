@@ -325,7 +325,7 @@ namespace OpenVIII.IGMData
         {
             Memory.Encounters.ID = encounter.ID;
             Menu.FadeIn();
-            Module_battle_debug.ResetState();
+            ModuleBattleDebug.ResetState();
             Menu.BattleMenus.CameFrom();
             Memory.Module = MODULE.BATTLE_DEBUG;
             Memory.IsMouseVisible = false;

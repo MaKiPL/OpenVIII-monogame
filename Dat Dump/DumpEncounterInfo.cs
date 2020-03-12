@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace OpenVIII.Dat_Dump
 {
-    internal class DumpEncounterInfo
+    internal static class DumpEncounterInfo
     {
         #region Fields
 
@@ -197,12 +197,12 @@ namespace OpenVIII.Dat_Dump
 
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
-        internal static void Process()
+        internal static async Task Process()
         {
-            LoadWorld();
-            LoadFields();
-            if (DumpMonsterAndCharacterDat.MonsterData?.IsEmpty ?? true)
-                DumpMonsterAndCharacterDat.LoadMonsters(); //load all the monsters.
+            await Task.WhenAll(Task.Run(() => LoadWorld()), LoadFields(),
+                    DumpMonsterAndCharacterDat.LoadMonsters() //load all the monsters.
+            );
+            
             using (StreamWriter csvFile = new StreamWriter(new FileStream("BattleEncounters.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite), System.Text.Encoding.UTF8))
             {
                 string header =
@@ -225,10 +225,10 @@ namespace OpenVIII.Dat_Dump
                     unique.ForEach(x =>
                     {
                         string name = "<unknown>";
-                        if (DumpMonsterAndCharacterDat.MonsterData.TryGetValue(x, out Debug_battleDat battleDat) && battleDat != null)
+                        if (DumpMonsterAndCharacterDat.MonsterData.TryGetValue(x, out DebugBattleDat battleDat) && battleDat != null)
                         {
                             name = battleDat.information.name.Value_str.Trim();
-                            name += $" ({battleDat.fileName})";
+                            name += $" ({battleDat.FileName})";
                         }
 
                         Debug.Assert(enemies != null, nameof(enemies) + " != null");
@@ -237,60 +237,64 @@ namespace OpenVIII.Dat_Dump
                     enemies = enemies.TrimEnd(Ls[0], ' ') + "\"";
                     data += $"{enemies}{Ls}";
                     //check encounters in fields and confirm encounter rate is above 0.
-                    IEnumerable<string> fieldMatches = FieldData.Where(x => x.Value.MrtRat != null && (x.Value.MrtRat.Any(y => y.Key == e.ID && y.Value > 0))).Select(x => x.Value.FileName);
-                    IEnumerable<string> second = _fieldsWithBattleScripts.Where(x => x.Value == e.ID).Select(x => x.Key);
-                    if (second.Any())
+                    if (FieldData != null)
                     {
-                        fieldMatches = fieldMatches.Any() ? fieldMatches.Concat(second).Distinct() : second;
+                        IEnumerable<string> fieldMatches = FieldData.Where(x => x.Value.MrtRat != null && (x.Value.MrtRat.Any(y => y.Key == e.ID && y.Value > 0))).Select(x => x.Value.FileName);
+                        if (_fieldsWithBattleScripts != null)
+                        {
+                            IEnumerable<string> second = _fieldsWithBattleScripts.Where(x => x.Value == e.ID).Select(x => x.Key);
+                            if (second.Any())
+                            {
+                                fieldMatches = fieldMatches.Any() ? fieldMatches.Concat(second).Distinct() : second;
+                            }
+                        }
+
+                        if (fieldMatches.Any())
+                            data += $"\"{string.Join($"{Ls} ", fieldMatches).TrimEnd(Ls[0], ' ')}\"{Ls}";
+                        else if (_worldEncounters.Any(x => x == e.ID))
+                        {
+                            data += $"\"World Map\"{Ls}";
+                        }
+                        else if (WorldEncountersLunar.Any(x => x == e.ID))
+                        {
+                            data += $"\"World Map - Lunar Cry\"{Ls}";
+                        }
+                        else
+                            data += Ls;
                     }
 
-                    if (fieldMatches.Any())
-                        data += $"\"{string.Join($"{Ls} ", fieldMatches).TrimEnd(Ls[0], ' ')}\"{Ls}";
-                    else if (_worldEncounters.Any(x => x == e.ID))
-                    {
-                        data += $"\"World Map\"{Ls}";
-                    }
-                    else if (WorldEncountersLunar.Any(x => x == e.ID))
-                    {
-                        data += $"\"World Map - Lunar Cry\"{Ls}";
-                    }
-                    else
-                        data += Ls;
                     csvFile.WriteLine(data);
                 }
             }
         }
 
-        private static void LoadFields()
+        private static async Task LoadFields()
         {
             if (FieldData == null)
             {
                 FieldData = new ConcurrentDictionary<int, Fields.Archive>();
 
                 Task[] tasks = new Task[Memory.FieldHolder.fields.Length];
+                void process(ushort i)
+                {
+                    if (FieldData.ContainsKey(i)) return;
+                    Fields.Archive archive = Fields.Archive.Load(i, Fields.Sections.MRT | Fields.Sections.RAT | Fields.Sections.JSM | Fields.Sections.SYM);
+
+                    if (archive != null)
+                        FieldData.TryAdd(i, archive);
+                }
                 foreach (int i1 in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
                 {
                     ushort j = (ushort)i1;
-
-                    void process(ushort i)
-                    {
-                        if (!FieldData.ContainsKey(i))
-                        {
-                            Fields.Archive archive = Fields.Archive.Load(i, Fields.Sections.MRT | Fields.Sections.RAT | Fields.Sections.JSM | Fields.Sections.SYM);
-
-                            if (archive != null)
-                                FieldData.TryAdd(i, archive);
-                        }
-                    }
                     tasks[j] = (Task.Run(() => process(j)));
                 }
-                Task.WaitAll(tasks);
+                await Task.WhenAll(tasks);
             }
 
             _fieldsWithBattleScripts =
             (from fieldArchive in FieldData
-             where fieldArchive.Value.jsmObjects != null && fieldArchive.Value.jsmObjects.Count > 0
-             from jsmObject in fieldArchive.Value.jsmObjects
+             where fieldArchive.Value.JSMObjects != null && fieldArchive.Value.JSMObjects.Count > 0
+             from jsmObject in fieldArchive.Value.JSMObjects
              from script in jsmObject.Scripts
              from instruction in script.Segment.Flatten()
              where instruction is BATTLE
@@ -302,7 +306,9 @@ namespace OpenVIII.Dat_Dump
             //            from jsmObject in fieldArchive.Value.jsmObjects
             //            from script in jsmObject.Scripts
             //            from jsmInstruction in script.Segment.Flatten()
+            // ReSharper disable once CommentTypo
             //            where jsmInstruction is BGSHADE
+            // ReSharper disable once CommentTypo
             //            let instruction = ((BGSHADE)jsmInstruction)
             //            select (new KeyValuePair<string, (int, Color, Color)>(fieldArchive.Value.FileName,
             //                (instruction.FadeFrames,
@@ -315,12 +321,13 @@ namespace OpenVIII.Dat_Dump
         {
             ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
 
-            string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains($"wmset{Extended.GetLanguageShort(true)}.obj")).Select(x => x).First();
+            // ReSharper disable once StringLiteralTypo
+            string wmPath = $"wmset{Extended.GetLanguageShort(true)}.obj";
 
-            using (World.Wmset wmset = new World.Wmset(aw.GetBinaryFile(wmPath)))
+            using (World.Wmset worldMapSettings = new World.Wmset(aw.GetBinaryFile(wmPath)))
             {
-                _worldEncounters = wmset.Encounters.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
-                WorldEncountersLunar = wmset.EncountersLunar.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
+                _worldEncounters = worldMapSettings.Encounters.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
+                WorldEncountersLunar = worldMapSettings.EncountersLunar.SelectMany(x => x.Select(y => y)).Distinct().ToHashSet();
             }
             //rail = new rail(aw.GetBinaryFile(railFile));
         }

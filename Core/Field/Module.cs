@@ -42,7 +42,7 @@ namespace OpenVIII.Fields
         public static Cameras Cameras => Archive?.Cameras;
         private static EventEngine EventEngine => Archive?.EventEngine;
         public static FieldMenu FieldMenu { get; set; }
-        private static INF inf => Archive?.inf;
+        private static INF inf => Archive?.INF;
         public static FF8String AreaName => Archive?.GetAreaNames()?.FirstOrDefault();
 
         public static ushort GetForcedBattleEncounter
@@ -56,22 +56,22 @@ namespace OpenVIII.Fields
             }
         }
 
-        public static Field_modes Mod
+        public static FieldModes Mod
         {
             get => Archive.Mod; private set => Archive.Mod = value;
         }
 
         public static MrtRat MrtRat => Archive.MrtRat;
 
-        private static MSK msk => Archive.msk;
+        private static MSK msk => Archive.MSK;
 
-        public static PMP pmp => Archive.pmp;
+        public static PMP pmp => Archive.PMP;
 
-        private static IServices services => Archive.services;
+        private static IServices services => Archive.Services;
 
-        private static SFX sfx => Archive.sfx;
+        private static SFX sfx => Archive.SFX;
 
-        private static TDW tdw => Archive.tdw;
+        private static TDW tdw => Archive.TDW;
 
         public static _Toggles Toggles { get; set; } = _Toggles.Quad | _Toggles.Menu;
 
@@ -85,7 +85,7 @@ namespace OpenVIII.Fields
         {
             switch (Mod)
             {
-                case Field_modes.INIT:
+                case FieldModes.Init:
                     break; //null
                 default:
                     Archive.Draw();
@@ -93,7 +93,7 @@ namespace OpenVIII.Fields
                         FieldMenu.Draw();
                     break;
 
-                case Field_modes.DISABLED:
+                case FieldModes.Disabled:
                     FieldMenu.Draw();
                     break;
             }
@@ -120,7 +120,7 @@ namespace OpenVIII.Fields
         {
             Memory.SuppressDraw = true;
             if (Archive != null)
-                Mod = Field_modes.INIT;
+                Mod = FieldModes.Init;
         }
 
         public static void Update()
@@ -133,24 +133,24 @@ namespace OpenVIII.Fields
                     Archive = new Archive();
                 switch (Mod)
                 {
-                    case Field_modes.INIT:
+                    case FieldModes.Init:
                         Archive.Init();
                         if (FieldMenu == null)
                             FieldMenu = FieldMenu.Create();
                         FieldMenu.Refresh();
                         break;
 
-                    case Field_modes.DEBUGRENDER:
+                    case FieldModes.DebugRender:
                         Archive.Update();
                         if (Toggles.HasFlag(_Toggles.Menu))
                             FieldMenu.Update();
                         break; //await events here
-                    case Field_modes.NOJSM://no scripts but has background.
+                    case FieldModes.NoJSM://no scripts but has background.
                         Archive.Update();
                         if (Toggles.HasFlag(_Toggles.Menu))
                             FieldMenu.Update();
                         break; //await events here
-                    case Field_modes.DISABLED:
+                    case FieldModes.Disabled:
                         FieldMenu.Update();
                         break;
                 }

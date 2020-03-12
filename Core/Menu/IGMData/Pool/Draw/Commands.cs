@@ -17,7 +17,7 @@ namespace OpenVIII.IGMData.Pool
             #region Fields
 
             public Dictionary<int, Func<bool>> OKAY_Actions;
-            private Debug_battleDat.Magic Magic;
+            private DebugBattleDat.Magic Magic;
 
             #endregion Fields
 
@@ -123,7 +123,7 @@ namespace OpenVIII.IGMData.Pool
                 base.Refresh();
             }
 
-            public void Refresh(Debug_battleDat.Magic magic)
+            public void Refresh(DebugBattleDat.Magic magic)
             {
                 if (Magic.ID != magic.ID)
                 {

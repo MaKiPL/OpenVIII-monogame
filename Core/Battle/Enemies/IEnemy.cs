@@ -5,7 +5,7 @@
         #region Properties
 
         byte AP { get; }
-        Debug_battleDat.Magic[] DrawList { get; }
+        DebugBattleDat.Magic[] DrawList { get; }
 
         Saves.Item[] DropList { get; }
 

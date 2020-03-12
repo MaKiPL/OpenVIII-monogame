@@ -792,7 +792,7 @@ namespace OpenVIII
         {
             if (GetBattleMode().Equals(BattleMode.ATB_Charging) || force)
             {
-                if (!Module_battle_debug.PauseATB)
+                if (!ModuleBattleDebug.PauseATB)
                     ATBTimer.Update();
                 if (ATBTimer.Done && ATBCharged())
                 {

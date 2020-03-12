@@ -79,7 +79,7 @@ namespace OpenVIII
             //Quaternion q = Quaternion.CreateFromYawPitchRoll(yaw, pitch, 0f);
 
             //The above code does the same thing as CreateBillboard but if you need more control might be worth having.
-            Update(Module_battle_debug.CreateBillboard(pos));
+            Update(ModuleBattleDebug.CreateBillboard(pos));
 
         public void Update(Matrix bb)
         {
@@ -93,9 +93,9 @@ namespace OpenVIII
 
         public void DrawForBattle()
         {
-            ate.World = Module_battle_debug.WorldMatrix;
-            ate.View = Module_battle_debug.ViewMatrix;
-            ate.Projection = Module_battle_debug.ProjectionMatrix;
+            ate.World = ModuleBattleDebug.WorldMatrix;
+            ate.View = ModuleBattleDebug.ViewMatrix;
+            ate.Projection = ModuleBattleDebug.ProjectionMatrix;
             Draw();
         }
 
@@ -105,7 +105,7 @@ namespace OpenVIII
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            Module_battle_debug.Effect.TextureEnabled = true;
+            ModuleBattleDebug.Effect.TextureEnabled = true;
 
             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
             {

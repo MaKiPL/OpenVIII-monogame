@@ -151,7 +151,7 @@ namespace OpenVIII.Fields.IGMData
             FieldName.Data = $"Field: { Memory.FieldHolder.FieldID} - { Memory.FieldHolder.GetString()?.ToUpper()}";
 
             BLANKS[0] = false;
-            if (Module.Mod != Field_modes.DISABLED)
+            if (Module.Mod != FieldModes.Disabled)
             {
                 WalkMesh.Data = $"Draw WalkMesh: {Module.Toggles.HasFlag(Module._Toggles.WalkMesh)}";
                 QuadBG.Data = $"Draw Quad BG: {Module.Toggles.HasFlag(Module._Toggles.Quad)}";
