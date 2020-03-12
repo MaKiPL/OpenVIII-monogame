@@ -1,6 +1,6 @@
-﻿using System;
+﻿using FFmpeg.AutoGen;
+using System;
 using System.IO;
-using FFmpeg.AutoGen;
 
 namespace OpenVIII.AV
 {
@@ -9,40 +9,68 @@ namespace OpenVIII.AV
     /// </summary>
     public struct BufferData
     {
+        #region Fields
+
+        private IntPtr _header;
+
+        private long _totalReadData;
+
+        #endregion Fields
+
+        #region Enums
+
         public enum TargetFile
         {
             SoundDat,
             OtherZzz
         }
 
-        #region Fields
-
-        public long DataSeekLoc { get; set; }
-        private long _totalReadData;
-        public long DataSize { get; set; }
-        public uint HeaderSize { get; set; }
-        private IntPtr _header;
-        public TargetFile Target { get; set; }
-
-        #endregion Fields
+        #endregion Enums
 
         #region Properties
 
         public static string DataFileName { get; set; }
+        public long DataSeekLoc { get; set; }
+        public long DataSize { get; set; }
+        public uint HeaderSize { get; set; }
+        public TargetFile Target { get; set; }
 
         #endregion Properties
 
         #region Methods
-        
+
         public unsafe int Read(byte* buf, int bufSize)
-        {   
+        {
             int ret;
-            if (HeaderSize >0 && (ret = ReadHeader(buf, bufSize)) != ffmpeg.AVERROR_EOF)
+            if (HeaderSize > 0 && (ret = ReadHeader(buf, bufSize)) != ffmpeg.AVERROR_EOF)
                 return ret;
             return ReadData(buf, bufSize);
         }
 
         public unsafe void SetHeader(byte* value) => _header = (IntPtr)value;
+
+        internal long Seek(long offset, int whence)
+        {
+            switch (whence)
+            {
+                case ffmpeg.AVSEEK_SIZE:
+                    return offset == 0
+                        ? _totalReadData
+                        : throw new Exception($"unknown {nameof(whence)}: {whence}, {nameof(offset)}: {offset}");
+
+                case 0:
+                    offset -= _totalReadData;
+                    break;
+
+                default:
+                    throw new Exception($"unknown {nameof(whence)}: {whence}");
+            }
+
+            DataSeekLoc += offset;
+            _totalReadData += offset;
+            DataSize -= offset;
+            return _totalReadData;
+        }
 
         private unsafe int ReadData(byte* buf, int bufSize)
         {
@@ -70,6 +98,7 @@ namespace OpenVIII.AV
                         s = new MemoryStream(other.GetBinaryFile("audio.dat", true), false);
                     }
                     break;
+
                 case TargetFile.OtherZzz:
                     other = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
                     s = other.OpenStream();
@@ -81,7 +110,7 @@ namespace OpenVIII.AV
             }
 
             // binaryReader disposes of fs
-            if(s == null) throw new NullReferenceException($"{nameof(BufferData)}::{nameof(ReadData)} stream is null");
+            if (s == null) throw new NullReferenceException($"{nameof(BufferData)}::{nameof(ReadData)} stream is null");
             using (BinaryReader br = new BinaryReader(s))
             {
                 s.Seek(DataSeekLoc, SeekOrigin.Begin);
@@ -113,28 +142,6 @@ namespace OpenVIII.AV
             HeaderSize -= (uint)bufSize;
 
             return bufSize;
-        }
-
-        internal long Seek(long offset, int whence)
-        {
-            switch (whence)
-            {
-                case ffmpeg.AVSEEK_SIZE:
-                    return offset == 0
-                        ? _totalReadData
-                        : throw new Exception($"unknown {nameof(whence)}: {whence}, {nameof(offset)}: {offset}");
-
-                case 0:
-                    offset -= _totalReadData;
-                    break;
-                default:
-                    throw new Exception($"unknown {nameof(whence)}: {whence}");
-             }
-
-            DataSeekLoc += offset;
-            _totalReadData += offset;
-            DataSize -= offset;
-            return _totalReadData;
         }
 
         #endregion Methods

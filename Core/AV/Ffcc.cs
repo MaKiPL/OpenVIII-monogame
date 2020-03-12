@@ -1,4 +1,6 @@
-﻿namespace OpenVIII.AV
+﻿using System.ComponentModel;
+
+namespace OpenVIII.AV
 {
     using FFmpeg.AutoGen;
     using Microsoft.Xna.Framework.Audio;
@@ -10,7 +12,6 @@
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -18,50 +19,58 @@
     /// Ffcc is a front end for processing Audio and Video using ffmpeg.autogen
     /// </summary>
     /// <remarks>
-    /// Code bits mostly converted to c# from c++ It uses bits of code from FFmpeg examples, Aforge,
-    /// FFmpeg.autogen, stackoverflow
+    /// Code bits mostly converted to c# from c++ It uses bits of code from FFMPEG examples and a-forge,
+    /// FFMPEG.autogen, stack overflow
     /// </remarks>
-    public abstract partial class Ffcc : IDisposable
+    public abstract class Ffcc : IDisposable
     {
 
-        protected static unsafe T Load<T>(BufferData* buffer_Data, byte[] headerData, int loopstart, FfccMode ffccMode, AVMediaType avtype) where T : Ffcc, new()
+        protected static unsafe T Load<T>(BufferData* bufferData, byte[] headerData, int loopStart, FfccMode ffccMode, AVMediaType avType) where T : Ffcc, new()
         {
+            if (bufferData == null) throw new ArgumentNullException(nameof(bufferData));
+            if (!Enum.IsDefined(typeof(FfccMode), ffccMode))
+                throw new InvalidEnumArgumentException(nameof(ffccMode), (int) ffccMode, typeof(FfccMode));
+            if (!Enum.IsDefined(typeof(AVMediaType), avType))
+                throw new InvalidEnumArgumentException(nameof(avType), (int) avType, typeof(AVMediaType));
             T r = new T();
 
             void play(BufferData* d)
             {
-                r.LoadFromRAM(d);
-                r.Init(null, avtype, ffccMode, loopstart);
-                if (ffccMode == FfccMode.PROCESS_ALL)
-                {
-                    ffmpeg.avformat_free_context(r.Decoder.Format);
-                    //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
-                    r.Decoder.Format = null;
-                    r.Dispose(false);
-                }
+                r.LoadFromRam(d);
+                r.Init(null, avType, ffccMode, loopStart);
+                if (ffccMode != FfccMode.ProcessAll) return;
+                ffmpeg.avformat_free_context(r.Decoder.Format);
+                //ffmpeg.avio_context_free(&Decoder._format->pb); //CTD
+                r.Decoder.Format = null;
+                r.Dispose(false);
             }
             if (headerData != null)
                 fixed (byte* tmp = &headerData[0])
                 {
                     lock (r.Decoder)
                     {
-                        buffer_Data->SetHeader(tmp);
-                        play(buffer_Data);
+                        bufferData->SetHeader(tmp);
+                        play(bufferData);
                     }
                 }
             else
-                play(buffer_Data);
+                play(bufferData);
             return r;
         }
 
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        protected static T Load<T>(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1) where T : Ffcc, new()
+        protected static T Load<T>(string filename, AVMediaType mediaType = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.StateMach, int loopStart = -1) where T : Ffcc, new()
         {
+            if (string.IsNullOrWhiteSpace(filename)) throw new ArgumentNullException(nameof(filename));
+            if (!Enum.IsDefined(typeof(AVMediaType), mediaType))
+                throw new InvalidEnumArgumentException(nameof(mediaType), (int) mediaType, typeof(AVMediaType));
+            if (!Enum.IsDefined(typeof(FfccMode), mode))
+                throw new InvalidEnumArgumentException(nameof(mode), (int) mode, typeof(FfccMode));
             T r = new T();
-            r.Init(filename, mediatype, mode, loopstart);
-            if (mode == FfccMode.PROCESS_ALL)
+            r.Init(filename, mediaType, mode, loopStart);
+            if (mode == FfccMode.ProcessAll)
                 r.Dispose(false);
             return r;
         }
@@ -70,7 +79,7 @@
 
         /// <summary>
         /// If you have sound skipping increase this number and it'll go away. might decrease sync or
-        /// increase memory load The goal is to keep the dynamicsoundeffectinterface fed. If it plays
+        /// increase memory load The goal is to keep the dynamic sound effect interface fed. If it plays
         /// the audio before you give it more, then you get sound skips.
         /// </summary>
         /// <value>The goal buffer Count.</value>
@@ -88,13 +97,13 @@
         /// <summary>
         /// on exception this is turned to true and will force fallback to naudio when monogame isn't working.
         /// </summary>
-        private static bool useNaudio = false;
+        private static bool _useNAudio;
 
-        private object DynamicSoundEffectLock = new object();
+        private readonly object _dynamicSoundEffectLock = new object();
         private readonly unsafe AVDictionary* _dict;
-        private unsafe AVIOContext* _avio_ctx;
-        private unsafe byte* _avio_ctx_buffer;
-        private int _avio_ctx_buffer_size;
+        private unsafe AVIOContext* _avioCtx;
+        private unsafe byte* _avioCtxBuffer;
+        private int _avioCtxBufferSize;
         private byte[] _convertedData;
 
         //private byte* _convertedData;
@@ -103,45 +112,37 @@
         private bool _frameSkip = true;
 
         //private IntPtr _intPtr;
-        private int _loopstart;
+        private int _loopStart;
 
-        /// <summary>
-        /// buffered wave provider used to handle audio samples
-        /// </summary>
-        /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
 
-        private CancellationToken cancellationToken;
+        private CancellationToken _cancellationToken = new CancellationToken();
 #if _WINDOWS
-        private BufferedWaveProvider bufferedWaveProvider;
+        private BufferedWaveProvider _bufferedWaveProvider;
 
         /// <summary>
         /// Wave out for naudio only works in windows.
         /// </summary>
         /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
-        private DirectSoundOut nAudioOut;
+        private DirectSoundOut _nAudioOut;
 
         /// <summary>
-        /// Directsound requires VolumeSampleProvider to change volume.
+        /// DirectSound requires VolumeSampleProvider to change volume.
         /// </summary>
-        private VolumeSampleProvider volumeSampleProvider;
+        private VolumeSampleProvider _volumeSampleProvider;
 
         /// <summary>
         /// Required by naudio to pan the sound.
         /// </summary>
-        private PanningSampleProvider panningSampleProvider;
+        private PanningSampleProvider _panningSampleProvider;
 
 #endif
-        private avio_alloc_context_read_packet rf;
-        private avio_alloc_context_seek sf;
-        private CancellationTokenSource sourceToken;
+        private avio_alloc_context_read_packet _rf;
+        private avio_alloc_context_seek _sf;
+        private CancellationTokenSource _sourceToken;
 
-        private bool stopped = false;
 
-        private Task task;
-        private FfccVaribleGroup _decoder = new FfccVaribleGroup();
+        private Task _task;
         private DynamicSoundEffectInstance _dynamicSound;
-        private int _loopend;
-        private int _looplength;
 
         #endregion Fields
 
@@ -156,79 +157,78 @@
 
         #region Enums
 
-        //public FileStream DecodeFileStream { get => _decodeFileStream; set => _decodeFileStream = value; }
         public enum FfccMode
         {
             /// <summary>
             /// Processes entire file at once and does something with output
             /// </summary>
-            PROCESS_ALL,
+            ProcessAll,
 
             /// <summary>
             /// State machine, functions in this call update to update current state. And update
             /// decides what to do next.
             /// </summary>
-            STATE_MACH,
+            StateMach,
 
             /// <summary>
             /// Not Init some error happened that prevented the class from working
             /// </summary>
-            NOTINIT
+            NotInit
         }
 
         public enum FfccState
         {
-            OPEN,
+            Open,
 
             /// <summary>
             /// Waiting for request for next frame
             /// </summary>
-            WAITING,
+            Waiting,
 
             /// <summary>
-            /// Readall the data
+            /// Read all the data
             /// </summary>
-            READALL,
+            ReadAll,
 
             /// <summary>
             /// Done reading file nothing more can be done
             /// </summary>
-            DONE,
+            Done,
 
             /// <summary>
             /// Don't change state just pass ret value.
             /// </summary>
-            NULL,
+            Null,
 
             /// <summary>
             /// Get packet of data containing frames
             /// </summary>
-            READONE,
+            ReadOne,
 
             /// <summary>
             /// Missing DLL required to function
             /// </summary>
-            NODLL,
+            NoDLL,
 
             /// <summary>
             /// Gets stream and Codec
             /// </summary>
-            GETCODEC,
+            GetCodec,
 
             /// <summary>
             /// Prepares Scaler for Video stream
             /// </summary>
-            PREPARE_SWS,
+            PrepareScaler,
 
             /// <summary>
             /// Start Reading
             /// </summary>
-            READ,
+            Read,
 
             /// <summary>
             /// Prepares Resampler for Audio stream
             /// </summary>
-            PREPARE_SWR
+            PrepareResampler
         }
 
         #endregion Enums
@@ -244,25 +244,24 @@
         {
             get
             {
-                if (Decoder.StreamIndex != -1 && Mode == FfccMode.STATE_MACH)
+                if (Decoder.StreamIndex == -1 || Mode != FfccMode.StateMach) return true;
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+                    if (DynamicSound != null)
                     {
-                        if (DynamicSound != null)
-                        {
-                            return DynamicSound.PendingBufferCount > GoalBufferCount;
-                        }
+                        return DynamicSound.PendingBufferCount > GoalBufferCount;
+                    }
 #if _WINDOWS
-                        else if (useNaudio)
-                        {
-                            return bufferedWaveProvider.BufferedDuration.TotalSeconds > bufferedWaveProvider.BufferDuration.TotalSeconds - 1;
-                        }
-#endif
-                    }
-                    else if (timer.IsRunning)
+
+                    if (_useNAudio)
                     {
-                        return CurrentFrameNum > ExpectedFrame;
+                        return _bufferedWaveProvider.BufferedDuration.TotalSeconds > _bufferedWaveProvider.BufferDuration.TotalSeconds - 1;
                     }
+#endif
+                }
+                else if (Timer.IsRunning)
+                {
+                    return CurrentFrameNum > ExpectedFrame;
                 }
                 return true;
             }
@@ -282,7 +281,7 @@
         {
             get
             {
-                if (Decoder.StreamIndex != -1 && Mode == FfccMode.STATE_MACH)
+                if (Decoder.StreamIndex != -1 && Mode == FfccMode.StateMach)
                 {
                     if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                     {
@@ -291,17 +290,16 @@
                             return DynamicSound.PendingBufferCount == GoalBufferCount;
                         }
 #if _WINDOWS
-                        else if (useNaudio)
+
+                        if (_useNAudio)
                         {
-                            return bufferedWaveProvider.BufferedDuration.TotalSeconds == bufferedWaveProvider.BufferDuration.TotalSeconds - 1;
+                            return Math.Abs(_bufferedWaveProvider.BufferedDuration.TotalSeconds - (_bufferedWaveProvider.BufferDuration.TotalSeconds - 1)) < float.Epsilon;
                         }
 #endif
-                        else
-                        {
-                            die($"{Decoder.CodecContext->sample_rate} is currently unsupported");
-                        }
+
+                        Die($"{Decoder.CodecContext->sample_rate} is currently unsupported");
                     }
-                    else if (timer.IsRunning)
+                    else if (Timer.IsRunning)
                     {
                         return CurrentFrameNum == ExpectedFrame;
                     }
@@ -322,7 +320,7 @@
         {
             get => _dynamicSound; private set
             {
-                lock (DynamicSoundEffectLock)
+                lock (_dynamicSoundEffectLock)
                     _dynamicSound = value;
             }
         }
@@ -337,27 +335,26 @@
         /// the fundamental unit of time (in seconds) in terms of which frame timestamps are
         /// represented. In many cases the audio files time base is the same as the sample rate.
         /// example 1/44100. video files audio stream might be 1/100 or 1/1000. these can make for
-        /// large durrations.
+        /// large durations.
         /// </summary>
         public unsafe double FPS
         {
             get
             {
-                double r = FPSvideo;
-                if (r != 0)
+                double r = FPSVideo;
+                if (Math.Abs(r) > double.Epsilon)
                 {
                     return r;
                 }
-                else
+
+                if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && Decoder.CodecContext != null && Decoder.CodecContext->framerate.den != 0)
                 {
-                    if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO && Decoder.CodecContext != null && Decoder.CodecContext->framerate.den != 0)
-                    {
-                        return Decoder.CodecContext->framerate.num / (double)Decoder.CodecContext->framerate.den;
-                    }
-                    else if (Decoder.Stream != null && Decoder.Stream->time_base.den != 0)
-                    {
-                        return Decoder.Stream->time_base.num / (double)Decoder.Stream->time_base.den; // returns the time_base
-                    }
+                    return Decoder.CodecContext->framerate.num / (double)Decoder.CodecContext->framerate.den;
+                }
+
+                if (Decoder.Stream != null && Decoder.Stream->time_base.den != 0)
+                {
+                    return Decoder.Stream->time_base.num / (double)Decoder.Stream->time_base.den; // returns the time_base
                 }
 
                 return 0;
@@ -367,17 +364,17 @@
         /// <summary>
         /// When getting video frames if behind it goes to next frame. disabled for debugging purposes.
         /// </summary>
-        public bool FrameSkip { get => MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO ? _frameSkip : false; set => _frameSkip = value; }
+        public bool FrameSkip { get => MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO && _frameSkip; set => _frameSkip = value; }
 
         /// <summary>
         /// Is the class disposed of. If true calling Dispose() does nothing.
         /// </summary>
-        public bool IsDisposed { get; set; } = false;
+        public bool IsDisposed { get; private set; }
 
         /// <summary>
         /// Sample Count that loop starts from.
         /// </summary>
-        public int LOOPSTART { get => _loopstart; set => _loopstart = value; }
+        public int LoopStart { get => _loopStart; set => _loopStart = value; }
 
         /// <summary>
         /// Current media type being processed.
@@ -395,14 +392,14 @@
         public SoundEffect SoundEffect { get; set; }
 
         /// <summary>
-        /// SoundEffectInterface for class. allows for more control than just playing the above soundeffect.
+        /// SoundEffectInterface for class. allows for more control than just playing the above sound effect.
         /// </summary>
         public SoundEffectInstance SoundEffectInstance { get; set; }
 
         /// <summary>
         /// Stopwatch tracks the time audio has played so video can sync or loops can be looped.
         /// </summary>
-        public Stopwatch timer { get; } = new Stopwatch();
+        public Stopwatch Timer { get; } = new Stopwatch();
 
         /// <summary>
         /// if there is no stream it returns false. only checked when trying to process audio
@@ -419,25 +416,25 @@
         public unsafe int CurrentFrameNum => Decoder.CodecContext != null ? Decoder.CodecContext->frame_number : -1;
 
         /// <summary>
-        /// MemoryStream of Audio after decoding and resamping to compatable format.
+        /// MemoryStream of Audio after decoding and resampling to compatible format.
         /// </summary>
         private MemoryStream DecodedMemoryStream { get => _decodedMemoryStream; set => _decodedMemoryStream = value; }
 
         /// <summary>
-        /// Holder of varibles for Decoder
+        /// Holder of variables for Decoder
         /// </summary>
-        protected FfccVaribleGroup Decoder { get => _decoder; set => _decoder = value; }
+        protected FfccVariableGroup Decoder { get; set; } = new FfccVariableGroup();
 
         /// <summary>
         /// Based on timer and FPS determines what the current frame is.
         /// </summary>
         /// <returns>Expected Frame Number</returns>
-        private int ExpectedFrame => timer.IsRunning ? (int)Math.Round(timer.ElapsedMilliseconds * (FPS / 1000)) : 0;
+        private int ExpectedFrame => Timer.IsRunning ? (int)Math.Round(Timer.ElapsedMilliseconds * (FPS / 1000)) : 0;
 
         /// <summary>
         /// FPS of the video stream.
         /// </summary>
-        private unsafe double FPSvideo
+        private unsafe double FPSVideo
         {
             get
             {
@@ -447,7 +444,8 @@
                 {
                     return 0;
                 }
-                else if (Decoder.Format->streams[Return]->codec->framerate.den > 0)
+
+                if (Decoder.Format->streams[Return]->codec->framerate.den > 0)
                 {
                     return (double)Decoder.Format->streams[Return]->codec->framerate.num / Decoder.Format->streams[Return]->codec->framerate.den;
                 }
@@ -492,7 +490,7 @@
         #region Methods
 
         /// <summary>
-        /// Dispose of all leaky varibles.
+        /// Dispose of all leaky variables.
         /// </summary>
         public void Dispose() => Dispose(true);
 
@@ -503,36 +501,13 @@
         public int Next()
         {
             //if stream doesn't exist or stream is done, end
-            if (Decoder.StreamIndex == -1 || State == FfccState.DONE)
+            if (Decoder.StreamIndex == -1 || State == FfccState.Done)
             {
                 return -1;
             }
             // read next frame(s)
-            else
-            {
-                return Update(FfccState.READONE);
-            }
-        }
 
-        /// <summary>
-        /// Pause or Resume timer. WIP
-        /// </summary>
-        public void Pause()
-        {
-            if (Decoder.StreamIndex > -1)
-            {
-                if (Mode == FfccMode.STATE_MACH)
-                {
-                    if (!timer.IsRunning)
-                    {
-                        timer.Stop();
-                    }
-                    else
-                    {
-                        timer.Start();
-                    }
-                }
-            }
+            return Update(FfccState.ReadOne);
         }
 
         /// <summary>
@@ -552,15 +527,15 @@
         {
             if (Decoder != null && Decoder.StreamIndex > -1)
             {
-                if (!timer.IsRunning && Mode == FfccMode.STATE_MACH && MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
+                if (!Timer.IsRunning && Mode == FfccMode.StateMach && MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
-                    timer.Start();
+                    Timer.Start();
                 }
-                if (!useNaudio)
+                if (!_useNAudio)
                 {
                     if (DynamicSound != null && !DynamicSound.IsDisposed && AudioEnabled)
                     {
-                        lock (DynamicSoundEffectLock)
+                        lock (_dynamicSoundEffectLock)
                         {
                             DynamicSound.Volume = volume;
                             DynamicSound.Pitch = pitch;
@@ -583,13 +558,13 @@
                         {
                             if (e.GetType().Name == "SharpDXException")
                             {
-                                Mode = FfccMode.NOTINIT;
-                                State = FfccState.NODLL;
+                                Mode = FfccMode.NotInit;
+                                State = FfccState.NoDLL;
                                 SoundEffectInstance = null;
                                 SoundEffect = null;
                                 // if it gets here I can't extract the sound from the SoundEffect but
                                 // I can turn on nAudio and next sound will work
-                                useNaudio = true;
+                                _useNAudio = true;
                             }
                             else
                                 e.Rethrow();
@@ -597,14 +572,14 @@
                     }
                 }
 #if _WINDOWS
-                else if (bufferedWaveProvider != null && nAudioOut != null)
+                else if (_bufferedWaveProvider != null && _nAudioOut != null)
                 {
-                    volumeSampleProvider.Volume = volume;
-                    if (panningSampleProvider != null) // panning requires mono sound so it's null if it wasn't 1 channel.
-                        panningSampleProvider.Pan = pan;
+                    _volumeSampleProvider.Volume = volume;
+                    if (_panningSampleProvider != null) // panning requires mono sound so it's null if it wasn't 1 channel.
+                        _panningSampleProvider.Pan = pan;
                     // i'll leave out pitch unless it's needed. there is a provider for it but sounds
                     // like it might do more than we need.
-                    nAudioOut.Play();
+                    _nAudioOut.Play();
                 }
 #endif
             }
@@ -617,35 +592,31 @@
         {
             if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                if (sourceToken == null)
-                    sourceToken = new CancellationTokenSource();
-                if (cancellationToken == null)
-                    cancellationToken = sourceToken.Token;
+                if (_sourceToken == null)
+                    _sourceToken = new CancellationTokenSource();
                 Play(volume, pitch, pan);
-                task = new Task<int>(NextinTask);
-                task.Start();
+                _task = new Task<int>(NextInTask);
+                _task.Start();
             }
             else
                 Play(volume, pitch, pan);
         }
 
         /// <summary>
-        /// Stop playing Sound or Stop the FPS timer for Video , and Dispose of Varibles
+        /// Stop playing Sound or Stop the FPS timer for Video , and Dispose of Variables
         /// </summary>
         public async void Stop()
         {
-            if (stopped)
-                return;
-            if (timer.IsRunning)
+            if (Timer.IsRunning)
             {
-                timer.Stop();
-                timer.Reset();
+                Timer.Stop();
+                Timer.Reset();
             }
-            if (!useNaudio)
+            if (!_useNAudio)
             {
                 if (DynamicSound != null && !DynamicSound.IsDisposed)
                 {
-                    lock (DynamicSoundEffectLock)
+                    lock (_dynamicSoundEffectLock)
                     {
                         if (AudioEnabled)
                         {
@@ -676,13 +647,13 @@
                 }
             }
 #if _WINDOWS
-            else if (bufferedWaveProvider != null && nAudioOut != null)
+            else if (_bufferedWaveProvider != null && _nAudioOut != null)
             {
-                nAudioOut.Stop();
+                _nAudioOut.Stop();
                 try
                 {
-                    nAudioOut.Dispose();
-                    bufferedWaveProvider.ClearBuffer();
+                    _nAudioOut.Dispose();
+                    _bufferedWaveProvider.ClearBuffer();
                 }
                 catch (InvalidOperationException)
                 {
@@ -690,15 +661,15 @@
                 }
             }
 #endif
-            if (task != null)
+            if (_task != null)
             {
-                sourceToken.Cancel();
-                await task;
+                _sourceToken.Cancel();
+                await _task;
             }
         }
 
         /// <summary>
-        /// Converts Frame to Texture with correct colorspace
+        /// Converts Frame to Texture with correct colors pace
         /// </summary>
         /// <returns>Texture2D</returns>
         public unsafe Texture2D Texture2D()
@@ -711,9 +682,9 @@
                 fixed (byte* ptr = &texBuffer[0])
                 {
                     byte*[] srcData = { ptr, null, null, null };
-                    int[] srcLinesize = { Decoder.CodecContext->width * bpp, 0, 0, 0 };
+                    int[] srcLineSize = { Decoder.CodecContext->width * bpp, 0, 0, 0 };
                     // convert video frame to the RGB data
-                    ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLinesize);
+                    ffmpeg.sws_scale(ScalerContext, Decoder.Frame->data, Decoder.Frame->linesize, 0, Decoder.CodecContext->height, srcData, srcLineSize);
                 }
                 frameTex.SetData(texBuffer);
                 return frameTex;
@@ -737,23 +708,20 @@
                 }
                 if (!IsDisposed)
                 {
-                    if (task != null)
+                    if (_task != null)
                     {
-                        if (task.IsCompleted)
+                        if (_task.IsCompleted)
 
-                            task.Dispose();
+                            _task.Dispose();
                         else
-                            Memory.FfccLeftOverTask.Add(task);
-                        task = null;
+                            Memory.FfccLeftOverTask.Add(_task);
+                        _task = null;
                     }
-                    State = FfccState.DONE;
-                    Mode = FfccMode.NOTINIT;
+                    State = FfccState.Done;
+                    Mode = FfccMode.NotInit;
                     // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
                     // TODO: set large fields to null.
-                    if (DecodedMemoryStream != null)
-                    {
-                        DecodedMemoryStream.Dispose();
-                    }
+                    DecodedMemoryStream?.Dispose();
                     if (ConvertedData != null)
                     {
                         //Marshal.FreeHGlobal((IntPtr)ConvertedData);
@@ -773,39 +741,38 @@
                         }
                         ffmpeg.av_frame_unref(ResampleFrame);
                         ffmpeg.av_free(ResampleFrame);
-                        if (_avio_ctx != null)
+                        if (_avioCtx != null)
                         {
                             //ffmpeg.avio_close(avio_ctx); //CTD
-                            ffmpeg.av_free(_avio_ctx);
+                            ffmpeg.av_free(_avioCtx);
                         }
                     }
                     //if (avio_ctx_buffer != null)
                     //    ffmpeg.av_freep(avio_ctx_buffer); //throws exception
 
-                    // set to true to prevent multiple disposings
+                    // set to true to prevent multiple disposing
                     IsDisposed = true;
-                    //GC.Collect(); // donno if this really does much. was trying to make sure the memory i'm watching is what is really there.
+                    //GC.Collect(); // don't know if this really does much. was trying to make sure the memory i'm watching is what is really there.
                 }
                 else
                 {
 #if _WINDOWS
-                    if (nAudioOut != null && useNaudio)
+                    if (_nAudioOut != null && _useNAudio)
                     {
-                        nAudioOut.Dispose();
-                        nAudioOut = null;
-                        bufferedWaveProvider.ClearBuffer();
+                        _nAudioOut.Dispose();
+                        _nAudioOut = null;
+                        _bufferedWaveProvider.ClearBuffer();
                     }
 #endif
-                    if (sourceToken != null)
+                    if (_sourceToken != null)
                     {
-                        sourceToken.Dispose();
-                        sourceToken = null;
+                        _sourceToken.Dispose();
+                        _sourceToken = null;
                     }
-                    if (_decoder != null)
-                    {
-                        _decoder.Dispose();
-                        _decoder = null;
-                    }
+
+                    if (Decoder == null) return;
+                    Decoder.Dispose();
+                    Decoder = null;
                 }
             }
         }
@@ -813,17 +780,17 @@
         /// <summary>
         /// Flush the Decoder context and packet
         /// </summary>
-        /// <param name="avctx">Decoder Codec Context</param>
-        /// <param name="avpkt">Decoder Packet</param>
+        /// <param name="codecContext">Decoder Codec Context</param>
+        /// <param name="packet">Decoder Packet</param>
         /// <returns>0 on success, less than 0 on error</returns>
-        private static unsafe int DecodeFlush(ref AVCodecContext* avctx, ref AVPacket avpkt)
+        private static unsafe void DecodeFlush(ref AVCodecContext* codecContext, ref AVPacket packet)
         {
-            avpkt.data = null;
-            avpkt.size = 0;
+            packet.data = null;
+            packet.size = 0;
 
-            fixed (AVPacket* tmpPacket = &avpkt)
+            fixed (AVPacket* tmpPacket = &packet)
             {
-                return ffmpeg.avcodec_send_packet(avctx, tmpPacket);
+                CheckReturn(ffmpeg.avcodec_send_packet(codecContext, tmpPacket));
             }
         }
 
@@ -831,7 +798,7 @@
         /// throw new exception
         /// </summary>
         /// <param name="v">string of message</param>
-        private static void die(string v) => throw new Exception(v.Trim('\0'));
+        private static void Die(string v) => throw new Exception(v.Trim('\0'));
 
 
         /// <summary>
@@ -839,54 +806,57 @@
         /// </summary>
         /// <param name="opaque">incoming data</param>
         /// <param name="buf">outgoing data</param>
-        /// <param name="buf_size">outgoing buffer size</param>
+        /// <param name="bufSize">outgoing buffer size</param>
         /// <returns>Total bytes read, or EOF</returns>
-        private static unsafe int Read_packet(void* opaque, byte* buf, int buf_size)
+        private static unsafe int ReadPacket(void* opaque, byte* buf, int bufSize)
         {
             BufferData* bd = (BufferData*)opaque;
 
-            return bd->Read(buf, buf_size);
+            return bd->Read(buf, bufSize);
         }
 
         /// <summary>
         /// Converts FFMPEG error codes into a string.
         /// </summary>
-        private unsafe string AvError(int ret)
+        private static unsafe string AvError(int ret)
         {
-            ulong errbuff_size = 256;
-            byte[] errbuff = new byte[errbuff_size];
-            fixed (byte* ptr = &errbuff[0])
+            const ulong bufferSize = 256;
+            byte[] buffer = new byte[bufferSize];
+            fixed (byte* ptr = &buffer[0])
             {
-                ffmpeg.av_strerror(ret, ptr, errbuff_size);
+                ffmpeg.av_strerror(ret, ptr, bufferSize);
             }
 
-            return System.Text.Encoding.UTF8.GetString(errbuff).Trim('\0');
+            return System.Text.Encoding.UTF8.GetString(buffer).Trim('\0');
         }
 
         /// <summary>
         /// Throws exception if Ret is less than 0
         /// </summary>
-        private int CheckReturn()
+        private void CheckReturn()
         {
-            switch (Return)
+            CheckReturn(Return);
+        }
+        private static void CheckReturn(int returnVal)
+        {
+            switch (returnVal)
             {
                 case ffmpeg.AVERROR_OUTPUT_CHANGED:
-                    die($"The swr_context output ch_layout, sample_rate, sample_fmt must match outframe! {Return} - {AvError(Return)}");
+                    Die($"The swr_context output ch_layout, sample_rate, sample_fmt must match out frame! {returnVal} - {AvError(returnVal)}");
                     break;
 
                 case ffmpeg.AVERROR_INPUT_CHANGED:
-                    die($"The swr_context input ch_layout, sample_rate, sample_fmt must match inframe! {Return} - {AvError(Return)}");
+                    Die($"The swr_context input ch_layout, sample_rate, sample_fmt must match in frame! {returnVal} - {AvError(returnVal)}");
                     break;
 
                 default:
-                    if (Return < 0)
+                    if (returnVal < 0)
                     {
-                        die($"{Return} - {AvError(Return)}");
+                        Die($"{returnVal} - {AvError(returnVal)}");
                     }
 
                     break;
             }
-            return Return;
         }
 
         /// <summary>
@@ -914,10 +884,8 @@
                             {
                                 goto EOF;
                             }
-                            else
-                            {
-                                CheckReturn();
-                            }
+
+                            CheckReturn();
                         }
                         //check for correct stream.
                         while (Decoder.Packet->stream_index != Decoder.StreamIndex);
@@ -938,13 +906,13 @@
                     CheckReturn();
                 }
             }
-            //check for frameskip, if enabled check if behind.
+            //check for frame skip, if enabled check if behind.
             while (FrameSkip && Behind);
             frame = *Decoder.Frame;
             return true;
 
         //end of file, check for loop and end.
-        //TODO: add LOOPEND and LOOPLENGTH support https://github.com/FFT-Hackers/vgmstream/commit/b332e5cf5cc9e3469cbbab226836083d8377ce61
+        //TODO: add LoopEnd and LOOPLength support https://github.com/FFT-Hackers/vgmstream/commit/b332e5cf5cc9e3469cbbab226836083d8377ce61
         EOF:
             Loop();
             frame = *Decoder.Frame;
@@ -974,25 +942,25 @@
 
                 Metadata[key.Trim().ToUpper()] = val;
                 Debug.WriteLine($"{key} = {val}");
-                if (key.Trim().IndexOf("LOOPSTART", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (key.Trim().IndexOf("LoopStart", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (!int.TryParse(val, out _loopstart))
-                    {
-                        _loopstart = 0;
-                        Debug.WriteLine($"Failed Parse {key} = {val}");
-                    }
+                    if (int.TryParse(val, out _loopStart)) continue;
+                    _loopStart = 0;
+                    Debug.WriteLine($"Failed Parse {key} = {val}");
                 }
-                else if (key.Trim().IndexOf("LOOPEND", StringComparison.OrdinalIgnoreCase) >= 0)
+                else if (key.Trim().IndexOf("LoopEnd", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (int.TryParse(val, out _loopend))
-                        _looplength = _loopend - _loopstart;
+                    if (int.TryParse(val, out int _))
+                    {
+                    }
                     else
                         Debug.WriteLine($"Failed Parse {key} = {val}");
                 }
-                else if (key.Trim().IndexOf("LOOPLENGTH", StringComparison.OrdinalIgnoreCase) >= 0)
+                else if (key.Trim().IndexOf("LoopLength", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (int.TryParse(val, out _looplength))
-                        _loopend = _loopend + _loopstart;
+                    if (int.TryParse(val, out int _))
+                    {
+                    }
                     else
                         Debug.WriteLine($"Failed Parse {key} = {val}");
                 }
@@ -1002,79 +970,74 @@
         /// <summary>
         /// Opens filename and init class.
         /// </summary>
-        protected void Init(string filename, AVMediaType mediatype = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.STATE_MACH, int loopstart = -1)
+        protected void Init(string filename, AVMediaType mediaType = AVMediaType.AVMEDIA_TYPE_AUDIO, FfccMode mode = FfccMode.StateMach, int loopStart = -1)
         {
+            if (!Enum.IsDefined(typeof(FfccMode), mode))
+                throw new InvalidEnumArgumentException(nameof(mode), (int) mode, typeof(FfccMode));
+            if (!Enum.IsDefined(typeof(AVMediaType), mediaType))
+                throw new InvalidEnumArgumentException(nameof(mediaType), (int) mediaType, typeof(AVMediaType));
             ffmpeg.av_log_set_level(ffmpeg.AV_LOG_PANIC);
-            LOOPSTART = loopstart;
-            State = FfccState.OPEN;
+            LoopStart = loopStart;
+            State = FfccState.Open;
             Mode = mode;
             DecodedFileName = filename;
-            MediaType = mediatype;
+            MediaType = mediaType;
             Return = -1;
             ConvertedData = null;
             Update();
         }
 
-        private unsafe bool initNaudio()
+        private unsafe bool InitNaudio()
         {
 #if _WINDOWS
-            if (!Extended.IsLinux)
+            if (Extended.IsLinux) return false;
+            _bufferedWaveProvider = new BufferedWaveProvider(
+                new WaveFormat(ResampleFrame->sample_rate, ResampleFrame->channels))
             {
-                bufferedWaveProvider = new BufferedWaveProvider(
-                    new WaveFormat(ResampleFrame->sample_rate, ResampleFrame->channels))
-                {
-                    DiscardOnBufferOverflow = false
-                };
-                volumeSampleProvider = new VolumeSampleProvider(bufferedWaveProvider.ToSampleProvider());
-                nAudioOut = new DirectSoundOut();
-                if (ResampleFrame->channels == 1)
-                {
-                    panningSampleProvider = new PanningSampleProvider(volumeSampleProvider);
-                    nAudioOut.Init(panningSampleProvider);
-                }
-                else
-                    nAudioOut.Init(volumeSampleProvider);
-                useNaudio = true;
-                return true;
+                DiscardOnBufferOverflow = false
+            };
+            _volumeSampleProvider = new VolumeSampleProvider(_bufferedWaveProvider.ToSampleProvider());
+            _nAudioOut = new DirectSoundOut();
+            if (ResampleFrame->channels == 1)
+            {
+                _panningSampleProvider = new PanningSampleProvider(_volumeSampleProvider);
+                _nAudioOut.Init(_panningSampleProvider);
             }
+            else
+                _nAudioOut.Init(_volumeSampleProvider);
+            _useNAudio = true;
+            return true;
 #endif
-            return false;
         }
 
         /// <summary>
         /// Sets up AVFormatContext to be able from the memory buffer.
         /// </summary>
-        protected unsafe void LoadFromRAM(BufferData* bd)
+        protected unsafe void LoadFromRam(BufferData* bd)
         {
-            _avio_ctx = null;
+            _avioCtx = null;
 
-            _avio_ctx_buffer_size = 4096;
-            int ret = 0;
-            //_bufferData = new Buffer_Data
-            //{
-            //    Header = buffer,
-            //    HeaderSize = buffer_size
-            //};
+            _avioCtxBufferSize = 4096;
 
-            _avio_ctx_buffer = (byte*)ffmpeg.av_malloc((ulong)_avio_ctx_buffer_size);
-            if (_avio_ctx_buffer == null)
+            _avioCtxBuffer = (byte*)ffmpeg.av_malloc((ulong)_avioCtxBufferSize);
+            if (_avioCtxBuffer == null)
             {
-                ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
+                CheckReturn(ffmpeg.AVERROR(ffmpeg.ENOMEM));
                 return;
             }
-            rf = new avio_alloc_context_read_packet(Read_packet);
-            sf = new avio_alloc_context_seek(Seek);
-            _avio_ctx = ffmpeg.avio_alloc_context(_avio_ctx_buffer, _avio_ctx_buffer_size, 0, bd, rf, null, sf);
-
-            if (_avio_ctx == null)
+            _rf = ReadPacket;
+            _sf = Seek;
+            _avioCtx = ffmpeg.avio_alloc_context(_avioCtxBuffer, _avioCtxBufferSize, 0, bd, _rf, null, _sf);
+            if (_avioCtx == null)
             {
-                ret = ffmpeg.AVERROR(ffmpeg.ENOMEM);
+                CheckReturn(ffmpeg.AVERROR(ffmpeg.ENOMEM));
+                return;
             }
-            Decoder._format->pb = _avio_ctx;
+            Decoder.Format->pb = _avioCtx;
             Open();
         }
 
-        private unsafe long Seek(void* opaque, long offset, int whence)
+        private static unsafe long Seek(void* opaque, long offset, int whence)
         {
             BufferData* bd = (BufferData*)opaque;
 
@@ -1082,29 +1045,26 @@
         }
 
         /// <summary>
-        /// Load sound from Memorystream into a SoundEFFect
+        /// Load sound from MemoryStream into a SoundEffect
         /// </summary>
         /// <param name="decodedStream">Memory Stream containing sound data</param>
         private unsafe void LoadSoundFromStream(ref MemoryStream decodedStream)
         {
-            if (DecodedMemoryStream.Length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
+            if (DecodedMemoryStream.Length <= 0 || MediaType != AVMediaType.AVMEDIA_TYPE_AUDIO) return;
+            if (!_useNAudio)
             {
-                if (!useNaudio)
+                if (SoundEffect != null) return;
+                SoundEffect = new SoundEffect(decodedStream.GetBuffer(), 0, (int) decodedStream.Length,
+                    ResampleFrame->sample_rate, (AudioChannels) ResampleFrame->channels, 0, 0);
+                SoundEffectInstance = SoundEffect.CreateInstance();
+                if (LoopStart >= 0)
                 {
-                    if (SoundEffect == null)
-                    {
-                        SoundEffect = new SoundEffect(decodedStream.GetBuffer(), 0, (int)decodedStream.Length, ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels, 0, 0);
-                        SoundEffectInstance = SoundEffect.CreateInstance();
-                        if (LOOPSTART >= 0)
-                        {
-                            SoundEffectInstance.IsLooped = true;
-                        }
-                        //doesn't throw an exception till you goto play it.
-                    }
+                    SoundEffectInstance.IsLooped = true;
                 }
-                else
-                    RecorderOnDataAvailable(this, new WaveInEventArgs(decodedStream.GetBuffer(), (int)decodedStream.Length));
+                //doesn't throw an exception till you goto play it.
             }
+            else
+                RecorderOnDataAvailable(new WaveInEventArgs(decodedStream.GetBuffer(), (int)decodedStream.Length));
         }
 
         /// <summary>
@@ -1119,23 +1079,23 @@
         //    LoadFromRAM(_intPtr, length);
         //}
         /// <summary>
-        /// Add sound from byte[] to a DynamicSoundEFFectInstance, it can play while you give it more data.
+        /// Add sound from byte[] to a Dynamic Sound Effect Instance, it can play while you give it more data.
         /// </summary>
         /// <param name="decodedStream">sound data</param>
         private unsafe void LoadSoundFromStream(ref byte[] buffer, int start, ref int length)
         {
             if (length > 0 && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                if (!useNaudio)
+                if (!_useNAudio)
                 {
                     if (DynamicSound == null)
                     {
-                        //create instance here to set sample_rate and channels dynamicly
+                        //create instance here to set sample_rate and channels dynamically
                         DynamicSound = new DynamicSoundEffectInstance(ResampleFrame->sample_rate, (AudioChannels)ResampleFrame->channels);
                     }
                     try
                     {
-                        lock (DynamicSoundEffectLock)
+                        lock (_dynamicSoundEffectLock)
                             DynamicSound.SubmitBuffer(buffer, start, length);
                     }
                     catch (ArgumentException)
@@ -1148,10 +1108,10 @@
                         {
                             //DynamicSound.Dispose();
                             DynamicSound = null;
-                            if (!initNaudio())
+                            if (!InitNaudio())
                             {
-                                Mode = FfccMode.NOTINIT;
-                                State = FfccState.NODLL;
+                                Mode = FfccMode.NotInit;
+                                State = FfccState.NoDLL;
                             }
                             else
                             {
@@ -1163,7 +1123,7 @@
                     }
                 }
                 else
-                    RecorderOnDataAvailable(this, new WaveInEventArgs(start > 0 ? buffer.Skip(start).ToArray() : buffer, length - start));
+                    RecorderOnDataAvailable(new WaveInEventArgs(start > 0 ? buffer.Skip(start).ToArray() : buffer, length - start));
             }
         }
 
@@ -1173,49 +1133,33 @@
         private void LoadSoundFromStream() => LoadSoundFromStream(ref _decodedMemoryStream);
 
         /// <summary>
-        /// If looping seek back to LOOPSTART
+        /// If looping seek back to LoopStart
         /// </summary>
         private unsafe void Loop()
         {
-            if (LOOPSTART >= 0 && Mode == FfccMode.STATE_MACH)
-            {
-                int min = LOOPSTART - 1000;
-                if (min < 0)
-                {
-                    min = 0;
-                }
-
-                long max = Decoder.Stream->duration;
-                if (max <= LOOPSTART)
-                {
-                    max = LOOPSTART + 1000;
-                }
-                //I didn't realize this didn't change the framenumber to 0. it just appends the LOOPSTART pos to the current stream.
-                //So it is possible this could overflow when it's looped long enough to bring the currentframenum to max value.
-                //Return = ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, min, LOOPSTART, max, 0);
-                Return = ffmpeg.av_seek_frame(Decoder.Format, Decoder.StreamIndex, LOOPSTART, 0);
-                
-                CheckReturn();
-
-                State = FfccState.WAITING;
-            }
+            if (LoopStart < 0 || Mode != FfccMode.StateMach) return;
+            //I didn't realize this didn't change the frame number to 0. it just appends the LoopStart pos to the current stream.
+            //So it is possible this could overflow when it's looped long enough to bring the current frame num to max value.
+            //Return = ffmpeg.avformat_seek_file(Decoder.Format, Decoder.StreamIndex, min, LoopStart, max, 0);
+            CheckReturn(ffmpeg.av_seek_frame(Decoder.Format, Decoder.StreamIndex, LoopStart, 0));
+            State = FfccState.Waiting;
         }
 
         /// <summary>
         /// For use in threads runs Next till done. To keep audio buffer fed. Or really good timing
         /// on video frames.
         /// </summary>
-        private int NextinTask()
+        private int NextInTask()
         {
             try
             {
-                while (Mode == FfccMode.STATE_MACH && !cancellationToken.IsCancellationRequested && State != FfccState.DONE && !IsDisposed)
+                while (Mode == FfccMode.StateMach && !_cancellationToken.IsCancellationRequested && State != FfccState.Done && !IsDisposed)
                 {
                     lock (Decoder) //make the main thread wait if it accesses this class.
                     {
                         NextLoop();
                     }
-                    if (!useNaudio)
+                    if (!_useNAudio)
                         Thread.Sleep(NextAsyncSleep); //delay checks
                 }
             }
@@ -1225,12 +1169,12 @@
             //}
             finally
             {
-                Dispose(cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
+                Dispose(_cancellationToken.IsCancellationRequested); // dispose of everything except audio encase it's still playing.
             }
 #if _WINDOWS
-            if (useNaudio)
+            if (_useNAudio)
             {
-                while (!cancellationToken.IsCancellationRequested && nAudioOut != null && nAudioOut.PlaybackState != PlaybackState.Stopped)
+                while (!_cancellationToken.IsCancellationRequested && _nAudioOut != null && _nAudioOut.PlaybackState != PlaybackState.Stopped)
                     Thread.Sleep(NextAsyncSleep);
                 //try
                 //{
@@ -1266,7 +1210,7 @@
         {
             if (!FileOpened)
             {
-                fixed (AVFormatContext** tmp = &Decoder._format)
+                fixed (AVFormatContext** tmp = &Decoder.Format)
                 {
                     Return = ffmpeg.avformat_open_input(tmp, DecodedFileName, null, null);
                     CheckReturn();
@@ -1288,28 +1232,26 @@
         private unsafe void PrepareCodec()
         {
             // find & open codec
-            fixed (AVCodec** tmp = &Decoder._codec)
+            fixed (AVCodec** tmp = &Decoder.Codec)
             {
                 Return = ffmpeg.av_find_best_stream(Decoder.Format, MediaType, -1, -1, tmp, 0);
             }
             if (Return == ffmpeg.AVERROR_STREAM_NOT_FOUND && MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
             {
-                //Don't fail if no audiostream just be done.
-                State = FfccState.DONE;
-                Mode = FfccMode.NOTINIT;
+                //Don't fail if no audio stream just be done.
+                State = FfccState.Done;
+                Mode = FfccMode.NotInit;
                 return;
             }
-            else
-            {
-                CheckReturn();
-            }
+
+            CheckReturn();
 
             Decoder.StreamIndex = Return;
             GetTags(ref Decoder.Stream->metadata);
             Decoder.CodecContext = ffmpeg.avcodec_alloc_context3(Decoder.Codec);
             if (Decoder.CodecContext == null)
             {
-                die("Could not allocate codec context");
+                Die("Could not allocate codec context");
             }
 
             Return = ffmpeg.avcodec_parameters_to_context(Decoder.CodecContext, Decoder.Stream->codecpar);
@@ -1336,7 +1278,7 @@
                     }
                     else
                     {
-                        die("must set custom channel layout, is not stereo or mono");
+                        Die("must set custom channel layout, is not stereo or mono");
                     }
                 }
             }
@@ -1366,7 +1308,7 @@
             ResampleFrame = ffmpeg.av_frame_alloc();
             if (ResampleFrame == null)
             {
-                die("Error allocating the frame\n");
+                Die("Error allocating the frame\n");
             }
             ResampleContext = ffmpeg.swr_alloc();
             ffmpeg.av_opt_set_channel_layout(ResampleContext, "in_channel_layout", (long)Decoder.CodecContext->channel_layout, 0);
@@ -1380,7 +1322,7 @@
             Return = ffmpeg.swr_init(ResampleContext);
             if (Return < 0)
             {
-                die("swr_init");
+                Die("swr_init");
             }
             Decoder.Frame->format = (int)Decoder.CodecContext->sample_fmt;
             Decoder.Frame->channel_layout = Decoder.CodecContext->channel_layout;
@@ -1405,7 +1347,7 @@
             //ConvertedData = (byte*)Marshal.AllocHGlobal(convertedFrameBufferSize);
             ConvertedData = new byte[convertedFrameBufferSize];
 
-            if (useNaudio) initNaudio();
+            if (_useNAudio) InitNaudio();
         }
 
         /// <summary>
@@ -1433,53 +1375,53 @@
         /// <ref>https://stackoverflow.com/questions/32051847/c-ffmpeg-distorted-sound-when-converting-audio?rq=1#_=_</ref>
         private unsafe void Process()
         {
-            while (Decode(out AVFrame _DecodedFrame))
+            while (Decode(out AVFrame decodedFrame))
             {
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
-                    if (Mode == FfccMode.STATE_MACH)
+                    if (Mode == FfccMode.StateMach)
                     {
-                        State = FfccState.WAITING;
+                        State = FfccState.Waiting;
                         break;
                     }
                     // do something with video here.
-                    else if (Mode == FfccMode.PROCESS_ALL)
+
+                    if (Mode == FfccMode.ProcessAll)
                     {
                     }
                 }
                 else if (MediaType == AVMediaType.AVMEDIA_TYPE_AUDIO)
                 {
-                    Resample(ref _DecodedFrame);
-                    if (Mode == FfccMode.STATE_MACH && !Behind) //still behind stay here.
+                    Resample(ref decodedFrame);
+                    if (Mode == FfccMode.StateMach && !Behind) //still behind stay here.
                     {
-                        State = FfccState.WAITING;
+                        State = FfccState.Waiting;
                         break;
                     }
                 }
             }
-            if (State != FfccState.WAITING)
+            if (State != FfccState.Waiting)
             {
-                State = FfccState.DONE;
-                timer.Stop();
-                timer.Reset();
+                State = FfccState.Done;
+                Timer.Stop();
+                Timer.Reset();
 
-                DecodeFlush(ref Decoder._codecContext, ref *Decoder.Packet); //calling this twice was causing issues.
+                DecodeFlush(ref Decoder.CodecContext, ref *Decoder.Packet); //calling this twice was causing issues.
             }
         }
 
         /// <summary>
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="waveInEventArgs"></param>
         /// <see cref="https://markheath.net/post/how-to-record-and-play-audio-at-same"/>
-        private void RecorderOnDataAvailable(object sender, WaveInEventArgs waveInEventArgs)
+        private void RecorderOnDataAvailable(WaveInEventArgs waveInEventArgs)
         {
 #if _WINDOWS
-            if (bufferedWaveProvider == null)
-                initNaudio();
+            if (_bufferedWaveProvider == null)
+                InitNaudio();
 
-            if (useNaudio)
-                bufferedWaveProvider.AddSamples(waveInEventArgs.Buffer, 0, waveInEventArgs.BytesRecorded);
+            if (_useNAudio)
+                _bufferedWaveProvider.AddSamples(waveInEventArgs.Buffer, 0, waveInEventArgs.BytesRecorded);
 #endif
         }
 
@@ -1490,18 +1432,20 @@
         private unsafe void Resample(ref AVFrame frame)
         {
             // Convert
-            int outSamples = 0;
+            int outSamples;
             fixed (byte** tmp = (byte*[])frame.data)
             {
                 outSamples = ffmpeg.swr_convert(ResampleContext, null, 0, tmp, frame.nb_samples);
             }
             if (outSamples < 0)
             {
-                die("Could not convert");
+                Die("Could not convert");
             }
             for (; ; )
             {
-                outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0);
+                // ReSharper disable once CommentTypo
+                //https://ffmpeg.org/doxygen/3.2/group__lswr.html#ga97a8d5f6abe3bcdfb6072412f17285a4
+                CheckReturn(outSamples = ffmpeg.swr_get_out_samples(ResampleContext, 0));
                 // 32 was nb_samples but if too big would just not decode anything
                 if (outSamples < 32 * ResampleFrame->channels)
                 {
@@ -1510,16 +1454,17 @@
                 //fixed (byte** tmp = &_convertedData)
                 fixed (byte* tmp = &_convertedData[0])
                 {
-                    outSamples = ffmpeg.swr_convert(ResampleContext, &tmp, ResampleFrame->nb_samples, null, 0);
+                    //https://ffmpeg.org/doxygen/3.2/group__lswr.html#gaa5bb6cab830146efa8c760fa66ee582a
+                    CheckReturn(ffmpeg.swr_convert(ResampleContext, &tmp, ResampleFrame->nb_samples, null, 0));
                 }
-                int buffer_size = ffmpeg.av_samples_get_buffer_size(null,
+                int bufferSize = ffmpeg.av_samples_get_buffer_size(null,
                     ResampleFrame->channels,
                     ResampleFrame->nb_samples,
                     (AVSampleFormat)ResampleFrame->format,
                     0);
 
                 // write to buffer
-                WritetoMs(ref _convertedData, 0, ref buffer_size);
+                WriteToMs(ref _convertedData, 0, ref bufferSize);
             }
         }
 
@@ -1529,19 +1474,19 @@
         /// <param name="state">Change the state to this</param>
         /// <param name="ret">return this</param>
         /// <returns>ret</returns>
-        private int Update(FfccState state = FfccState.NULL, int ret = 0)
+        private int Update(FfccState state = FfccState.Null, int ret = 0)
         {
-            if (Mode == FfccMode.NOTINIT)
+            if (Mode == FfccMode.NotInit)
             {
-                die("Class not Init");
+                Die("Class not Init");
             }
 
-            if (state == FfccState.NODLL)
+            if (state == FfccState.NoDLL)
             {
                 return -1;
             }
 
-            if (state != FfccState.NULL)
+            if (state != FfccState.Null)
             {
                 State = state;
             }
@@ -1550,47 +1495,47 @@
             {
                 switch (State)
                 {
-                    case FfccState.OPEN:
-                        State = FfccState.GETCODEC;
+                    case FfccState.Open:
+                        State = FfccState.GetCodec;
                         if (0 < Open())
                         {
-                            die("Failed to Open");
+                            Die("Failed to Open");
                         }
                         break;
 
-                    case FfccState.GETCODEC:
-                        State = FfccState.PREPARE_SWR;
+                    case FfccState.GetCodec:
+                        State = FfccState.PrepareResampler;
                         PrepareCodec();
                         break;
 
-                    case FfccState.PREPARE_SWR:
-                        State = FfccState.PREPARE_SWS;
+                    case FfccState.PrepareResampler:
+                        State = FfccState.PrepareScaler;
                         PrepareResampler();
                         break;
 
-                    case FfccState.PREPARE_SWS:
-                        State = FfccState.READ;
+                    case FfccState.PrepareScaler:
+                        State = FfccState.Read;
                         PrepareScaler();
                         break;
 
-                    case FfccState.READ://Enters waiting state unless we want to process all now.
-                        State = Mode == FfccMode.PROCESS_ALL ? FfccState.READALL : FfccState.READONE;
-                        //READONE here makes it grab one video frame and precaches audio to it's limit.
-                        //WAITING here makes it wait till GetFrame() is called.
-                        //READALL just processes the whole audio stream (memoryleaky), not ment for video
-                        //Currently video will just saves all the frames to bmp in temp folder on READALL.
+                    case FfccState.Read://Enters waiting state unless we want to process all now.
+                        State = Mode == FfccMode.ProcessAll ? FfccState.ReadAll : FfccState.ReadOne;
+                        //ReadOne here makes it grab one video frame and pre-caches audio to it's limit.
+                        //Waiting here makes it wait till GetFrame() is called.
+                        //ReadAll just processes the whole audio stream (memory leaky), not meant for video
+                        //Currently video will just saves all the frames to bmp in temp folder on ReadAll.
                         break;
 
-                    case FfccState.READALL:
-                        State = FfccState.DONE;
+                    case FfccState.ReadAll:
+                        State = FfccState.Done;
                         PrepareProcess();
                         break;
 
-                    case FfccState.READONE:
+                    case FfccState.ReadOne:
                         PrepareProcess();
                         switch (State)
                         {
-                            case FfccState.WAITING:
+                            case FfccState.Waiting:
                                 ret = 0;
                                 break;
 
@@ -1601,17 +1546,17 @@
                         break;
 
                     default:
-                        State = FfccState.DONE;
+                        State = FfccState.Done;
                         break;
                 }
             }
-            while (!((Mode == FfccMode.PROCESS_ALL && State == FfccState.DONE) || (State == FfccState.DONE || State == FfccState.WAITING)));
+            while (!((Mode == FfccMode.ProcessAll && State == FfccState.Done) || (State == FfccState.Done || State == FfccState.Waiting)));
             return ret;
         }
 
-        private int WritetoMs(ref byte[] output, int start, ref int length)
+        private void WriteToMs(ref byte[] output, int start, ref int length)
         {
-            if (Mode == FfccMode.STATE_MACH)
+            if (Mode == FfccMode.StateMach)
             {
                 LoadSoundFromStream(ref output, start, ref length);
             }
@@ -1619,43 +1564,9 @@
             {
                 DecodedMemoryStream.Write(output, start, length);
             }
-            return length - start;
         }
 
-        /// <summary>
-        /// Write to Memory Stream.
-        /// </summary>
-        /// <param name="output">Byte pointer to output buffer array</param>
-        /// <param name="start">Start from typically 0</param>
-        /// <param name="length">Total bytes to read.</param>
-        /// <returns>bytes wrote</returns>
-        private unsafe int WritetoMs(ref byte* output, int start, ref int length)
-        {
-            if (Mode == FfccMode.STATE_MACH)
-            {
-                byte[] arr = new byte[length];
-                Marshal.Copy((IntPtr)output, arr, 0, length);
-                LoadSoundFromStream(ref arr, start, ref length);
-                return length;
-            }
-            else
-            {
-                //memory leaky? seems when i used this method alot of memory wouldn't get disposed, might be only with large sounds
-                long c_len = DecodedMemoryStream.Length;
-                for (int i = start; i < length; i++)
-                {
-                    DecodedMemoryStream.WriteByte(output[i]);
-                }
-                if (DecodedMemoryStream.Length - c_len != length)
-                {
-                    die("not all data wrote");
-                }
-
-                return (int)(DecodedMemoryStream.Length - c_len);
-            }
-        }
-
-#endregion Methods
+        #endregion Methods
 
     }
 }

@@ -202,7 +202,7 @@ namespace OpenVIII.AV
                     {
                         ffccMusic = AV.Audio.Load(filename, loop ? 0 : -1);
                         if (!loop)
-                            ffccMusic.LOOPSTART = -1;
+                            ffccMusic.LoopStart = -1;
                         if (Memory.Threaded)
                             ffccMusic.PlayInTask(volume, pitch, pan);
                         else
