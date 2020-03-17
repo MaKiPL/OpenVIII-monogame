@@ -321,22 +321,22 @@ namespace OpenVIII
             }
             else if (Input2.Button(Keys.F9))
             {
-                AddSequenceToAllQueues(new AnimationSequence
-                {
-                    AnimationQueue = new List<byte> {
-                    //0x2,
-                    //0x5,
-                    //0xf,
-                    //0x10,
-                    //0xb,
-                    //0x3,
-                    //0x6,
-                    0xe,
-                    //0x1,
-                    0xf,
-                    0x0
-                }
-                });
+                //AddSequenceToAllQueues(new AnimationSequence
+                //{
+                //    AnimationQueue = new List<byte> {
+                //    //0x2,
+                //    //0x5,
+                //    //0xf,
+                //    //0x10,
+                //    //0xb,
+                //    //0x3,
+                //    //0x6,
+                //    0xe,
+                //    //0x1,
+                //    0xf,
+                //    0x0
+                //}
+                //});
             }
             else if (Input2.Button(Keys.F8))
             {
@@ -489,7 +489,7 @@ namespace OpenVIII
             {
                 DebugBattleDat weapon = _characterInstances[i].Data.Weapon;
                 DebugBattleDat character = _characterInstances[i].Data.Character;
-                List<AnimationSequence> sequences =
+                IReadOnlyList<AnimationSequence> sequences =
                     (weapon?.Sequences.Count ?? 0) == 0 ? character.Sequences : weapon.Sequences;
                 if (sequences.Count <= sid) continue;
                 section5 = sequences.FirstOrDefault(x => x.ID == sid);

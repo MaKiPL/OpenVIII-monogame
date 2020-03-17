@@ -177,14 +177,14 @@ namespace OpenVIII.Dat_Dump
                     xmlWriter.WriteStartElement("sequence");
                     string id = s.ID.ToString();
                     string offset = s.Offset.ToString("X");
-                    string bytes = s.Data.Length.ToString();
+                    string bytes = s.Count.ToString();
 
                     xmlWriter.WriteAttributeString("BattleID", id);
                     xmlWriter.WriteAttributeString("offset", offset);
                     xmlWriter.WriteAttributeString("bytes", bytes);
 
                     csvFile?.Write($"{prefix ?? ""}{Ls}{count}{Ls}{id}{Ls}{s.Offset}{Ls}{bytes}");
-                    foreach (byte b in s.Data)
+                    foreach (byte b in s)
                     {
                         xmlWriter.WriteString($"{b:X2} ");
                         csvFile?.Write($"{Ls}{b}");

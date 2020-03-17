@@ -1,76 +1,76 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace OpenVIII.Battle.Dat
 {
-    public struct AnimationSequence
+    public struct AnimationSequence : IReadOnlyList<byte>
     {
         #region Fields
 
-        public byte[] Data;
-        public int ID;
-        public uint Offset;
+        private readonly IReadOnlyList<byte> Data;
+        public readonly int ID;
+        public readonly uint Offset;
 
         #endregion Fields
+
+        #region Constructors
+
+        private AnimationSequence(BinaryReader br, uint start, uint end, int id) : this()
+        {
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
+
+            ID = id;
+            Offset = start;
+            Data = br.ReadBytes(((int)(start - end)));
+        }
+
+        #endregion Constructors
 
         #region Properties
 
         /// <summary>
         /// Test-Reason for list is so i can go read the data with out removing it.
         /// </summary>
-        public List<byte> AnimationQueue { get; set; }
+        public IReadOnlyList<byte> AnimationQueue { get; private set; }
 
         #endregion Properties
 
         #region Methods
 
-        //public static Dictionary<byte, Action<byte[], int>> ParseData = new Dictionary<byte, Action<byte[], int>>{
-        //    { 0xA3, (byte[] data, int i) => { } } };
-        public void GenerateQueue(DebugBattleDat dat)
+        public static IReadOnlyList<AnimationSequence> CreateInstances(BinaryReader br, uint start, uint end)
         {
-            AnimationQueue = new List<byte>();
-            for (int i = 0; Data != null && i < Data.Length; i++)
+            // nothing final in here just was trying to dump data to see what was there.
+            br.BaseStream.Seek(start, SeekOrigin.Begin);
+            uint[] offsets = new uint[br.ReadUInt16()];
+            for (ushort i = 0; i < offsets.Length; i++)
             {
-                byte b;
-                byte[] data = this.Data;
-                byte get(int j = -1)
-                {
-                    return b = data[j < 0 ? i : j];
-                }
-                if (get() < (dat.Animations.Count))
-                {
-                    AnimationQueue.Add(b);
-                }
-                //else switch(b)
-                //{
-                //        case 0xA3:
-                //            // following value is animation.
-                //            break;
-                //        case 0xE6:
-                //            switch (get(++i))
-                //            {
-                //                case 0x03:
-                //                    i += 1;
-                //                    break;
-                //            }
-                //            break;
-                //        case 0xEA:
-                //            switch (get(++i))
-                //            {
-                //                case 0x05:
-                //                    i += 1;
-                //                    break;
-                //                case 0x06:
-                //                    i += 2;
-                //                    break;
-                //            }
-                //            break;
-                //        default:
-                //            i++;//skip next byte //as might not be a animation.
-                //            break;
-                //}
+                ushort offset = br.ReadUInt16();
+                if (offset == 0)
+                    continue;
+                offsets[i] = offset + start;
             }
+
+            IReadOnlyList<uint> orderedEnumerable = offsets.Where(x => x > 0).Distinct().OrderBy(x => x).ToList().AsReadOnly();
+            return orderedEnumerable.Select((x, i) => new AnimationSequence(br, x, orderedEnumerable.Count > i + 1 ? orderedEnumerable[i + 1] : end, i))
+                .ToList().AsReadOnly();
         }
 
         #endregion Methods
+
+        public IEnumerator<byte> GetEnumerator()
+        {
+            return Data.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Data.GetEnumerator();
+        }
+
+        public int Count => Data.Count;
+
+        public byte this[int index] => Data[index];
     }
 }
