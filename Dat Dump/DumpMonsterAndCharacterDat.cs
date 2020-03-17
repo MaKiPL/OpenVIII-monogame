@@ -88,7 +88,7 @@ namespace OpenVIII.Dat_Dump
 
         private static string XmlAnimations(XmlWriter xmlWriter, DebugBattleDat battleDat)
         {
-            string count = $"{battleDat.AnimHeader.animations?.Length ?? 0}";
+            string count = $"{battleDat.AnimHeader.Animations?.Count ?? 0}";
             xmlWriter.WriteStartElement("animations");
             xmlWriter.WriteAttributeString("Count", count);
             xmlWriter.WriteEndElement();

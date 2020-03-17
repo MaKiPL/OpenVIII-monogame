@@ -352,7 +352,7 @@ namespace OpenVIII.IGMData
                         }
                         if (Magic || e.DrawList.Any(x => x.Data != null))
                             AddCommand(Memory.Kernel_Bin.BattleCommands[2]);
-                        if (Item || e.DropList.Any(x => x.DATA?.Battle != null) || e.MugList.Any(x => x.DATA?.Battle != null))
+                        if (Item || e.DropList.Any(x => x.Data?.Battle != null) || e.MugList.Any(x => x.Data?.Battle != null))
                             AddCommand(Memory.Kernel_Bin.BattleCommands[4]);
                         if (e.JunctionedGFs?.Any() ?? false)
                             AddCommand(Memory.Kernel_Bin.BattleCommands[3]);

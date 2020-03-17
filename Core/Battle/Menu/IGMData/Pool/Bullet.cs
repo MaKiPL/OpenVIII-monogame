@@ -57,7 +57,7 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Memory.State?.Items != null)
             {
-                List<Saves.Item> ammo = Memory.State.Items.Where(x => x.DATA != null && x.QTY > 0 && x.DATA?.Type == Item_In_Menu._Type.Ammo).OrderBy(x => x.ID).ToList();
+                List<Saves.Item> ammo = Memory.State.Items.Where(x => x.Data != null && x.QTY > 0 && x.Data?.Type == Item_In_Menu._Type.Ammo).OrderBy(x => x.ID).ToList();
                 int i = 0;
                 int skip = Page * Rows;
                 bool AddItem(Saves.Item item)
@@ -65,10 +65,10 @@ namespace OpenVIII.IGMData.Pool
                     if (i >= Rows) return false;
                     if (skip-- <= 0)
                     {
-                        ((IGMDataItem.Text)ITEM[i, 0]).Data = item.DATA?.Name ?? null;
-                        ((IGMDataItem.Text)ITEM[i, 0]).Icon = item.DATA?.Icon ?? null;
+                        ((IGMDataItem.Text)ITEM[i, 0]).Data = item.Data?.Name ?? null;
+                        ((IGMDataItem.Text)ITEM[i, 0]).Icon = item.Data?.Icon ?? null;
                         ((IGMDataItem.Integer)ITEM[i, 1]).Data = item.QTY;
-                        Contents[i] = item.DATA ?? default;
+                        Contents[i] = item.Data ?? default;
                         BLANKS[i] = false;
                         ITEM[i, 0].Show();
                         ITEM[i, 1].Show();

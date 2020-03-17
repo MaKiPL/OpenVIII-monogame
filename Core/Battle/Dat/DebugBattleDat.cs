@@ -103,12 +103,12 @@ namespace OpenVIII.Battle.Dat
         /// <returns></returns>
         public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, ref Vector3 translationPosition, Quaternion rotation, ref AnimationSystem refAnimationSystem, double step)
         {
-            if (refAnimationSystem.AnimationFrame >= AnimHeader.animations[refAnimationSystem.AnimationId].AnimationFrames.Length || refAnimationSystem.AnimationFrame < 0)
+            if (refAnimationSystem.AnimationFrame >= AnimHeader.Animations[refAnimationSystem.AnimationId].AnimationFrames.Count || refAnimationSystem.AnimationFrame < 0)
                 refAnimationSystem.AnimationFrame = 0;
-            AnimationFrame nextFrame = AnimHeader.animations[refAnimationSystem.AnimationId].AnimationFrames[refAnimationSystem.AnimationFrame];
+            AnimationFrame nextFrame = AnimHeader.Animations[refAnimationSystem.AnimationId].AnimationFrames[refAnimationSystem.AnimationFrame];
             int lastAnimationFrame = refAnimationSystem.LastAnimationFrame;
-            AnimationFrame[] lastAnimationFrames = AnimHeader.animations[refAnimationSystem.LastAnimationId].AnimationFrames;
-            lastAnimationFrame = lastAnimationFrames.Length > lastAnimationFrame ? lastAnimationFrame : lastAnimationFrames.Length - 1;
+            IReadOnlyList<AnimationFrame> lastAnimationFrames = AnimHeader.Animations[refAnimationSystem.LastAnimationId].AnimationFrames;
+            lastAnimationFrame = lastAnimationFrames.Count > lastAnimationFrame ? lastAnimationFrame : lastAnimationFrames.Count - 1;
             AnimationFrame animationFrame = lastAnimationFrames[lastAnimationFrame];
 
             Object obj = Geometry.Objects[objectId];
@@ -216,9 +216,9 @@ namespace OpenVIII.Battle.Dat
                 r = Vector3.Transform(r, Matrix.CreateScale(Skeleton.GetScale));
                 return r;
             }
-            Vector3 rootFramePos = getVector(currentFrame.boneMatrix[vectorBoneGRP.BoneID]); //get's bone matrix
+            Vector3 rootFramePos = getVector(currentFrame.BoneMatrix[vectorBoneGRP.BoneID]); //get's bone matrix
             if (!(step > 0f)) return new VectorBoneGRP(rootFramePos, vectorBoneGRP.BoneID);
-            Vector3 nextFramePos = getVector(nextFrame.boneMatrix[vectorBoneGRP.BoneID]);
+            Vector3 nextFramePos = getVector(nextFrame.BoneMatrix[vectorBoneGRP.BoneID]);
             rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
             return new VectorBoneGRP(rootFramePos, vectorBoneGRP.BoneID);
         }
@@ -231,137 +231,124 @@ namespace OpenVIII.Battle.Dat
         /// <param name="fileName"></param>
         private void ReadSection3(uint start)
         {
-            _br.BaseStream.Seek(start, SeekOrigin.Begin);
-            AnimHeader = new AnimationData { cAnimations = _br.ReadUInt32() };
-            AnimHeader.pAnimations = new uint[AnimHeader.cAnimations];
-            for (int i = 0; i < AnimHeader.cAnimations; i++)
-            {
-                AnimHeader.pAnimations[i] = _br.ReadUInt32();
-                //Console.WriteLine($"{i}|{animHeader.pAnimations[i]}");
-            }
-            AnimHeader.animations = new Animation[AnimHeader.cAnimations];
-            for (int i = 0; i < AnimHeader.cAnimations; i++) //animation
-            {
-                _br.BaseStream.Seek(start + AnimHeader.pAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
-                AnimHeader.animations[i] = new Animation { CFrames = _br.ReadByte() }; //Create new animation with cFrames frames
-                AnimHeader.animations[i].AnimationFrames = new AnimationFrame[AnimHeader.animations[i].CFrames];
-                ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(_br.BaseStream);
-                for (int n = 0; n < AnimHeader.animations[i].CFrames; n++) //frames
-                {
-                    //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per currentFrame
+            //_br.BaseStream.Seek(start, SeekOrigin.Begin);
+            //AnimHeader = new AnimationData { CAnimations = _br.ReadUInt32() };
+            //AnimHeader.PAnimations = new uint[AnimHeader.CAnimations];
+            //for (int i = 0; i < AnimHeader.CAnimations; i++)
+            //{
+            //    AnimHeader.PAnimations[i] = _br.ReadUInt32();
+            //    //Console.WriteLine($"{i}|{animHeader.pAnimations[i]}");
+            //}
+            //AnimHeader.Animations = new Animation[AnimHeader.CAnimations];
+            //for (int i = 0; i < AnimHeader.CAnimations; i++) //animation
+            //{
+            //    _br.BaseStream.Seek(start + AnimHeader.PAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
+            //    AnimHeader.Animations[i] = new Animation { CFrames = _br.ReadByte() }; //Create new animation with cFrames frames
+            //    AnimHeader.Animations[i].AnimationFrames = new AnimationFrame[AnimHeader.Animations[i].CFrames];
+            //    ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(_br.BaseStream);
+            //    for (int n = 0; n < AnimHeader.Animations[i].CFrames; n++) //frames
+            //    {
+            //        //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per currentFrame
 
-                    float x = bitReader.ReadPositionType() * .01f;
-                    float y = bitReader.ReadPositionType() * .01f;
-                    float z = bitReader.ReadPositionType() * .01f;
-                    AnimHeader.animations[i].AnimationFrames[n] = n == 0
-                        ? new AnimationFrame { Position = new Vector3(x, y, z) }
-                        : new AnimationFrame
-                        {
-                            Position = new Vector3(
-                                AnimHeader.animations[i].AnimationFrames[n - 1].Position.X + x,
-                                AnimHeader.animations[i].AnimationFrames[n - 1].Position.Y + y,
-                                AnimHeader.animations[i].AnimationFrames[n - 1].Position.Z + z)
-                        };
-                    byte modeTest = (byte)bitReader.ReadBits(1); //used to determine if additional info is required
-                    if (i == 0 && n == 0)
-                        Console.WriteLine($"{i} {n}: {modeTest}");
-                    AnimHeader.animations[i].AnimationFrames[n].boneMatrix = new Matrix[Skeleton.CBones];
-                    AnimHeader.animations[i].AnimationFrames[n].bonesVectorRotations = new Vector3[Skeleton.CBones];
+            //        float x = bitReader.ReadPositionType() * .01f;
+            //        float y = bitReader.ReadPositionType() * .01f;
+            //        float z = bitReader.ReadPositionType() * .01f;
+            //        AnimHeader.Animations[i].AnimationFrames[n] = n == 0
+            //            ? new AnimationFrame { Position = new Vector3(x, y, z) }
+            //            : new AnimationFrame
+            //            {
+            //                Position = new Vector3(
+            //                    AnimHeader.Animations[i].AnimationFrames[n - 1].Position.X + x,
+            //                    AnimHeader.Animations[i].AnimationFrames[n - 1].Position.Y + y,
+            //                    AnimHeader.Animations[i].AnimationFrames[n - 1].Position.Z + z)
+            //            };
+            //        byte modeTest = (byte)bitReader.ReadBits(1); //used to determine if additional info is required
+            //        if (i == 0 && n == 0)
+            //            Console.WriteLine($"{i} {n}: {modeTest}");
+            //        AnimHeader.Animations[i].AnimationFrames[n].BoneMatrix = new Matrix[Skeleton.CBones];
+            //        AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations = new Vector3[Skeleton.CBones];
 
-                    //Step 2. We read the position and we need to store the bones rotations or save base rotation if currentFrame==0
+            //        //Step 2. We read the position and we need to store the bones rotations or save base rotation if currentFrame==0
 
-                    for (int k = 0; k < Skeleton.CBones; k++) //bones iterator
-                    {
-                        if (n != 0) //just like position the data for next frames are added to previous
-                        {
-                            AnimHeader.animations[i].AnimationFrames[n].bonesVectorRotations[k] = new Vector3
-                            {
-                                X = bitReader.ReadRotationType(),
-                                Y = bitReader.ReadRotationType(),
-                                Z = bitReader.ReadRotationType()
-                            };
-                            if (modeTest > 0)
-                                GetAdditionalRotationInformation(bitReader);
-                            Vector3 previousFrame = AnimHeader.animations[i].AnimationFrames[n - 1].bonesVectorRotations[k];
-                            Vector3 currentFrame = AnimHeader.animations[i].AnimationFrames[n].bonesVectorRotations[k];
-                            AnimHeader.animations[i].AnimationFrames[n].bonesVectorRotations[k] = previousFrame + currentFrame;
-                        }
-                        else //if this is zero currentFrame, then we need to set the base rotations for bones
-                        {
-                            AnimHeader.animations[i].AnimationFrames[n].bonesVectorRotations[k] = new Vector3
-                            {
-                                X = bitReader.ReadRotationType(),
-                                Y = bitReader.ReadRotationType(),
-                                Z = bitReader.ReadRotationType()
-                            };
-                            if (modeTest > 0)
-                                GetAdditionalRotationInformation(bitReader);
-                        }
-                    }
+            //        for (int k = 0; k < Skeleton.CBones; k++) //bones iterator
+            //        {
+            //            if (n != 0) //just like position the data for next frames are added to previous
+            //            {
+            //                AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k] = new Vector3
+            //                {
+            //                    X = bitReader.ReadRotationType(),
+            //                    Y = bitReader.ReadRotationType(),
+            //                    Z = bitReader.ReadRotationType()
+            //                };
+            //                if (modeTest > 0)
+            //                    GetAdditionalRotationInformation(bitReader);
+            //                Vector3 previousFrame = AnimHeader.Animations[i].AnimationFrames[n - 1].BonesVectorRotations[k];
+            //                Vector3 currentFrame = AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k];
+            //                AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k] = previousFrame + currentFrame;
+            //            }
+            //            else //if this is zero currentFrame, then we need to set the base rotations for bones
+            //            {
+            //                AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k] = new Vector3
+            //                {
+            //                    X = bitReader.ReadRotationType(),
+            //                    Y = bitReader.ReadRotationType(),
+            //                    Z = bitReader.ReadRotationType()
+            //                };
+            //                if (modeTest > 0)
+            //                    GetAdditionalRotationInformation(bitReader);
+            //            }
+            //        }
 
-                    //Step 3. We now have all bone rotations stored into short. We need to convert that into Matrix and 360/4096
-                    for (int k = 0; k < Skeleton.CBones; k++)
-                    {
-                        Vector3 boneRotation = AnimHeader.animations[i].AnimationFrames[n].bonesVectorRotations[k];
-                        boneRotation = Extended.S16VectorToFloat(boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
-                        boneRotation *= Degrees; //bone rotations are in 360 scope
-                        //maki way
-                        Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
-                        Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
-                        Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
+            //        //Step 3. We now have all bone rotations stored into short. We need to convert that into Matrix and 360/4096
+            //        for (int k = 0; k < Skeleton.CBones; k++)
+            //        {
+            //            Vector3 boneRotation = AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k];
+            //            boneRotation = Extended.S16VectorToFloat(boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
+            //            boneRotation *= Degrees; //bone rotations are in 360 scope
+            //            //maki way
+            //            Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
+            //            Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
+            //            Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
 
-                        //this is the monogame way and gives same results as above.
-                        //Matrix xRot = Matrix.CreateRotationX(MathHelper.ToRadians(boneRotation.X));
-                        //Matrix yRot = Matrix.CreateRotationY(MathHelper.ToRadians(boneRotation.Y));
-                        //Matrix zRot = Matrix.CreateRotationZ(MathHelper.ToRadians(boneRotation.Z));
+            //            //this is the monogame way and gives same results as above.
+            //            //Matrix xRot = Matrix.CreateRotationX(MathHelper.ToRadians(boneRotation.X));
+            //            //Matrix yRot = Matrix.CreateRotationY(MathHelper.ToRadians(boneRotation.Y));
+            //            //Matrix zRot = Matrix.CreateRotationZ(MathHelper.ToRadians(boneRotation.Z));
 
-                        Matrix matrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
-                        matrixZ = Extended.MatrixMultiply_transpose(zRot, matrixZ);
+            //            Matrix matrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
+            //            matrixZ = Extended.MatrixMultiply_transpose(zRot, matrixZ);
 
-                        // ReSharper disable once CommentTypo
-                        if (Skeleton.Bones[k].ParentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
-                        {
-                            matrixZ.M41 = -AnimHeader.animations[i].AnimationFrames[n].Position.X;
-                            matrixZ.M42 = -AnimHeader.animations[i].AnimationFrames[n].Position.Y; //up/down
-                            matrixZ.M43 = AnimHeader.animations[i].AnimationFrames[n].Position.Z;
-                            matrixZ.M44 = 1;
-                        }
-                        else
-                        {
-                            Matrix parentBone = AnimHeader.animations[i].AnimationFrames[n]
-                                .boneMatrix[Skeleton.Bones[k].ParentId]; //gets the parent bone
-                            matrixZ.M43 = Skeleton.Bones[Skeleton.Bones[k].ParentId].Size;
-                            Matrix rMatrix = Matrix.Multiply(parentBone, matrixZ);
-                            rMatrix.M41 = parentBone.M11 * matrixZ.M41 + parentBone.M12 * matrixZ.M42 +
-                                          parentBone.M13 * matrixZ.M43 + parentBone.M41;
-                            rMatrix.M42 = parentBone.M21 * matrixZ.M41 + parentBone.M22 * matrixZ.M42 +
-                                          parentBone.M23 * matrixZ.M43 + parentBone.M42;
-                            rMatrix.M43 = parentBone.M31 * matrixZ.M41 + parentBone.M32 * matrixZ.M42 +
-                                          parentBone.M33 * matrixZ.M43 + parentBone.M43;
-                            rMatrix.M44 = 1;
-                            matrixZ = rMatrix;
-                        }
+            //            // ReSharper disable once CommentTypo
+            //            if (Skeleton.Bones[k].ParentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
+            //            {
+            //                matrixZ.M41 = -AnimHeader.Animations[i].AnimationFrames[n].Position.X;
+            //                matrixZ.M42 = -AnimHeader.Animations[i].AnimationFrames[n].Position.Y; //up/down
+            //                matrixZ.M43 = AnimHeader.Animations[i].AnimationFrames[n].Position.Z;
+            //                matrixZ.M44 = 1;
+            //            }
+            //            else
+            //            {
+            //                Matrix parentBone = AnimHeader.Animations[i].AnimationFrames[n]
+            //                    .BoneMatrix[Skeleton.Bones[k].ParentId]; //gets the parent bone
+            //                matrixZ.M43 = Skeleton.Bones[Skeleton.Bones[k].ParentId].Size;
+            //                Matrix rMatrix = Matrix.Multiply(parentBone, matrixZ);
+            //                rMatrix.M41 = parentBone.M11 * matrixZ.M41 + parentBone.M12 * matrixZ.M42 +
+            //                              parentBone.M13 * matrixZ.M43 + parentBone.M41;
+            //                rMatrix.M42 = parentBone.M21 * matrixZ.M41 + parentBone.M22 * matrixZ.M42 +
+            //                              parentBone.M23 * matrixZ.M43 + parentBone.M42;
+            //                rMatrix.M43 = parentBone.M31 * matrixZ.M41 + parentBone.M32 * matrixZ.M42 +
+            //                              parentBone.M33 * matrixZ.M43 + parentBone.M43;
+            //                rMatrix.M44 = 1;
+            //                matrixZ = rMatrix;
+            //            }
 
-                        AnimHeader.animations[i].AnimationFrames[n].boneMatrix[k] = matrixZ;
-                    }
-                }
-            }
+            //            AnimHeader.Animations[i].AnimationFrames[n].BoneMatrix[k] = matrixZ;
+            //        }
+            //    }
+            //}
+            AnimHeader = AnimationData.CreateInstance(_br,start,Skeleton);
         }
 
-        /// <summary>
-        /// Some enemies use additional information that is saved for bone AFTER rotation types. We
-        /// are still not sure what it does as enemy works without it
-        /// </summary>
-        /// <param name="bitReader"></param>
-        /// <returns></returns>
-        [SuppressMessage("ReSharper", "UnusedMethodReturnValue.Local")]
-        private static (short unk1V, short unk2V, short unk3V) GetAdditionalRotationInformation(
-            ExtapathyExtended.BitReader bitReader)
-        {
-            short calc() => checked((short)(((byte)bitReader.ReadBits(1) > 0) ? (bitReader.ReadBits(16) + 1024) : 1024));
-
-            return (calc(), calc(), calc());
-        }
 
         public AnimationData AnimHeader;
         public int Frame;
@@ -468,9 +455,9 @@ namespace OpenVIII.Battle.Dat
         {
             if (EntityType != EntityType.Character && EntityType != EntityType.Monster) return;
             // Get baseline from running function on only Animation 0;
-            if (AnimHeader.animations == null)
+            if (AnimHeader.Animations == null)
                 return;
-            List<Vector4> baseline = AnimHeader.animations[0].AnimationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
+            List<Vector4> baseline = AnimHeader.Animations[0].AnimationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
             //X is lowY, Y is high Y, Z is mid x, W is mid z
             (float baselineLowY, float baselineHighY) = (baseline.Min(x => x.X), baseline.Max(x => x.Y));
             OffsetY = 0f;
@@ -484,7 +471,7 @@ namespace OpenVIII.Battle.Dat
             // Need to add this later to bring baseline low to 0.
             //OffsetY = offsetY;
             // Brings all Y values less than baseline low to baseline low
-            _animationYOffsets = AnimHeader.animations.SelectMany((animation, animationID) =>
+            _animationYOffsets = AnimHeader.Animations.SelectMany((animation, animationID) =>
                 animation.AnimationFrames.Select((animationFrame, animationFrameNumber) =>
                     new AnimationYOffset(animationID, animationFrameNumber, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationFrame, animationFrame, 0f)))).ToList();
         }

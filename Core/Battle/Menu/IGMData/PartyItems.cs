@@ -103,11 +103,11 @@ namespace OpenVIII.IGMData
             base.Refresh();
             if (Items != null && Items.TryPeek(out _item))
             {
-                ((IGMDataItem.Box)ITEM[0, 1]).Data = Item.DATA?.Name;
+                ((IGMDataItem.Box)ITEM[0, 1]).Data = Item.Data?.Name;
                 ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{Item.QTY}";
-                ((IGMDataItem.Box)ITEM[0, 3]).Data = Item.DATA?.Description;
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name ?? "");
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.DATA?.Name ?? "");
+                ((IGMDataItem.Box)ITEM[0, 3]).Data = Item.Data?.Description;
+                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.Data?.Name ?? "");
+                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.Data?.Name ?? "");
                 ITEM[0, 1].Show();
                 ITEM[0, 2].Show();
                 ITEM[0, 3].Show();

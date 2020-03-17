@@ -141,10 +141,10 @@ namespace OpenVIII.IGMData.Pool
                     HashSet<Item_In_Menu> items = new HashSet<Item_In_Menu>();
                     foreach(var a in e.Abilities.Where(x=>x.ITEM != null))
                         items.Add(a.ITEM.Value);
-                    foreach (var a in e.DropList.Where(x => x.ID != 0 && x.DATA != null))
-                        items.Add(a.DATA.Value);
-                    foreach (var a in e.MugList.Where(x => x.ID != 0 && x.DATA != null))
-                        items.Add(a.DATA.Value);
+                    foreach (var a in e.DropList.Where(x => x.ID != 0 && x.Data != null))
+                        items.Add(a.Data.Value);
+                    foreach (var a in e.MugList.Where(x => x.ID != 0 && x.Data != null))
+                        items.Add(a.Data.Value);
                     foreach (var i in items)
                         if (addEnemyItem(i) == 0) break;
                     NUM_.Hide();
@@ -154,7 +154,7 @@ namespace OpenVIII.IGMData.Pool
                 for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
                     {
                         Saves.Item item = Source.Items[i];
-                        Item_In_Menu itemdata = item.DATA ?? new Item_In_Menu();
+                        Item_In_Menu itemdata = item.Data ?? new Item_In_Menu();
                         if (AddItem(ref pos, ref skip, item, itemdata) == 0) break;
                     }
                 for (; pos < Rows; pos++)

@@ -389,7 +389,7 @@ namespace OpenVIII.IGMData.Target
                     Enemy e = (Enemy)d.First();
                     //unsure if party member being ejected or if they need to be in the party for rare item to work
                     Saves.Item i = e.Mug(Damageable.SPD, Memory.State.PartyHasAbility(Kernel.Abilities.RareItem));
-                    Debug.WriteLine($"{Damageable.Name} stole {i.DATA?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(d) }");
+                    Debug.WriteLine($"{Damageable.Name} stole {i.Data?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(d) }");
                 }
                 EndTurn();
                 return true;
