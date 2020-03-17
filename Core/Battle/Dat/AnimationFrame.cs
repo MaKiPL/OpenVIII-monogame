@@ -17,9 +17,8 @@ namespace OpenVIII.Battle.Dat
 
         #region Constructors
 
-        private AnimationFrame(BinaryReader br, Skeleton skeleton, AnimationFrame? previous = null)
+        private AnimationFrame(ExtapathyExtended.BitReader bitReader, Skeleton skeleton, AnimationFrame? previous = null)
         {
-            ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(br.BaseStream);
             /// <summary>
             /// Some enemies use additional information that is saved for bone AFTER rotation types. We
             /// are still not sure what it does as enemy works without it
@@ -78,11 +77,11 @@ namespace OpenVIII.Battle.Dat
                     if (modeTest > 0)
                         GetAdditionalRotationInformation();
                 }
-            }
+            //}
 
             //Step 3. We now have all bone rotations stored into short. We need to convert that into Matrix and 360/4096
-            foreach (int k in Enumerable.Range(0, skeleton.CBones)) //bones iterator
-            {
+            //foreach (int k in Enumerable.Range(0, skeleton.CBones)) //bones iterator
+            //{
                 Vector3 boneRotation = BonesVectorRotations[k];
                 boneRotation =
                     Extended.S16VectorToFloat(
@@ -141,11 +140,13 @@ namespace OpenVIII.Battle.Dat
 
         public static IReadOnlyList<AnimationFrame> CreateInstances(BinaryReader br, byte cFrames, Skeleton skeleton)
         {
+
+            ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(br.BaseStream);
             AnimationFrame[] animationFrames = new AnimationFrame[cFrames];
             foreach (int n in Enumerable.Range(0, cFrames)) //frames
                 animationFrames[n] = n == 0
-                    ? new AnimationFrame(br, skeleton)
-                    : new AnimationFrame(br, skeleton, animationFrames[n - 1]);
+                    ? new AnimationFrame(bitReader, skeleton)
+                    : new AnimationFrame(bitReader, skeleton, animationFrames[n - 1]);
             
             return animationFrames;
         }
