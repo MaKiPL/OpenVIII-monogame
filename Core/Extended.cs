@@ -123,7 +123,7 @@ namespace OpenVIII
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToClass<T>(byte[] bytes) where T : class
         {
-            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             try
             {
                 return (T)Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
@@ -136,7 +136,7 @@ namespace OpenVIII
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
-            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             try
             {
                 return (T)Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());

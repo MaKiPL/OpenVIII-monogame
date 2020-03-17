@@ -413,10 +413,10 @@ namespace OpenVIII.IGMData
                                 BLANKS[pos] = true;
                             }
                         }
-                        const int crisiswidth = 294;
+                        const int crisisWidth = 294;
                         if (Battle && CrisisLevel > -1)
                         {
-                            CONTAINER.Width = crisiswidth;
+                            CONTAINER.Width = crisisWidth;
                             LimitArrow.Show();
                         }
                         else

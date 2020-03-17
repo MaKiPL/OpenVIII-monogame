@@ -88,7 +88,7 @@ namespace OpenVIII.Dat_Dump
 
         private static string XmlAnimations(XmlWriter xmlWriter, DebugBattleDat battleDat)
         {
-            string count = $"{battleDat.animHeader.animations?.Length ?? 0}";
+            string count = $"{battleDat.AnimHeader.animations?.Length ?? 0}";
             xmlWriter.WriteStartElement("animations");
             xmlWriter.WriteAttributeString("Count", count);
             xmlWriter.WriteEndElement();
@@ -130,7 +130,7 @@ namespace OpenVIII.Dat_Dump
                 if (!MonsterData.TryGetValue(i, out DebugBattleDat battleDat) || battleDat == null) continue;
                 const string type = "monster";
                 string id = i.ToString();
-                FF8String name = battleDat.information.name ?? new FF8String("");
+                FF8String name = battleDat.Information.name ?? new FF8String("");
                 string prefix = $"{type}{Ls}{id}{Ls}{name}";
                 xmlWriter.WriteStartElement(type);
                 xmlWriter.WriteAttributeString("BattleID", id);

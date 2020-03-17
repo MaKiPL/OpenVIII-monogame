@@ -232,7 +232,7 @@ namespace OpenVIII.Dat_Dump
                         string name = "<unknown>";
                         if (DumpMonsterAndCharacterDat.MonsterData.TryGetValue(x, out DebugBattleDat battleDat) && battleDat != null)
                         {
-                            name = battleDat.information.name.Value_str.Trim();
+                            name = battleDat.Information.name.Value_str.Trim();
                             name += $" ({battleDat.FileName})";
                         }
 

@@ -2,85 +2,87 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace OpenVIII.Battle.Dat
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 20)]
-    public struct Quad
+    [StructLayout(LayoutKind.Explicit, Pack = 1, Size = ByteSize)]
+    public class Quad
     {
-        private ushort A;
-        private ushort B;
-        private ushort C;
-        private ushort D;
-        public UV vta;
-        public ushort texUnk;
-        public UV vtb;
-        public ushort u;
-        public UV vtc;
-        public UV vtd;
+        #region Fields
 
-        private VertexPositionTexture[] TempVPT;
+        public const int ByteSize = 20;
 
-        public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
-        public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
-        public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
-        public ushort D1 { get => (ushort)(D & 0xFFF); set => D = value; }
-        public byte TextureIndex => (byte)((texUnk >> 6) & 0b111);
+        [field: FieldOffset(10)]
+        public readonly ushort TexUnk;
 
-        public static Quad Create(BinaryReader br) => new Quad()
+        [field: FieldOffset(14)]
+        public readonly ushort U;
+
+        [field: FieldOffset(8)]
+        public readonly UV Vta;
+
+        [field: FieldOffset(12)]
+        public readonly UV Vtb;
+
+        [field: FieldOffset(16)]
+        public readonly UV Vtc;
+
+        [field: FieldOffset(18)]
+        public readonly UV Vtd;
+
+        [field: FieldOffset(0)]
+        private readonly ushort _a;
+
+        [field: FieldOffset(2)]
+        private readonly ushort _b;
+
+        [field: FieldOffset(4)]
+        private readonly ushort _c;
+
+        [field: FieldOffset(6)]
+        private readonly ushort _d;
+
+        #endregion Fields
+
+        #region Constructors
+
+        private Quad(BinaryReader br)
         {
-            A = br.ReadUInt16(),
-            B = br.ReadUInt16(),
-            C = br.ReadUInt16(),
-            D = br.ReadUInt16(),
-            vta = UV.Create(br),
-            texUnk = br.ReadUInt16(),
-            vtb = UV.Create(br),
-            u = br.ReadUInt16(),
-            vtc = UV.Create(br),
-            vtd = UV.Create(br),
-            TempVPT = new VertexPositionTexture[Count]
-        };
-
-        public ushort GetIndex(int i)
-        {
-            switch (i)
-            {
-                case 0:
-                    return A1;
-
-                case 1:
-                    return B1;
-
-                case 2:
-                    return C1;
-
-                case 3:
-                    return D1;
-            }
-            throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
+            _a = br.ReadUInt16();
+            _b = br.ReadUInt16();
+            _c = br.ReadUInt16();
+            _d = br.ReadUInt16();
+            Vta = UV.CreateInstance(br);
+            TexUnk = br.ReadUInt16();
+            Vtb = UV.CreateInstance(br);
+            U = br.ReadUInt16();
+            Vtc = UV.CreateInstance(br);
+            Vtd = UV.CreateInstance(br);
         }
 
-        public UV GetUV(int i)
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private Quad()
         {
-            switch (i)
-            {
-                case 0:
-                    return vta;
-
-                case 1:
-                    return vtb;
-
-                case 2:
-                    return vtc;
-
-                case 3:
-                    return vtd;
-            }
-            throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
         }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public static byte Count => 6;
+        public ushort A => (ushort)(_a & 0xFFF);
+        public ushort B => (ushort)(_b & 0xFFF);
+        public ushort C => (ushort)(_c & 0xFFF);
+        public ushort D => (ushort)(_d & 0xFFF);
+        public byte TextureIndex => (byte)((TexUnk >> 6) & 0b111);
+
+        #endregion Properties
+
+        #region Indexers
 
         public byte this[int i]
         {
@@ -106,26 +108,73 @@ namespace OpenVIII.Battle.Dat
             }
         }
 
-        public byte[] Indices => new[] { this[0], this[1], this[2], this[3], this[4], this[5] };
-        public static byte Count => 6;
+        #endregion Indexers
 
-        public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> vertices, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
+        #region Methods
+
+        public static Quad CreateInstance(BinaryReader br) => Extended.ByteArrayToClass<Quad>(br.ReadBytes(ByteSize));
+
+        public static IReadOnlyList<Quad> CreateInstances(BinaryReader br, ushort count) =>
+            Enumerable.Range(0, count).Select(_ => CreateInstance(br)).ToList().AsReadOnly();
+
+        public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> vertices, Quaternion rotation,
+            Vector3 translationPosition, Texture2D preVarTex)
         {
-            if (TempVPT == null)
-                TempVPT = new VertexPositionTexture[Count];
-            VertexPositionTexture GetVPT(ref Quad quad, byte i)
+            VertexPositionTexture[] tempVPT = new VertexPositionTexture[Count];
+            VertexPositionTexture GetVPT(Quad quad, byte i)
             {
-                Vector3 GetVertex(ref Quad refQuad, byte j)
+                Vector3 GetVertex(Quad refQuad, byte j)
                 {
                     return DebugBattleDat.TransformVertex(vertices[refQuad.GetIndex(j)], translationPosition, rotation);
                 }
-                return new VertexPositionTexture(GetVertex(ref quad, i), quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
+                return new VertexPositionTexture(GetVertex(quad, i),
+                    quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
             }
-            TempVPT[0] = TempVPT[3] = GetVPT(ref this, this[0]);
-            TempVPT[1] = GetVPT(ref this, this[1]);
-            TempVPT[4] = GetVPT(ref this, this[4]);
-            TempVPT[2] = TempVPT[5] = GetVPT(ref this, this[2]);
-            return TempVPT;
+            tempVPT[0] = tempVPT[3] = GetVPT(this, this[0]);
+            tempVPT[1] = GetVPT(this, this[1]);
+            tempVPT[4] = GetVPT(this, this[4]);
+            tempVPT[2] = tempVPT[5] = GetVPT(this, this[2]);
+            return tempVPT;
         }
+
+        public ushort GetIndex(int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    return A;
+
+                case 1:
+                    return B;
+
+                case 2:
+                    return C;
+
+                case 3:
+                    return D;
+            }
+            throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
+        }
+
+        public UV GetUV(int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    return Vta;
+
+                case 1:
+                    return Vtb;
+
+                case 2:
+                    return Vtc;
+
+                case 3:
+                    return Vtd;
+            }
+            throw new IndexOutOfRangeException($"{this} :: 0-3 are only valid values");
+        }
+
+        #endregion Methods
     }
 }

@@ -70,7 +70,7 @@ namespace OpenVIII
         /// </remarks>
         public override byte HIT => 0;
 
-        public Information Info => EII.Data.information;
+        public Information Info => EII.Data.Information;
 
         public IEnumerable<GFs> JunctionedGFs => Memory.State != null ? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
 

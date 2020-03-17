@@ -351,7 +351,7 @@ namespace OpenVIII
         public override void StartDraw()
         {
             //if (BoolShot())
-            //    GetOneShot().Shot.DrawCrosshair();
+            //    GetOneShot().Shot.DrawCrossHair();
             base.StartDraw();
         }
 

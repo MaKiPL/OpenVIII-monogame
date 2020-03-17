@@ -72,7 +72,7 @@ namespace OpenVIII.Battle
             if (sectionCounter != 6)
             {
                 Memory.Log.WriteLine($"BS_PARSER_PRE_OBJECT SECTION: Main geometry section has no 6 pointers at: {br.BaseStream.Position}");
-                ModuleBattleDebug.battleModule++;
+                ModuleBattleDebug.BattleModule++;
                 return null;
             }
             MainGeometrySection mainSection = MainGeometrySection.Read(br);

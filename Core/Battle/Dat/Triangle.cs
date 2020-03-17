@@ -2,77 +2,78 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace OpenVIII.Battle.Dat
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
-    public struct Triangle
+    [StructLayout(LayoutKind.Explicit, Pack = 1, Size = ByteSize)]
+    public class Triangle
     {
-        private ushort A;
-        private ushort B;
-        private ushort C;
-        public UV vta;
-        public UV vtb;
-        public ushort texUnk;
-        public UV vtc;
-        public ushort u;
-        private VertexPositionTexture[] TempVPT;
+        #region Fields
 
-        public ushort A1 { get => (ushort)(A & 0xFFF); set => A = value; }
-        public ushort B1 { get => (ushort)(B & 0xFFF); set => B = value; }
-        public ushort C1 { get => (ushort)(C & 0xFFF); set => C = value; }
-        public byte TextureIndex => (byte)((texUnk >> 6) & 0b111);
+        [field: FieldOffset(10)]
+        public readonly ushort TexUnk;
 
-        public static Triangle Create(BinaryReader br)
+        [field: FieldOffset(14)]
+        public readonly ushort U;
+
+        [field: FieldOffset(6)]
+        public readonly UV Vta;
+
+        [field: FieldOffset(8)]
+        public readonly UV Vtb;
+
+        [field: FieldOffset(12)]
+        public readonly UV Vtc;
+
+        private const int ByteSize = 16;
+
+        [field: FieldOffset(0)]
+        private readonly ushort _a;
+
+        [field: FieldOffset(2)]
+        private readonly ushort _b;
+
+        [field: FieldOffset(4)]
+        private readonly ushort _c;
+
+        #endregion Fields
+
+        #region Constructors
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private Triangle()
+        { }
+
+        private Triangle(BinaryReader br)
+
         {
-            Triangle r = new Triangle()
-            {
-                A = br.ReadUInt16(),
-                B = br.ReadUInt16(),
-                C = br.ReadUInt16(),
-                vta = UV.Create(br),
-                vtb = UV.Create(br),
-                texUnk = br.ReadUInt16(),
-                vtc = UV.Create(br),
-                u = br.ReadUInt16(),
-                TempVPT = new VertexPositionTexture[Count]
-            };
-            return r;
+            _a = br.ReadUInt16();//0
+            _b = br.ReadUInt16();//2
+            _c = br.ReadUInt16();//4
+            Vta = UV.CreateInstance(br);//6
+            Vtb = UV.CreateInstance(br);//8
+            TexUnk = br.ReadUInt16();//10
+            Vtc = UV.CreateInstance(br);//12
+            U = br.ReadUInt16();//14
         }
 
-        public ushort GetIndex(int i)
-        {
-            switch (i)
-            {
-                case 0:
-                    return C1; //for some reason C is first in triangle
+        #endregion Constructors
 
-                case 1:
-                    return A1;
+        #region Properties
 
-                case 2:
-                    return B1;
-            }
-            throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
-        }
+        public static byte Count => 3;
+        public ushort A => (ushort)(_a & 0xFFF);
+        public ushort B => (ushort)(_b & 0xFFF);
+        public ushort C => (ushort)(_c & 0xFFF);
+        public byte TextureIndex => (byte)((TexUnk >> 6) & 0b111);
 
-        public UV GetUV(int i)
-        {
-            switch (i)
-            {
-                case 0:
-                    return vta;
+        #endregion Properties
 
-                case 1:
-                    return vtb;
-
-                case 2:
-                    return vtc;
-            }
-            throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
-        }
+        #region Indexers
 
         public byte this[int i]
         {
@@ -93,14 +94,18 @@ namespace OpenVIII.Battle.Dat
             }
         }
 
-        public byte[] Indices => new[] { this[0], this[1], this[2] };
-        public static byte Count => 3;
+        #endregion Indexers
+
+        #region Methods
+
+        public static Triangle CreateInstance(BinaryReader br) => Extended.ByteArrayToClass<Triangle>(br.ReadBytes(ByteSize));
+
+        public static IReadOnlyList<Triangle> CreateInstances(BinaryReader br, ushort count) => Enumerable.Range(0, count).Select(_ => CreateInstance(br)).ToList().AsReadOnly();
 
         public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> vertices, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
         {
-            if (TempVPT == null)
-                TempVPT = new VertexPositionTexture[Count];
-            VertexPositionTexture GetVPT(ref Triangle triangle, byte i)
+            VertexPositionTexture[] tempVPT = new VertexPositionTexture[Count];
+            VertexPositionTexture GetVPT(Triangle triangle, byte i)
             {
                 Vector3 GetVertex(ref Triangle refTriangle, byte j)
                 {
@@ -108,10 +113,44 @@ namespace OpenVIII.Battle.Dat
                 }
                 return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
             }
-            TempVPT[0] = GetVPT(ref this, this[0]);
-            TempVPT[1] = GetVPT(ref this, this[1]);
-            TempVPT[2] = GetVPT(ref this, this[2]);
-            return TempVPT;
+            tempVPT[0] = GetVPT(this, this[0]);
+            tempVPT[1] = GetVPT(this, this[1]);
+            tempVPT[2] = GetVPT(this, this[2]);
+            return tempVPT;
         }
+
+        public ushort GetIndex(int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    return C; //for some reason C is first in triangle
+
+                case 1:
+                    return A;
+
+                case 2:
+                    return B;
+            }
+            throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+        }
+
+        public UV GetUV(int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    return Vta;
+
+                case 1:
+                    return Vtb;
+
+                case 2:
+                    return Vtc;
+            }
+            throw new IndexOutOfRangeException($"{this} :: 0-2 are only valid values");
+        }
+
+        #endregion Methods
     }
 }

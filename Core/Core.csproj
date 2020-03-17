@@ -231,6 +231,7 @@
     <Compile Include="AV\Sound\Sound.cs" />
     <Compile Include="AV\Video.cs" />
     <Compile Include="Battle\AnimationSystem.cs" />
+    <Compile Include="Battle\BattleModule.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
     <Compile Include="Battle\Characters\CharacterData.cs" />
     <Compile Include="Battle\Characters\CharacterInstanceInformation.cs" />
