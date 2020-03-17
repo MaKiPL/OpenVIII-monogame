@@ -33,8 +33,8 @@ namespace OpenVIII.Battle
         public void SetAnimationID(int id)
         {
             if (AnimationSystem.AnimationId != id &&
-                id < Data.Character.AnimHeader.Animations.Count &&
-                id < Data.Weapon.AnimHeader.Animations.Count &&
+                id < Data.Character.Animations.Count &&
+                id < Data.Weapon.Animations.Count &&
                 id >= 0)
             {
                 AnimationSystem.AnimationId = id;

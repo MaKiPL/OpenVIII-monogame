@@ -517,11 +517,11 @@ namespace OpenVIII
             switch (type)
             {
                 case EntityType.Monster:
-                    animationSystem = Enemy.Party[n].EII.Data.AnimHeader.Animations[Enemy.Party[n].EII.AnimationSystem.AnimationId];
-                    if (Enemy.Party[n].EII.AnimationSystem.AnimationFrame < animationSystem.CFrames) return;
+                    animationSystem = Enemy.Party[n].EII.Data.Animations[Enemy.Party[n].EII.AnimationSystem.AnimationId];
+                    if (Enemy.Party[n].EII.AnimationSystem.AnimationFrame < animationSystem.Count) return;
                     EnemyInstanceInformation eInstanceInformationProvider = Enemy.Party[n].EII;
                     if (Enemy.Party[n].EII.AnimationSystem.AnimationQueue.TryDequeue(out int animationID) &&
-                        animationID < eInstanceInformationProvider.Data.AnimHeader.Animations.Count &&
+                        animationID < eInstanceInformationProvider.Data.Animations.Count &&
                         animationID >= 0
                     )
                     {
@@ -532,12 +532,12 @@ namespace OpenVIII
 
                 case EntityType.Character:
                 case EntityType.Weapon:
-                    animationSystem = _characterInstances[n].Data.Character.AnimHeader.Animations[_characterInstances[n].AnimationSystem.AnimationId];
-                    if (_characterInstances[n].AnimationSystem.AnimationFrame < animationSystem.CFrames) return;
+                    animationSystem = _characterInstances[n].Data.Character.Animations[_characterInstances[n].AnimationSystem.AnimationId];
+                    if (_characterInstances[n].AnimationSystem.AnimationFrame < animationSystem.Count) return;
                     CharacterInstanceInformation cInstanceInformationProvider = _characterInstances[n];
                     if (_characterInstances[n].AnimationSystem.AnimationQueue.TryDequeue(out animationID) &&
-                        (animationID < cInstanceInformationProvider.Data.Character.AnimHeader.Animations.Count ||
-                         animationID < (cInstanceInformationProvider.Data.Weapon?.AnimHeader.Animations.Count ?? 0)) &&
+                        (animationID < cInstanceInformationProvider.Data.Character.Animations.Count ||
+                         animationID < (cInstanceInformationProvider.Data.Weapon?.Animations.Count ?? 0)) &&
                         animationID >= 0)
                     {
                         cInstanceInformationProvider.AnimationSystem.AnimationId = animationID;

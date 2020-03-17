@@ -36,7 +36,7 @@ namespace OpenVIII.Battle.Dat
                 {
                     return b = data[j < 0 ? i : j];
                 }
-                if (get() < (dat.AnimHeader.Animations?.Count ?? 0))
+                if (get() < (dat.Animations.Count))
                 {
                     AnimationQueue.Add(b);
                 }

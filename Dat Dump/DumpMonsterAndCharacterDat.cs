@@ -88,14 +88,14 @@ namespace OpenVIII.Dat_Dump
 
         private static string XmlAnimations(XmlWriter xmlWriter, DebugBattleDat battleDat)
         {
-            string count = $"{battleDat.AnimHeader.Animations?.Count ?? 0}";
+            string count = $"{battleDat.Animations.Count}";
             xmlWriter.WriteStartElement("animations");
             xmlWriter.WriteAttributeString("Count", count);
             xmlWriter.WriteEndElement();
             return count;
         }
 
-        private static void XmlCharacterData(XmlWriter xmlWriter, StreamWriter csvFile)
+        private static void XmlCharacterData(XmlWriter xmlWriter, TextWriter csvFile)
         {
             xmlWriter.WriteStartElement("characters");
             for (int i = 0; i <= 10; i++)

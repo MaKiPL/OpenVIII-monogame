@@ -103,11 +103,11 @@ namespace OpenVIII.Battle.Dat
         /// <returns></returns>
         public VertexPositionTexturePointersGRP GetVertexPositions(int objectId, ref Vector3 translationPosition, Quaternion rotation, ref AnimationSystem refAnimationSystem, double step)
         {
-            if (refAnimationSystem.AnimationFrame >= AnimHeader.Animations[refAnimationSystem.AnimationId].AnimationFrames.Count || refAnimationSystem.AnimationFrame < 0)
+            if (refAnimationSystem.AnimationFrame >= Animations[refAnimationSystem.AnimationId].Count || refAnimationSystem.AnimationFrame < 0)
                 refAnimationSystem.AnimationFrame = 0;
-            AnimationFrame nextFrame = AnimHeader.Animations[refAnimationSystem.AnimationId].AnimationFrames[refAnimationSystem.AnimationFrame];
+            AnimationFrame nextFrame = Animations[refAnimationSystem.AnimationId][refAnimationSystem.AnimationFrame];
             int lastAnimationFrame = refAnimationSystem.LastAnimationFrame;
-            IReadOnlyList<AnimationFrame> lastAnimationFrames = AnimHeader.Animations[refAnimationSystem.LastAnimationId].AnimationFrames;
+            IReadOnlyList<AnimationFrame> lastAnimationFrames = Animations[refAnimationSystem.LastAnimationId];
             lastAnimationFrame = lastAnimationFrames.Count > lastAnimationFrame ? lastAnimationFrame : lastAnimationFrames.Count - 1;
             AnimationFrame animationFrame = lastAnimationFrames[lastAnimationFrame];
 
@@ -229,128 +229,10 @@ namespace OpenVIII.Battle.Dat
         /// <param name="start"></param>
         /// <param name="br"></param>
         /// <param name="fileName"></param>
-        private void ReadSection3(uint start)
-        {
-            //_br.BaseStream.Seek(start, SeekOrigin.Begin);
-            //AnimHeader = new AnimationData { CAnimations = _br.ReadUInt32() };
-            //AnimHeader.PAnimations = new uint[AnimHeader.CAnimations];
-            //for (int i = 0; i < AnimHeader.CAnimations; i++)
-            //{
-            //    AnimHeader.PAnimations[i] = _br.ReadUInt32();
-            //    //Console.WriteLine($"{i}|{animHeader.pAnimations[i]}");
-            //}
-            //AnimHeader.Animations = new Animation[AnimHeader.CAnimations];
-            //for (int i = 0; i < AnimHeader.CAnimations; i++) //animation
-            //{
-            //    _br.BaseStream.Seek(start + AnimHeader.PAnimations[i], SeekOrigin.Begin); //Get to pointer of animation Id
-            //    AnimHeader.Animations[i] = new Animation { CFrames = _br.ReadByte() }; //Create new animation with cFrames frames
-            //    AnimHeader.Animations[i].AnimationFrames = new AnimationFrame[AnimHeader.Animations[i].CFrames];
-            //    ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(_br.BaseStream);
-            //    for (int n = 0; n < AnimHeader.Animations[i].CFrames; n++) //frames
-            //    {
-            //        //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per currentFrame
-
-            //        float x = bitReader.ReadPositionType() * .01f;
-            //        float y = bitReader.ReadPositionType() * .01f;
-            //        float z = bitReader.ReadPositionType() * .01f;
-            //        AnimHeader.Animations[i].AnimationFrames[n] = n == 0
-            //            ? new AnimationFrame { Position = new Vector3(x, y, z) }
-            //            : new AnimationFrame
-            //            {
-            //                Position = new Vector3(
-            //                    AnimHeader.Animations[i].AnimationFrames[n - 1].Position.X + x,
-            //                    AnimHeader.Animations[i].AnimationFrames[n - 1].Position.Y + y,
-            //                    AnimHeader.Animations[i].AnimationFrames[n - 1].Position.Z + z)
-            //            };
-            //        byte modeTest = (byte)bitReader.ReadBits(1); //used to determine if additional info is required
-            //        if (i == 0 && n == 0)
-            //            Console.WriteLine($"{i} {n}: {modeTest}");
-            //        AnimHeader.Animations[i].AnimationFrames[n].BoneMatrix = new Matrix[Skeleton.CBones];
-            //        AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations = new Vector3[Skeleton.CBones];
-
-            //        //Step 2. We read the position and we need to store the bones rotations or save base rotation if currentFrame==0
-
-            //        for (int k = 0; k < Skeleton.CBones; k++) //bones iterator
-            //        {
-            //            if (n != 0) //just like position the data for next frames are added to previous
-            //            {
-            //                AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k] = new Vector3
-            //                {
-            //                    X = bitReader.ReadRotationType(),
-            //                    Y = bitReader.ReadRotationType(),
-            //                    Z = bitReader.ReadRotationType()
-            //                };
-            //                if (modeTest > 0)
-            //                    GetAdditionalRotationInformation(bitReader);
-            //                Vector3 previousFrame = AnimHeader.Animations[i].AnimationFrames[n - 1].BonesVectorRotations[k];
-            //                Vector3 currentFrame = AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k];
-            //                AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k] = previousFrame + currentFrame;
-            //            }
-            //            else //if this is zero currentFrame, then we need to set the base rotations for bones
-            //            {
-            //                AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k] = new Vector3
-            //                {
-            //                    X = bitReader.ReadRotationType(),
-            //                    Y = bitReader.ReadRotationType(),
-            //                    Z = bitReader.ReadRotationType()
-            //                };
-            //                if (modeTest > 0)
-            //                    GetAdditionalRotationInformation(bitReader);
-            //            }
-            //        }
-
-            //        //Step 3. We now have all bone rotations stored into short. We need to convert that into Matrix and 360/4096
-            //        for (int k = 0; k < Skeleton.CBones; k++)
-            //        {
-            //            Vector3 boneRotation = AnimHeader.Animations[i].AnimationFrames[n].BonesVectorRotations[k];
-            //            boneRotation = Extended.S16VectorToFloat(boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
-            //            boneRotation *= Degrees; //bone rotations are in 360 scope
-            //            //maki way
-            //            Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
-            //            Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
-            //            Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
-
-            //            //this is the monogame way and gives same results as above.
-            //            //Matrix xRot = Matrix.CreateRotationX(MathHelper.ToRadians(boneRotation.X));
-            //            //Matrix yRot = Matrix.CreateRotationY(MathHelper.ToRadians(boneRotation.Y));
-            //            //Matrix zRot = Matrix.CreateRotationZ(MathHelper.ToRadians(boneRotation.Z));
-
-            //            Matrix matrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
-            //            matrixZ = Extended.MatrixMultiply_transpose(zRot, matrixZ);
-
-            //            // ReSharper disable once CommentTypo
-            //            if (Skeleton.Bones[k].ParentId == 0xFFFF) //if parentId is 0xFFFF then the current bone is core aka bone0
-            //            {
-            //                matrixZ.M41 = -AnimHeader.Animations[i].AnimationFrames[n].Position.X;
-            //                matrixZ.M42 = -AnimHeader.Animations[i].AnimationFrames[n].Position.Y; //up/down
-            //                matrixZ.M43 = AnimHeader.Animations[i].AnimationFrames[n].Position.Z;
-            //                matrixZ.M44 = 1;
-            //            }
-            //            else
-            //            {
-            //                Matrix parentBone = AnimHeader.Animations[i].AnimationFrames[n]
-            //                    .BoneMatrix[Skeleton.Bones[k].ParentId]; //gets the parent bone
-            //                matrixZ.M43 = Skeleton.Bones[Skeleton.Bones[k].ParentId].Size;
-            //                Matrix rMatrix = Matrix.Multiply(parentBone, matrixZ);
-            //                rMatrix.M41 = parentBone.M11 * matrixZ.M41 + parentBone.M12 * matrixZ.M42 +
-            //                              parentBone.M13 * matrixZ.M43 + parentBone.M41;
-            //                rMatrix.M42 = parentBone.M21 * matrixZ.M41 + parentBone.M22 * matrixZ.M42 +
-            //                              parentBone.M23 * matrixZ.M43 + parentBone.M42;
-            //                rMatrix.M43 = parentBone.M31 * matrixZ.M41 + parentBone.M32 * matrixZ.M42 +
-            //                              parentBone.M33 * matrixZ.M43 + parentBone.M43;
-            //                rMatrix.M44 = 1;
-            //                matrixZ = rMatrix;
-            //            }
-
-            //            AnimHeader.Animations[i].AnimationFrames[n].BoneMatrix[k] = matrixZ;
-            //        }
-            //    }
-            //}
-            AnimHeader = AnimationData.CreateInstance(_br,start,Skeleton);
-        }
+        private void ReadSection3(uint start) => Animations = AnimationData.CreateInstance(_br,start,Skeleton);
 
 
-        public AnimationData AnimHeader;
+        public AnimationData Animations;
         public int Frame;
 
         /// <summary>
@@ -455,9 +337,9 @@ namespace OpenVIII.Battle.Dat
         {
             if (EntityType != EntityType.Character && EntityType != EntityType.Monster) return;
             // Get baseline from running function on only Animation 0;
-            if (AnimHeader.Animations == null)
+            if (Animations.Count == 0)
                 return;
-            List<Vector4> baseline = AnimHeader.Animations[0].AnimationFrames.Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
+            List<Vector4> baseline = Animations[0].Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
             //X is lowY, Y is high Y, Z is mid x, W is mid z
             (float baselineLowY, float baselineHighY) = (baseline.Min(x => x.X), baseline.Max(x => x.Y));
             OffsetY = 0f;
@@ -471,8 +353,8 @@ namespace OpenVIII.Battle.Dat
             // Need to add this later to bring baseline low to 0.
             //OffsetY = offsetY;
             // Brings all Y values less than baseline low to baseline low
-            _animationYOffsets = AnimHeader.Animations.SelectMany((animation, animationID) =>
-                animation.AnimationFrames.Select((animationFrame, animationFrameNumber) =>
+            _animationYOffsets = Animations.SelectMany((animation, animationID) =>
+                animation.Select((animationFrame, animationFrameNumber) =>
                     new AnimationYOffset(animationID, animationFrameNumber, FindLowHighPoints(OffsetYVector, Quaternion.Identity, animationFrame, animationFrame, 0f)))).ToList();
         }
 
@@ -534,26 +416,26 @@ namespace OpenVIII.Battle.Dat
             {
                 // per wiki 127 only have 7 & 8
                 if (Flags.HasFlag(Sections.Information))
-                    ReadSection7(DatFile.PSections[0]);
+                    ReadSection7(DatFile[0]);
                 //if (Flags.HasFlag(Sections.Scripts))
                 //    ReadSection8(datFile.pSections[7]);
                 return;
             }
             if (Flags.HasFlag(Sections.Skeleton))
-                ReadSection1(DatFile.PSections[0]);
+                ReadSection1(DatFile[0]);
             if (Flags.HasFlag(Sections.ModelAnimation))
-                ReadSection3(DatFile.PSections[2]); // animation data
+                ReadSection3(DatFile[2]); // animation data
             if (Flags.HasFlag(Sections.ModelGeometry))
-                ReadSection2(DatFile.PSections[1]);
+                ReadSection2(DatFile[1]);
 
             //if (Flags.HasFlag(Sections.Section4_Unknown))
             //  ReadSection4(datFile.pSections[3]);
             if (Flags.HasFlag(Sections.AnimationSequences))
-                ReadSection5(DatFile.PSections[4], DatFile.PSections[5]);
+                ReadSection5(DatFile[4], DatFile[5]);
             //if (Flags.HasFlag(Sections.Section6_Unknown))
             //  ReadSection6(datFile.pSections[5]);
             if (Flags.HasFlag(Sections.Information))
-                ReadSection7(DatFile.PSections[6]);
+                ReadSection7(DatFile[6]);
             //if (Flags.HasFlag(Sections.Scripts))
             //ReadSection8(datFile.pSections[7]); // battle scripts/ai
 
@@ -563,26 +445,26 @@ namespace OpenVIII.Battle.Dat
             //  ReadSection10(datFile.pSections[9], datFile.pSections[10], br, fileName);
 
             if (Flags.HasFlag(Sections.Textures))
-                ReadSection11(DatFile.PSections[10]);
+                ReadSection11(DatFile[10]);
         }
 
         private void LoadCharacter()
         {
             if (Flags.HasFlag(Sections.Skeleton))
-                ReadSection1(DatFile.PSections[0]);
+                ReadSection1(DatFile[0]);
             if (Flags.HasFlag(Sections.ModelAnimation))
-                ReadSection3(DatFile.PSections[2]);
+                ReadSection3(DatFile[2]);
             if (Flags.HasFlag(Sections.ModelGeometry))
-                ReadSection2(DatFile.PSections[1]);
+                ReadSection2(DatFile[1]);
             if (ID == 7 && EntityType == EntityType.Character) // edna has no weapons.
             {
                 if (Flags.HasFlag(Sections.Textures))
-                    ReadSection11(DatFile.PSections[8]);
+                    ReadSection11(DatFile[8]);
                 if (Flags.HasFlag(Sections.AnimationSequences))
-                    ReadSection5(DatFile.PSections[5], DatFile.PSections[6]);
+                    ReadSection5(DatFile[5], DatFile[6]);
             }
             else if (Flags.HasFlag(Sections.Textures))
-                ReadSection11(DatFile.PSections[5]);
+                ReadSection11(DatFile[5]);
         }
 
         private void LoadWeapon(DebugBattleDat skeletonReference)
@@ -590,26 +472,26 @@ namespace OpenVIII.Battle.Dat
             if (ID != 1 && ID != 9)
             {
                 if (Flags.HasFlag(Sections.Skeleton))
-                    ReadSection1(DatFile.PSections[0]);
+                    ReadSection1(DatFile[0]);
                 if (Flags.HasFlag(Sections.ModelAnimation))
-                    ReadSection3(DatFile.PSections[2]);
+                    ReadSection3(DatFile[2]);
                 if (Flags.HasFlag(Sections.ModelGeometry))
-                    ReadSection2(DatFile.PSections[1]);
+                    ReadSection2(DatFile[1]);
                 if (Flags.HasFlag(Sections.AnimationSequences))
-                    ReadSection5(DatFile.PSections[3], DatFile.PSections[4]);
+                    ReadSection5(DatFile[3], DatFile[4]);
                 if (Flags.HasFlag(Sections.Textures))
-                    ReadSection11(DatFile.PSections[6]);
+                    ReadSection11(DatFile[6]);
             }
             else if (skeletonReference != null)
             {
                 Skeleton = skeletonReference.Skeleton;
-                AnimHeader = skeletonReference.AnimHeader;
+                Animations = skeletonReference.Animations;
                 if (Flags.HasFlag(Sections.ModelGeometry))
-                    ReadSection2(DatFile.PSections[0]);
+                    ReadSection2(DatFile[0]);
                 if (Flags.HasFlag(Sections.AnimationSequences))
-                    ReadSection5(DatFile.PSections[1], DatFile.PSections[2]);
+                    ReadSection5(DatFile[1], DatFile[2]);
                 if (Flags.HasFlag(Sections.Textures))
-                    ReadSection11(DatFile.PSections[4]);
+                    ReadSection11(DatFile[4]);
             }
         }
 

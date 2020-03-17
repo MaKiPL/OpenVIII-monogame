@@ -2,6 +2,9 @@ using Microsoft.Xna.Framework;
 
 namespace OpenVIII.Battle.Dat
 {
+    /// <summary>
+    /// this is a workaround because the animations have characters and monsters floating in air.
+    /// </summary>
     public struct AnimationYOffset
     {
         #region Constructors
