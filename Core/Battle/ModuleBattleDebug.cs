@@ -566,7 +566,7 @@ namespace OpenVIII
                     return;
                 for (int k = 0; k < vertexPositionTexturePointersGRP.VPT.Length / 3; k++)
                 {
-                    Ate.Texture = (Texture2D)battleDat.Textures.textures[vertexPositionTexturePointersGRP.TexturePointers[k]];
+                    Ate.Texture = (Texture2D)battleDat.Textures[vertexPositionTexturePointersGRP.TexturePointers[k]];
                     foreach (EffectPass pass in Ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();

@@ -2,8 +2,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -14,7 +12,6 @@ namespace OpenVIII.Battle.Dat
         private readonly byte[] _buffer;
         private const float BaseLineMaxYFilter = 10f;
         public const float ScaleHelper = 2048.0f;
-        private const float Degrees = 360f;
 
         public DatFile DatFile { get; }
 
@@ -22,16 +19,13 @@ namespace OpenVIII.Battle.Dat
         /// Skeleton data section
         /// </summary>
         /// <param name="start"></param>
-        private void ReadSection1(uint start)
-=>
-            Skeleton = Skeleton.CreateInstance(_br, start);
+        private void ReadSection1(uint start) => Skeleton = Skeleton.CreateInstance(_br, start);
 
         public Skeleton Skeleton;
 
         #region Fields
 
         public Information Information;
-
 
         #endregion Fields
 
@@ -43,12 +37,10 @@ namespace OpenVIII.Battle.Dat
         /// <param name="start"></param>
         /// <param name="br"></param>
         /// <param name="fileName"></param>
-        private void ReadSection7(uint start)
-        {
-            Information = Information.CreateInstance(_br, start);
-        }
+        private void ReadSection7(uint start) => Information = Information.CreateInstance(_br, start);
 
         #endregion Methods
+
         /// <summary>
         /// Section 2: Model Geometry
         /// </summary>
@@ -61,12 +53,7 @@ namespace OpenVIII.Battle.Dat
         /// <param name="start"></param>
         /// <param name="br"></param>
         /// <param name="fileName"></param>
-        private void ReadSection2(uint start)
-        {
-            Geometry = Geometry.CreateInstance(_br, start);
-        }
-
-        
+        private void ReadSection2(uint start) => Geometry = Geometry.CreateInstance(_br, start);
 
         public Vector3 IndicatorPoint(Vector3 translationPosition)
         {
@@ -74,8 +61,6 @@ namespace OpenVIII.Battle.Dat
                 translationPosition.Y -= _offsetYLow;
             return _indicatorPoint + translationPosition;
         }
-
-        //public ConcurrentDictionary<Tuple<int, int>, float> low points = new ConcurrentDictionary<Tuple<int, int>, float>();
 
         /// <summary>
         /// This method returns geometry data AFTER animation matrix translations, local
@@ -145,7 +130,7 @@ namespace OpenVIII.Battle.Dat
             //Triangle parsing
             for (; i < obj.CTriangles; i++)
             {
-                Texture2D preVarTex = (Texture2D)Textures.textures[obj.Triangles[i].TextureIndex];
+                Texture2D preVarTex = (Texture2D)Textures[obj.Triangles[i].TextureIndex];
                 vpt.AddRange(obj.Triangles[i].GenerateVPT(vectorBoneGroups, rotation, translationPosition, preVarTex));
                 texturePointers[i] = obj.Triangles[i].TextureIndex;
             }
@@ -153,7 +138,7 @@ namespace OpenVIII.Battle.Dat
             //Quad parsing
             for (i = 0; i < obj.CQuads; i++)
             {
-                Texture2D preVarTex = (Texture2D)Textures.textures[obj.Quads[i].TextureIndex];
+                Texture2D preVarTex = (Texture2D)Textures[obj.Quads[i].TextureIndex];
                 vpt.AddRange(obj.Quads[i].GenerateVPT(vectorBoneGroups, rotation, translationPosition, preVarTex));
                 texturePointers[obj.CTriangles + i * 2] = obj.Quads[i].TextureIndex;
                 texturePointers[obj.CTriangles + i * 2 + 1] = obj.Quads[i].TextureIndex;
@@ -229,8 +214,7 @@ namespace OpenVIII.Battle.Dat
         /// <param name="start"></param>
         /// <param name="br"></param>
         /// <param name="fileName"></param>
-        private void ReadSection3(uint start) => Animations = AnimationData.CreateInstance(_br,start,Skeleton);
-
+        private void ReadSection3(uint start) => Animations = AnimationData.CreateInstance(_br, start, Skeleton);
 
         public AnimationData Animations;
         public int Frame;
@@ -241,37 +225,7 @@ namespace OpenVIII.Battle.Dat
         /// <param name="start"></param>
         /// <param name="br"></param>
         /// <param name="fileName"></param>
-        private void ReadSection11(uint start)
-        {
-#if DEBUG
-            //Dump for debug
-            _br.BaseStream.Seek(start, SeekOrigin.Begin);
-            using (BinaryWriter fs = new BinaryWriter(File.Create(Path.Combine(Path.GetTempPath(), $"{start}.dump"), (int)(_br.BaseStream.Length - _br.BaseStream.Position), FileOptions.None)))
-                fs.Write(_br.ReadBytes((int)(_br.BaseStream.Length - _br.BaseStream.Position)));
-#endif
-            _br.BaseStream.Seek(start, SeekOrigin.Begin);
-            //Begin create Textures struct
-            //populate the tim Count;
-            Textures = new Textures { cTims = _br.ReadUInt32() };
-            //create arrays per Count.
-            Textures.pTims = new uint[Textures.cTims];
-            Textures.textures = new TextureHandler[Textures.cTims];
-            //Read pointers into array
-            for (int i = 0; i < Textures.cTims; i++)
-                Textures.pTims[i] = _br.ReadUInt32();
-            //Read EOF
-            Textures.Eof = _br.ReadUInt32();
-            //Read TIM -> TextureHandler into array
-            for (int i = 0; i < Textures.cTims; i++)
-                if (_buffer[start + Textures.pTims[i]] == 0x10)
-                {
-                    TIM2 tm = new TIM2(_buffer, start + Textures.pTims[i]); //broken
-                    Textures.textures[i] =
-                        TextureHandler.Create($"{FileName}_{i /*.ToString("D2")*/}", tm); // tm.GetTexture(0);
-                }
-                else
-                    Debug.WriteLine($"DEBUG: {this}.{ID}.{start + Textures.pTims[i]} :: Not a tim file!");
-        }
+        private void ReadSection11(uint start) => Textures = Textures.CreateInstance(_buffer, start, FileName);
 
         public Textures Textures;
         private BinaryReader _br;
