@@ -350,7 +350,7 @@ namespace OpenVIII.IGMData
                             IEnumerable<Battle.Dat.Abilities> ecattacks = enemycommands.Where(x => x.MONSTER != null);
                             AddCommand(Memory.Kernel_Bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().MONSTER.Name : null));
                         }
-                        if (Magic || e.DrawList.Any(x => x.DATA != null))
+                        if (Magic || e.DrawList.Any(x => x.Data != null))
                             AddCommand(Memory.Kernel_Bin.BattleCommands[2]);
                         if (Item || e.DropList.Any(x => x.DATA?.Battle != null) || e.MugList.Any(x => x.DATA?.Battle != null))
                             AddCommand(Memory.Kernel_Bin.BattleCommands[4]);

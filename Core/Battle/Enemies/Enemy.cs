@@ -30,33 +30,33 @@ namespace OpenVIII
 
         public static List<Enemy> Party { get; set; }
 
-        public Battle.Dat.Abilities[] Abilities => hml(Info.abilitiesHigh, Info.abilitiesMed, Info.abilitiesLow);
+        public Battle.Dat.Abilities[] Abilities => hml(Info.AbilitiesHigh, Info.AbilitiesMed, Info.AbilitiesLow);
 
-        public byte AP => Info.ap;
+        public byte AP => Info.AP;
 
-        public Kernel.Devour Devour => Info.devour[levelgroup()] >= Memory.Kernel_Bin.Devour.Count ?
+        public Kernel.Devour Devour => Info.Devour[levelgroup()] >= Memory.Kernel_Bin.Devour.Count ?
             Memory.Kernel_Bin.Devour[Memory.Kernel_Bin.Devour.Count - 1] :
-            Memory.Kernel_Bin.Devour[Info.devour[levelgroup()]];
+            Memory.Kernel_Bin.Devour[Info.Devour[levelgroup()]];
 
-        public Magic[] DrawList => hml(Info.drawhigh, Info.drawmed, Info.drawlow);
+        public Magic[] DrawList => hml(Info.DrawHigh, Info.DrawMed, Info.DrawLow);
 
         /// <summary>
         /// Randomly gain 1 or 0 from this list.
         /// </summary>
-        public Saves.Item[] DropList => hml(Info.drophigh, Info.dropmed, Info.droplow);
+        public Saves.Item[] DropList => hml(Info.DropHigh, Info.DropMed, Info.DropLow);
 
-        public byte DropRate => (byte)(MathHelper.Clamp(Info.dropRate * 100 / byte.MaxValue, 0, 100));
+        public byte DropRate => (byte)(MathHelper.Clamp(Info.DropRate * 100 / byte.MaxValue, 0, 100));
 
         public Battle.EnemyInstanceInformation EII { get; set; }
 
         public IEnumerable<Kernel.EnemyAttacksData> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
 
-        public override byte EVA => convert2(Info.eva);
+        public override byte EVA => convert2(Info.EVA);
 
         /// <summary>
         /// The EXP everyone gets.
         /// </summary>
-        public override int EXP => convert3(Info.exp, Memory.State.AveragePartyLevel);
+        public override int EXP => convert3(Info.Exp, Memory.State.AveragePartyLevel);
 
         public byte FixedLevel { get => _fixedLevel; set => _fixedLevel = value; }
 
@@ -95,24 +95,24 @@ namespace OpenVIII
         /// </summary>
         public override byte LUCK => 0;
 
-        public override byte MAG => convert1(Info.mag);
+        public override byte MAG => convert1(Info.MAG);
 
         /// <summary>
         /// Randomly gain 1 or 0 from this list.
         /// </summary>
-        public Saves.Item[] MugList => hml(Info.mughigh, Info.mugmed, Info.muglow);
+        public Saves.Item[] MugList => hml(Info.MugHigh, Info.MugMed, Info.MugLow);
 
-        public byte MugRate => (byte)(MathHelper.Clamp(Info.mugRate * 100 / byte.MaxValue, 0, 100));
+        public byte MugRate => (byte)(MathHelper.Clamp(Info.MugRate * 100 / byte.MaxValue, 0, 100));
 
-        public override FF8String Name => Info.name;
+        public override FF8String Name => Info.Name;
 
-        public override byte SPD => convert2(Info.spd);
+        public override byte SPD => convert2(Info.SPD);
 
-        public override byte SPR => convert2(Info.spr);
+        public override byte SPR => convert2(Info.SPR);
 
-        public override byte STR => convert1(Info.str);
+        public override byte STR => convert1(Info.STR);
 
-        public override byte VIT => convert2(Info.vit);
+        public override byte VIT => convert2(Info.VIT);
 
         #endregion Properties
 
@@ -130,23 +130,23 @@ namespace OpenVIII
                 FixedLevel = fixedLevel
             };
             r._CurrentHP = startinghp ?? r.MaxHP();
-            if ((r.Info.bitSwitch & Information.Flag1.Zombie) != 0)
+            if ((r.Info.BitSwitch & Flag1.Zombie) != 0)
             {
                 r.Statuses0 |= Kernel.PersistentStatuses.Zombie;
             }
-            if ((r.Info.bitSwitch & Information.Flag1.Auto_Protect) != 0)
+            if ((r.Info.BitSwitch & Flag1.AutoProtect) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Protect;
             }
-            if ((r.Info.bitSwitch & Information.Flag1.Auto_Reflect) != 0)
+            if ((r.Info.BitSwitch & Flag1.AutoReflect) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Reflect;
             }
-            if ((r.Info.bitSwitch & Information.Flag1.Auto_Shell) != 0)
+            if ((r.Info.BitSwitch & Flag1.AutoShell) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Shell;
             }
-            if ((r.Info.bitSwitch & Information.Flag1.Fly) != 0)
+            if ((r.Info.BitSwitch & Flag1.Fly) != 0)
             {
                 r.Statuses1 |= Kernel.BattleOnlyStatuses.Float;
             }
@@ -161,20 +161,20 @@ namespace OpenVIII
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public Cards.ID Card()
         {
-            if (Info.card.Skip(1).All(x => x == Cards.ID.Immune)) return Cards.ID.Immune;
+            if (Info.Card.Skip(1).All(x => x == Cards.ID.Immune)) return Cards.ID.Immune;
             int p = (256 * MaxHP() - 255 * CurrentHP()) / MaxHP();
             int r = Memory.Random.Next(256);
             // 2 is rare card, 1 is normal card 0 per ifrit.
-            return r < (p + 1) ? (r < 17 ? Info.card[2] : Info.card[1]) : Cards.ID.Fail;
+            return r < (p + 1) ? (r < 17 ? Info.Card[2] : Info.Card[1]) : Cards.ID.Fail;
         }
 
         public Cards.ID CardDrop()
         {
             //9 / 256
-            if (Info.card[0] == Cards.ID.Immune) return Info.card[1];
+            if (Info.Card[0] == Cards.ID.Immune) return Info.Card[1];
 
             int r = Memory.Random.Next(256);
-            return r < 9 ? Info.card[1] : Cards.ID.Fail;
+            return r < 9 ? Info.Card[1] : Cards.ID.Fail;
         }
 
         public override Damageable Clone() => throw new NotImplementedException();
@@ -224,7 +224,7 @@ namespace OpenVIII
                 return 100;
             // I wonder if i should average the resistances in cases of multiple elements.
             else
-                return conv(Info.resistance[l.FindIndex(x => (x & @in) != 0) - 1]);
+                return conv(Info.Resistance[l.FindIndex(x => (x & @in) != 0) - 1]);
             short conv(byte val) => (short)MathHelper.Clamp(900 - (val * 10), -100, 400);
         }
 
@@ -233,14 +233,14 @@ namespace OpenVIII
         /// </summary>
         /// <param name="lasthitlevel">Level of character whom got last hit.</param>
         /// <returns></returns>
-        public int EXPExtra(byte lasthitlevel) => convert3(Info.expExtra, lasthitlevel);
+        public int EXPExtra(byte lasthitlevel) => convert3(Info.ExpExtra, lasthitlevel);
 
         public override ushort MaxHP()
         {
             //from Ifrit's help file
-            if (Info.hp == null)
+            if (Info.HP == null)
                 return 0;
-            int i = (Info.hp[0] * Level * Level / 20) + (Info.hp[0] + Info.hp[2] * 100) * Level + Info.hp[1] * 10 + Info.hp[3] * 1000;
+            int i = (Info.HP[0] * Level * Level / 20) + (Info.HP[0] + Info.HP[2] * 100) * Level + Info.HP[1] * 10 + Info.HP[3] * 1000;
             return (ushort)MathHelper.Clamp(i, 0, ushort.MaxValue);
         }
 
@@ -293,31 +293,31 @@ namespace OpenVIII
             switch (s)
             {
                 case Kernel.PersistentStatuses.Death:
-                    r = Info.deathResistanceMental;
+                    r = Info.DeathResistanceMental;
                     break;
 
                 case Kernel.PersistentStatuses.Poison:
-                    r = Info.poisonResistanceMental;
+                    r = Info.PoisonResistanceMental;
                     break;
 
                 case Kernel.PersistentStatuses.Petrify:
-                    r = Info.petrifyResistanceMental;
+                    r = Info.PetrifyResistanceMental;
                     break;
 
                 case Kernel.PersistentStatuses.Darkness:
-                    r = Info.darknessResistanceMental;
+                    r = Info.DarknessResistanceMental;
                     break;
 
                 case Kernel.PersistentStatuses.Silence:
-                    r = Info.silenceResistanceMental;
+                    r = Info.SilenceResistanceMental;
                     break;
 
                 case Kernel.PersistentStatuses.Berserk:
-                    r = Info.berserkResistanceMental;
+                    r = Info.BerserkResistanceMental;
                     break;
 
                 case Kernel.PersistentStatuses.Zombie:
-                    r = Info.zombieResistanceMental;
+                    r = Info.ZombieResistanceMental;
                     break;
             }
 
@@ -331,23 +331,23 @@ namespace OpenVIII
             switch (s)
             {
                 case Kernel.BattleOnlyStatuses.Sleep:
-                    r = Info.sleepResistanceMental;
+                    r = Info.SleepResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Haste:
-                    r = Info.hasteResistanceMental;
+                    r = Info.HasteResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Slow:
-                    r = Info.slowResistanceMental;
+                    r = Info.SlowResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Stop:
-                    r = Info.stopResistanceMental;
+                    r = Info.StopResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Regen:
-                    r = Info.regenResistanceMental;
+                    r = Info.RegenResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Protect:
@@ -357,7 +357,7 @@ namespace OpenVIII
                     break;
 
                 case Kernel.BattleOnlyStatuses.Reflect:
-                    r = Info.reflectResistanceMental;
+                    r = Info.ReflectResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Aura:
@@ -367,30 +367,30 @@ namespace OpenVIII
                     break;
 
                 case Kernel.BattleOnlyStatuses.Doom:
-                    r = Info.doomResistanceMental;
+                    r = Info.DoomResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Invincible:
                     break;
 
                 case Kernel.BattleOnlyStatuses.Petrifying:
-                    r = Info.slowPetrifyResistanceMental;
+                    r = Info.SlowPetrifyResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Float:
-                    r = Info.floatResistanceMental;
+                    r = Info.FloatResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Confuse:
-                    r = Info.confuseResistanceMental;
+                    r = Info.ConfuseResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Drain:
-                    r = Info.drainResistanceMental;
+                    r = Info.DrainResistanceMental;
                     break;
 
                 case Kernel.BattleOnlyStatuses.Eject:
-                    r = Info.explusionResistanceMental;
+                    r = Info.ExpulsionResistanceMental;
                     break;
                 case BattleOnlyStatuses.None:
                     break;
@@ -511,9 +511,9 @@ namespace OpenVIII
         private T hml<T>(T h, T m, T l)
         {
             byte level = Level;
-            if (level > Info.highLevelStart)
+            if (level > Info.HighLevelStart)
                 return h;
-            else if (level > Info.medLevelStart)
+            else if (level > Info.MedLevelStart)
                 return m;
             else return l;
         }
@@ -521,9 +521,9 @@ namespace OpenVIII
         private int levelgroup()
         {
             byte l = Level;
-            if (l > Info.highLevelStart)
+            if (l > Info.HighLevelStart)
                 return 2;
-            if (l > Info.medLevelStart)
+            if (l > Info.MedLevelStart)
                 return 1;
             else return 0;
         }

@@ -1,205 +1,186 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace OpenVIII.Battle.Dat
 {
     /// <summary>
+    /// Section 7: Information & stats
     /// </summary>
     /// <see cref="http://forums.qhimm.com/index.php?topic=8741.0"/>
     /// <seealso cref="http://wiki.ffrtt.ru/index.php/FF8/FileFormat_DAT#Section_7:_Informations_.26_stats"/>
     /// <seealso cref="http://www.gjoerulv.com/"/>
-    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = DebugBattleDat.Section7Size)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = ByteSize)]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public struct Information
     {
-        [Flags]
-        public enum Flag1 : byte
-        {
-            None = 0,
-            Zombie = 0x1,
-            Fly = 0x2,
-            zz1 = 0x4,
-            zz2 = 0x8,
-            zz3 = 0x10,
-            Auto_Reflect = 0x20,
-            Auto_Shell = 0x40,
-            Auto_Protect = 0x80,
-        }
+        #region Fields
 
-        [Flags]
-        public enum Flag2 : byte
-        {
-            None = 0,
-            zz1 = 0x1,
-            zz2 = 0x2,
-            unused1 = 0x4,
-            unused2 = 0x8,
-            unused3 = 0x10,
-            unused4 = 0x20,
-            DiablosMissed = 0x40,
-            AlwaysCard = 0x80,
-        }
-
-        [Flags]
-        public enum UnkFlag : byte
-        {
-            None = 0,
-            unk0 = 0x1,
-            unk1 = 0x2,
-            unk2 = 0x4,
-            unk3 = 0x8,
-            unk4 = 0x10,
-            unk5 = 0x20,
-            unk6 = 0x40,
-            unk7 = 0x80,
-        }
+        public const int ByteSize = 380;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 24)]
-        private byte[] _name;
+        private readonly byte[] _name;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] hp;
+        public readonly byte[] HP;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] str;
+        public readonly byte[] STR;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] vit;
+        public readonly byte[] VIT;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] mag;
+        public readonly byte[] MAG;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] spr;
+        public readonly byte[] SPR;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] spd;
+        public readonly byte[] SPD;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public byte[] eva;
+        public readonly byte[] EVA;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public Abilities[] abilitiesLow;
+        public readonly Abilities[] AbilitiesLow;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public Abilities[] abilitiesMed;
+        public readonly Abilities[] AbilitiesMed;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public Abilities[] abilitiesHigh;
+        public readonly Abilities[] AbilitiesHigh;
 
         /// <summary>
         /// Level med stats start
         /// </summary>
-
-        public byte medLevelStart;
+        public readonly byte MedLevelStart;
 
         /// <summary>
         /// Level high stats start
         /// </summary>
+        public readonly byte HighLevelStart;
 
-        public byte highLevelStart;
+        public readonly UnkFlag UnkFlag;
 
-        public UnkFlag unkflag;
-
-        public Flag1 bitSwitch;
+        public readonly Flag1 BitSwitch;
 
         /// <summary>
         /// Cards per ifrit this is more of a drop, mod and rare mod
         /// </summary>
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public Cards.ID[] card;
+        public readonly Cards.ID[] Card;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-        public byte[] devour;
+        public readonly byte[] Devour;
 
-        public Flag2 bitSwitch2;
+        public readonly Flag2 BitSwitch2;
 
-        public UnkFlag unkflag2;
+        public readonly UnkFlag UnkFlag2;
 
-        public ushort expExtra;
+        public readonly ushort ExpExtra;
 
-        public ushort exp;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Magic[] drawlow;
+        public readonly ushort Exp;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Magic[] drawmed;
+        public readonly Magic[] DrawLow;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Magic[] drawhigh;
+        public readonly Magic[] DrawMed;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Saves.Item[] muglow;
+        public readonly Magic[] DrawHigh;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Saves.Item[] mugmed;
+        public readonly Saves.Item[] MugLow;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Saves.Item[] mughigh;
+        public readonly Saves.Item[] MugMed;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Saves.Item[] droplow;
+        public readonly Saves.Item[] MugHigh;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Saves.Item[] dropmed;
+        public readonly Saves.Item[] DropLow;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public Saves.Item[] drophigh;
+        public readonly Saves.Item[] DropMed;
 
-        public byte mugRate;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public readonly Saves.Item[] DropHigh;
 
-        public byte dropRate;
+        public readonly byte MugRate;
 
-        public byte padding;
+        public readonly byte DropRate;
 
-        public byte ap;
+        public readonly byte Padding;
+
+        public readonly byte AP;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        public byte[] unk3;
+        public readonly byte[] Unk3;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-        public byte[] resistance;
+        public readonly byte[] Resistance;
 
-        public byte deathResistanceMental;
+        public readonly byte DeathResistanceMental;
 
-        public byte poisonResistanceMental;
+        public readonly byte PoisonResistanceMental;
 
-        public byte petrifyResistanceMental;
+        public readonly byte PetrifyResistanceMental;
 
-        public byte darknessResistanceMental;
+        public readonly byte DarknessResistanceMental;
 
-        public byte silenceResistanceMental;
+        public readonly byte SilenceResistanceMental;
 
-        public byte berserkResistanceMental;
+        public readonly byte BerserkResistanceMental;
 
-        public byte zombieResistanceMental;
+        public readonly byte ZombieResistanceMental;
 
-        public byte sleepResistanceMental;
+        public readonly byte SleepResistanceMental;
 
-        public byte hasteResistanceMental;
+        public readonly byte HasteResistanceMental;
 
-        public byte slowResistanceMental;
+        public readonly byte SlowResistanceMental;
 
-        public byte stopResistanceMental;
+        public readonly byte StopResistanceMental;
 
-        public byte regenResistanceMental;
+        public readonly byte RegenResistanceMental;
 
-        public byte reflectResistanceMental;
+        public readonly byte ReflectResistanceMental;
 
-        public byte doomResistanceMental;
+        public readonly byte DoomResistanceMental;
 
-        public byte slowPetrifyResistanceMental;
+        public readonly byte SlowPetrifyResistanceMental;
 
-        public byte floatResistanceMental;
+        public readonly byte FloatResistanceMental;
 
-        public byte confuseResistanceMental;
+        public readonly byte ConfuseResistanceMental;
 
-        public byte drainResistanceMental;
+        public readonly byte DrainResistanceMental;
 
-        public byte explusionResistanceMental;
+        public readonly byte ExpulsionResistanceMental;
 
-        public byte percentResistanceMental;
+        public readonly byte PercentResistanceMental;
 
-        public FF8String name => _name;
+        #endregion Fields
+
+        #region Properties
+
+        public FF8String Name => _name;
+
+        #endregion Properties
+
+        #region Methods
+
+        public Information CreateInstance(BinaryReader br, long byteOffset)
+        {
+            br.BaseStream.Seek(byteOffset, SeekOrigin.Begin);
+            return Extended.ByteArrayToStructure<Information>(br.ReadBytes(ByteSize));
+        }
+
+        public override string ToString() => Name;
+
+        #endregion Methods
     }
 }

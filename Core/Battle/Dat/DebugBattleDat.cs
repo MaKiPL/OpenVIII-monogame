@@ -32,7 +32,6 @@ namespace OpenVIII.Battle.Dat
 
         public Information Information;
 
-        public const int Section7Size = 380;
 
         #endregion Fields
 
@@ -46,8 +45,7 @@ namespace OpenVIII.Battle.Dat
         /// <param name="fileName"></param>
         private void ReadSection7(uint start)
         {
-            _br.BaseStream.Seek(start, SeekOrigin.Begin);
-            Information = Extended.ByteArrayToStructure<Information>(_br.ReadBytes(Section7Size));
+            Information = Information.CreateInstance(_br, start);
         }
 
         #endregion Methods

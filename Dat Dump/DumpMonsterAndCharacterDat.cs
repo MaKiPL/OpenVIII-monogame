@@ -130,7 +130,7 @@ namespace OpenVIII.Dat_Dump
                 if (!MonsterData.TryGetValue(i, out DebugBattleDat battleDat) || battleDat == null) continue;
                 const string type = "monster";
                 string id = i.ToString();
-                FF8String name = battleDat.Information.name ?? new FF8String("");
+                FF8String name = battleDat.Information.Name ?? new FF8String("");
                 string prefix = $"{type}{Ls}{id}{Ls}{name}";
                 xmlWriter.WriteStartElement(type);
                 xmlWriter.WriteAttributeString("BattleID", id);
@@ -153,15 +153,15 @@ namespace OpenVIII.Dat_Dump
                 void addAbilities(string fieldName, IReadOnlyList<Abilities> abilities)
                 {
                     if (abilities == null) return;
-                    for (int number = 0; number < e.Info.abilitiesLow.Length; number++)
+                    for (int number = 0; number < e.Info.AbilitiesLow.Length; number++)
                     {
                         Abilities a = abilities[number];
                         addAbility(fieldName, a, number);
                     }
                 }
-                addAbilities(nameof(e.Info.abilitiesLow), e.Info.abilitiesLow);
-                addAbilities(nameof(e.Info.abilitiesMed), e.Info.abilitiesMed);
-                addAbilities(nameof(e.Info.abilitiesHigh), e.Info.abilitiesHigh);
+                addAbilities(nameof(e.Info.AbilitiesLow), e.Info.AbilitiesLow);
+                addAbilities(nameof(e.Info.AbilitiesMed), e.Info.AbilitiesMed);
+                addAbilities(nameof(e.Info.AbilitiesHigh), e.Info.AbilitiesHigh);
             }
             xmlWriter.WriteEndElement();
         }

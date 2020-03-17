@@ -115,7 +115,7 @@ namespace OpenVIII.IGMData.Pool
                     }
                     else
                     {
-                        Target_Group.SelectTargetWindows(Magic.DATA);
+                        Target_Group.SelectTargetWindows(Magic.Data);
                         ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.White;
                         BLANKS[_Draw] = false;
                     }

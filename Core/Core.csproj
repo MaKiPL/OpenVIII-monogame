@@ -266,7 +266,10 @@
     <Compile Include="Battle\Enemies\Enemy.cs" />
     <Compile Include="Battle\Encounters\EnemyCoordinates.cs" />
     <Compile Include="Battle\Enemies\EnemyInstanceInformation.cs" />
+    <Compile Include="Battle\Enemies\Flag1.cs" />
+    <Compile Include="Battle\Enemies\Flag2.cs" />
     <Compile Include="Battle\Enemies\Magic.cs" />
+    <Compile Include="Battle\Enemies\UnkFlag.cs" />
     <Compile Include="Battle\FPS_Camera.cs" />
     <Compile Include="Battle\Enemies\IEnemy.cs" />
     <Compile Include="Battle\Enemies\Information.cs" />
