@@ -7,6 +7,10 @@ using System.Runtime.InteropServices;
 
 namespace OpenVIII.Battle.Dat
 {
+    /// <summary>
+    /// Section 2d: Vertex
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_DAT#Useful_structures"/>
     [StructLayout(LayoutKind.Explicit, Pack = 1, Size = ByteSize)]
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
     public class Vertex

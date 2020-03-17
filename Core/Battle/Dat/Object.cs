@@ -6,6 +6,10 @@ using Microsoft.Xna.Framework;
 
 namespace OpenVIII.Battle.Dat
 {
+    /// <summary>
+    /// Section 2b: Object Data
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_DAT#Object_Data"/>
     public class Object
     {
         #region Fields

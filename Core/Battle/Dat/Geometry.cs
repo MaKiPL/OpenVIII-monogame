@@ -5,6 +5,10 @@ using System.Runtime.InteropServices;
 
 namespace OpenVIII.Battle.Dat
 {
+    /// <summary>
+    /// Section 2: Model geometry
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_DAT#Header_.28data_sub_table.29"/>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class Geometry
     {

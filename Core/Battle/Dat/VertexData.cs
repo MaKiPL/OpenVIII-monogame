@@ -5,6 +5,10 @@ using System.Linq;
 
 namespace OpenVIII.Battle.Dat
 {
+    /// <summary>
+    /// Section 2c: Vertex Data
+    /// </summary>
+    /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_DAT#Vertice_Data"/>
     public class VertexData
     {
         #region Fields
