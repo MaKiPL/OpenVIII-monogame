@@ -139,8 +139,8 @@ namespace OpenVIII.IGMData.Pool
                         return AddItem(ref pos, ref skip, item, itemdata);
                     }
                     HashSet<Item_In_Menu> items = new HashSet<Item_In_Menu>();
-                    foreach(var a in e.Abilities.Where(x=>x.ITEM != null))
-                        items.Add(a.ITEM.Value);
+                    foreach(var a in e.Abilities.Where(x=>x.Item != null))
+                        items.Add(a.Item.Value);
                     foreach (var a in e.DropList.Where(x => x.ID != 0 && x.Data != null))
                         items.Add(a.Data.Value);
                     foreach (var a in e.MugList.Where(x => x.ID != 0 && x.Data != null))

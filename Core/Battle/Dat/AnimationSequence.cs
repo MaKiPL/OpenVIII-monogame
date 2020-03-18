@@ -10,9 +10,9 @@ namespace OpenVIII.Battle.Dat
     {
         #region Fields
 
-        private readonly IReadOnlyList<byte> _data;
         public readonly int ID;
         public readonly uint Offset;
+        private readonly IReadOnlyList<byte> _data;
 
         #endregion Fields
 
@@ -28,6 +28,18 @@ namespace OpenVIII.Battle.Dat
         }
 
         #endregion Constructors
+
+        #region Properties
+
+        public int Count => _data.Count;
+
+        #endregion Properties
+
+        #region Indexers
+
+        public byte this[int index] => _data[index];
+
+        #endregion Indexers
 
         #region Methods
 
@@ -49,20 +61,10 @@ namespace OpenVIII.Battle.Dat
                 .ToList().AsReadOnly();
         }
 
+        public IEnumerator<byte> GetEnumerator() => _data.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _data.GetEnumerator();
+
         #endregion Methods
-
-        public IEnumerator<byte> GetEnumerator()
-        {
-            return _data.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _data.GetEnumerator();
-        }
-
-        public int Count => _data.Count;
-
-        public byte this[int index] => _data[index];
     }
 }

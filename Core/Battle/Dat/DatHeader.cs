@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace OpenVIII.Battle.Dat
 {
@@ -14,9 +13,8 @@ namespace OpenVIII.Battle.Dat
     {
         #region Fields
 
-        private readonly IReadOnlyList<uint> _pSections;
-
         public readonly uint Eof;
+        private readonly IReadOnlyList<uint> _pSections;
 
         #endregion Fields
 
@@ -31,24 +29,26 @@ namespace OpenVIII.Battle.Dat
 
         #endregion Constructors
 
+        #region Properties
+
+        public int Count => _pSections.Count;
+
+        #endregion Properties
+
+        #region Indexers
+
+        public uint this[int index] => _pSections[index];
+
+        #endregion Indexers
+
         #region Methods
 
         public static DatHeader CreateInstance(BinaryReader br) => new DatHeader(br);
 
+        public IEnumerator<uint> GetEnumerator() => _pSections.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_pSections).GetEnumerator();
+
         #endregion Methods
-
-        public IEnumerator<uint> GetEnumerator()
-        {
-            return _pSections.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable) _pSections).GetEnumerator();
-        }
-
-        public int Count => _pSections.Count;
-
-        public uint this[int index] => _pSections[index];
     }
 }

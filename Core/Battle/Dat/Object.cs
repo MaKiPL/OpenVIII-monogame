@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework;
 
 namespace OpenVIII.Battle.Dat
 {
@@ -14,24 +12,20 @@ namespace OpenVIII.Battle.Dat
     {
         #region Fields
 
-        public readonly ushort CVertices;
-        public readonly IReadOnlyList<VertexData> VertexData;
-        public readonly ushort CTriangles;
         public readonly ushort CQuads;
+        public readonly ushort CTriangles;
+        public readonly ushort CVertices;
         public readonly ulong Padding;
-        public readonly IReadOnlyList<Triangle> Triangles;
         public readonly IReadOnlyList<Quad> Quads;
+        public readonly IReadOnlyList<Triangle> Triangles;
+        public readonly IReadOnlyList<VertexData> VertexData;
 
         #endregion Fields
 
-        public static Object CreateInstance(BinaryReader br, long byteOffset)
-        {
-            br.BaseStream.Seek(byteOffset, SeekOrigin.Begin);
-            return new Object(br);
-        }
+        #region Constructors
 
         private Object(BinaryReader br)
-        { 
+        {
             CVertices = br.ReadUInt16();
             VertexData = Dat.VertexData.CreateInstances(br, CVertices);
             //padding
@@ -42,8 +36,20 @@ namespace OpenVIII.Battle.Dat
             Debug.Assert(Padding == 0);
             if (CTriangles == 0 && CQuads == 0)
                 return;
-            Triangles = Triangle.CreateInstances(br,CTriangles);
+            Triangles = Triangle.CreateInstances(br, CTriangles);
             Quads = Quad.CreateInstances(br, CQuads);
         }
+
+        #endregion Constructors
+
+        #region Methods
+
+        public static Object CreateInstance(BinaryReader br, long byteOffset)
+        {
+            br.BaseStream.Seek(byteOffset, SeekOrigin.Begin);
+            return new Object(br);
+        }
+
+        #endregion Methods
     }
 }

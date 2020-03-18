@@ -62,7 +62,7 @@ namespace OpenVIII.Dat_Dump
                         $"{nameof(Enemy.EII.Data.FileName)}{Ls}" +
                         $"{nameof(Abilities)}{Ls}" +
                         $"Number{Ls}" +
-                        $"{nameof(Abilities.animation)}{Ls}" +
+                        $"{nameof(Abilities.Animation)}{Ls}" +
                         $"Type{Ls}" +
                         $"BattleID{Ls}" +
                         $"Name{Ls}");
@@ -145,10 +145,10 @@ namespace OpenVIII.Dat_Dump
                                        $"{battleDat.FileName}{Ls}" +
                                        $"{fieldName}{Ls}" +
                                        $"{number}{Ls}" +
-                                       $"{a.animation}{Ls}" +
-                                       $"{(a.ITEM != null ? nameof(a.ITEM) : a.MAGIC != null ? nameof(a.MAGIC) : a.MONSTER != null ? nameof(a.MONSTER) : "")}{Ls}" +
-                                       $"{a.ITEM?.ID ?? (a.MAGIC?.MagicDataID ?? (a.MONSTER?.EnemyAttackID ?? 0))}{Ls}" +
-                                       $"\"{(a.ITEM != null ? a.ITEM.Value.Name : a.MAGIC != null ? a.MAGIC.Name : a.MONSTER != null ? a.MONSTER.Name : new FF8String(""))}\"{Ls}");
+                                       $"{a.Animation}{Ls}" +
+                                       $"{(a.Item != null ? nameof(a.Item) : a.Magic != null ? nameof(a.Magic) : a.Monster != null ? nameof(a.Monster) : "")}{Ls}" +
+                                       $"{a.Item?.ID ?? (a.Magic?.MagicDataID ?? (a.Monster?.EnemyAttackID ?? 0))}{Ls}" +
+                                       $"\"{(a.Item != null ? a.Item.Value.Name : a.Magic != null ? a.Magic.Name : a.Monster != null ? a.Monster.Name : new FF8String(""))}\"{Ls}");
                 }
                 void addAbilities(string fieldName, IReadOnlyList<Abilities> abilities)
                 {

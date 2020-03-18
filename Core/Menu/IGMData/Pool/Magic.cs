@@ -110,8 +110,8 @@ namespace OpenVIII.IGMData.Pool
 
                     HashSet<Kernel.MagicData> Unique_Magic = new HashSet<Kernel.MagicData>();
 
-                    foreach (var m in e.Abilities.Where(x => x.MAGIC != null))
-                        Unique_Magic.Add(m.MAGIC);
+                    foreach (var m in e.Abilities.Where(x => x.Magic != null))
+                        Unique_Magic.Add(m.Magic);
                     foreach (var m in e.DrawList.Where(x => x.Data != null))
                         Unique_Magic.Add(m.Data);
                     foreach(var m in Unique_Magic)

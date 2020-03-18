@@ -54,6 +54,7 @@ namespace OpenVIII.Battle.Dat
 
         #region Constructors
 
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private Quad(BinaryReader br)
         {
             _a = br.ReadUInt16();

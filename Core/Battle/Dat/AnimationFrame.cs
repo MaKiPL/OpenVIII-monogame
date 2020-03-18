@@ -36,7 +36,7 @@ namespace OpenVIII.Battle.Dat
                     const int special = 1024;
                     if ((byte)unk1 <= 0) return special; // if checked here it'll crash
                     short unk1V = bitReader.ReadBits(16);
-                    return checked((short) (unk1V + special));
+                    return checked((short)(unk1V + special));
                 }
 
                 return (calc(), calc(), calc());

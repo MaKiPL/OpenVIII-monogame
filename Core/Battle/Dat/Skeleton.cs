@@ -50,10 +50,6 @@ namespace OpenVIII.Battle.Dat
 
         #region Constructors
 
-        private Skeleton()
-        {
-        }
-
         private Skeleton(BinaryReader br)
         {
             if (br.BaseStream.Position + 16 >= br.BaseStream.Length) throw new InvalidDataException($"{nameof(Skeleton)} Stream to short to read");
@@ -67,6 +63,7 @@ namespace OpenVIII.Battle.Dat
             Unk7 = br.ReadUInt16();
             Bones = Bone.CreateInstances(br, CBones);
         }
+
         #endregion Constructors
 
         #region Properties

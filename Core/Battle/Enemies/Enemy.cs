@@ -48,7 +48,7 @@ namespace OpenVIII
 
         public Battle.EnemyInstanceInformation EII { get; set; }
 
-        public IEnumerable<EnemyAttacksData> EnemyAttacksDatas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
+        public IEnumerable<EnemyAttacksData> EnemyAttacksDatas => Abilities.Where(x => x.Monster != null).Select(x => x.Monster);
 
         public override byte EVA => Convert2(Info.EVA);
 

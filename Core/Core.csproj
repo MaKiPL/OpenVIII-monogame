@@ -244,6 +244,7 @@
     <Compile Include="Battle\Dat\CharacterDatFile.cs" />
     <Compile Include="Battle\Dat\DatHeader.cs" />
     <Compile Include="Battle\Dat\DatFile.cs" />
+    <Compile Include="Battle\Dat\KernelFlag.cs" />
     <Compile Include="Battle\Dat\MonsterDatFile.cs" />
     <Compile Include="Battle\Dat\EntityType.cs" />
     <Compile Include="Battle\Dat\Geometry.cs" />

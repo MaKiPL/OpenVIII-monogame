@@ -52,6 +52,7 @@ namespace OpenVIII.Battle.Dat
         private Triangle()
         { }
 
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private Triangle(BinaryReader br)
 
         {
