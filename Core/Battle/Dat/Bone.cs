@@ -90,7 +90,7 @@ namespace OpenVIII.Battle.Dat
         public (float X, float Y, float Z) Rot =>
                     (_rotX / 4096.0f * 360.0f, _rotY / 4096.0f * 360.0f, _rotZ / 4096.0f * 360.0f);
 
-        public float Size => BoneSize / DebugBattleDat.ScaleHelper;
+        public float Size => BoneSize / DatFile.ScaleHelper;
 
         public (float A, float B, float C) UnkV => (_unk4 / 4096.0f, _unk5 / 4096.0f, _unk6 / 4096.0f);
 

@@ -10,7 +10,7 @@ namespace OpenVIII.Battle
         public bool BIsActive;
         public bool BIsHidden;
         public bool BIsUntargetable;
-        public DebugBattleDat Data;
+        public DatFile Data;
 
         /// <summary>
         /// bit position of the enemy in encounter data. Use to pair the information with

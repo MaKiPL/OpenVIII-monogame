@@ -71,7 +71,7 @@ namespace OpenVIII.Battle.Dat
 
         #region Properties
 
-        public Vector3 GetScale => new Vector3(Scale / DebugBattleDat.ScaleHelper * 12, Scale / DebugBattleDat.ScaleHelper * 12, Scale / DebugBattleDat.ScaleHelper * 12);
+        public Vector3 GetScale => new Vector3(Scale / DatFile.ScaleHelper * 12, Scale / DatFile.ScaleHelper * 12, Scale / DatFile.ScaleHelper * 12);
 
         #endregion Properties
 

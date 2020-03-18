@@ -43,7 +43,7 @@ namespace OpenVIII
         private static bool _forceReload;
         private static FPS_Camera _fpsCamera;
         private static TimeSpan _frameTime = TimeSpan.Zero;
-        private static DebugBattleDat[] _monstersData;
+        private static MonsterDatFile[] _monstersData;
         private static sbyte? _partyPos;
         private static RegularPyramid _regularPyramid;
         private static byte _sid;
@@ -140,12 +140,15 @@ namespace OpenVIII
             switch (entityType)
             {
                 case EntityType.Monster:
-                    Enemy.Party[nIndex].EII.AnimationSystem.AnimationQueue.Enqueue(newAnimId);
+                    if (Enemy.Party[nIndex].EII.Data.Animations.Count > newAnimId)
+                        Enemy.Party[nIndex].EII.AnimationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 case EntityType.Character:
                 case EntityType.Weapon:
-                    _characterInstances[nIndex].AnimationSystem.AnimationQueue.Enqueue(newAnimId);
+                    if (Math.Max(_characterInstances[nIndex].Data.Character.Animations.Count,
+                        _characterInstances[nIndex].Data.Weapon.Animations.Count) > newAnimId)
+                        _characterInstances[nIndex].AnimationSystem.AnimationQueue.Enqueue(newAnimId);
                     return;
 
                 default:
@@ -155,7 +158,7 @@ namespace OpenVIII
 
         public static void AddSequenceToQueue(EntityType entityType, int nIndex, AnimationSequence section5)
         {
-            foreach (byte newAnimId in section5.AnimationQueue)
+            foreach (byte newAnimId in section5)
             {
                 AddAnimationToQueue(entityType, nIndex, newAnimId);
             }
@@ -460,6 +463,7 @@ namespace OpenVIII
             UpdateFrames();
         }
 
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static void AddSequenceToAllQueues(AnimationSequence section5)
         {
             for (int i = 0; i < Enemy.Party.Count; i++)
@@ -477,24 +481,21 @@ namespace OpenVIII
             AnimationSequence section5;
             for (int i = 0; i < Enemy.Party.Count; i++)
             {
-                if (Enemy.Party[i].EII.Data.Sequences.Count > sid)
-                {
-                    section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x => x.ID == sid);
-                    if (section5.AnimationQueue != null)
-                        AddSequenceToQueue(EntityType.Monster, i, section5);
-                    //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
-                }
+                if (Enemy.Party[i].EII.Data.Sequences.Count <= sid) continue;
+                section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x => x.ID == sid);
+
+                AddSequenceToQueue(EntityType.Monster, i, section5);
+                //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
             }
             for (int i = 0; i < _characterInstances.Count; i++)
             {
-                DebugBattleDat weapon = _characterInstances[i].Data.Weapon;
-                DebugBattleDat character = _characterInstances[i].Data.Character;
+                DatFile weapon = _characterInstances[i].Data.Weapon;
+                DatFile character = _characterInstances[i].Data.Character;
                 IReadOnlyList<AnimationSequence> sequences =
                     (weapon?.Sequences.Count ?? 0) == 0 ? character.Sequences : weapon.Sequences;
                 if (sequences.Count <= sid) continue;
                 section5 = sequences.FirstOrDefault(x => x.ID == sid);
-                if (section5.AnimationQueue != null)
-                    AddSequenceToQueue(EntityType.Character, i, section5);
+                AddSequenceToQueue(EntityType.Character, i, section5);
                 //AddAnimationToQueue(Debug_battleDat.EntityType.Character, i, 0);
             }
         }
@@ -550,13 +551,13 @@ namespace OpenVIII
             }
         }
 
-        private static void DrawBattleDat(DebugBattleDat battleDat, double step, ref AnimationSystem animationSystem,
+        private static void DrawBattleDat(DatFile battleDatFile, double step, ref AnimationSystem animationSystem,
             ref Vector3 position, Quaternion? nullRotation = null)
         {
-            for (int i = 0; /*i<1 &&*/ i < battleDat.Geometry.CObjects; i++)
+            for (int i = 0; /*i<1 &&*/ i < battleDatFile.Geometry.CObjects; i++)
             {
                 Quaternion rotation = nullRotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
-                VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP = battleDat.GetVertexPositions(
+                VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP = battleDatFile.GetVertexPositions(
                     i,
                     ref position,
                     rotation,
@@ -566,7 +567,7 @@ namespace OpenVIII
                     return;
                 for (int k = 0; k < vertexPositionTexturePointersGRP.VPT.Length / 3; k++)
                 {
-                    Ate.Texture = (Texture2D)battleDat.Textures[vertexPositionTexturePointersGRP.TexturePointers[k]];
+                    Ate.Texture = (Texture2D)battleDatFile.Textures[vertexPositionTexturePointersGRP.TexturePointers[k]];
                     foreach (EffectPass pass in Ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
@@ -808,11 +809,11 @@ namespace OpenVIII
 
         private static CharacterData ReadCharacterData(int characterId, int alternativeCostumeId, int weaponId)
         {
-            DebugBattleDat character = DebugBattleDat.Load(characterId, EntityType.Character, alternativeCostumeId);
-            DebugBattleDat weapon;
+            DatFile character = CharacterDatFile.CreateInstance(characterId, alternativeCostumeId);
+            DatFile weapon;
             if (characterId == 1 || characterId == 9)
-                weapon = DebugBattleDat.Load(characterId, EntityType.Weapon, weaponId, character);
-            else if (weaponId != -1) weapon = DebugBattleDat.Load(characterId, EntityType.Weapon, weaponId);
+                weapon = WeaponDatFile.CreateInstance(characterId, weaponId, character);
+            else if (weaponId != -1) weapon = WeaponDatFile.CreateInstance(characterId, weaponId);
             else weapon = null;
             return new CharacterData
             {
@@ -911,23 +912,23 @@ namespace OpenVIII
 
             if (encounter.EnabledEnemy.Cast<bool>().Any(x => x))
             {
-                _monstersData = encounter.UniqueMonstersList?.Select(x => DebugBattleDat.Load(x, EntityType.Monster)).ToArray();
+                _monstersData = encounter.UniqueMonstersList?.Select(x => MonsterDatFile.CreateInstance(x)).ToArray();
             }
             else
             {
-                _monstersData = new DebugBattleDat[0];
+                _monstersData = null;
                 return;
             }
 
             Enemy.Party = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)]).Select(x =>
             {
-                DebugBattleDat debugBattleDat = _monstersData.FirstOrDefault(mon => mon.GetId == x.x);
+                DatFile datFile = _monstersData.FirstOrDefault(mon => mon.GetId == x.x);
                 int i = r(x.i);
-                return debugBattleDat == default
+                return datFile == default
                     ? null
                     : (Enemy)new EnemyInstanceInformation
                     {
-                        Data = debugBattleDat,
+                        Data = datFile,
                         BIsHidden = encounter.HiddenEnemies[i],
                         BIsActive = true,
                         PartyPos = (sbyte)(-1 - x.i),

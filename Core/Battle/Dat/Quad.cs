@@ -129,7 +129,7 @@ namespace OpenVIII.Battle.Dat
             {
                 Vector3 GetVertex(Quad refQuad, byte j)
                 {
-                    return DebugBattleDat.TransformVertex(vertices[refQuad.GetIndex(j)], translationPosition, rotation);
+                    return DatFile.TransformVertex(vertices[refQuad.GetIndex(j)], translationPosition, rotation);
                 }
                 return new VertexPositionTexture(GetVertex(quad, i),
                     quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));

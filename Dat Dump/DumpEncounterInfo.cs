@@ -230,7 +230,7 @@ namespace OpenVIII.Dat_Dump
                     unique.ForEach(x =>
                     {
                         string name = "<unknown>";
-                        if (DumpMonsterAndCharacterDat.MonsterData.TryGetValue(x, out DebugBattleDat battleDat) && battleDat != null)
+                        if (DumpMonsterAndCharacterDat.MonsterData.TryGetValue(x, out DatFile battleDat) && battleDat != null)
                         {
                             name = battleDat.Information.Name.Value_str.Trim();
                             name += $" ({battleDat.FileName})";

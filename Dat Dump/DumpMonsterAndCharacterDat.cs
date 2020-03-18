@@ -17,8 +17,8 @@ namespace OpenVIII.Dat_Dump
     {
         #region Fields
 
-        public static ConcurrentDictionary<int, DebugBattleDat> MonsterData = new ConcurrentDictionary<int, DebugBattleDat>();
-        private static readonly ConcurrentDictionary<int, DebugBattleDat> CharacterData = new ConcurrentDictionary<int, DebugBattleDat>();
+        public static ConcurrentDictionary<int, DatFile> MonsterData = new ConcurrentDictionary<int, DatFile>();
+        private static readonly ConcurrentDictionary<int, DatFile> CharacterData = new ConcurrentDictionary<int, DatFile>();
 
         #endregion Fields
 
@@ -37,7 +37,7 @@ namespace OpenVIII.Dat_Dump
             // so the sequence dump is probably less useful or broken.
             Task<bool> addMonster(int i)
             => Task.Run(() => MonsterData.TryAdd(i,
-                        DebugBattleDat.Load(i, EntityType.Monster,
+                        DatFile.Load(i, EntityType.Monster,
                             flags: Sections.AnimationSequences | Sections.Information)));
 
             await Task.WhenAll(Enumerable.Range(0, 200).Select(addMonster));
@@ -86,9 +86,9 @@ namespace OpenVIII.Dat_Dump
             Console.ReadLine();
         }
 
-        private static string XmlAnimations(XmlWriter xmlWriter, DebugBattleDat battleDat)
+        private static string XmlAnimations(XmlWriter xmlWriter, DatFile battleDatFile)
         {
-            string count = $"{battleDat.Animations.Count}";
+            string count = $"{battleDatFile.Animations.Count}";
             xmlWriter.WriteStartElement("animations");
             xmlWriter.WriteAttributeString("Count", count);
             xmlWriter.WriteEndElement();
@@ -100,12 +100,12 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteStartElement("characters");
             for (int i = 0; i <= 10; i++)
             {
-                DebugBattleDat test = DebugBattleDat.Load(i, EntityType.Character, 0);
+                DatFile test = DatFile.Load(i, EntityType.Character, 0);
                 if (test != null && CharacterData.TryAdd(i, test))
                 {
                 }
 
-                if (!CharacterData.TryGetValue(i, out DebugBattleDat battleDat) || battleDat == null) continue;
+                if (!CharacterData.TryGetValue(i, out DatFile battleDat) || battleDat == null) continue;
                 const string type = "character";
                 xmlWriter.WriteStartElement(type);
                 string id = i.ToString();
@@ -127,7 +127,7 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteStartElement("monsters");
             for (int i = 0; i <= 200; i++)
             {
-                if (!MonsterData.TryGetValue(i, out DebugBattleDat battleDat) || battleDat == null) continue;
+                if (!MonsterData.TryGetValue(i, out DatFile battleDat) || battleDat == null) continue;
                 const string type = "monster";
                 string id = i.ToString();
                 FF8String name = battleDat.Information.Name ?? new FF8String("");
@@ -166,13 +166,13 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteEndElement();
         }
 
-        private static void XmlSequences(XmlWriter xmlWriter, DebugBattleDat battleDat, TextWriter csvFile, string prefix)
+        private static void XmlSequences(XmlWriter xmlWriter, DatFile battleDatFile, TextWriter csvFile, string prefix)
         {
             xmlWriter.WriteStartElement("sequences");
-            string count = $"{battleDat.Sequences?.Count ?? 0}";
+            string count = $"{battleDatFile.Sequences?.Count ?? 0}";
             xmlWriter.WriteAttributeString("Count", count);
-            if (battleDat.Sequences != null)
-                foreach (AnimationSequence s in battleDat.Sequences)
+            if (battleDatFile.Sequences != null)
+                foreach (AnimationSequence s in battleDatFile.Sequences)
                 {
                     xmlWriter.WriteStartElement("sequence");
                     string id = s.ID.ToString();
@@ -196,22 +196,22 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteEndElement();
         }
 
-        private static void XmlWeaponData(XmlWriter xmlWriter, int characterID, ref DebugBattleDat r, TextWriter csvFile, string prefix1)
+        private static void XmlWeaponData(XmlWriter xmlWriter, int characterID, ref DatFile r, TextWriter csvFile, string prefix1)
         {
-            ConcurrentDictionary<int, DebugBattleDat> weaponData = new ConcurrentDictionary<int, DebugBattleDat>();
+            ConcurrentDictionary<int, DatFile> weaponData = new ConcurrentDictionary<int, DatFile>();
             xmlWriter.WriteStartElement("weapons");
             for (int i = 0; i <= 40; i++)
             {
-                DebugBattleDat test;
+                DatFile test;
                 if (characterID == 1 || characterID == 9)
-                    test = DebugBattleDat.Load(characterID, EntityType.Weapon, i, r);
+                    test = DatFile.Load(characterID, EntityType.Weapon, i, r);
                 else
-                    test = DebugBattleDat.Load(characterID, EntityType.Weapon, i);
+                    test = DatFile.Load(characterID, EntityType.Weapon, i);
                 if (test != null && weaponData.TryAdd(i, test))
                 {
                 }
 
-                if (!weaponData.TryGetValue(i, out DebugBattleDat battleDat) || battleDat == null) continue;
+                if (!weaponData.TryGetValue(i, out DatFile battleDat) || battleDat == null) continue;
                 const string type = "weapon";
                 string id = i.ToString();
                 xmlWriter.WriteStartElement(type);

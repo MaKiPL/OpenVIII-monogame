@@ -241,8 +241,10 @@
     <Compile Include="Battle\Dat\AnimationSequence.cs" />
     <Compile Include="Battle\Dat\AnimationYOffset.cs" />
     <Compile Include="Battle\Dat\Bone.cs" />
+    <Compile Include="Battle\Dat\CharacterDatFile.cs" />
+    <Compile Include="Battle\Dat\DatHeader.cs" />
     <Compile Include="Battle\Dat\DatFile.cs" />
-    <Compile Include="Battle\Dat\DebugBattleDat.cs" />
+    <Compile Include="Battle\Dat\MonsterDatFile.cs" />
     <Compile Include="Battle\Dat\EntityType.cs" />
     <Compile Include="Battle\Dat\Geometry.cs" />
     <Compile Include="Battle\Dat\Object.cs" />
@@ -256,6 +258,7 @@
     <Compile Include="Battle\Dat\Vertex.cs" />
     <Compile Include="Battle\Dat\VertexData.cs" />
     <Compile Include="Battle\Dat\VertexPositionTexturePointersGRP.cs" />
+    <Compile Include="Battle\Dat\WeaponDatFile.cs" />
     <Compile Include="Battle\Encounters\Coordinate.cs" />
     <Compile Include="Battle\DeadTime.cs" />
     <Compile Include="Battle\Dat\VertexPositionTexturePointersGRPExt.cs" />

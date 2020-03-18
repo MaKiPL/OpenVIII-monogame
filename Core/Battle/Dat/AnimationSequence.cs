@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ namespace OpenVIII.Battle.Dat
     {
         #region Fields
 
-        private readonly IReadOnlyList<byte> Data;
+        private readonly IReadOnlyList<byte> _data;
         public readonly int ID;
         public readonly uint Offset;
 
@@ -23,19 +24,10 @@ namespace OpenVIII.Battle.Dat
 
             ID = id;
             Offset = start;
-            Data = br.ReadBytes(((int)(start - end)));
+            _data = br.ReadBytes(((int)Math.Abs(end - start)));
         }
 
         #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        /// Test-Reason for list is so i can go read the data with out removing it.
-        /// </summary>
-        public IReadOnlyList<byte> AnimationQueue { get; private set; }
-
-        #endregion Properties
 
         #region Methods
 
@@ -61,16 +53,16 @@ namespace OpenVIII.Battle.Dat
 
         public IEnumerator<byte> GetEnumerator()
         {
-            return Data.GetEnumerator();
+            return _data.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return Data.GetEnumerator();
+            return _data.GetEnumerator();
         }
 
-        public int Count => Data.Count;
+        public int Count => _data.Count;
 
-        public byte this[int index] => Data[index];
+        public byte this[int index] => _data[index];
     }
 }

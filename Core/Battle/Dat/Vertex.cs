@@ -57,8 +57,8 @@ namespace OpenVIII.Battle.Dat
         public static IReadOnlyList<Vector3> CreateInstances(BinaryReader br, ushort count) => Enumerable
             .Range(0, count).Select(_ => (Vector3)CreateInstance(br)).ToList().AsReadOnly();
 
-        public static implicit operator Vector3(Vertex v) => new Vector3(-v.X / DebugBattleDat.ScaleHelper,
-            -v.Z / DebugBattleDat.ScaleHelper, -v.Y / DebugBattleDat.ScaleHelper);
+        public static implicit operator Vector3(Vertex v) => new Vector3(-v.X / DatFile.ScaleHelper,
+            -v.Z / DatFile.ScaleHelper, -v.Y / DatFile.ScaleHelper);
 
         public override string ToString() =>
             $"{nameof(X)}={X}, {nameof(Y)}={Y}, {nameof(Z)}={Z}, {nameof(Vector3)}={(Vector3)this}";

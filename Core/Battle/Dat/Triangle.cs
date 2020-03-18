@@ -113,7 +113,7 @@ namespace OpenVIII.Battle.Dat
             {
                 Vector3 GetVertex(ref Triangle refTriangle, byte j)
                 {
-                    return DebugBattleDat.TransformVertex(vertices[refTriangle.GetIndex(j)], translationPosition, rotation);
+                    return DatFile.TransformVertex(vertices[refTriangle.GetIndex(j)], translationPosition, rotation);
                 }
                 return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
             }
