@@ -134,7 +134,9 @@ namespace OpenVIII.Fields
                 switch (Mod)
                 {
                     case Field_modes.INIT:
-                        Archive.Init();
+                        bool init = Archive.Init();
+                        if (init && Mod == Field_modes.INIT)
+                            Mod++;
                         if (FieldMenu == null)
                             FieldMenu = FieldMenu.Create();
                         FieldMenu.Refresh();
