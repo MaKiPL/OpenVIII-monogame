@@ -351,6 +351,7 @@
     <Compile Include="Field\PMP.cs" />
     <Compile Include="Field\Sections.cs" />
     <Compile Include="Field\SFX.cs" />
+    <Compile Include="Field\Toggles.cs" />
     <Compile Include="Field\WalkMesh\Access.cs" />
     <Compile Include="Field\Background\Background.cs" />
     <Compile Include="Field\Background\BackgroundTextureType.cs" />

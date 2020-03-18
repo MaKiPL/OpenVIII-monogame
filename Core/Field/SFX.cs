@@ -10,24 +10,23 @@ namespace OpenVIII.Fields
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_SFX"/>
     public class SFX : IReadOnlyList<uint>
     {
-        List<uint> sndids;
-        public SFX(byte[] sfxb)
+        private readonly IReadOnlyList<uint> _sndIDs;
+        public SFX(byte[] sfxB)
         {
-            if (sfxb != null && sfxb.Length >= 4)
-            {
-                sndids = new List<uint>(sfxb.Length / 4);
-                MemoryStream ms;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(sfxb)))
-                    while (ms.Position < ms.Length)
-                        sndids.Add(br.ReadUInt32());
-            }
+            if (sfxB == null || sfxB.Length < 4) return;
+            List<uint> sndIDs = new List<uint>(sfxB.Length / 4);
+            MemoryStream ms;
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(sfxB)))
+                while (ms.Position < ms.Length)
+                    sndIDs.Add(br.ReadUInt32());
+            _sndIDs = sndIDs.AsReadOnly();
         }
 
-        public uint this[int index] => ((IReadOnlyList<uint>)sndids)[index];
+        public uint this[int index] => _sndIDs[index];
 
-        public int Count => ((IReadOnlyList<uint>)sndids).Count;
+        public int Count => _sndIDs.Count;
 
-        public IEnumerator<uint> GetEnumerator() => ((IReadOnlyList<uint>)sndids).GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<uint>)sndids).GetEnumerator();
+        public IEnumerator<uint> GetEnumerator() => _sndIDs.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _sndIDs.GetEnumerator();
     }
 }

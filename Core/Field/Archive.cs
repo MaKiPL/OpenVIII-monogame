@@ -44,6 +44,7 @@ namespace OpenVIII.Fields
             return !r.Init(inputFieldID, flags) ? null : r;
         }
 
+/*
         public HashSet<ushort> GetForcedBattleEncounters() => JSMObjects != null && JSMObjects.Count > 0 ?
             (
              from jsmObject in JSMObjects
@@ -52,6 +53,7 @@ namespace OpenVIII.Fields
              where instruction is BATTLE
              let battle = ((BATTLE)instruction)
              select battle.Encounter).ToHashSet() : null;
+*/
 
         public HashSet<FF8String> GetAreaNames() => JSMObjects != null && JSMObjects.Count > 0 ?
             (
@@ -153,7 +155,7 @@ namespace OpenVIII.Fields
                     {
                         Debug.WriteLine($"FileNotFound :: {FileName.ToUpper()}.sy");
                         //sy file might be optional.
-                        //Mod = Field_modes.NOJSM;
+                        //Mod = Field_modes.NoJSM;
                     }
                 }
             }
@@ -165,16 +167,16 @@ namespace OpenVIII.Fields
 
             //if (flags.HasFlag(Sections.MCH))
             //{
-            //    byte[] mchb = getfile(".mch");//Field character models
+            //    byte[] mchB = getFile(".mch");//Field character models
             //}
 
             //if (flags.HasFlag(Sections.ONE))
             //{
-            //    byte[] oneb = getfile(".one");//Field character models container
+            //    byte[] oneB = getFile(".one");//Field character models container
             //}
             //if (flags.HasFlag(Sections.MSD))
             //{
-            //    byte[] msdb = getfile(".msd");//dialogs
+            //    byte[] msdB = getFile(".msd");//dialogs
             //}
             if (flags.HasFlag(Sections.INF))
             {
@@ -205,11 +207,11 @@ namespace OpenVIII.Fields
             }
             //if (flags.HasFlag(Sections.PMD))
             //{
-            //    byte[] pmdb = getfile(".pmd");//particle info
-            //    if (pmdb != null && pmdb.Length > 4)
+            //    byte[] pmdB = getFile(".pmd");//particle info
+            //    if (pmdB != null && pmdB.Length > 4)
             //        using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(),
             //            $"{Memory.FieldHolder.GetString()}.pmd"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-            //            fs.Write(pmdb, 0, pmdb.Length);
+            //            fs.Write(pmdB, 0, pmdB.Length);
             //}
             if (flags.HasFlag(Sections.PMP))
             {

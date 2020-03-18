@@ -3,113 +3,111 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenVIII.Fields
 {
     /// <summary>
     /// this works only as a preview for field models and proof-of-concept
     /// </summary>
-    public class Module_field_object_test
+    public class ModuleFieldObjectTest
     {
-        private static int lastFieldId = -1;
+        private static int _lastFieldId = -1;
 
-        static int debugModelId = 0;
-        static int animId = 0;
-        static int animFrame = 0;
+        private static int _debugModelId;
+        private static int _animId;
+        private static int _animFrame;
 
-        static double timer = 0.0f;
+        private static double _timer;
 
-        static FieldCharaOne charaOne;
+        private static FieldCharaOne _charaOne;
 
-        private static FPS_Camera fps_camera;
-        private static Matrix projectionMatrix, viewMatrix, worldMatrix;
-        private static float degrees;
-        private static float camDistance = 10.0f;
-        private static float renderCamDistance = 1200f;
-        private static Vector3 camPosition, camTarget;
-        public static BasicEffect effect;
-        public static AlphaTestEffect ate;
+        private static FPS_Camera _fpsCamera;
+        private static Matrix _projectionMatrix, _viewMatrix, _worldMatrix;
+        private static float _degrees;
+        //private static float _camDistance = 10.0f;
+        private const float RenderCamDistance = 1200f;
+        private static Vector3 _camPosition, _camTarget;
+        public static BasicEffect Effect;
+        public static AlphaTestEffect Ate;
 
-        static bool bInitialized = false;
+        private static bool _bInitialized;
 
         public static void Update()
         {
-            if(!bInitialized)
+            if(!_bInitialized)
             {
-                fps_camera = new FPS_Camera();
+                _fpsCamera = new FPS_Camera();
                 //init renderer
-                effect = new BasicEffect(Memory.graphics.GraphicsDevice);
-                effect.EnableDefaultLighting();
-                effect.TextureEnabled = true;
-                effect.DirectionalLight0.Enabled = true;
-                effect.DirectionalLight1.Enabled = false;
-                effect.DirectionalLight2.Enabled = false;
-                effect.DirectionalLight0.Direction = new Vector3(
+                Effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+                Effect.EnableDefaultLighting();
+                Effect.TextureEnabled = true;
+                Effect.DirectionalLight0.Enabled = true;
+                Effect.DirectionalLight1.Enabled = false;
+                Effect.DirectionalLight2.Enabled = false;
+                Effect.DirectionalLight0.Direction = new Vector3(
                    -0.349999f,
                     0.499999f,
                     -0.650000f
                     );
-                effect.DirectionalLight0.SpecularColor = new Vector3(0.8500003f, 0.8500003f, 0.8500003f);
-                effect.DirectionalLight0.DiffuseColor = new Vector3(1.54999f, 1.54999f, 1.54999f);
-                camTarget = new Vector3(0, 0f, 0f);
-                camPosition = new Vector3(0, 0f, 0f);
-                projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                Effect.DirectionalLight0.SpecularColor = new Vector3(0.8500003f, 0.8500003f, 0.8500003f);
+                Effect.DirectionalLight0.DiffuseColor = new Vector3(1.54999f, 1.54999f, 1.54999f);
+                _camTarget = new Vector3(0, 0f, 0f);
+                _camPosition = new Vector3(0, 0f, 0f);
+                _projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                    MathHelper.ToRadians(60),
                                    Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
                     1f, 10000f);
-                viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                _viewMatrix = Matrix.CreateLookAt(_camPosition, _camTarget,
                              new Vector3(0f, 1f, 0f));// Y up
                                                       //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
                                                       //              Forward, Vector3.Up);
-                worldMatrix = Matrix.CreateTranslation(0, 0, 0);
+                _worldMatrix = Matrix.CreateTranslation(0, 0, 0);
                 //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
                 //Memory.musicIndex = 30;
                 //AV.Music.Play();
-                ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+                Ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
                 {
-                    Projection = projectionMatrix,
-                    View = viewMatrix,
-                    World = worldMatrix,
+                    Projection = _projectionMatrix,
+                    View = _viewMatrix,
+                    World = _worldMatrix,
                     FogEnabled = false,
                     FogColor = Color.CornflowerBlue.ToVector3(),
                     FogStart = 9.75f,
-                    FogEnd = renderCamDistance
+                    FogEnd = RenderCamDistance
                 };
-                bInitialized = true;
+                _bInitialized = true;
             }
-            if (lastFieldId != Memory.FieldHolder.FieldID)
+            if (_lastFieldId != Memory.FieldHolder.FieldID)
                 ReInit();
-            viewMatrix = fps_camera.Update(ref camPosition, ref camTarget, ref degrees);
+            _viewMatrix = _fpsCamera.Update(ref _camPosition, ref _camTarget, ref _degrees);
             if (Input2.Button(MouseButtons.LeftButton, ButtonTrigger.OnRelease))
-                debugModelId++;
+                _debugModelId++;
             if (Input2.Button(Microsoft.Xna.Framework.Input.Keys.F1, ButtonTrigger.OnRelease))
                 ReInit();
-            if (Input2.Button(Microsoft.Xna.Framework.Input.Keys.F2, ButtonTrigger.OnPress))
+            if (Input2.Button(Microsoft.Xna.Framework.Input.Keys.F2))
                 Memory.FieldHolder.FieldID++;
-            if (Input2.Button(Microsoft.Xna.Framework.Input.Keys.F3, ButtonTrigger.OnPress))
+            if (Input2.Button(Microsoft.Xna.Framework.Input.Keys.F3))
                 Memory.FieldHolder.FieldID--;
-            if (Input2.Button(Microsoft.Xna.Framework.Input.Keys.F4, ButtonTrigger.OnPress))
+            if (Input2.Button(Microsoft.Xna.Framework.Input.Keys.F4))
             {
-                animId++;
-                animFrame = 0;
+                _animId++;
+                _animFrame = 0;
             }
 
-            timer += Memory.ElapsedGameTime.TotalMilliseconds / 1000.0d;
-            if (timer > 0.033d)
+            _timer += Memory.ElapsedGameTime.TotalMilliseconds / 1000.0d;
+            if (_timer > 0.033d)
             {
-                animFrame++;
-                timer = 0f;
+                _animFrame++;
+                _timer = 0f;
             }
         }
 
 
         private static void ReInit()
         {
-            lastFieldId = Memory.FieldHolder.FieldID;
+            _lastFieldId = Memory.FieldHolder.FieldID;
             
-            charaOne = new FieldCharaOne(Memory.FieldHolder.FieldID);
+            _charaOne = new FieldCharaOne(Memory.FieldHolder.FieldID);
         }
 
         public static void Draw()
@@ -119,47 +117,47 @@ namespace OpenVIII.Fields
             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            Memory.graphics.GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Aqua);
-            if (!bInitialized)
+            Memory.graphics.GraphicsDevice.Clear(Color.Aqua);
+            if (!_bInitialized)
                 return;
             uint maxAnim = 0;
             uint maxFrame = 0;
 
-            ate.Projection = projectionMatrix;
-            ate.View = viewMatrix;
-            ate.World = worldMatrix;
-            effect.Projection = projectionMatrix;
-            effect.View = viewMatrix;
-            effect.World = worldMatrix;
+            Ate.Projection = _projectionMatrix;
+            Ate.View = _viewMatrix;
+            Ate.World = _worldMatrix;
+            Effect.Projection = _projectionMatrix;
+            Effect.View = _viewMatrix;
+            Effect.World = _worldMatrix;
 
-            if (charaOne.fieldModels == null)
-                goto _donotdraw;
+            if (_charaOne.fieldModels == null)
+                goto _doNotDraw;
 
-            if (debugModelId >= charaOne.fieldModels.Length)
-                debugModelId = 0;
-            int whichModel = debugModelId;
+            if (_debugModelId >= _charaOne.fieldModels.Length)
+                _debugModelId = 0;
+            int whichModel = _debugModelId;
 
-            if (charaOne.fieldModels[whichModel].mch == null)
-                goto _donotdraw;
+            if (_charaOne.fieldModels[whichModel].mch == null)
+                goto _doNotDraw;
 
-            charaOne.fieldModels[whichModel].mch.AssignTextureSizes(
-                charaOne.fieldModels[whichModel].textures, 
-                Enumerable.Range(0,charaOne.fieldModels[whichModel].textures.Length).ToArray());
+            _charaOne.fieldModels[whichModel].mch.AssignTextureSizes(
+                _charaOne.fieldModels[whichModel].textures, 
+                Enumerable.Range(0,_charaOne.fieldModels[whichModel].textures.Length).ToArray());
 
-            maxAnim = charaOne.fieldModels[whichModel].mch.GetAnimationCount();
-            if (animId >= maxAnim)
-                animId = 0;
-            maxFrame = charaOne.fieldModels[whichModel].mch.GetAnimationFramesCount(animId);
-            if (animFrame >= maxFrame)
-                animFrame = 0;
+            maxAnim = _charaOne.fieldModels[whichModel].mch.GetAnimationCount();
+            if (_animId >= maxAnim)
+                _animId = 0;
+            maxFrame = _charaOne.fieldModels[whichModel].mch.GetAnimationFramesCount(_animId);
+            if (_animFrame >= maxFrame)
+                _animFrame = 0;
 
             Tuple<VertexPositionColorTexture[], byte[]> charaCollection = 
-                charaOne.fieldModels[whichModel].mch.GetVertexPositions(Vector3.Zero,Quaternion.Identity, animId, animFrame);
+                _charaOne.fieldModels[whichModel].mch.GetVertexPositions(Vector3.Zero,Quaternion.Identity, _animId, _animFrame);
 
             Dictionary<Texture2D, List<VertexPositionColorTexture>> vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
             for (int i = 0; i < charaCollection.Item2.Length; i += 3)
             {
-                Texture2D charaTexture = charaOne.fieldModels[whichModel].textures[charaCollection.Item2[i]];
+                Texture2D charaTexture = _charaOne.fieldModels[whichModel].textures[charaCollection.Item2[i]];
                 if (!vptCollection.ContainsKey(charaTexture))
                     vptCollection.Add(charaTexture, new List<VertexPositionColorTexture>());
                 vptCollection[charaTexture].AddRange(charaCollection.Item1.Skip(i).Take(3).ToArray());
@@ -167,44 +165,44 @@ namespace OpenVIII.Fields
 
             foreach (KeyValuePair<Texture2D, List<VertexPositionColorTexture>> kvp in vptCollection)
             {
-                ate.Texture = kvp.Key;
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                Ate.Texture = kvp.Key;
+                foreach (EffectPass pass in Ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
                 }
             }
 
-            _donotdraw:
+            _doNotDraw:
             Memory.SpriteBatchStartAlpha();
-            if(charaOne.fieldModels == null)
+            if(_charaOne.fieldModels == null)
             {
                 Memory.font.RenderBasicText(
     $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
-    $"World Map Camera: ={camPosition}\n" +
-    $"FPS camera degrees: ={degrees}°\n" +
-    $"Current model is: =BROKEN\n" +
-    $"Animation={animId + 1} of {maxAnim} -- frame: {animFrame + 1} of {maxFrame}\n" +
-    $"F1 - reinit (for reparsing and live code debugging)\n" +
-    $"F2 - Next field\n" +
-    $"F3 - Previous field\n" +
-    $"F4 - Next animation\n" +
-    $"LMB - Next NPC model\n" +
-    $"NULL: ={0}", 30, 20, 1f, 2f, lineSpacing: 5);
+    $"World Map Camera: ={_camPosition}\n" +
+    $"FPS camera degrees: ={_degrees}°\n" +
+    "Current model is: =BROKEN\n" +
+    $"Animation={_animId + 1} of {maxAnim} -- frame: {_animFrame + 1} of {maxFrame}\n" +
+    "F1 - re-init (for reparsing and live code debugging)\n" +
+    "F2 - Next field\n" +
+    "F3 - Previous field\n" +
+    "F4 - Next animation\n" +
+    "LMB - Next NPC model\n" +
+    "NULL: =0", 30, 20, 1f, 2f, lineSpacing: 5);
             }
             else
                 Memory.font.RenderBasicText(
     $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
-    $"World Map Camera: ={camPosition}\n" +
-    $"FPS camera degrees: ={degrees}°\n" +
-    $"Current model is: ={debugModelId+1} of {charaOne.fieldModels.Length} which is {new string(charaOne.fieldModels[debugModelId].modelName,0,4)}\n" +
-    $"Animation={animId+1} of {maxAnim} -- frame: {animFrame+1} of {maxFrame}\n" +
-    $"F1 - reinit (for reparsing and live code debugging)\n" +
-    $"F2 - Next field\n" +
-    $"F3 - Previous field\n" +
-    $"F4 - Next animation\n" +
-    $"LMB - Next NPC model\n" +
-    $"NULL: ={0}", 30, 20, 1f, 2f, lineSpacing: 5);
+    $"World Map Camera: ={_camPosition}\n" +
+    $"FPS camera degrees: ={_degrees}°\n" +
+    $"Current model is: ={_debugModelId+1} of {_charaOne.fieldModels.Length} which is {new string(_charaOne.fieldModels[_debugModelId].modelName,0,4)}\n" +
+    $"Animation={_animId+1} of {maxAnim} -- frame: {_animFrame+1} of {maxFrame}\n" +
+    "F1 - re-init (for reparsing and live code debugging)\n" +
+    "F2 - Next field\n" +
+    "F3 - Previous field\n" +
+    "F4 - Next animation\n" +
+    "LMB - Next NPC model\n" +
+    "NULL: =0", 30, 20, 1f, 2f, lineSpacing: 5);
             Memory.SpriteBatchEnd();
 
         }

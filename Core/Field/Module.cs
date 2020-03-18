@@ -1,6 +1,4 @@
 ﻿using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -16,66 +14,74 @@ namespace OpenVIII.Fields
     {
         #region Fields
 
-        private static Archive Archive;
+        private static Archive _archive;
 
         #endregion Fields
 
         #region Enums
 
-        [Flags]
-        public enum _Toggles : byte
-        {
-            DumpingData = 0x1,
-            ClassicSpriteBatch = 0x2,
-            Quad = 0x4,
-            WalkMesh = 0x8,
-            Deswizzle = 0x10,
-            Perspective = 0x20,
-            Menu = 0x40,
-        }
+        
 
         #endregion Enums
 
         #region Properties
 
-        public static Background Background => Archive?.Background;
-        public static Cameras Cameras => Archive?.Cameras;
-        private static EventEngine EventEngine => Archive?.EventEngine;
+        public static Background Background => _archive?.Background;
+/*
+        public static Cameras Cameras => _archive?.Cameras;
+*/
+/*
+        private static EventEngine EventEngine => _archive?.EventEngine;
+*/
         public static FieldMenu FieldMenu { get; set; }
-        private static INF inf => Archive?.INF;
-        public static FF8String AreaName => Archive?.GetAreaNames()?.FirstOrDefault();
+/*
+        private static INF INF => _archive?.INF;
+*/
+        public static FF8String AreaName => _archive?.GetAreaNames()?.FirstOrDefault();
 
+/*
         public static ushort GetForcedBattleEncounter
         {
             get
             {
-                HashSet<ushort> t = Archive?.GetForcedBattleEncounters();
+                HashSet<ushort> t = _archive?.GetForcedBattleEncounters();
                 if (t == null || t.Count == 0)
                     return ushort.MaxValue;
                 return t.First();
             }
         }
+*/
 
         public static FieldModes Mod
         {
-            get => Archive.Mod; private set => Archive.Mod = value;
+            get => _archive.Mod; private set => _archive.Mod = value;
         }
 
-        public static MrtRat MrtRat => Archive.MrtRat;
+/*
+        public static MrtRat MrtRat => _archive.MrtRat;
+*/
 
-        private static MSK msk => Archive.MSK;
+/*
+        private static MSK MSK => _archive.MSK;
+*/
 
-        public static PMP pmp => Archive.PMP;
+        public static PMP PMP => _archive.PMP;
 
-        private static IServices services => Archive.Services;
+/*
+        private static IServices Services => _archive.Services;
+*/
 
-        private static SFX sfx => Archive.SFX;
+/*
+        private static SFX SFX => _archive.SFX;
+*/
 
-        private static TDW tdw => Archive.TDW;
+/*
+        private static TDW TDW => _archive.TDW;
+*/
 
-        public static _Toggles Toggles { get; set; } = _Toggles.Quad | _Toggles.Menu;
+        public static Toggles Toggles { get; set; } = Toggles.Quad | Toggles.Menu;
 
-        public static WalkMesh WalkMesh => Archive.WalkMesh;
+        public static WalkMesh WalkMesh => _archive.WalkMesh;
 
         #endregion Properties
 
@@ -88,8 +94,8 @@ namespace OpenVIII.Fields
                 case FieldModes.Init:
                     break; //null
                 default:
-                    Archive.Draw();
-                    if (Toggles.HasFlag(_Toggles.Menu))
+                    _archive.Draw();
+                    if (Toggles.HasFlag(Toggles.Menu))
                         FieldMenu.Draw();
                     break;
 
@@ -101,17 +107,17 @@ namespace OpenVIII.Fields
 
         public static string GetFieldName()
         {
-            string fieldname = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
-            if (string.IsNullOrWhiteSpace(fieldname))
-                fieldname = $"unk{Memory.FieldHolder.FieldID}";
-            return fieldname;
+            string fieldName = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
+            if (string.IsNullOrWhiteSpace(fieldName))
+                fieldName = $"unk{Memory.FieldHolder.FieldID}";
+            return fieldName;
         }
 
-        public static string GetFolder(string fieldname = null, string subfolder = "")
+        public static string GetFolder(string fieldName = null, string subfolder = "")
         {
-            if (string.IsNullOrWhiteSpace(fieldname))
-                fieldname = GetFieldName();
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldname.Substring(0, 2), fieldname, subfolder);
+            if (string.IsNullOrWhiteSpace(fieldName))
+                fieldName = GetFieldName();
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldName.Substring(0, 2), fieldName, subfolder);
             Directory.CreateDirectory(folder);
             return folder;
         }
@@ -119,22 +125,22 @@ namespace OpenVIII.Fields
         public static void ResetField()
         {
             Memory.SuppressDraw = true;
-            if (Archive != null)
+            if (_archive != null)
                 Mod = FieldModes.Init;
         }
 
         public static void Update()
         {
             if (Input2.DelayedButton(Keys.D0))
-                Toggles = Toggles.Flip(_Toggles.Menu);
+                Toggles = Toggles.Flip(Toggles.Menu);
             else
             {
-                if (Archive == null)
-                    Archive = new Archive();
+                if (_archive == null)
+                    _archive = new Archive();
                 switch (Mod)
                 {
                     case FieldModes.Init:
-                        bool init = Archive.Init();
+                        bool init = _archive.Init();
                         if (init && Mod == FieldModes.Init)
                             Mod++;
                         if (FieldMenu == null)
@@ -143,13 +149,13 @@ namespace OpenVIII.Fields
                         break;
 
                     case FieldModes.DebugRender:
-                        Archive.Update();
-                        if (Toggles.HasFlag(_Toggles.Menu))
+                        _archive.Update();
+                        if (Toggles.HasFlag(Toggles.Menu))
                             FieldMenu.Update();
                         break; //await events here
                     case FieldModes.NoJSM://no scripts but has background.
-                        Archive.Update();
-                        if (Toggles.HasFlag(_Toggles.Menu))
+                        _archive.Update();
+                        if (Toggles.HasFlag(Toggles.Menu))
                             FieldMenu.Update();
                         break; //await events here
                     case FieldModes.Disabled:

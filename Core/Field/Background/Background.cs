@@ -396,7 +396,7 @@ namespace OpenVIII.Fields
             float tilesWidth = GetTiles.Width;
             float tilesHeight = GetTiles.Height;
 
-            if (Module.Toggles.HasFlag(Module._Toggles.Perspective)) //perspective mode shows gabs in the tiles.
+            if (Module.Toggles.HasFlag(Toggles.Perspective)) //perspective mode shows gabs in the tiles.
             {
                 //finds the min zoom out to fit the entire image in frame.
                 Vector2 half = new Vector2(tilesWidth / 2f, tilesHeight / 2f);
@@ -412,7 +412,7 @@ namespace OpenVIII.Fields
                     _camPosition.Z = minDistanceFromBG;
 
                 _projectionMatrix = Matrix.CreatePerspectiveFieldOfView(fieldOfView, Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
-                _viewMatrix = !Module.Toggles.HasFlag(Module._Toggles.Menu)
+                _viewMatrix = !Module.Toggles.HasFlag(Toggles.Menu)
                     ? _fpsCamera.Update(ref _camPosition, ref _camTarget, ref Degrees)
                     : Matrix.CreateLookAt(_camPosition, _camTarget, Vector3.Up);
             }
@@ -508,7 +508,7 @@ namespace OpenVIII.Fields
 
         private void DrawBackgroundQuads()
         {
-            if (!Module.Toggles.HasFlag(Module._Toggles.Quad)) return;
+            if (!Module.Toggles.HasFlag(Toggles.Quad)) return;
             DrawBackgroundQuadsStart();
             foreach (TileQuadTexture quad in _quads.Where(x => x.Enabled))
             {
@@ -576,7 +576,7 @@ namespace OpenVIII.Fields
 
         private void DrawSpriteBatch()
         {
-            if (!Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)) return;
+            if (!Module.Toggles.HasFlag(Toggles.ClassicSpriteBatch)) return;
             List<KeyValuePair<BlendMode, Texture2D>> drawTextures = GetTexturesReadyToDrawClassicSpriteBatch();
             bool open = false;
             BlendMode lastBlendMode = BlendMode.None;
@@ -634,7 +634,7 @@ namespace OpenVIII.Fields
 
         private void DrawWalkMesh()
         {//todo move into walk mesh class. was only because at the time I thought i'd need the background data.
-            if (!Module.Toggles.HasFlag(Module._Toggles.WalkMesh)) return;
+            if (!Module.Toggles.HasFlag(Toggles.WalkMesh)) return;
 
             _effect.TextureEnabled = false;
             Memory.graphics.GraphicsDevice.BlendFactor = Color.White;
@@ -656,7 +656,7 @@ namespace OpenVIII.Fields
 
                 _effect.Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView,
                     Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
-                _effect.View = !Module.Toggles.HasFlag(Module._Toggles.Menu)
+                _effect.View = !Module.Toggles.HasFlag(Toggles.Menu)
                     ? _fpsCamera.Update(ref _camPosition, ref _camTarget, ref Degrees)
                     : Matrix.CreateLookAt(_camPosition, _camTarget, Vector3.Up);
                 foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
@@ -671,7 +671,7 @@ namespace OpenVIII.Fields
 
         private void DumpRawTexture(byte[] mim)
         {
-            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Module._Toggles.DumpingData))
+            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Toggles.DumpingData))
             {
                 MemoryStream ms;
 
@@ -887,7 +887,7 @@ namespace OpenVIII.Fields
         //private void SaveSwizzled(string suf = "") => SaveSwizzled(TextureIDs, suf);
         private void OldSaveDeswizzled()
         {
-            if (Memory.EnableDumpingData || (Module.Toggles.HasFlag(Module._Toggles.DumpingData) && Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)))
+            if (Memory.EnableDumpingData || (Module.Toggles.HasFlag(Toggles.DumpingData) && Module.Toggles.HasFlag(Toggles.ClassicSpriteBatch)))
             {
                 string fieldName = Module.GetFieldName();
                 string folder = Module.GetFolder(fieldName);
@@ -921,7 +921,7 @@ namespace OpenVIII.Fields
 
         private bool ParseBackgroundClassicSpriteBatch(byte[] mim)
         {
-            if (!Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)) return true;
+            if (!Module.Toggles.HasFlag(Toggles.ClassicSpriteBatch)) return true;
             if (mim == null || (GetTiles?.Count ?? 0) == 0)
                 return false;
 
@@ -1218,7 +1218,7 @@ namespace OpenVIII.Fields
 
         private void SaveCluts()
         {
-            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Module._Toggles.DumpingData))
+            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Toggles.DumpingData))
             {
                 string path = Path.Combine(Module.GetFolder(),
                     $"{Module.GetFieldName()}_Clut.png");
@@ -1228,7 +1228,7 @@ namespace OpenVIII.Fields
 
         private static void SaveSwizzled(Dictionary<byte, Texture2D> textureIDs, string suf = "")
         {
-            if (!Memory.EnableDumpingData && !Module.Toggles.HasFlag(Module._Toggles.DumpingData)) return;
+            if (!Memory.EnableDumpingData && !Module.Toggles.HasFlag(Toggles.DumpingData)) return;
             string fieldName = Module.GetFieldName();
             string folder = Module.GetFolder(fieldName);
             foreach (KeyValuePair<byte, Texture2D> kvp in textureIDs)

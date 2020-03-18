@@ -12,29 +12,23 @@ namespace OpenVIII.Fields
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_MSK"/>
     public class MSK : IReadOnlyList<Vector3>
     {
-        private List<Vector3> CamPositions;
+        private readonly IReadOnlyList<Vector3> _camPositions;
 
-        public MSK(byte[] mskb)
+        public MSK(byte[] mskB)
         {
-            if (mskb != null && mskb.Length > 4)
-            {
-                MemoryStream ms;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(mskb)))
-                {
-                    int count = br.ReadInt32();
-                    CamPositions = new List<Vector3>(count);
-                    foreach (int i in Enumerable.Range(0, count))
-                        CamPositions.Add(new Vector3(br.ReadInt16(), br.ReadInt16(), br.ReadInt16()));
-                }
-            }
+            if (mskB == null || mskB.Length <= 4) return;
+            using (BinaryReader br = new BinaryReader(new MemoryStream(mskB)))
+                _camPositions = Enumerable.Range(0, br.ReadInt32())
+                    .Select(_ => new Vector3(br.ReadInt16(), br.ReadInt16(), br.ReadInt16())).ToList().AsReadOnly();
+            
         }
 
-        public Vector3 this[int index] => ((IReadOnlyList<Vector3>)CamPositions)[index];
+        public Vector3 this[int index] => _camPositions[index];
 
-        public int Count => ((IReadOnlyList<Vector3>)CamPositions).Count;
+        public int Count => _camPositions.Count;
 
-        public IEnumerator<Vector3> GetEnumerator() => ((IReadOnlyList<Vector3>)CamPositions).GetEnumerator();
+        public IEnumerator<Vector3> GetEnumerator() => _camPositions.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyList<Vector3>)CamPositions).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _camPositions.GetEnumerator();
     }
 }
