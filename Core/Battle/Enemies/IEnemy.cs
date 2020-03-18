@@ -30,7 +30,7 @@
 
         Saves.Item Drop(bool RareITEM);
 
-        int EXPExtra(byte lasthitlevel);
+        int EXPExtra(byte lastHitLevel);
 
         Saves.Item Mug(byte spd, bool RareITEM);
 

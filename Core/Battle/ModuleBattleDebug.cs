@@ -934,8 +934,8 @@ namespace OpenVIII
                         PartyPos = (sbyte)(-1 - x.i),
                         BIsUntargetable = encounter.UntargetableEnemy[i],
                         AnimationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
-                        Location = encounter.enemyCoordinates[i], //each instance needs own location.
-                        FixedLevel = encounter.bLevels[i]
+                        Location = encounter.EnemyCoordinates[i], //each instance needs own location.
+                        FixedLevel = encounter.BLevels[i]
                     };
             }).Where(x => x != null).ToList();
         }

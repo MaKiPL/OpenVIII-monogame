@@ -59,7 +59,7 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Damageable != null && Damageable.GetEnemy(out Enemy e))
             {
-                IEnumerable<EnemyAttacksData> enemyAttacksDatas = e.Enemy_Attacks_Datas as EnemyAttacksData[] ?? e.Enemy_Attacks_Datas.ToArray();
+                IEnumerable<EnemyAttacksData> enemyAttacksDatas = e.EnemyAttacksDatas as EnemyAttacksData[] ?? e.EnemyAttacksDatas.ToArray();
                 DefaultPages = enemyAttacksDatas.Count() / Rows;
                 int i = 0;
                 int skip = Page * Rows;

@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII.Battle
 {
     [Flags]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public enum EncounterFlag : byte
     {
         None,
-        CantEspace = 0x1,
+        CanNotEscape = 0x1,
         NoVictorySequence = 0x2,
         ShowTimer = 0x4,
-        NoEXP = 0x8,
-        SkipEXPScreen = 0x10,
+        NoExp = 0x8,
+        SkipExpScreen = 0x10,
         SurpriseAttack = 0x20,
         BackAttacked = 0x40,
-        isScriptedBattle = 0x80,
+        IsScriptedBattle = 0x80,
     }
 }

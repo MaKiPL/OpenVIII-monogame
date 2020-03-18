@@ -78,7 +78,7 @@ namespace OpenVIII.Battle
         public byte AlternativeCamera => Current.AlternativeCamera;
         public EncounterFlag BattleFlags => Current.BattleFlags;
         public BitArray EnabledEnemy => Current.EnabledEnemy;
-        public EnemyCoordinates enemyCoordinates => Current.enemyCoordinates;
+        public EnemyCoordinates enemyCoordinates => Current.EnemyCoordinates;
         public BitArray HiddenEnemies => Current.HiddenEnemies;
         public byte PrimaryCamera => Current.PrimaryCamera;
         public byte Scenario => Current.Scenario;
