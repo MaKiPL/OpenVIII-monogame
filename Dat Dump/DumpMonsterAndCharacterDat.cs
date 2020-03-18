@@ -37,8 +37,8 @@ namespace OpenVIII.Dat_Dump
             // so the sequence dump is probably less useful or broken.
             Task<bool> addMonster(int i)
             => Task.Run(() => MonsterData.TryAdd(i,
-                        DatFile.Load(i, EntityType.Monster,
-                            flags: Sections.AnimationSequences | Sections.Information)));
+                        MonsterDatFile.CreateInstance(i, 
+                            Sections.AnimationSequences | Sections.Information)));
 
             await Task.WhenAll(Enumerable.Range(0, 200).Select(addMonster));
         }
@@ -100,7 +100,7 @@ namespace OpenVIII.Dat_Dump
             xmlWriter.WriteStartElement("characters");
             for (int i = 0; i <= 10; i++)
             {
-                DatFile test = DatFile.Load(i, EntityType.Character, 0);
+                DatFile test = CharacterDatFile.CreateInstance(i, 0);
                 if (test != null && CharacterData.TryAdd(i, test))
                 {
                 }
@@ -204,9 +204,9 @@ namespace OpenVIII.Dat_Dump
             {
                 DatFile test;
                 if (characterID == 1 || characterID == 9)
-                    test = DatFile.Load(characterID, EntityType.Weapon, i, r);
+                    test = WeaponDatFile.CreateInstance(characterID, i, r);
                 else
-                    test = DatFile.Load(characterID, EntityType.Weapon, i);
+                    test = WeaponDatFile.CreateInstance(characterID, i);
                 if (test != null && weaponData.TryAdd(i, test))
                 {
                 }

@@ -10,10 +10,8 @@ namespace OpenVIII.Fields
         {
             #region Fields
 
-            private VertexPositionTexture[] cache;
-            private bool enabled;
-            private TextureHandler texture;
-            private Tile tile;
+            private readonly VertexPositionTexture[] _cache;
+            private bool _enabled;
 
             #endregion Fields
 
@@ -21,41 +19,43 @@ namespace OpenVIII.Fields
 
             public TileQuadTexture(Tile tile, TextureHandler texture, float scale)
             {
-                this.enabled = true;
-                this.tile = tile;
-                this.cache = tile.GetQuad(scale);
-                this.texture = texture;
+                _enabled = true;
+                GetTile = tile;
+                _cache = tile.GetQuad(scale);
+                Texture = texture;
             }
 
             #endregion Constructors
 
             #region Properties
 
-            public byte AnimationID => tile.AnimationID;
+            public byte AnimationID => GetTile.AnimationID;
 
-            public byte AnimationState => tile.AnimationState;
+            public byte AnimationState => GetTile.AnimationState;
 
-            public BlendMode BlendMode => tile.BlendMode;
+            /*
+                        public BlendMode BlendMode => _tile.BlendMode;
+            */
 
-            public bool Enabled => enabled && texture != null;
+            public bool Enabled => _enabled && Texture != null;
 
-            public Tile GetTile => tile;
+            public Tile GetTile { get; }
 
-            public TextureHandler Texture { get => texture; set => texture = value; }
+            public TextureHandler Texture { get; }
 
             #endregion Properties
 
             #region Methods
 
-            public static explicit operator Tile(TileQuadTexture @in) => @in.tile;
+            public static explicit operator Tile(TileQuadTexture @in) => @in.GetTile;
 
-            public static implicit operator Texture2D(TileQuadTexture @in) => (Texture2D)@in.texture;
+            public static implicit operator Texture2D(TileQuadTexture @in) => (Texture2D)@in.Texture;
 
-            public static implicit operator VertexPositionTexture[] (TileQuadTexture @in) => @in.cache;
+            public static implicit operator VertexPositionTexture[] (TileQuadTexture @in) => @in._cache;
 
-            public void Hide() => enabled = false;
+            public void Hide() => _enabled = false;
 
-            public void Show() => enabled = true;
+            public void Show() => _enabled = true;
 
             #endregion Methods
         }

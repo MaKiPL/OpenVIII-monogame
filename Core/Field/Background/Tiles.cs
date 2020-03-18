@@ -20,20 +20,20 @@ namespace OpenVIII.Fields
             /// </summary>
             public void UniquePupuIDs()
             {
-                var duplicateids = GetOverLapTiles().ToList();
-                foreach (var i in duplicateids)
+                List<Tile[]> duplicateIDs = GetOverLapTiles().ToList();
+                foreach (Tile[] i in duplicateIDs)
                 {
                     i[1].PupuID = i[0].PupuID + 1;
                 }
-                Debug.Assert(GetOverLapTiles().Count() == 0);
+                Debug.Assert(!GetOverLapTiles().Any());
             }
 
-            private IOrderedEnumerable<Tile[]> GetOverLapTiles() => (from t1 in tiles
+            private IEnumerable<Tile[]> GetOverLapTiles() => (from t1 in tiles
                                                         from t2 in tiles
                                                         where t1.PupuID == t2.PupuID && t1.TileID < t2.TileID && t1.Intersect(t2)
                                                         select new[] { t1, t2 }).OrderBy(x=>x[0].TileID);
 
-            private List<Tile> tiles;
+            private readonly List<Tile> tiles;
 
             #endregion Fields
 
@@ -47,7 +47,7 @@ namespace OpenVIII.Fields
 
             #region Properties
 
-            public Point BottomRight => new Point(tiles.Max(tile => tile.X) + Tile.size, tiles.Max(tile => tile.Y) + Tile.size);
+            public Point BottomRight => new Point(tiles.Max(tile => tile.X) + Tile.Size, tiles.Max(tile => tile.Y) + Tile.Size);
             public int Count => ((IList<Tile>)tiles).Count;
 
             public int Height => Math.Abs(TopLeft.Y) + BottomRight.Y;// + (int)Origin.Y;

@@ -6,11 +6,11 @@
 
         public enum BlendMode : byte
         {
-            halfadd,
-            add,
-            subtract,
-            quarteradd,
-            none,
+            HalfAdd,
+            Add,
+            Subtract,
+            QuarterAdd,
+            None,
         }
 
         #endregion Enums

@@ -309,8 +309,8 @@ namespace OpenVIII.Fields
                                 Point dst = (new Vector2(tile.SourceX, tile.SourceY) * scale).ToPoint();
 
                                 if (!doOverLap)
-                                    foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
-                                        from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
+                                    foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
+                                        from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
                                         orderby y, x ascending
                                         select new Point(x, y)))
                                     {
@@ -330,8 +330,8 @@ namespace OpenVIII.Fields
                                     TextureIDPaletteID key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
                                     texIDsPalette.TryAdd(key, new TextureBuffer(width, height));
 
-                                    foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.size * scale.X))
-                                        from y in Enumerable.Range(0, (int)(Tile.size * scale.Y))
+                                    foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
+                                        from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
                                         select new Point(x, y)))
                                     {
                                         Color input = inTex[src.X + p.X, src.Y + p.Y];
@@ -496,7 +496,7 @@ namespace OpenVIII.Fields
                     temp[i] = t;
                 }
             }
-            DrawBackgroundQuadsSetBendMode(forceBlendModeNone ? BlendMode.none : tile.BlendMode);
+            DrawBackgroundQuadsSetBendMode(forceBlendModeNone ? BlendMode.None : tile.BlendMode);
             foreach (EffectPass pass in _ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
@@ -533,26 +533,26 @@ namespace OpenVIII.Fields
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
-                case BlendMode.add:
+                case BlendMode.Add:
                     Memory.graphics.GraphicsDevice.BlendFactor = full;
                     Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
-                case BlendMode.subtract:
+                case BlendMode.Subtract:
                     Memory.graphics.GraphicsDevice.BlendFactor = full;
                     Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Subtract;
                     _ate.Alpha = .85f; //doesn't darken so much.
                                       //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
-                case BlendMode.halfadd:
+                case BlendMode.HalfAdd:
                     Memory.graphics.GraphicsDevice.BlendFactor = half;
                     Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
-                case BlendMode.quarteradd:
+                case BlendMode.QuarterAdd:
                     Memory.graphics.GraphicsDevice.BlendFactor = quarter;
                     Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
@@ -579,7 +579,7 @@ namespace OpenVIII.Fields
             if (!Module.Toggles.HasFlag(Module._Toggles.ClassicSpriteBatch)) return;
             List<KeyValuePair<BlendMode, Texture2D>> drawTextures = GetTexturesReadyToDrawClassicSpriteBatch();
             bool open = false;
-            BlendMode lastBlendMode = BlendMode.none;
+            BlendMode lastBlendMode = BlendMode.None;
             float alpha = 1f;
             if (drawTextures != null)
                 foreach (KeyValuePair<BlendMode, Texture2D> kvp in drawTextures)
@@ -596,19 +596,19 @@ namespace OpenVIII.Fields
                                 Memory.SpriteBatchStartAlpha();
                                 break;
 
-                            case BlendMode.halfadd:
+                            case BlendMode.HalfAdd:
                                 Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
                                 break;
 
-                            case BlendMode.quarteradd:
+                            case BlendMode.QuarterAdd:
                                 Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
                                 break;
 
-                            case BlendMode.add:
+                            case BlendMode.Add:
                                 Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
                                 break;
 
-                            case BlendMode.subtract:
+                            case BlendMode.Subtract:
                                 alpha = .9f;
                                 Memory.SpriteBatchStart(bs: Memory.blendState_Subtract, ss: SamplerState.AnisotropicClamp);
                                 break;
@@ -770,7 +770,7 @@ namespace OpenVIII.Fields
         private void FindOverlappingTilesClassicSpriteBatch() => (from t1 in GetTiles
                                                                   from t2 in GetTiles
                                                                   where t1.TileID < t2.TileID
-                                                                  where t1.BlendMode == BlendMode.none
+                                                                  where t1.BlendMode == BlendMode.None
                                                                   where t1.Intersect(t2)
                                                                   orderby t1.TileID, t2.TileID ascending
                                                                   select new[] { t1, t2 }
@@ -930,8 +930,8 @@ namespace OpenVIII.Fields
             Point lowest = new Point(GetTiles.Min(x => x.X), GetTiles.Min(x => x.Y));
             Point maximum = new Point(GetTiles.Max(x => x.X), GetTiles.Max(x => x.Y));
 
-            Height = Math.Abs(lowest.Y) + maximum.Y + Tile.size; //224
-            Width = Math.Abs(lowest.X) + maximum.X + Tile.size; //320
+            Height = Math.Abs(lowest.Y) + maximum.Y + Tile.Size; //224
+            Width = Math.Abs(lowest.X) + maximum.X + Tile.Size; //320
                                                                 //Color[] finalImage = new Color[height * width]; //ARGB;
                                                                 //Color[] finalOverlapImage = new Color[height * width];
                                                                 //tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
@@ -952,7 +952,7 @@ namespace OpenVIII.Fields
             byte animationID = 0;
             byte animationState = 0;
             byte overlapID = 0;
-            BlendMode blendMode = BlendMode.none;
+            BlendMode blendMode = BlendMode.None;
             TextureBuffer textureBuffer = null;
             bool hasColor = false;
             ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>> dictLayerID = _textures.GetOrAdd(z, new ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>());
@@ -1011,8 +1011,8 @@ namespace OpenVIII.Fields
                 {
                     startPixel -= tile.SourceX / 2;
                 }
-                for (int y = 0; y < Tile.size; y++)
-                    for (int x = 0; x < Tile.size; x++)
+                for (int y = 0; y < Tile.Size; y++)
+                    for (int x = 0; x < Tile.Size; x++)
                     {
                         byte colorKey = GetColorKeyClassicSpriteBatch(mim, _textureType.Width, startPixel, x, y, tile.Is8Bit);
                         ushort color16Bit = BitConverter.ToUInt16(mim, 2 * colorKey + palettePointer);
@@ -1022,12 +1022,12 @@ namespace OpenVIII.Fields
 
                         int pos = realDestinationPixel + (x) + (y * Width);
                         Color bufferedColor = textureBuffer[pos];
-                        if (blendMode < BlendMode.none)
+                        if (blendMode < BlendMode.None)
                         {
                             if (color == Color.Black)
                                 continue;
 
-                            if (blendMode == BlendMode.subtract)
+                            if (blendMode == BlendMode.Subtract)
                             {
                                 if (bufferedColor.A != 0)
                                     color = Blend2(bufferedColor, color);
@@ -1036,17 +1036,17 @@ namespace OpenVIII.Fields
                             {
                                 switch (blendMode)
                                 {
-                                    case BlendMode.quarteradd:
+                                    case BlendMode.QuarterAdd:
                                         color = Color.Multiply(color, .25f);
                                         break;
-                                    case BlendMode.halfadd:
+                                    case BlendMode.HalfAdd:
                                         color = Color.Multiply(color, .5f);
                                         break;
-                                    case BlendMode.add:
+                                    case BlendMode.Add:
                                         break;
-                                    case BlendMode.subtract:
+                                    case BlendMode.Subtract:
                                         break;
-                                    case BlendMode.none:
+                                    case BlendMode.None:
                                         break;
                                     default:
                                         throw new ArgumentOutOfRangeException();
@@ -1092,8 +1092,8 @@ namespace OpenVIII.Fields
                 {
                     x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Depth, x.PaletteID, x.AnimationID
                 }).Distinct().ToList();
-                Width = uniqueSetOfTileData.Max(x => x.loc.X + Tile.size);
-                Height = uniqueSetOfTileData.Max(x => x.loc.Y + Tile.size);
+                Width = uniqueSetOfTileData.Max(x => x.loc.X + Tile.Size);
+                Height = uniqueSetOfTileData.Max(x => x.loc.Y + Tile.Size);
                 Dictionary<byte, Texture2D> textureIDs = uniqueSetOfTileData.Select(x => x.TextureID).Distinct()
                     .ToDictionary(x => x,
                         x => Memory.graphics != null ? new Texture2D(Memory.graphics.GraphicsDevice, 256, 256) : null);
@@ -1149,8 +1149,8 @@ namespace OpenVIII.Fields
                             long startPixel = _textureType.PaletteSectionSize + (tile.loc.X / (is4Bit ? 2 : 1)) + (TexturePageWidth * tile.TextureID) + (_textureType.Width * tile.loc.Y);
 
                             byte colorKey = 0;
-                            foreach (Point p in (from x in Enumerable.Range(0, Tile.size)
-                                                 from y in Enumerable.Range(0, Tile.size)
+                            foreach (Point p in (from x in Enumerable.Range(0, Tile.Size)
+                                                 from y in Enumerable.Range(0, Tile.Size)
                                                  orderby y, x ascending
                                                  select new Point(x, y)))
                             {

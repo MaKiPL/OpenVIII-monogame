@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII.Fields
 {
@@ -12,40 +13,39 @@ namespace OpenVIII.Fields
             #region Fields
 
             public byte Palettes;
-            public byte SkippedPalettes = 8;
-            public byte TexturePages;
+            private byte _skippedPalettes = 8;
+            private byte _texturePages;
             public byte Type = 1;
-            private const ushort THeight = 256;
-            private const ushort TWidth = 128;
+            private const ushort OutHeight = 256;
+            private const ushort OutWidth = 128;
 
             #endregion Fields
 
             #region Properties
 
-            public int BytesSkippedPalettes => BytesPerPalette * SkippedPalettes;
-            public uint FileSize => checked((uint)(PaletteSectionSize + (Width * THeight)));
+            public int BytesSkippedPalettes => BytesPerPalette * _skippedPalettes;
+            private uint FileSize => checked((uint)(PaletteSectionSize + (Width * OutHeight)));
             public uint PaletteSectionSize => checked((uint)(BytesPerPalette * Palettes));
-            public ushort Width => checked((ushort)(TWidth * TexturePages));
+            public ushort Width => checked((ushort)(OutWidth * _texturePages));
 
             #endregion Properties
 
             #region Methods
 
             // first 8 are junk and are not used.
-            public static BackgroundTextureType GetTextureType(byte[] mimb)
-                => mimb == null ? default: TextureTypes.First(x => x.FileSize == mimb.Length);
+            public static BackgroundTextureType GetTextureType(IReadOnlyCollection<byte> mim)
+                => mim == null ? default: TextureTypes.First(x => x.FileSize == mim.Count);
 
 
-            private static BackgroundTextureType[] TextureTypes = new BackgroundTextureType[]
-            {
+            private static readonly BackgroundTextureType[] TextureTypes = {
             new BackgroundTextureType {
                 Palettes =24,
-                TexturePages = 13
+                _texturePages = 13
             },
             new BackgroundTextureType {
                 Palettes =16,
-                TexturePages = 12,
-                SkippedPalettes =0,
+                _texturePages = 12,
+                _skippedPalettes =0,
                 Type = 2
             },
             };
