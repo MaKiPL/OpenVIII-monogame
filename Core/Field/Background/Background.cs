@@ -1146,9 +1146,8 @@ namespace OpenVIII.Fields
                             bool is4Bit = Tile.Test4Bit(tile.Depth);
                             bool is8Bit = Tile.Test8Bit(tile.Depth);
                             bool is16Bit = Tile.Test16Bit(tile.Depth);
+                            float bytePerPixel = is16Bit ? 2f : is8Bit ? 1f : .5f;
 
-                            long startPixel = _textureType.PaletteSectionSize + (tile.loc.X / (is4Bit ? 2 : 1)) +
-                                              (TexturePageWidth * tile.TextureID) + (_textureType.Width * tile.loc.Y);
 
                             byte colorKey = 0;
                             foreach (Point p in (from x in Enumerable.Range(0, Tile.Size)
@@ -1156,9 +1155,18 @@ namespace OpenVIII.Fields
                                 orderby y, x
                                 select new Point(x, y)))
                             {
+                                (int trueX, int trueY) = (tile.loc.X+p.X, (tile.loc.Y + p.Y));
+                                int offsetX = is16Bit
+                                    ? trueX * 2
+                                    : (trueX / (is4Bit ? 2 : 1));
+                                int texturePageOffset = TexturePageWidth * tile.TextureID;
+                                int offsetY = (_textureType.Width / (is16Bit ? 2 : 1)) * (trueY) ;
+                                long startPixel = _textureType.PaletteSectionSize +
+                                                  offsetX +
+                                                  texturePageOffset + 
+                                                  offsetY;
                                 br.BaseStream.Seek(
-                                    startPixel + (p.Y * _textureType.Width / (is16Bit ? 2 : 1)) +
-                                    (p.X / (is4Bit ? 2 : 1)), SeekOrigin.Begin);
+                                    startPixel, SeekOrigin.Begin);
 
                                 Point point = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
 
@@ -1199,6 +1207,8 @@ namespace OpenVIII.Fields
                                     if (input.A != 0)
                                         tex[point.X, point.Y] = input;
                                 }
+                                //if(input.A != 0)
+                                //    Debug.WriteLine($"{trueX}, {trueY}, {offsetX + texturePageOffset + offsetY}, {input}");
                             }
                         }
 
