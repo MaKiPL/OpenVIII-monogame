@@ -327,6 +327,7 @@
     <Compile Include="CountDown.cs" />
     <Compile Include="DrawVertDeclaration.cs" />
     <Compile Include="Field\Archive.cs" />
+    <Compile Include="Field\Camera\Camera.cs" />
     <Compile Include="Field\Camera\Cameras.cs" />
     <Compile Include="Field\EnumFlagExt.cs" />
     <Compile Include="Field\Field_modes.cs" />
