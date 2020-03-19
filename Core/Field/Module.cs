@@ -1,6 +1,8 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using System;
+using Microsoft.Xna.Framework.Input;
 using System.IO;
 using System.Linq;
+using Microsoft.Xna.Framework;
 
 namespace OpenVIII.Fields
 {
@@ -89,11 +91,13 @@ namespace OpenVIII.Fields
 
         public static void Draw()
         {
+            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
             switch (Mod)
             {
                 case FieldModes.Init:
                     break; //null
-                default:
+                case FieldModes.DebugRender:
+                case FieldModes.NoJSM:
                     _archive.Draw();
                     if (Toggles.HasFlag(Toggles.Menu))
                         FieldMenu.Draw();
@@ -102,6 +106,8 @@ namespace OpenVIII.Fields
                 case FieldModes.Disabled:
                     FieldMenu.Draw();
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -117,7 +123,7 @@ namespace OpenVIII.Fields
         {
             if (string.IsNullOrWhiteSpace(fieldName))
                 fieldName = GetFieldName();
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldName.Substring(0, 2), fieldName, subfolder,"b");
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldName.Substring(0, 2), fieldName, subfolder);
             Directory.CreateDirectory(folder);
             return folder;
         }
@@ -161,6 +167,8 @@ namespace OpenVIII.Fields
                     case FieldModes.Disabled:
                         FieldMenu.Update();
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
         }

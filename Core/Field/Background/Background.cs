@@ -251,7 +251,7 @@ namespace OpenVIII.Fields
 
         public void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            //Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
             DrawBackgroundQuads();
             DrawWalkMesh();
             DrawSpriteBatch();
