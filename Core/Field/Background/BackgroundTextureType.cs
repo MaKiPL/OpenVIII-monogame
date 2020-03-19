@@ -12,6 +12,7 @@ namespace OpenVIII.Fields
             #region Fields
 
             public byte Palettes;
+            /// <remarks> first 8 are junk and are not used. </remarks>
             public byte SkippedPalettes = 8;
             public byte TexturePages;
             public byte Type = 1;
@@ -31,7 +32,6 @@ namespace OpenVIII.Fields
 
             #region Methods
 
-            // first 8 are junk and are not used.
             public static BackgroundTextureType GetTextureType(byte[] mimb)
                 => mimb == null ? default: TextureTypes.First(x => x.FileSize == mimb.Length);
 
