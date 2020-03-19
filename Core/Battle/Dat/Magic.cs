@@ -16,7 +16,7 @@ namespace OpenVIII.Battle.Dat
         public Kernel.MagicData Data => Memory.Kernel_Bin.MagicData.Count > ID ? Memory.Kernel_Bin.MagicData[ID] : null;
         public Kernel.JunctionableGFsData JunctionableGFsData => Memory.Kernel_Bin.JunctionableGFsData.ContainsKey(GF) ? Memory.Kernel_Bin.JunctionableGFsData[GF] : null;
 
-        ///<remarks>per IFRIT GFs BattleID is between 0x40 and 0x4F. And they seem to be in order of GFs enum.</remarks>
+        ///<remarks>per IFRIT GFs ID is between 0x40 and 0x4F. And they seem to be in order of GFs enum.</remarks>
         public GFs GF => ID > 0x4F || ID < 0x40 ? GFs.Blank : (GFs)(ID - 0x40);
 
         public FF8String Name => GF != GFs.Blank ? Memory.Strings.GetName(GF) : Data?.Name;

@@ -130,7 +130,7 @@ namespace OpenVIII.Battle.Dat
         /// <param name="rotation">a Quaternion to set the correct rotation. 1=90, 2=180 ...</param>
         /// <param name="animationId">an animation pointer. Animation 0 is always idle</param>
         /// <param name="animationFrame">
-        /// an animation currentFrame from animation BattleID. You should pass incrementing currentFrame and reset to 0
+        /// an animation currentFrame from animation ID. You should pass incrementing currentFrame and reset to 0
         /// when frameCount max is hit
         /// </param>
         /// <param name="step">
@@ -173,12 +173,12 @@ namespace OpenVIII.Battle.Dat
                 _indicatorPoint.X = MathHelper.Lerp(lastOffsets.MidX, nextOffsets.MidX, (float)step);
                 _indicatorPoint.Y = MathHelper.Lerp(lastOffsets.HighY, nextOffsets.HighY, (float)step);
                 _indicatorPoint.Z = MathHelper.Lerp(lastOffsets.MidZ, nextOffsets.MidZ, (float)step);
-                // Move All Y axis down to 0 based on Lowest Y axis in Animation BattleID 0.
+                // Move All Y axis down to 0 based on Lowest Y axis in Animation ID 0.
                 if (OffsetY < 0)
                 {
                     translationPosition.Y += OffsetY;
                 }
-                // If any Y axis readings are lower than 0 in Animation BattleID >0. Bring it up to zero.
+                // If any Y axis readings are lower than 0 in Animation ID >0. Bring it up to zero.
             }
 
             //Triangle parsing

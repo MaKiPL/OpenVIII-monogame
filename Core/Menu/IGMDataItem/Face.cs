@@ -10,7 +10,7 @@ namespace OpenVIII.IGMDataItem
 
         #endregion Fields
 
-        //public Face(Faces.BattleID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
+        //public Face(Faces.ID data, Rectangle? pos = null, bool blink = false, float blink_adjustment = 1f) : base(pos)
         //{
         //    Data = data;
         //    Blink = blink;

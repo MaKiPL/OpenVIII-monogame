@@ -14,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// </summary>
         private IJsmExpression _channel;
         /// <summary>
-        /// Field message BattleID
+        /// Field message ID
         /// </summary>
         private IJsmExpression _messageId;
         /// <summary>

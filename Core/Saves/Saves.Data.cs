@@ -274,9 +274,9 @@ namespace OpenVIII
             public FF8String GrieverName { get; set; }
 
             /// <summary>
-            /// <para>0x0B54 396 bytes Items 198 items (Item BattleID and Quantity)</para>
+            /// <para>0x0B54 396 bytes Items 198 items (Item ID and Quantity)</para>
             /// <para>
-            /// The order of items out of battle and Each item uses 2 bytes 1 for BattleID and 1 for Quantity
+            /// The order of items out of battle and Each item uses 2 bytes 1 for ID and 1 for Quantity
             /// </para>
             /// </summary>
             public List<Item> Items { get; private set; }
@@ -338,7 +338,7 @@ namespace OpenVIII
             public TimeSpan LoadTime { get; set; }
 
             /// <summary>
-            /// 0x0004 2 bytes Preview: Location BattleID
+            /// 0x0004 2 bytes Preview: Location ID
             /// </summary>
             public ushort LocationID { get; set; }
 
@@ -428,7 +428,7 @@ namespace OpenVIII
             public TimeSpan TimePlayed { get; set; }
 
             /// <summary>
-            /// 0x0D62 3*2 bytes Triangle BattleID (party1, party2, party3)
+            /// 0x0D62 3*2 bytes Triangle ID (party1, party2, party3)
             /// </summary>
             public ushort[] TriangleID { get; set; }
 
@@ -766,7 +766,7 @@ namespace OpenVIII
                 ItemsBattleOrder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
                 for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < Items.Capacity; i++)
-                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item BattleID and Quantity)
+                    Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
             /// <summary>

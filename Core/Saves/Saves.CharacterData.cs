@@ -232,7 +232,7 @@ namespace OpenVIII
             public override byte HIT => checked((byte)TotalStat(Stat.HIT));
 
             /// <summary>
-            /// If TeamLaguna the BattleID will change to a Laguna Party member
+            /// If TeamLaguna the ID will change to a Laguna Party member
             /// </summary>
             public Characters ID
             {
@@ -384,7 +384,7 @@ namespace OpenVIII
             {
                 ushort current = CurrentHP();
                 ushort max = MaxHP();
-                //if ((BattleID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
+                //if ((ID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
                 //{
                 int hpMod = CharacterStats.Crisis * 10 * current / max;
                 int deathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;

@@ -28,7 +28,7 @@ namespace OpenVIII.Battle.Dat
 
         public static implicit operator Vector3(VectorBoneGRP vbg) => vbg.Vector;
 
-        public override string ToString() => $"Vector: {Vector}, Bone BattleID: {BoneID}";
+        public override string ToString() => $"Vector: {Vector}, Bone ID: {BoneID}";
 
         #endregion Methods
     }

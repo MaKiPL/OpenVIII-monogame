@@ -481,7 +481,7 @@ namespace OpenVIII.AV.Midi
                 GEN_VOLENVRELEASE,      /**< Volume envelope release */
                 GEN_KEYTOVOLENVHOLD,        /**< Key to volume envelope hold */
                 GEN_KEYTOVOLENVDECAY,       /**< Key to volume envelope decay */
-                GEN_INSTRUMENT,     /**< Instrument BattleID (shouldn't be set by user) */
+                GEN_INSTRUMENT,     /**< Instrument ID (shouldn't be set by user) */
                 GEN_RESERVED1,      /**< Reserved */
                 GEN_KEYRANGE,           /**< MIDI note range */
                 GEN_VELRANGE,           /**< MIDI velocity range */
@@ -493,7 +493,7 @@ namespace OpenVIII.AV.Midi
                 GEN_ENDLOOPADDRCOARSEOFS,   /**< Sample end loop address coarse offset (X 32768) */
                 GEN_COARSETUNE,     /**< Coarse tuning */
                 GEN_FINETUNE,           /**< Fine tuning */
-                GEN_SAMPLEID,           /**< Sample BattleID (shouldn't be set by user) */
+                GEN_SAMPLEID,           /**< Sample ID (shouldn't be set by user) */
                 GEN_SAMPLEMODE,     /**< Sample mode flags */
                 GEN_RESERVED3,      /**< Reserved */
                 GEN_SCALETUNE,      /**< Scale tuning */

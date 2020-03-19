@@ -110,7 +110,7 @@ namespace OpenVIII
             public override byte HIT => 0;
 
             /// <summary>
-            /// Enum BattleID for this GF
+            /// Enum ID for this GF
             /// </summary>
             public GFs ID { get; private set; }
 

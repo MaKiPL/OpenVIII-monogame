@@ -10,7 +10,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class TUTO : JsmInstruction
     {
         /// <summary>
-        /// Tutorial BattleID
+        /// Tutorial ID
         /// </summary>
         private readonly IJsmExpression _tutorialID;
 

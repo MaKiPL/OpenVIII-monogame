@@ -64,10 +64,10 @@ namespace OpenVIII.Dat_Dump
                         $"Number{Ls}" +
                         $"{nameof(Abilities.Animation)}{Ls}" +
                         $"Type{Ls}" +
-                        $"BattleID{Ls}" +
+                        $"ID{Ls}" +
                         $"Name{Ls}");
                     //header for animation info
-                    csvFile.WriteLine($"Type{Ls}Type BattleID{Ls}Name{Ls}Animation Count{Ls}Sequence Count{Ls}Sequence BattleID{Ls}Offset{Ls}Bytes");
+                    csvFile.WriteLine($"Type{Ls}Type ID{Ls}Name{Ls}Animation Count{Ls}Sequence Count{Ls}Sequence ID{Ls}Offset{Ls}Bytes");
                     using (XmlWriter xmlWriter = XmlWriter.Create("SequenceDump.xml", xmlWriterSettings))
                     {
                         xmlWriter.WriteStartDocument();
@@ -109,7 +109,7 @@ namespace OpenVIII.Dat_Dump
                 const string type = "character";
                 xmlWriter.WriteStartElement(type);
                 string id = i.ToString();
-                xmlWriter.WriteAttributeString("BattleID", id);
+                xmlWriter.WriteAttributeString("ID", id);
                 FF8String name = Memory.Strings.GetName((Characters)i);
                 xmlWriter.WriteAttributeString("name", name);
                 string prefix0 = $"{type}{Ls}{id}{Ls}";
@@ -133,7 +133,7 @@ namespace OpenVIII.Dat_Dump
                 FF8String name = battleDat.Information.Name ?? new FF8String("");
                 string prefix = $"{type}{Ls}{id}{Ls}{name}";
                 xmlWriter.WriteStartElement(type);
-                xmlWriter.WriteAttributeString("BattleID", id);
+                xmlWriter.WriteAttributeString("ID", id);
                 xmlWriter.WriteAttributeString("name", name);
                 prefix += $"{Ls}{XmlAnimations(xmlWriter, battleDat)}";
                 XmlSequences(xmlWriter, battleDat, csvFile, prefix);
@@ -179,7 +179,7 @@ namespace OpenVIII.Dat_Dump
                     string offset = s.Offset.ToString("X");
                     string bytes = s.Count.ToString();
 
-                    xmlWriter.WriteAttributeString("BattleID", id);
+                    xmlWriter.WriteAttributeString("ID", id);
                     xmlWriter.WriteAttributeString("offset", offset);
                     xmlWriter.WriteAttributeString("bytes", bytes);
 
@@ -215,7 +215,7 @@ namespace OpenVIII.Dat_Dump
                 const string type = "weapon";
                 string id = i.ToString();
                 xmlWriter.WriteStartElement(type);
-                xmlWriter.WriteAttributeString("BattleID", id);
+                xmlWriter.WriteAttributeString("ID", id);
                 int index = ModuleBattleDebug.Weapons[(Characters)characterID].FindIndex(v => v == i);
                 WeaponsData currentWeaponData = Memory.Kernel_Bin.WeaponsData.FirstOrDefault(v => v.Character == (Characters)characterID &&
                                                                                                   v.AltID == index);

@@ -4,7 +4,7 @@
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Jump the player to the field with the given BattleID and starting on the given walkmesh triangle. The walkmesh is almost always 0 because MAPJUMPO is intended to be used for teleporting the player into a cutscene, and the cutscenes place the characters where they need to be on initialization, so it doesn't matter where they're initially teleported.
+    /// Jump the player to the field with the given ID and starting on the given walkmesh triangle. The walkmesh is almost always 0 because MAPJUMPO is intended to be used for teleporting the player into a cutscene, and the cutscenes place the characters where they need to be on initialization, so it doesn't matter where they're initially teleported.
     /// </summary>
     internal sealed class MAPJUMPO : JsmInstruction
     {

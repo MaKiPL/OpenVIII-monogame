@@ -49,7 +49,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 Crisis = br.ReadByte(); //0x0002; 1 byte; Crisis level hp multiplier
                 Gender = br.ReadByte() == 0 ? Gender.Male : Gender.Female; //0x0003; 1 byte; Gender; 0x00 - Male 0x01 - Female
-                _limitID = br.ReadByte(); //0x0004; 1 byte; Limit Break BattleID
+                _limitID = br.ReadByte(); //0x0004; 1 byte; Limit Break ID
                 LimitParam = br.ReadByte(); //0x0005; 1 byte; Limit Break Param used for the power of each renzokuken hit before finisher
                 _exp = br.ReadBytes(2); //0x0006; 2 bytes; EXP modifier
                 _hp = br.ReadBytes(4); //0x0008; 4 bytes; HP modifiers

@@ -10,7 +10,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class ADDPARTY : JsmInstruction
     {
         /// <summary>
-        /// Character BattleID
+        /// Character ID
         /// </summary>
         private Characters _characterId;
 

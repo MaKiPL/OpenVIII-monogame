@@ -212,7 +212,7 @@ namespace OpenVIII
             ImGui.Text($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}\n");
             ImGui.Text($"Camera.Mode: {Camera.cam.control_word & 1}\n");
             ImGui.Text($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {_bUseFPSCamera}\n");
-            ImGui.Text($"Sequence BattleID: {_sid}, press F10 to activate sequence, F11 SID--, F12 SID++");
+            ImGui.Text($"Sequence ID: {_sid}, press F10 to activate sequence, F11 SID--, F12 SID++");
             ImGui.End();
             Memory.imgui.AfterLayout();
         }
@@ -751,7 +751,7 @@ namespace OpenVIII
                 }
             if (_crossHair == null || _forceReload)
                 _crossHair = new Icon { Data = Icons.ID.Cross_Hair1 };
-            //testQuad = Memory.Icons.Quad(Icons.BattleID.Cross_Hair1, 2);
+            //testQuad = Memory.Icons.Quad(Icons.ID.Cross_Hair1, 2);
             //MakiExtended.Debugger_Spawn();
             //MakiExtended.Debugger_Feed(typeof(Module_battle_debug), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             //InputMouse.Mode = MouseLockMode.Center;

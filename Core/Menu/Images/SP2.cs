@@ -44,7 +44,7 @@ namespace OpenVIII
         protected virtual Dictionary<uint, Entry> Entries { get; set; }
 
         /// <summary>
-        /// Entries per texture,BattleID MOD EntriesPerTexture to get current entry to use on this texture
+        /// Entries per texture,ID MOD EntriesPerTexture to get current entry to use on this texture
         /// </summary>
         public virtual int EntriesPerTexture { get; protected set; }
 

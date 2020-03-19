@@ -12,7 +12,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         #region Fields
 
         /// <summary>
-        /// Character BattleID
+        /// Character ID
         /// </summary>
         private readonly Characters _characterID;
 

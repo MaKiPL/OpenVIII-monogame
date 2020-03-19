@@ -14,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         #region Fields
 
         /// <summary>
-        /// Card BattleID? only value is 12 = Buel. 
+        /// Card ID? only value is 12 = Buel. 
         /// </summary>
         private Cards.ID _cardID;
 

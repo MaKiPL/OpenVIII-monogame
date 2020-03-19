@@ -19,7 +19,7 @@ namespace OpenVIII
             #region Properties
 
             /// <summary>
-            /// Convert stat to correct icon BattleID.
+            /// Convert stat to correct icon ID.
             /// </summary>
             private static IReadOnlyDictionary<Stat, Icons.ID> Stat2Icon { get; } = new Dictionary<Stat, Icons.ID>
                 {

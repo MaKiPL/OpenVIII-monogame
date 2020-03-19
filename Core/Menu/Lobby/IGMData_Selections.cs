@@ -59,7 +59,7 @@ namespace OpenVIII
                 * we should happen to reset wm2field values
                 * also the basic party of Squall is now set: SG_PARTY_FIELD1 = 0, and other members are 0xFF
                 */
-                Memory.FieldHolder.FieldID = 74; //RE: startup stage BattleID is hardcoded. Probably we would want to change it for modding
+                Memory.FieldHolder.FieldID = 74; //RE: startup stage ID is hardcoded. Probably we would want to change it for modding
                                                  //the module changes to 1 now
                 Fields.Module.ResetField();
 

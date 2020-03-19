@@ -5,7 +5,7 @@ namespace OpenVIII.Fields.Scripts.Instructions.Abstract
     public abstract class ANIME : JsmInstruction
     {
         /// <summary>
-        /// Model Animation BattleID
+        /// Model Animation ID
         /// </summary>
         protected readonly Int32 _animationId;
 

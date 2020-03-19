@@ -147,7 +147,7 @@ namespace OpenVIII
         public Icons.ID Icon { get; private set; }
 
         /// <summary>
-        /// Item BattleID
+        /// Item ID
         /// </summary>
         public byte ID { get; private set; }
 
@@ -386,7 +386,7 @@ namespace OpenVIII
                         if (Memory.State.Items[i].ID == ID)
                             Memory.State.Items[i].UsedOne();
                     }
-                    //Memory.State.Items.Where(m => m.BattleID == BattleID).ForEach(x => x.UsedOne());
+                    //Memory.State.Items.Where(m => m.ID == ID).ForEach(x => x.UsedOne());
                     return true;
                 }
             }

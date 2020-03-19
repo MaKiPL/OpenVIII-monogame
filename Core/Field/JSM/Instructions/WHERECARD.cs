@@ -10,7 +10,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class WHERECARD : JsmInstruction
     {
         /// <summary>
-        /// card BattleID?
+        /// card ID?
         /// </summary>
         private IJsmExpression _cardID;
 

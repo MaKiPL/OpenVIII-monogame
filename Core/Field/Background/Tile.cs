@@ -37,7 +37,7 @@ namespace OpenVIII.Fields
             public bool Draw = true;
 
             /// <summary>
-            /// Layer BattleID, Used to control which parts draw.
+            /// Layer ID, Used to control which parts draw.
             /// </summary>
             public byte LayerID;
 
@@ -97,7 +97,7 @@ namespace OpenVIII.Fields
             public bool Is8Bit => Test8Bit(Depth);
 
             /// <summary>
-            /// Pupu goes in a loop and +1 the BattleID when it detects an overlap.
+            /// Pupu goes in a loop and +1 the ID when it detects an overlap.
             /// There are some wasted bits
             /// </summary>
             public uint PupuID { get; set; }

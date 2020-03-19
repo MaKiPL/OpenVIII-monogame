@@ -34,7 +34,7 @@ namespace OpenVIII.Fields
                 {
                     case Part.One: return Path.Combine(_fieldDirectory, "chara.one");
                     case Part.Ca: return _fieldPath + ".ca";
-                    case Part.Id: return _fieldPath + ".BattleID";
+                    case Part.Id: return _fieldPath + ".ID";
                     case Part.Inf: return _fieldPath + ".inf";
                     case Part.Jsm: return _fieldPath + ".jsm";
                     case Part.Map: return _fieldPath + ".map";

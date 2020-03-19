@@ -34,7 +34,7 @@ namespace OpenVIII
                 br.BaseStream.Seek(2, SeekOrigin.Current);
                 Renzokuken = (RenzokukenFinisher)br.ReadByte(); //0x0002	1 byte Renzokuken finishers
                 Unknown0 = br.ReadByte(); //0x0003	1 byte Unknown
-                Character = (Characters)br.ReadByte();//0x0004	1 byte Character BattleID
+                Character = (Characters)br.ReadByte();//0x0004	1 byte Character ID
                 if (_lastCharacter != Character)
                 {
                     AltID = _counter = 0;
@@ -67,7 +67,7 @@ namespace OpenVIII
             public AttackType AttackType { get; }
 
             /// <summary>
-            ///0x0004	1 byte Character BattleID
+            ///0x0004	1 byte Character ID
             /// </summary>
             public Characters Character { get; }
 

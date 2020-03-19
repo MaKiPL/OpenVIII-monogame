@@ -89,7 +89,7 @@ namespace OpenVIII.World
         public int GetTrainTrackCount() => railEntries.Length;
 
         /// <summary>
-        /// Gets Vector3 translated to openviii coordinates from given track animation's frame BattleID
+        /// Gets Vector3 translated to openviii coordinates from given track animation's frame ID
         /// </summary>
         /// <param name="trackId"></param>
         /// <param name="frameId"></param>

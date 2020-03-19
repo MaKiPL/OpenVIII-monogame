@@ -72,7 +72,7 @@ namespace OpenVIII.Kernel
                 TemporaryCharacterLimitBreaks = Kernel.TemporaryCharacterLimitBreaks.Read(br);
                 ms.Seek(subPositions[Kernel.BlueMagicQuistisLimitBreak.ID], SeekOrigin.Begin);
                 BlueMagicQuistisLimitBreak = Kernel.BlueMagicQuistisLimitBreak.Read(br);
-                //ms.Seek(subPositions[Quistis_limit_break_parameters.BattleID], SeekOrigin.Begin);
+                //ms.Seek(subPositions[Quistis_limit_break_parameters.ID], SeekOrigin.Begin);
                 //QuistisLimitBreakParameters = Quistis_limit_break_parameters.Read(br);
                 ms.Seek(subPositions[Kernel.ShotIrvineLimitBreak.ID], SeekOrigin.Begin);
                 ShotIrvineLimitBreak = Kernel.ShotIrvineLimitBreak.Read(br);

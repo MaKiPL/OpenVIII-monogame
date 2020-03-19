@@ -11,7 +11,7 @@ namespace OpenVIII
         /// <summary>
         /// </summary>
         /// <remarks>
-        /// Using Faces.BattleID because it contains characters and gfs. Can cast to Characters or subtract
+        /// Using Faces.ID because it contains characters and gfs. Can cast to Characters or subtract
         /// 16 and cast to GFs
         /// </remarks>
         private class IGMData_TargetPool : IGMData.Pool.Base<Saves.Data, Faces.ID>
@@ -113,7 +113,7 @@ namespace OpenVIII
                 }
                 ////List won't populate unless theres a valid item set.
                 //if (Item.Type == Item_In_Menu._Type.None && Memory.State.Items != null)
-                //    Item = Memory.MItems[Memory.State.Items.FirstOrDefault(m => m.BattleID > 0 && m.QTY > 0).BattleID];
+                //    Item = Memory.MItems[Memory.State.Items.FirstOrDefault(m => m.ID > 0 && m.QTY > 0).ID];
                 else
                     Fill();
                 ForceRefresh = true;

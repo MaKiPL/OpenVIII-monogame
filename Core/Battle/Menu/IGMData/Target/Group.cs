@@ -637,7 +637,9 @@ namespace OpenVIII.IGMData.Target
             return r;
         }
 
-        private void DebugMessageCommand(IGMData.Target.Enemies i, Damageable[] d, Damageable fromvc) => Debug.WriteLine($"{Damageable.Name} uses {Command.Name}({Command.BattleID}) command on { DebugMessageSuffix(d) }");
+        private void DebugMessageCommand(IGMData.Target.Enemies i, Damageable[] d, Damageable fromvc) =>
+            Debug.WriteLine(
+                $"{Damageable.Name} uses {Command.Name}({Command.BattleID}) command on {DebugMessageSuffix(d)}");
 
         private string DebugMessageSuffix(Damageable[] d) => $"{DamageableNames(d)}({(d.Length == 1 ? TargetEnemies.CURSOR_SELECT.ToString() : "MultiSelect")})";
 

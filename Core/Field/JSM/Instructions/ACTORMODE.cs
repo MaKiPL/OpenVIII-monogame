@@ -10,7 +10,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class ACTORMODE : JsmInstruction
     {
         /// <summary>
-        /// Model BattleID?
+        /// Model ID?
         /// </summary>
         private IJsmExpression _arg0;
 

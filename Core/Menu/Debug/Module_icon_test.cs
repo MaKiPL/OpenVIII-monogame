@@ -74,7 +74,7 @@ namespace OpenVIII
 
         public static new string ToString()
         {
-            string output = "{Enum Name},{Enum BattleID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
+            string output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
             for (uint i = 0; i < Memory.Icons.Count; i++)
             {
                 EntryGroup eg = Memory.Icons.GetEntryGroup((Icons.ID)i);
@@ -195,7 +195,7 @@ namespace OpenVIII
             Memory.Icons.Draw(icon, palette, dst, scale);
             Memory.font.RenderBasicText(
                 $"{(icon).ToString().Replace('_', ' ')}\n" +
-                $"BattleID: {(ushort)icon}\n\n" +
+                $"ID: {(ushort)icon}\n\n" +
                 $"palette: {palette}\n\n" +
                 $"width: {Memory.Icons[icon].Width}\n" +
                 $"height: {Memory.Icons[icon].Height}",

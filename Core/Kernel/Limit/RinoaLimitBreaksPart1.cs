@@ -46,7 +46,7 @@ namespace OpenVIII
                 Unknown0 = new BitArray(br.ReadBytes(1));
                 //0x0005  1 byte Target
                 Target = (Target)br.ReadByte();
-                //0x0006  1 byte Ability data BattleID
+                //0x0006  1 byte Ability data ID
                 AbilityID = br.ReadByte();
                 //0x0007  1 byte Unknown / Unused
                 Unknown1 = br.ReadByte();

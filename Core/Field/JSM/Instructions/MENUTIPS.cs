@@ -16,7 +16,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class MENUTIPS : JsmInstruction
     {
         /// <summary>
-        /// Tip BattleID?
+        /// Tip ID?
         /// </summary>
         /// <remarks>known values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 15, 16, 18, 19, 21, 22, 23, 24, 25, 
         /// 26, 27, 28, 32, 33, 34, 35, 36, 37, 40, 41, 42, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 

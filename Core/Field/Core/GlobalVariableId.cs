@@ -12,7 +12,7 @@ namespace OpenVIII.Fields
         public GlobalVariableId(Int32 variableId)
         {
             if (variableId < 0)
-                throw new ArgumentOutOfRangeException(nameof(variableId), $"Invalid global variable BattleID: {variableId}");
+                throw new ArgumentOutOfRangeException(nameof(variableId), $"Invalid global variable ID: {variableId}");
 
             VariableId = variableId;
         }

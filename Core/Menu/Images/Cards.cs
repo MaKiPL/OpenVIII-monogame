@@ -46,14 +46,14 @@ namespace OpenVIII
             //int pos = v % EntriesPerTexture;
 
             //    pos = (int) Memory.Cards.Count - 1;
-            //base.Draw((Cards.BattleID)(pos+(EntriesPerTexture *t)), dst, fade);
+            //base.Draw((Cards.ID)(pos+(EntriesPerTexture *t)), dst, fade);
             if (v >= (uint)Cards.ID.Card_Back)
             {
                 int ept = EntriesPerTexture;
                 EntriesPerTexture = -1;
                 id = (Cards.ID)(ept);
-                //Rectangle src = GetEntry(BattleID).GetRectangle;
-                //TextureHandler tex = GetTexture(BattleID,v/ept);
+                //Rectangle src = GetEntry(ID).GetRectangle;
+                //TextureHandler tex = GetTexture(ID,v/ept);
                 //tex.Draw(dst, src, Color.White * fade);
 
                 base.Draw(id, dst, fade);

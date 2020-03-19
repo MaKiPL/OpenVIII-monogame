@@ -11,7 +11,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class LBL : JsmInstruction
     {
         /// <summary>
-        /// Script BattleID.
+        /// Script ID.
         /// </summary>
         public Int32 Label { get; }
 

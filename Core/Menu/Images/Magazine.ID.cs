@@ -5,7 +5,7 @@
         #region Enums
 
         /// <summary>
-        /// BattleID's of Magazine Images.
+        /// ID's of Magazine Images.
         /// </summary>
         /// <seealso cref="https://finalfantasy.fandom.com/wiki/Weapons_Monthly"/>
         /// <seealso cref="https://finalfantasy.fandom.com/wiki/Pet_Pals"/>

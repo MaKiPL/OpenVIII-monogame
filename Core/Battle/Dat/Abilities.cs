@@ -20,7 +20,7 @@ namespace OpenVIII.Battle.Dat
         [FieldOffset(0)]
         public KernelFlag KernelID; 
 
-        // ifrit states one of theses is an animation BattleID.
+        // ifrit states one of theses is an animation ID.
         private const string Unk = "Unknown";
 
         #endregion Fields

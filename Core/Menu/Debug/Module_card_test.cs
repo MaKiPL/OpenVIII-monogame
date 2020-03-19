@@ -102,7 +102,7 @@ namespace OpenVIII
                 uint pos = (uint)((uint)id % Memory.Cards.EntriesPerTexture);
                 if (id >= Cards.ID.Card_Back)
                     pos = Memory.Cards.Count-1;
-                //int i = cards.GetEntry(BattleID).File;
+                //int i = cards.GetEntry(ID).File;
                 Entry entry = Memory.Cards.GetEntry(pos);
                 uint col = (uint)(entry.X / entry.Width) + 1;
                 uint row = (uint)(entry.Y / entry.Width) + 1;

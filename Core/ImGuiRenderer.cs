@@ -85,7 +85,7 @@ namespace OpenVIII.Core
             // Should a texture already have been build previously, unbind it first so it can be deallocated
             if (_fontTextureId.HasValue) UnbindTexture(_fontTextureId.Value);
 
-            // Bind the new texture to an ImGui-friendly BattleID
+            // Bind the new texture to an ImGui-friendly ID
             _fontTextureId = BindTexture(tex2d);
 
             // Let ImGui know where to find the texture
@@ -349,7 +349,7 @@ namespace OpenVIII.Core
 
                     if (!_loadedTextures.ContainsKey(drawCmd.TextureId))
                     {
-                        throw new InvalidOperationException($"Could not find a texture with BattleID '{drawCmd.TextureId}', please check your bindings");
+                        throw new InvalidOperationException($"Could not find a texture with ID '{drawCmd.TextureId}', please check your bindings");
                     }
 
                     _graphicsDevice.ScissorRectangle = new Rectangle(
