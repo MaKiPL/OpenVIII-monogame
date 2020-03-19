@@ -136,10 +136,8 @@ namespace OpenVIII.Fields
                 if (type == 1)
                 {
                     t.Z = br.ReadUInt16();
-                    byte texIdBuffer = br.ReadByte();
-                    t.TextureID = (byte)(texIdBuffer & 0xF);
-
-                    br.BaseStream.Seek(1, SeekOrigin.Current);
+                    ushort texIdBuffer = br.ReadUInt16();
+                    t.TextureID = GetTextureID(texIdBuffer);
                     t.PaletteID = GetPaletteID(br);
                     t.SourceX = br.ReadByte();
                     t.SourceY = br.ReadByte();
@@ -157,9 +155,8 @@ namespace OpenVIII.Fields
                     t.SourceX = br.ReadUInt16();
                     t.SourceY = br.ReadUInt16();
                     t.Z = br.ReadUInt16();
-                    byte texIdBuffer = br.ReadByte();
-                    t.TextureID = (byte)(texIdBuffer & 0xF);
-                    br.BaseStream.Seek(1, SeekOrigin.Current);
+                    ushort texIdBuffer = br.ReadUInt16();
+                    t.TextureID = GetTextureID(texIdBuffer);
                     t.PaletteID = GetPaletteID(br);
                     t.AnimationID = br.ReadByte();
                     t.AnimationState = br.ReadByte();
@@ -172,6 +169,11 @@ namespace OpenVIII.Fields
                 t.GeneratePupu();
                 Debug.Assert(p - br.BaseStream.Position == -16);
                 return t;
+            }
+
+            private static byte GetTextureID(ushort texIdBuffer)
+            {
+                return (byte)(texIdBuffer & 0xF);
             }
 
             public static bool Test16Bit(Bppflag depth) => depth.HasFlag(Bppflag._16bpp) && !depth.HasFlag(Bppflag._8bpp);
@@ -233,15 +235,15 @@ namespace OpenVIII.Fields
                 $"AnimationState: {AnimationState}; " +
                 $"4 bit? {Is4Bit}";
 
-            private static byte GetBlend(byte texIdBuffer) => (byte)((texIdBuffer >> 5) & 0x3);
+            private static byte GetBlend(ushort texIdBuffer) => (byte)((texIdBuffer >> 5) & 0x3);
 
-            private static Bppflag GetDepth(byte texIdBuffer) => (Bppflag)(texIdBuffer >> 7 & 0x3);
+            private static Bppflag GetDepth(ushort texIdBuffer) => (Bppflag)(texIdBuffer >> 7 & 0x3);
 
-            private static bool GetDraw(byte texIdBuffer) => ((texIdBuffer >> 4) & 0x1) != 0;
+            private static bool GetDraw(ushort texIdBuffer) => ((texIdBuffer >> 4) & 0x1) != 0;
 
             private static byte GetLayerID(BinaryReader br) => (byte)(br.ReadByte() >> 1);
 
-            private static byte GetPaletteID(BinaryReader br) => (byte)((br.ReadInt16() >> 6) & 0xF);
+            private static byte GetPaletteID(BinaryReader br) => (byte)((br.ReadUInt16() >> 6) & 0xF);
 
             /*
                         public bool SourceIntersect(Tile tile)
