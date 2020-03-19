@@ -311,7 +311,7 @@ namespace OpenVIII.Fields
                                 if (!doOverLap)
                                     foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
                                         from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
-                                        orderby y, x ascending
+                                        orderby y, x
                                         select new Point(x, y)))
                                     {
                                         Color input = inTex[src.X + p.X, src.Y + p.Y];
@@ -885,35 +885,34 @@ namespace OpenVIII.Fields
         //private void SaveSwizzled(string suf = "") => SaveSwizzled(TextureIDs, suf);
         private void OldSaveDeswizzled()
         {
-            if (Memory.EnableDumpingData || (Module.Toggles.HasFlag(Toggles.DumpingData) && Module.Toggles.HasFlag(Toggles.ClassicSpriteBatch)))
+            if (!Memory.EnableDumpingData && (!Module.Toggles.HasFlag(Toggles.DumpingData) ||
+                                              !Module.Toggles.HasFlag(Toggles.ClassicSpriteBatch))) return;
+            string fieldName = Module.GetFieldName();
+            string folder = Module.GetFolder(fieldName);
+            foreach (KeyValuePair<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte,
+                    ConcurrentDictionary<byte,
+                        ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>
+            > kvpZ in _textures)
+            foreach (KeyValuePair<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte,
+                ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>> kvpLayer in kvpZ
+                .Value)
+            foreach (KeyValuePair<byte, ConcurrentDictionary<byte,
+                    ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>> kvpAnimationID
+                in
+                kvpLayer.Value)
+            foreach (KeyValuePair<byte,
+                    ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>
+                kvpAnimationState in kvpAnimationID.Value)
+            foreach (KeyValuePair<byte, ConcurrentDictionary<BlendMode, Texture2D>> kvpOverlapID in kvpAnimationState.Value)
+            foreach (KeyValuePair<BlendMode, Texture2D> kvp in kvpOverlapID.Value)
             {
-                string fieldName = Module.GetFieldName();
-                string folder = Module.GetFolder(fieldName);
-                foreach (KeyValuePair<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte,
-                        ConcurrentDictionary<byte,
-                            ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>
-                > kvpZ in _textures)
-                    foreach (KeyValuePair<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte,
-                        ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>> kvpLayer in kvpZ
-                        .Value)
-                        foreach (KeyValuePair<byte, ConcurrentDictionary<byte,
-                                ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>> kvpAnimationID
-                            in
-                            kvpLayer.Value)
-                            foreach (KeyValuePair<byte,
-                                    ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>
-                                kvpAnimationState in kvpAnimationID.Value)
-                                foreach (KeyValuePair<byte, ConcurrentDictionary<BlendMode, Texture2D>> kvpOverlapID in kvpAnimationState.Value)
-                                    foreach (KeyValuePair<BlendMode, Texture2D> kvp in kvpOverlapID.Value)
-                                    {
-                                        string path = Path.Combine(folder,
-                                            $"{fieldName}_{kvpZ.Key:D4}.{kvpLayer.Key}.{kvpAnimationID.Key}.{kvpAnimationState.Key}.{kvpOverlapID.Key}.{(int) kvp.Key}.png");
-                                        using (FileStream fs = new FileStream(path,
-                                            FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                                            kvp.Value.SaveAsPng(
-                                                fs,
-                                                kvp.Value.Width, kvp.Value.Height);
-                                    }
+                string path = Path.Combine(folder,
+                    $"{fieldName}_{kvpZ.Key:D4}.{kvpLayer.Key}.{kvpAnimationID.Key}.{kvpAnimationState.Key}.{kvpOverlapID.Key}.{(int) kvp.Key}.png");
+                using (FileStream fs = new FileStream(path,
+                    FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                    kvp.Value.SaveAsPng(
+                        fs,
+                        kvp.Value.Width, kvp.Value.Height);
             }
         }
 
@@ -945,7 +944,7 @@ namespace OpenVIII.Fields
                     tex.Dispose();
             }
             _textures = new ConcurrentDictionary<ushort, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>>>>>();
-            ushort z = 0;
+            const ushort z = 0;
             byte layerID = 0;
             byte animationID = 0;
             byte animationState = 0;
