@@ -320,10 +320,10 @@ namespace OpenVIII.Fields
                                         Point unscaledLocation = tile.Source.Location;
                                         unscaledLocation.Offset(p.ToVector2() / scale);
                                         Color? output = ChangeColor(current, input, unscaledLocation, tile.TextureID, overlap);
-                                        if (!output.HasValue) continue;
+                                        if (!output.HasValue) break;
                                         if (output.Value.A != 0)
                                             texIDs[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = output.Value;
-                                        else break;
+                                        
                                     }
                                 else if (overlap[tile.TextureID].Count > 1)
                                 {
