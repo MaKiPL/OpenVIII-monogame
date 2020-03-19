@@ -309,10 +309,10 @@ namespace OpenVIII.Fields
                                 Point dst = (new Vector2(tile.SourceX, tile.SourceY) * scale).ToPoint();
 
                                 if (!doOverLap)
-                                    foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
+                                    foreach (Point p in from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
                                         from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
                                         orderby y, x
-                                        select new Point(x, y)))
+                                        select new Point(x, y))
                                     {
                                         Color input = inTex[src.X + p.X, src.Y + p.Y];
                                         Color current = texIDs[tile.TextureID][dst.X + p.X, dst.Y + p.Y];
@@ -330,9 +330,9 @@ namespace OpenVIII.Fields
                                     TextureIDPaletteID key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
                                     texIDsPalette.TryAdd(key, new TextureBuffer(width, height));
 
-                                    foreach (Point p in (from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
+                                    foreach (Point p in from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
                                         from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
-                                        select new Point(x, y)))
+                                        select new Point(x, y))
                                     {
                                         Color input = inTex[src.X + p.X, src.Y + p.Y];
                                         if (input.A != 0)
@@ -689,8 +689,8 @@ namespace OpenVIII.Fields
                 process(24,true);
                 void process(byte bit, bool alt  = false)
                 {
-                    float adj = (bit / 8f);
-                    int textureTypeWidth = (bit == 24)? _textureType.Width :(int)(_textureType.Width / adj);
+                    float adj = bit / 8f;
+                    int textureTypeWidth = bit == 24? _textureType.Width :(int)(_textureType.Width / adj);
                     int height = checked((int)Math.Ceiling(((float)mim.Length - _textureType.PaletteSectionSize) / _textureType.Width / (bit == 24 ? adj : 1f)));
 
                     if (bit == 24 && alt)
@@ -708,7 +708,7 @@ namespace OpenVIII.Fields
                         int lastRow = 0;
                         while (ms.Position + Math.Ceiling(adj) < ms.Length)
                         {
-                            int row = (i / textureTypeWidth);
+                            int row = i / textureTypeWidth;
                             Color input;
                             if (bit == 24) //just to see if anything is there. don't think there is a real usage of 24 bit.
                             {
@@ -778,8 +778,8 @@ namespace OpenVIII.Fields
         private static byte GetColorKeyClassicSpriteBatch(IReadOnlyList<byte> mim, int textureWidth, int startPixel, int x, int y, bool is8Bit)
         {
             if (is8Bit)
-                return mim[startPixel + x + (y * textureWidth)];
-            byte tempKey = mim[startPixel + x / 2 + (y * textureWidth)];
+                return mim[startPixel + x + y * textureWidth];
+            byte tempKey = mim[startPixel + x / 2 + y * textureWidth];
             if (x % 2 == 1)
                 return checked((byte)((tempKey & 0xf0) >> 4));
             return checked((byte)(tempKey & 0xf));
@@ -800,7 +800,8 @@ namespace OpenVIII.Fields
         /// <returns>Texture handler used by tile</returns>
         private TextureHandler GetTextureUsedByTile(Tile tile)
         {
-            TextureHandler textureIDsPalette = _textureIDsPalettes?.FirstOrDefault(x => x.Key.PaletteID == tile.PaletteID && x.Key.TextureID == tile.TextureID).Value;
+            TextureHandler textureIDsPalette = _textureIDsPalettes
+                ?.FirstOrDefault(x => x.Key.PaletteID == tile.PaletteID && x.Key.TextureID == tile.TextureID).Value;
             if (textureIDsPalette != null)
                 return textureIDsPalette;
 
@@ -822,7 +823,7 @@ namespace OpenVIII.Fields
             using (BinaryReader br = new BinaryReader(new MemoryStream(mim)))
                 foreach (KeyValuePair<byte, Color[]> clut in cluts)
                 {
-                    int palettePointer = offset + ((clut.Key) * BytesPerPalette);
+                    int palettePointer = offset + clut.Key * BytesPerPalette;
                     br.BaseStream.Seek(palettePointer, SeekOrigin.Begin);
                     for (int i = 0; i < ColorsPerPalette; i++)
                         clut.Value[i] = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
@@ -977,15 +978,12 @@ namespace OpenVIII.Fields
             }
             for (int i = 0; i < sortedTiles.Count; i++)
             {
-                Tile previousTile = (i > 0) ? sortedTiles[i - 1] : null;
+                Tile previousTile = i > 0 ? sortedTiles[i - 1] : null;
                 Tile tile = sortedTiles[i];
-                if (textureBuffer == null || previousTile == null ||
-                    (previousTile.Z != tile.Z ||
-                    previousTile.LayerID != tile.LayerID ||
-                    previousTile.BlendMode != tile.BlendMode ||
+                if (textureBuffer == null || previousTile == null || previousTile.Z != tile.Z ||
+                    previousTile.LayerID != tile.LayerID || previousTile.BlendMode != tile.BlendMode ||
                     previousTile.AnimationID != tile.AnimationID ||
-                    previousTile.AnimationState != tile.AnimationState ||
-                    previousTile.OverLapID != tile.OverLapID))
+                    previousTile.AnimationState != tile.AnimationState || previousTile.OverLapID != tile.OverLapID)
                 {
                     convertColorToTexture2d();
                     textureBuffer = new TextureBuffer(Width, Height, false);
@@ -996,12 +994,12 @@ namespace OpenVIII.Fields
                     overlapID = tile.OverLapID;
                 }
 
-                int palettePointer = _textureType.BytesSkippedPalettes + ((tile.PaletteID) * BytesPerPalette);
+                int palettePointer = _textureType.BytesSkippedPalettes + tile.PaletteID * BytesPerPalette;
                 int sourceImagePointer = BytesPerPalette * _textureType.Palettes;
                 const int textureWidth = 128;
-                int startPixel = sourceImagePointer + tile.SourceX + textureWidth * tile.TextureID + (_textureType.Width * tile.SourceY);
+                int startPixel = sourceImagePointer + tile.SourceX + textureWidth * tile.TextureID + _textureType.Width * tile.SourceY;
                 Point real = new Point(Math.Abs(lowest.X) + tile.X, Math.Abs(lowest.Y) + tile.Y);
-                int realDestinationPixel = ((real.Y * Width) + real.X);
+                int realDestinationPixel = real.Y * Width + real.X;
 
                 
                 if (tile.Is4Bit)
@@ -1017,7 +1015,7 @@ namespace OpenVIII.Fields
                             continue;
                         Color color = Texture_Base.ABGR1555toRGBA32bit(color16Bit);
 
-                        int pos = realDestinationPixel + (x) + (y * Width);
+                        int pos = realDestinationPixel + x + y * Width;
                         Color bufferedColor = textureBuffer[pos];
                         if (blendMode < BlendMode.None)
                         {
@@ -1146,27 +1144,25 @@ namespace OpenVIII.Fields
                             bool is4Bit = Tile.Test4Bit(tile.Depth);
                             bool is8Bit = Tile.Test8Bit(tile.Depth);
                             bool is16Bit = Tile.Test16Bit(tile.Depth);
-                            float bytePerPixel = is16Bit ? 2f : is8Bit ? 1f : .5f;
 
 
                             byte colorKey = 0;
-                            foreach (Point p in (from x in Enumerable.Range(0, Tile.Size)
+                            foreach (Point p in from x in Enumerable.Range(0, Tile.Size)
                                 from y in Enumerable.Range(0, Tile.Size)
                                 orderby y, x
-                                select new Point(x, y)))
+                                select new Point(x, y))
                             {
-                                (int trueX, int trueY) = (tile.loc.X+p.X, (tile.loc.Y + p.Y));
+                                (int trueX, int trueY) = (tile.loc.X+p.X, tile.loc.Y + p.Y);
                                 int offsetX = is16Bit
                                     ? trueX * 2
-                                    : (trueX / (is4Bit ? 2 : 1));
+                                    : trueX / (is4Bit ? 2 : 1);
                                 int texturePageOffset = TexturePageWidth * tile.TextureID;
-                                int offsetY = (_textureType.Width / (is16Bit ? 2 : 1)) * (trueY) ;
-                                long startPixel = _textureType.PaletteSectionSize +
+                                int offsetY = _textureType.Width * trueY ;
+                                long offset = _textureType.PaletteSectionSize +
                                                   offsetX +
                                                   texturePageOffset + 
                                                   offsetY;
-                                br.BaseStream.Seek(
-                                    startPixel, SeekOrigin.Begin);
+                                br.BaseStream.Seek(offset, SeekOrigin.Begin);
 
                                 Point point = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
 
@@ -1207,8 +1203,6 @@ namespace OpenVIII.Fields
                                     if (input.A != 0)
                                         tex[point.X, point.Y] = input;
                                 }
-                                //if(input.A != 0)
-                                //    Debug.WriteLine($"{trueX}, {trueY}, {offsetX + texturePageOffset + offsetY}, {input}");
                             }
                         }
 
