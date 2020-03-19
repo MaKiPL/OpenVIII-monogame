@@ -671,97 +671,95 @@ namespace OpenVIII.Fields
 
         private void DumpRawTexture(byte[] mim)
         {
-            if (Memory.EnableDumpingData || Module.Toggles.HasFlag(Toggles.DumpingData))
+            if (!Memory.EnableDumpingData && !Module.Toggles.HasFlag(Toggles.DumpingData)) return;
+            MemoryStream ms;
+
+            string path = Path.Combine(Module.GetFolder(),
+                $"{Module.GetFieldName()}_raw_{{0}}bit_{{1}}.png");
+            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(mim)))
             {
-                MemoryStream ms;
 
-                string path = Path.Combine(Module.GetFolder(),
-                    $"{Module.GetFieldName()}_raw_{{0}}bit_{{1}}.png");
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(mim)))
-                {
-
-                    long startPixel = _textureType.PaletteSectionSize;
+                long startPixel = _textureType.PaletteSectionSize;
                     
 
-                    process(8);
-                    process(4);
-                    process(16);
-                    process(24);
-                    process(24,true);
-                    void process(byte bit, bool alt  = false)
+                process(8);
+                process(4);
+                process(16);
+                process(24);
+                process(24,true);
+                void process(byte bit, bool alt  = false)
+                {
+                    float adj = (bit / 8f);
+                    int textureTypeWidth = (bit == 24)? _textureType.Width :(int)(_textureType.Width / adj);
+                    int height = checked((int)Math.Ceiling(((float)mim.Length - _textureType.PaletteSectionSize) / _textureType.Width / (bit == 24 ? adj : 1f)));
+
+                    if (bit == 24 && alt)
                     {
-                        float adj = (bit / 8f);
-                        int textureTypeWidth = (bit == 24)? _textureType.Width :(int)(_textureType.Width / adj);
-                        int height = checked((int)Math.Ceiling(((float)mim.Length - _textureType.PaletteSectionSize) / _textureType.Width / (bit == 24 ? adj : 1f)));
+                        textureTypeWidth = (int)Math.Ceiling(_textureType.Width / adj);
+                        height *= (int)adj;
+                    }
 
-                        if (bit == 24 && alt)
+                    TextureBuffer buffer = new TextureBuffer(textureTypeWidth, height, false);
+                    foreach (KeyValuePair<byte, Color[]> clut in _cluts)
+                    {
+                        ms.Seek(startPixel, SeekOrigin.Begin);
+                        int i = 0;
+                        byte colorKey = 0;
+                        int lastRow = 0;
+                        while (ms.Position + Math.Ceiling(adj) < ms.Length)
                         {
-                            textureTypeWidth = (int)Math.Ceiling(_textureType.Width / adj);
-                            height *= (int)adj;
-                        }
-
-                        TextureBuffer buffer = new TextureBuffer(textureTypeWidth, height, false);
-                        foreach (KeyValuePair<byte, Color[]> clut in _cluts)
-                        {
-                            ms.Seek(startPixel, SeekOrigin.Begin);
-                            int i = 0;
-                            byte colorKey = 0;
-                            int lastRow = 0;
-                            while (ms.Position + Math.Ceiling(adj) < ms.Length)
+                            int row = (i / textureTypeWidth);
+                            Color input;
+                            if (bit == 24) //just to see if anything is there. don't think there is a real usage of 24 bit.
                             {
-                                int row = (i / textureTypeWidth);
-                                Color input;
-                                if (bit == 24) //just to see if anything is there. don't think there is a real usage of 24 bit.
+                                if (alt && lastRow != row && row % 3 ==0) i++;
+                                //i += 1;
+                                input = new Color
                                 {
-                                    if (alt && lastRow != row && row % 3 ==0) i++;
-                                    //i += 1;
-                                    input = new Color
-                                    {
-                                        B = br.ReadByte(),
-                                        G = br.ReadByte(),
-                                        R = br.ReadByte(),
-                                        A = 0xFF,
-                                    };
-                                }
-                                else if (bit == 16)
+                                    B = br.ReadByte(),
+                                    G = br.ReadByte(),
+                                    R = br.ReadByte(),
+                                    A = 0xFF,
+                                };
+                            }
+                            else if (bit == 16)
+                            {
+                                //i += 1;
+                                input = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
+                            }
+                            else if (bit == 8)
+                            {
+                                //i = checked((int)(ms.Position - startPixel));
+                                colorKey = br.ReadByte();
+                                input = clut.Value[colorKey];
+                            }
+                            else if (bit == 4)
+                            {
+                                //i++;
+                                if (i % 2 == 0)
                                 {
-                                    //i += 1;
-                                    input = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
-                                }
-                                else if (bit == 8)
-                                {
-                                    //i = checked((int)(ms.Position - startPixel));
                                     colorKey = br.ReadByte();
-                                    input = clut.Value[colorKey];
+                                    input = clut.Value[colorKey & 0xf];
                                 }
-                                else if (bit == 4)
+                                else
                                 {
-                                    //i++;
-                                    if (i % 2 == 0)
-                                    {
-                                        colorKey = br.ReadByte();
-                                        input = clut.Value[colorKey & 0xf];
-                                    }
-                                    else
-                                    {
-                                        input = clut.Value[(colorKey & 0xf0) >> 4];
-                                    }
+                                    input = clut.Value[(colorKey & 0xf0) >> 4];
                                 }
-                                else throw new ArgumentException($"{nameof(bit)} is {bit}, it may only be 4 or 8.");
-                                if (i < buffer.Count)
-                                    buffer[i] = input;
-                                else break;
-                                i++;
-                                lastRow = row;
                             }
-
-                            using (Texture2D tex = (Texture2D)buffer)
-                            using (FileStream fs = new FileStream(string.Format(path, bit, $"{clut.Key}{(alt?"a":"")}"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                            {
-                                tex.SaveAsPng(fs, textureTypeWidth, height);
-                            }
-                            if (bit > 8) break;
+                            else throw new ArgumentException($"{nameof(bit)} is {bit}, it may only be 4 or 8.");
+                            if (i < buffer.Count)
+                                buffer[i] = input;
+                            else break;
+                            i++;
+                            lastRow = row;
                         }
+
+                        using (Texture2D tex = (Texture2D)buffer)
+                        using (FileStream fs = new FileStream(string.Format(path, bit, $"{clut.Key}{(alt?"a":"")}"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                        {
+                            tex.SaveAsPng(fs, textureTypeWidth, height);
+                        }
+                        if (bit > 8) break;
                     }
                 }
             }
@@ -1082,22 +1080,19 @@ namespace OpenVIII.Fields
                 return false;
             string path = Path.Combine(Memory.FF8DIR, "textures");
             int count = LoadUpscaleBackgrounds(path);
-            if (count > 0)
-            {
-                Debug.WriteLine($"Loaded {count} Textures from {path}");
-            }
-            else
+            if (count <= 0)
             {
                 var uniqueSetOfTileData = GetTiles.Where(x => x.Draw).Select(x => new
                 {
                     x.TextureID, x.BlendMode, loc = new Point(x.SourceX, x.SourceY), x.Depth, x.PaletteID, x.AnimationID
-                }).Distinct().ToList();
-                Width = uniqueSetOfTileData.Max(x => x.loc.X + Tile.Size);
-                Height = uniqueSetOfTileData.Max(x => x.loc.Y + Tile.Size);
-                Dictionary<byte, Texture2D> textureIDs = uniqueSetOfTileData.Select(x => x.TextureID).Distinct()
+                }).Distinct().ToList().AsReadOnly();
+                Width = uniqueSetOfTileData.Max(x => x.loc.X) + Tile.Size;
+                Height = uniqueSetOfTileData.Max(x => x.loc.Y) + Tile.Size;
+                IReadOnlyDictionary<byte, Texture2D> textureIDs = uniqueSetOfTileData.Select(x => x.TextureID)
+                    .Distinct()
                     .ToDictionary(x => x,
                         x => Memory.graphics != null ? new Texture2D(Memory.graphics.GraphicsDevice, 256, 256) : null);
-                Dictionary<byte, HashSet<byte>> overlap = GetTiles.Select(x => x.TextureID).Distinct()
+                IReadOnlyDictionary<byte, HashSet<byte>> overlap = GetTiles.Select(x => x.TextureID).Distinct()
                     .ToDictionary(x => x, x => new HashSet<byte>());
                 using (BinaryReader br = new BinaryReader(new MemoryStream(mim)))
                 {
@@ -1105,6 +1100,7 @@ namespace OpenVIII.Fields
                     {
                         GenTexture(kvp.Key, kvp.Value);
                     }
+
                     SaveSwizzled(textureIDs);
                     string fieldName = Module.GetFieldName();
                     _textureIDs = textureIDs.ToDictionary(x => x.Key,
@@ -1113,7 +1109,7 @@ namespace OpenVIII.Fields
 
                     if (overlap.Any(x => x.Value.Count > 1))
                     {
-                        Dictionary<TextureIDPaletteID, Texture2D> textureIDsPalettes = uniqueSetOfTileData
+                        IReadOnlyDictionary<TextureIDPaletteID, Texture2D> textureIDsPalettes = uniqueSetOfTileData
                             .Where(x => overlap[x.TextureID].Contains(x.PaletteID))
                             .Select(x => new TextureIDPaletteID {TextureID = x.TextureID, PaletteID = x.PaletteID})
                             .Distinct().ToDictionary(x => x,
@@ -1125,36 +1121,45 @@ namespace OpenVIII.Fields
                         {
                             GenTexture(kvp.Key.TextureID, kvp.Value, kvp.Key.PaletteID);
                         }
-                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in textureIDsPalettes.Where(x => textureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1).GroupBy(x => x.Key.PaletteID))
 
-                            foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvpGroup in groups)
-                            {
-                                textureIDs =
-                                    groups.ToDictionary(x => x.Key.TextureID, x => x.Value);
-                                SaveSwizzled(textureIDs, $"_{kvpGroup.Key.PaletteID}");
-                                break;
-                            }
+                        foreach (IGrouping<byte, KeyValuePair<TextureIDPaletteID, Texture2D>> groups in
+                            textureIDsPalettes
+                                .Where(x => textureIDsPalettes.Count(y => y.Key.TextureID == x.Key.TextureID) > 1)
+                                .GroupBy(x => x.Key.PaletteID))
+
+                        foreach (KeyValuePair<TextureIDPaletteID, Texture2D> kvpGroup in groups)
+                        {
+                            textureIDs =
+                                groups.ToDictionary(x => x.Key.TextureID, x => x.Value);
+                            SaveSwizzled(textureIDs, $"_{kvpGroup.Key.PaletteID}");
+                            break;
+                        }
                     }
+
                     void GenTexture(byte texID, Texture2D tex2d, byte? inPaletteID = null)
                     {
                         if (tex2d == null) return;
                         TextureBuffer tex = new TextureBuffer(tex2d.Width, tex2d.Height, false);
 
-                        foreach (var tile in uniqueSetOfTileData.Where(x => x.TextureID == texID && (!inPaletteID.HasValue || inPaletteID.Value == x.PaletteID)))
+                        foreach (var tile in uniqueSetOfTileData.Where(x =>
+                            x.TextureID == texID && (!inPaletteID.HasValue || inPaletteID.Value == x.PaletteID)))
                         {
                             bool is4Bit = Tile.Test4Bit(tile.Depth);
                             bool is8Bit = Tile.Test8Bit(tile.Depth);
                             bool is16Bit = Tile.Test16Bit(tile.Depth);
 
-                            long startPixel = _textureType.PaletteSectionSize + (tile.loc.X / (is4Bit ? 2 : 1)) + (TexturePageWidth * tile.TextureID) + (_textureType.Width * tile.loc.Y);
+                            long startPixel = _textureType.PaletteSectionSize + (tile.loc.X / (is4Bit ? 2 : 1)) +
+                                              (TexturePageWidth * tile.TextureID) + (_textureType.Width * tile.loc.Y);
 
                             byte colorKey = 0;
                             foreach (Point p in (from x in Enumerable.Range(0, Tile.Size)
-                                                 from y in Enumerable.Range(0, Tile.Size)
-                                                 orderby y, x ascending
-                                                 select new Point(x, y)))
+                                from y in Enumerable.Range(0, Tile.Size)
+                                orderby y, x
+                                select new Point(x, y)))
                             {
-                                br.BaseStream.Seek(startPixel + (p.Y * _textureType.Width / (is16Bit?2:1)) + (p.X / (is4Bit ? 2 : 1)), SeekOrigin.Begin);
+                                br.BaseStream.Seek(
+                                    startPixel + (p.Y * _textureType.Width / (is16Bit ? 2 : 1)) +
+                                    (p.X / (is4Bit ? 2 : 1)), SeekOrigin.Begin);
 
                                 Point point = new Point(p.X + tile.loc.X, p.Y + tile.loc.Y);
 
@@ -1164,11 +1169,11 @@ namespace OpenVIII.Fields
                                 {
                                     input = _cluts[paletteID][br.ReadByte()];
                                 }
-                                else if(is16Bit)
+                                else if (is16Bit)
                                 {
                                     input = Texture_Base.ABGR1555toRGBA32bit(br.ReadUInt16());
                                 }
-                                else if(is4Bit)
+                                else if (is4Bit)
                                 {
                                     if (p.X % 2 == 0)
                                     {
@@ -1181,14 +1186,14 @@ namespace OpenVIII.Fields
                                     }
                                 }
 
-                                if (!inPaletteID.HasValue) // forcing a palette happens post overlap test. So shouldn't need to rerun test.
+                                if (!inPaletteID.HasValue) 
+                                    // forcing a palette happens post overlap test. So shouldn't need to rerun test.
                                 {
                                     Color current = tex[point.X, point.Y];
                                     Color? output = ChangeColor(current, input, point, tile.TextureID, overlap);
-                                    if (!output.HasValue) continue;
+                                    if (!output.HasValue) break;
                                     if (output.Value.A != 0)
                                         tex[point.X, point.Y] = output.Value;
-                                    else break;
                                 }
                                 else
                                 {
@@ -1197,10 +1202,16 @@ namespace OpenVIII.Fields
                                 }
                             }
                         }
+
                         tex.SetData(tex2d);
                     }
                 }
             }
+            else
+            {
+                Debug.WriteLine($"Loaded {count} Textures from {path}");
+            }
+
             //the sort here should be the default draw order. May need changed.
             _quads = GetTiles.Select(x => new TileQuadTexture(x, GetTextureUsedByTile(x), 1f)).Where(x => x.Enabled)
                 .OrderByDescending(x => x.GetTile.Z)
@@ -1226,7 +1237,7 @@ namespace OpenVIII.Fields
             }
         }
 
-        private static void SaveSwizzled(Dictionary<byte, Texture2D> textureIDs, string suf = "")
+        private static void SaveSwizzled(IReadOnlyDictionary<byte, Texture2D> textureIDs, string suf = "")
         {
             if (!Memory.EnableDumpingData && !Module.Toggles.HasFlag(Toggles.DumpingData)) return;
             string fieldName = Module.GetFieldName();

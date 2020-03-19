@@ -79,7 +79,7 @@ namespace OpenVIII.Fields
         private static TDW TDW => _archive.TDW;
 */
 
-        public static Toggles Toggles { get; set; } = Toggles.Quad | Toggles.Menu;
+        public static Toggles Toggles { get; set; } = Toggles.Quad | Toggles.Menu | Toggles.DumpingData;
 
         public static WalkMesh WalkMesh => _archive.WalkMesh;
 
@@ -117,7 +117,7 @@ namespace OpenVIII.Fields
         {
             if (string.IsNullOrWhiteSpace(fieldName))
                 fieldName = GetFieldName();
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldName.Substring(0, 2), fieldName, subfolder);
+            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldName.Substring(0, 2), fieldName, subfolder,"b");
             Directory.CreateDirectory(folder);
             return folder;
         }
