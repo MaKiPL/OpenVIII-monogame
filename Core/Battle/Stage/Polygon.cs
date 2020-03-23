@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII.Battle
 {
@@ -8,32 +8,18 @@ namespace OpenVIII.Battle
     {
         #region Classes
 
-        /// <summary>
-        /// Just a guess.
-        /// </summary>
-        [Flags]
-        public enum GPU : byte
-        {
-            v0 = 0x0,
-            v1 = 0x1,
-            v2_add = 0x2,
-            v3 = 0x4,
-            v4 = 0x8,
-            v5 = 0x10,
-            v6 = 0x20,
-            v7 = 0x40,
-            v8 = 0x80,
-        }
 
+
+        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
         private abstract class Polygon
         {
             #region Fields
 
             public ushort A;
             public ushort B;
-            public byte bHide;
+            protected byte BHide;
             public ushort C;
-            public byte clut;
+            public byte Clut;
             public GPU GPU;
             public byte TexturePage;
             protected byte Blue;
@@ -42,7 +28,7 @@ namespace OpenVIII.Battle
             protected byte U1;
             protected byte U2;
             protected byte U3;
-            protected byte UNK;
+            protected byte Unk;
             protected byte V1;
             protected byte V2;
             protected byte V3;
@@ -87,7 +73,10 @@ namespace OpenVIII.Battle
             public List<Vector2> UVs { get; protected set; }
 
             #endregion Properties
-        }
+
+
+            
+    }
 
         #endregion Classes
     }

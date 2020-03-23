@@ -278,6 +278,7 @@
     <Compile Include="Battle\Enemies\IEnemy.cs" />
     <Compile Include="Battle\Dat\Information.cs" />
     <Compile Include="Battle\Mag\BinReaderExt.cs" />
+    <Compile Include="Battle\Stage\GPU.cs" />
     <Compile Include="BinaryReaderExt.cs" />
     <Compile Include="Battle\Mag\Geometry.cs" />
     <Compile Include="Battle\InitDebuggerBattle.cs" />
