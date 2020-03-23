@@ -6,78 +6,77 @@ namespace OpenVIII.Battle
 {
     public partial class Stage
     {
-        #region Classes
+        #region Interfaces
 
-
-
-        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
-        private abstract class Polygon
+        public interface IPolygon
         {
-            #region Fields
-
-            public ushort A;
-            public ushort B;
-            protected byte BHide;
-            public ushort C;
-            public byte Clut;
-            public GPU GPU;
-            public byte TexturePage;
-            protected byte Blue;
-            protected byte Green;
-            protected byte Red;
-            protected byte U1;
-            protected byte U2;
-            protected byte U3;
-            protected byte Unk;
-            protected byte V1;
-            protected byte V2;
-            protected byte V3;
-
-            #endregion Fields
-
             #region Properties
 
-            public Color Color => new Color(Red, Green, Blue);
+            ushort A { get; }
+            ushort B { get; }
+            ushort C { get; }
+            byte Clut { get; }
+            GPU GPU { get; }
+            byte TexturePage { get; }
 
-            public Vector2 MaxUV
-            {
-                get
-                {
-                    Vector2 vector2 = UVs[0];
-                    for (int i = 1; i < UVs.Count; i++)
-                        vector2 = Vector2.Max(vector2, UVs[i]);
-                    return vector2;
-                }
-            }
 
-            public Vector2 MinUV
-            {
-                get
-                {
-                    Vector2 vector2 = UVs[0];
-                    for (int i = 1; i < UVs.Count; i++)
-                        vector2 = Vector2.Min(vector2, UVs[i]);
-                    return vector2;
-                }
-            }
+            byte Hide { get; }
+            Color Color { get; }
 
-            public Rectangle Rectangle
-            {
-                get
-                {
-                    Vector2 minUV = MinUV;
-                    return new Rectangle(minUV.ToPoint(), (MaxUV - minUV).ToPoint());
-                }
-            }
+            Vector2[] UVs { get; }
+            #endregion Properties
+        }
 
-            public List<Vector2> UVs { get; protected set; }
+        public interface IQuad
+        {
+            #region Properties
+
+            ushort D { get; }
 
             #endregion Properties
+        }
+
+        #endregion Interfaces
+
+       
 
 
-            
+    }
+[SuppressMessage("ReSharper", "NotAccessedField.Local")]
+public static class PolygonExt
+{
+    #region Fields
+
+
+    #endregion Fields
+
+
+    public static Vector2 MaxUV(this Stage.IPolygon v)
+    {
+        if (v.UVs == null || v.UVs.Length <= 2) return Vector2.Zero;
+        Vector2 vector2 = v.UVs[0];
+        for (int i = 1; i < v.UVs.Length; i++)
+            vector2 = Vector2.Max(vector2, v.UVs[i]);
+        return vector2;
+
     }
 
-        #endregion Classes
+    public static Vector2 MinUV(this Stage.IPolygon v)
+    {
+        if (v.UVs == null || v.UVs.Length <= 2) return Vector2.Zero;
+        Vector2 vector2 = v.UVs[0];
+        for (int i = 1; i < v.UVs.Length; i++)
+            vector2 = Vector2.Min(vector2, v.UVs[i]);
+        return vector2;
+
     }
+
+    public static Rectangle Rectangle(this Stage.IPolygon v)
+    {
+        Vector2 minUV = v.MinUV();
+        Vector2 maxUV = v.MaxUV();
+        return new Rectangle(minUV.ToPoint(), (maxUV - minUV).ToPoint());
+
+    }
+}
 }

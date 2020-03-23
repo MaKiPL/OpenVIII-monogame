@@ -8,43 +8,59 @@ namespace OpenVIII.Battle
     {
         #region Classes
 
-        private class Triangle : Polygon
+        private class Triangle : IPolygon
         {
+            #region Constructors
 
             private Triangle(BinaryReader br)
             {
-                byte tmp;
                 A = br.ReadUInt16();
                 B = br.ReadUInt16();
                 C = br.ReadUInt16();
-                U1 = br.ReadByte();
-                V1 = br.ReadByte();
-                U2 = br.ReadByte();
-                V2 = br.ReadByte();
+                byte u1 = br.ReadByte();
+                byte v1 = br.ReadByte();
+                byte u2 = br.ReadByte();
+                byte v2 = br.ReadByte();
                 Clut = GetClutId(br.ReadUInt16());
-                U3 = br.ReadByte();
-                V3 = br.ReadByte();
-                TexturePage = GetTexturePage(tmp = br.ReadByte());
-                BHide = br.ReadByte();
-                Red = br.ReadByte();
-                Green = br.ReadByte();
-                Blue = br.ReadByte();
+                byte u3 = br.ReadByte();
+                byte v3 = br.ReadByte();
+                TexturePage = GetTexturePage(br.ReadByte());
+                Hide = br.ReadByte();
+                Color = new Color(br.ReadByte(), br.ReadByte(), br.ReadByte());
                 GPU = (GPU)br.ReadByte();
-                Unk = (byte)((tmp & 0xF0) >> 1);
-                UVs = new List<Vector2> { new Vector2(U1, V1), new Vector2(U2, V2), new Vector2(U3, V3) };
+                //byte unk = (byte)((tmp & 0xF0) >> 1);
+                UVs = new [] { new Vector2(u1, v1), new Vector2(u2, v2), new Vector2(u3, v3) };
             }
+
+
+            #endregion Constructors
+
+            #region Properties
+
+            public ushort A { get; }
+
+            public ushort B { get; }
+
+            public ushort C { get; }
+
+            public byte Clut { get; }
+
+            public GPU GPU { get; }
+
+            public byte TexturePage { get; }
+            public byte Hide { get; }
+            public Color Color { get; }
+            public Vector2[] UVs { get; }
+
+            #endregion Properties
+
             #region Methods
 
-            public static Triangle Read(BinaryReader br)
-            {
-                return new Triangle(br);
-            }
+            public static Triangle Read(BinaryReader br) => new Triangle(br);
 
             #endregion Methods
-
         }
 
         #endregion Classes
-
     }
 }

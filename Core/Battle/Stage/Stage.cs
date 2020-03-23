@@ -48,14 +48,14 @@ namespace OpenVIII.Battle
                     ModelGroup.Read(objectsGroups[3].objectListPointer, br)
             );
 
-            Textures = ReadTexture(mainSection.TexturePointer, br);
+            (Textures, UsingTexturePages,Width,Height) = ReadTexture(mainSection.TexturePointer, br);
             Scenario = Memory.Encounters.Scenario;
 
             if (Textures == null || Textures.All(x => x.Value == null)) return;
 
-            TextureHandler t = Textures.First(x => x.Value != null).Value;
-            Width = t.Width;
-            Height = t.Height;
+            //TextureHandler t = Textures.First(x => x.Value != null).Value;
+            //Width = t.Width;
+            //Height = t.Height;
 
             //Seems most animations skip the first frame. Can override with skip:0
             //Count defaults to rows * cols. Can override this to be less than that.
@@ -65,20 +65,20 @@ namespace OpenVIII.Battle
                     {new TextureAnimation(Textures[1], 32, 96, 2, 6, 1, skip: 3, y: 128)}.AsReadOnly();
             else if (Scenario == 31 || Scenario == 30)
                 _animations =
-                    new List<Animation> {new Animation(64, 64, 4, 4, 2, _modelGroups, skip: 0)}.AsReadOnly();
+                    new List<Animation> { new Animation(64, 64, 4, 4, 2, _modelGroups, skip: 0) }.AsReadOnly();
             else if (Scenario == 20)
                 _animations = new List<Animation> { new Animation(64, 128, 2, 4, 2, _modelGroups) }.AsReadOnly();
             else if (Scenario == 48)
                 _animations =
-                    new List<Animation> {new Animation(84, 32, 4, 3, 3, _modelGroups, 8, 0, 32)}.AsReadOnly();
+                    new List<Animation> { new Animation(84, 32, 4, 3, 3, _modelGroups, 8, 0, 32) }.AsReadOnly();
             else if (Scenario == 51)
                 _animations =
-                    new List<Animation> {new Animation(64, 64, 0, 4, 2, _modelGroups, skip: 0)}.AsReadOnly();
+                    new List<Animation> { new Animation(64, 64, 0, 4, 2, _modelGroups, skip: 0) }.AsReadOnly();
             else if (Scenario == 52)
                 _animations =
-                    new List<Animation> {new Animation(64, 64, 0, 4, 1, _modelGroups, skip: 0)}.AsReadOnly();
+                    new List<Animation> { new Animation(64, 64, 0, 4, 1, _modelGroups, skip: 0) }.AsReadOnly();
             else if (Scenario == 79)
-                _animations = new List<Animation> {new Animation(32, 64, 4, 8, 1, _modelGroups, y: 192, skip: 0)}
+                _animations = new List<Animation> { new Animation(32, 64, 4, 8, 1, _modelGroups, y: 192, skip: 0) }
                     .AsReadOnly();
             else if (Scenario == 107 || Scenario == 108 || Scenario == 136)
                 _animations = new List<Animation>
@@ -86,7 +86,6 @@ namespace OpenVIII.Battle
                     new Animation(128, 32, 4, 2, 4, _modelGroups, topDown: true, reversible: true,
                         totalFrameTime: TimeSpan.FromMilliseconds(1000f / 5f),
                         pauseAtStart: TimeSpan.FromMilliseconds(500f))
-                    
                 }.AsReadOnly();
             else if (Scenario == 147)
                 _animations = new List<Animation> {
@@ -105,7 +104,7 @@ namespace OpenVIII.Battle
         public int Height { get; }
         public byte Scenario { get; }
         public IReadOnlyDictionary<ushort, TextureHandler> Textures { get; }
-
+        public bool UsingTexturePages { get; }
         public int Width { get; }
 
         #endregion Properties
@@ -138,7 +137,9 @@ namespace OpenVIII.Battle
             //Float U = (float)U_Byte / (float)(TIM_Texture_Width * 2) + ((float)Texture_Page / (TIM_Texture_Width * 2));
             (float x, float y) = uv;
             const float texPageWidth = 128f;
-            return new Vector2((x + texPage * texPageWidth) / Width, y / Height);
+            return UsingTexturePages
+                ? new Vector2(x / (texPageWidth * 2), y / (texPageWidth * 2))
+                : new Vector2((x + texPage * texPageWidth) / Width, y / Height);
         }
 
         public void Draw()
@@ -197,7 +198,9 @@ namespace OpenVIII.Battle
                         // bs?.Dispose();
                         void process(GeometryInfoSupplier gis)
                         {
-                            ate.Texture = (Texture2D)Textures[gis.clut]; //provide texture per-face
+                            ate.Texture =
+                                (Texture2D) Textures[
+                                    UsingTexturePages ? gis.texPage : gis.clut]; //provide texture per-face
                             foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                             {
                                 pass.Apply();
@@ -279,40 +282,40 @@ namespace OpenVIII.Battle
             if (model.Quads == null)
                 return new GeometryVertexPosition(bsRendererSupplier.ToArray(), vptDynamic.ToArray());
             {
-                    foreach (Quad quad in model.Quads)
+                foreach (Quad quad in model.Quads)
+                {
+                    //I have to re-triangulate it. Fortunately I had been working on this lately
+                    (Vertex a, Vertex b, Vertex c, Vertex d) =
+                        (model.Vertices[quad.A], //1
+                            model.Vertices[quad.B], //2
+                            model.Vertices[quad.C], //4
+                            model.Vertices[quad.D]); //3
+
+                    //triangulation wing-reorder
+                    //1 2 4
+                    vptDynamic.Add(new VertexPositionTexture(a,
+                        CalculateUV(quad.UVs[0], quad.TexturePage)));
+                    vptDynamic.Add(new VertexPositionTexture(b,
+                        CalculateUV(quad.UVs[1], quad.TexturePage)));
+                    vptDynamic.Add(new VertexPositionTexture(d,
+                        CalculateUV(quad.UVs[3], quad.TexturePage)));
+
+                    //1 3 4
+                    vptDynamic.Add(new VertexPositionTexture(d,
+                        CalculateUV(quad.UVs[3], quad.TexturePage)));
+                    vptDynamic.Add(new VertexPositionTexture(c,
+                        CalculateUV(quad.UVs[2], quad.TexturePage)));
+                    vptDynamic.Add(new VertexPositionTexture(a,
+                        CalculateUV(quad.UVs[0], quad.TexturePage)));
+
+                    bsRendererSupplier.Add(new GeometryInfoSupplier()
                     {
-                        //I have to re-triangulate it. Fortunately I had been working on this lately
-                        (Vertex a, Vertex b, Vertex c, Vertex d) =
-                            (model.Vertices[quad.A], //1
-                                model.Vertices[quad.B], //2
-                                model.Vertices[quad.C], //4
-                                model.Vertices[quad.D]); //3
-
-                        //triangulation wing-reorder
-                        //1 2 4
-                        vptDynamic.Add(new VertexPositionTexture(a,
-                            CalculateUV(quad.UVs[0], quad.TexturePage)));
-                        vptDynamic.Add(new VertexPositionTexture(b,
-                            CalculateUV(quad.UVs[1], quad.TexturePage)));
-                        vptDynamic.Add(new VertexPositionTexture(d,
-                            CalculateUV(quad.UVs[3], quad.TexturePage)));
-
-                        //1 3 4
-                        vptDynamic.Add(new VertexPositionTexture(d,
-                            CalculateUV(quad.UVs[3], quad.TexturePage)));
-                        vptDynamic.Add(new VertexPositionTexture(c,
-                            CalculateUV(quad.UVs[2], quad.TexturePage)));
-                        vptDynamic.Add(new VertexPositionTexture(a,
-                            CalculateUV(quad.UVs[0], quad.TexturePage)));
-
-                        bsRendererSupplier.Add(new GeometryInfoSupplier()
-                        {
-                            bQuad = true,
-                            clut = quad.Clut,
-                            texPage = quad.TexturePage,
-                            GPU = quad.GPU
-                        });
-                    }
+                        bQuad = true,
+                        clut = quad.Clut,
+                        texPage = quad.TexturePage,
+                        GPU = quad.GPU
+                    });
+                }
             }
 
             return new GeometryVertexPosition(bsRendererSupplier.ToArray(), vptDynamic.ToArray());
@@ -322,9 +325,10 @@ namespace OpenVIII.Battle
         /// Method designed for Stage texture loading.
         /// </summary>
         /// <param name="texturePointer">Absolute pointer to TIM texture header in stageBuffer</param>
-        private IReadOnlyDictionary<ushort, TextureHandler> ReadTexture(uint texturePointer, BinaryReader br)
+        private (IReadOnlyDictionary<ushort, TextureHandler> textures, bool usingTexturePages, int Width, int Height) ReadTexture(uint texturePointer, BinaryReader br)
         {
             TIM2 textureInterface = new TIM2(br, texturePointer);
+            
 
             IEnumerable<Model> temp = (from mg in _modelGroups
                                        from m in mg
@@ -334,19 +338,29 @@ namespace OpenVIII.Battle
                        where m.Triangles != null && m.Triangles.Count > 0
                        from t in m.Triangles
                        where t != null
-                       select new { clut = t.Clut, t.TexturePage, t.MinUV, t.MaxUV, t.Rectangle }).Distinct().ToList();
+                       select new { clut = t.Clut, t.TexturePage, min = t.MinUV(), max = t.MaxUV(), rectangle = t.Rectangle() }).Distinct().ToList();
             var quv = (from m in enumerable
                        where m.Quads != null && m.Quads.Count > 0
                        from q in m.Quads
                        where q != null
-                       select new { clut = q.Clut, q.TexturePage, q.MinUV, q.MaxUV, q.Rectangle }).Distinct().ToList();
+                       select new { clut = q.Clut, q.TexturePage, min = q.MinUV(), max = q.MaxUV(), rectangle = q.Rectangle() }).Distinct().ToList();
 
             HashSet<byte> allCluts = tuv.Union(quv).Select(x => x.clut).ToHashSet();
-            IReadOnlyDictionary<ushort, TextureHandler> textures = allCluts.ToDictionary(i => (ushort)i, i => TextureHandler.Create(Memory.Encounters.Filename, textureInterface, palette: i));
+            HashSet<byte> allTexturePages = tuv.Union(quv).Select(x => x.TexturePage).ToHashSet();
+            IReadOnlyDictionary<ushort, string> fileNames = allTexturePages.ToDictionary(x => (ushort)x, x => $"{Path.GetFileNameWithoutExtension(Memory.Encounters.Filename)}_{x + 16:D2}");
+            bool usingTexturePages = true;
+            IReadOnlyDictionary<ushort, TextureHandler> textures = fileNames.ToDictionary(i => i.Key,
+                i => TextureHandler.CreateFromPng(i.Value, 256, 256, 0, true, true));
+            if (textures.Any(x => x.Value == null))
+            {
+                textures = allCluts.ToDictionary(i => (ushort)i,
+                    i => TextureHandler.Create(Memory.Encounters.Filename, textureInterface, palette: i));
+                usingTexturePages = false;
+            }
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             // ReSharper disable once RedundantLogicalConditionalExpressionOperand
-            if (!Memory.EnableDumpingData && !EnableDumpingData) return textures;
+            if (!Memory.EnableDumpingData && !EnableDumpingData) return (textures, usingTexturePages, textureInterface.GetWidth, textureInterface.GetHeight);
             var all = tuv.Union(quv);
             foreach (var tpGroup in all.GroupBy(x => x.TexturePage))
             {
@@ -365,7 +379,7 @@ namespace OpenVIII.Battle
                         Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
                         Memory.SpriteBatchStartAlpha();
                         Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
-                        foreach (Rectangle r in clutGroup.Select(x => x.Rectangle))
+                        foreach (Rectangle r in clutGroup.Select(x => x.rectangle))
                         {
                             Rectangle src = r;
                             Rectangle dst = r;
@@ -396,7 +410,7 @@ namespace OpenVIII.Battle
 
             Textures.ForEach(x => x.Value.Save(path, false));
 
-            return textures;
+            return (textures, usingTexturePages, textureInterface.GetWidth, textureInterface.GetHeight);
         }
 
         #endregion Methods

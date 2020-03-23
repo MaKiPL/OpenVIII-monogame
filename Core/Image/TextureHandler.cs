@@ -20,7 +20,7 @@ namespace OpenVIII
 
         private static readonly ConcurrentDictionary<string, Texture2D> PngCache = new ConcurrentDictionary<string, Texture2D>();
         private static readonly ConcurrentDictionary<string, TextureHandler> TextureHandlerCache = new ConcurrentDictionary<string, TextureHandler>();
-        private static string[] _pngStrings;
+        
         private Texture_Base _classic;
 
         private bool _disposedValue;
@@ -181,37 +181,34 @@ namespace OpenVIII
 
             string bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path, @"\{[\d\.\:]+\}", "", RegexOptions.IgnoreCase | RegexOptions.Compiled)));
             string textures = Path.Combine(Memory.FF8DIR, "textures");
-            if (Directory.Exists(textures))
-            {
-                if (_pngStrings == null)
-                    _pngStrings = Directory.GetFiles(textures, "*.png", SearchOption.AllDirectories);
+            if (!Directory.Exists(textures)) return null;
 
-                IOrderedEnumerable<string> limited = _pngStrings.Where(x => x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
-                if (!limited.Any()) return null;
+            string[] pngStrings = Directory.GetFiles(textures, $"*{bn}*.png", SearchOption.AllDirectories);
+            if (pngStrings.Length == 1) return pngStrings[0];
+            IOrderedEnumerable<string> limited = pngStrings.Where(x => x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
+            if (!limited.Any()) return null;
 
-                Regex re1 = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                Regex re2 = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                IEnumerable<Match> matches = (limited.Select(x => new { x, m1 = re1.Match(x) })
-                    .Select(t => new { t, m2 = re2.Match(t.x) })
-                    .Where(t => (t.t.m1.Success || t.m2.Success))
-                    .OrderByDescending(t => t.t.m1.Success)
-                    .Select(t => t.t.m1.Success ? t.t.m1 : t.m2));
-                string tex = matches.FirstOrDefault(x =>
-                        (x.Groups.Count == 3 && int.TryParse(x.Groups[1].Value, out int p) && p == palette) ||
-                        x.Groups.Count == 2)
-                    ?.Value;
-                //string tex = limited.FirstOrDefault(x => (t = re1.Match(x)).Success && t.Groups.Count > 1 && int.TryParse(t.Groups[1].Value, out int p) && p == palette);
-                //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
-                //    tex = _findPNG(bn);
-                //if (tex != null)
-                //if (string.IsNullOrWhiteSpace(tex))
-                //{
-                //    tex = limited.FirstOrDefault(x => (t = re2.Match(x)).Success);
-                //}
+            Regex re1 = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            Regex re2 = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            IEnumerable<Match> matches = (limited.Select(x => new { x, m1 = re1.Match(x) })
+                .Select(t => new { t, m2 = re2.Match(t.x) })
+                .Where(t => (t.t.m1.Success || t.m2.Success))
+                .OrderByDescending(t => t.t.m1.Success)
+                .Select(t => t.t.m1.Success ? t.t.m1 : t.m2));
+            string tex = matches.FirstOrDefault(x =>
+                    (x.Groups.Count == 2 && int.TryParse(x.Groups[1].Value, out int p) && p == palette) ||
+                    x.Groups.Count == 1)
+                ?.Value;
+            //string tex = limited.FirstOrDefault(x => (t = re1.Match(x)).Success && t.Groups.Count > 1 && int.TryParse(t.Groups[1].Value, out int p) && p == palette);
+            //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
+            //    tex = _findPNG(bn);
+            //if (tex != null)
+            //if (string.IsNullOrWhiteSpace(tex))
+            //{
+            //    tex = limited.FirstOrDefault(x => (t = re2.Match(x)).Success);
+            //}
 
-                return tex;
-            }
-            return null;
+            return tex;
         }
 
         public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());

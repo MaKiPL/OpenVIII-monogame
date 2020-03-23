@@ -54,10 +54,10 @@ namespace OpenVIII.Battle
 
                 _qs = (from model in temp
                        from q in model.Quads
-                       select q).Where(q => rectangle.Contains(q.Rectangle) && q.TexturePage == texturePage).ToList();
+                       select q).Where(q => rectangle.Contains(q.Rectangle()) && q.TexturePage == texturePage).ToList();
                 _ts = (from model in temp
                        from q in model.Triangles
-                       select q).Where(q => rectangle.Contains(q.Rectangle) && q.TexturePage == texturePage).ToList();
+                       select q).Where(q => rectangle.Contains(q.Rectangle()) && q.TexturePage == texturePage).ToList();
             }
 
             #endregion Constructors
@@ -107,7 +107,7 @@ namespace OpenVIII.Battle
 
                 foreach (Quad q in _qs)
                 {
-                    for (int i = 0; i < q.UVs.Count; i++)
+                    for (int i = 0; i < q.UVs.Length; i++)
                     {
                         Vector2 uv = q.UVs[i];
                         uv.X += _width * (col - lastCol);
@@ -117,7 +117,7 @@ namespace OpenVIII.Battle
                 }
                 foreach (Triangle q in _ts)
                 {
-                    for (int i = 0; i < q.UVs.Count; i++)
+                    for (int i = 0; i < q.UVs.Length; i++)
                     {
                         Vector2 uv = q.UVs[i];
                         uv.X += _width * (col - lastCol);

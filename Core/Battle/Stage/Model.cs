@@ -19,24 +19,10 @@ namespace OpenVIII.Battle
 
             #endregion Fields
 
-            #region Methods
-
-            /// <summary>
-            /// This is the main class that reads given Stage geometry group. It stores the data into
-            /// Model structure
-            /// </summary>
-            /// <param name="pointer">absolute pointer in buffer for given Stage geometry group</param>
-            /// <returns></returns>
-            [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-            public static Model Read(uint pointer, BinaryReader br)
-            {
-
-                br.BaseStream.Seek(pointer, SeekOrigin.Begin);
-                return new Model(br);
-            }
+            #region Constructors
 
             private Model(BinaryReader br)
-            { 
+            {
                 bool bSpecial = false;
                 uint header = Extended.UintLittleEndian(br.ReadUInt32());
                 if (header != 0x01000100) //those may be some switches, but I don't know what they mean
@@ -58,6 +44,23 @@ namespace OpenVIII.Battle
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 Triangles = Enumerable.Range(0, trianglesCount).Select(_ => Triangle.Read(br)).ToList().AsReadOnly();
                 Quads = Enumerable.Range(0, quadsCount).Select(_ => Quad.Read(br)).ToList().AsReadOnly();
+            }
+
+            #endregion Constructors
+
+            #region Methods
+
+            /// <summary>
+            /// This is the main class that reads given Stage geometry group. It stores the data into
+            /// Model structure
+            /// </summary>
+            /// <param name="pointer">absolute pointer in buffer for given Stage geometry group</param>
+            /// <returns></returns>
+            [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
+            public static Model Read(uint pointer, BinaryReader br)
+            {
+                br.BaseStream.Seek(pointer, SeekOrigin.Begin);
+                return new Model(br);
             }
 
             #endregion Methods
