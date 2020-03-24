@@ -33,7 +33,7 @@ namespace OpenVIII.Battle
 
         private Stage(BinaryReader br)
         {
-            MainGeometrySection mainSection = MainGeometrySection.Read(br);
+            var mainSection = MainGeometrySection.Read(br);
             ObjectsGroup[] objectsGroups = {
                     ObjectsGroup.Read(mainSection.Group1Pointer,br),
                     ObjectsGroup.Read(mainSection.Group2Pointer,br),
@@ -113,10 +113,10 @@ namespace OpenVIII.Battle
 
         public static BinaryReader Open()
         {
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
-            string filename = Memory.Encounters.Filename;
+            var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+            var filename = Memory.Encounters.Filename;
             Memory.Log.WriteLine($"{nameof(Battle)} :: Loading {nameof(Camera)} :: {filename}");
-            byte[] stageBuffer = aw.GetBinaryFile(filename);
+            var stageBuffer = aw.GetBinaryFile(filename);
 
             return stageBuffer == null ? null : new BinaryReader(new MemoryStream(stageBuffer));
         }
@@ -124,7 +124,7 @@ namespace OpenVIII.Battle
         public static Stage Read(uint offset, BinaryReader br)
         {
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
-            uint sectionCounter = br.ReadUInt32();
+            var sectionCounter = br.ReadUInt32();
             if (sectionCounter == 6) return new Stage(br);
             Memory.Log.WriteLine($"BS_PARSER_PRE_OBJECT SECTION: Main geometry section has no 6 pointers at: {br.BaseStream.Position}");
             ModuleBattleDebug.BattleModule++;
@@ -135,7 +135,7 @@ namespace OpenVIII.Battle
         {
             //old code from my wiki page
             //Float U = (float)U_Byte / (float)(TIM_Texture_Width * 2) + ((float)Texture_Page / (TIM_Texture_Width * 2));
-            (float x, float y) = uv;
+            var (x, y) = uv;
             const float texPageWidth = 128f;
             return UsingTexturePages
                 ? new Vector2(x / (texPageWidth * 2), y / (texPageWidth * 2))
@@ -150,7 +150,7 @@ namespace OpenVIII.Battle
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             //Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
-            using (AlphaTestEffect ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            using (var ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
             {
                 Projection = ProjectionMatrix,
                 View = ViewMatrix,
@@ -167,15 +167,15 @@ namespace OpenVIII.Battle
                 // where model.quads != null && model.triangles != null && model.vertices != null
                 // select model);
                 int[] order = { 3, 0, 1, 2 };
-                foreach (int n in order.Where(x => x < (_modelGroups?.Count ?? 0)))
-                    foreach (Model b in _modelGroups[n])
+                foreach (var n in order.Where(x => x < (_modelGroups?.Count ?? 0)))
+                    foreach (var b in _modelGroups[n])
                     {
-                        GeometryVertexPosition vpt = GetVertexBuffer(b);
+                        var vpt = GetVertexBuffer(b);
                         if (n == 3 && Math.Abs(SkyRotators[Memory.Encounters.Scenario]) > float.Epsilon)
                             CreateRotation(vpt);
                         if (vpt == null) continue;
-                        int localVertexIndex = 0;
-                        foreach (GeometryInfoSupplier gis in vpt.GeometryInfoSupplier.Where(x => !x.GPU.HasFlag(GPU.v2_add)))
+                        var localVertexIndex = 0;
+                        foreach (var gis in vpt.GeometryInfoSupplier.Where(x => !x.GPU.HasFlag(GPU.v2_add)))
                         {
                             Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
                             process(gis);
@@ -190,7 +190,7 @@ namespace OpenVIII.Battle
                         //    AlphaDestinationBlend = Blend.One,
                         //    ColorBlendFunction = BlendFunction.Max
                         //};
-                        foreach (GeometryInfoSupplier gis in vpt.GeometryInfoSupplier.Where(x => x.GPU.HasFlag(GPU.v2_add)))
+                        foreach (var gis in vpt.GeometryInfoSupplier.Where(x => x.GPU.HasFlag(GPU.v2_add)))
                         {
                             Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;//bs;
                             process(gis);
@@ -201,19 +201,19 @@ namespace OpenVIII.Battle
                             ate.Texture =
                                 (Texture2D) Textures[
                                     UsingTexturePages ? gis.texPage : gis.clut]; //provide texture per-face
-                            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                            foreach (var pass in ate.CurrentTechnique.Passes)
                             {
                                 pass.Apply();
                                 if (gis.bQuad)
                                 {
-                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                                        vertexData: vpt.VertexPositionTexture, vertexOffset: localVertexIndex, primitiveCount: 2);
+                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
+                                        vpt.VertexPositionTexture, localVertexIndex, 2);
                                     localVertexIndex += 6;
                                 }
                                 else
                                 {
-                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
-                                        vertexData: vpt.VertexPositionTexture, vertexOffset: localVertexIndex, primitiveCount: 1);
+                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
+                                        vpt.VertexPositionTexture, localVertexIndex, 1);
                                     localVertexIndex += 3;
                                 }
                             }
@@ -230,7 +230,7 @@ namespace OpenVIII.Battle
 
         private static byte GetClutId(ushort clut)
         {
-            ushort bb = Extended.UshortLittleEndian(clut);
+            var bb = Extended.UshortLittleEndian(clut);
             return (byte)(((bb >> 14) & 0x03) | (bb << 2) & 0x0C);
         }
 
@@ -245,8 +245,9 @@ namespace OpenVIII.Battle
             _localRotator += (short)SkyRotators[Memory.Encounters.Scenario] / 4096f * Memory.ElapsedGameTime.Milliseconds;
             if (_localRotator <= 0)
                 return;
-            for (int i = 0; i < vpt.VertexPositionTexture.Length; i++)
-                vpt.VertexPositionTexture[i].Position = Vector3.Transform(vpt.VertexPositionTexture[i].Position, Matrix.CreateRotationY(MathHelper.ToRadians(_localRotator)));
+            for (var i = 0; i < vpt.VertexPositionTexture.Length; i++)
+                vpt.VertexPositionTexture[i].Position = Vector3.Transform(Vector3.Transform(vpt.VertexPositionTexture[i].Position,
+                    Matrix.CreateRotationY(MathHelper.ToRadians(_localRotator))),Matrix.CreateScale(1.10f,1f,1.1f));
         }
 
         /// <summary>
@@ -256,13 +257,13 @@ namespace OpenVIII.Battle
         /// <returns></returns>
         private GeometryVertexPosition GetVertexBuffer(Model model)
         {
-            List<VertexPositionTexture> vptDynamic = new List<VertexPositionTexture>();
-            List<GeometryInfoSupplier> bsRendererSupplier = new List<GeometryInfoSupplier>();
+            var vptDynamic = new List<VertexPositionTexture>();
+            var bsRendererSupplier = new List<GeometryInfoSupplier>();
             if (model.Vertices == null) return null;
             if (model.Triangles != null)
-                foreach (Triangle triangle in model.Triangles)
+                foreach (var triangle in model.Triangles)
                 {
-                    (Vertex a, Vertex b, Vertex c) =
+                    var (a, b, c) =
                         (model.Vertices[triangle.A], model.Vertices[triangle.B], model.Vertices[triangle.C]);
                     vptDynamic.Add(new VertexPositionTexture(a,
                         CalculateUV(triangle.UVs[1], triangle.TexturePage)));
@@ -282,10 +283,10 @@ namespace OpenVIII.Battle
             if (model.Quads == null)
                 return new GeometryVertexPosition(bsRendererSupplier.ToArray(), vptDynamic.ToArray());
             {
-                foreach (Quad quad in model.Quads)
+                foreach (var quad in model.Quads)
                 {
                     //I have to re-triangulate it. Fortunately I had been working on this lately
-                    (Vertex a, Vertex b, Vertex c, Vertex d) =
+                    var (a, b, c, d) =
                         (model.Vertices[quad.A], //1
                             model.Vertices[quad.B], //2
                             model.Vertices[quad.C], //4
@@ -327,10 +328,10 @@ namespace OpenVIII.Battle
         /// <param name="texturePointer">Absolute pointer to TIM texture header in stageBuffer</param>
         private (IReadOnlyDictionary<ushort, TextureHandler> textures, bool usingTexturePages, int Width, int Height) ReadTexture(uint texturePointer, BinaryReader br)
         {
-            TIM2 textureInterface = new TIM2(br, texturePointer);
+            var textureInterface = new TIM2(br, texturePointer);
             
 
-            IEnumerable<Model> temp = (from mg in _modelGroups
+            var temp = (from mg in _modelGroups
                                        from m in mg
                                        select m).Where(x => x.Vertices != null && x.Triangles != null && x.Quads != null);
             IEnumerable<Model> enumerable = temp as Model[] ?? temp.ToArray();
@@ -345,16 +346,16 @@ namespace OpenVIII.Battle
                        where q != null
                        select new { clut = q.Clut, q.TexturePage, min = q.MinUV(), max = q.MaxUV(), rectangle = q.Rectangle() }).Distinct().ToList();
 
-            HashSet<byte> allCluts = tuv.Union(quv).Select(x => x.clut).ToHashSet();
-            HashSet<byte> allTexturePages = tuv.Union(quv).Select(x => x.TexturePage).ToHashSet();
+            var allCluts = tuv.Union(quv).Select(x => x.clut).ToHashSet();
+            var allTexturePages = tuv.Union(quv).Select(x => x.TexturePage).ToHashSet();
             IReadOnlyDictionary<ushort, string> fileNames = allTexturePages.ToDictionary(x => (ushort)x, x => $"{Path.GetFileNameWithoutExtension(Memory.Encounters.Filename)}_{x + 16:D2}");
-            bool usingTexturePages = true;
+            var usingTexturePages = true;
             IReadOnlyDictionary<ushort, TextureHandler> textures = fileNames.ToDictionary(i => i.Key,
                 i => TextureHandler.CreateFromPng(i.Value, 256, 256, 0, true, true));
             if (textures.Any(x => x.Value == null))
             {
                 textures = allCluts.ToDictionary(i => (ushort)i,
-                    i => TextureHandler.Create(Memory.Encounters.Filename, textureInterface, palette: i));
+                    i => TextureHandler.Create(Memory.Encounters.Filename, textureInterface, i));
                 usingTexturePages = false;
             }
 
@@ -364,46 +365,46 @@ namespace OpenVIII.Battle
             var all = tuv.Union(quv);
             foreach (var tpGroup in all.GroupBy(x => x.TexturePage))
             {
-                byte texturePage = tpGroup.Key;
+                var texturePage = tpGroup.Key;
                 foreach (var clutGroup in tpGroup.GroupBy(x => x.clut))
                 {
-                    byte clut = clutGroup.Key;
-                    string filename = Path.GetFileNameWithoutExtension(Memory.Encounters.Filename);
-                    string p = Path.Combine(Path.GetTempPath(), "Battle Stages",
+                    var clut = clutGroup.Key;
+                    var filename = Path.GetFileNameWithoutExtension(Memory.Encounters.Filename);
+                    var p = Path.Combine(Path.GetTempPath(), "Battle Stages",
                         filename ?? throw new InvalidOperationException(), "Reference");
                     Directory.CreateDirectory(p);
                     filename = $"{filename}_{clut}_{texturePage}.png";
-                    using (Texture2D tex = textureInterface.GetTexture(clut))
-                    using (RenderTarget2D tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, 256, 256))
+                    using (var tex = textureInterface.GetTexture(clut))
+                    using (var tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, 256, 256))
                     {
                         Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
                         Memory.SpriteBatchStartAlpha();
                         Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
-                        foreach (Rectangle r in clutGroup.Select(x => x.rectangle))
+                        foreach (var r in clutGroup.Select(x => x.rectangle))
                         {
-                            Rectangle src = r;
-                            Rectangle dst = r;
+                            var src = r;
+                            var dst = r;
                             src.Offset(texturePage * 128, 0);
                             Memory.spriteBatch.Draw(tex, dst, src, Color.White);
                         }
 
                         Memory.SpriteBatchEnd();
                         Memory.graphics.GraphicsDevice.SetRenderTarget(null);
-                        using (FileStream fs = new FileStream(Path.Combine(p, filename), FileMode.Create,
+                        using (var fs = new FileStream(Path.Combine(p, filename), FileMode.Create,
                             FileAccess.Write, FileShare.ReadWrite))
                             tmp.SaveAsPng(fs, 256, 256);
                     }
                 }
             }
 
-            string path = Path.Combine(Path.GetTempPath(), "Battle Stages",
+            var path = Path.Combine(Path.GetTempPath(), "Battle Stages",
                 Path.GetFileNameWithoutExtension(Memory.Encounters.Filename) ??
                 throw new InvalidOperationException());
             Directory.CreateDirectory(path);
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             // ReSharper disable once RedundantLogicalConditionalExpressionOperand
-            string fullPath = Path.Combine(path,
+            var fullPath = Path.Combine(path,
                 $"{Path.GetFileNameWithoutExtension(Memory.Encounters.Filename)}_Clut.png");
             if (!File.Exists(fullPath))
                 textureInterface.SaveCLUT(fullPath);
