@@ -66,26 +66,27 @@ namespace OpenVIII
 
         public bool Update()
         {
-            if (Damageable != null)
+            if (Damageable == null || Damageable.IsDead)
             {
-                if (!Damageable.IsDead)
-                {
-                    if (!Done)
-                    {
-                        double TotalMilliseconds = Memory.ElapsedGameTime.TotalMilliseconds;
-                        ATBBarIncrement = Damageable.BarIncrement(); // 60 ticks per second.
-                        ATBBarPos += checked((float)(ATBBarIncrement * TotalMilliseconds / 60));
-                        // if TotalMilliseconds is 1000 then it'll increment 60 times. So this should be right.
-                        return true;
-                    }
-                }
-                else if (ATBBarPos > 0)
-                {
-                    ATBBarPos = 0;
-                    return true;
-                }
+                return false;
             }
-            return false;
+
+            if (ATBBarPos > 0)
+            {
+                ATBBarPos = 0;
+                return true;
+            }
+
+            if (Done) 
+            {
+                return false;
+            }
+
+            double TotalMilliseconds = Memory.ElapsedGameTime.TotalMilliseconds;
+            ATBBarIncrement = Damageable.BarIncrement(); // 60 ticks per second.
+            ATBBarPos += checked((float)(ATBBarIncrement * TotalMilliseconds / 60));
+            // if TotalMilliseconds is 1000 then it'll increment 60 times. So this should be right.
+            return true;
         }
     }
 }
