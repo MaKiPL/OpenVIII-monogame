@@ -158,7 +158,7 @@ namespace OpenVIII.Battle
             try
             {
                 TIM2 tim = new TIM2(br, noExec: true);
-                if (tim.NOT_TIM)
+                if (tim.NotTIM)
                     return TIM = null;
                 isTIM = true;
                 return TIM = new TIM2[] { tim };

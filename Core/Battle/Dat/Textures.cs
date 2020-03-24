@@ -32,12 +32,12 @@ namespace OpenVIII.Battle.Dat
             //                fs.Write(_br.ReadBytes((int)(_br.BaseStream.Length - _br.BaseStream.Position)));
             //#endif
             IReadOnlyList<uint> pTim;
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            using (var br = new BinaryReader(new MemoryStream(buffer)))
             {
                 br.BaseStream.Seek(byteOffset, SeekOrigin.Begin);
                 //Begin create Textures struct
                 //populate the tim Count;
-                int cTim = br.ReadInt32();
+                var cTim = br.ReadInt32();
                 //create arrays per Count and Read pointers into array
                 pTim = Enumerable.Range(0, cTim).Select(_ => (uint)(byteOffset + br.ReadUInt32())).ToList()
                     .AsReadOnly();
@@ -50,8 +50,12 @@ namespace OpenVIII.Battle.Dat
             {
                 if (buffer[offset] == 0x10)
                 {
-                    TIM2 tm = new TIM2(buffer, offset); //broken
-                    return TextureHandler.Create($"{fileName}_{i /*.ToString("D2")*/}", tm); // tm.GetTexture(0);
+                    var tm = new TIM2(buffer, offset); //broken
+                    var filename = $"{fileName}_{i}";
+                    var path = Path.Combine(Path.GetTempPath(), "battle.dat");
+                    Directory.CreateDirectory(path);
+                    tm.SavePNG(Path.Combine(path,filename));
+                    return TextureHandler.Create(filename, tm); // tm.GetTexture(0);
                 }
                 Memory.Log.WriteLine($"{nameof(Textures)}::{nameof(getTexture)}.{offset} :: Not a tim file!");
                 return null;

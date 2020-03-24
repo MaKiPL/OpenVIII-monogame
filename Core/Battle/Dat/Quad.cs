@@ -123,9 +123,9 @@ namespace OpenVIII.Battle.Dat
             Enumerable.Range(0, count).Select(_ => CreateInstance(br)).ToList().AsReadOnly();
 
         public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> vertices, Quaternion rotation,
-            Vector3 translationPosition, Texture2D preVarTex)
+            Vector3 translationPosition, TextureHandler preVarTex)
         {
-            VertexPositionTexture[] tempVPT = new VertexPositionTexture[Count];
+            var tempVPT = new VertexPositionTexture[Count];
             VertexPositionTexture GetVPT(Quad quad, byte i)
             {
                 Vector3 GetVertex(Quad refQuad, byte j)
@@ -133,7 +133,7 @@ namespace OpenVIII.Battle.Dat
                     return DatFile.TransformVertex(vertices[refQuad.GetIndex(j)], translationPosition, rotation);
                 }
                 return new VertexPositionTexture(GetVertex(quad, i),
-                    quad.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
+                    quad.GetUV(i).ToVector2(preVarTex.ClassicWidth, preVarTex.ClassicHeight));
             }
             tempVPT[0] = tempVPT[3] = GetVPT(this, this[0]);
             tempVPT[1] = GetVPT(this, this[1]);

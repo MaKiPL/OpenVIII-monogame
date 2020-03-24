@@ -22,7 +22,7 @@ namespace OpenVIII
 
         private new void _Init(byte[] buffer, uint offset)
         {
-            this.buffer = buffer;
+            this.Buffer = buffer;
             using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
             {
                 Init(br, offset);
@@ -31,33 +31,33 @@ namespace OpenVIII
 
         private new void _Init(BinaryReader br, uint offset)
         {
-            trimExcess = true;
+            TrimExcess = true;
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
-            buffer = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position));
-            using (BinaryReader br2 = new BinaryReader(new MemoryStream(buffer)))
+            Buffer = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position));
+            using (BinaryReader br2 = new BinaryReader(new MemoryStream(Buffer)))
                 Init(br2, 0);
         }
 
         private new void Init(BinaryReader br, uint offset)
         {
-            bpp = 16;
-            timOffset = offset;
+            BPP = 16;
+            TIMOffset = offset;
             ReadParameters(br);
         }
 
         private new void ReadParameters(BinaryReader br)
         {
-            br.BaseStream.Seek(timOffset, SeekOrigin.Begin);
-            texture.ImageOrgX = br.ReadUInt16();
-            texture.ImageOrgY = br.ReadUInt16();
-            texture.Width = br.ReadUInt16();
-            texture.Height = br.ReadUInt16();
-            texture.ImageSize = (uint)(br.BaseStream.Length - timOffset);
-            texture.ImageDataSize = (int)(br.BaseStream.Length - br.BaseStream.Position);
-            textureDataPointer = (uint)br.BaseStream.Position;
-            br.BaseStream.Seek(timOffset, SeekOrigin.Begin);
-            if (trimExcess)
-                buffer = buffer.Skip((int)timOffset).Take((int)(texture.ImageDataSize + textureDataPointer - timOffset)).ToArray();
+            br.BaseStream.Seek(TIMOffset, SeekOrigin.Begin);
+            Texture.ImageOrgX = br.ReadUInt16();
+            Texture.ImageOrgY = br.ReadUInt16();
+            Texture.Width = br.ReadUInt16();
+            Texture.Height = br.ReadUInt16();
+            Texture.ImageSize = (uint)(br.BaseStream.Length - TIMOffset);
+            Texture.ImageDataSize = (int)(br.BaseStream.Length - br.BaseStream.Position);
+            TextureDataPointer = (uint)br.BaseStream.Position;
+            br.BaseStream.Seek(TIMOffset, SeekOrigin.Begin);
+            if (TrimExcess)
+                Buffer = Buffer.Skip((int)TIMOffset).Take((int)(Texture.ImageDataSize + TextureDataPointer - TIMOffset)).ToArray();
         }
 
         ///// <summary>

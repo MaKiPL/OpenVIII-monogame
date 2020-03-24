@@ -107,16 +107,17 @@ namespace OpenVIII.Battle.Dat
 
         public static IReadOnlyList<Triangle> CreateInstances(BinaryReader br, ushort count) => Enumerable.Range(0, count).Select(_ => CreateInstance(br)).ToList().AsReadOnly();
 
-        public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> vertices, Quaternion rotation, Vector3 translationPosition, Texture2D preVarTex)
+        public VertexPositionTexture[] GenerateVPT(List<VectorBoneGRP> vertices, Quaternion rotation,
+            Vector3 translationPosition, TextureHandler preVarTex)
         {
-            VertexPositionTexture[] tempVPT = new VertexPositionTexture[Count];
+            var tempVPT = new VertexPositionTexture[Count];
             VertexPositionTexture GetVPT(Triangle triangle, byte i)
             {
                 Vector3 GetVertex(ref Triangle refTriangle, byte j)
                 {
                     return DatFile.TransformVertex(vertices[refTriangle.GetIndex(j)], translationPosition, rotation);
                 }
-                return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.Width, preVarTex.Height));
+                return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(preVarTex.ClassicWidth, preVarTex.ClassicHeight));
             }
             tempVPT[0] = GetVPT(this, this[0]);
             tempVPT[1] = GetVPT(this, this[1]);

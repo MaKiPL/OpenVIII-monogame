@@ -28,16 +28,16 @@ namespace OpenVIII.Battle.Dat
             AltID = additionalFileId;
 
             Memory.Log.WriteLine($"{nameof(DatFile)} Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
-            char et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
-            string fileName = entityType == EntityType.Monster ? $"c0m{ID:D03}" :
+            var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+            var et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
+            var fileName = entityType == EntityType.Monster ? $"c0m{ID:D03}" :
                 entityType == EntityType.Character || entityType == EntityType.Weapon ? $"d{fileId:x}{et}{additionalFileId:D03}"
                 : string.Empty;
             EntityType = entityType;
             if (string.IsNullOrEmpty(fileName))
                 return;
             string path;
-            string search = "";
+            var search = "";
             if (et != default)
             {
                 search = $"d{fileId:x}{et}";
@@ -144,29 +144,29 @@ namespace OpenVIII.Battle.Dat
         {
             if (refAnimationSystem.AnimationFrame >= Animations[refAnimationSystem.AnimationId].Count || refAnimationSystem.AnimationFrame < 0)
                 refAnimationSystem.AnimationFrame = 0;
-            AnimationFrame nextFrame = Animations[refAnimationSystem.AnimationId][refAnimationSystem.AnimationFrame];
-            int lastAnimationFrame = refAnimationSystem.LastAnimationFrame;
+            var nextFrame = Animations[refAnimationSystem.AnimationId][refAnimationSystem.AnimationFrame];
+            var lastAnimationFrame = refAnimationSystem.LastAnimationFrame;
             IReadOnlyList<AnimationFrame> lastAnimationFrames = Animations[refAnimationSystem.LastAnimationId];
             lastAnimationFrame = lastAnimationFrames.Count > lastAnimationFrame ? lastAnimationFrame : lastAnimationFrames.Count - 1;
-            AnimationFrame animationFrame = lastAnimationFrames[lastAnimationFrame];
+            var animationFrame = lastAnimationFrames[lastAnimationFrame];
 
-            Object obj = Geometry.Objects[objectId];
-            int i = 0;
+            var obj = Geometry.Objects[objectId];
+            var i = 0;
 
-            List<VectorBoneGRP> vectorBoneGroups = GetVertices(obj, animationFrame, nextFrame, step);
+            var vectorBoneGroups = GetVertices(obj, animationFrame, nextFrame, step);
             //float minY = vertices.Min(x => x.Y);
             //Vector2 HLPTS = FindLowHighPoints(translationPosition, rotation, currentFrame, nextFrame, step);
 
-            byte[] texturePointers = new byte[obj.CTriangles + obj.CQuads * 2];
-            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
+            var texturePointers = new byte[obj.CTriangles + obj.CQuads * 2];
+            var vpt = new List<VertexPositionTexture>(texturePointers.Length * 3);
 
             if (objectId == 0)
             {
-                AnimationSystem animationSystem = refAnimationSystem;
-                AnimationYOffset lastOffsets = AnimationYOffsets?.First(x =>
+                var animationSystem = refAnimationSystem;
+                var lastOffsets = AnimationYOffsets?.First(x =>
                     x.ID == animationSystem.LastAnimationId &&
                     x.Frame == lastAnimationFrame) ?? default;
-                AnimationYOffset nextOffsets = AnimationYOffsets?.First(x =>
+                var nextOffsets = AnimationYOffsets?.First(x =>
                     x.ID == animationSystem.AnimationId &&
                     x.Frame == animationSystem.AnimationFrame) ?? default;
                 OffsetYLow = MathHelper.Lerp(lastOffsets.LowY, nextOffsets.LowY, (float)step);
@@ -184,7 +184,7 @@ namespace OpenVIII.Battle.Dat
             //Triangle parsing
             for (; i < obj.CTriangles; i++)
             {
-                Texture2D preVarTex = (Texture2D)Textures[obj.Triangles[i].TextureIndex];
+                var preVarTex = Textures[obj.Triangles[i].TextureIndex];
                 vpt.AddRange(obj.Triangles[i].GenerateVPT(vectorBoneGroups, rotation, translationPosition, preVarTex));
                 texturePointers[i] = obj.Triangles[i].TextureIndex;
             }
@@ -192,7 +192,7 @@ namespace OpenVIII.Battle.Dat
             //Quad parsing
             for (i = 0; i < obj.CQuads; i++)
             {
-                Texture2D preVarTex = (Texture2D)Textures[obj.Quads[i].TextureIndex];
+                var preVarTex = Textures[obj.Quads[i].TextureIndex];
                 vpt.AddRange(obj.Quads[i].GenerateVPT(vectorBoneGroups, rotation, translationPosition, preVarTex));
                 texturePointers[obj.CTriangles + i * 2] = obj.Quads[i].TextureIndex;
                 texturePointers[obj.CTriangles + i * 2 + 1] = obj.Quads[i].TextureIndex;
@@ -228,16 +228,16 @@ namespace OpenVIII.Battle.Dat
         {
             Vector3 getVector(Matrix matrix)
             {
-                Vector3 r = new Vector3(
+                var r = new Vector3(
                     matrix.M11 * vectorBoneGRP.X + matrix.M41 + matrix.M12 * vectorBoneGRP.Z + matrix.M13 * -vectorBoneGRP.Y,
                     matrix.M21 * vectorBoneGRP.X + matrix.M42 + matrix.M22 * vectorBoneGRP.Z + matrix.M23 * -vectorBoneGRP.Y,
                     matrix.M31 * vectorBoneGRP.X + matrix.M43 + matrix.M32 * vectorBoneGRP.Z + matrix.M33 * -vectorBoneGRP.Y);
                 r = Vector3.Transform(r, Matrix.CreateScale(Skeleton.GetScale));
                 return r;
             }
-            Vector3 rootFramePos = getVector(currentFrame.BoneMatrix[vectorBoneGRP.BoneID]); //get's bone matrix
+            var rootFramePos = getVector(currentFrame.BoneMatrix[vectorBoneGRP.BoneID]); //get's bone matrix
             if (!(step > 0f)) return new VectorBoneGRP(rootFramePos, vectorBoneGRP.BoneID);
-            Vector3 nextFramePos = getVector(nextFrame.BoneMatrix[vectorBoneGRP.BoneID]);
+            var nextFramePos = getVector(nextFrame.BoneMatrix[vectorBoneGRP.BoneID]);
             rootFramePos = Vector3.Lerp(rootFramePos, nextFramePos, (float)step);
             return new VectorBoneGRP(rootFramePos, vectorBoneGRP.BoneID);
         }
@@ -248,9 +248,9 @@ namespace OpenVIII.Battle.Dat
             {
                 const string target = @"d:\";
                 if (!Directory.Exists(target)) return;
-                DriveInfo[] drive = DriveInfo.GetDrives().Where(x =>
+                var drive = DriveInfo.GetDrives().Where(x =>
                     x.Name.IndexOf(Path.GetPathRoot(target), StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
-                DirectoryInfo di = new DirectoryInfo(target);
+                var di = new DirectoryInfo(target);
                 if (!di.Attributes.HasFlag(FileAttributes.ReadOnly) && drive.Count() == 1 && drive[0].DriveType == DriveType.Fixed)
                     Extended.DumpBuffer(Buffer, Path.Combine(target, "out.dat"));
             }
@@ -265,9 +265,9 @@ namespace OpenVIII.Battle.Dat
             // Get baseline from running function on only Animation 0;
             if (Animations.Count == 0)
                 return;
-            List<Vector4> baseline = Animations[0].Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
+            var baseline = Animations[0].Select(x => FindLowHighPoints(Vector3.Zero, Quaternion.Identity, x, x, 0f)).ToList();
             //X is lowY, Y is high Y, Z is mid x, W is mid z
-            (float baselineLowY, float baselineHighY) = (baseline.Min(x => x.X), baseline.Max(x => x.Y));
+            (var baselineLowY, var baselineHighY) = (baseline.Min(x => x.X), baseline.Max(x => x.Y));
             OffsetY = 0f;
             if (Math.Abs(baselineLowY) < BaseLineMaxYFilter)
             {
@@ -287,7 +287,7 @@ namespace OpenVIII.Battle.Dat
         private Vector4 FindLowHighPoints(Vector3 translationPosition, Quaternion rotation, AnimationFrame currentFrame,
                     AnimationFrame nextFrame, double step)
         {
-            List<VectorBoneGRP> vertices =
+            var vertices =
                 Geometry.Objects.SelectMany(@object => GetVertices(@object, currentFrame, nextFrame, step)).ToList();
             if (translationPosition == Vector3.Zero && rotation == Quaternion.Identity)
                 return new Vector4(vertices.Min(x => x.Y), vertices.Max(x => x.Y),

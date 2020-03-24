@@ -18,17 +18,17 @@ namespace OpenVIII.Battle
                 B = br.ReadUInt16();
                 C = br.ReadUInt16();
                 D = br.ReadUInt16();
-                byte u1 = br.ReadByte();
-                byte v1 = br.ReadByte();
+                var u1 = br.ReadByte();
+                var v1 = br.ReadByte();
                 Clut = GetClutId(br.ReadUInt16());
-                byte u2 = br.ReadByte();
-                byte v2 = br.ReadByte();
+                var u2 = br.ReadByte();
+                var v2 = br.ReadByte();
                 TexturePage = GetTexturePage(br.ReadByte());
                 Hide = br.ReadByte();
-                byte u3 = br.ReadByte();
-                byte v3 = br.ReadByte();
-                byte u4 = br.ReadByte();
-                byte v4 = br.ReadByte();
+                var u3 = br.ReadByte();
+                var v3 = br.ReadByte();
+                var u4 = br.ReadByte();
+                var v4 = br.ReadByte();
                 Color = new Color(br.ReadByte(), br.ReadByte(), br.ReadByte());
                 GPU = (GPU)br.ReadByte();
 

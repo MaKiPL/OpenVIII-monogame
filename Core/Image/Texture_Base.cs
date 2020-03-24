@@ -173,7 +173,8 @@ namespace OpenVIII
         public abstract void SaveCLUT(string path);
 
         #endregion Methods
-
+        public virtual void SavePNG(string path, short clut =-1)
+        { }
         //public static class Transparency
         //{
         //    /// <summary>
