@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -132,8 +133,13 @@ namespace OpenVIII.Battle.Dat
                 {
                     return DatFile.TransformVertex(vertices[refQuad.GetIndex(j)], translationPosition, rotation);
                 }
+
+                var (x, y) = ((float)preVarTex.Width / preVarTex.Height, (float)preVarTex.ClassicWidth / preVarTex.ClassicHeight);
+
+                //Debug.Assert(Math.Abs(x - y) < float.Epsilon);
+                var classicWidth = Math.Abs(x - y) < float.Epsilon ? preVarTex.ClassicWidth : preVarTex.ClassicHeight * x;
                 return new VertexPositionTexture(GetVertex(quad, i),
-                    quad.GetUV(i).ToVector2(preVarTex.ClassicWidth, preVarTex.ClassicHeight));
+                    quad.GetUV(i).ToVector2(classicWidth, preVarTex.ClassicHeight));
             }
             tempVPT[0] = tempVPT[3] = GetVPT(this, this[0]);
             tempVPT[1] = GetVPT(this, this[1]);

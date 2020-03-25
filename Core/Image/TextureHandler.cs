@@ -113,7 +113,7 @@ namespace OpenVIII
 
         public static TextureHandler Create(string filename, Texture_Base classic, uint cols, uint rows, ushort palette = 0, Color[] colors = null)
         {
-            var pngPath = FindPng(filename, palette);
+            var (pngPath, _) = FindPng(filename, palette);
             if (!string.IsNullOrWhiteSpace(pngPath) && TextureHandlerCache.TryGetValue(pngPath, out var ret)) return ret;
             ret = new TextureHandler
             {
@@ -135,8 +135,9 @@ namespace OpenVIII
 
         public static TextureHandler CreateFromPng(string filename, int classicWidth, int classicHeight, ushort palette, bool enforceSquare, bool forceReload = false)
         {
-            var s = FindPng(filename, palette);
-            if (string.IsNullOrWhiteSpace(s) || !TextureHandlerCache.TryGetValue(s, out var ret))
+            var (s, _) = FindPng(filename, palette);
+            if (string.IsNullOrWhiteSpace(s)) return null;
+            if (!TextureHandlerCache.TryGetValue(s, out var ret))
             {
                 ret = new TextureHandler
                 {
@@ -174,41 +175,47 @@ namespace OpenVIII
         }
 
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-        public static string FindPng(string path, int palette = -1)
+        public static (string PNGpath, byte[] zzzPNG) FindPng(string path, int palette = -1)
         {
             if (File.Exists(path))
-                return path;
+                return (path, null);
 
-            var bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path, @"\{[\d\.\:]+\}", "", RegexOptions.IgnoreCase | RegexOptions.Compiled)));
+            var bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path, @"\{[\d\.\:]+\}", "",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled)));
             var textures = Path.Combine(Memory.FF8DIR, "textures");
-            if (!Directory.Exists(textures)) return null;
+            if (!Directory.Exists(textures)) return (null, null);
 
             var pngStrings = Directory.GetFiles(textures, $"*{bn}*.png", SearchOption.AllDirectories);
-            if (pngStrings.Length == 1) return pngStrings[0];
-            var limited = pngStrings.Where(x => x.IndexOf(bn, StringComparison.OrdinalIgnoreCase) >= 0).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
-            if (!limited.Any()) return null;
+            if (pngStrings.Length == 1) return (pngStrings[0], null);
+            var bn1 = bn;
+            var limited = pngStrings.Where(x => x.IndexOf(bn1, StringComparison.OrdinalIgnoreCase) >= 0)
+                .OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
+            
+            if (limited.Any())
+            {
+                var re1 = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                var re2 = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-            var re1 = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            var re2 = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            var matches = (limited.Select(x => new { x, m1 = re1.Match(x) })
-                .Select(t => new { t, m2 = re2.Match(t.x) })
-                .Where(t => (t.t.m1.Success || t.m2.Success))
-                .OrderByDescending(t => t.t.m1.Success)
-                .Select(t => t.t.m1.Success ? t.t.m1 : t.m2));
-            var tex = matches.FirstOrDefault(x =>
-                    (x.Groups.Count == 2 && int.TryParse(x.Groups[1].Value, out var p) && p == palette) ||
-                    x.Groups.Count == 1)
-                ?.Value;
-            //string tex = limited.FirstOrDefault(x => (t = re1.Match(x)).Success && t.Groups.Count > 1 && int.TryParse(t.Groups[1].Value, out int p) && p == palette);
-            //if (palette < 0 || (tex = _findPNG($"{bn}+ _{ (palette)}")) == null)
-            //    tex = _findPNG(bn);
-            //if (tex != null)
-            //if (string.IsNullOrWhiteSpace(tex))
-            //{
-            //    tex = limited.FirstOrDefault(x => (t = re2.Match(x)).Success);
-            //}
+                var matches = (limited.Select(x => new {x, m1 = re1.Match(x)})
+                    .Select(t => new {t, m2 = re2.Match(t.x)})
+                    .Where(t => (t.t.m1.Success || t.m2.Success))
+                    .OrderByDescending(t => t.t.m1.Success)
+                    .Select(t => t.t.m1.Success ? t.t.m1 : t.m2));
+                var tex = matches.FirstOrDefault(x =>
+                        (x.Groups.Count == 2 && int.TryParse(x.Groups[1].Value, out var p) && p == palette) ||
+                        x.Groups.Count == 1)
+                    ?.Value;
+                if (!string.IsNullOrWhiteSpace(tex)) return (tex, null);
+            }
 
-            return tex;
+            
+            var zzz = ArchiveZzz.Load(Memory.Archives.ZZZ_MAIN);
+            if (zzz == null || !zzz.IsOpen) return (null, null);
+            bn += ".png";
+            if(zzz.ArchiveMap.FindString(ref bn, out _) != default)
+                return PngCache.ContainsKey(bn) ? (bn, null) : (bn, zzz.GetBinaryFile(bn));
+            return (null, null);
         }
 
         public static Vector2 GetOffset(Rectangle old, Rectangle @new) => GetOffset(old.Location.ToVector2(), @new.Location.ToVector2());
@@ -219,10 +226,11 @@ namespace OpenVIII
         {
             if (Math.Abs(@new.Y) < float.Epsilon && Math.Abs(@new.X) > float.Epsilon)
                 return new Vector2(@new.X / old.X);
-            else if (Math.Abs(@new.Y) > float.Epsilon && Math.Abs(@new.X) < float.Epsilon)
+            if (Math.Abs(@new.Y) > float.Epsilon && Math.Abs(@new.X) < float.Epsilon)
                 return new Vector2(@new.Y / old.Y);
-            else if (Math.Abs(@new.Y) < float.Epsilon && Math.Abs(@new.X) < float.Epsilon)
+            if (Math.Abs(@new.Y) < float.Epsilon && Math.Abs(@new.X) < float.Epsilon)
                 return Vector2.One;
+
             return @new / old;
         }
 
@@ -240,31 +248,46 @@ namespace OpenVIII
         // ReSharper disable once InconsistentNaming
         public static Texture2D LoadPNG(string path, int palette = -1, bool forceSquare = false)
         {
-            var pngPath = File.Exists(path) ? path : FindPng(path, palette);
+            //Debug.Assert(!path.ToLower().Contains("c0m071"));
+            var (pngPath, zzzPNG) = File.Exists(path) ? (path, null) : FindPng(path, palette);
             Texture2D tex = null;
-            if (!string.IsNullOrWhiteSpace(pngPath) && !PngCache.TryGetValue(pngPath, out tex))
+            if (!string.IsNullOrWhiteSpace(pngPath))
             {
-                using (var fs = new FileStream(pngPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                if (PngCache.TryGetValue(pngPath, out tex))
                 {
-                    tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
-                    PngCache.TryAdd(pngPath, tex);
+
+                }
+                else if (zzzPNG != null && zzzPNG.Length > 0)
+                {
+                    using (var fs = new MemoryStream(zzzPNG, false))
+                    {
+                        tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                        PngCache.TryAdd(pngPath, tex);
+                    }
+                }
+                else if(File.Exists(pngPath))
+                {
+                    using (var fs = new FileStream(pngPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                        PngCache.TryAdd(pngPath, tex);
+                    }
                 }
             }
-            if (tex != null && forceSquare && tex.Width != tex.Height)
+
+            if (tex == null || !forceSquare || tex.Width == tex.Height) return tex;
+            var s = Math.Max(tex.Width, tex.Height);
+            var tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, s, s);
+            using (tex)
             {
-                var s = Math.Max(tex.Width, tex.Height);
-                var tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, s, s);
-                using (tex)
-                {
-                    Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
-                    Memory.SpriteBatchStartAlpha();
-                    Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
-                    Memory.spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
-                    Memory.SpriteBatchEnd();
-                    Memory.graphics.GraphicsDevice.SetRenderTarget(null);
-                }
-                tex = tmp;
+                Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
+                Memory.SpriteBatchStartAlpha();
+                Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                Memory.spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
+                Memory.SpriteBatchEnd();
+                Memory.graphics.GraphicsDevice.SetRenderTarget(null);
             }
+            tex = tmp;
             return tex;
         }
 
@@ -295,11 +318,9 @@ namespace OpenVIII
                 var tex = colors != null ? old.GetTexture(colors) : old.GetTexture(palette);
                 return tex;
             }
-            else
-            {
-                scale = old != null ? GetScale(old, @new) : Vector2.Zero;
-                return @new;
-            }
+
+            scale = old != null ? GetScale(old, @new) : Vector2.Zero;
+            return @new;
         }
 
         // This code added to correctly implement the disposable pattern.
@@ -576,7 +597,8 @@ namespace OpenVIII
                         }
                         //End
                         //This part is for if a given src rectangle overlaps >=2 textures
-                        else if (cnt.Intersects(source2))
+
+                        if (cnt.Intersects(source2))
                         {
                             var src2 = Rectangle.Intersect(cnt, source2);
                             src2.Location = (GetOffset(cnt, src2)).ToPoint();

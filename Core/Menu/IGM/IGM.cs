@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+#pragma warning disable 67
 
 namespace OpenVIII
 {
@@ -21,6 +23,7 @@ namespace OpenVIII
 
         #region Enums
 
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public enum Items
         {
             Junction,
@@ -35,8 +38,8 @@ namespace OpenVIII
             Tutorial,
             Save,
             Battle,
-            CurrentEXP,
-            NextLEVEL,
+            CurrentExp,
+            NextLevel,
         }
 
         //private Mode _mode = 0;
@@ -68,14 +71,14 @@ namespace OpenVIII
             Size = new Vector2 { X = 843, Y = 630 };
             base.Init();
 
-            Action[] actions = new Action[]
+            var actions = new Action[]
             {
                 () => Data.TryAdd(SectionName.Header, IGMData_Header.Create()),
                 () => Data.TryAdd(SectionName.Footer, IGMData_Footer.Create()),
                 () => Data.TryAdd(SectionName.Clock, IGMData_Clock.Create()),
                 () => Data.TryAdd(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create())),
                 () => {
-                    FF8String[] keys = new FF8String[] {
+                    var keys = new[] {
                         Strings.Name.SideMenu.Junction,
                         Strings.Name.SideMenu.Item,
                         Strings.Name.SideMenu.Magic,
@@ -89,7 +92,7 @@ namespace OpenVIII
                         Strings.Name.SideMenu.Save,
                         Strings.Name.SideMenu.Battle};
 
-                    FF8String[] values = new FF8String[] {
+                    var values = new[] {
                         Strings.Description.SideMenu.Junction,
                         Strings.Description.SideMenu.Item,
                         Strings.Description.SideMenu.Magic,
@@ -104,22 +107,29 @@ namespace OpenVIII
                         Strings.Description.SideMenu.Battle};
 
                     if(keys.Distinct().Count() == keys.Length && values.Length == keys.Length)
-                    Data.TryAdd(SectionName.SideMenu, IGMData_SideMenu.Create((from i in Enumerable.Range(0,keys.Length)
-                                                                               select i).ToDictionary(x=>keys[x],x=>values[x])));
+                        Data.TryAdd(SectionName.SideMenu, IGMDataSideMenu.Create((from i in Enumerable.Range(0,keys.Length)
+                            select i).ToDictionary(x=>keys[x],x=>values[x])));
                     else Data.TryAdd(SectionName.SideMenu,null);
                 }
             };
             Memory.ProcessActions(actions);
-            Func<bool> SideMenuInputs = null;
-            if (Data[SectionName.SideMenu] != null) SideMenuInputs = Data[SectionName.SideMenu].Inputs;
+            Func<bool> sideMenuInputs = null;
+            if (Data[SectionName.SideMenu] != null) sideMenuInputs = Data[SectionName.SideMenu].Inputs;
             InputDict = new Dictionary<Mode, Func<bool>>
                     {
-                        { Mode.ChooseItem, SideMenuInputs },
+                        { Mode.ChooseItem, sideMenuInputs },
                         { Mode.ChooseChar, Data[SectionName.PartyGroup].Inputs },
                     };
             SetMode((Mode)0);
         }
 
         #endregion Methods
+
+/*
+        protected virtual void OnChoiceChangeHandler(KeyValuePair<Items, FF8String> e)
+        {
+            ChoiceChangeHandler?.Invoke(this, e);
+        }
+*/
     }
 }

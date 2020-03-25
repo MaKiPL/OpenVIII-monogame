@@ -68,7 +68,7 @@ namespace OpenVIII
 
         public void Add(params Entry[] entries)
         {
-            foreach (Entry entry in entries)
+            foreach (var entry in entries)
             {
                 //TODO fix math
                 if (list.Count >= 1)
@@ -95,7 +95,7 @@ namespace OpenVIII
                         });
                 }
                 list.Add(entry);
-                Vector2 size = Abs(entry.Offset) + entry.Size;
+                var size = Abs(entry.Offset) + entry.Size;
                 if (Width < size.X) Width = (int)size.X;
                 if (Height < size.Y) Height = (int)size.Y;
             }
@@ -113,22 +113,22 @@ namespace OpenVIII
                     if (Average == null)
                         Average = new ConcurrentDictionary<int, Color>();
                 }
-                if (!(Average.TryGetValue(palette, out Color ret)))
+                if (!(Average.TryGetValue(palette, out var ret)))
                 {
-                    Rectangle r = this[0].GetRectangle;
-                    for (int i = 1; i < Count; i++)
+                    var r = this[0].GetRectangle;
+                    for (var i = 1; i < Count; i++)
                         r = Rectangle.Union(r, this[i].GetRectangle);
                     r = r.Scale(tex.ScaleFactor);
-                    Texture2D t = (Texture2D)tex;
+                    var t = (Texture2D)tex;
                     if (t == null) return default;
-                    Color[] tc = new Color[r.Width * r.Height];
+                    var tc = new Color[r.Width * r.Height];
                     t.GetData(0, r, tc, 0, tc.Length);
                     HSL test, last;
                     last.S = 0;
                     last.L = 0;
                     ret = Color.TransparentBlack;
 
-                    foreach (Color p in tc)
+                    foreach (var p in tc)
                     {
                         if (p.A >= 250)
                         {
@@ -174,12 +174,12 @@ namespace OpenVIII
                     Width = 0;
                     Height = 0;
                     Trimmed = true;
-                    Vector2 offset = new Vector2(float.MaxValue);
+                    var offset = new Vector2(float.MaxValue);
                     if (Count == 1)
                         this[0].Offset = Vector2.Zero;
-                    for (int i = 0; i < Count; i++)
+                    for (var i = 0; i < Count; i++)
                     {
-                        Rectangle ret = tex.Trim(this[i].GetRectangle);
+                        var ret = tex.Trim(this[i].GetRectangle);
                         this[i].SetTrim_1stPass(ret, Count == 1 ? true : false);
                         if (Count > 1)
                         {
@@ -187,11 +187,11 @@ namespace OpenVIII
                             if (this[i].Offset.Y < offset.Y) offset.Y = this[i].Offset.Y;
                         }
                     }
-                    for (int i = 0; i < Count; i++)
+                    for (var i = 0; i < Count; i++)
                     {
                         if (offset != Vector2.Zero && Count > 1)
                             this[i].SetTrim_2ndPass(offset);
-                        Point size = new Point((int)(this[i].Width + Math.Abs(this[i].Offset.X)), (int)(this[i].Height + Math.Abs(this[i].Offset.Y)));
+                        var size = new Point((int)(this[i].Width + Math.Abs(this[i].Offset.X)), (int)(this[i].Height + Math.Abs(this[i].Offset.Y)));
 
                         if (Width < size.X) Width = size.X;
                         if (Height < size.Y) Height = size.Y;
@@ -211,7 +211,7 @@ namespace OpenVIII
 
         public static void Draw(List<TextureHandler> textures, List<Entry> elist, int palette, Rectangle inputdst, Vector2 inscale, float fade, Point totalSize, Color? color_ = null)
         {
-            Color color = color_ ?? Color.White;
+            var color = color_ ?? Color.White;
             Rectangle dst;
             inscale = Abs(inscale);
             inputdst.Width = Math.Abs(inputdst.Width);
@@ -219,7 +219,7 @@ namespace OpenVIII
             if (inputdst.Right < minx || inputdst.Bottom < miny)
                 return;
 
-            Vector2 autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
+            var autoscale = new Vector2((float)inputdst.Width / totalSize.X, (float)inputdst.Height / totalSize.Y);
             Vector2 scale;
             if (inscale == Vector2.Zero || inscale == Vector2.UnitX)
                 scale = new Vector2(autoscale.X);
@@ -229,24 +229,24 @@ namespace OpenVIII
                 scale = new Vector2(autoscale.Y);
             else
                 scale = inscale;
-            foreach (Entry e in elist)
+            foreach (var e in elist)
             {
                 if (totalSize == new Point(0))
                 {
                     totalSize.X = (int)e.Width;
                     totalSize.Y = (int)e.Height;
                 }
-                int cpalette = e.CustomPalette < 0 || e.CustomPalette >= textures.Count ? palette : e.CustomPalette;
+                var cpalette = e.CustomPalette < 0 || e.CustomPalette >= textures.Count ? palette : e.CustomPalette;
                 dst = inputdst;
 
-                Vector2 Offset = e.Offset * scale;
-                Point offset2 = RoundedPoint(e.End * scale);
+                var Offset = e.Offset * scale;
+                var offset2 = RoundedPoint(e.End * scale);
                 dst.Offset(e.Snap_Right ? inputdst.Width : 0, e.Snap_Bottom ? inputdst.Height : 0);
                 dst.Offset(RoundedPoint(Offset));
                 dst.Size = RoundedPoint(e.Size * scale);
-                Rectangle src = e.GetRectangle;
-                bool testY = false;
-                bool testX = false;
+                var src = e.GetRectangle;
+                var testY = false;
+                var testX = false;
                 CorrectX(inputdst, totalSize, ref dst, autoscale, ref scale, e, ref src);
                 CorrectY(inputdst, totalSize, ref dst, autoscale, ref scale, e, ref src);
 
@@ -258,7 +258,7 @@ namespace OpenVIII
                     {
                         do
                         {
-                            Point correction = Correction(inputdst, dst, offset2);
+                            var correction = Correction(inputdst, dst, offset2);
                             testY = testYfunct(dst, inputdst, offset2);
                             testX = testXfunct(dst, inputdst, offset2);
                             TileBounds(correction, ref dst, scale, e, ref src, ref testY, ref testX);
@@ -278,7 +278,7 @@ namespace OpenVIII
         {
             if (inputdst.Height != 0 && dst.Bottom > inputdst.Bottom)
             {
-                int change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
+                var change = GetChange(totalSize.Y, inputdst.Height, scale.Y); ;
                 src.Height -= (int)Math.Round(change / scale.Y);
                 dst.Height -= change;
             }
@@ -293,7 +293,7 @@ namespace OpenVIII
         {
             if ((inputdst.Width != 0) && dst.Right > inputdst.Right)
             {
-                int change = GetChange(totalSize.X, inputdst.Width, scale.X);
+                var change = GetChange(totalSize.X, inputdst.Width, scale.X);
                 src.Width -= (int)Math.Round(change / scale.X);
                 dst.Width -= change;
             }

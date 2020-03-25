@@ -14,6 +14,7 @@ namespace OpenVIII.Battle.Dat
         public const float ScaleHelper = 2048.0f;
         public int Frame;
         protected const float BaseLineMaxYFilter = 10f;
+        private readonly string _prefix;
         private Vector3 _indicatorPoint;
 
         #endregion Fields
@@ -26,30 +27,42 @@ namespace OpenVIII.Battle.Dat
 
             ID = fileId;
             AltID = additionalFileId;
+            var middle = string.Empty;
+            switch (entityType)
+            {
+                case EntityType.Monster:
+                    _prefix = "c0m";
+                    FileName = $"{_prefix}{ID:D03}";
+                    break;
 
+                case EntityType.Character:
+                case EntityType.Weapon:
+                    _prefix = "d";
+                    middle = entityType == EntityType.Character ? "c" : "w";
+                    FileName = $"{_prefix}{ID:x}{middle}{AltID:D03}";
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(entityType), entityType, null);
+            }
             Memory.Log.WriteLine($"{nameof(DatFile)} Creating new BattleDat with {fileId},{entityType},{additionalFileId}");
             var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
-            var et = entityType == EntityType.Weapon ? 'w' : entityType == EntityType.Character ? 'c' : default;
-            var fileName = entityType == EntityType.Monster ? $"c0m{ID:D03}" :
-                entityType == EntityType.Character || entityType == EntityType.Weapon ? $"d{fileId:x}{et}{additionalFileId:D03}"
-                : string.Empty;
+
             EntityType = entityType;
-            if (string.IsNullOrEmpty(fileName))
-                return;
             string path;
             var search = "";
-            if (et != default)
+            if (!string.IsNullOrWhiteSpace(middle))
             {
-                search = $"d{fileId:x}{et}";
-                IEnumerable<string> test = aw.GetListOfFiles().Where(x => x.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
-                path = test.FirstOrDefault(x => x.ToLower().Contains(fileName));
+                search = $"d{fileId:x}{middle}";
+                IEnumerable<string> test = aw.GetListOfFiles()
+                    .Where(x => x.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
+                path = test.FirstOrDefault(x => x.ToLower().Contains(FileName));
 
                 if (string.IsNullOrWhiteSpace(path) && test.Any() && entityType == EntityType.Character)
                     path = test.First();
             }
-            else path = aw.GetListOfFiles().FirstOrDefault(x => x.ToLower().Contains(fileName));
+            else path = aw.GetListOfFiles().FirstOrDefault(x => x.ToLower().Contains(FileName));
 
-            FileName = fileName;
             if (!string.IsNullOrWhiteSpace(path))
                 Buffer = aw.GetBinaryFile(path);
             if (Buffer == null || Buffer.Length < 0)
@@ -71,32 +84,32 @@ namespace OpenVIII.Battle.Dat
 
         #region Properties
 
-        public int AltID { get; protected set; }
-        public AnimationData Animations { get; protected set; }
-        public DatHeader DatHeader { get; protected set; }
+        public int AltID { get; }
+        public AnimationData Animations { get; private set; }
+        public DatHeader DatHeader { get; }
 
-        public EntityType EntityType { get; protected set; }
+        public EntityType EntityType { get; }
 
-        public string FileName { get; protected set; }
+        public string FileName { get; }
 
-        public Sections Flags { get; protected set; }
+        public Sections Flags { get; }
 
         /// <summary>
         /// Section 2: Model Geometry
         /// </summary>
         /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_DAT#Section_2:_Model_geometry"/>
-        public Geometry Geometry { get; protected set; }
+        public Geometry Geometry { get; private set; }
 
         public int GetId => ID;
         public int ID { get; }
-        public Information Information { get; protected set; }
-        public IReadOnlyList<AnimationSequence> Sequences { get; protected set; }
-        public Skeleton Skeleton { get; protected set; }
-        public Textures Textures { get; protected set; }
-        protected List<AnimationYOffset> AnimationYOffsets { get; set; }
-        protected BinaryReader Br { get; set; }
-        protected byte[] Buffer { get; set; }
-        protected float OffsetYLow { get; set; }
+        public Information Information { get; private set; }
+        public IReadOnlyList<AnimationSequence> Sequences { get; private set; }
+        public Skeleton Skeleton { get; private set; }
+        public Textures Textures { get; private set; }
+        protected List<AnimationYOffset> AnimationYOffsets { get; private set; }
+        protected BinaryReader Br { get; private set; }
+        protected byte[] Buffer { get; }
+        protected float OffsetYLow { get; private set; }
         private float OffsetY { get; set; }
 
         private Vector3 OffsetYVector => new Vector3(0f, OffsetY, 0f);
@@ -430,7 +443,43 @@ namespace OpenVIII.Battle.Dat
         /// <param name="start"></param>
         /// <param name="br"></param>
         /// <param name="fileName"></param>
-        private void ReadSection11(uint start) => Textures = Textures.CreateInstance(Buffer, start, FileName);
+        private void ReadSection11(uint start)
+        {
+            var local = FileName;
+            switch (EntityType)
+            {
+                case EntityType.Monster:
+                    var id = ID;
+                    switch (id)
+                    {
+                        //blue
+                        case 71:
+                        case 73:
+                        case 76:
+                        case 134:
+                        case 143:
+                            id = 73;
+                            break;
+                        //red
+                        case 64:
+                        case 72:
+                        case 74:
+                        case 135:
+                            id = 74;
+                            break;
+                    }
+                    local = $"{_prefix}{id:D03}";
+                    break;
+
+                case EntityType.Character:
+                case EntityType.Weapon:
+                //  local = $"{_prefix}{ID:x}{_middle}{AltID:D03}";
+                  break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(EntityType), EntityType, null);
+            }
+            Textures = Textures.CreateInstance(Buffer, start, local);
+        }
 
         /// <summary>
         /// Model Geometry section
