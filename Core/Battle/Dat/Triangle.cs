@@ -2,7 +2,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -119,10 +118,24 @@ namespace OpenVIII.Battle.Dat
                     return DatFile.TransformVertex(vertices[refTriangle.GetIndex(j)], translationPosition, rotation);
                 }
 
-                var (x, y) = ((float)preVarTex.Width / preVarTex.Height, (float)preVarTex.ClassicWidth / preVarTex.ClassicHeight);
-                //Debug.Assert(Math.Abs(x - y) < float.Epsilon);
-                var classicWidth = Math.Abs(x - y) < float.Epsilon? preVarTex.ClassicWidth : preVarTex.ClassicHeight*x;
-                return new VertexPositionTexture(GetVertex(ref triangle, i), triangle.GetUV(i).ToVector2(classicWidth, preVarTex.ClassicHeight));
+                // begin stupid hacks to fix Rinoa and Ward in remaster. might break when going above 3X upscale
+                // if you choose to upscale more crop off dead bottom 128 pixels from SE's render.
+                // also hack adjusts aspect ratio to handle the eye closing animation frames.
+                // in remaster you just need to shift all the uv's to the right when eyes close.
+                var (x, y) = preVarTex.ScaleFactor;
+
+                float height;
+                if (x > y)
+                    height = (float)(preVarTex.Height / Math.Floor(y));
+                else
+                    height = (float)(preVarTex.Height / Math.Floor(x));
+                var (newAR, oldAR) = ((float)preVarTex.Width / preVarTex.Height,
+                    preVarTex.ClassicWidth / height);
+
+                var width = Math.Abs(newAR - oldAR) < float.Epsilon ? preVarTex.ClassicWidth : height * newAR;
+                // end hack.
+                return new VertexPositionTexture(GetVertex(ref triangle, i),
+                    triangle.GetUV(i).ToVector2(width, height));
             }
             tempVPT[0] = GetVPT(this, this[0]);
             tempVPT[1] = GetVPT(this, this[1]);

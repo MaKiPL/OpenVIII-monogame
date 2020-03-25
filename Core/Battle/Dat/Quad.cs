@@ -133,12 +133,24 @@ namespace OpenVIII.Battle.Dat
                     return DatFile.TransformVertex(vertices[refQuad.GetIndex(j)], translationPosition, rotation);
                 }
 
-                var (x, y) = ((float)preVarTex.Width / preVarTex.Height, (float)preVarTex.ClassicWidth / preVarTex.ClassicHeight);
+                // begin stupid hacks to fix Rinoa and Ward in remaster. might break when going above 3X upscale
+                // if you choose to upscale more crop off dead bottom 128 pixels from SE's render.
+                // also hack adjusts aspect ratio to handle the eye closing animation frames.
+                // in remaster you just need to shift all the uv's to the right when eyes close.
+                var (x, y) = preVarTex.ScaleFactor;
 
-                //Debug.Assert(Math.Abs(x - y) < float.Epsilon);
-                var classicWidth = Math.Abs(x - y) < float.Epsilon ? preVarTex.ClassicWidth : preVarTex.ClassicHeight * x;
+                float height;
+                if (x > y)
+                    height = (float)(preVarTex.Height / Math.Floor(y));
+                else
+                    height = (float)(preVarTex.Height / Math.Floor(x));
+                var (newAR, oldAR) = ((float)preVarTex.Width / preVarTex.Height,
+                    preVarTex.ClassicWidth / height);
+
+                var width = Math.Abs(newAR - oldAR) < float.Epsilon ? preVarTex.ClassicWidth : height * newAR;
+                // end hacks
                 return new VertexPositionTexture(GetVertex(quad, i),
-                    quad.GetUV(i).ToVector2(classicWidth, preVarTex.ClassicHeight));
+                    quad.GetUV(i).ToVector2(width, height));
             }
             tempVPT[0] = tempVPT[3] = GetVPT(this, this[0]);
             tempVPT[1] = GetVPT(this, this[1]);

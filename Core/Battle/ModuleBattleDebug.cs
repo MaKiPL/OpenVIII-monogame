@@ -735,7 +735,7 @@ namespace OpenVIII
         private static Vector3 GetCharPos(int n) => new Vector3(-10 + n * 10, YOffset, -30);
 
         private static byte GetCostume(Characters c) =>
-            Memory.State[c].AlternativeModel != 0 ? Costumes[c].First() : Costumes[c].Last();
+            Memory.State[c].AlternativeModel == 0 ? Costumes[c].First() : Costumes[c].Last();
 
         private static Vector3 GetEnemyPos(int n) => Enemy.Party[n].EII.Location;
 
