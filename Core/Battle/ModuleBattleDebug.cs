@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenVIII.Battle;
 using OpenVIII.Battle.Dat;
-using OpenVIII.IGMData.Limit;
 using OpenVIII.IGMDataItem;
 using System;
 using System.Collections.Concurrent;
@@ -158,7 +157,7 @@ namespace OpenVIII
 
         public static void AddSequenceToQueue(EntityType entityType, int nIndex, AnimationSequence section5)
         {
-            foreach (byte newAnimId in section5)
+            foreach (var newAnimId in section5)
             {
                 AddAnimationToQueue(entityType, nIndex, newAnimId);
             }
@@ -181,7 +180,7 @@ namespace OpenVIII
                     DrawCharactersWeapons();
                     _regularPyramid.Draw(WorldMatrix, ViewMatrix, ProjectionMatrix);
                     Stage.Draw();
-                    Vector3 v = GetIndicatorPoint(-1);
+                    var v = GetIndicatorPoint(-1);
                     v.Y -= 5f;
                     if (!_bUseFPSCamera)
                         Menu.BattleMenus.Draw();
@@ -219,21 +218,21 @@ namespace OpenVIII
 
         public static void DrawCrossHair(Enemy enemy)
         {
-            Shot shot = Menu.BattleMenus.GetCurrentBattleMenu()?.Shot;
+            var shot = Menu.BattleMenus.GetCurrentBattleMenu()?.Shot;
             if (shot == null || !shot.Enabled) return;
-            Damageable[] targets = shot.Targets;
+            var targets = shot.Targets;
             if (targets == null) return;
-            foreach (Damageable d in targets)
+            foreach (var d in targets)
             {
-                if (!d.GetEnemy(out Enemy e) || !e.Equals(enemy)) continue;
-                Vector3 posIn3DSpace = e.EII.Data.IndicatorPoint(e.EII.Location);
+                if (!d.GetEnemy(out var e) || !e.Equals(enemy)) continue;
+                var posIn3DSpace = e.EII.Data.IndicatorPoint(e.EII.Location);
                 posIn3DSpace.Y -= 1f;
-                Vector3 screenPos = Memory.graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
+                var screenPos = Memory.graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
                 Memory.SpriteBatchStartAlpha();
                 _crossHair.Pos = new Rectangle(new Vector2(screenPos.X, screenPos.Y).ToPoint(), Point.Zero);
-                EntryGroup icons = Memory.Icons[_crossHair.Data];
-                TextureHandler texture = Memory.Icons.GetTexture(Icons.ID.Cross_Hair1);
-                Vector2 s = texture.ScaleFactor;
+                var icons = Memory.Icons[_crossHair.Data];
+                var texture = Memory.Icons.GetTexture(Icons.ID.Cross_Hair1);
+                var s = texture.ScaleFactor;
                 _crossHair.Pos.Offset(-icons.Width * s.X / 2f, -icons.Height * s.Y / 2f);
                 _crossHair.Draw();
                 Memory.SpriteBatchEnd();
@@ -253,7 +252,7 @@ namespace OpenVIII
             }
 
             if (Enemy.Party == null) return Vector3.Zero;
-            EnemyInstanceInformation enemyInstanceInformation = Enemy.Party.FirstOrDefault(x => x.EII.PartyPos == n)?.EII;
+            var enemyInstanceInformation = Enemy.Party.FirstOrDefault(x => x.EII.PartyPos == n)?.EII;
             if (enemyInstanceInformation == null) return Vector3.Zero;
             return enemyInstanceInformation.Data.IndicatorPoint(enemyInstanceInformation.Location) + PyramidOffset;
         }
@@ -284,10 +283,7 @@ namespace OpenVIII
             }
             else if (Input2.Button(Keys.F5))
             {
-                //reload
-                BattleModule = BattleModule.Init;
-                _forceReload = true;
-                Memory.SuppressDraw = true;
+                ResetState();
             }
             else if (Input2.Button(Keys.D3))
             {
@@ -366,14 +362,14 @@ namespace OpenVIII
             switch (entityType)
             {
                 case EntityType.Monster:
-                    EnemyInstanceInformation mInstanceInformationProvider = Enemy.Party[nIndex].EII;
+                    var mInstanceInformationProvider = Enemy.Party[nIndex].EII;
                     mInstanceInformationProvider.AnimationSystem.AnimationId = newAnimId;
                     Enemy.Party[nIndex].EII = mInstanceInformationProvider;
                     return;
 
                 case EntityType.Character:
                 case EntityType.Weapon:
-                    CharacterInstanceInformation cInstanceInformationProvider = _characterInstances[nIndex];
+                    var cInstanceInformationProvider = _characterInstances[nIndex];
                     cInstanceInformationProvider.AnimationSystem.AnimationId = newAnimId;
                     _characterInstances[nIndex] = cInstanceInformationProvider;
                     return;
@@ -383,14 +379,20 @@ namespace OpenVIII
             }
         }
 
-        public static void ResetState() => BattleModule = BattleModule.Init;
+        public static void ResetState()
+        {
+            //reload
+            BattleModule = BattleModule.Init;
+            _forceReload = true;
+            Memory.SuppressDraw = true;
+        }
 
         public static void Update()
         {
             if (_characterInstances != null)
-                foreach (CharacterInstanceInformation cii in _characterInstances)
+                foreach (var cii in _characterInstances)
                 {
-                    Saves.CharacterData c = Memory.State?[cii.VisibleCharacter];
+                    var c = Memory.State?[cii.VisibleCharacter];
                     if (c == null) continue;
                     c.Update(); //updates ATB for Character.
                     if (cii.AnimationSystem.AnimationId < 0 ||
@@ -402,9 +404,9 @@ namespace OpenVIII
                         cii.SetAnimationID((int)AnimID.Critical);
                 }
             if (Enemy.Party != null)
-                foreach (Enemy e in Enemy.Party)
+                foreach (var e in Enemy.Party)
                     e.Update(); //updates ATB for enemy.
-            bool ret = false;
+            var ret = false;
             switch (BattleModule)
             {
                 case BattleModule.Init:
@@ -424,7 +426,7 @@ namespace OpenVIII
                     Stage?.Update();
                     _deadTime?.Update();
                     Menu.BattleMenus.Update();
-                    sbyte? partyPos = Menu.BattleMenus.PartyPos;
+                    var partyPos = Menu.BattleMenus.PartyPos;
                     _regularPyramid.Set(GetIndicatorPoint(partyPos ?? 0));
                     if (partyPos != _partyPos)
                     {
@@ -466,11 +468,11 @@ namespace OpenVIII
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
         private static void AddSequenceToAllQueues(AnimationSequence section5)
         {
-            for (int i = 0; i < Enemy.Party.Count; i++)
+            for (var i = 0; i < Enemy.Party.Count; i++)
             {
                 AddSequenceToQueue(EntityType.Monster, i, section5);
             }
-            for (int i = 0; i < _characterInstances.Count; i++)
+            for (var i = 0; i < _characterInstances.Count; i++)
             {
                 AddSequenceToQueue(EntityType.Character, i, section5);
             }
@@ -479,7 +481,7 @@ namespace OpenVIII
         private static void AddSequenceToAllQueues(byte sid)
         {
             AnimationSequence section5;
-            for (int i = 0; i < Enemy.Party.Count; i++)
+            for (var i = 0; i < Enemy.Party.Count; i++)
             {
                 if (Enemy.Party[i].EII.Data.Sequences.Count <= sid) continue;
                 section5 = Enemy.Party[i].EII.Data.Sequences.FirstOrDefault(x => x.ID == sid);
@@ -487,11 +489,11 @@ namespace OpenVIII
                 AddSequenceToQueue(EntityType.Monster, i, section5);
                 //AddAnimationToQueue(Debug_battleDat.EntityType.Monster, i, 0);
             }
-            for (int i = 0; i < _characterInstances.Count; i++)
+            for (var i = 0; i < _characterInstances.Count; i++)
             {
-                DatFile weapon = _characterInstances[i].Data.Weapon;
-                DatFile character = _characterInstances[i].Data.Character;
-                IReadOnlyList<AnimationSequence> sequences =
+                var weapon = _characterInstances[i].Data.Weapon;
+                var character = _characterInstances[i].Data.Character;
+                var sequences =
                     (weapon?.Sequences.Count ?? 0) == 0 ? character.Sequences : weapon.Sequences;
                 if (sequences.Count <= sid) continue;
                 section5 = sequences.FirstOrDefault(x => x.ID == sid);
@@ -520,8 +522,8 @@ namespace OpenVIII
                 case EntityType.Monster:
                     animationSystem = Enemy.Party[n].EII.Data.Animations[Enemy.Party[n].EII.AnimationSystem.AnimationId];
                     if (Enemy.Party[n].EII.AnimationSystem.AnimationFrame < animationSystem.Count) return;
-                    EnemyInstanceInformation eInstanceInformationProvider = Enemy.Party[n].EII;
-                    if (Enemy.Party[n].EII.AnimationSystem.AnimationQueue.TryDequeue(out int animationID) &&
+                    var eInstanceInformationProvider = Enemy.Party[n].EII;
+                    if (Enemy.Party[n].EII.AnimationSystem.AnimationQueue.TryDequeue(out var animationID) &&
                         animationID < eInstanceInformationProvider.Data.Animations.Count &&
                         animationID >= 0
                     )
@@ -535,7 +537,7 @@ namespace OpenVIII
                 case EntityType.Weapon:
                     animationSystem = _characterInstances[n].Data.Character.Animations[_characterInstances[n].AnimationSystem.AnimationId];
                     if (_characterInstances[n].AnimationSystem.AnimationFrame < animationSystem.Count) return;
-                    CharacterInstanceInformation cInstanceInformationProvider = _characterInstances[n];
+                    var cInstanceInformationProvider = _characterInstances[n];
                     if (_characterInstances[n].AnimationSystem.AnimationQueue.TryDequeue(out animationID) &&
                         (animationID < cInstanceInformationProvider.Data.Character.Animations.Count ||
                          animationID < (cInstanceInformationProvider.Data.Weapon?.Animations.Count ?? 0)) &&
@@ -554,10 +556,11 @@ namespace OpenVIII
         private static void DrawBattleDat(DatFile battleDatFile, double step, ref AnimationSystem animationSystem,
             ref Vector3 position, Quaternion? nullRotation = null)
         {
-            for (int i = 0; /*i<1 &&*/ i < battleDatFile.Geometry.CObjects; i++)
+            if (battleDatFile.Geometry == null) return;
+            for (var i = 0; /*i<1 &&*/ i < battleDatFile.Geometry.CObjects; i++)
             {
-                Quaternion rotation = nullRotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
-                VertexPositionTexturePointersGRP vertexPositionTexturePointersGRP = battleDatFile.GetVertexPositions(
+                var rotation = nullRotation ?? Quaternion.CreateFromYawPitchRoll(MathHelper.Pi, 0, 0);
+                var vertexPositionTexturePointersGRP = battleDatFile.GetVertexPositions(
                     i,
                     ref position,
                     rotation,
@@ -565,10 +568,10 @@ namespace OpenVIII
                     step); //DEBUG
                 if (vertexPositionTexturePointersGRP.IsNotSet())
                     return;
-                for (int k = 0; k < vertexPositionTexturePointersGRP.VPT.Length / 3; k++)
+                for (var k = 0; k < vertexPositionTexturePointersGRP.VPT.Length / 3; k++)
                 {
                     Ate.Texture = (Texture2D)battleDatFile.Textures[vertexPositionTexturePointersGRP.TexturePointers[k]];
-                    foreach (EffectPass pass in Ate.CurrentTechnique.Passes)
+                    foreach (var pass in Ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
                         Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
@@ -593,10 +596,10 @@ namespace OpenVIII
             if (_characterInstances == null)
                 return;
 
-            for (int n = 0; n < _characterInstances.Count; n++)
+            for (var n = 0; n < _characterInstances.Count; n++)
             {
                 CheckAnimationFrame(EntityType.Character, n);
-                Vector3 characterPosition = _characterInstances[n].Data.Location = GetCharPos(n);
+                var characterPosition = _characterInstances[n].Data.Location = GetCharPos(n);
                 DrawBattleDat(_characterInstances[n].Data.Character, CharacterInstanceGenerateStep(n),
                     ref _characterInstances[n].AnimationSystem, ref characterPosition);
                 DrawShadow(characterPosition, Ate, .5f);
@@ -622,7 +625,7 @@ namespace OpenVIII
 
             if (Enemy.Party == null)
                 return;
-            for (int n = 0; n < Enemy.Party.Count; n++)
+            for (var n = 0; n < Enemy.Party.Count; n++)
             {
                 if (Enemy.Party[n].EII.Data.GetId == 127)
                 {
@@ -631,7 +634,7 @@ namespace OpenVIII
                 }
 
                 CheckAnimationFrame(EntityType.Monster, n);
-                Vector3 enemyPosition = GetEnemyPos(n);
+                var enemyPosition = GetEnemyPos(n);
                 enemyPosition.Y += YOffset;
                 DrawBattleDat(Enemy.Party[n].EII.Data, GenerateStep(EnemyInstanceAnimationStopped(n)), ref Enemy.Party[n].EII.AnimationSystem, ref enemyPosition, Quaternion.Identity);
                 DrawShadow(enemyPosition, Ate, Enemy.Party[n].EII.Data.Skeleton.GetScale.X / 5);
@@ -677,17 +680,17 @@ namespace OpenVIII
         {
             if (Costumes != null) return;
             Costumes = new ConcurrentDictionary<Characters, SortedSet<byte>>();
-            Regex r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
-            foreach (string s in aw.GetListOfFiles())
+            var r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+            foreach (var s in aw.GetListOfFiles())
             {
-                Match match = r.Match(s);
+                var match = r.Match(s);
                 {
                     if (!byte.TryParse(match.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-                        out byte ci)) continue;
-                    Characters c = (Characters)ci;
+                        out var ci)) continue;
+                    var c = (Characters)ci;
 
-                    if (!byte.TryParse(match.Groups[2].Value, out byte a)) continue;
+                    if (!byte.TryParse(match.Groups[2].Value, out var a)) continue;
                     Costumes.TryAdd(c, new SortedSet<byte>());
                     Costumes[c].Add(a);
                 }
@@ -698,16 +701,16 @@ namespace OpenVIII
         {
             if (_sWeapons != null) return;
             Weapons = new ConcurrentDictionary<Characters, List<byte>>();
-            for (int i = 0; i <= (int)Characters.Ward_Zabac; i++)
+            for (var i = 0; i <= (int)Characters.Ward_Zabac; i++)
             {
-                SortedSet<byte> weapons = new SortedSet<byte>();
-                Regex r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+                var weapons = new SortedSet<byte>();
+                var r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
 
-                foreach (string s in aw.GetListOfFiles().OrderBy(Path.GetFileName, StringComparer.InvariantCultureIgnoreCase))
+                foreach (var s in aw.GetListOfFiles().OrderBy(Path.GetFileName, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    Match match = r.Match(s);
-                    if (!byte.TryParse(match.Groups[2].Value, out byte a)) continue;
+                    var match = r.Match(s);
+                    if (!byte.TryParse(match.Groups[2].Value, out var a)) continue;
                     weapons.Add(a);
                 }
                 Weapons.TryAdd((Characters)i, weapons.ToList());
@@ -731,10 +734,10 @@ namespace OpenVIII
         private static byte GetWeaponID(Characters c)
         {
             byte weaponId = 0;
-            if (!Memory.State.Characters.TryGetValue(c, out Saves.CharacterData characterData) ||
+            if (!Memory.State.Characters.TryGetValue(c, out var characterData) ||
                 characterData.WeaponID >= Memory.Kernel_Bin.WeaponsData.Count) return weaponId;
-            byte altID = Memory.Kernel_Bin.WeaponsData[characterData.WeaponID].AltID;
-            if (Weapons.TryGetValue(c, out List<byte> weapons) && weapons != null && weapons.Count > altID)
+            var altID = Memory.Kernel_Bin.WeaponsData[characterData.WeaponID].AltID;
+            if (Weapons.TryGetValue(c, out var weapons) && weapons != null && weapons.Count > altID)
                 weaponId = weapons[altID];
 
             return weaponId;
@@ -743,7 +746,7 @@ namespace OpenVIII
         private static void InitBattle()
         {
             if (Stage == null || Stage.Scenario != Memory.Encounters.Scenario || _forceReload)
-                using (BinaryReader br = Stage.Open())
+                using (var br = Stage.Open())
                 {
                     //Camera and stage are in the same file.
                     Camera = Camera.Read(br);
@@ -796,7 +799,7 @@ namespace OpenVIII
 
         private static CharacterInstanceInformation ReadCharacter(ref int cid, Characters c)
         {
-            CharacterInstanceInformation cii = new CharacterInstanceInformation
+            var cii = new CharacterInstanceInformation
             {
                 Data = ReadCharacterData((int)c, GetCostume(c), GetWeaponID(c)),
                 AnimationSystem = new AnimationSystem { AnimationQueue = new ConcurrentQueue<int>() },
@@ -860,7 +863,7 @@ namespace OpenVIII
 
                 _characterInstances = new List<CharacterInstanceInformation>(3);
                 cid = 0;
-                foreach (Characters c in Memory.State.Party)
+                foreach (var c in Memory.State.Party)
                 {
                     if (c != Characters.Blank)
                     {
@@ -908,7 +911,7 @@ namespace OpenVIII
         private static void ReadMonster()
         {
             int r(int i) => 7 - i;
-            Encounter encounter = Memory.Encounters.Current;
+            var encounter = Memory.Encounters.Current;
 
             if (encounter.EnabledEnemy.Cast<bool>().Any(x => x))
             {
@@ -923,7 +926,7 @@ namespace OpenVIII
             Enemy.Party = encounter.BEnemies.Select((x, i) => new { i, x }).Where(x => encounter.EnabledEnemy[r(x.i)]).Select(x =>
             {
                 DatFile datFile = _monstersData.FirstOrDefault(mon => mon.GetId == x.x);
-                int i = r(x.i);
+                var i = r(x.i);
                 return datFile == default
                     ? null
                     : (Enemy)new EnemyInstanceInformation
@@ -944,17 +947,17 @@ namespace OpenVIII
 
         private static void StartAnimations()
         {
-            foreach (CharacterInstanceInformation c in _characterInstances)
+            foreach (var c in _characterInstances)
                 c.AnimationSystem.StartAnimation();
-            foreach (Enemy e in Enemy.Party)
+            foreach (var e in Enemy.Party)
                 e.EII.AnimationSystem.StartAnimation();
         }
 
         private static void StopAnimations()
         {
-            foreach (CharacterInstanceInformation c in _characterInstances)
+            foreach (var c in _characterInstances)
                 c.AnimationSystem.StopAnimation();
-            foreach (Enemy e in Enemy.Party)
+            foreach (var e in Enemy.Party)
                 e.EII.AnimationSystem.StopAnimation();
         }
 
@@ -968,13 +971,13 @@ namespace OpenVIII
             _frameTime += Memory.ElapsedGameTime;
             if (_frameTime <= FPS) return;
             if (Enemy.Party != null)
-                foreach (Enemy e in Enemy.Party.Where(e => !e.EII.AnimationSystem.AnimationStopped && !e.IsPetrify))
+                foreach (var e in Enemy.Party.Where(e => !e.EII.AnimationSystem.AnimationStopped && !e.IsPetrify))
                 {
                     e.EII.AnimationSystem.NextFrame();
                 }
 
             if (_characterInstances != null)
-                foreach (CharacterInstanceInformation cii in _characterInstances.Where(cii =>
+                foreach (var cii in _characterInstances.Where(cii =>
                     !cii.AnimationSystem.AnimationStopped && (!Memory.State[cii.VisibleCharacter]?.IsPetrify ?? true)))
                 {
                     cii.AnimationSystem.NextFrame();
