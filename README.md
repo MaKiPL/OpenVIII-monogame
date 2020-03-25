@@ -23,11 +23,13 @@ Requirements: MonoGame + Visual Studio
 4. If you get an "Unable to load DLL 'FreeImage'" error, download and install:
 [Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
 
-5. In Visual Studio 2017, while the solution is open, go to Tools > NuGet Package Manager > Manage NuGet Packages for solution. Make sure the required packages are installed and everything is up to date. There should be a notice on this screen if a package isn't installed. There will be a number in a box next to Updates if there are out of date packages.
+5. In Visual Studio 2017, while the solution is open, right click on Core > Properties and make sure Core project targets .NET Framework 4.6. Visual Studio might try to target the newest available .NET Framework on your machine by default which will mess next step.
 
-6. Make sure you add the Final Fantasy VIII path to the array at `WindowsGameLocationProvider.cs:36`. On Windows the code tries to detect the install path via the registry. If it fails, it'll fall back to the array.
+6. Go to Tools > NuGet Package Manager > Manage NuGet Packages for solution. Make sure the required packages are installed and everything is up to date. There should be a notice on this screen if a package isn't installed. There will be a number in a box next to Updates if there are out of date packages.
 
-7. That's all. You can now compile the executable.
+7. Make sure you add the Final Fantasy VIII path to the array at `WindowsGameLocationProvider.cs:36`. On Windows the code tries to detect the install path via the registry. If it fails, it'll fall back to the array.
+
+8. That's all. You can now compile the executable.
 
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
 
