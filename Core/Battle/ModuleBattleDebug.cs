@@ -8,6 +8,7 @@ using OpenVIII.IGMDataItem;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -22,7 +23,7 @@ namespace OpenVIII
 
         public const int YOffset = 0;
         public static AlphaTestEffect Ate;
-        public static int Debug = 0;
+        public static int IntDebug = 0;
         public static bool PauseATB = false;
 
         //parses battle stage and all monsters
@@ -46,7 +47,7 @@ namespace OpenVIII
         private static sbyte? _partyPos;
         private static RegularPyramid _regularPyramid;
         private static byte _sid;
-        private static ConcurrentDictionary<Characters, List<byte>> _sWeapons;
+        private static readonly ConcurrentDictionary<Characters, IReadOnlyList<byte>> SWeapons = new ConcurrentDictionary<Characters, IReadOnlyList<byte>>();
 
         #endregion Fields
 
@@ -114,14 +115,16 @@ namespace OpenVIII
         public static Stage Stage { get; private set; }
         public static Matrix ViewMatrix { get; private set; }
 
-        public static ConcurrentDictionary<Characters, List<byte>> Weapons
+        public static ConcurrentDictionary<Characters, IReadOnlyList<byte>> Weapons
         {
             get
             {
                 FillWeapons();
-                return _sWeapons;
+                lock (weaponLock)
+                {
+                    return SWeapons;
+                }
             }
-            private set => _sWeapons = value;
         }
 
         public static Matrix WorldMatrix { get; private set; }
@@ -697,23 +700,28 @@ namespace OpenVIII
             }
         }
 
+        private static readonly object weaponLock = new object();
         private static void FillWeapons()
         {
-            if (_sWeapons != null) return;
-            Weapons = new ConcurrentDictionary<Characters, List<byte>>();
-            for (var i = 0; i <= (int)Characters.Ward_Zabac; i++)
+            lock (weaponLock)
             {
-                var weapons = new SortedSet<byte>();
-                var r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
-
-                foreach (var s in aw.GetListOfFiles().OrderBy(Path.GetFileName, StringComparer.InvariantCultureIgnoreCase))
+                if (SWeapons == null ||SWeapons.Count != 0) return;
+                for (var i = 0; i <= (int)Characters.Ward_Zabac; i++)
                 {
-                    var match = r.Match(s);
-                    if (!byte.TryParse(match.Groups[2].Value, out var a)) continue;
-                    weapons.Add(a);
+                    //Debug.Assert(i != 10);
+                    var weapons = new SortedSet<byte>();
+                    var r = new Regex(@"d(" + i.ToString("X") + @")w(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
+
+                    foreach (var s in aw.GetListOfFiles().OrderBy(Path.GetFileName, StringComparer.InvariantCultureIgnoreCase).Where(x=>x.IndexOf($"d{i:x}w", StringComparison.OrdinalIgnoreCase) >=0))
+                    {
+                        var match = r.Match(s);
+                        if (!byte.TryParse(match.Groups[2].Value, out var a)) continue;
+                        weapons.Add(a);
+                    }
+
+                    SWeapons.TryAdd((Characters) i, weapons.ToList().AsReadOnly());
                 }
-                Weapons.TryAdd((Characters)i, weapons.ToList());
             }
         }
 
@@ -733,14 +741,21 @@ namespace OpenVIII
 
         private static byte GetWeaponID(Characters c)
         {
-            byte weaponId = 0;
-            if (!Memory.State.Characters.TryGetValue(c, out var characterData) ||
-                characterData.WeaponID >= Memory.Kernel_Bin.WeaponsData.Count) return weaponId;
+            IReadOnlyList<byte> weapons;
+            if (c >= Characters.Laguna_Loire)
+            {
+                if (Weapons.TryGetValue(c, out weapons) && weapons != null && weapons.Count > 0)
+                    return weapons[0];
+                return 0;
+            }
+            var characterData = Memory.State[c];
+            if (characterData.WeaponID >= Memory.Kernel_Bin.WeaponsData.Count) return 0;
             var altID = Memory.Kernel_Bin.WeaponsData[characterData.WeaponID].AltID;
-            if (Weapons.TryGetValue(c, out var weapons) && weapons != null && weapons.Count > altID)
-                weaponId = weapons[altID];
 
-            return weaponId;
+            if (!Weapons.TryGetValue(c, out weapons) || weapons == null) return 0;
+            if (weapons.Count > altID)
+                return weapons[altID];
+            return weapons.Count>0 ? weapons[weapons.Count - 1] : (byte) 0;
         }
 
         private static void InitBattle()
