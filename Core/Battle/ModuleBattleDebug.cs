@@ -8,9 +8,7 @@ using OpenVIII.IGMDataItem;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -23,7 +21,6 @@ namespace OpenVIII
 
         public const int YOffset = 0;
         public static AlphaTestEffect Ate;
-        public static int IntDebug = 0;
         public static bool PauseATB = false;
 
         //parses battle stage and all monsters
@@ -105,7 +102,7 @@ namespace OpenVIII
         public static BattleModule BattleModule { get; set; }
         public static Camera Camera { get; private set; }
 
-        public static ConcurrentDictionary<Characters, SortedSet<byte>> Costumes { get; private set; }
+        public static ConcurrentDictionary<Characters, IReadOnlyList<byte>> Costumes { get; } = new ConcurrentDictionary<Characters, IReadOnlyList<byte>>();
 
         public static int DebugFrame { get; private set; }
         public static BasicEffect Effect { get; private set; }
@@ -120,7 +117,7 @@ namespace OpenVIII
             get
             {
                 FillWeapons();
-                lock (weaponLock)
+                lock (WeaponLock)
                 {
                     return SWeapons;
                 }
@@ -608,12 +605,10 @@ namespace OpenVIII
                 DrawShadow(characterPosition, Ate, .5f);
 
                 //WEAPON
-                if (_characterInstances[n].Data.Weapon != null)
-                {
-                    CheckAnimationFrame(EntityType.Weapon, n);
-                    DrawBattleDat(_characterInstances[n].Data.Weapon, CharacterInstanceGenerateStep(n),
-                        ref _characterInstances[n].AnimationSystem, ref characterPosition);
-                }
+                if (_characterInstances[n].Data.Weapon == null) continue;
+                CheckAnimationFrame(EntityType.Weapon, n);
+                DrawBattleDat(_characterInstances[n].Data.Weapon, CharacterInstanceGenerateStep(n),
+                    ref _characterInstances[n].AnimationSystem, ref characterPosition);
             }
         }
 
@@ -679,31 +674,36 @@ namespace OpenVIII
             (Enemy.Party[n].IsPetrify &&
             Enemy.Party[n].EII.AnimationSystem.StopAnimation());
 
+        private static readonly object CostumeLock = new object();
         private static void FillCostumes()
         {
-            if (Costumes != null) return;
-            Costumes = new ConcurrentDictionary<Characters, SortedSet<byte>>();
-            var r = new Regex(@"d([\da-fA-F]+)c(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
-            foreach (var s in aw.GetListOfFiles())
-            {
-                var match = r.Match(s);
+                lock (CostumeLock)
                 {
-                    if (!byte.TryParse(match.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-                        out var ci)) continue;
-                    var c = (Characters)ci;
+                    if (Costumes == null || Costumes.Count != 0) return;
+                    for (var i = 0; i <= (int)Characters.Ward_Zabac; i++)
+                    {
+                        //Debug.Assert(i != 10);
+                        var costumes = new SortedSet<byte>();
+                        var r = new Regex(@"d(" + i.ToString("X") + @")c(\d+)\.dat", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                        var aw = ArchiveWorker.Load(Memory.Archives.A_BATTLE);
 
-                    if (!byte.TryParse(match.Groups[2].Value, out var a)) continue;
-                    Costumes.TryAdd(c, new SortedSet<byte>());
-                    Costumes[c].Add(a);
+                        foreach (var s in aw.GetListOfFiles().OrderBy(Path.GetFileName, StringComparer.InvariantCultureIgnoreCase).Where(x => x.IndexOf($"d{i:x}c", StringComparison.OrdinalIgnoreCase) >= 0))
+                        {
+                            var match = r.Match(s);
+                            if (!byte.TryParse(match.Groups[2].Value, out var a)) continue;
+                            costumes.Add(a);
+                        }
+
+                        Costumes.TryAdd((Characters)i, costumes.ToList().AsReadOnly());
+                    }
                 }
-            }
+            
         }
 
-        private static readonly object weaponLock = new object();
+        private static readonly object WeaponLock = new object();
         private static void FillWeapons()
         {
-            lock (weaponLock)
+            lock (WeaponLock)
             {
                 if (SWeapons == null ||SWeapons.Count != 0) return;
                 for (var i = 0; i <= (int)Characters.Ward_Zabac; i++)
