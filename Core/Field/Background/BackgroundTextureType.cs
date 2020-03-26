@@ -12,11 +12,11 @@ namespace OpenVIII.Fields
         {
             #region Fields
 
-            public byte Palettes;
+            public readonly byte Palettes;
             /// <remarks> first 8 are junk and are not used. </remarks>
-            public byte SkippedPalettes = 8;
-            public byte TexturePages;
-            public byte Type = 1;
+            private readonly byte _skippedPalettes;
+            private readonly byte _texturePages;
+            public readonly byte Type;
             private const ushort OutHeight = 256;
             private const ushort OutWidth = 128;
 
@@ -33,23 +33,15 @@ namespace OpenVIII.Fields
 
             #region Methods
 
-            public static BackgroundTextureType GetTextureType(byte[] mimb)
-                => mimb == null ? default: TextureTypes.First(x => x.FileSize == mimb.Length);
+            public static BackgroundTextureType GetTextureType(IReadOnlyCollection<byte> mimBytes)
+                => mimBytes == null ? default: TextureTypes.First(x => x.FileSize == mimBytes.Count);
 
-
+            private BackgroundTextureType(byte palettes, byte texturePages, byte skippedPalettes = 8, byte type = 1) =>
+                (Palettes, _texturePages, _skippedPalettes, Type) = (palettes, texturePages, skippedPalettes, type);
+            
             private static readonly BackgroundTextureType[] TextureTypes = {
-            new BackgroundTextureType {
-                Palettes =24,
-                _texturePages = 13
-            },
-            new BackgroundTextureType {
-                Palettes =16,
-                _texturePages = 12,
-                _skippedPalettes =0,
-                Type = 2
-            },
-            };
-
+            new BackgroundTextureType(24, 13),
+            new BackgroundTextureType(16,12,0,2)};
             #endregion Methods
         }
 
