@@ -22,7 +22,7 @@ namespace OpenVIII.Fields
 
         #region Enums
 
-        
+
 
         #endregion Enums
 
