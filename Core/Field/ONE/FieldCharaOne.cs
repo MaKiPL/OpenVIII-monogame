@@ -31,16 +31,16 @@ namespace OpenVIII.Fields
         {
             if (!FieldMainCharaOne.bAlreadyInitialized)
                 FieldMainCharaOne.Init();
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
-            string[] test = aw.GetListOfFiles();
+            var aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
+            var test = aw.GetListOfFiles();
 
             var CollectionEntry = test.Where(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID],StringComparison.OrdinalIgnoreCase)>=0);
             if (!CollectionEntry.Any()) return;
-            string fieldArchivename = CollectionEntry.First();
+            var fieldArchivename = CollectionEntry.First();
             var fieldArchive = aw.GetArchive(fieldArchivename);
             
 
-            string[] test_ = fieldArchive.GetListOfFiles();
+            var test_ = fieldArchive.GetListOfFiles();
 
 
             string one;
@@ -54,7 +54,7 @@ namespace OpenVIII.Fields
                 return;
             }
 
-            byte[] oneb = fieldArchive.GetBinaryFile(one);
+            var oneb = fieldArchive.GetBinaryFile(one);
             if (oneb.Length == 0)
                 return;
             ReadBuffer(oneb);
@@ -62,24 +62,24 @@ namespace OpenVIII.Fields
 
         private void ReadBuffer(byte[] oneBuffer)
         {
-            List<CharaModelHeaders> cmh = new List<CharaModelHeaders>();
-            int lastMsPosition = 0;
-            using (MemoryStream ms = new MemoryStream(oneBuffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            var cmh = new List<CharaModelHeaders>();
+            var lastMsPosition = 0;
+            using (var ms = new MemoryStream(oneBuffer))
+            using (var br = new BinaryReader(ms))
             {
-                uint nModels = br.ReadUInt32();
-                for (int i = 0; i < nModels; i++)
+                var nModels = br.ReadUInt32();
+                for (var i = 0; i < nModels; i++)
                 {
 
-                    CharaModelHeaders localCmh = new CharaModelHeaders
+                    var localCmh = new CharaModelHeaders
                     {
                         offset = br.ReadUInt32() + 4,
                         size = br.ReadUInt32(),
                         size2 = br.ReadUInt32(),
                         flagDWORD = br.ReadUInt32()
                     };
-                    bool bIgnorePadding = false;
-                    bool bMainChara = false;
+                    var bIgnorePadding = false;
+                    var bMainChara = false;
                     if (localCmh.flagDWORD >> 24 == 0xD0) //main character file
                     {
                         localCmh.timOffset = new uint[0];
@@ -96,8 +96,8 @@ namespace OpenVIII.Fields
                     }
                     else
                     {
-                        List<uint> timOffsets = new List<uint>();
-                        uint flagTimOffset = localCmh.flagDWORD & 0x00FFFFFF;
+                        var timOffsets = new List<uint>();
+                        var flagTimOffset = localCmh.flagDWORD & 0x00FFFFFF;
 
                         timOffsets.Add(localCmh.flagDWORD << 8);
                         uint localTimOffset;
@@ -117,12 +117,12 @@ namespace OpenVIII.Fields
                         ms.Seek(localCmh.offset + localCmh.modelDataOffset, SeekOrigin.Begin);
                         localCmh.mch = new Debug_MCH(ms, br, Debug_MCH.mchMode.FieldNPC, 3f);
                         //ms.Seek(localCmh.offset + 4, SeekOrigin.Begin);
-                        List<Texture2D> texList = new List<Texture2D>();
-                        for (int n = 0; n < localCmh.timOffset.Length; n++)
+                        var texList = new List<Texture2D>();
+                        for (var n = 0; n < localCmh.timOffset.Length; n++)
                         {
                             if (localCmh.timOffset[n] > 0x10000000)
                                 localCmh.timOffset[n] = localCmh.timOffset[n] & 0x00FFFFFF;
-                            TIM2 localTim = new TIM2(br, localCmh.offset + localCmh.timOffset[n]);
+                            var localTim = new TIM2(br, localCmh.offset + localCmh.timOffset[n]);
                             texList.Add(localTim.GetTexture());
                         }
                         localCmh.textures = texList.ToArray();
@@ -132,7 +132,7 @@ namespace OpenVIII.Fields
                     {
                         lastMsPosition = (int)ms.Position;
                         //this is main chara, so please grab data from main_chr.fs
-                        int getRefId = int.Parse(new string(localCmh.modelName).Substring(1, 3));
+                        var getRefId = int.Parse(new string(localCmh.modelName).Substring(1, 3));
                         var chara = FieldMainCharaOne.MainFieldCharacters.Where(x => x.id == getRefId).First();
                         localCmh.modelDataOffset = 1;
                         localCmh.mch = chara.mch;
@@ -169,30 +169,30 @@ namespace OpenVIII.Fields
             if (bAlreadyInitialized && !bForce)
                 return;
 
-            List<MainFieldChara> mfc = new List<MainFieldChara>();
+            var mfc = new List<MainFieldChara>();
 
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
-            string[] test = aw.GetListOfFiles();
+            var aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
+            var test = aw.GetListOfFiles();
 
             var CollectionEntry = test.Where(x => x.ToLower().Contains("main_chr"));
             if (!CollectionEntry.Any()) return;
-            string fieldArchiveName = CollectionEntry.First();
+            var fieldArchiveName = CollectionEntry.First();
             var fieldArchive = aw.GetArchive(fieldArchiveName);
-            string[] test_ = fieldArchive.GetListOfFiles() ;
+            var test_ = fieldArchive.GetListOfFiles() ;
 
-            for(int i = 0; i<test_.Length; i++)
+            for(var i = 0; i<test_.Length; i++)
             {
                 //if (test_[i].Contains("d008.mch"))
                 //    continue;
                 if (string.IsNullOrWhiteSpace(test_[i]))
                     continue;
-                byte[] oneb = fieldArchive.GetBinaryFile(test_[i]);
+                var oneb = fieldArchive.GetBinaryFile(test_[i]);
 
                 if (oneb.Length < 64) //Hello Kazuo Suzuki! I will skip your dummy files
                     continue;
 
-                MainFieldChara currentLocalChara = ReadMainChara(oneb);
-                int localId = int.Parse(Path.GetFileNameWithoutExtension(test_[i]).Substring(1,3));
+                var currentLocalChara = ReadMainChara(oneb);
+                var localId = int.Parse(Path.GetFileNameWithoutExtension(test_[i]).Substring(1,3));
                 currentLocalChara.id = localId;
                 mfc.Add(currentLocalChara);
             }
@@ -202,21 +202,21 @@ namespace OpenVIII.Fields
 
         private static MainFieldChara ReadMainChara(byte[] oneb)
         {
-            MainFieldChara localMfc = new MainFieldChara();
-            using (MemoryStream ms = new MemoryStream(oneb))
-            using (BinaryReader br = new BinaryReader(ms))
+            var localMfc = new MainFieldChara();
+            using (var ms = new MemoryStream(oneb))
+            using (var br = new BinaryReader(ms))
             {
-                List<uint> timOffsets = new List<uint>();
+                var timOffsets = new List<uint>();
                 uint timOffset;
                 while((timOffset = br.ReadUInt32())!=0xffffffff )
                     timOffsets.Add(timOffset & 0x00FFFFFF);
-                uint modelPointer = br.ReadUInt32();
+                var modelPointer = br.ReadUInt32();
 
                 //read textures
-                List<Texture2D> tex2Dreader = new List<Texture2D>();
-                for(int i = 0; i<timOffsets.Count; i++)
+                var tex2Dreader = new List<Texture2D>();
+                for(var i = 0; i<timOffsets.Count; i++)
                 {
-                    TIM2 tim = new TIM2(br, timOffsets[i]);
+                    var tim = new TIM2(br, timOffsets[i]);
                     tex2Dreader.Add(tim.GetTexture());
                 }
                 localMfc.textures = tex2Dreader.ToArray();
@@ -224,7 +224,7 @@ namespace OpenVIII.Fields
                 //read models
                 ms.Seek(modelPointer, SeekOrigin.Begin);
 
-                Debug_MCH mch = new Debug_MCH(ms, br, Debug_MCH.mchMode.FieldMain);
+                var mch = new Debug_MCH(ms, br, Debug_MCH.mchMode.FieldMain);
                 localMfc.mch = mch;
             }
             return localMfc;

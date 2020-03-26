@@ -65,7 +65,7 @@ namespace OpenVIII.IGMData
             }
             else if (Items != null && Items.Count > 0)
             {
-                if (Items.TryDequeue(out Saves.Item item) && Memory.State.Items.FirstOrDefault(x=>x.ID == item.ID).QTY < Memory.State.EarnItem(item).QTY)
+                if (Items.TryDequeue(out var item) && Memory.State.Items.FirstOrDefault(x=>x.ID == item.ID).QTY < Memory.State.EarnItem(item).QTY)
                 {
                     ITEM?[0, 6]?.Show();
                     Earn();
@@ -81,7 +81,7 @@ namespace OpenVIII.IGMData
             }
             else if (_cards != null && _cards.Count > 0)
             {
-                if (_cards.TryDequeue(out KeyValuePair<Cards.ID, byte> card) && Memory.State.EarnItem(card))
+                if (_cards.TryDequeue(out var card) && Memory.State.EarnItem(card))
                 {
                     ITEM?[0, 6]?.Show();
                     Earn();
@@ -118,11 +118,11 @@ namespace OpenVIII.IGMData
             else
             if (_cards != null && _cards.TryPeek(out card))
             {
-                FF8StringReference name = Memory.Strings.Read(Strings.FileID.MenuGroup, 110, (int)card.Key);
-                int pos = 0;
+                var name = Memory.Strings.Read(Strings.FileID.MenuGroup, 110, (int)card.Key);
+                var pos = 0;
                 for (; pos < name.Length; pos++)
                     if (name.Value[pos] == 2) break;
-                FF8String trimname = new FF8String(name.Value.Take(pos - 1).ToArray());
+                var trimname = new FF8String(name.Value.Take(pos - 1).ToArray());
                 ((IGMDataItem.Box)ITEM[0, 1]).Data = trimname;
                 //TODO grab card name from start of string
                 ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{card.Value}";
@@ -152,7 +152,7 @@ namespace OpenVIII.IGMData
             if (cards.Count > 0)
             {
                 _cards = new ConcurrentQueue<KeyValuePair<Cards.ID, byte>>();
-                foreach (KeyValuePair<Cards.ID, byte> e in cards)
+                foreach (var e in cards)
                     _cards.Enqueue(e);
             }
             else _cards = null;
@@ -163,7 +163,7 @@ namespace OpenVIII.IGMData
             if (items.Count > 0)
             {
                 Items = new ConcurrentQueue<Saves.Item>();
-                foreach (KeyValuePair<byte, byte> e in items)
+                foreach (var e in items)
                     Items.Enqueue(new Saves.Item(e));
             }
             else Items = null;

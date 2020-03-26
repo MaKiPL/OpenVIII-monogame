@@ -86,11 +86,11 @@ namespace OpenVIII
             {
                 get
                 {
-                    int level = 0;
-                    int cnt = 0;
-                    for (int p = 0; p < 3; p++)
+                    var level = 0;
+                    var cnt = 0;
+                    for (var p = 0; p < 3; p++)
                     {
-                        Characters c = PartyData?[p] ?? OpenVIII.Characters.Squall_Leonhart;
+                        var c = PartyData?[p] ?? OpenVIII.Characters.Squall_Leonhart;
                         if (c != OpenVIII.Characters.Blank)
                         {
                             level += Characters?[c].Level ?? 0;
@@ -402,7 +402,7 @@ namespace OpenVIII
                 {
                     if (Characters != null)
                     {
-                        foreach (KeyValuePair<Characters, CharacterData> i in Characters)
+                        foreach (var i in Characters)
                         {
                             if (!Party.Contains(i.Key) && i.Value.Available)
                             {
@@ -506,13 +506,13 @@ namespace OpenVIII
             public static Data LoadInitOut()
             {
                 Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Data)} :: {nameof(LoadInitOut)} ");
-                ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN, true);
-                byte[] buffer = aw.GetBinaryFile("init.out");
+                var aw = ArchiveWorker.Load(Memory.Archives.A_MAIN, true);
+                var buffer = aw.GetBinaryFile("init.out");
                 if (buffer != null && buffer.Length >0)
                 {
-                    using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                    using (var br = new BinaryReader(new MemoryStream(buffer)))
                     {
-                        Data data = new Data();
+                        var data = new Data();
                         data.ReadInitOut(br);
                         return data;
                     }
@@ -528,7 +528,7 @@ namespace OpenVIII
             {
                 Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Data)} :: {nameof(Clone)} ");
                 //shadow copy
-                Data d = (Data)MemberwiseClone();
+                var d = (Data)MemberwiseClone();
                 //deep copy anything that needs it here.
 
                 d._characters = _characters.ToDictionary(x => x.Key, x => (CharacterData)x.Value.Clone());
@@ -557,7 +557,7 @@ namespace OpenVIII
                     character = id.ToCharacters();
                 if (gf == OpenVIII.GFs.Blank)
                     gf = id.ToGFs();
-                int hp = (Characters.ContainsKey(character) ? Characters[character].CurrentHP() : -1);
+                var hp = (Characters.ContainsKey(character) ? Characters[character].CurrentHP() : -1);
                 hp = (hp < 0 && GFs.ContainsKey(gf) ? GFs[gf].CurrentHP() : hp);
                 return hp;
             }
@@ -580,13 +580,13 @@ namespace OpenVIII
 
             public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>> abilities)
             {
-                ConcurrentQueue<GFs> ret = new ConcurrentQueue<GFs>();
+                var ret = new ConcurrentQueue<GFs>();
                 abilities = null;
                 if (GFs == null) return ret;
                 abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>>();
-                foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value != null && i.Value.Exists))
+                foreach (var g in GFs.Where(i => i.Value != null && i.Value.Exists))
                 {
-                    if (!g.Value.EarnExp(ap, out Kernel.Abilities ability)) continue;
+                    if (!g.Value.EarnExp(ap, out var ability)) continue;
                     if (ability != Kernel.Abilities.None)
                     {
                         abilities.Enqueue(new KeyValuePair<GFs, Kernel.Abilities>(g.Key, ability));
@@ -598,7 +598,7 @@ namespace OpenVIII
 
             public bool EarnItem(Cards.ID card, byte qty, byte location = 0)
             {
-                TTCardInfo i = new TTCardInfo { Unlocked = true, Qty = qty, Location = location };
+                var i = new TTCardInfo { Unlocked = true, Qty = qty, Location = location };
                 if (!TripleTriad.cards.TryAdd(card, i))
                 {
                     TripleTriad.cards[card].Unlocked = i.Unlocked;
@@ -615,7 +615,7 @@ namespace OpenVIII
             {
                 if (Items.Any(i => i.ID == iD) && qty != 0)
                 {
-                    int k = Items.FindIndex(item => item.ID == iD);
+                    var k = Items.FindIndex(item => item.ID == iD);
                     if (qty < 0)
                         return Items[k] = Items[k].Add(checked((sbyte)qty));
                     if (qty > 0)
@@ -623,7 +623,7 @@ namespace OpenVIII
                 }
                 else if (Items.Any(i => i.ID == 0) && qty > 0)
                 {
-                    int k = Items.FindIndex(item => item.ID == 0);
+                    var k = Items.FindIndex(item => item.ID == 0);
                     return Items[k] = Items[k].Add(checked((byte)qty), iD);
                 }
                 return default;
@@ -633,11 +633,11 @@ namespace OpenVIII
 
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
-                Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>();
+                var r = new Dictionary<GFs, Characters>();
                 if (Characters == null) return r;
-                foreach (KeyValuePair<Characters, CharacterData> c in Characters)
+                foreach (var c in Characters)
                 {
-                    foreach (GFs gf in c.Value.JunctionedGFs)
+                    foreach (var gf in c.Value.JunctionedGFs)
                         if(!r.ContainsKey(gf) && gf >= OpenVIII.GFs.Quezacotl && gf <= OpenVIII.GFs.Eden )
                             r.Add(gf, c.Key);
 
@@ -651,9 +651,9 @@ namespace OpenVIII
             public bool PartyHasAbility(Kernel.Abilities a)
             {
                 if (PartyData == null) return false;
-                foreach (Characters c in PartyData)
+                foreach (var c in PartyData)
                 {
-                    if (Characters.TryGetValue(c, out CharacterData cd) && cd.Abilities.Contains(a))
+                    if (Characters.TryGetValue(c, out var cd) && cd.Abilities.Contains(a))
                         return true;
                 }
                 return false;
@@ -705,11 +705,11 @@ namespace OpenVIII
                 Module = br.ReadUInt16();//0x0D50 (1= field, 2= world map, 3= battle)
                 CurrentField = br.ReadUInt16();//0x0D52
                 PreviousField = br.ReadUInt16();//0x0D54
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                     CoordinateX[i] = br.ReadInt16();//0x0D56 signed  (party1, party2, party3)
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                     CoordinateY[i] = br.ReadInt16();//0x0D5C signed  (party1, party2, party3)
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                     TriangleID[i] = br.ReadUInt16();//0x0D62  (party1, party2, party3)
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B
@@ -735,13 +735,13 @@ namespace OpenVIII
                 //init offset 1088;
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
-                    CharacterData tmp = CharacterData.Load(br, (Characters)i, this);
+                    var tmp = CharacterData.Load(br, (Characters)i, this);
 
                     tmp.Name = Memory.Strings.GetName((Characters)i, this);
                     _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total
                 }
                 //init offset 2304
-                for (int i = 0; i < _shops.Capacity; i++)
+                for (var i = 0; i < _shops.Capacity; i++)
                     _shops.Add(new Shop(br));//0x0960 //400 bytes
                 //init offset 2704
                 //Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
@@ -765,7 +765,7 @@ namespace OpenVIII
                 LimitBreakAngeloPoints = br.ReadBytes(8).Select((value, key) => new { key, value }).ToDictionary(x => (Angelo)(x.key + 1), x => x.value);//0x0B2C
                 ItemsBattleOrder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
-                for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < Items.Capacity; i++)
+                for (var i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < Items.Capacity; i++)
                     Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
@@ -779,7 +779,7 @@ namespace OpenVIII
                 CharacterData c = null;
                 if (Characters != null && !Characters.TryGetValue(id, out c) && Characters.Count > 0 && Party != null)
                 {
-                    int ind = Party.FindIndex(x => x.Equals(id));
+                    var ind = Party.FindIndex(x => x.Equals(id));
 
                     if (ind == -1 || !Characters.TryGetValue(PartyData[ind], out c))
                         throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
@@ -792,8 +792,8 @@ namespace OpenVIII
 
             private Damageable GetDamageable(Faces.ID id)
             {
-                GFs gf = id.ToGFs();
-                Characters c = id.ToCharacters();
+                var gf = id.ToGFs();
+                var c = id.ToCharacters();
                 if (c == OpenVIII.Characters.Blank)
                     return GetDamageable(gf);
                 return GetDamageable(c);

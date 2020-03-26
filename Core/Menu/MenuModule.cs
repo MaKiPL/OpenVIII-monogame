@@ -192,7 +192,7 @@ namespace OpenVIII
                     Memory.IsMouseVisible = true;
                     break;
             }
-            bool forceupdate = false;
+            var forceupdate = false;
             switch (State)
             {
                 case Mode.MainLobby:

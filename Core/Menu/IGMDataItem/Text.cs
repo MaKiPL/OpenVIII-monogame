@@ -71,11 +71,11 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled)
             {
-                Rectangle r = Pos;
+                var r = Pos;
                 if (OffsetAnchor != null)
                     r.Offset(OffsetAnchor);
 
-                Rectangle r2 = r;
+                var r2 = r;
                 if (Icon != null && Icon != Icons.ID.None)
                 {
                     r2.Size = Point.Zero;
@@ -94,7 +94,7 @@ namespace OpenVIII.IGMDataItem
         {
             if (_icon != Icons.ID.None)
             {
-                EntryGroup entryGroup = Memory.Icons.GetEntryGroup(_icon);
+                var entryGroup = Memory.Icons.GetEntryGroup(_icon);
                 if (entryGroup != null)
                     DataSize.Offset(entryGroup.Width * Scale.X, 0);
             }

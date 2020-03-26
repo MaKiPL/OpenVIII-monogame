@@ -17,14 +17,14 @@ namespace OpenVIII.Battle
 
             public static MainGeometrySection Read(BinaryReader br)
             {
-                int basePointer = (int)br.BaseStream.Position - 4;
-                uint objectGroup_1 = (uint)basePointer + br.ReadUInt32();
-                uint objectGroup_2 = (uint)basePointer + br.ReadUInt32();
-                uint objectGroup_3 = (uint)basePointer + br.ReadUInt32();
-                uint objectGroup_4 = (uint)basePointer + br.ReadUInt32();
-                uint TextureUnused = (uint)basePointer + br.ReadUInt32();
-                uint Texture = (uint)basePointer + br.ReadUInt32();
-                uint EOF = (uint)basePointer + br.ReadUInt32();
+                var basePointer = (int)br.BaseStream.Position - 4;
+                var objectGroup_1 = (uint)basePointer + br.ReadUInt32();
+                var objectGroup_2 = (uint)basePointer + br.ReadUInt32();
+                var objectGroup_3 = (uint)basePointer + br.ReadUInt32();
+                var objectGroup_4 = (uint)basePointer + br.ReadUInt32();
+                var TextureUnused = (uint)basePointer + br.ReadUInt32();
+                var Texture = (uint)basePointer + br.ReadUInt32();
+                var EOF = (uint)basePointer + br.ReadUInt32();
                 if (EOF != br.BaseStream.Length)
                     throw new Exception("BS_PARSER_ERROR_LENGTH: Geometry EOF pointer is other than buffered filesize");
 

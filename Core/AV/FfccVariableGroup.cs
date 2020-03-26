@@ -102,7 +102,7 @@
             {
                 fixed (AVFormatContext** tmp = &Format)
                 {
-                    for (int i = 0; i < Format->nb_streams; i++)
+                    for (var i = 0; i < Format->nb_streams; i++)
                     {
                         ffmpeg.avcodec_close(Format->streams[i]->codec);
                     }

@@ -42,8 +42,8 @@ namespace OpenVIII.Fields
             {
                 if (_byIndex.TryGetByKey(objectName, out var obj))
                 {
-                    Int32 index = obj.AddScript("Initialize");
-                    ScriptReference reference = new ScriptReference(obj, index);
+                    var index = obj.AddScript("Initialize");
+                    var reference = new ScriptReference(obj, index);
                     _byLabel.Add(++_maxLabel, reference);
                 }
                 else
@@ -57,8 +57,8 @@ namespace OpenVIII.Fields
             {
                 if (_byIndex.TryGetByKey(objectName, out var obj))
                 {
-                    Int32 index = obj.AddScript(scriptName);
-                    ScriptReference reference = new ScriptReference(obj, index);
+                    var index = obj.AddScript(scriptName);
+                    var reference = new ScriptReference(obj, index);
                     _byLabel.Add(++_maxLabel, reference);
                 }
                 else

@@ -47,12 +47,12 @@ namespace OpenVIII
 
         public void Reverse()
         {
-            T tempValue = Start;
+            var tempValue = Start;
             Start = End;
             End = tempValue;
             if (ReversedTime > TimeSpan.Zero)
             {
-                TimeSpan tempTime = ReversedTime;
+                var tempTime = ReversedTime;
                 ReversedTime = TotalTime;
                 TotalTime = tempTime;
             }

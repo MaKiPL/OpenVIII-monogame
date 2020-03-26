@@ -33,7 +33,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
             currentObject.Interaction.IsPushScriptActive = false;
             return DummyAwaitable.Instance;
         }

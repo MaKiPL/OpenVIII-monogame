@@ -18,7 +18,7 @@ namespace OpenVIII.Fields.Scripts
 
             public void FormatMethod(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
             {
-                String methodName = GetMethodName(formatterContext);
+                var methodName = GetMethodName(formatterContext);
 
                 sw.AppendLine($"public void {methodName}()");
                 {
@@ -39,7 +39,7 @@ namespace OpenVIII.Fields.Scripts
 
             private String GetMethodName(IScriptFormatterContext formatterContext)
             {
-                formatterContext.GetObjectScriptNamesById(ScriptId, out _, out String methodName);
+                formatterContext.GetObjectScriptNamesById(ScriptId, out _, out var methodName);
                 if (Char.IsLower(methodName[0]))
                     methodName = Char.ToUpperInvariant(methodName[0]) + methodName.Substring(1);
                 return methodName;

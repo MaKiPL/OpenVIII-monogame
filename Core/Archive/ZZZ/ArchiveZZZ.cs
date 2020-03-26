@@ -22,7 +22,7 @@ namespace OpenVIII
             ArchiveBase tempArchive = null;
             ParentPath = FindParentPath(archive);
             if (ParentPath != null && ParentPath.Count > 0)
-                foreach (Memory.Archive p in ParentPath)
+                foreach (var p in ParentPath)
                 {
                     if (p.IsDir)
                     {
@@ -39,7 +39,7 @@ namespace OpenVIII
                     .FirstOrDefault(x => x.IndexOf(archive.ZZZ, StringComparison.OrdinalIgnoreCase) > 0));
             Memory.Log.WriteLine($"{nameof(ArchiveZzz)}:: opening archiveFile: {archive}");
             if (string.IsNullOrWhiteSpace(archive)) return;
-            using (BinaryReader br = Open())
+            using (var br = Open())
             {
                 if (br == null) return;
                 ArchiveMap = Header.Load(br);
@@ -60,7 +60,7 @@ namespace OpenVIII
             if (string.IsNullOrWhiteSpace(path)) return null;
             lock (Locker)
             {
-                if (CacheTryGetValue(path, out ArchiveBase value))
+                if (CacheTryGetValue(path, out var value))
                 {
                     return value;
                 }
@@ -90,7 +90,7 @@ namespace OpenVIII
         {
             lock (GetArchiveLock)
             {
-                if (!CacheTryGetValue(archive, out ArchiveBase value))
+                if (!CacheTryGetValue(archive, out var value))
                     return ArchiveWorker.Load(archive, GetStreamWithRangeValues(archive.FI), this, GetStreamWithRangeValues(archive.FL));
                 return value;
             }
@@ -102,10 +102,10 @@ namespace OpenVIII
             {
                 lock (BinaryFileLock)
                 {
-                    FI fi = ArchiveMap.FindString(ref fileName, out int size);
+                    var fi = ArchiveMap.FindString(ref fileName, out var size);
                     if (!string.IsNullOrWhiteSpace(fileName))
                     {
-                        if (LocalTryGetValue(fileName, out BufferWithAge value))
+                        if (LocalTryGetValue(fileName, out var value))
                         {
                             Memory.Log.WriteLine($"{nameof(ArchiveZzz)}::{nameof(GetBinaryFile)}::{nameof(CacheTryGetValue)} read from cache {fileName}");
                             return value;
@@ -115,7 +115,7 @@ namespace OpenVIII
                             Stream s;
                             if ((s = OpenStream()) != null)
                             {
-                                byte[] buffer = ArchiveMap.GetBinaryFile(fi, s, fileName, size);
+                                var buffer = ArchiveMap.GetBinaryFile(fi, s, fileName, size);
                                 if (buffer != null && cache && LocalTryAdd(fileName, buffer))
                                 {
                                     Memory.Log.WriteLine($"{nameof(ArchiveZzz)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} caching {fileName}");
@@ -144,7 +144,7 @@ namespace OpenVIII
         public override StreamWithRangeValues GetStreamWithRangeValues(string filename)
         {
             if (ArchiveMap == null) return null;
-            FI fi = ArchiveMap.FindString(ref filename, out int size);
+            var fi = ArchiveMap.FindString(ref filename, out var size);
             return !string.IsNullOrWhiteSpace(filename) && fi != null
                 ? new StreamWithRangeValues(OpenStream(), fi.Offset, size, fi.CompressionType, fi.UncompressedSize)
                 : null;
@@ -152,13 +152,13 @@ namespace OpenVIII
 
         public BinaryReader Open()
         {
-            Stream s = OpenStream();
+            var s = OpenStream();
             return s != null ? new BinaryReader(s) : null;
         }
 
         public Stream OpenStream()
         {
-            string path = File.Exists(Archive) && Archive.IsZZZ ? (string)Archive : File.Exists(Archive.ZZZ) ? Archive.ZZZ : null;
+            var path = File.Exists(Archive) && Archive.IsZZZ ? (string)Archive : File.Exists(Archive.ZZZ) ? Archive.ZZZ : null;
             return path != null ? new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite) : null;
         }
 

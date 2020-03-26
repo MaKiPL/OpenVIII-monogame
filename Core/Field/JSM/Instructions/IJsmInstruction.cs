@@ -26,13 +26,13 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
             if (checktype(e))
             {
-                ExecutableSegment es = ((ExecutableSegment)e);
-                foreach (ExecutableSegment child in es.Where(x => checktype(x)).Select(x => (ExecutableSegment)x))
+                var es = ((ExecutableSegment)e);
+                foreach (var child in es.Where(x => checktype(x)).Select(x => (ExecutableSegment)x))
                 {
-                    foreach (IJsmInstruction i in Flatten(child))
+                    foreach (var i in Flatten(child))
                         yield return i;
                 }
-                foreach (IJsmInstruction child in es.Where(x => !checktype(x)))
+                foreach (var child in es.Where(x => !checktype(x)))
                 {
                     yield return child;
                 }

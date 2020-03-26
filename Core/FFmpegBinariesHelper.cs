@@ -11,17 +11,17 @@ namespace FFmpeg.AutoGen.Example
         public static void RegisterFFmpegBinaries()
         {
             OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)} :: {nameof(RegisterFFmpegBinaries)}");
-            string libraryPath = "";
+            var libraryPath = "";
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.Win32NT:
                 case PlatformID.Win32S:
                 case PlatformID.Win32Windows:
-                    string current = Environment.CurrentDirectory;
-                    string probe = Path.Combine(Environment.Is64BitProcess ? "x64" : "x86");
+                    var current = Environment.CurrentDirectory;
+                    var probe = Path.Combine(Environment.Is64BitProcess ? "x64" : "x86");
                     while (current != null)
                     {
-                        string ffmpegDirectory = Path.Combine(current, probe);
+                        var ffmpegDirectory = Path.Combine(current, probe);
                         if (Directory.Exists(ffmpegDirectory))
                         {
                             OpenVIII.Memory.Log.WriteLine($"{nameof(FFmpegBinariesHelper)} :: {nameof(ffmpegDirectory)} :: {ffmpegDirectory}");
@@ -59,10 +59,10 @@ namespace FFmpeg.AutoGen.Example
 
                 case PlatformID.Unix:
                 case PlatformID.MacOSX:
-                    string currentValue = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
+                    var currentValue = Environment.GetEnvironmentVariable(LD_LIBRARY_PATH);
                     if (string.IsNullOrWhiteSpace(currentValue) == false && currentValue.Contains(path) == false)
                     {
-                        string newValue = currentValue + Path.PathSeparator + path;
+                        var newValue = currentValue + Path.PathSeparator + path;
                         Environment.SetEnvironmentVariable(LD_LIBRARY_PATH, newValue);
                     }
                     break;

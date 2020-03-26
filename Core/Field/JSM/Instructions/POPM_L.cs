@@ -41,7 +41,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            UInt32 value = (UInt32)_value.Calculate(services);
+            var value = (UInt32)_value.Calculate(services);
             ServiceId.Global[services].Set(_globalVariable, value);
             return DummyAwaitable.Instance;
         }

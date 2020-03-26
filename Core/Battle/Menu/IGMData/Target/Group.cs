@@ -51,7 +51,7 @@ namespace OpenVIII.IGMData.Target
             const int Width2 = 180;
             const int Y = 464;
 
-            Group r = Create<Group>(
+            var r = Create<Group>(
                 Enemies.Create(new Rectangle(X1, Y, Width1, Height)),
                 Party.Create(new Rectangle(X2, Y, Width2, Height)),
                 makesubs ? IGMData.Pool.Draw.Create(new Rectangle(X1 + 50, Y - 50, 300, 40*3), damageable, true) : null);
@@ -65,7 +65,7 @@ namespace OpenVIII.IGMData.Target
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (Draw_Pool?.Enabled ?? false)
             {
                 TargetEnemies.Cursor_Status |= Cursor_Status.Blinking;
@@ -120,11 +120,11 @@ namespace OpenVIII.IGMData.Target
         /// <returns></returns>
         public bool Execute()
         {
-            bool ret = false;
+            var ret = false;
             while (Casts-- > 0)
             {
                 skipend = Casts > 0;
-                if (CommandFunc.TryGetValue(Command.BattleID, out Func<bool> val))
+                if (CommandFunc.TryGetValue(Command.BattleID, out var val))
                     ret = val.Invoke() || ret;
                 else
                     ret = CommandDefault() || ret;
@@ -153,7 +153,7 @@ namespace OpenVIII.IGMData.Target
 
         public void SelectTargetWindows(Combine.KernelItem c)
         {
-            Kernel.Target t = c.Target;
+            var t = c.Target;
             SelectTargetWindows(t);
             Command = Memory.Kernel_Bin.BattleCommands[19];
             CombineKernelItem = c;
@@ -164,7 +164,7 @@ namespace OpenVIII.IGMData.Target
             // we don't know what the enemy attacks default target is. Setting a general default here.
             // The battle AI script sets the target for the enemies
             // http://forums.qhimm.com/index.php?topic=18384.0
-            Kernel.Target t = Kernel.Target.Ally | Kernel.Target.Enemy | Kernel.Target.SingleTarget;
+            var t = Kernel.Target.Ally | Kernel.Target.Enemy | Kernel.Target.SingleTarget;
             SelectTargetWindows(t);
             Command = Memory.Kernel_Bin.BattleCommands[1];
             EnemyAttack = c;
@@ -172,7 +172,7 @@ namespace OpenVIII.IGMData.Target
 
         public void SelectTargetWindows(Item_In_Menu c, bool shot = false)
         {
-            Kernel.Target t = c.Battle?.Target ?? Kernel.Target.Enemy | Kernel.Target.SingleTarget;
+            var t = c.Battle?.Target ?? Kernel.Target.Enemy | Kernel.Target.SingleTarget;
             if (shot)
                 t = c.Shot.Target;
             SelectTargetWindows(t);
@@ -182,7 +182,7 @@ namespace OpenVIII.IGMData.Target
 
         public void SelectTargetWindows(Kernel.BattleCommand c)
         {
-            Kernel.Target t = c.Target;
+            var t = c.Target;
             SelectTargetWindows(t);
             Command = c;
             Magic = null;
@@ -191,7 +191,7 @@ namespace OpenVIII.IGMData.Target
 
         public void SelectTargetWindows(Kernel.MagicData c, int casts = 1, Random random = default)
         {
-            Kernel.Target t = c.Target;
+            var t = c.Target;
             SelectTargetWindows(t, casts, random);
             Command = Memory.Kernel_Bin.BattleCommands[2];
             Magic = c;
@@ -201,7 +201,7 @@ namespace OpenVIII.IGMData.Target
         {
             //not sure if target data is missing for blue magic.
             //The target box does show up in game so I imagine the target data is in there somewhere.
-            Kernel.Target t = c.Target;
+            var t = c.Target;
             SelectTargetWindows(t);
             Command = Memory.Kernel_Bin.BattleCommands[15];
             BlueMagic = c;
@@ -268,8 +268,8 @@ namespace OpenVIII.IGMData.Target
 
             bool Command01_ATTACK()
             {
-                NeededVariables(out Damageable[] d);
-                if (EnemyAttack != null && Damageable.GetEnemy(out Enemy e))
+                NeededVariables(out var d);
+                if (EnemyAttack != null && Damageable.GetEnemy(out var e))
                 {
                     Debug.WriteLine($"{Damageable.Name} uses {EnemyAttack.Name}({EnemyAttack.MagicID}) enemy attack on { DebugMessageSuffix(d) }");
                 }
@@ -279,7 +279,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command02_MAGIC()
             {
-                NeededVariables(out Damageable[] d, Magic.PositiveMagic);
+                NeededVariables(out var d, Magic.PositiveMagic);
                 Debug.WriteLine($"{Damageable.Name} casts {Magic.Name}({Magic.MagicDataID}) spell on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return true;
@@ -289,7 +289,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command04_ITEM()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 Debug.WriteLine($"{Damageable.Name} uses {Item.Name}({Item.ID}) item on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return true;
@@ -297,22 +297,22 @@ namespace OpenVIII.IGMData.Target
 
             bool Command05_RENZOKUKEN()
             {
-                NeededVariables(out Damageable[] d);
-                if (d.First().GetType() == typeof(Enemy) && Damageable.GetCharacterData(out Saves.CharacterData c))
+                NeededVariables(out var d);
+                if (d.First().GetType() == typeof(Enemy) && Damageable.GetCharacterData(out var c))
                 {
-                    Saves.CharacterData squall = Memory.State[Characters.Squall_Leonhart];
+                    var squall = Memory.State[Characters.Squall_Leonhart];
                     //Renzokuken
-                    byte weaponid = squall.WeaponID;
-                    int hits = 0;
+                    var weaponid = squall.WeaponID;
+                    var hits = 0;
                     if (c.CurrentCrisisLevel > 0)
                         hits = c.CurrentCrisisLevel < Renzokuken_hits.Length ? Renzokuken_hits[c.CurrentCrisisLevel] : Renzokuken_hits.Last();
                     //else return false;
                     else hits = Renzokuken_hits.First();
-                    int finisherchance = (c.CurrentCrisisLevel + 1) * 60;
-                    bool willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
-                    int choosefinish = Memory.Random.Next(3 + 1);
-                    Kernel.WeaponsData weapondata = Memory.Kernel_Bin.WeaponsData[weaponid];
-                    Kernel.RenzokukenFinisher renzokekenfinisher = weapondata.Renzokuken;
+                    var finisherchance = (c.CurrentCrisisLevel + 1) * 60;
+                    var willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
+                    var choosefinish = Memory.Random.Next(3 + 1);
+                    var weapondata = Memory.Kernel_Bin.WeaponsData[weaponid];
+                    var renzokekenfinisher = weapondata.Renzokuken;
                     if (renzokekenfinisher == 0)
                         willfinish = false;
 
@@ -327,11 +327,11 @@ namespace OpenVIII.IGMData.Target
                     Menu.BattleMenus.GetCurrentBattleMenu().Renzokeken.Show();
                     if (willfinish)
                     {
-                        List<Kernel.RenzokukenFinisher> flags = Enum.GetValues(typeof(Kernel.RenzokukenFinisher))
+                        var flags = Enum.GetValues(typeof(Kernel.RenzokukenFinisher))
                             .Cast<Kernel.RenzokukenFinisher>()
                             .Where(f => (f & renzokekenfinisher) != 0)
                             .ToList();
-                        Kernel.RenzokukenFinisher finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
+                        var finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
                         Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.BattleID}) then uses {Memory.Kernel_Bin.RenzokukenFinishersData[finisher].Name}.");
                     }
                     else
@@ -342,12 +342,12 @@ namespace OpenVIII.IGMData.Target
 
             bool Command06_DRAW()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 //draw
                 //spawn a 1 page 4 row pool of the magic/gfs that the selected enemy has.
                 if (d.First().GetType() == typeof(Enemy))
                 {
-                    Enemy e = (Enemy)d.First();
+                    var e = (Enemy)d.First();
                     DrawMagic(e.DrawList);
                     Draw_Pool.Refresh(e.DrawList);
                     Draw_Pool.Show();
@@ -357,7 +357,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command07_DEVOUR()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 //TODO add devour commands
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -373,7 +373,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command11_DUEL()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -383,12 +383,12 @@ namespace OpenVIII.IGMData.Target
 
             bool Command12_MUG()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 if (d.First().GetType() == typeof(Enemy))
                 {
-                    Enemy e = (Enemy)d.First();
+                    var e = (Enemy)d.First();
                     //unsure if party member being ejected or if they need to be in the party for rare item to work
-                    Saves.Item i = e.Mug(Damageable.SPD, Memory.State.PartyHasAbility(Kernel.Abilities.RareItem));
+                    var i = e.Mug(Damageable.SPD, Memory.State.PartyHasAbility(Kernel.Abilities.RareItem));
                     Debug.WriteLine($"{Damageable.Name} stole {i.Data?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(d) }");
                 }
                 EndTurn();
@@ -399,7 +399,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command14_SHOT()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Menu.BattleMenus.GetCurrentBattleMenu().Shot.Refresh(Item,d);
                 Menu.BattleMenus.GetCurrentBattleMenu().Shot.Show();
@@ -410,7 +410,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command15_BLUE_MAGIC()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 Debug.WriteLine($"{Damageable.Name} casts {BlueMagic.Name}({BlueMagic.BlueMagic}) spell on { DebugMessageSuffix(d) }");
                 EndTurn();
                 return false;
@@ -420,7 +420,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command17_FIRE_CROSS_NO_MERCY()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -430,7 +430,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command18_SORCERY_ICE_STRIKE()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -441,7 +441,7 @@ namespace OpenVIII.IGMData.Target
             bool Command19_COMBINE()
             {
                 //perform angelo attack unless angel wing is unlocked and chosen in menu.
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {CombineKernelItem.Name}({CombineKernelItem.ID}) - Combine Limit Break on { DebugMessageSuffix(d) }");
 
@@ -452,7 +452,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command20_DESPERADO()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -462,7 +462,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command21_BLOOD_PAIN()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -472,7 +472,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command22_MASSIVE_ANCHOR()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -484,7 +484,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command24_MADRUSH()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -494,7 +494,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command25_TREATMENT()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -504,7 +504,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command26_RECOVERY()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -514,7 +514,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command27_REVIVE()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -523,18 +523,18 @@ namespace OpenVIII.IGMData.Target
             }
             bool Command28_DARKSIDE()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 EndTurn();
                 return true;
             }
 
             bool Command29_CARD()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 if (d.First().GetType() == typeof(Enemy))
                 {
-                    Enemy e = (Enemy)d.First();
-                    Cards.ID c = e.Card();
+                    var e = (Enemy)d.First();
+                    var c = e.Card();
                     if (c == Cards.ID.Fail)
 
                         Debug.WriteLine($"{Damageable.Name} Failed to use {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
@@ -549,14 +549,14 @@ namespace OpenVIII.IGMData.Target
 
             bool Command30_DOOM()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
                 EndTurn();
                 return true;
             }
 
             bool Command31_KAMIKAZI()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -566,7 +566,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command32_ABSORB()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -576,7 +576,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command33_LVL_DOWN()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -586,7 +586,7 @@ namespace OpenVIII.IGMData.Target
 
             bool Command34_LVL_UP()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -609,7 +609,7 @@ namespace OpenVIII.IGMData.Target
             }
             bool Command38_MINIMOG()
             {
-                NeededVariables(out Damageable[] d);
+                NeededVariables(out var d);
 
                 Debug.WriteLine($"{Damageable.Name} used {Command.Name}({Command.BattleID}) on { DebugMessageSuffix(d) }");
                 EndTurn();
@@ -630,8 +630,8 @@ namespace OpenVIII.IGMData.Target
 
         private string DamageableNames(Damageable[] e)
         {
-            string r = $"[{e[0].Name}";
-            for (int j = 1; j < e.Length; j++)
+            var r = $"[{e[0].Name}";
+            for (var j = 1; j < e.Length; j++)
                 r += $", {e[j]}";
             r += "]";
             return r;
@@ -653,12 +653,12 @@ namespace OpenVIII.IGMData.Target
         {
             Damageable[] e = null;
             Damageable[] vc = null;
-            IEnumerable<Saves.CharacterData> party = Memory.State.Party.Where(x => x != Characters.Blank).Select(y => Memory.State[y]);
+            var party = Memory.State.Party.Where(x => x != Characters.Blank).Select(y => Memory.State[y]);
             if (Target.HasFlag(Kernel.Target.SingleTarget))
             {
                 if (TargetEnemies.Enabled && TargetParty.Enabled && RandomTarget.Single && RandomTarget.Side)
                 {
-                    List<Damageable> CombinedTargets = new List<Damageable>();
+                    var CombinedTargets = new List<Damageable>();
 
                     if (RandomTarget.PositiveMatters)
                     {
@@ -672,7 +672,7 @@ namespace OpenVIII.IGMData.Target
                         CombinedTargets.AddRange(Enemy.Party);
                         CombinedTargets.AddRange(party);
                     }
-                    Damageable rand = CombinedTargets.Random();
+                    var rand = CombinedTargets.Random();
                     if (typeof(Enemy).Equals(rand.GetType()))
                     {
                         e = new Damageable[] { rand };
@@ -721,8 +721,8 @@ namespace OpenVIII.IGMData.Target
                         }
                 }
             }
-            Characters c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
-            Damageable fromc = Menu.BattleMenus.GetDamageable();
+            var c = Memory.State.PartyData.Where(x => x != Characters.Blank).ToList()[TargetParty.CURSOR_SELECT];
+            var fromc = Menu.BattleMenus.GetDamageable();
             //fromvc = Memory.State.Party.Where(x => x != Characters.Blank).ToList()[p];
             if (RandomTarget.PositiveMatters)
             {
@@ -765,7 +765,7 @@ namespace OpenVIII.IGMData.Target
                 else
                     i.Cursor_Status |= Cursor_Status.All;
             }
-            if (Damageable.GetEnemy(out Enemy e))
+            if (Damageable.GetEnemy(out var e))
             {
                 if (TargetEnemies.Enabled == (TargetParty.Enabled == true))
                 {

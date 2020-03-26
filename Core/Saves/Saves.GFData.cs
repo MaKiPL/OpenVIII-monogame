@@ -123,7 +123,7 @@ namespace OpenVIII
                 {
                     if (
                         Memory.Kernel_Bin.JunctionableGFsData != null &&
-                        Memory.Kernel_Bin.JunctionableGFsData.TryGetValue(ID, out Kernel.JunctionableGFsData value))
+                        Memory.Kernel_Bin.JunctionableGFsData.TryGetValue(ID, out var value))
                     {
                         return value;
                     }
@@ -143,10 +143,10 @@ namespace OpenVIII
             {
                 get
                 {
-                    Kernel.JunctionableGFsData junctionableGFsData = JunctionableGFsData;
+                    var junctionableGFsData = JunctionableGFsData;
                     if (junctionableGFsData != null)
                     {
-                        uint ret = (Experience / junctionableGFsData.ExpPerLevel) + 1;
+                        var ret = (Experience / junctionableGFsData.ExpPerLevel) + 1;
                         return ret > 100 ? (byte)100 : (byte)ret;
                     }
                     return 0;
@@ -171,8 +171,8 @@ namespace OpenVIII
             {
                 get
                 {
-                    int p = 0;
-                    List<Kernel.Abilities> unlocked = UnlockedAbilities;
+                    var p = 0;
+                    var unlocked = UnlockedAbilities;
                     if (unlocked.Contains(Kernel.Abilities.GFHP10))
                         p += 10;
                     if (unlocked.Contains(Kernel.Abilities.GFHP20))
@@ -189,8 +189,8 @@ namespace OpenVIII
             {
                 get
                 {
-                    if (Memory.State.JunctionedGFs().TryGetValue(ID, out Characters c) &&
-                        Memory.State[c].CompatibilityWithGFs.TryGetValue(ID, out Saves.CompatibilitywithGF value))
+                    if (Memory.State.JunctionedGFs().TryGetValue(ID, out var c) &&
+                        Memory.State[c].CompatibilityWithGFs.TryGetValue(ID, out var value))
                     {
                         return value;
                     }
@@ -211,8 +211,8 @@ namespace OpenVIII
             {
                 get
                 {
-                    List<Kernel.Abilities> abilities = new List<Kernel.Abilities>();
-                    for (int i = 1; Complete != null && i < Complete.Length; i++)//0 is none so skipping it.
+                    var abilities = new List<Kernel.Abilities>();
+                    for (var i = 1; Complete != null && i < Complete.Length; i++)//0 is none so skipping it.
                     {
                         if (Complete[i])
                             abilities.Add((Kernel.Abilities)i);
@@ -236,7 +236,7 @@ namespace OpenVIII
             public override Damageable Clone()
             {
                 //Shadowcopy
-                GFData c = (GFData)MemberwiseClone();
+                var c = (GFData)MemberwiseClone();
                 //Deepcopy
                 c.Name = Name.Clone();
                 c.Complete = (BitArray)(Complete.Clone());
@@ -247,7 +247,7 @@ namespace OpenVIII
 
             public bool EarnExp(uint ap, out Kernel.Abilities ability)
             {
-                bool ret = false;
+                var ret = false;
                 ability = Kernel.Abilities.None;
 
                 if (!IsGameOver)
@@ -257,8 +257,8 @@ namespace OpenVIII
                     Experience += ap;
                     if (!Learning.Equals(Kernel.Abilities.None) && Memory.Kernel_Bin.AllAbilities.ContainsKey(Learning))
                     {
-                        byte ap_tolearn = Memory.Kernel_Bin.AllAbilities[Learning].AP;
-                        if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out int ind) && TestGFCanLearn(Learning, false))
+                        var ap_tolearn = Memory.Kernel_Bin.AllAbilities[Learning].AP;
+                        if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out var ind) && TestGFCanLearn(Learning, false))
                         {
                             if (ap_tolearn < APs[ind] + ap)
                             {
@@ -305,10 +305,10 @@ namespace OpenVIII
             /// </summary>
             public override ushort MaxHP()
             {
-                Kernel.JunctionableGFsData junctionableGFsData = JunctionableGFsData;
+                var junctionableGFsData = JunctionableGFsData;
                 if (junctionableGFsData != null)
                 {
-                    int max = ((Level * Level / 25) + 250 + junctionableGFsData.HPMod * Level) * (Percent + 100) / 100;
+                    var max = ((Level * Level / 25) + 250 + junctionableGFsData.HPMod * Level) * (Percent + 100) / 100;
                     return (ushort)(max > Kernel.KernelBin.MaxHPValue ? Kernel.KernelBin.MaxHPValue : max);
                 }
                 return 0;
@@ -321,8 +321,8 @@ namespace OpenVIII
             /// <param name="ability">If null sets to first in learnable list</param>
             public void SetLearning(Kernel.Abilities? _ability = null)
             {
-                Kernel.Abilities a = _ability ?? Kernel.Abilities.None;
-                bool _set = false;
+                var a = _ability ?? Kernel.Abilities.None;
+                var _set = false;
                 if (a == Kernel.Abilities.None)
                 {
                     foreach (KeyValuePair<Kernel.Abilities, Kernel.Unlocker> kvp in JunctionableGFsData.Ability)
@@ -367,7 +367,7 @@ namespace OpenVIII
 
             public bool UnlockerTest(Kernel.Abilities a)
             {
-                if (JunctionableGFsData.Ability.TryGetByKey(a, out Kernel.Unlocker u))
+                if (JunctionableGFsData.Ability.TryGetByKey(a, out var u))
                 {
                     return UnlockerTest(u);
                 }
@@ -388,7 +388,7 @@ namespace OpenVIII
                 else
                 {
                     int ind = (u - Kernel.Unlocker.GFLevel100);
-                    if (JunctionableGFsData.Ability.TryGetKeyByIndex(ind, out Kernel.Abilities key))
+                    if (JunctionableGFsData.Ability.TryGetKeyByIndex(ind, out var key))
                         return Complete[(int)key];
                     else
                         return false;

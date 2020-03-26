@@ -67,7 +67,7 @@ namespace OpenVIII
                 level = br.ReadByte();
                 current_hp = br.ReadByte();
                 max_hp = br.ReadByte();
-                ushort tmp = br.ReadUInt16();// 4 bit = 1 weapon
+                var tmp = br.ReadUInt16();// 4 bit = 1 weapon
                 weapon = new byte[4];
                 weapon[0] = (byte)(tmp & 0x000F);
                 weapon[1] = (byte)((tmp & 0x00F0)>>4);     

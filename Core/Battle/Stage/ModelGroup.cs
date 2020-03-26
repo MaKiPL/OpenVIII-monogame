@@ -63,12 +63,12 @@ namespace OpenVIII.Battle
             public static ModelGroup Read(uint pointer, BinaryReader br)
             {
                 br.BaseStream.Seek(pointer, SeekOrigin.Begin);
-                int modelsCount = br.ReadInt32();
-                ModelGroup models = new ModelGroup(modelsCount);
-                uint[] modelPointers = new uint[modelsCount];
-                for (int i = 0; i < modelsCount; i++)
+                var modelsCount = br.ReadInt32();
+                var models = new ModelGroup(modelsCount);
+                var modelPointers = new uint[modelsCount];
+                for (var i = 0; i < modelsCount; i++)
                     modelPointers[i] = pointer + br.ReadUInt32();
-                for (int i = 0; i < modelsCount; i++)
+                for (var i = 0; i < modelsCount; i++)
                     models.models.Add(Model.Read(modelPointers[i], br));
                 return models;
             }

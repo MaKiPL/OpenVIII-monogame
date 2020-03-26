@@ -19,7 +19,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static GF Create(Rectangle? pos = null, Damageable damageable = null, bool battle = false)
         {
-            GF r = new GF
+            var r = new GF
             {
                 Count = 5,
                 Depth = 3,
@@ -65,18 +65,18 @@ namespace OpenVIII.IGMData.Pool
                 skipsnd = true;
                 AV.Sound.Play(31);
                 base.Inputs_OKAY();
-                GFs select = Contents[CURSOR_SELECT];
-                Characters characterID = Damageable.GetCharacterData(out Saves.CharacterData characterData) && JunctionedGFs.ContainsKey(select) ?
+                var select = Contents[CURSOR_SELECT];
+                var characterID = Damageable.GetCharacterData(out var characterData) && JunctionedGFs.ContainsKey(select) ?
                     JunctionedGFs[select] : characterData?.ID ?? Characters.Blank;
 
                 if (characterID == Characters.Blank) return false;
                 if (characterData != null && characterID == characterData.ID)
                 {
                     //Purge everything that you can't have anymore. Because the GF provided for you.
-                    List<Abilities> a = (characterData).UnlockedGFAbilities;
+                    var a = (characterData).UnlockedGFAbilities;
                     characterData.RemoveJunctionedGF(select);
-                    List<Abilities> b = (characterData).UnlockedGFAbilities;
-                    foreach (Abilities r in a.Except(b).Where(v => !Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
+                    var b = (characterData).UnlockedGFAbilities;
+                    foreach (var r in a.Except(b).Where(v => !Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
                     {
                         if (Memory.Kernel_Bin.CommandAbilities.ContainsKey(r))
                         {
@@ -90,7 +90,7 @@ namespace OpenVIII.IGMData.Pool
                         }
                     }
 
-                    foreach (Abilities r in a.Except(b).Where(v => Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
+                    foreach (var r in a.Except(b).Where(v => Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
                     {
                         if (Kernel.KernelBin.Stat2Ability.Any(item => item.Value == r))
                             switch (r)
@@ -483,9 +483,9 @@ namespace OpenVIII.IGMData.Pool
             ((IGMDataItem.Icon)ITEM[Rows, 2]).Data = Battle ? Icons.ID.HP : Icons.ID.Size_16x08_Lv_;
             if (Damageable != null)
             {
-                int pos = 0;
-                int skip = Page * Rows;
-                if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                var pos = 0;
+                var skip = Page * Rows;
+                if (Damageable.GetCharacterData(out var c))
                 {
                     if (Battle)
                     {
@@ -500,10 +500,10 @@ namespace OpenVIII.IGMData.Pool
                         UpdateCharacter();
                     }
                 }
-                else if (Damageable.GetEnemy(out Enemy e))
+                else if (Damageable.GetEnemy(out var e))
                 {
-                    IEnumerable<GFs> gfs = e.JunctionedGFs;
-                    foreach (GFs g in gfs)
+                    var gfs = e.JunctionedGFs;
+                    foreach (var g in gfs)
                     {
                         if (!AddGF(ref pos, ref skip, g, Source[g].IsDead ? Font.ColorID.Red : Font.ColorID.White, Source[g].IsDead)) break;
                     }
@@ -542,7 +542,7 @@ namespace OpenVIII.IGMData.Pool
                 Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - (Battle ? 50 : 30), SIZE[Rows].Y, 0, 0),
                 Scale = new Vector2(2.5f)
             };
-            for (int i = 0; i < Rows;)
+            for (var i = 0; i < Rows;)
                 AddGF(ref i, GFs.Blank);
         }
 
@@ -619,7 +619,7 @@ namespace OpenVIII.IGMData.Pool
 
         private void AddGFs(ref int pos, ref int skip, System.Func<GFs, bool> predicate, Font.ColorID colorID = Font.ColorID.White, bool blank = false)
         {
-            foreach (GFs g in UnlockedGFs.Where(predicate))
+            foreach (var g in UnlockedGFs.Where(predicate))
             {
                 if (!AddGF(ref pos, ref skip, g, colorID, blank)) break;
             }
@@ -648,8 +648,8 @@ namespace OpenVIII.IGMData.Pool
         {
             if (!Battle && Menu.IGM_Junction != null)
             {
-                GFs g = Contents[CURSOR_SELECT];
-                IGMDataItem.Box i =
+                var g = Contents[CURSOR_SELECT];
+                var i =
                     (IGMDataItem.Box)((IGM_Junction.IGMData_GF_Group)Menu.IGM_Junction.Data[IGM_Junction.SectionName.TopMenu_GF_Group]).ITEM[2, 0];
                 i.Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
             }

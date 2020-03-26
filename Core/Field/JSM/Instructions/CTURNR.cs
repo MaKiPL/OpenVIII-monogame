@@ -39,10 +39,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
 
-            Degrees degrees = Degrees.FromAngle256(_angle.Int32(services));
-            Int32 frameDuration = _frameDuration.Int32(services);
+            var degrees = Degrees.FromAngle256(_angle.Int32(services));
+            var frameDuration = _frameDuration.Int32(services);
             currentObject.Model.Rotate(degrees, frameDuration);
 
             return DummyAwaitable.Instance;

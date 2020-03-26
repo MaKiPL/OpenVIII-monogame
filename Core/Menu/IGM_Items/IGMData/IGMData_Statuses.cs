@@ -92,17 +92,17 @@ namespace OpenVIII
                 if ((e == Faces.ID.Blank && Target != Faces.ID.Blank) || All)
                 {
                     Target = e;
-                    foreach (Menu_Base i in ITEM)
+                    foreach (var i in ITEM)
                         i?.Hide();
                 }
                 else
                 {
                     if (Target == Faces.ID.Blank)
-                        foreach (Menu_Base i in ITEM)
+                        foreach (var i in ITEM)
                             i?.Show();
                     Target = e;
-                    Characters character = e.ToCharacters();
-                    GFs gf = e.ToGFs();
+                    var character = e.ToCharacters();
+                    var gf = e.ToGFs();
                     if (character != Characters.Blank || (gf != GFs.Blank && gf != GFs.All))
                     {
                         ITEM[0, 0] = new IGMDataItem.Text { Data = Strings.Name.LV, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, 0, 0) };

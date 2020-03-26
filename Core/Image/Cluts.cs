@@ -77,15 +77,15 @@ namespace OpenVIII
         byte MaxClut => Keys.Max(x => x);
         public void Save(string path)
         {
-            using (Texture2D clutTexture = new Texture2D(Memory.graphics.GraphicsDevice, MaxColors, MaxClut+1))
+            using (var clutTexture = new Texture2D(Memory.graphics.GraphicsDevice, MaxColors, MaxClut+1))
             {
                 foreach(var _Y_Colors in Clut.OrderBy(x=>x.Key))
                 {
-                    Color[] colors = _Y_Colors.Value;
-                    byte y = _Y_Colors.Key;
+                    var colors = _Y_Colors.Value;
+                    var y = _Y_Colors.Key;
                     clutTexture.SetData(0, new Rectangle(0, y, colors.Length, 1), colors, 0, colors.Length);
                 }
-                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
                     clutTexture.SaveAsPng(fs, clutTexture.Width, clutTexture.Height);
             }
         }

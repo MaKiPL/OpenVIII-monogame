@@ -16,7 +16,7 @@ namespace OpenVIII.Fields
 
         public void Enqueue(T value, Int32 priority = 0)
         {
-            Item item = new Item(value, priority);
+            var item = new Item(value, priority);
 
             if (_list.Count == 0)
             {
@@ -24,8 +24,8 @@ namespace OpenVIII.Fields
                 return;
             }
 
-            Int32 first = _list.First.Value.Priority;
-            Int32 last = _list.Last.Value.Priority;
+            var first = _list.First.Value.Priority;
+            var last = _list.Last.Value.Priority;
 
             if (Math.Abs(first - priority) < Math.Abs(last - priority))
             {
@@ -81,8 +81,8 @@ namespace OpenVIII.Fields
             if (_list.Count == 0)
                 return false;
 
-            Int32 first = _list.First.Value.Priority;
-            Int32 last = _list.Last.Value.Priority;
+            var first = _list.First.Value.Priority;
+            var last = _list.Last.Value.Priority;
 
             if (Math.Abs(first - priority) < Math.Abs(last - priority))
             {

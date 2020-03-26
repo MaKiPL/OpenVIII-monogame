@@ -25,11 +25,11 @@ namespace OpenVIII.Fields
 
         public MrtRat(byte[] mrtB, byte[] ratB)
         {
-            ushort[] mrt = new ushort[4];
-            using (BinaryReader br = new BinaryReader(new MemoryStream(mrtB)))
-                foreach (int i in Enumerable.Range(0, mrt.Length))
+            var mrt = new ushort[4];
+            using (var br = new BinaryReader(new MemoryStream(mrtB)))
+                foreach (var i in Enumerable.Range(0, mrt.Length))
                     mrt[i] = br.ReadUInt16();
-            using (BinaryReader br = new BinaryReader(new MemoryStream(ratB)))
+            using (var br = new BinaryReader(new MemoryStream(ratB)))
                 _mrtrat = mrt.Distinct().ToDictionary(x => x, x => br.ReadByte());
         }
 

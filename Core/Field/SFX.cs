@@ -14,9 +14,9 @@ namespace OpenVIII.Fields
         public SFX(byte[] sfxB)
         {
             if (sfxB == null || sfxB.Length < 4) return;
-            List<uint> sndIDs = new List<uint>(sfxB.Length / 4);
+            var sndIDs = new List<uint>(sfxB.Length / 4);
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(sfxB)))
+            using (var br = new BinaryReader(ms = new MemoryStream(sfxB)))
                 while (ms.Position < ms.Length)
                     sndIDs.Add(br.ReadUInt32());
             _sndIDs = sndIDs.AsReadOnly();

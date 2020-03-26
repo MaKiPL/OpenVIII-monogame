@@ -19,11 +19,11 @@ namespace OpenVIII
         public texl(byte[] texlBuffer)
         {
             textures = new TextureHandler[20][];
-            using (BinaryReader br = new BinaryReader(new MemoryStream(texlBuffer)))
-            for (int i = 0; i < TEX_COUNT; i++)
+            using (var br = new BinaryReader(new MemoryStream(texlBuffer)))
+            for (var i = 0; i < TEX_COUNT; i++)
             {
-                    int timOffset = i * TEX_SIZE;
-                    TIM2 tim = new TIM2(texlBuffer, (uint)timOffset);
+                    var timOffset = i * TEX_SIZE;
+                    var tim = new TIM2(texlBuffer, (uint)timOffset);
                     textures[i] = new TextureHandler[tim.GetClutCount];
                     for (ushort k = 0; k < textures[i].Length; k++)
                         textures[i][k] = TextureHandler.Create($"texl_tim{(i + 1).ToString("D2")}.tim", tim, k, null);

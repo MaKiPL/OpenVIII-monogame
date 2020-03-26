@@ -25,7 +25,7 @@ namespace OpenVIII
 
         public OrderedDictionary(IDictionary<TKey, TValue> copy) : this(copy.Count)
         {
-            foreach (KeyValuePair<TKey, TValue> pair in copy)
+            foreach (var pair in copy)
             {
                 Add(new KeyValuePair<TKey, TValue>(pair.Key, pair.Value));
             }
@@ -54,7 +54,7 @@ namespace OpenVIII
         {
             get
             {
-                if (TryGetKVPByIndex(index, out KeyValuePair<TKey, TValue> kvp))
+                if (TryGetKVPByIndex(index, out var kvp))
                     return kvp;
                 throw new KeyNotFoundException($"{this}::Index:{index} - Not Found!");
             }
@@ -64,13 +64,13 @@ namespace OpenVIII
         {
             get
             {
-                if (TryGetByKey(key, out TValue value))
+                if (TryGetByKey(key, out var value))
                     return value;
                 throw new KeyNotFoundException($"{this}::Key:{key} - Not Found!");
             }
             set
             {
-                int index = _list.FindIndex(kvp => kvp.Key.Equals(key));
+                var index = _list.FindIndex(kvp => kvp.Key.Equals(key));
                 if (index >= 0)
                     _list[index] = new KeyValuePair<TKey, TValue>(key, value);
                 else
@@ -109,7 +109,7 @@ namespace OpenVIII
         {
             if (Count <= array.Length + arrayIndex)
             {
-                foreach (KeyValuePair<TKey, TValue> i in _list)
+                foreach (var i in _list)
                 {
                     array[arrayIndex++] = i;
                 }
@@ -122,7 +122,7 @@ namespace OpenVIII
 
         public bool Remove(TKey key)
         {
-            KeyValuePair<TKey, TValue> kvp = _list.First(_kvp => _kvp.Key.Equals(key));
+            var kvp = _list.First(_kvp => _kvp.Key.Equals(key));
             return _list.Remove(kvp);
         }
 

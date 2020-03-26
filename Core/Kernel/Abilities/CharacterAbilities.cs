@@ -40,7 +40,7 @@ namespace OpenVIII.Kernel
             //0x0004  1 byte
             AP = br.ReadByte();
             //0x0005  3 byte
-            byte[] tmp = br.ReadBytes(3);
+            var tmp = br.ReadBytes(3);
             Flags = (CharacterAbilityFlags)(tmp[2] << (16) | tmp[1] << (8) | tmp[0]);
         }
 

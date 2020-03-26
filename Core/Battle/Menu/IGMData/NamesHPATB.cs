@@ -90,9 +90,9 @@ namespace OpenVIII.IGMData
             {
                 if (Memory.IsMainThread)
                 {
-                    Texture2D localdot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
-                    Color[] tmp = new Color[localdot.Height * localdot.Width];
-                    for (int i = 0; i < tmp.Length; i++)
+                    var localdot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
+                    var tmp = new Color[localdot.Height * localdot.Width];
+                    for (var i = 0; i < tmp.Length; i++)
                         tmp[i] = Color.White;
                     localdot.SetData(tmp);
                     dot = localdot;
@@ -131,18 +131,18 @@ namespace OpenVIII.IGMData
         {
             if (Damageable != null)
             {
-                if (Memory.State?.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State?.Characters != null && Damageable.GetCharacterData(out var c))
                 {
-                    List<KeyValuePair<int, Characters>> party = GetParty();
+                    var party = GetParty();
                     if (GetCharPos(party) == 0xFF) return;
                 }
                 else
                 {
                 }
-                sbyte pos = PartyPos;
-                Rectangle rectangle = SIZE[0];
+                var pos = PartyPos;
+                var rectangle = SIZE[0];
                 rectangle.Offset(0f, SIZE[0].Height * pos);
-                Rectangle atbbarpos = new Rectangle(rectangle.X + 230, rectangle.Y + 12, ATBWidth, 15);
+                var atbbarpos = new Rectangle(rectangle.X + 230, rectangle.Y + 12, ATBWidth, 15);
                 ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Pos = atbbarpos;
                 ((IGMDataItem.Texture)ITEM[0, (byte)DepthID.ATBCharged]).Pos = atbbarpos;
                 ((IGMDataItem.Icon)ITEM[0, (byte)DepthID.ATBBorder]).Pos = atbbarpos;
@@ -174,8 +174,8 @@ namespace OpenVIII.IGMData
                     EventAdded = true;
                     Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
                 }
-                bool blink = false;
-                bool charging = false;
+                var blink = false;
+                var charging = false;
                 BattleMode = (Damageable.BattleMode)Damageable.GetBattleMode();
 
                 ITEM[0, (byte)DepthID.HP].Show();
@@ -227,13 +227,13 @@ namespace OpenVIII.IGMData
         {
             if (ITEM[0, 2].GetType() == typeof(IGMDataItem.Gradient.ATB))
             {
-                IGMDataItem.Gradient.ATB hg = (IGMDataItem.Gradient.ATB)ITEM[0, 2];
+                var hg = (IGMDataItem.Gradient.ATB)ITEM[0, 2];
             }
             if (Damageable != null)
             {
                 int HP = Damageable.CurrentHP();
                 int CriticalHP = Damageable.CriticalHP();
-                Font.ColorID colorid = Font.ColorID.White;
+                var colorid = Font.ColorID.White;
                 if (HP < CriticalHP)
                 {
                     colorid = Font.ColorID.Yellow;
@@ -255,7 +255,7 @@ namespace OpenVIII.IGMData
             Memory.MainThreadOnlyActions.Enqueue(ThreadUnsafeOperations);
 
             // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
-            Rectangle atbbarpos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);
+            var atbbarpos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);
             ITEM[0, (byte)DepthID.Name] = new IGMDataItem.Text { };
             ITEM[0, (byte)DepthID.HP] = new IGMDataItem.Integer { Spaces = 4, NumType = Icons.NumType.Num8X16A };
             ITEM[0, (byte)DepthID.GFHPBox] = new IGMDataItem.Box { Options = Box_Options.Right | Box_Options.Middle };
@@ -283,8 +283,8 @@ namespace OpenVIII.IGMData
 
         private byte GetCharPos(List<KeyValuePair<int, Characters>> party)
         {
-            int i = -1;
-            if (party != null && (i = party.FindIndex(x => Damageable.GetCharacterData(out Saves.CharacterData c) && x.Value == c.ID)) > -1)
+            var i = -1;
+            if (party != null && (i = party.FindIndex(x => Damageable.GetCharacterData(out var c) && x.Value == c.ID)) > -1)
                 return checked((byte)i);
             return 0xFF;
         }

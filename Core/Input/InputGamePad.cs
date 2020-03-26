@@ -83,7 +83,7 @@ namespace OpenVIII
 
                     case GamePadButtons.ThumbSticks_Right:
                     case GamePadButtons.RightStick:
-                        Vector2 right = _state.ThumbSticks.Right;
+                        var right = _state.ThumbSticks.Right;
                         if (Math.Abs(right.X) < 0.09f) //deadzone
                             right.X = 0;
                         return right;
@@ -120,9 +120,9 @@ namespace OpenVIII
 
         private bool Press(GamePadButtons k, GamePadState _state)
         {
-            ButtonState bs = Translate_Button(k, _state);
-            float ts = Translate_Trigger(k, _state);
-            Vector2 ss = Translate_Stick(k, _state);
+            var bs = Translate_Button(k, _state);
+            var ts = Translate_Trigger(k, _state);
+            var ss = Translate_Stick(k, _state);
             if ((ss != Vector2.Zero) ||
                 (ts != 0f) ||
                 (bs == ButtonState.Pressed))
@@ -151,7 +151,7 @@ namespace OpenVIII
 
         protected FF8String ButtonString(Iap i)
         {
-            short id = (short)i.id;
+            var id = (short)i.id;
             return new FF8String(new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.CustomICON, (byte)(id & 0xFF), (byte)((id & 0xFF00) >> 8), i.palette });
         }
 
@@ -220,10 +220,10 @@ namespace OpenVIII
         {
             if (test != null && test.GamePadButton != GamePadButtons.None)
             {
-                bool combotest = false;
+                var combotest = false;
                 if (test.Combo != null)
                 {
-                    foreach (InputButton item in test.Combo)
+                    foreach (var item in test.Combo)
                     {
                         item.Trigger = ButtonTrigger.Press;
                         if (!base.ButtonTriggered(item))
@@ -233,7 +233,7 @@ namespace OpenVIII
                     }
                     combotest = true;
                 }
-                ButtonTrigger triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
+                var triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
                 return ((test.Combo == null || combotest) &&
                     ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.GamePadButton)) ||
                     ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.GamePadButton)) ||

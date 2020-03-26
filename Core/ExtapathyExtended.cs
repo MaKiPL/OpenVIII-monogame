@@ -22,13 +22,13 @@ namespace OpenVIII
                 if (count > 16)
                     throw new ArgumentException();
 
-                long position = Position;
-                int byte1 = BaseStream.ReadByte();
-                int byte2 = BaseStream.ReadByte();
-                int byte3 = BaseStream.ReadByte();
-                int temp = byte1 | byte2 << 8 | byte3 << 16;
+                var position = Position;
+                var byte1 = BaseStream.ReadByte();
+                var byte2 = BaseStream.ReadByte();
+                var byte3 = BaseStream.ReadByte();
+                var temp = byte1 | byte2 << 8 | byte3 << 16;
                 temp = (short)((temp >> _bitPosition) & ~(0xFFFFFFFF << count));
-                short value = (short)((temp << (32 - count)) >> (32 - count));
+                var value = (short)((temp << (32 - count)) >> (32 - count));
 
                 Position = position + (count + _bitPosition) / 8;
                 _bitPosition = (count + _bitPosition) % 8;
@@ -38,7 +38,7 @@ namespace OpenVIII
 
             public short ReadPositionType()
             {
-                int countIndex = ReadBits(2) & 3;
+                var countIndex = ReadBits(2) & 3;
                 return ReadBits(PositionReadHelper[countIndex]);
             }
 
@@ -49,12 +49,12 @@ namespace OpenVIII
 
             public short ReadRotationType()
             {
-                bool readRotation = (ReadBits(1) & 1) != 0;
+                var readRotation = (ReadBits(1) & 1) != 0;
 
                 if (!readRotation)
                     return 0;
 
-                int countIndex = ReadBits(2) & 3;
+                var countIndex = ReadBits(2) & 3;
                 return ReadBits(RotationReadHelper[countIndex]);
             }
         }

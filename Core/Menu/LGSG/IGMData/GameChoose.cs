@@ -32,7 +32,7 @@ namespace OpenVIII
 
             public static GameChoose Create(Rectangle pos)
             {
-                GameChoose r = Create<GameChoose>(30, 1, new IGMDataItem.Empty { Pos = pos }, 3, 10);
+                var r = Create<GameChoose>(30, 1, new IGMDataItem.Empty { Pos = pos }, 3, 10);
                 return r;
             }
 
@@ -40,7 +40,7 @@ namespace OpenVIII
             {
                 if (Input2.DelayedButton(FF8TextTagKey.RotateLeft) || Input2.DelayedButton(FF8TextTagKey.RotateRight))
                 {
-                    IGM_LGSG.Mode mode = (IGM_LGSG.Mode)Menu.IGM_LGSG.GetMode();
+                    var mode = (IGM_LGSG.Mode)Menu.IGM_LGSG.GetMode();
                     AV.Sound.Play(0);
                     mode ^= IGM_LGSG.Mode.Slot1;
                     mode ^= IGM_LGSG.Mode.Slot2;
@@ -62,7 +62,7 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                Saves.Data save = Contents[CURSOR_SELECT];
+                var save = Contents[CURSOR_SELECT];
                 if (save != null && save.Characters != null)
                 {
                     base.Inputs_OKAY();
@@ -93,9 +93,9 @@ namespace OpenVIII
                             Slot = 0;
                         else
                             Slot = 1;
-                        int total = Count - ExtraCount;
+                        var total = Count - ExtraCount;
 
-                        int r = 0;
+                        var r = 0;
                         for (byte i = 0; i < total; i++)
                         {
                             ((GameBlock)ITEM[i, 0]).Refresh(i, Saves.FileList?[Slot, i]);
@@ -123,8 +123,8 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                int r = 0;
-                foreach (Menu_Base i in ITEM)
+                var r = 0;
+                foreach (var i in ITEM)
                 {
                     if (i != null && i.GetType() == typeof(GameBlock) && ((GameBlock)i).ExpectedPageNumber == Page)
                     {
@@ -140,7 +140,7 @@ namespace OpenVIII
                 RightArrow.Y = Y + Height / 2 - RightArrow.Height / 2;
                 LeftArrow.Y = Y + Height / 2 - LeftArrow.Height / 2;
 
-                for (int i = 0; i < Count - ExtraCount; i++)
+                for (var i = 0; i < Count - ExtraCount; i++)
                 {
                     ITEM[i, 0] = GameBlock.Create(SIZE[i % Rows]);
                     ((GameBlock)ITEM[i, 0]).AddPageChangeEvent(ref PageChangeEventHandler);

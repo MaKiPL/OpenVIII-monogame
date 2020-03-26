@@ -25,7 +25,7 @@ namespace OpenVIII.Fields
         {
             if (idb == null || idb.Length == 0) return null;
 
-            WalkMesh r = new WalkMesh
+            var r = new WalkMesh
             {
                 Cameras = c
             };
@@ -40,26 +40,26 @@ namespace OpenVIII.Fields
 
         private void ReadData(byte[] idb)
         {
-            using (BinaryReader br = new BinaryReader(new MemoryStream(idb)))
+            using (var br = new BinaryReader(new MemoryStream(idb)))
             {
-                int count = checked((int)br.ReadUInt32());
+                var count = checked((int)br.ReadUInt32());
                 const int sides = 3;
-                List<Vert> vs = new List<Vert>(count * sides);
+                var vs = new List<Vert>(count * sides);
                 Accesses = new List<Access>(count);
-                foreach (int i in Enumerable.Range(0, vs.Capacity))
+                foreach (var i in Enumerable.Range(0, vs.Capacity))
                         vs.Add(new Vert { x = br.ReadInt16(), y = br.ReadInt16(), z = br.ReadInt16(), res = br.ReadInt16() });
-                foreach (int i in Enumerable.Range(0, Accesses.Capacity))
+                foreach (var i in Enumerable.Range(0, Accesses.Capacity))
                     Accesses.Add(new Access { br.ReadInt16(), br.ReadInt16(), br.ReadInt16() });
                 Debug.Assert(br.BaseStream.Position == br.BaseStream.Length);
                 max = new Vector3(vs.Max(x => x.x), vs.Max(x => x.y), vs.Max(x => x.z));
                 min = new Vector3(vs.Min(x => x.x), vs.Min(x => x.y), vs.Min(x => x.z));
                 distance = max - min;
-                float maxvalue = Math.Max(Math.Max(distance.X, distance.Y), distance.Z);
+                var maxvalue = Math.Max(Math.Max(distance.X, distance.Y), distance.Z);
                 //Matrix scale = Matrix.CreateTranslation(0, 0, -Module.Cameras[0].Zoom);
 
                 //Matrix scale = Matrix.CreateScale(1f / 1f);
-                Matrix scale = Matrix.CreateScale(Cameras[0].Zoom / 4096f);
-                Matrix move = Matrix.CreateTranslation(Cameras[0].Position*4096f);
+                var scale = Matrix.CreateScale(Cameras[0].Zoom / 4096f);
+                var move = Matrix.CreateTranslation(Cameras[0].Position*4096f);
                 Vertices = vs.Select((x, i) => new VertexPositionColor(Vector3.Transform(Vector3.Transform(Vector3.Transform(new Vector3(x.x, x.y , x.z), Cameras[0].RotationMatrix),move), scale), i % sides == 0 ? Color.Red : i % sides == 1 ? Color.Green : Color.Blue)).ToList();
             }
         }

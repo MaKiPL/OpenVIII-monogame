@@ -49,13 +49,13 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
 
-            Coords3D coords = new Coords3D(
+            var coords = new Coords3D(
                 _x.Int32(services),
                 _y.Int32(services),
                 _z.Int32(services));
-            Int32 unknown = _unknown.Int32(services);
+            var unknown = _unknown.Int32(services);
 
             currentObject.Interaction.Move(coords, unknown);
 

@@ -31,7 +31,7 @@ namespace OpenVIII
 
             public static new IGMData_PartyGroup Create(params Menu_Base[] d)
             {
-                IGMData_PartyGroup r = Create<IGMData_PartyGroup>(d);
+                var r = Create<IGMData_PartyGroup>(d);
                 r.Cursor_Status &= ~(Cursor_Status.Enabled | Cursor_Status.Horizontal | Cursor_Status.Blinking);
                 r.Cursor_Status |= Cursor_Status.Vertical;
                 return r;
@@ -52,7 +52,7 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                bool ret = base.Inputs_OKAY();
+                var ret = base.Inputs_OKAY();
                 FadeIn();
                 switch (Choice)
                 {
@@ -82,7 +82,7 @@ namespace OpenVIII
                 }
                 base.Refresh();
 
-                int total_Count = (Party?.Count ?? 0) + (Non_Party?.Count ?? 0);
+                var total_Count = (Party?.Count ?? 0) + (Non_Party?.Count ?? 0);
                 if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Party != null && Non_Party != null)
                 {
                     //TODO fix this... should be set in Init not Refresh
@@ -90,14 +90,14 @@ namespace OpenVIII
                     CURSOR = new Point[total_Count];
                     BLANKS = new BitArray(total_Count,false);
                     Contents = new Damageable[total_Count];
-                    int i = 0;
+                    var i = 0;
                     test(Party, ref i, Party.Contents);
                     test(Non_Party, ref i, Non_Party.Contents);
                 }
 
                 void test(IGMData.Base t, ref int i, Damageable[] contents)
                 {
-                    int pos = 0;
+                    var pos = 0;
                     for (; pos < t.Count && i < total_Count; i++)
                     {
                         SIZE[i] = t.SIZE[pos];

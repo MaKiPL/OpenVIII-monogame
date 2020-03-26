@@ -34,9 +34,9 @@ namespace OpenVIII.World
 
         public wm2field(byte[] buffer)
         {
-            int structSize = Marshal.SizeOf(typeof(warpEntry));
+            var structSize = Marshal.SizeOf(typeof(warpEntry));
             warpEntries = new warpEntry[buffer.Length / structSize];
-            for (int i = 0; i < warpEntries.Length; i++)
+            for (var i = 0; i < warpEntries.Length; i++)
                 warpEntries[i] = Extended.ByteArrayToStructure<warpEntry>(buffer.Skip(i * structSize).Take(structSize).ToArray());
         }
 

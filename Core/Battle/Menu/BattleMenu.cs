@@ -41,7 +41,7 @@ namespace OpenVIII
         {
             get
             {
-                if (Data.TryGetValue(SectionName.Renzokeken, out Menu_Base val))
+                if (Data.TryGetValue(SectionName.Renzokeken, out var val))
                     return (IGMData.Limit.Renzokeken)val;
                 return null;
             }
@@ -51,7 +51,7 @@ namespace OpenVIII
         {
             get
             {
-                if (Data.TryGetValue(SectionName.Shot, out Menu_Base val))
+                if (Data.TryGetValue(SectionName.Shot, out var val))
                     return (IGMData.Limit.Shot)val;
                 return null;
             }
@@ -71,7 +71,7 @@ namespace OpenVIII
         public void DrawData(SectionName v)
         {
             if (!skipdata && Enabled)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(a => a.Value != null && a.Key.Equals(v)))
+                foreach (var i in Data.Where(a => a.Value != null && a.Key.Equals(v)))
                     i.Value.Draw();
         }
 
@@ -136,7 +136,7 @@ namespace OpenVIII
             Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Limit.Renzokeken.Create(new Rectangle(0, (int)Size.Y - 164, (int)Size.X, 124))));
             int width = 100, height = 100;
             Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, IGMData.Limit.Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 164, width, height))));
-            Action[] actions = new Action[]
+            var actions = new Action[]
             {
                 () => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 224), 210, 186), Damageable, true)),
                 () => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), (int)(Size.Y - 164), 389, 40), Damageable)),

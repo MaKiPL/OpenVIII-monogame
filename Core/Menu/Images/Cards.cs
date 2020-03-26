@@ -41,7 +41,7 @@ namespace OpenVIII
 
         public override void Draw(Enum id, Rectangle dst, float fade = 1)
         {
-            int v = Convert.ToInt32(id);
+            var v = Convert.ToInt32(id);
             //int t =  (v / EntriesPerTexture);
             //int pos = v % EntriesPerTexture;
 
@@ -49,7 +49,7 @@ namespace OpenVIII
             //base.Draw((Cards.ID)(pos+(EntriesPerTexture *t)), dst, fade);
             if (v >= (uint)Cards.ID.Card_Back)
             {
-                int ept = EntriesPerTexture;
+                var ept = EntriesPerTexture;
                 EntriesPerTexture = -1;
                 id = (Cards.ID)(ept);
                 //Rectangle src = GetEntry(ID).GetRectangle;

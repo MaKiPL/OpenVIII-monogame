@@ -83,16 +83,16 @@ namespace OpenVIII
         {
             Size = new Vector2 { X = 840, Y = 630 };
             base.Init();
-            Action[] actions = new Action[]
+            var actions = new Action[]
             {
                 () => Data.TryAdd(SectionName.Help, new IGMDataItem.HelpBox { Pos = new Rectangle(15, 69, 810, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle}),
                 () => {
-                    FF8String[] keys = new FF8String[]{
+                    var keys = new FF8String[]{
                         Strings.Name.Use, //todo add to Strings.Name
                         Strings.Name.Rearrange,
                         Strings.Name.Sort,
                         Strings.Name.Battle };
-                    FF8String[] values = new FF8String[]{
+                    var values = new FF8String[]{
                         Strings.Description.Use, //todo add to Strings.Description
                         Strings.Description.Rearrange,
                         Strings.Description.Sort,

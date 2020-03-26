@@ -123,10 +123,10 @@ namespace OpenVIII
                 }
 
                 br.BaseStream.Seek(4, SeekOrigin.Current);
-                byte ability = br.ReadByte();
-                Battle.Dat.UnkFlag flags = (Battle.Dat.UnkFlag)br.ReadByte();
-                Target target = (Target)br.ReadByte();
-                byte unknown = br.ReadByte();
+                var ability = br.ReadByte();
+                var flags = (Battle.Dat.UnkFlag)br.ReadByte();
+                var target = (Target)br.ReadByte();
+                var unknown = br.ReadByte();
                 return new BattleCommand(name, description, ability, flags, target, unknown, i);
             }
 

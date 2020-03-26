@@ -7,23 +7,23 @@ namespace OpenVIII
     /// TIM data for overture textures.
     /// </summary>
     /// <remarks>
-    /// The reason for this is the lack of header, And allows compatablility with other objects that
+    /// The reason for this is the lack of header, And allows compatibility with other objects that
     /// use TIMs.
     /// </remarks>
-    public sealed class TIM_OVERTURE : TIM2
+    public sealed class TIMOverture : TIM2
     {
-        public TIM_OVERTURE(byte[] buffer, uint offset = 0) : base() => _Init(buffer, offset);
+        public TIMOverture(byte[] buffer, uint offset = 0) : base() => _Init(buffer, offset);
 
-        public TIM_OVERTURE(BinaryReader br, uint offset = 0) : base() => _Init(br, offset);
+        public TIMOverture(BinaryReader br, uint offset = 0) : base() => _Init(br, offset);
 
-        private TIM_OVERTURE()
+        private TIMOverture()
         {
         }
 
         private new void _Init(byte[] buffer, uint offset)
         {
             this.Buffer = buffer;
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            using (var br = new BinaryReader(new MemoryStream(buffer)))
             {
                 Init(br, offset);
             }
@@ -34,7 +34,7 @@ namespace OpenVIII
             TrimExcess = true;
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
             Buffer = br.ReadBytes((int)(br.BaseStream.Length - br.BaseStream.Position));
-            using (BinaryReader br2 = new BinaryReader(new MemoryStream(Buffer)))
+            using (var br2 = new BinaryReader(new MemoryStream(Buffer)))
                 Init(br2, 0);
         }
 

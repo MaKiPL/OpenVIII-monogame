@@ -18,7 +18,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static EnemyAttacks Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            EnemyAttacks r = Create<EnemyAttacks>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ABILITY }, count, 1, damageable, battle: battle);
+            var r = Create<EnemyAttacks>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ABILITY }, count, 1, damageable, battle: battle);
             if (battle)
                 r.TargetGroup = Target.Group.Create(r.Damageable);
             return r;
@@ -26,7 +26,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (InputITEM(TargetGroup, ref ret))
             { }
             else
@@ -48,7 +48,7 @@ namespace OpenVIII.IGMData.Pool
         {
             base.Inputs_OKAY();
 
-            EnemyAttacksData enemyAttacksData = Contents[CURSOR_SELECT];
+            var enemyAttacksData = Contents[CURSOR_SELECT];
             if (enemyAttacksData == null) return true;
             TargetGroup?.SelectTargetWindows(enemyAttacksData);
             TargetGroup?.ShowTargetWindows();
@@ -57,13 +57,13 @@ namespace OpenVIII.IGMData.Pool
 
         public override void Refresh()
         {
-            if (Damageable != null && Damageable.GetEnemy(out Enemy e))
+            if (Damageable != null && Damageable.GetEnemy(out var e))
             {
                 IEnumerable<EnemyAttacksData> enemyAttacksDatas = e.EnemyAttacksDatas as EnemyAttacksData[] ?? e.EnemyAttacksDatas.ToArray();
                 DefaultPages = enemyAttacksDatas.Count() / Rows;
-                int i = 0;
-                int skip = Page * Rows;
-                foreach (EnemyAttacksData enemyAttacksData in enemyAttacksDatas)
+                var i = 0;
+                var skip = Page * Rows;
+                foreach (var enemyAttacksData in enemyAttacksDatas)
                 {
                     if (i >= Rows) break;
                     if (skip-- > 0) continue;
@@ -93,7 +93,7 @@ namespace OpenVIII.IGMData.Pool
         protected override void Init()
         {
             base.Init();
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
                 ITEM[i, 0] = new IGMDataItem.Text
                 {

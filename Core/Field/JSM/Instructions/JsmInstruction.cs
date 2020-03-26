@@ -17,7 +17,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public static JsmInstruction TryMake(Jsm.Opcode opcode, Int32 parameter, IStack<IJsmExpression> stack)
         {
-            if (Factories.TryGetValue(opcode, out Make make))
+            if (Factories.TryGetValue(opcode, out var make))
                 return make(parameter, stack);
 
             return null;

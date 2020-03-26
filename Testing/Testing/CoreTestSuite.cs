@@ -21,7 +21,7 @@ namespace OpenVIII.Tests
             //TODO initiate kernel_bin with out new;
             // ReSharper disable once ObjectCreationAsStatement
             Console.WriteLine("Printing items: ");
-            foreach (Kernel.NonBattleItemsData item in Memory.Kernel_Bin.NonBattleItemsData)
+            foreach (var item in Memory.Kernel_Bin.NonBattleItemsData)
             {
                 Console.WriteLine("item: " + item.NonBattleItemsDataID + " - " + item.Name + " - " + item.Description);
             }
@@ -30,7 +30,7 @@ namespace OpenVIII.Tests
         [Test]
         public void SimpleWorkerTest()
         {
-            string[] fileNames = new[]
+            var fileNames = new[]
             {
                 "music0.obj",
                 "music1.obj",
@@ -48,13 +48,13 @@ namespace OpenVIII.Tests
 
             Memory.Init(null, null, null, null);
 
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
+            var aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
             //Console.WriteLine(aw.archive);
-            string[] wmxPath = aw.GetListOfFiles();
+            var wmxPath = aw.GetListOfFiles();
             Console.WriteLine("Files in Archive (" + Memory.Archives.A_WORLD + ")");
-            for (int i = 0; i < wmxPath.Length; i++)
+            for (var i = 0; i < wmxPath.Length; i++)
             {
-                string filePath = wmxPath[i];
+                var filePath = wmxPath[i];
                 Console.WriteLine(i + 1 + ".) " + filePath);
             }
 

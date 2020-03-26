@@ -56,7 +56,7 @@ namespace OpenVIII.IGMData.Limit
         public override bool Inputs_OKAY()
         {
             skipsnd = true;
-            foreach (Menu_Base i in ITEM)
+            foreach (var i in ITEM)
             {
                 if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
                 {
@@ -97,19 +97,19 @@ namespace OpenVIII.IGMData.Limit
         public override bool Update()
         {
             if (!Enabled) return false;
-            bool done = false;
-            bool hot = false;
+            var done = false;
+            var hot = false;
 
             ((IGMDataItem.Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
             ((IGMDataItem.Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
 
-            int hotcnt = 0;
-            int pos = 0;
-            foreach (Menu_Base i in ITEM)
+            var hotcnt = 0;
+            var pos = 0;
+            foreach (var i in ITEM)
             {
                 if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken) && pos++ < _hits)
                 {
-                    IGMDataItem.Gradient.Renzokeken gr = (IGMDataItem.Gradient.Renzokeken)i;
+                    var gr = (IGMDataItem.Gradient.Renzokeken)i;
                     done = !gr.Done || done;
                     hot = gr.Trigger || hot;
                     if (gr.Done)
@@ -166,9 +166,9 @@ namespace OpenVIII.IGMData.Limit
             Trigger_Prep(ref r, ref tr, out scale, out w, out trigwidtharea, out xbak);
 
             newattack = new Color(104, 80, 255);
-            Rectangle pos = new Rectangle(r.X, r.Y + 4, Renzokeken_Gradient_Width, r.Height - 8);
+            var pos = new Rectangle(r.X, r.Y + 4, Renzokeken_Gradient_Width, r.Height - 8);
             r.Inflate(-4, -4);
-            for (int x = 0; x <= _hits && x <= 7; x++)
+            for (var x = 0; x <= _hits && x <= 7; x++)
                 ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokeken.Create(pos, newattack, Renzokenken_Seperator_Color, 1f, hotspot, r, time: RenzoTime, TimeSpan.FromTicks(RenzoDelay.Ticks * x));
             tr = _0_Hit_Prep(r, tr, out scale, out w, trigwidtharea, xbak);
             Perfect_Prep(r, tr, out scale, out w, trigwidtharea, xbak);
@@ -179,7 +179,7 @@ namespace OpenVIII.IGMData.Limit
 
         private void Perfect_Prep(Rectangle r, Rectangle tr, out float scale, out int w, int trigwidtharea, int xbak)
         {
-            EntryGroup e = Memory.Icons[Icons.ID.Perfect__];
+            var e = Memory.Icons[Icons.ID.Perfect__];
             scale = 1f;
             w = 0;
             if (e != null)
@@ -197,7 +197,7 @@ namespace OpenVIII.IGMData.Limit
 
             scale = 1f;
             w = 0;
-            IEnumerable<EntryGroup> range = (from i in Enumerable.Range(0, 8)
+            var range = (from i in Enumerable.Range(0, 8)
                                              where Memory.Icons[Icons.ID._0_Hit_ + (byte)i] != null &&
                                                      Memory.Icons[Icons.ID._0_Hit_ + (byte)i].Count > 0
                                              select Memory.Icons[Icons.ID._0_Hit_ + (byte)i]);
@@ -230,7 +230,7 @@ namespace OpenVIII.IGMData.Limit
 
         private void Trigger_Prep(ref Rectangle r, ref Rectangle tr, out float scale, out int w, out int trigwidtharea, out int xbak)
         {
-            EntryGroup e = Memory.Icons[Icons.ID.Trigger_];
+            var e = Memory.Icons[Icons.ID.Trigger_];
             scale = 1f;
             w = 0;
             if (e != null)
@@ -248,9 +248,9 @@ namespace OpenVIII.IGMData.Limit
 
         private void Renzokeken_Seperator_Prep(out Rectangle r, out Rectangle hotspot, out Rectangle tr)
         {
-            EntryGroup e = Memory.Icons[Icons.ID.Renzokeken_Seperator];
-            int w = 0;
-            float scale = 1f;
+            var e = Memory.Icons[Icons.ID.Renzokeken_Seperator];
+            var w = 0;
+            var scale = 1f;
             r = CONTAINER.Pos;
             r.Inflate(-16, -20);
             r.X += r.X % 4;
@@ -276,12 +276,12 @@ namespace OpenVIII.IGMData.Limit
 
         protected override void RefreshChild()
         {
-            int pos = 0;
-            foreach (Menu_Base i in ITEM)
+            var pos = 0;
+            foreach (var i in ITEM)
             {
                 if (i.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
                 {
-                    IGMDataItem.Gradient.Renzokeken rg = (IGMDataItem.Gradient.Renzokeken)i;
+                    var rg = (IGMDataItem.Gradient.Renzokeken)i;
                     if (pos++ < _hits)
                         rg.Show();
                     else

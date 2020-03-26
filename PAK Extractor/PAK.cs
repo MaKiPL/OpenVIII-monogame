@@ -138,7 +138,7 @@ namespace OpenVIII.PAK_Extractor
             Console.WriteLine($"Extracting {FilePath.FullName}");
             foreach (MovieClip item in this)
             {
-                using (BinaryReader br = new BinaryReader(File.OpenRead(FilePath.FullName)))
+                using (var br = new BinaryReader(File.OpenRead(FilePath.FullName)))
                 {
                     Extract(br, item.Cam);
                     Extract(br, item.BinkHigh);
@@ -152,11 +152,11 @@ namespace OpenVIII.PAK_Extractor
             }
             void Extract(BinaryReader br, FileSection fs)
             {
-                string outPath = Path.Combine(destPath, fs.FileName);
+                var outPath = Path.Combine(destPath, fs.FileName);
                 if (File.Exists(outPath))
                 {
                     bool overwrite;
-                    using (FileStream s = File.OpenRead(outPath))
+                    using (var s = File.OpenRead(outPath))
                     {
                         overwrite = s.Length != fs.Size;
                     }
@@ -168,7 +168,7 @@ namespace OpenVIII.PAK_Extractor
                         return;
                     }
                 }
-                using (BinaryWriter bw = new BinaryWriter(File.Create(outPath)))
+                using (var bw = new BinaryWriter(File.Create(outPath)))
                 {
                     Console.WriteLine($"Extracting {fs.FileName}");
                     br.BaseStream.Seek(fs.Offset, SeekOrigin.Begin);
@@ -186,8 +186,8 @@ namespace OpenVIII.PAK_Extractor
         {
             if (_discCache == -1)
             {
-                Regex re = new Regex(@"\d+");
-                Match m = re.Match(Path.GetFileNameWithoutExtension(FilePath.FullName));
+                var re = new Regex(@"\d+");
+                var m = re.Match(Path.GetFileNameWithoutExtension(FilePath.FullName));
 
                 if (m.Success)
                 {
@@ -213,12 +213,12 @@ namespace OpenVIII.PAK_Extractor
         private void Read(FileInfo info)
         {
             FilePath = info;
-            using (BinaryReader br = new BinaryReader(File.OpenRead(info.FullName)))
+            using (var br = new BinaryReader(File.OpenRead(info.FullName)))
             {
                 _movie = new MovieClip();
                 while (br.BaseStream.Position < br.BaseStream.Length)
                 {
-                    Type header = (Type)(br.ReadUInt32() & (uint)Type._3B_MASK);
+                    var header = (Type)(br.ReadUInt32() & (uint)Type._3B_MASK);
                     if (_readFunctions.ContainsKey(header))
                     {
                         _readFunctions[header](br, header);
@@ -236,13 +236,13 @@ namespace OpenVIII.PAK_Extractor
         private FileSection ReadBik(BinaryReader br, Type type)
         {
             br.BaseStream.Seek(-1, SeekOrigin.Current);
-            byte version = br.ReadByte();
+            var version = br.ReadByte();
             if ((type == Type.Bik && _bik1.Contains(version)) || (type == Type.Kb2 && _bik2.Contains(version)))
             {
             }
             else
                 throw new Exception($"_Type {type}, version {version}, is invalid");
-            FileSection fs = new FileSection()
+            var fs = new FileSection()
             {
                 Type = type,
                 Offset = br.BaseStream.Position - 4,
@@ -283,9 +283,9 @@ namespace OpenVIII.PAK_Extractor
         /// <param name="type">Header of file type</param>
         private FileSection ReadCam(BinaryReader br, Type type)
         {
-            long offset = br.BaseStream.Position - 4; // start of section
+            var offset = br.BaseStream.Position - 4; // start of section
             br.BaseStream.Seek(2, SeekOrigin.Current); // skip 2 bytes
-            ushort frames = br.ReadUInt16(); // get approx number of frames
+            var frames = br.ReadUInt16(); // get approx number of frames
             br.BaseStream.Seek((frames) * CamSectionSize, SeekOrigin.Current);
             uint b;
             // there seems to be 1 or more extra frames. Check for those.
@@ -307,7 +307,7 @@ namespace OpenVIII.PAK_Extractor
                 _movie = new MovieClip();
             }
 
-            FileSection fs = new FileSection() { Type = type, Offset = offset, Size = br.BaseStream.Position - offset, Frames = frames, FileName = GenerateFileName("cam") };
+            var fs = new FileSection() { Type = type, Offset = offset, Size = br.BaseStream.Position - offset, Frames = frames, FileName = GenerateFileName("cam") };
             _movie.Cam = fs;
             return fs;
         }

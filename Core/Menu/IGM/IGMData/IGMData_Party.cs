@@ -47,10 +47,10 @@ namespace OpenVIII
 
                     if (Memory.State.Characters != null)
                     {
-                        bool ret = base.Update();
+                        var ret = base.Update();
                         for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)
                         {
-                            Characters cid = Memory.State.PartyData[i];
+                            var cid = Memory.State.PartyData[i];
                             if (cid != Characters.Blank)
                                 RefreshCharacter(i, Memory.State[cid]);
                             else
@@ -65,7 +65,7 @@ namespace OpenVIII
             {
                 Contents = new Damageable[Count];
                 base.Init();
-                for (int pos = 0; pos < Count; pos++)
+                for (var pos = 0; pos < Count; pos++)
                 {
                     ITEM[pos, 0] = new IGMDataItem.Box { Title = Icons.ID.STATUS };
                     ITEM[pos, 1] = new IGMDataItem.Icon { Data = Icons.ID.Lv, Palette = 13 };
@@ -79,7 +79,7 @@ namespace OpenVIII
                     ITEM[pos, 9] = new IGMDataItem.Icon { Data = Icons.ID.P, Palette = 2 };
                     ITEM[pos, 10] = new IGMDataItem.Integer { Palette = 2, Faded_Palette = 0, Padding = 1, Spaces = 9 };
                     ITEM[pos, 11] = new IGMDataItem.Icon { Data = Icons.ID.P, Palette = 2 };
-                    for (int i = 0; i < Depth; i++)
+                    for (var i = 0; i < Depth; i++)
                         ITEM[pos, i].Hide();
                 }
             }
@@ -97,7 +97,7 @@ namespace OpenVIII
                 ((IGMDataItem.Box)ITEM[pos, 0]).Pos = SIZE[pos];
                 ((IGMDataItem.Box)ITEM[pos, 0]).Show();
                 BLANKS[pos] = true;
-                for (int i = 1; i < Depth; i++)
+                for (var i = 1; i < Depth; i++)
                 {
                     ITEM[pos, i].Hide();
                 }
@@ -115,8 +115,8 @@ namespace OpenVIII
 
                         ((IGMDataItem.Box)ITEM[pos, 0]).Data = damageable.Name;
                         ((IGMDataItem.Box)ITEM[pos, 0]).Title = Icons.ID.STATUS;
-                        BoxReturn dims = DrawBox(SIZE[pos], ((IGMDataItem.Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
-                        Rectangle r = dims.Font;
+                        var dims = DrawBox(SIZE[pos], ((IGMDataItem.Box)ITEM[pos, 0]).Data, options: Box_Options.SkipDraw);
+                        var r = dims.Font;
                         CURSOR[pos] = dims.Cursor;
 
                         r = dims.Font;
@@ -146,14 +146,14 @@ namespace OpenVIII
                         ((IGMDataItem.Integer)ITEM[pos, 6]).Data = damageable.MaxHP();
                         ((IGMDataItem.Integer)ITEM[pos, 6]).Pos = r;
 
-                        for (int i = 0; i <= 6; i++)
+                        for (var i = 0; i <= 6; i++)
                             ITEM[pos, i].Show();
-                        if ((Memory.State.TeamLaguna || Memory.State.SmallTeam) && damageable.GetCharacterData(out Saves.CharacterData c))
+                        if ((Memory.State.TeamLaguna || Memory.State.SmallTeam) && damageable.GetCharacterData(out var c))
                         {
                             BLANKS[pos] = false;
                             r = dims.Font;
                             r.Offset(145, 36);
-                            FF8String s = Strings.Name.CurrentEXP + "\n" + Strings.Name.NextLEVEL;
+                            var s = Strings.Name.CurrentEXP + "\n" + Strings.Name.NextLEVEL;
                             ((IGMDataItem.Text)ITEM[pos, 7]).Data = s;
                             ((IGMDataItem.Text)ITEM[pos, 7]).Pos = r;
 
@@ -175,11 +175,11 @@ namespace OpenVIII
                             r.Offset(520, 75);
                             ((IGMDataItem.Icon)ITEM[pos, 11]).Pos = r;
 
-                            for (int i = 7; i < Depth; i++)
+                            for (var i = 7; i < Depth; i++)
                                 ITEM[pos, i].Show();
                         }
                         else
-                            for (int i = 7; i < Depth; i++)
+                            for (var i = 7; i < Depth; i++)
                                 ITEM[pos, i].Hide();
                     }
                     else

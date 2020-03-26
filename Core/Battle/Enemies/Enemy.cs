@@ -83,8 +83,8 @@ namespace OpenVIII
             {
                 if (FixedLevel != default)
                     return FixedLevel;
-                byte a = Memory.State.AveragePartyLevel;
-                byte d = (byte)(a / 5);
+                var a = Memory.State.AveragePartyLevel;
+                var d = (byte)(a / 5);
                 return (byte)MathHelper.Clamp(a + d, 1, 100);
             }
         }
@@ -123,7 +123,7 @@ namespace OpenVIII
 
         public static Enemy Load(Battle.EnemyInstanceInformation eii, byte fixedLevel = 0, ushort? startingHP = null)
         {
-            Enemy r = new Enemy
+            var r = new Enemy
             {
                 EII = eii,
                 FixedLevel = fixedLevel
@@ -161,8 +161,8 @@ namespace OpenVIII
         public Cards.ID Card()
         {
             if (Info.Card.Skip(1).All(x => x == Cards.ID.Immune)) return Cards.ID.Immune;
-            int p = (256 * MaxHP() - 255 * CurrentHP()) / MaxHP();
-            int r = Memory.Random.Next(256);
+            var p = (256 * MaxHP() - 255 * CurrentHP()) / MaxHP();
+            var r = Memory.Random.Next(256);
             // 2 is rare card, 1 is normal card 0 per ifrit.
             return r < (p + 1) ? (r < 17 ? Info.Card[2] : Info.Card[1]) : Cards.ID.Fail;
         }
@@ -172,7 +172,7 @@ namespace OpenVIII
             //9 / 256
             if (Info.Card[0] == Cards.ID.Immune) return Info.Card[1];
 
-            int r = Memory.Random.Next(256);
+            var r = Memory.Random.Next(256);
             return r < 9 ? Info.Card[1] : Cards.ID.Fail;
         }
 
@@ -182,15 +182,15 @@ namespace OpenVIII
         {
             if (_mugged) return default;
             int percent = DropRate;
-            Saves.Item[] list = DropList;
-            int i = Memory.Random.Next(100 + 1);
+            var list = DropList;
+            var i = Memory.Random.Next(100 + 1);
             if (i >= percent || list.Length <= 0) return default;
             //Slot              |  0        | 1         | 2        | 3
             //------------------|  ---------| --------- | ---------| --------
             //Without Rare Item | 178 / 256 | 51 / 256  | 15 / 256 | 12 / 256
             //------------------|  ---------| --------- | ---------| --------
             //With Rare Item    | 128 / 256 | 114 / 256 | 14 / 256 | 0 / 256 <- kinda makes no scene to me
-            int r = Memory.Random.Next(256);
+            var r = Memory.Random.Next(256);
             if (rareItem)
             {
                 if (r < 128)
@@ -208,7 +208,7 @@ namespace OpenVIII
 
         public override short ElementalResistance(Element @in)
         {
-            List<Element> l = (Enum.GetValues(typeof(Element))).Cast<Element>().ToList();
+            var l = (Enum.GetValues(typeof(Element))).Cast<Element>().ToList();
             return @in == Element.NonElemental
                 ? (short)100
                 : conv(Info.Resistance[l.FindIndex(x => (x & @in) != 0) - 1]);
@@ -227,21 +227,21 @@ namespace OpenVIII
             //from Ifrit's help file
             if (Info.HP == null)
                 return 0;
-            int i = (Info.HP[0] * Level * Level / 20) + (Info.HP[0] + Info.HP[2] * 100) * Level + Info.HP[1] * 10 + Info.HP[3] * 1000;
+            var i = (Info.HP[0] * Level * Level / 20) + (Info.HP[0] + Info.HP[2] * 100) * Level + Info.HP[1] * 10 + Info.HP[3] * 1000;
             return (ushort)MathHelper.Clamp(i, 0, ushort.MaxValue);
         }
 
         public Saves.Item Mug(byte spd, bool rareItem = false)
         {
             if (_mugged) return default;
-            int percent = (MugRate + spd);
-            Saves.Item[] list = DropList;
-            int i = Memory.Random.Next(100 + 1);
+            var percent = (MugRate + spd);
+            var list = DropList;
+            var i = Memory.Random.Next(100 + 1);
             try
             {
                 if (i < percent && list.Length > 0)
                 {
-                    byte r = (byte)Memory.Random.Next(256);
+                    var r = (byte)Memory.Random.Next(256);
                     if (rareItem)
                     {
                         if (r < 128)
@@ -522,8 +522,8 @@ namespace OpenVIII
         private byte Convert1(IReadOnlyList<byte> @in)
         {
             //from Ifrit's help file
-            byte level = Level;
-            int i = level * @in[0] / 10 + level / @in[1] - level * level / 2 / (@in[3] + @in[2]) / 4;
+            var level = Level;
+            var i = level * @in[0] / 10 + level / @in[1] - level * level / 2 / (@in[3] + @in[2]) / 4;
             //PLEASE NOTE: I'm not 100% sure on the STR/MAG formula, but it should be accurate enough to get the general idea.
             // wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
 
@@ -533,15 +533,15 @@ namespace OpenVIII
         private byte Convert2(IReadOnlyList<byte> @in)
         {
             //from Ifrit's help file
-            byte level = Level;
-            int i = level / @in[1] - level / @in[3] + level * @in[0] + @in[2];
+            var level = Level;
+            var i = level / @in[1] - level / @in[3] + level * @in[0] + @in[2];
             return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
         }
 
         private int Convert3(ushort @in, byte inLevel)
         {
             //from Ifrit's help file
-            byte level = Level;
+            var level = Level;
             if (inLevel == 0)
                 return 0;
             return @in * (5 * (level - inLevel) / inLevel + 4);
@@ -549,7 +549,7 @@ namespace OpenVIII
 
         private T HML<T>(T h, T m, T l)
         {
-            byte level = Level;
+            var level = Level;
             if (level > Info.HighLevelStart)
                 return h;
             if (level > Info.MedLevelStart)
@@ -559,7 +559,7 @@ namespace OpenVIII
 
         private int LevelGroup()
         {
-            byte l = Level;
+            var l = Level;
             if (l > Info.HighLevelStart)
                 return 2;
             return l > Info.MedLevelStart ? 1 : 0;

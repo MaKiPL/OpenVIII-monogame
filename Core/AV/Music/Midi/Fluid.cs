@@ -853,8 +853,8 @@ namespace OpenVIII.AV.Midi
 #endif
             synth = NativeMethods.new_fluid_synth(settings);
             driver = NativeMethods.new_fluid_audio_driver(settings, synth);
-            string music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
-            string dlsPath = Path.Combine(music_pt, "FF8.dls");
+            var music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
+            var dlsPath = Path.Combine(music_pt, "FF8.dls");
             NativeMethods.fluid_synth_sfload(synth, dlsPath, 1); //we should allow user to choose other SoundFont if he wants to
             player = NativeMethods.new_fluid_player(synth);
             handles = new GCHandle[4];
@@ -864,7 +864,7 @@ namespace OpenVIII.AV.Midi
             handles[3] = GCHandle.Alloc(player, GCHandleType.Pinned);
             NativeMethods.fluid_synth_set_interp_method(synth, -1, NativeMethods.fluid_interp.FLUID_INTERP_HIGHEST);
             //fluid_synth_set_gain(synth, 0.8f);
-            System.Threading.Thread fluidThread = new System.Threading.Thread(new System.Threading.ThreadStart(FluidWorker));
+            var fluidThread = new System.Threading.Thread(new System.Threading.ThreadStart(FluidWorker));
             fluidThread.Start();
         }
 
@@ -902,7 +902,7 @@ namespace OpenVIII.AV.Midi
                         NativeMethods.fluid_player_add_mem(player, midBuffer, (uint)midBuffer.Length);
                         NativeMethods.fluid_player_play(player);
                         fluidState = ThreadFluidState.playing;
-                        NativeMethods.fluid_settings_getint(settings, "synth.polyphony", out int val);
+                        NativeMethods.fluid_settings_getint(settings, "synth.polyphony", out var val);
                         continue;
 
                     //The most important state- it handles the real-time transmission to synth driver
@@ -920,30 +920,30 @@ namespace OpenVIII.AV.Midi
 
         private void FluidWorker_ProduceMid()
         {
-            NAudio.Midi.MidiEventCollection mid = new NAudio.Midi.MidiEventCollection(1, DMUS_PPQ);
+            var mid = new NAudio.Midi.MidiEventCollection(1, DMUS_PPQ);
             mid.AddTrack();
-            for (int i = 0; i < lbinbins.Count; i++)
+            for (var i = 0; i < lbinbins.Count; i++)
             {
-                DMUS_IO_INSTRUMENT lbin = lbinbins[i];
-                int patch_ = (int)(lbin.dwPatch & 0xFF); //MSB, LSB + patch on the least 8 bits
-                NAudio.Midi.PatchChangeEvent patch = new NAudio.Midi.PatchChangeEvent(0, (int)lbin.dwPChannel + 1, patch_);
+                var lbin = lbinbins[i];
+                var patch_ = (int)(lbin.dwPatch & 0xFF); //MSB, LSB + patch on the least 8 bits
+                var patch = new NAudio.Midi.PatchChangeEvent(0, (int)lbin.dwPChannel + 1, patch_);
                 mid.AddEvent(patch, 0);
             }
             mid.AddEvent(new NAudio.Midi.TempoEvent((int)(DMUS_MusicTimeMilisecond / tetr.dblTempo), 0), 0);
-            for (int i = 0; i < tims.Count; i++)
+            for (var i = 0; i < tims.Count; i++)
             {
-                DMUS_IO_TIMESIGNATURE_ITEM tim = tims[i];
+                var tim = tims[i];
                 //NAudio.Midi.TimeSignatureEvent time = new NAudio.Midi.TimeSignatureEvent(tim.lTime, ,,tim);
             }
-            for (int i = 0; i < seqt.Count; i++)
+            for (var i = 0; i < seqt.Count; i++)
             {
-                DMUS_IO_SEQ_ITEM ss = seqt[i];
-                NAudio.Midi.NoteEvent note = new NAudio.Midi.NoteEvent(ss.mtTime, (int)ss.dwPChannel + 1, NAudio.Midi.MidiCommandCode.NoteOn, ss.bByte1, ss.bByte2);
+                var ss = seqt[i];
+                var note = new NAudio.Midi.NoteEvent(ss.mtTime, (int)ss.dwPChannel + 1, NAudio.Midi.MidiCommandCode.NoteOn, ss.bByte1, ss.bByte2);
                 mid.AddEvent(note, 0);
                 note = new NAudio.Midi.NoteEvent(ss.mtTime + ss.mtDuration, (int)ss.dwPChannel + 1, NAudio.Midi.MidiCommandCode.NoteOff, ss.bByte1, ss.bByte2);
                 mid.AddEvent(note, 0);
             }
-            for (int i = 0; i < 16; i++)
+            for (var i = 0; i < 16; i++)
             {
                 //native build of naudio doesn't have the numbers in the enum.
                 //you can manually force it to take the number by doing (NAudio.Midi.MidiController)number
@@ -955,7 +955,7 @@ namespace OpenVIII.AV.Midi
                 mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.MSGgenerator38, 110), 0);//6
                 //The DLS loader has wrong release/hold/attack so we need to tweak it via generators. It's prior to change
             }
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
                 // pull request to get this added to naudio
                 // https://github.com/naudio/NAudio/pull/499
@@ -969,7 +969,7 @@ namespace OpenVIII.AV.Midi
             FileStream fs = null;
 
             // fs is disposed of by binary reader
-            using (BinaryReader br = new BinaryReader(fs = new FileStream(pt, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (var br = new BinaryReader(fs = new FileStream(pt, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 if (ReadFourCc(br) != "RIFF")
                 {
@@ -1008,13 +1008,13 @@ namespace OpenVIII.AV.Midi
             lbinbins = new List<DMUS_IO_INSTRUMENT>();
             if ((fourCc = ReadFourCc(br)) != "segh")
             { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: Broken structure. Expected segh, got={fourCc}"); return; }
-            uint chunkSize = br.ReadUInt32();
+            var chunkSize = br.ReadUInt32();
             if (chunkSize != Marshal.SizeOf(segh))
             { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: chunkSize={chunkSize} is different than DMUS_IO_SEGMENT_HEADER sizeof={Marshal.SizeOf(segh)}"); return; }
             segh = Extended.ByteArrayToStructure<DMUS_IO_SEGMENT_HEADER>(br.ReadBytes((int)chunkSize));
             if ((fourCc = ReadFourCc(br)) != "guid")
             { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected guid, got={fourCc}"); return; }
-            byte[] guid = br.ReadBytes(br.ReadInt32());
+            var guid = br.ReadBytes(br.ReadInt32());
             if ((fourCc = ReadFourCc(br)) != "LIST")
             { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected LIST, got={fourCc}"); return; }
             //let's skip segment data for now, looks like it's not needed, it's not even oficially a part of segh
@@ -1034,50 +1034,50 @@ namespace OpenVIII.AV.Midi
             if ((fourCc = ReadFourCc(br)) != "trkl")
             { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected trkl, got={fourCc}"); return; }
             //at this point we are free to read the file up to the end by reading all available DMTK RIFFs;
-            uint eof = (uint)fs.Position + chunkSize - 4;
+            var eof = (uint)fs.Position + chunkSize - 4;
             while (fs.Position < eof)
             {
                 if ((fourCc = ReadFourCc(br)) != "RIFF")
                 { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected RIFF, got={fourCc}"); return; }
                 chunkSize = br.ReadUInt32();
-                long skipTell = fs.Position;
+                var skipTell = fs.Position;
                 Console.WriteLine($"RIFF entry: {ReadFourCc(br)}/{ReadFourCc(br)}");
-                DMUS_IO_TRACK_HEADER trkhEntry = Extended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32()));
+                var trkhEntry = Extended.ByteArrayToStructure<DMUS_IO_TRACK_HEADER>(br.ReadBytes((int)br.ReadUInt32()));
                 trkh.Add(trkhEntry);
-                string moduleName = string.IsNullOrEmpty(trkhEntry.Ckid) ? trkhEntry.FccType : trkhEntry.Ckid;
+                var moduleName = string.IsNullOrEmpty(trkhEntry.Ckid) ? trkhEntry.FccType : trkhEntry.Ckid;
                 switch (moduleName.ToLower())
                 {
                     case "cord": //Chord track list =[DONE]
                         if ((fourCc = ReadFourCc(br)) != "LIST")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected cord/LIST, got={fourCc}"); break; }
-                        uint cordListChunkSize = br.ReadUInt32();
+                        var cordListChunkSize = br.ReadUInt32();
                         if ((fourCc = ReadFourCc(br)) != "cord")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected cord/cord, got={fourCc}"); break; }
                         if ((fourCc = ReadFourCc(br)) != "crdh")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected cord/crdh, got={fourCc}"); break; }
                         fs.Seek(4, SeekOrigin.Current); //crdh size. It's always one DWORD, so...
-                        uint crdhDword = br.ReadUInt32();
-                        byte crdhRoot = (byte)(crdhDword >> 24);
-                        uint crdhScale = crdhDword & 0xFFFFFF;
+                        var crdhDword = br.ReadUInt32();
+                        var crdhRoot = (byte)(crdhDword >> 24);
+                        var crdhScale = crdhDword & 0xFFFFFF;
                         if ((fourCc = ReadFourCc(br)) != "crdb")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected cord/crdb, got={fourCc}"); break; }
-                        uint crdbChunkSize = br.ReadUInt32();
+                        var crdbChunkSize = br.ReadUInt32();
                         crdh = Extended.ByteArrayToStructure<DMUS_IO_CHORD>(br.ReadBytes((int)br.ReadUInt32()));
-                        uint cSubChords = br.ReadUInt32();
-                        uint subChordSize = br.ReadUInt32();
-                        for (int k = 0; k < cSubChords; k++)
+                        var cSubChords = br.ReadUInt32();
+                        var subChordSize = br.ReadUInt32();
+                        for (var k = 0; k < cSubChords; k++)
                             crdb.Add(Extended.ByteArrayToStructure<DMUS_IO_SUBCHORD>(br.ReadBytes((int)subChordSize)));
                         break;
 
                     case "tetr":
                         if ((fourCc = ReadFourCc(br)) != "tetr")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected tetr/tetr, got={fourCc}"); break; }
-                        uint tetrChunkSize = br.ReadUInt32();
-                        uint tetrEntrySize = br.ReadUInt32();
+                        var tetrChunkSize = br.ReadUInt32();
+                        var tetrEntrySize = br.ReadUInt32();
                         fs.Seek(4, SeekOrigin.Current); //???
                         tetr = Extended.ByteArrayToStructure<DMUS_IO_TEMPO_ITEM>(br.ReadBytes((int)tetrEntrySize - 4));
-                        byte[] doubleBuffer = BitConverter.GetBytes(tetr.dblTempo);
-                        byte[] newDoubleBUffer = new byte[8];
+                        var doubleBuffer = BitConverter.GetBytes(tetr.dblTempo);
+                        var newDoubleBUffer = new byte[8];
                         Array.Copy(doubleBuffer, 4, newDoubleBUffer, 0, 4);
                         Array.Copy(doubleBuffer, 0, newDoubleBUffer, 4, 4);
                         tetr.dblTempo = BitConverter.ToDouble(newDoubleBUffer, 0);
@@ -1086,29 +1086,29 @@ namespace OpenVIII.AV.Midi
                     case "seqt": //Sequence Track Chunk
                         if ((fourCc = ReadFourCc(br)) != "seqt")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected seqt/seqt, got={fourCc}"); break; }
-                        uint seqtChunkSize = br.ReadUInt32();
+                        var seqtChunkSize = br.ReadUInt32();
                         if ((fourCc = ReadFourCc(br)) != "evtl")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected seqt/evtl, got={fourCc}"); break; }
-                        uint evtlChunkSize = br.ReadUInt32();
-                        uint sequenceItemSize = br.ReadUInt32();
-                        uint sequenceItemsCount = (evtlChunkSize - 4) / sequenceItemSize;
-                        for (int k = 0; k < sequenceItemsCount; k++)
+                        var evtlChunkSize = br.ReadUInt32();
+                        var sequenceItemSize = br.ReadUInt32();
+                        var sequenceItemsCount = (evtlChunkSize - 4) / sequenceItemSize;
+                        for (var k = 0; k < sequenceItemsCount; k++)
                             seqt.Add(Extended.ByteArrayToStructure<DMUS_IO_SEQ_ITEM>(br.ReadBytes((int)sequenceItemSize)));
                         if ((fourCc = ReadFourCc(br)) != "curl")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected seqt/curl, got={fourCc}"); break; }
-                        uint curlChunkSize = br.ReadUInt32();
-                        uint curveItemSize = br.ReadUInt32();
-                        uint curvesItemCount = (curlChunkSize - 4) / curveItemSize;
-                        for (int k = 0; k < curvesItemCount; k++)
+                        var curlChunkSize = br.ReadUInt32();
+                        var curveItemSize = br.ReadUInt32();
+                        var curvesItemCount = (curlChunkSize - 4) / curveItemSize;
+                        for (var k = 0; k < curvesItemCount; k++)
                             curl.Add(Extended.ByteArrayToStructure<DMUS_IO_CURVE_ITEM>(br.ReadBytes((int)curveItemSize)));
                         break;
 
                     case "tims": //Time Signature Track List  =[DONE]
                         if ((fourCc = ReadFourCc(br)) != "tims")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected tims/tims, got={fourCc}"); break; }
-                        uint timsChunkSize = br.ReadUInt32();
-                        uint timsEntrySize = br.ReadUInt32();
-                        for (int n = 0; n < (timsChunkSize - 4) / 8; n++)
+                        var timsChunkSize = br.ReadUInt32();
+                        var timsEntrySize = br.ReadUInt32();
+                        for (var n = 0; n < (timsChunkSize - 4) / 8; n++)
                             tims.Add(Extended.ByteArrayToStructure<DMUS_IO_TIMESIGNATURE_ITEM>(br.ReadBytes((int)timsEntrySize)));
                         break;
 
@@ -1116,7 +1116,7 @@ namespace OpenVIII.AV.Midi
                         fs.Seek(12, SeekOrigin.Current); //We are skipping RIFF and the segment size. Useless for us
                         if ((fourCc = ReadFourCc(br)) != "LIST")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected dmbt/LIST, got={fourCc}"); break; }
-                        uint lbdlChunkSize = br.ReadUInt32();
+                        var lbdlChunkSize = br.ReadUInt32();
                         if ((fourCc = ReadFourCc(br)) != "lbdl")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected dmbt/lbdl, got={fourCc}"); break; }
                         if ((fourCc = ReadFourCc(br)) != "LIST")
@@ -1141,12 +1141,12 @@ namespace OpenVIII.AV.Midi
                         if ((fourCc = ReadFourCc(br)) != "LIST")
                         { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected dmbt/LIST, got={fourCc}"); break; }
                         fs.Seek(br.ReadUInt32() + 4, SeekOrigin.Current); //we skip the UNFOunam, we don't care for this too
-                        uint lbilSegmentSize = br.ReadUInt32();
-                        byte[] lbilSegment = br.ReadBytes((int)lbilSegmentSize);
+                        var lbilSegmentSize = br.ReadUInt32();
+                        var lbilSegment = br.ReadBytes((int)lbilSegmentSize);
 
                         //now the list is varied- therefore we need to work on the segment and iterate. Let's create memorystream from memory buffer of segment
-                        MemoryStream msB = new MemoryStream(lbilSegment);
-                        using (BinaryReader brB = new BinaryReader(msB))
+                        var msB = new MemoryStream(lbilSegment);
+                        using (var brB = new BinaryReader(msB))
                         {
                             if (msB.Position == msB.Length)
                                 break;
@@ -1156,7 +1156,7 @@ namespace OpenVIII.AV.Midi
                             {
                                 if ((fourCc = ReadFourCc(brB)) != "LIST")
                                 { if (msB.Position == msB.Length) break; else { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: expected dmbt/LIST, got={fourCc}"); break; } }
-                                uint listBufferSize = brB.ReadUInt32();
+                                var listBufferSize = brB.ReadUInt32();
                                 if (listBufferSize != 52)
                                 {
                                     msB.Seek(listBufferSize, SeekOrigin.Current); //the other data is useless for us. We want the bands only.
@@ -1166,11 +1166,11 @@ namespace OpenVIII.AV.Midi
                                 }
                                 else
                                 {
-                                    string bandHeader = $"{ReadFourCc(brB)}{ReadFourCc(brB)}";
+                                    var bandHeader = $"{ReadFourCc(brB)}{ReadFourCc(brB)}";
                                     if (bandHeader != "lbinbins")
                                     { Console.WriteLine($"init_debugger_Audio::ReadSegmentForm: the band LIST reader got this magic: {bandHeader} instead of lbinbins"); break; }
-                                    uint sizeofDMUS_IO_INSTRUMENT = brB.ReadUInt32();
-                                    DMUS_IO_INSTRUMENT instrument = Extended.ByteArrayToStructure<DMUS_IO_INSTRUMENT>(brB.ReadBytes((int)sizeofDMUS_IO_INSTRUMENT));
+                                    var sizeofDMUS_IO_INSTRUMENT = brB.ReadUInt32();
+                                    var instrument = Extended.ByteArrayToStructure<DMUS_IO_INSTRUMENT>(brB.ReadBytes((int)sizeofDMUS_IO_INSTRUMENT));
                                     lbinbins.Add(instrument);
                                     continue;
                                 }
@@ -1218,7 +1218,7 @@ namespace OpenVIII.AV.Midi
                 Stop();
                 fluidState = ThreadFluidState.kill;
                 if (handles != null)
-                    foreach (GCHandle hwnd in handles)
+                    foreach (var hwnd in handles)
                         hwnd.Free();
                 disposedValue = true;
             }

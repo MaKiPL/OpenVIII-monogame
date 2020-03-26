@@ -35,13 +35,13 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         public static Renzokeken Create(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, TimeSpan time = default, TimeSpan delay = default, Color? darkcolor = null, bool rev = false, bool vanish = true)
         {
-            int total = 12 + 180;
+            var total = 12 + 180;
             if (pos.HasValue && pos.Value.Width > 0)
             {
                 total = pos.Value.Width;
             }
-            Color[] cfade = new Color[total];
-            Renzokeken r = new Renzokeken
+            var cfade = new Color[total];
+            var r = new Renzokeken
             {
                 Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1),
                 _pos = pos ?? Rectangle.Empty,
@@ -52,10 +52,10 @@ namespace OpenVIII.IGMDataItem.Gradient
                 Faded_Color = faded_color ?? color ?? Color.White,
                 Blink_Adjustment = blink_adjustment
             };
-            float dark = 0.067f;
-            float fade = 0.933f;
-            Color lightline = new Color(118, 118, 118, 255);
-            Color darkline = new Color(58, 58, 58, 255);
+            var dark = 0.067f;
+            var fade = 0.933f;
+            var lightline = new Color(118, 118, 118, 255);
+            var darkline = new Color(58, 58, 58, 255);
             int i;
             if (!rev)
             {

@@ -38,7 +38,7 @@ namespace OpenVIII.Fields.Scripts
 
                 public IEnumerable<IAwaitable> Execute(IServices services)
                 {
-                    foreach (IJsmInstruction instr in _list)
+                    foreach (var instr in _list)
                     {
                         if (instr is JsmInstruction singleInstruction)
                         {
@@ -47,8 +47,8 @@ namespace OpenVIII.Fields.Scripts
                         else if (instr is ExecutableSegment segment)
                         {
                             // TODO: Change recursion to the loop
-                            IScriptExecuter nested = segment.GetExecuter();
-                            foreach (IAwaitable result in nested.Execute(services))
+                            var nested = segment.GetExecuter();
+                            foreach (var result in nested.Execute(services))
                                 yield return result;
                         }
                         else

@@ -21,7 +21,7 @@ namespace OpenVIII.Fields.Scripts
 
         public String GetObjectNameByIndex(Int32 index)
         {
-            String objectName = String.Empty;
+            var objectName = String.Empty;
             if (_symbols != null)
                 objectName = _symbols.GetObjectOrDefault(index, defaultValue: String.Empty).Name;
 

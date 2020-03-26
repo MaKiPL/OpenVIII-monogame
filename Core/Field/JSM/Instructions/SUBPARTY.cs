@@ -34,7 +34,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Characters characterId = (Characters)_characterId.Int32(services);
+            var characterId = (Characters)_characterId.Int32(services);
             ServiceId.Party[services].RemovePartyCharacter(characterId);
             return DummyAwaitable.Instance;
         }

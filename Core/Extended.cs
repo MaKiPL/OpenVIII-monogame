@@ -75,15 +75,15 @@ namespace OpenVIII
         {
             if(x>WORLD_COORDS_MINLEFT)
             {
-                float leftSide = x - WORLD_COORDS_MINLEFT; //this is the distance from left to middle of map
+                var leftSide = x - WORLD_COORDS_MINLEFT; //this is the distance from left to middle of map
                 //0x1FFFF is one part of map
-                float percentUsage = leftSide / 0x1FFFF; //we now know the left side map percentage use
+                var percentUsage = leftSide / 0x1FFFF; //we now know the left side map percentage use
                 return (float)(percentUsage * (WORLD_OPENVIII_MAXRIGHT / 2.0));
             }
             else
             {
-                float percentUsage = x / WORLD_COORDS_MAXRIGHT;
-                double rightSide = WORLD_OPENVIII_MAXRIGHT / 2.0;
+                var percentUsage = x / WORLD_COORDS_MAXRIGHT;
+                var rightSide = WORLD_OPENVIII_MAXRIGHT / 2.0;
                 return (float)(percentUsage * rightSide + rightSide);
             }
         }
@@ -97,15 +97,15 @@ namespace OpenVIII
         {
             if (z > WORLD_COORDS_MINTOP)
             {
-                float topSide = z - WORLD_COORDS_MINTOP; //this is the distance from left to middle of map
+                var topSide = z - WORLD_COORDS_MINTOP; //this is the distance from left to middle of map
                 //0x1FFFF is one part of map
-                float percentUsage = topSide / 0x17FFF; //we now know the left side map percentage use
+                var percentUsage = topSide / 0x17FFF; //we now know the left side map percentage use
                 return (float)(percentUsage * (WORLD_OPENVIII_MAXBOTTOM / 2.0));
             }
             else
             {
-                float percentUsage = z / WORLD_COORDS_MAXBOTTOM;
-                double rightSide = WORLD_OPENVIII_MAXBOTTOM / 2.0;
+                var percentUsage = z / WORLD_COORDS_MAXBOTTOM;
+                var rightSide = WORLD_OPENVIII_MAXBOTTOM / 2.0;
                 return (float)(percentUsage * rightSide + rightSide);
             }
         }
@@ -123,7 +123,7 @@ namespace OpenVIII
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToClass<T>(byte[] bytes) where T : class
         {
-            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             try
             {
                 return (T)Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
@@ -136,7 +136,7 @@ namespace OpenVIII
         //https://stackoverflow.com/a/2887/4509036
         public static T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
-            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             try
             {
                 return (T)Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
@@ -160,7 +160,7 @@ namespace OpenVIII
         public static void DumpTexture(Texture2D tex, string s)
         {
             if (Directory.Exists(Path.GetDirectoryName(s)))
-            using (System.IO.FileStream fs = new System.IO.FileStream(s, System.IO.FileMode.Create, System.IO.FileAccess.Write))
+            using (var fs = new System.IO.FileStream(s, System.IO.FileMode.Create, System.IO.FileAccess.Write))
                 tex.SaveAsPng(fs, tex.Width, tex.Height);
         }
 #endif
@@ -192,36 +192,36 @@ namespace OpenVIII
         public static int RayIntersection3D(Ray R, Vector3 a, Vector3 b, Vector3 c, out Vector3 barycentric)
         {
             barycentric = Vector3.Zero;
-            Vector3 p1 = b - a;
-            Vector3 p2 = c - a;
-            Vector3 lhs = Vector3.Cross(p1, p2);
+            var p1 = b - a;
+            var p2 = c - a;
+            var lhs = Vector3.Cross(p1, p2);
             if (lhs == Vector3.Zero)
                 return -1;
-            Vector3 direction = R.Direction;
-            Vector3 rhs = R.Position - a;
-            float dot00 = -Vector3.Dot(lhs, rhs);
-            float dot01 = Vector3.Dot(lhs, direction);
+            var direction = R.Direction;
+            var rhs = R.Position - a;
+            var dot00 = -Vector3.Dot(lhs, rhs);
+            var dot01 = Vector3.Dot(lhs, direction);
             if (Math.Abs(dot01) < 1E-08f)
                 if (dot00 == 0f)
                     return 2;
                 else return 0;
             else
             {
-                float dot02 = dot00 / dot01;
+                var dot02 = dot00 / dot01;
                 if (dot02 < 0.0)
                     return 0;
                 barycentric = R.Position + dot02 * direction;
-                float dot10 = Vector3.Dot(p1, p1);
-                float dot11 = Vector3.Dot(p1, p2);
-                float dot12 = Vector3.Dot(p2, p2);
-                Vector3 lhs2 = barycentric - a;
-                float dot21 = Vector3.Dot(lhs2, p1);
-                float dot22 = Vector3.Dot(lhs2, p2);
-                float dot30 = dot11 * dot11 - dot10 * dot12;
-                float dot31 = (dot11 * dot22 - dot12 * dot21) / dot30;
+                var dot10 = Vector3.Dot(p1, p1);
+                var dot11 = Vector3.Dot(p1, p2);
+                var dot12 = Vector3.Dot(p2, p2);
+                var lhs2 = barycentric - a;
+                var dot21 = Vector3.Dot(lhs2, p1);
+                var dot22 = Vector3.Dot(lhs2, p2);
+                var dot30 = dot11 * dot11 - dot10 * dot12;
+                var dot31 = (dot11 * dot22 - dot12 * dot21) / dot30;
                 if (dot31 < 0.0 || dot31 > 1.0)
                     return 0;
-                float dot32 = (dot11 * dot21 - dot10 * dot22) / dot30;
+                var dot32 = (dot11 * dot21 - dot10 * dot22) / dot30;
                 if (dot32 < 0.0 || (dot31 + dot32) > 1.0)
                     return 0;
                 return 1;
@@ -230,14 +230,14 @@ namespace OpenVIII
 
         public static BoundingBox GetBoundingBox(Vector3 a, Vector3 b, Vector3 c)
         {
-            float Minx = (new float[] { a.X, b.X, c.X }).Min();
-            float Maxx = (new float[] { a.X, b.X, c.X }).Max();
-            float Miny = (new float[] { a.Y, b.Y, c.Y }).Min();
-            float Maxy = (new float[] { a.Y, b.Y, c.Y }).Max();
-            float Minz = (new float[] { a.Z, b.Z, c.Z }).Min();
-            float Maxz = (new float[] { a.Z, b.Z, c.Z }).Max();
-            Vector3 min = new Vector3(Minx, Miny, Minz);
-            Vector3 max = new Vector3(Maxx, Maxy, Maxz);
+            var Minx = (new float[] { a.X, b.X, c.X }).Min();
+            var Maxx = (new float[] { a.X, b.X, c.X }).Max();
+            var Miny = (new float[] { a.Y, b.Y, c.Y }).Min();
+            var Maxy = (new float[] { a.Y, b.Y, c.Y }).Max();
+            var Minz = (new float[] { a.Z, b.Z, c.Z }).Min();
+            var Maxz = (new float[] { a.Z, b.Z, c.Z }).Max();
+            var min = new Vector3(Minx, Miny, Minz);
+            var max = new Vector3(Maxx, Maxy, Maxz);
             return new BoundingBox(min, max);
         }
 
@@ -257,12 +257,12 @@ namespace OpenVIII
              * |         |
              * TWO------ONE*/
 
-            Vector3 zero = new Vector3(1f * scale +translatePosition.X , translatePosition.Y, 1f * scale + translatePosition.Z);
-            Vector3 one = new Vector3(1f * scale + translatePosition.X, translatePosition.Y, translatePosition.Z);
-            Vector3 two = translatePosition;
-            Vector3 three = new Vector3(translatePosition.X, translatePosition.Y, 1f * scale + translatePosition.Z);
+            var zero = new Vector3(1f * scale +translatePosition.X , translatePosition.Y, 1f * scale + translatePosition.Z);
+            var one = new Vector3(1f * scale + translatePosition.X, translatePosition.Y, translatePosition.Z);
+            var two = translatePosition;
+            var three = new Vector3(translatePosition.X, translatePosition.Y, 1f * scale + translatePosition.Z);
 
-            VertexPositionTexture[] vpt = new VertexPositionTexture[]
+            var vpt = new VertexPositionTexture[]
             {
                 new VertexPositionTexture(zero, new Vector2(1f,1f)),
                 new VertexPositionTexture(one, new Vector2(1f,0f)),
@@ -290,7 +290,7 @@ namespace OpenVIII
         /// <returns></returns>
         public static byte[] GetBinaryString(BinaryReader br)
         {
-            List<byte> bb = new List<byte>();
+            var bb = new List<byte>();
             byte b;
             while ((b = br.ReadByte()) != 0x00)
                 bb.Add(b);
@@ -301,7 +301,7 @@ namespace OpenVIII
         {
             get
             {
-                int p = (int)Environment.OSVersion.Platform;
+                var p = (int)Environment.OSVersion.Platform;
                 return (p == 4) || (p == 6) || (p == 128);
             }
         }
@@ -372,7 +372,7 @@ namespace OpenVIII
 
         public static string GetLanguageShort(bool bUseAlternative = false)
         {
-            string languageIndicator = Memory.languages.ToString();
+            var languageIndicator = Memory.languages.ToString();
             return bUseAlternative ? languageIndicator == "en" ? "us" : languageIndicator : languageIndicator;
         }
 

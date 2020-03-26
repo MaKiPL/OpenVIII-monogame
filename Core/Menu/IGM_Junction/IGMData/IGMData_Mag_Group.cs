@@ -16,10 +16,10 @@
 
             public override bool ITEMInputs(Menu_Base i, int pos = 0)
             {
-                bool ret = false;
+                var ret = false;
                 if (InputsModeTest(pos))
                 {
-                    Mode lastmode = (Mode)IGM_Junction.GetMode();
+                    var lastmode = (Mode)IGM_Junction.GetMode();
                     ret = base.ITEMInputs(i, pos);
                     if (ret)
                     {

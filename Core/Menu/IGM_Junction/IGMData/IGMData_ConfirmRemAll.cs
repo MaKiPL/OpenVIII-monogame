@@ -29,7 +29,7 @@ namespace OpenVIII
                         skipsnd = true;
                         AV.Sound.Play(31);
                         base.Inputs_OKAY();
-                        if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                        if (Damageable.GetCharacterData(out var c))
                             c.RemoveAll();
                         IGM_Junction.Data[SectionName.RemAll].Hide();
                         IGM_Junction.Data[SectionName.TopMenu_Off].Hide();

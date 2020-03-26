@@ -47,7 +47,7 @@ namespace OpenVIII.Battle
                 _rows = rows;
                 _frames = count > 0 && count <= _cols * _rows ? count : _cols * _rows;
                 _skip = skip;
-                Rectangle rectangle = new Rectangle(x, y, width, height);
+                var rectangle = new Rectangle(x, y, width, height);
                 IEnumerable<Model> temp = (from modelGroup in mg
                                            from model in modelGroup
                                            select model).Where(i => i.Quads != null && i.Triangles != null && i.Vertices != null).ToArray();
@@ -69,7 +69,7 @@ namespace OpenVIII.Battle
                 _time += Memory.ElapsedGameTime;
                 if (_time < _totalFrameTime + (_frameNumber <= _skip ? _pauseAtStart : TimeSpan.Zero)) return;
                 _time = TimeSpan.Zero;
-                int last = _frameNumber;
+                var last = _frameNumber;
                 if (_step != 1 && _step != -1) _step = 1;
                 _frameNumber += _step;
                 if (_reversible)
@@ -105,21 +105,21 @@ namespace OpenVIII.Battle
                     row = _frameNumber % _rows;
                 }
 
-                foreach (Quad q in _qs)
+                foreach (var q in _qs)
                 {
-                    for (int i = 0; i < q.UVs.Length; i++)
+                    for (var i = 0; i < q.UVs.Length; i++)
                     {
-                        Vector2 uv = q.UVs[i];
+                        var uv = q.UVs[i];
                         uv.X += _width * (col - lastCol);
                         uv.Y += _height * (row - lastRow);
                         q.UVs[i] = uv;
                     }
                 }
-                foreach (Triangle q in _ts)
+                foreach (var q in _ts)
                 {
-                    for (int i = 0; i < q.UVs.Length; i++)
+                    for (var i = 0; i < q.UVs.Length; i++)
                     {
-                        Vector2 uv = q.UVs[i];
+                        var uv = q.UVs[i];
                         uv.X += _width * (col - lastCol);
                         uv.Y += _height * (row - lastRow);
                         q.UVs[i] = uv;

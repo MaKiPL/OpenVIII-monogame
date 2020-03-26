@@ -81,9 +81,9 @@ namespace OpenVIII.Fields.Scripts
 
                 private Boolean TryMakeIf()
                 {
-                    JPF jpf = _begin;
+                    var jpf = _begin;
 
-                    If control = new If(_instructions, _index, _begin.Index);
+                    var control = new If(_instructions, _index, _begin.Index);
                     _result.Add(control);
 
                     if (!(_instructions[_begin.Index - 1] is JMP jmp))
@@ -117,11 +117,11 @@ namespace OpenVIII.Fields.Scripts
 
                 private void AddIfElseBranches(If control, JPF jpf, JMP jmp)
                 {
-                    Int32 endOfBlock = jmp.Index;
+                    var endOfBlock = jmp.Index;
 
                     while (true)
                     {
-                        Int32 newJpfIndex = jpf.Index;
+                        var newJpfIndex = jpf.Index;
                         if (!(_instructions[newJpfIndex] is JPF newJpf) || newJpf.Index > endOfBlock)
                         {
                             control.AddElse(jpf.Index, endOfBlock);

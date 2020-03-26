@@ -107,7 +107,7 @@ namespace OpenVIII.IGMData
 
         public static Commands Create(Rectangle pos, Damageable damageable = null, bool battle = false)
         {
-            Commands r = new Commands
+            var r = new Commands
             {
                 skipRefresh = damageable == null,
                 Battle = battle
@@ -120,11 +120,11 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs()
         {
-            bool ret = false;
-            bool found = false;
+            var ret = false;
+            var found = false;
             //loop through Start to Count
             //This is to only check for input from the dialogs that popup.
-            for (int i = Offsets.Start; i < Offsets.Count; i++)
+            for (var i = Offsets.Start; i < Offsets.Count; i++)
             {
                 if (InputITEM(ITEM[i, 0], ref ret))
                 {
@@ -158,16 +158,16 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs_OKAY()
         {
-            Kernel.BattleCommand c = commands[CURSOR_SELECT];
+            var c = commands[CURSOR_SELECT];
             if (c == null) return false;
             base.Inputs_OKAY();
             TargetGroup.SelectTargetWindows(c);
-            if (c.BattleID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
+            if (c.BattleID == 1 && Damageable != null && Damageable.GetEnemy(out var e))
             {
-                IEnumerable<Battle.Dat.Abilities> ecattacks = e.Abilities.Where(x => x.Monster != null);
+                var ecattacks = e.Abilities.Where(x => x.Monster != null);
                 if (ecattacks.Count() == 1)
                 {
-                    Kernel.EnemyAttacksData monster = ecattacks.First().Monster;
+                    var monster = ecattacks.First().Monster;
                     TargetGroup.SelectTargetWindows(monster);
                     TargetGroup.ShowTargetWindows();
                 }
@@ -277,7 +277,7 @@ namespace OpenVIII.IGMData
         {
             if (Battle && CURSOR_SELECT == 0 && CrisisLevel > -1)
             {
-                if (page == 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (page == 0 && Damageable.GetCharacterData(out var c))
                 {
                     commands[CURSOR_SELECT] = c.CharacterStats.Limit;
                     ((IGMDataItem.Text)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
@@ -308,13 +308,13 @@ namespace OpenVIII.IGMData
                         else
                             Show();
                     }
-                    if (Damageable.GetEnemy(out Enemy e))
+                    if (Damageable.GetEnemy(out var e))
                     {
                         enemycommands = e.Abilities;
-                        int pos = 0;
+                        var pos = 0;
                         bool Item, Magic, Attack;
                         Item = Magic = Attack = false;
-                        foreach (Battle.Dat.Abilities a in enemycommands)
+                        foreach (var a in enemycommands)
                         {
                             if (pos >= Rows) break;
                             ((IGMDataItem.Text)ITEM[pos, 0]).Hide();
@@ -347,7 +347,7 @@ namespace OpenVIII.IGMData
 
                         if (Attack)
                         {
-                            IEnumerable<Battle.Dat.Abilities> ecattacks = enemycommands.Where(x => x.Monster != null);
+                            var ecattacks = enemycommands.Where(x => x.Monster != null);
                             AddCommand(Memory.Kernel_Bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().Monster.Name : null));
                         }
                         if (Magic || e.DrawList.Any(x => x.Data != null))
@@ -371,11 +371,11 @@ namespace OpenVIII.IGMData
                             BLANKS[pos] = true;
                         }
                     }
-                    else if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    else if (Memory.State.Characters != null && Damageable.GetCharacterData(out var c))
                     {
                         if (Battle)
                             c.GenerateCrisisLevel();
-                        Rectangle DataSize = Rectangle.Empty;
+                        var DataSize = Rectangle.Empty;
                         page = 0;
                         Cursor_Status &= ~Cursor_Status.Horizontal;
                         commands[0] = Memory.Kernel_Bin.BattleCommands[(c.Abilities.Contains(Kernel.Abilities.Mug) ? 12 : 1)];
@@ -385,13 +385,13 @@ namespace OpenVIII.IGMData
                             Pos = SIZE[0]
                         };
 
-                        for (int pos = 1; pos < Rows; pos++)
+                        for (var pos = 1; pos < Rows; pos++)
                         {
-                            Kernel.Abilities cmd = c.Commands[pos - 1];
+                            var cmd = c.Commands[pos - 1];
 
                             if (cmd != Kernel.Abilities.None)
                             {
-                                if (!Memory.Kernel_Bin.CommandAbilities.TryGetValue(cmd, out Kernel.CommandAbility cmdval))
+                                if (!Memory.Kernel_Bin.CommandAbilities.TryGetValue(cmd, out var cmdval))
                                 {
                                     continue;
                                 }
@@ -447,7 +447,7 @@ namespace OpenVIII.IGMData
         {
             base.Init();
             BLANKS[Offsets.Limit_Arrow] = true;
-            for (int pos = 0; pos < Rows; pos++)
+            for (var pos = 0; pos < Rows; pos++)
                 ITEM[pos, 0] = new IGMDataItem.Text
                 {
                     Pos = SIZE[pos]
@@ -516,7 +516,7 @@ namespace OpenVIII.IGMData
             }
         }
 
-        public sbyte CrisisLevel => Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) ? c.CurrentCrisisLevel : (sbyte)-1;
+        public sbyte CrisisLevel => Damageable != null && Damageable.GetCharacterData(out var c) ? c.CurrentCrisisLevel : (sbyte)-1;
 
         private void SubscribeEvents()
         {

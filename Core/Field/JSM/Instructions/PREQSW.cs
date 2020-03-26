@@ -26,14 +26,14 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
-            formatterContext.GetObjectScriptNamesById(_scriptId, out String typeName, out String methodName);
+            formatterContext.GetObjectScriptNamesById(_scriptId, out var typeName, out var methodName);
 
             sw.AppendLine($"{nameof(PREQSW)}(priority: {_priority}, GetObject<{typeName}>().{methodName}());");
         }
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject targetObject = ServiceId.Party[services].FindPartyCharacterObject(_partyId);
+            var targetObject = ServiceId.Party[services].FindPartyCharacterObject(_partyId);
             if (targetObject == null)
                 throw new NotSupportedException($"Unknown expected behavior when trying to call a method of a nonexistent party character (Slot: {_partyId}).");
 

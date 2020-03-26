@@ -41,7 +41,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Int32 fps = _halfFps.Int32(services) * 2;
+            var fps = _halfFps.Int32(services) * 2;
             ServiceId.Rendering[services].BackgroundFPS = fps;
             return DummyAwaitable.Instance;
         }

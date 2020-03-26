@@ -60,7 +60,7 @@ namespace OpenVIII
                 if (Memory.State?.Characters != null)
                 {
                     sbyte pos = 0;
-                    bool ret = base.Update();
+                    var ret = base.Update();
                     if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                     {
                         for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
@@ -74,7 +74,7 @@ namespace OpenVIII
                     }
                     for (; pos < Count; pos++)
                     {
-                        for (int i = 0; i < Depth; i++)
+                        for (var i = 0; i < Depth; i++)
                         {
                             BLANKS[pos] = true;
                             ITEM[pos, i]?.Hide();
@@ -110,14 +110,14 @@ namespace OpenVIII
                 Contents = new Damageable[Count];
                 base.Init();
 
-                for (int pos = 0; pos < Count; pos++)
+                for (var pos = 0; pos < Count; pos++)
                 {
                     float yoff = 39;
-                    Rectangle rbak = SIZE[pos];
+                    var rbak = SIZE[pos];
                     ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
                     CURSOR[pos] = new Point(rbak.X, (int)(rbak.Y + (6 * TextScale.Y)));
 
-                    Rectangle r = rbak;
+                    var r = rbak;
                     r.Offset(7, yoff);
                     ITEM[pos, 1] = new IGMDataItem.Icon { Data = Icons.ID.Lv, Pos = r, Palette = 13 };
 
@@ -145,7 +145,7 @@ namespace OpenVIII
                     r.Offset((166), yoff);
                     ITEM[pos, 8] = new IGMDataItem.Integer { Pos = r, Palette = 2, Faded_Palette = 0, Padding = 1, Spaces = 4 };
 
-                    for (int i = 0; i < Depth; i++)
+                    for (var i = 0; i < Depth; i++)
                     {
                         ITEM[pos, i]?.Hide();
                     }
@@ -159,7 +159,7 @@ namespace OpenVIII
                     _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                     _red_pixel.SetData(new Color[] { Color.White }, 0, _red_pixel.Width * _red_pixel.Height);
                 }
-                for (int pos = 0; pos < Count; pos++)
+                for (var pos = 0; pos < Count; pos++)
                 {
                     if (ITEM[pos, 4] != null && ITEM[pos, 4].GetType() == typeof(IGMDataItem.Texture))
                         ((IGMDataItem.Texture)ITEM[pos, 4]).Data = _red_pixel;
@@ -184,7 +184,7 @@ namespace OpenVIII
                     ITEM[pos, 0] = new IGMDataItem.Text { Data = damageable.Name, Pos = SIZE[pos] };
                     CURSOR[pos] = new Point(SIZE[pos].X, (int)(SIZE[pos].Y + (6 * TextScale.Y)));
 
-                    Rectangle r = ITEM[pos, 5].Pos;
+                    var r = ITEM[pos, 5].Pos;
                     r.Height = BarHeight;
                     r.Width = (int)(DefaultHPBarWidth * damageable.PercentFullHP());
                     ((IGMDataItem.Texture)ITEM[pos, 5]).Pos = r;
@@ -194,13 +194,13 @@ namespace OpenVIII
 
                     ((IGMDataItem.Integer)ITEM[pos, 2]).Data = damageable.Level;
                     ((IGMDataItem.Integer)ITEM[pos, 8]).Data = damageable.CurrentHP();
-                    for (int i = 0; i < Depth; i++)
+                    for (var i = 0; i < Depth; i++)
                     {
                         ITEM[pos, i]?.Show();
                     }
                 }
                 else
-                    for (int i = 0; i < Depth; i++)
+                    for (var i = 0; i < Depth; i++)
                     {
                         ITEM[pos, i]?.Hide();
                     }

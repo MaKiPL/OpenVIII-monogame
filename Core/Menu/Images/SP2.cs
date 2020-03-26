@@ -89,7 +89,7 @@ namespace OpenVIII
         public static T Load<T>() where T : SP2, new()
         {
             Memory.Log.WriteLine($"{nameof(SP2)} :: {nameof(Load)} :: {typeof(T)} ");
-            T r = new T();
+            var r = new T();
             r.DefaultValues();
             r.Init();
             return r;
@@ -103,28 +103,28 @@ namespace OpenVIII
         /// <param name="fade"></param>
         public virtual void Draw(Enum id, Rectangle dst, float fade = 1)
         {
-            Rectangle src = GetEntry(id).GetRectangle;
-            TextureHandler tex = GetTexture(id);
+            var src = GetEntry(id).GetRectangle;
+            var tex = GetTexture(id);
             tex.Draw(dst, src, Color.White * fade);
         }
 
         public virtual void Draw(Enum id, Rectangle dst, Vector2 fill, float fade = 1)
         {
-            Entry entry = GetEntry(id);
+            var entry = GetEntry(id);
             if (entry != null)
             {
-                Rectangle src = entry.GetRectangle;
+                var src = entry.GetRectangle;
                 if (fill == Vector2.UnitX)
                 {
-                    float r = (float)dst.Height / dst.Width;
+                    var r = (float)dst.Height / dst.Width;
                     src.Height = (int)Math.Round(src.Height * r);
                 }
                 else if (fill == Vector2.UnitY)
                 {
-                    float r = (float)dst.Width / dst.Height;
+                    var r = (float)dst.Width / dst.Height;
                     src.Width = (int)Math.Round(src.Width * r);
                 }
-                TextureHandler tex = GetTexture(id);
+                var tex = GetTexture(id);
                 tex?.Draw(dst, src, Color.White * fade);
             }
         }
@@ -142,7 +142,7 @@ namespace OpenVIII
 
         public virtual TextureHandler GetTexture(Enum id, int file = -1)
         {
-            int pos = Convert.ToInt32(id);
+            var pos = Convert.ToInt32(id);
             file = file >= 0 ? file : GetEntry((uint)pos).File;
             //check if we set a custom file and we have a pos more then set entries per texture
             if (file <= 0)
@@ -151,7 +151,7 @@ namespace OpenVIII
                     file = (pos / EntriesPerTexture);
             }
             if (file <= 0) return Textures.Count > file ? Textures[file] : null;
-            int j = (int)Props.Sum(x => x.Count);
+            var j = (int)Props.Sum(x => x.Count);
             if (file >= j)
             {
                 file %= j;
@@ -167,7 +167,7 @@ namespace OpenVIII
 
         public virtual void Trim(Enum ic, byte pal)
         {
-            Entry entry = this[ic];
+            var entry = this[ic];
             entry.SetTrimNonGroup(Textures[pal]);
         }
 
@@ -179,10 +179,10 @@ namespace OpenVIII
 
         protected virtual VertexPositionTexture_Texture2D Quad(Entry entry, TextureHandler texture, float scale = .25f, Box_Options options = Box_Options.Middle | Box_Options.Center, float z = 0f)
         {
-            Rectangle rectangle = entry.GetRectangle;
-            Vector2 scaleFactor = texture.ScaleFactor;
-            Vector2 offset = options.HasFlag(Box_Options.UseOffset) ? entry.Offset : Vector2.Zero;
-            VertexPositionTexture[] vpt = new VertexPositionTexture[6];
+            var rectangle = entry.GetRectangle;
+            var scaleFactor = texture.ScaleFactor;
+            var offset = options.HasFlag(Box_Options.UseOffset) ? entry.Offset : Vector2.Zero;
+            var vpt = new VertexPositionTexture[6];
             float left, right, bottom, top;
             if (options.HasFlag(Box_Options.Left))
             {
@@ -215,7 +215,7 @@ namespace OpenVIII
                 top = rectangle.Height / 2f;
             }
 
-            VertexPositionTexture[] v = new VertexPositionTexture[]
+            var v = new VertexPositionTexture[]
             {
                 new VertexPositionTexture(new Vector3(left+offset.X,top+offset.Y,z)*scale,new Vector2(rectangle.Right*scaleFactor.X/texture.Width,rectangle.Top*scaleFactor.Y/texture.Height)),
                 new VertexPositionTexture(new Vector3(right+offset.X,top+offset.Y,z)*scale,new Vector2(rectangle.Left*scaleFactor.X/texture.Width,rectangle.Top*scaleFactor.Y/texture.Height)),
@@ -249,7 +249,7 @@ namespace OpenVIII
         {
             if (Entries == null)
             {
-                ArchiveBase aw = ArchiveWorker.Load(ArchiveString);
+                var aw = ArchiveWorker.Load(ArchiveString);
                 InitEntries(aw);
                 InsertCustomEntries();
                 InitTextures<TEX>(aw);
@@ -263,12 +263,12 @@ namespace OpenVIII
                 aw = ArchiveWorker.Load(ArchiveString);
             MemoryStream ms;
 
-            byte[] buffer = aw.GetBinaryFile(IndexFilename);
+            var buffer = aw.GetBinaryFile(IndexFilename);
             if (buffer == null) return;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 Count = br.ReadUInt32();
-                ushort[] locations = new ushort[Count];
+                var locations = new ushort[Count];
                 Entries = new Dictionary<uint, Entry>((int)Count);
                 for (uint i = 0; i < Count; i++)
                 {
@@ -280,7 +280,7 @@ namespace OpenVIII
                 for (uint i = 0; i < Count; i++)
                 {
                     ms.Seek(locations[i] + 6, SeekOrigin.Begin);
-                    byte t = br.ReadByte();
+                    var t = br.ReadByte();
                     if (t == 0 || t == 96) // known invalid entries in sp2 files have this value. there might be more to it.
                     {
                         Count = i;
@@ -297,7 +297,7 @@ namespace OpenVIII
 
         protected virtual void InitTextures<T>(ArchiveBase aw = null) where T : Texture_Base, new()
         {
-            int count = (int)Props.Sum(x => x.Count);
+            var count = (int)Props.Sum(x => x.Count);
             if (Textures == null)
                 Textures = new List<TextureHandler>(count);
             if (Textures.Count <= 0)
@@ -306,26 +306,26 @@ namespace OpenVIII
                     aw = ArchiveWorker.Load(ArchiveString);
                 T tex;
                 Scale = new Dictionary<uint, Vector2>(count);
-                int b = 0;
-                for (int j = 0; j < Props.Count; j++)
+                var b = 0;
+                for (var j = 0; j < Props.Count; j++)
                     for (uint i = 0; i < Props[j].Count; i++)
                     {
                         tex = new T();
-                        byte[] buffer = aw.GetBinaryFile(string.Format(Props[j].Filename, i + TextureStartOffset));
+                        var buffer = aw.GetBinaryFile(string.Format(Props[j].Filename, i + TextureStartOffset));
                         if (buffer != null)
                         {
                             tex.Load(buffer);
 
                             if (Props[j].Big != null && ForceOriginal == false && b < Props[j].Big.Count)
                             {
-                                TextureHandler th = TextureHandler.Create(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
+                                var th = TextureHandler.Create(Props[j].Big[b].Filename, tex, 2, Props[j].Big[b++].Split / 2);
 
                                 Textures.Add(th);
                                 Scale[i] = Vector2.One;
                             }
                             else
                             {
-                                TextureHandler th = TextureHandler.Create(Props[j].Filename, tex);
+                                var th = TextureHandler.Create(Props[j].Filename, tex);
                                 Textures.Add(th);
                                 Scale[i] = th.GetScale(); //scale might not be used outside of texturehandler.
                             }

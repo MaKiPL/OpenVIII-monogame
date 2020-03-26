@@ -42,10 +42,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
 
-            Int32 unknown = _unknown.Int32(services);
-            Int32 frameDuration = _frameDuration.Int32(services);
+            var unknown = _unknown.Int32(services);
+            var frameDuration = _frameDuration.Int32(services);
             currentObject.Model.RotateToPlayer(unknown, frameDuration);
 
             return DummyAwaitable.Instance;

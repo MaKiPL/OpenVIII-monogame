@@ -19,10 +19,10 @@ namespace OpenVIII
 
             public override bool Update()
             {
-                if (Memory.State?.Characters != null && Damageable!=null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State?.Characters != null && Damageable!=null && Damageable.GetCharacterData(out var c))
                 {
-                    Dictionary<Kernel.Element, byte> oldtotal = (prevSetting != null) ? getTotal(prevSetting, out Enum[] availableFlagsarray) : null;
-                    Dictionary<Kernel.Element, byte> total = getTotal(c, out availableFlagsarray);
+                    var oldtotal = (prevSetting != null) ? getTotal(prevSetting, out var availableFlagsarray) : null;
+                    var total = getTotal(c, out availableFlagsarray);
                     FillData(oldtotal, total, availableFlagsarray, Icons.ID.Element_Fire, palette: 9);
                 }
                 return base.Update();

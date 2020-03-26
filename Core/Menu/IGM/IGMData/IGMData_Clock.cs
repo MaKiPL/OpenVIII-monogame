@@ -31,7 +31,7 @@ namespace OpenVIII
                     if (!Memory.State.TeamLaguna)
                     {
                         //TODO Hide seed rank if not in seed yet.
-                        int SeedRank = Memory.State.FieldVars.SeedRankPts / 100;
+                        var SeedRank = Memory.State.FieldVars.SeedRankPts / 100;
                         ((IGMDataItem.Integer)ITEM[0, 5]).Data = SeedRank < MaxSeedRank ? SeedRank : MaxSeedRank;
                         ITEM[0, 4].Show();
                         ITEM[0, 5].Show();
@@ -41,7 +41,7 @@ namespace OpenVIII
                         ITEM[0, 4].Hide();
                         ITEM[0, 5].Hide();
                     }
-                    for (int i = 0; i < Depth; i++)
+                    for (var i = 0; i < Depth; i++)
                     {
                         if (i != 4 && i != 5)
                             ITEM[0, i]?.Show();

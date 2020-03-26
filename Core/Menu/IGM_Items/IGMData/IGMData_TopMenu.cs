@@ -35,7 +35,7 @@ namespace OpenVIII
 
             public static IGMData_TopMenu Create(IReadOnlyDictionary<FF8String, FF8String> pairs)
             {
-                IGMData_TopMenu r = Create<IGMData_TopMenu>();
+                var r = Create<IGMData_TopMenu>();
                 r._pairs = pairs;
                 r.CreateData();
                 return r;
@@ -101,10 +101,10 @@ namespace OpenVIII
                 _helpStr = new FF8String[Pairs.Count];
                 widths = new int[Pairs.Count];
                 byte pos = 0;
-                foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
+                foreach (var pair in Pairs)
                 {
                     _helpStr[pos] = pair.Value;
-                    Rectangle rectangle = Memory.font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
+                    var rectangle = Memory.font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
                     widths[pos] = rectangle.Width;
                     if (rectangle.Width > largestwidth) largestwidth = rectangle.Width;
                     if (rectangle.Height > largestheight) largestheight = rectangle.Height;
@@ -114,7 +114,7 @@ namespace OpenVIII
                 }
                 Init(Pairs.Count, 1, new IGMDataItem.Box { Pos = new Rectangle(0, 12, 610, 54) }, Pairs.Count, 1);
                 pos = 0;
-                foreach (KeyValuePair<FF8String, FF8String> pair in Pairs)
+                foreach (var pair in Pairs)
                 {
                     ITEM[pos, 0] = new IGMDataItem.Text { Data = pair.Key, Pos = SIZE[pos] };
                     pos++;

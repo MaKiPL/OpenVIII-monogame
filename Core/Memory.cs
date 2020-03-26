@@ -133,7 +133,7 @@ namespace OpenVIII
         {
             if (Threaded)
             {
-                List<Task> tasks = new List<Task>(actions.Length);
+                var tasks = new List<Task>(actions.Length);
                 actions.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
                 //Some code that cannot be threaded on init.
                 if (!Task.WaitAll(tasks.ToArray(), 10000))
@@ -147,7 +147,7 @@ namespace OpenVIII
         {
             if (Threaded)
             {
-                List<Task<bool>> tasks = new List<Task<bool>>(funcs.Length);
+                var tasks = new List<Task<bool>>(funcs.Length);
                 funcs.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
                 //Some code that cannot be threaded on init.
                 if (!Task.WaitAll(tasks.ToArray(), 10000))
@@ -166,8 +166,8 @@ namespace OpenVIII
                 targetX = graphics.GraphicsDevice.Viewport.Width;
             if (targetY == 0)
                 targetY = graphics.GraphicsDevice.Viewport.Height;
-            float h = targetX / Width;
-            float v = targetY / Height;
+            var h = targetX / Width;
+            var v = targetY / Height;
             switch (scaleMode)
             {
 #pragma warning disable CS0162 // Unreachable code detected
@@ -218,8 +218,8 @@ namespace OpenVIII
             {
                 if (dicMusic.Count > 0)
                 {
-                    ushort max = (ushort)dicMusic.Keys.Max();
-                    ushort min = (ushort)dicMusic.Keys.Min();
+                    var max = (ushort)dicMusic.Keys.Max();
+                    var min = (ushort)dicMusic.Keys.Min();
                     while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
                         !dicMusic.ContainsKey((MusicId)currmusic))
                     {
@@ -352,7 +352,7 @@ namespace OpenVIII
         public static int InitTaskMethod(object obj)
         {
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(Memory)} :: {nameof(Init)}");
-            CancellationToken token = (CancellationToken)obj;
+            var token = (CancellationToken)obj;
 
             if (!token.IsCancellationRequested)
                 Memory.Strings = new Strings();
@@ -361,7 +361,7 @@ namespace OpenVIII
             // saves data will reference kernel_bin.
             if (!token.IsCancellationRequested)
                 Kernel_Bin = KernelBin.CreateInstance();
-            List<Action> actions = new List<Action>()
+            var actions = new List<Action>()
             {
                 // this has a soft requirement on kernel_bin. It checks for null so should work without it.
                 () => {MItems = Items_In_Menu.Read(); },
@@ -399,13 +399,13 @@ namespace OpenVIII
                 State = InitState?.Clone();
             });
 
-            List<Task> tasks = new List<Task>();
+            var tasks = new List<Task>();
 
             if (!token.IsCancellationRequested)
             {
                 if (Threaded)
                 {
-                    foreach (Action a in actions)
+                    foreach (var a in actions)
                     {
                         if (!token.IsCancellationRequested)
                             tasks.Add(Task.Run(a, token));
@@ -413,7 +413,7 @@ namespace OpenVIII
                     Task.WaitAll(tasks.ToArray());
                 }
                 else
-                    foreach (Action a in actions)
+                    foreach (var a in actions)
                     {
                         if (!token.IsCancellationRequested)
                             a.Invoke();
@@ -443,7 +443,7 @@ namespace OpenVIII
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics}");
             Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics?.GraphicsDevice.Adapter.CurrentDisplayMode}");
             if (graphics != null)
-                foreach (DisplayMode i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
+                foreach (var i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
                     Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
             //Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics.GraphicsDevice.Adapter.DeviceName}");
             //Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch}");
@@ -461,7 +461,7 @@ namespace OpenVIII
             FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
 
             SetData();
-            bool languageSet = false;
+            var languageSet = false;
             void setLang(string lang)
             {
                 switch (lang.ToLower())
@@ -507,7 +507,7 @@ namespace OpenVIII
                 IEnumerable<string[]> splitArguments = (from a in arguments
                                                         where a.Contains('=')
                                                         select a.Trim().Split(new[] { '=' }, 2)).OrderByDescending(x=>x[0],StringComparer.OrdinalIgnoreCase);
-                foreach (string[] s in splitArguments)
+                foreach (var s in splitArguments)
                 {
                     bool test(string @in, ref string @out)
                     {
@@ -516,7 +516,7 @@ namespace OpenVIII
                         return true;
                     }
 
-                    string lang = "";
+                    var lang = "";
                     if (test("dir", ref _ff8Dir)) //override ff8 directory
                     {
                         if (!Directory.Exists(_ff8Dir))
@@ -538,17 +538,17 @@ namespace OpenVIII
             }
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIR)} = {FF8DIR}");
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata)} = {FF8DIRdata}");
-            string langDatPath = Path.Combine(FF8DIR, "lang.dat");
+            var langDatPath = Path.Combine(FF8DIR, "lang.dat");
             if (!languageSet && File.Exists(langDatPath))
-                using (StreamReader streamReader = new StreamReader(
+                using (var streamReader = new StreamReader(
                     new FileStream(langDatPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.UTF8))
                 {
-                    string lang = streamReader.ReadLine()?.Trim();
+                    var lang = streamReader.ReadLine()?.Trim();
                     setLang(lang);
                 }
 
             Memory.Log.WriteLine($"{nameof(Extended)} :: {nameof(Extended.GetLanguageShort)} = {Extended.GetLanguageShort()}");
-            string testDir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
+            var testDir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
             FF8DIRdata_lang = Directory.Exists(testDir) ? testDir : FF8DIRdata;
             Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata_lang)} = {FF8DIRdata_lang}");
 
@@ -1116,7 +1116,7 @@ namespace OpenVIII
             Action a = null;
             while (IsMainThread && (MainThreadOnlyActions?.TryDequeue(out a) ?? false))
             { a.Invoke(); }
-            for (int i = 0; IsMainThread && i < FfccLeftOverTask.Count; i++)
+            for (var i = 0; IsMainThread && i < FfccLeftOverTask.Count; i++)
             {
                 if (FfccLeftOverTask[i].IsCompleted)
                 {

@@ -113,7 +113,7 @@ namespace OpenVIII
         {
             get
             {
-                Kernel.PersistentStatuses ret = Kernel.PersistentStatuses.None;
+                var ret = Kernel.PersistentStatuses.None;
                 if (Type == _Type.HealGF || Type == _Type.Heal || Type == _Type.Revive || Type == _Type.ReviveGF ||
                     Type == _Type.Cure_Abnormal_Status || Type == _Type.SavePointHeal)
                     ret = (Kernel.PersistentStatuses)b3;
@@ -228,7 +228,7 @@ namespace OpenVIII
         public static Item_In_Menu Read(BinaryReader br, byte i)
         {
             Memory.Log.WriteLine($"{nameof(Item_In_Menu)} :: {nameof(Read)} :: {i}");
-            Item_In_Menu tmp = new Item_In_Menu
+            var tmp = new Item_In_Menu
             {
                 Type = (_Type)br.ReadByte(),
                 b1 = (_Target)br.ReadByte(),
@@ -376,12 +376,12 @@ namespace OpenVIII
         {
             if (UseActions.ContainsKey(Type))
             {
-                bool ret = GFAction(UseActions[Type], obj, battle);
+                var ret = GFAction(UseActions[Type], obj, battle);
                 ret = CharAction(UseActions[Type], obj, battle) || ret;
                 if (ret)
                 {
-                    byte id = ID;
-                    for (int i = 0; i < Memory.State.Items.Count; i++)
+                    var id = ID;
+                    for (var i = 0; i < Memory.State.Items.Count; i++)
                     {
                         if (Memory.State.Items[i].ID == ID)
                             Memory.State.Items[i].UsedOne();
@@ -399,10 +399,10 @@ namespace OpenVIII
             else if (Type == _Type.SolomonRing) return !Memory.State[GFs.Doomtrain]?.Exists ?? true; //TODO detect doomtrain and return false if unlocked
             else if (Type == _Type.Lamp) return !Memory.State[GFs.Diablos]?.Exists ?? true;  //TODO detect diablo and return false if unlocked
             Faces.ID _face;
-            foreach (Faces.ID face in (Faces.ID[])Enum.GetValues(typeof(Faces.ID)))
+            foreach (var face in (Faces.ID[])Enum.GetValues(typeof(Faces.ID)))
             {
                 _face = face;
-                if (TestCharacter(ref _face, out Characters character) || TestGF(ref _face, out GFs gf))
+                if (TestCharacter(ref _face, out var character) || TestGF(ref _face, out var gf))
                 {
                     return true;
                 }
@@ -421,18 +421,18 @@ namespace OpenVIII
 
         private bool CharAction(Func<Faces.ID, bool, bool> func, Faces.ID obj, bool battle = false)
         {
-            bool ret = false;
+            var ret = false;
             if (All)
             {
-                foreach (KeyValuePair<Characters, Saves.CharacterData> c in Memory.State.Characters.Where(x => (battle && Memory.State.PartyData.Contains(x.Key)) || x.Value.Available))
+                foreach (var c in Memory.State.Characters.Where(x => (battle && Memory.State.PartyData.Contains(x.Key)) || x.Value.Available))
                 {
                     obj = c.Key.ToFacesID();
-                    if (TestCharacter(ref obj, out Characters character))
+                    if (TestCharacter(ref obj, out var character))
                         ret = func(obj, battle) || ret;
                 }
                 return ret;
             }
-            else if (TestCharacter(ref obj, out Characters character))
+            else if (TestCharacter(ref obj, out var character))
                 ret = func(obj, battle);
 
             return ret;
@@ -444,7 +444,7 @@ namespace OpenVIII
 
         private bool Cure_Abnormal_StatusAction(Damageable c, bool battle)
         {
-            bool ret = false;
+            var ret = false;
             if (c != null && !c.StatusImmune)
                 ret = c.DealStatus(Cleansed_Statuses, Battle?.Statuses1, Battle?.AttackType ?? Kernel.AttackType.CurativeItem, Battle?.AttackFlags);
             return ret;
@@ -466,18 +466,18 @@ namespace OpenVIII
 
         private bool GFAction(Func<Faces.ID, bool, bool> func, Faces.ID obj, bool battle = false)
         {
-            bool ret = false;
+            var ret = false;
             if (All)
             {
-                foreach (KeyValuePair<GFs, Saves.GFData> c in Memory.State.GFs.Where(x => x.Value.Exists))
+                foreach (var c in Memory.State.GFs.Where(x => x.Value.Exists))
                 {
                     obj = c.Key.ToFacesID();
-                    if (TestGF(ref obj, out GFs gf))
+                    if (TestGF(ref obj, out var gf))
                         ret = func(obj, battle) || ret;
                 }
                 return ret;
             }
-            else if (TestGF(ref obj, out GFs gf))
+            else if (TestGF(ref obj, out var gf))
                 ret = func(obj, battle);
 
             return ret;
@@ -498,7 +498,7 @@ namespace OpenVIII
         private bool HealAction(Damageable c, bool battle)
         {
             //c.ChangeHP(-Heals);
-            bool ret = false;
+            var ret = false;
 
             if (c != null && !ZombieCheck(c.Statuses0, battle))
             {
@@ -523,7 +523,7 @@ namespace OpenVIII
 
         private bool ReviveAction(Damageable c, bool battle)
         {
-            bool ret = false;
+            var ret = false;
             if (c != null && !ZombieCheck(c.Statuses0, battle))
             {
                 if (!c.StatusImmune && Cleansed_Statuses != Kernel.PersistentStatuses.None)
@@ -589,10 +589,10 @@ namespace OpenVIII
 
         public static Items_In_Menu Read()
         {
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
-            byte[] buffer = aw.GetBinaryFile("mitem.bin");
+            var aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
+            var buffer = aw.GetBinaryFile("mitem.bin");
             if(buffer != null)
-                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                using (var br = new BinaryReader(new MemoryStream(buffer)))
                 {
                     return Read(br);
                 }
@@ -602,10 +602,10 @@ namespace OpenVIII
         private static Items_In_Menu Read(BinaryReader br)
         {
             Memory.Log.WriteLine($"{nameof(Items_In_Menu)} :: {nameof(Read)} ");
-            Items_In_Menu ret = new Items_In_Menu();
+            var ret = new Items_In_Menu();
             for (byte i = 0; br.BaseStream.Position + 4 <= br.BaseStream.Length; i++)
             {
-                Item_In_Menu tmp = Item_In_Menu.Read(br, i);
+                var tmp = Item_In_Menu.Read(br, i);
                 ret._items.Add(tmp);
             }
             return ret;

@@ -12,9 +12,9 @@ namespace OpenVIII.IGMData.Slots
         {
             base.Refresh();
 
-            if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out var c))
             {
-                for (int i = 0; i < Count; i++)
+                for (var i = 0; i < Count; i++)
                 {
                     if (i > 0)
                     {
@@ -22,7 +22,7 @@ namespace OpenVIII.IGMData.Slots
                         {
                             ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.Kernel_Bin.CommandAbilities[c.Commands[i - 1]].Name;
                             ITEM[i, 1].Show();
-                            Kernel.Abilities k = c.Commands[i - 1];
+                            var k = c.Commands[i - 1];
                             Descriptions[i] = Memory.Kernel_Bin.CommandAbilities[k].BattleCommand.Description;
                         }
                         else
@@ -46,7 +46,7 @@ namespace OpenVIII.IGMData.Slots
             base.Init();
             CURSOR[0] = Point.Zero; //disable this cursor location
 
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
             {
                 if (i > 0)
                 {

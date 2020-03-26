@@ -29,7 +29,7 @@ namespace DumpStrings
                     int sectionID, int inputID, FF8StringReference value)
                     => (fileID, sectionID, inputID, value); // this is for having a tuple instead of anonymous type
 
-                ReadOnlyCollection<(Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value)> strings = (
+                var strings = (
                     from file in Memory.Strings
                     from section in file.Value
                     from ff8StringReference in section.Value.Select((x, i) => new { Key = i, Value = x })
@@ -48,7 +48,7 @@ namespace DumpStrings
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         private static void DumpReverseStrings()
         {
-            using (XmlWriter w =
+            using (var w =
                 XmlWriter.Create(
                     new FileStream($"reverse_strings_{Extended.GetLanguageShort().ToLower()}.xml", FileMode.Create, FileAccess.Write,
                         FileShare.ReadWrite),
@@ -58,10 +58,10 @@ namespace DumpStrings
                 w.WriteStartElement("ReverseStrings"); //<ReverseStrings>
                 w.WriteAttributeString("lang", Extended.GetLanguageShort().ToUpper());
 
-                IEnumerable<(Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value)> strings = CollectionOfStrings;
+                var strings = CollectionOfStrings;
 
                 w.WriteAttributeString("count", strings.Count().ToString("D"));
-                foreach ((Strings.FileID fileID, int sectionID, int id, FF8StringReference value) in strings)
+                foreach ((var fileID, var sectionID, var id, var value) in strings)
                 {
                     w.WriteStartElement("String");
                     w.WriteAttributeString(nameof(fileID).ToLower(), fileID.ToString("D"));
@@ -79,7 +79,7 @@ namespace DumpStrings
 
         private static void DumpStrings()
         {
-            using (XmlWriter w =
+            using (var w =
                 XmlWriter.Create(
                     new FileStream($"strings_{Extended.GetLanguageShort().ToLower()}.xml", FileMode.Create, FileAccess.Write,
                         FileShare.ReadWrite),
@@ -89,24 +89,24 @@ namespace DumpStrings
                 w.WriteStartElement("Strings"); //<Strings>
                 w.WriteAttributeString("lang", Extended.GetLanguageShort().ToUpper());
 
-                IEnumerable<(Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value)> strings = CollectionOfStrings;
-                ReadOnlyCollection<IGrouping<Strings.FileID, (Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value)>> fileGroups = strings.GroupBy(x => x.fileKey).ToList().AsReadOnly();
+                var strings = CollectionOfStrings;
+                var fileGroups = strings.GroupBy(x => x.fileKey).ToList().AsReadOnly();
                 //var fileGroupsCounts = fileGroups.Select(group => new {group.Key, Count = group.Count()});
-                int fileGroupsCount = fileGroups.Count();
+                var fileGroupsCount = fileGroups.Count();
                 w.WriteAttributeString("count", fileGroupsCount.ToString("D"));
-                foreach (IGrouping<Strings.FileID, (Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value)> fileGroup in fileGroups)
+                foreach (var fileGroup in fileGroups)
                 {
                     w.WriteStartElement("File");
                     w.WriteAttributeString("id", fileGroup.Key.ToString());
-                    ReadOnlyCollection<IGrouping<int, (Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value)>> sectionGroups = fileGroup.GroupBy(x => x.sectionKey).ToList().AsReadOnly();
-                    int sectionGroupsCount = sectionGroups.Count();
+                    var sectionGroups = fileGroup.GroupBy(x => x.sectionKey).ToList().AsReadOnly();
+                    var sectionGroupsCount = sectionGroups.Count();
                     w.WriteAttributeString("count", sectionGroupsCount.ToString("D"));
-                    foreach (IGrouping<int, (Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value)> sectionGroup in sectionGroups)
+                    foreach (var sectionGroup in sectionGroups)
                     {
                         w.WriteStartElement("Section");
                         w.WriteAttributeString("id", sectionGroup.Key.ToString());
                         w.WriteAttributeString("count", sectionGroup.Count().ToString("D"));
-                        foreach ((Strings.FileID fileKey, int sectionKey, int id, FF8StringReference Value) ff8StringReference in sectionGroup)
+                        foreach (var ff8StringReference in sectionGroup)
                         {
                             w.WriteStartElement("String");
                             w.WriteAttributeString("id", ff8StringReference.id.ToString());

@@ -123,7 +123,7 @@ namespace OpenVIII
                             Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
                         else
                         {
-                            int enemypos = (0 - PartyPos) - 1;
+                            var enemypos = (0 - PartyPos) - 1;
                             if (PartyPos < 0 && Enemy.Party != null && enemypos < Enemy.Party.Count)
                             {
                                 Damageable = Enemy.Party[enemypos];
@@ -135,7 +135,7 @@ namespace OpenVIII
                 else if (damageable != null)
                 {
                     Damageable = damageable;
-                    if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                    if (Damageable.GetCharacterData(out var c))
                     {
                         PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
                     }

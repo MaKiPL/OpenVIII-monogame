@@ -54,8 +54,8 @@ public static class PolygonExt
     public static Vector2 MaxUV(this Stage.IPolygon v)
     {
         if (v.UVs == null || v.UVs.Length <= 2) return Vector2.Zero;
-        Vector2 vector2 = v.UVs[0];
-        for (int i = 1; i < v.UVs.Length; i++)
+        var vector2 = v.UVs[0];
+        for (var i = 1; i < v.UVs.Length; i++)
             vector2 = Vector2.Max(vector2, v.UVs[i]);
         return vector2;
 
@@ -64,8 +64,8 @@ public static class PolygonExt
     public static Vector2 MinUV(this Stage.IPolygon v)
     {
         if (v.UVs == null || v.UVs.Length <= 2) return Vector2.Zero;
-        Vector2 vector2 = v.UVs[0];
-        for (int i = 1; i < v.UVs.Length; i++)
+        var vector2 = v.UVs[0];
+        for (var i = 1; i < v.UVs.Length; i++)
             vector2 = Vector2.Min(vector2, v.UVs[i]);
         return vector2;
 
@@ -74,7 +74,7 @@ public static class PolygonExt
     public static Rectangle Rectangle(this Stage.IPolygon v)
     {
         Vector2 minUV = v.MinUV();
-        Vector2 maxUV = v.MaxUV();
+        var maxUV = v.MaxUV();
         return new Rectangle(minUV.ToPoint(), (maxUV - minUV).ToPoint());
 
     }

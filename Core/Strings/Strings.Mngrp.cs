@@ -64,14 +64,14 @@ namespace OpenVIII
             {
                 StringFiles = new StringFile(118);
                 GetFileLocations();
-                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
-                byte[] buffer = aw.GetBinaryFile(FileNames[0], true);
+                var aw = ArchiveWorker.Load(Archive, true);
+                var buffer = aw.GetBinaryFile(FileNames[0], true);
                 if (buffer == null) return;
-                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                using (var br = new BinaryReader(new MemoryStream(buffer)))
                 {
-                    for (int key = 0; key < StringFiles.SubPositions.Count; key++)
+                    for (var key = 0; key < StringFiles.SubPositions.Count; key++)
                     {
-                        bool pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
+                        var pad = (Array.IndexOf(StringsPadLoc, key) >= 0);
                         if (pad || Array.IndexOf(StringsLoc, key) >= 0)
                             Get_Strings_Offsets(br, FileNames[0], key, pad);
                         else if (BinMsg.ContainsKey(key))
@@ -88,10 +88,10 @@ namespace OpenVIII
 
             private void GetFileLocations()
             {
-                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
-                byte[] buffer = aw.GetBinaryFile(FileNames[1], true);
+                var aw = ArchiveWorker.Load(Archive, true);
+                var buffer = aw.GetBinaryFile(FileNames[1], true);
                 if (buffer == null) return;
-                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                using (var br = new BinaryReader(new MemoryStream(buffer)))
                 {
                     GetFileLocations(br);
                 }
@@ -101,7 +101,7 @@ namespace OpenVIII
             {
                 while (br.BaseStream.Position + 8 < br.BaseStream.Length)
                 {
-                    (uint seek, uint length) = ((br.ReadUInt32(), br.ReadUInt32()));
+                    (var seek, var length) = ((br.ReadUInt32(), br.ReadUInt32()));
                     if (seek == 0xFFFFFFFF || length == 0x00000000) continue;
                     seek--;
                     StringFiles.SubPositions.Add(Loc.CreateInstance(seek, length));

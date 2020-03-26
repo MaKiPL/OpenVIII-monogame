@@ -52,7 +52,7 @@ namespace OpenVIII
             if (left.Texture == right.Texture)
             {
                 //could be optimized.
-                List<VertexPositionTexture> tmp = new List<VertexPositionTexture>(left.VPT.Length + right.VPT.Length);
+                var tmp = new List<VertexPositionTexture>(left.VPT.Length + right.VPT.Length);
                 tmp.AddRange(left.VPT);
                 tmp.AddRange(right.VPT);
                 return new VertexPositionTexture_Texture2D(tmp.ToArray(), left.Texture);
@@ -83,7 +83,7 @@ namespace OpenVIII
 
         public void Update(Matrix bb)
         {
-            for (int i = 0; i < VPT.Length; i++)
+            for (var i = 0; i < VPT.Length; i++)
             {
                 TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, bb);
                 //TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, q);
@@ -107,7 +107,7 @@ namespace OpenVIII
             Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ModuleBattleDebug.Effect.TextureEnabled = true;
 
-            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+            foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,

@@ -24,7 +24,7 @@ namespace OpenVIII
 
             public static SlotChoose Create(Rectangle pos)
             {
-                SlotChoose r = new SlotChoose();
+                var r = new SlotChoose();
                 r.Init(2, 2, new IGMDataItem.Empty { Pos = pos }, 1, 2);
                 return r;
             }
@@ -45,9 +45,9 @@ namespace OpenVIII
             public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
-                IGM_LGSG.Mode mode = IGM_LGSG.Mode.Slot |
-                        IGM_LGSG.Mode.Checking |
-                        (Save ? IGM_LGSG.Mode.Save : IGM_LGSG.Mode.Nothing);
+                var mode = IGM_LGSG.Mode.Slot |
+                           IGM_LGSG.Mode.Checking |
+                           (Save ? IGM_LGSG.Mode.Save : IGM_LGSG.Mode.Nothing);
 
                 if (CURSOR_SELECT == 0)
                     Menu.IGM_LGSG.SetMode(mode | IGM_LGSG.Mode.Slot1);
@@ -73,11 +73,11 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                Point offset = new Point(-8, -28);
-                Point size = new Point(132, 60);
+                var offset = new Point(-8, -28);
+                var size = new Point(132, 60);
                 Slot1Main = new IGMDataItem.Box { Data = Strings.Name.FF8, Pos = SIZE[0], Options = Box_Options.Buttom | Box_Options.Center };
                 Slot2Main = new IGMDataItem.Box { Data = Strings.Name.FF8, Pos = SIZE[1], Options = Box_Options.Buttom | Box_Options.Center };
-                Point p = SIZE[0].Location;
+                var p = SIZE[0].Location;
                 p = p.Offset(offset);
                 Slot1Title = new IGMDataItem.Box { Data = Strings.Name.Slot1, Pos = new Rectangle(p, size), Options = Box_Options.Middle | Box_Options.Center };
                 p = SIZE[1].Location;
@@ -92,7 +92,7 @@ namespace OpenVIII
 
             protected override void InitShift(int i, int col, int row)
             {
-                int SpaceBetween = 60;
+                var SpaceBetween = 60;
                 base.InitShift(i, col, row);
                 switch (i)
                 {

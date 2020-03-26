@@ -12,9 +12,9 @@ namespace OpenVIII.Fields
         {
             public static IReadOnlyList<FF8String> FromBytes(Byte[] buff)
             {
-                List<FF8String> monologues = new List<FF8String>();
+                var monologues = new List<FF8String>();
 
-                Int32 bufferSize = buff.Length;
+                var bufferSize = buff.Length;
                 if (bufferSize < 4)
                     return monologues;
                         ReadMessages(buff, monologues);
@@ -26,15 +26,15 @@ namespace OpenVIII.Fields
             private static void ReadMessages(byte[] buff, List<FF8String> monologues)
             {
 
-                using (BinaryReader br = new BinaryReader(new MemoryStream(buff)))
+                using (var br = new BinaryReader(new MemoryStream(buff)))
                 {
-                    uint dataOffset = br.ReadUInt32();
-                    int count = checked((int)GetMessageNumber(dataOffset, br.BaseStream.Length));
+                    var dataOffset = br.ReadUInt32();
+                    var count = checked((int)GetMessageNumber(dataOffset, br.BaseStream.Length));
                     if (count == 0)
                         return;
 
                     monologues.Capacity = count;
-                    List<uint> Offsets = new List<uint>(count)
+                    var Offsets = new List<uint>(count)
                     {
                         dataOffset
                     };
@@ -42,17 +42,17 @@ namespace OpenVIII.Fields
                     {
                         Offsets.Add(br.ReadUInt32());
                     }
-                    for (int i = 0; i < Offsets.Count; i++)
+                    for (var i = 0; i < Offsets.Count; i++)
                     {
-                        uint offset = Offsets[i];
-                        uint nextoffset = i+1<Offsets.Capacity ? Offsets[i+1] : (uint)br.BaseStream.Length;
+                        var offset = Offsets[i];
+                        var nextoffset = i+1<Offsets.Capacity ? Offsets[i+1] : (uint)br.BaseStream.Length;
                         if (offset == nextoffset)
                         {
                             monologues.Add(String.Empty);
                             continue;
                         }
-                        int length = checked((int)(nextoffset - offset - 1));
-                        FF8String message = new FF8String(br.ReadBytes(length));
+                        var length = checked((int)(nextoffset - offset - 1));
+                        var message = new FF8String(br.ReadBytes(length));
                         monologues.Add(message);
                     }                    
                 }
@@ -60,7 +60,7 @@ namespace OpenVIII.Fields
 
             private static UInt32 GetMessageNumber(UInt32 dataOffset, long bufferSize)
             {
-                UInt32 count = dataOffset / 4;
+                var count = dataOffset / 4;
 
                 if (dataOffset % 4 != 0)
                     throw new InvalidDataException($"The offset to the beginning of the text data also determines the number of lines in the file and must be a multiple of 4. Occured: {dataOffset} mod 4 = {dataOffset % 4}");

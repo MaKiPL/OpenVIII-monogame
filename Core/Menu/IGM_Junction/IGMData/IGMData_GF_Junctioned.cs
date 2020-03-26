@@ -18,9 +18,9 @@ namespace OpenVIII
             public override void Refresh()
             {
                 base.Refresh();
-                if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out var c))
                 {
-                    int pos = 0;
+                    var pos = 0;
                     foreach (var gf in c.JunctionedGFs)
                     {
                         ((IGMDataItem.Text)ITEM[pos, 0]).Data = Memory.State.GFs[gf].Name;
@@ -40,7 +40,7 @@ namespace OpenVIII
                 Table_Options |= Table_Options.FillRows;
                 base.Init();
 
-                for (int pos = 0; pos < Count; pos++)
+                for (var pos = 0; pos < Count; pos++)
                 {
                     ITEM[pos, 0] = new IGMDataItem.Text
                     {

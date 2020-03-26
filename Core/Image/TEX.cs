@@ -85,9 +85,9 @@ namespace OpenVIII
             else if (clut >= texture.NumOfCluts)
                 throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {texture.NumOfCluts}");
 
-            Color[] colors = new Color[texture.NumOfColours];
-            int k = 0;
-            for (int i = clut * texture.NumOfColours * 4; i < texture.paletteData.Length && k < colors.Length; i += 4)
+            var colors = new Color[texture.NumOfColours];
+            var k = 0;
+            for (var i = clut * texture.NumOfColours * 4; i < texture.paletteData.Length && k < colors.Length; i += 4)
             {
                 colors[k].B = texture.paletteData[i];
                 colors[k].G = texture.paletteData[i + 1];
@@ -126,13 +126,13 @@ namespace OpenVIII
                 //}
 
                 MemoryStream ms;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
                 {
                     ms.Seek(TextureLocator, SeekOrigin.Begin);
-                    TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
-                    for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
+                    var convertBuffer = new TextureBuffer(texture.Width, texture.Height);
+                    for (var i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
                     {
-                        byte colorKey = br.ReadByte();
+                        var colorKey = br.ReadByte();
                         if (colorKey > colors.Length) continue;
                         convertBuffer[i] = colors[colorKey];
                     }
@@ -145,11 +145,11 @@ namespace OpenVIII
                 if (texture.bytesPerPixel == 2)
                 {
                     MemoryStream ms;
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                    using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
                         ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
-                        for (int i = 0; ms.Position + 2 < ms.Length; i++)
+                        var convertBuffer = new TextureBuffer(texture.Width, texture.Height);
+                        for (var i = 0; ms.Position + 2 < ms.Length; i++)
                         {
                             convertBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
                         }
@@ -161,13 +161,13 @@ namespace OpenVIII
                 {
                     // not tested but vincent tim had support for it so i guess it's possible RGB or BGR
                     MemoryStream ms;
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                    using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
                     {
                         ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
+                        var convertBuffer = new TextureBuffer(texture.Width, texture.Height);
                         Color color;
                         color.A = 0xFF;
-                        for (int i = 0; ms.Position + 3 < ms.Length; i++)
+                        for (var i = 0; ms.Position + 3 < ms.Length; i++)
                         {
                             //RGB or BGR so might need to reorder things to RGB
                             color.B = br.ReadByte();
@@ -199,7 +199,7 @@ namespace OpenVIII
         /// <param name="path">Path where you want file to be saved.</param>
         public override void Save(string path)
         {
-            using (BinaryWriter bw = new BinaryWriter(File.Create(path)))
+            using (var bw = new BinaryWriter(File.Create(path)))
             {
                 bw.Write(buffer);
             }
@@ -207,13 +207,13 @@ namespace OpenVIII
 
         public override void SaveCLUT(string path)
         {
-            using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
+            using (var CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
             {
                 for (ushort i = 0; i < texture.NumOfCluts; i++)
                 {
                     CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(i), 0, texture.NumOfColours);
                 }
-                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
                     CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
             }
         }

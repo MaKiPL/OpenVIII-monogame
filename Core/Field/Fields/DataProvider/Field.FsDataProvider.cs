@@ -21,7 +21,7 @@ namespace OpenVIII.Fields
 
             public Byte[] FindPart(Part part)
             {
-                String filePath = GetFilePath(part);
+                var filePath = GetFilePath(part);
                 if (File.Exists(filePath))
                     return File.ReadAllBytes(filePath);
 

@@ -44,7 +44,7 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                if (OkayActions.TryGetValue(CURSOR_SELECT, out Action a))
+                if (OkayActions.TryGetValue(CURSOR_SELECT, out var a))
                 {
                     a();
                     return true;

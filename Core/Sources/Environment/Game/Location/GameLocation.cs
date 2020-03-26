@@ -23,7 +23,7 @@ namespace OpenVIII
 
         private static GameLocation GetCurrentLocation()
         {
-            IGameLocationProvider provider = GetLocationProvider();
+            var provider = GetLocationProvider();
             return provider.GetGameLocation();
         }
 

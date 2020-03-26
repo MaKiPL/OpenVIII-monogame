@@ -16,7 +16,7 @@ namespace OpenVIII
             public override bool Inputs_CANCEL()
             {
                 if (Memory.PrevState != null &&
-                    Damageable.GetCharacterData(out Saves.CharacterData c) && (
+                    Damageable.GetCharacterData(out var c) && (
                     Memory.PrevState.Characters[c.ID].CurrentHP() > Memory.State.Characters[c.ID].CurrentHP() ||
                     Memory.PrevState.Characters[c.ID].MaxHP() > Memory.State.Characters[c.ID].MaxHP()))
                 {
@@ -74,7 +74,7 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out var c))
                 {
                     (from i in Enumerable.Range(1, 3)
                              select new { Key = i, Junctioned = c.JunctionedGFs?.Any() ?? false }).ForEach(x =>
@@ -88,7 +88,7 @@ namespace OpenVIII
 
             public override bool Update()
             {
-                bool ret = base.Update();
+                var ret = base.Update();
                 if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.TopMenu) && Enabled)
                 {
                     FF8String Changed = null;

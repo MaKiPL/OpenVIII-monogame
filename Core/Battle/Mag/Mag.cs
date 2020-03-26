@@ -72,14 +72,14 @@ namespace OpenVIII.Battle
 
         public static Mag Load(string filename, byte[] buffer)
         {
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer, false)))
+            using (var br = new BinaryReader(new MemoryStream(buffer, false)))
                 return Load(filename, br);
         }
 
         public static Mag Load(string filename, BinaryReader br)
         {
             br.BaseStream.Seek(0, SeekOrigin.Begin);
-            Mag m = new Mag
+            var m = new Mag
             {
                 FileName = filename
             };
@@ -157,7 +157,7 @@ namespace OpenVIII.Battle
         {
             try
             {
-                TIM2 tim = new TIM2(br, noExec: true);
+                var tim = new TIM2(br, noExec: true);
                 if (tim.NotTIM)
                     return TIM = null;
                 isTIM = true;
@@ -178,7 +178,7 @@ namespace OpenVIII.Battle
             br.BaseStream.Seek(pGeometry, SeekOrigin.Begin);
             if (!br.Read(out int count)) return;
             //Count = Count > 0x24 ? 0x24 : Count; // unsure why.
-            List<uint> positions = new List<uint>();
+            var positions = new List<uint>();
             while (count-- > 0 && br.Read(out uint pos))
             {
                 if (pos > 0 && pos + pGeometry < br.BaseStream.Length)
@@ -188,11 +188,11 @@ namespace OpenVIII.Battle
 
             Geometries = new List<Geometry>(positions.Count);
 
-            foreach (uint pos in positions)
+            foreach (var pos in positions)
             {
-                Geometry g = new Geometry();
+                var g = new Geometry();
                 const int PassFromStart = 24;
-                bool OnlyVertex = true;
+                var OnlyVertex = true;
                 br.BaseStream.Seek(pos, SeekOrigin.Begin);
                 if (!br.Read(out count)) break;
 
@@ -202,21 +202,21 @@ namespace OpenVIII.Battle
                     OnlyVertex = false;
                 br.BaseStream.Seek(pos + 8, SeekOrigin.Begin);
 
-                uint _relativeJump = br.ReadUInt32() + pos;
+                var _relativeJump = br.ReadUInt32() + pos;
                 br.BaseStream.Seek(pos + PassFromStart, SeekOrigin.Begin);
-                int _vertexCount = br.ReadUInt16() * 8;
+                var _vertexCount = br.ReadUInt16() * 8;
                 br.BaseStream.Seek(pos + PassFromStart - 4, SeekOrigin.Begin);
-                uint _verticesOffset = br.ReadUInt16() + pos;
+                var _verticesOffset = br.ReadUInt16() + pos;
                 ReadVertices();
                 if (OnlyVertex) { continue; }
                 if (_relativeJump > br.BaseStream.Length) return;
                 br.BaseStream.Seek(_relativeJump, SeekOrigin.Begin);
-                ushort _polygonType = br.ReadUInt16();
-                ushort polygons = br.ReadUInt16();
+                var _polygonType = br.ReadUInt16();
+                var polygons = br.ReadUInt16();
                 bool _generatefaces;
                 bool isknownpolygon() => _knownPolygons.Any(x => x == _polygonType);
                 long localoffset = _relativeJump + 4;
-                int safeHandle = 0;
+                var safeHandle = 0;
                 while (!(_generatefaces = !isknownpolygon()))
                 {
                     switch (_polygonType)
@@ -269,8 +269,8 @@ namespace OpenVIII.Battle
                     void GetTriangle(int cnt, int off0)
                     {
                         int off1 = off0 + 2, off2 = off0 + 4;
-                        int size = polygons * cnt;
-                        for (int i = 0; i < size; i += cnt)
+                        var size = polygons * cnt;
+                        for (var i = 0; i < size; i += cnt)
                         {
                             g.Triangles.Add(new Vector3(GetPolygonIndex(localoffset + i + off0),
                                 GetPolygonIndex(localoffset + i + off1),
@@ -281,8 +281,8 @@ namespace OpenVIII.Battle
                     void GetQuad(int cnt, int off0)
                     {
                         int off1 = off0 + 2, off2 = off0 + 6, off3 = off0 + 4;
-                        int size = polygons * cnt;
-                        for (int i = 0; i < size; i += cnt)
+                        var size = polygons * cnt;
+                        for (var i = 0; i < size; i += cnt)
                         {
                             g.Quads.Add(new Vector4(GetPolygonIndex(localoffset + i + off0),
                                 GetPolygonIndex(localoffset + i + off1),
@@ -294,7 +294,7 @@ namespace OpenVIII.Battle
                     ushort GetPolygonIndex(long offset)
                     {
                         br.BaseStream.Seek(offset, SeekOrigin.Begin);
-                        ushort temp = checked((ushort)(br.ReadUInt16() / 8));
+                        var temp = checked((ushort)(br.ReadUInt16() / 8));
                         Debug.Assert(temp < g.Vertices.Count);
                         //return temp == 0 ? 1 : (temp / 8) + 1;
                         return temp;
@@ -308,7 +308,7 @@ namespace OpenVIII.Battle
                 {
                     br.BaseStream.Seek(_verticesOffset, SeekOrigin.Begin);
                     if (_vertexCount % 8 != 0) return;
-                    for (int i = 0; i < _vertexCount / 8; i++)
+                    for (var i = 0; i < _vertexCount / 8; i++)
                     {
                         br.BaseStream.Seek(_verticesOffset + i * 8, SeekOrigin.Begin);
                         g.Vertices.Add(br.ReadVertex());
@@ -327,11 +327,11 @@ namespace OpenVIII.Battle
                 ) return null;
 
             br.BaseStream.Seek(pTexture, SeekOrigin.Begin);
-            List<uint> positions = new List<uint>();
+            var positions = new List<uint>();
             //Debug.Assert(pTextureSize > 0 && pTextureSize < br.BaseStream.Length);
             while (pTextureLimit > 0 && br.BaseStream.Position < pTextureLimit && br.BaseStream.Position + 4 < br.BaseStream.Length)
             {
-                uint pos = br.ReadUInt32();
+                var pos = br.ReadUInt32();
                 if (pos != 0)
                     positions.Add(pos + pTexture);
             }

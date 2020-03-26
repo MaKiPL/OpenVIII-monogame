@@ -33,10 +33,10 @@ namespace OpenVIII.Card
             Memory.MainThreadOnlyActions.Enqueue(() =>
             {
                 //Memory.EnableDumpingData = true;
-                FileStream input = FileStreamOpen();
+                var input = FileStreamOpen();
                 if (input != null)
                 {
-                    using (BinaryReader br = new BinaryReader(input))
+                    using (var br = new BinaryReader(input))
                         ReadSymbolsNumbers(0, br);
                 }
                 //Memory.EnableDumpingData = false;
@@ -44,17 +44,17 @@ namespace OpenVIII.Card
 
             Memory.MainThreadOnlyActions.Enqueue(() =>
             {
-                FileStream input = FileStreamOpen();
+                var input = FileStreamOpen();
                 if (input != null)
-                    using (BinaryReader br = new BinaryReader(input))
+                    using (var br = new BinaryReader(input))
                         ReadCardFaces(2, br);
             });
 
             Memory.MainThreadOnlyActions.Enqueue(() =>
             {
-                FileStream input = FileStreamOpen();
+                var input = FileStreamOpen();
                 if (input != null)
-                    using (BinaryReader br = new BinaryReader(input))
+                    using (var br = new BinaryReader(input))
                 {
                     //ReadTIM(1, br,out Other);
                     ReadTIM(50, br, out _cardGameBG);
@@ -72,45 +72,45 @@ namespace OpenVIII.Card
 
         private void ReadCardFaces(int id, BinaryReader br)
         {
-            TIM2 cardtim = new TIM2(br, EXE_Offsets.TIM[year][id]);
-            using (Texture2D cardback = cardtim.GetTexture(55))
+            var cardtim = new TIM2(br, EXE_Offsets.TIM[year][id]);
+            using (var cardback = cardtim.GetTexture(55))
             {
                 GenernateCardFaceEntries();
                 cardtim.ForceSetClutColors(128);
                 cardtim.ForceSetClutCount(112);
-                int rows = 4;
-                int size = cardback.Height / rows;
-                int cols = cardback.Width / size;
+                var rows = 4;
+                var size = cardback.Height / rows;
+                var cols = cardback.Width / size;
 
                 //using (Texture2D combined = new Texture2D(Memory.graphics.GraphicsDevice, cardback.Width, cardback.Height))
                 //{
-                Color[] data = new Color[size * size];
-                Rectangle src = new Rectangle(new Point(size * (cols - 2), size * (rows - 1)), new Point(size));
+                var data = new Color[size * size];
+                var src = new Rectangle(new Point(size * (cols - 2), size * (rows - 1)), new Point(size));
                 Rectangle dst;
                 //cardback.GetData(0, src, data, 0, data.Length);
                 //combined.SetData(0, src, data, 0, data.Length);
-                int row = 0;
-                int acol = 0;
-                List<Point> rc = new List<Point>(110);
-                int page = 0;
-                int pages = cols / 2;
-                List<TextureHandler> th = new List<TextureHandler>(pages);
+                var row = 0;
+                var acol = 0;
+                var rc = new List<Point>(110);
+                var page = 0;
+                var pages = cols / 2;
+                var th = new List<TextureHandler>(pages);
                 ushort i = 0;
-                string filename = $"cards";
+                var filename = $"cards";
                 while (i < 110 && page < pages)
                 {
-                    Texture2D pagetex = new Texture2D(Memory.graphics.GraphicsDevice, cardback.Height, cardback.Height);
-                    for (int p = 0; p < 8 && i < 110; p++)
+                    var pagetex = new Texture2D(Memory.graphics.GraphicsDevice, cardback.Height, cardback.Height);
+                    for (var p = 0; p < 8 && i < 110; p++)
                     {
-                        Texture2D cardface = cardtim.GetTexture(i);
-                        int coloff = i % 2;
-                        bool even = coloff == 0;
+                        var cardface = cardtim.GetTexture(i);
+                        var coloff = i % 2;
+                        var even = coloff == 0;
                         if (row >= rows)
                         {
                             row = 0;
                             acol += 2;
                         }
-                        int col = acol + coloff;
+                        var col = acol + coloff;
                         src = new Rectangle(new Point(size * (col), size * (row)), new Point(size));
                         dst = new Rectangle(new Point(size * (coloff), size * (row)), new Point(size));
                         cardface.GetData(0, src, data, 0, data.Length);
@@ -128,7 +128,7 @@ namespace OpenVIII.Card
                         pagetex.SetData(0, dst, data, 0, data.Length);
                     }
                     if (Memory.EnableDumpingData)
-                        using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), $"{filename}_{page}.png"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                        using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), $"{filename}_{page}.png"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                             pagetex.SaveAsPng(fs, cardback.Height, cardback.Height);
                     th.Add(TextureHandler.Create($"{filename}_{page}.png", new Texture2DWrapper(pagetex)));
                     page++;
@@ -146,13 +146,13 @@ namespace OpenVIII.Card
             if (_cardFacesEntries == null || _cardFacesEntries.Count == 0)
             {
                 _cardFacesEntries = new List<Entry>();
-                Cards.ID[] CardValues = (Cards.ID[])Enum.GetValues(typeof(Cards.ID));
+                var CardValues = (Cards.ID[])Enum.GetValues(typeof(Cards.ID));
                 Array.Sort(CardValues);
                 const int size = 64;
                 const int numberofcardsperpage = 8;
                 const int cols = 2;
                 const int rows = 4;
-                for (int i = 0; i < CardValues.Length && CardValues[i] <= Cards.ID.Card_Back; i++)
+                for (var i = 0; i < CardValues.Length && CardValues[i] <= Cards.ID.Card_Back; i++)
                 {
                     new Entry
                     {
@@ -194,7 +194,7 @@ namespace OpenVIII.Card
         private void ReadSymbolsNumbers(int id, BinaryReader br)
         {
             const int pages = 3;
-            List<TextureHandler> th = new List<TextureHandler>(pages);
+            var th = new List<TextureHandler>(pages);
             //3 pages, 256x256; inside () is palette ID +1.
             //page 1 = 5 rows. first 3 rows are 16x16 grid, last 2 rows are a 24x24 grid
             //          row 1 has 11 hex numbers: 0-A (1)
@@ -205,10 +205,10 @@ namespace OpenVIII.Card
             //page 2 = 3 rows of 256x48: You Win!(2), You Lose...(5), Draw(8)
             //page 3 = 3 rows of 256x64: Same!(9), Plus!(6), Combo!(9)
             GenerateEntriesSymbolsNumbers();
-            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
+            var temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
             //temp.ForceSetClutColors(16);
             //temp.ForceSetClutCount(48);
-            int size = 256;
+            var size = 256;
             //Rectangle pagesrc = new Rectangle(new Point(size * (page), size), new Point(size));
             //Rectangle dst;
 
@@ -218,9 +218,9 @@ namespace OpenVIII.Card
             Texture2D pagetex = null;
             sbyte CustomPalette = -1;
             sbyte File = -1;
-            string filename = "";
+            var filename = "";
             //string combinedfilename = $"text_combined.png";
-            foreach (Entry e in SymbolNumberEntries)
+            foreach (var e in SymbolNumberEntries)
             {
                 if (File != e.File)
                 {
@@ -236,9 +236,9 @@ namespace OpenVIII.Card
                     CustomPalette = e.CustomPalette;
                     texture = temp.GetTexture((ushort)CustomPalette);
                 }
-                Color[] data = new Color[(int)(e.Width * e.Height)];
-                Rectangle src = e.GetRectangle;
-                Rectangle dst = src;
+                var data = new Color[(int)(e.Width * e.Height)];
+                var src = e.GetRectangle;
+                var dst = src;
                 src.Offset(e.File * 256, 0);
                 texture.GetData(0, src, data, 0, data.Length);
                 pagetex.SetData(0, dst, data, 0, data.Length);
@@ -252,7 +252,7 @@ namespace OpenVIII.Card
                 if (pagetex != null)
                 {
                     if (Memory.EnableDumpingData)
-                        using (FileStream fs = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                        using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                             pagetex.SaveAsPng(fs, pagetex.Width, pagetex.Height);
 
                     th.Add(TextureHandler.Create(filename, new Texture2DWrapper(pagetex)));
@@ -287,7 +287,7 @@ namespace OpenVIII.Card
             if (_symbolNumberEntries == null || _symbolNumberEntries.Count == 0)
             {
                 _symbolNumberEntries = new List<Entry>();
-                for (int i = 0; i < 11; i++)
+                for (var i = 0; i < 11; i++)
                 {
                     _symbolNumberEntries.Add(new Entry
                     {
@@ -299,9 +299,9 @@ namespace OpenVIII.Card
                         NumberValue = i
                     });
                 }
-                for (int k = 0; k < 2; k++)
-                    for (int j = 0; j < 4; j++)
-                        for (int i = 0; i < 4; i++)
+                for (var k = 0; k < 2; k++)
+                    for (var j = 0; j < 4; j++)
+                        for (var i = 0; i < 4; i++)
                         {
                             _symbolNumberEntries.Add(new Entry
                             {
@@ -313,7 +313,7 @@ namespace OpenVIII.Card
                                 Frame = i,
                             });
                         }
-                for (int i = 0; i < 9; i++)
+                for (var i = 0; i < 9; i++)
                 {
                     _symbolNumberEntries.Add(new Entry
                     {
@@ -325,7 +325,7 @@ namespace OpenVIII.Card
                         NumberValue = i
                     });
                 }
-                for (int i = 0; i < 2; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     _symbolNumberEntries.Add(new Entry
                     {
@@ -337,7 +337,7 @@ namespace OpenVIII.Card
                         NumberValue = 1 + (-2 * i)
                     });
                 }
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
                     _symbolNumberEntries.Add(new Entry
                     {
@@ -348,7 +348,7 @@ namespace OpenVIII.Card
                         Size = new Vector2(256, 48),
                     });
                 }
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                 {
                     _symbolNumberEntries.Add(new Entry
                     {
@@ -364,12 +364,12 @@ namespace OpenVIII.Card
 
         private void ReadTIM(int id, BinaryReader br, out TextureHandler[] tex, ushort ForceSetClutColors = 0, ushort ForceSetClutCount = 0)
         {
-            TIM2 temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
+            var temp = new TIM2(br, EXE_Offsets.TIM[year][id]);
             if (ForceSetClutColors > 0)
                 temp.ForceSetClutColors(ForceSetClutColors);
             if (ForceSetClutCount > 0)
                 temp.ForceSetClutCount(ForceSetClutCount);
-            string filename = $"ff8exe{id.ToString("D2")}";
+            var filename = $"ff8exe{id.ToString("D2")}";
             if (Memory.EnableDumpingData)
                 Memory.MainThreadOnlyActions.Enqueue(() => { temp.SaveCLUT(Path.Combine(Path.GetTempPath(), $"{filename}.CLUT.png")); });
             tex = new TextureHandler[temp.GetClutCount == 0 ? 1 : temp.GetClutCount];

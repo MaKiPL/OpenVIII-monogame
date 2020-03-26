@@ -29,7 +29,7 @@ namespace OpenVIII
                         skipsnd = true;
                         AV.Sound.Play(31);
                         base.Inputs_OKAY();
-                        if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                        if (Damageable.GetCharacterData(out var c))
                             c.RemoveMagic();
                         Inputs_CANCEL();
                         IGM_Junction.Refresh();

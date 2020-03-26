@@ -62,8 +62,8 @@ namespace OpenVIII
                 switch (k)
                 {
                     case MouseButtons.MouseToStick:
-                        float tmpX = MathHelper.Clamp((_state.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f), -1f, 1f);
-                        float tmpY = MathHelper.Clamp((Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - _state.Y) / (50f), -1f, 1f);
+                        var tmpX = MathHelper.Clamp((_state.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f), -1f, 1f);
+                        var tmpY = MathHelper.Clamp((Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - _state.Y) / (50f), -1f, 1f);
                         return new Vector2(tmpX, tmpY);
                 }
             return Vector2.Zero;
@@ -75,7 +75,7 @@ namespace OpenVIII
 
         private bool Press(MouseButtons k, MouseState _state)
         {
-            ButtonState bs = Translate_Buttons(k, _state);
+            var bs = Translate_Buttons(k, _state);
             if (bs == ButtonState.Pressed)
                 return true;
             return false;
@@ -122,10 +122,10 @@ namespace OpenVIII
         {
             if (test != null && test.MouseButton != MouseButtons.None)
             {
-                bool combotest = false;
+                var combotest = false;
                 if (test.Combo != null)
                 {
-                    foreach (InputButton item in test.Combo)
+                    foreach (var item in test.Combo)
                     {
                         item.Trigger = ButtonTrigger.Press;
                         if (!base.ButtonTriggered(item))
@@ -135,7 +135,7 @@ namespace OpenVIII
                     }
                     combotest = true;
                 }
-                ButtonTrigger triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
+                var triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
                 return ((test.Combo == null || combotest) &&
                     ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.MouseButton)) ||
                     ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.MouseButton)) ||
@@ -148,7 +148,7 @@ namespace OpenVIII
         {
 
             // override center lock if mouse is visible to screen.
-            MouseLockMode mode = Mode != MouseLockMode.Disabled && Memory.IsMouseVisible ? MouseLockMode.Screen : Mode;
+            var mode = Mode != MouseLockMode.Disabled && Memory.IsMouseVisible ? MouseLockMode.Screen : Mode;
 #if DEBUG
             //disable mouselock for debugging. will be optional when config is done.
             if(mode.Equals(MouseLockMode.Screen))
@@ -162,7 +162,7 @@ namespace OpenVIII
                 }
                 else if (mode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
                 {
-                    Rectangle vpb = Memory.graphics.GraphicsDevice.Viewport.Bounds;
+                    var vpb = Memory.graphics.GraphicsDevice.Viewport.Bounds;
                     //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
                     if (!(state.X >= 0 && state.X <= vpb.Width) || !(state.Y >= 0 && state.Y <= vpb.Height))
                     {

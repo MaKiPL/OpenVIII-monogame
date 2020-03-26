@@ -22,7 +22,7 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Damageable.GetCharacterData(out var c))
                     switch (CURSOR_SELECT)
                     {
                         case 0:
@@ -48,7 +48,7 @@ namespace OpenVIII
 
             public override bool Update()
             {
-                bool ret = base.Update();
+                var ret = base.Update();
                 Update_String();
                 return ret;
             }

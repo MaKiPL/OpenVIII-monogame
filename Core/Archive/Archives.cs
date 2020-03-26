@@ -20,7 +20,7 @@ namespace OpenVIII
             public static void Init()
             {
                 Memory.Log.WriteLine($"{nameof(Archive)}::{nameof(Init)}");
-                Archive parent = new Archive(FF8DIR);
+                var parent = new Archive(FF8DIR);
                 ZZZ_MAIN = new Archive("main.zzz", true, parent);
                 ZZZ_OTHER = new Archive("other.zzz", true, parent);
                 A_BATTLE = new Archive("battle", FF8DIRdata_lang, ZZZ_MAIN);
@@ -47,9 +47,9 @@ namespace OpenVIII
                 void Merge(Archive a)
                 {
                     Log.WriteLine($"{nameof(Archive)}::{nameof(Init)}::{nameof(Merge)}\n\t{a} to {ZZZ_MAIN}");
-                    string fs = a.FS;
-                    ArchiveBase child = ArchiveWorker.Load(a);
-                    FI fi = aw.ArchiveMap.FindString(ref fs, out int _);
+                    var fs = a.FS;
+                    var child = ArchiveWorker.Load(a);
+                    var fi = aw.ArchiveMap.FindString(ref fs, out var _);
                     aw.ArchiveMap.MergeMaps(child.ArchiveMap, fi.Offset);
                 }
                 Merge(A_BATTLE);

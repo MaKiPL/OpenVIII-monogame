@@ -32,10 +32,10 @@ namespace OpenVIII.Battle.Dat
             {
                 short calc()
                 {
-                    short unk1 = bitReader.ReadBits(1);
+                    var unk1 = bitReader.ReadBits(1);
                     const int special = 1024;
                     if ((byte)unk1 <= 0) return special; // if checked here it'll crash
-                    short unk1V = bitReader.ReadBits(16);
+                    var unk1V = bitReader.ReadBits(16);
                     return checked((short)(unk1V + special));
                 }
 
@@ -43,9 +43,9 @@ namespace OpenVIII.Battle.Dat
             }
             //Step 1. It starts with bone0.position. Let's read that into AnimationFrames[animId]- it's only one position per currentFrame
 
-            float x = bitReader.ReadPositionType() * .01f;
-            float y = bitReader.ReadPositionType() * .01f;
-            float z = bitReader.ReadPositionType() * .01f;
+            var x = bitReader.ReadPositionType() * .01f;
+            var y = bitReader.ReadPositionType() * .01f;
+            var z = bitReader.ReadPositionType() * .01f;
             Position = !previous.HasValue
                 ? new Vector3(x, y, z)
                 : new Vector3(
@@ -53,14 +53,14 @@ namespace OpenVIII.Battle.Dat
                     previous.Value.Position.Y + y,
                     previous.Value.Position.Z + z);
 
-            byte modeTest = (byte)bitReader.ReadBits(1); //used to determine if additional info is required
+            var modeTest = (byte)bitReader.ReadBits(1); //used to determine if additional info is required
 
-            Matrix[] boneMatrix = new Matrix[skeleton.CBones];
-            Vector3[] bonesVectorRotations = new Vector3[skeleton.CBones];
+            var boneMatrix = new Matrix[skeleton.CBones];
+            var bonesVectorRotations = new Vector3[skeleton.CBones];
 
             //Step 2. We read the position and we need to store the bones rotations or save base rotation if currentFrame==0
 
-            foreach (int k in Enumerable.Range(0, skeleton.CBones)) //bones iterator
+            foreach (var k in Enumerable.Range(0, skeleton.CBones)) //bones iterator
             {
                 if (previous.HasValue) //just like position the data for next frames are added to previous
                 {
@@ -72,8 +72,8 @@ namespace OpenVIII.Battle.Dat
                     };
                     if (modeTest > 0)
                         GetAdditionalRotationInformation();
-                    Vector3 previousFrame = previous.Value.BonesVectorRotations[k];
-                    Vector3 currentFrame = bonesVectorRotations[k];
+                    var previousFrame = previous.Value.BonesVectorRotations[k];
+                    var currentFrame = bonesVectorRotations[k];
                     bonesVectorRotations[k] =
                         previousFrame + currentFrame;
                 }
@@ -91,22 +91,22 @@ namespace OpenVIII.Battle.Dat
 
                 //Step 3. We now have all bone rotations stored into short. We need to convert that into Matrix and 360/4096
 
-                Vector3 boneRotation = bonesVectorRotations[k];
+                var boneRotation = bonesVectorRotations[k];
                 boneRotation =
                     Extended.S16VectorToFloat(
                         boneRotation); //we had vector3 containing direct copy of short to float, now we need them in real floating point values
                 boneRotation *= Degrees; //bone rotations are in 360 scope
                                          //maki way
-                Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
-                Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
-                Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
+                var xRot = Extended.GetRotationMatrixX(-boneRotation.X);
+                var yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
+                var zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
 
                 //this is the monogame way and gives same results as above.
                 //Matrix xRot = Matrix.CreateRotationX(MathHelper.ToRadians(boneRotation.X));
                 //Matrix yRot = Matrix.CreateRotationY(MathHelper.ToRadians(boneRotation.Y));
                 //Matrix zRot = Matrix.CreateRotationZ(MathHelper.ToRadians(boneRotation.Z));
 
-                Matrix matrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
+                var matrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
                 matrixZ = Extended.MatrixMultiply_transpose(zRot, matrixZ);
 
                 // ReSharper disable once CommentTypo
@@ -120,9 +120,9 @@ namespace OpenVIII.Battle.Dat
                 }
                 else
                 {
-                    Matrix parentBone = boneMatrix[skeleton.Bones[k].ParentId]; //gets the parent bone
+                    var parentBone = boneMatrix[skeleton.Bones[k].ParentId]; //gets the parent bone
                     matrixZ.M43 = skeleton.Bones[skeleton.Bones[k].ParentId].Size;
-                    Matrix rMatrix = Matrix.Multiply(parentBone, matrixZ);
+                    var rMatrix = Matrix.Multiply(parentBone, matrixZ);
                     rMatrix.M41 = parentBone.M11 * matrixZ.M41 + parentBone.M12 * matrixZ.M42 +
                                   parentBone.M13 * matrixZ.M43 + parentBone.M41;
                     rMatrix.M42 = parentBone.M21 * matrixZ.M41 + parentBone.M22 * matrixZ.M42 +
@@ -152,9 +152,9 @@ namespace OpenVIII.Battle.Dat
 
         public static IReadOnlyList<AnimationFrame> CreateInstances(BinaryReader br, byte cFrames, Skeleton skeleton)
         {
-            ExtapathyExtended.BitReader bitReader = new ExtapathyExtended.BitReader(br.BaseStream);
-            AnimationFrame[] animationFrames = new AnimationFrame[cFrames];
-            foreach (int n in Enumerable.Range(0, cFrames)) //frames
+            var bitReader = new ExtapathyExtended.BitReader(br.BaseStream);
+            var animationFrames = new AnimationFrame[cFrames];
+            foreach (var n in Enumerable.Range(0, cFrames)) //frames
                 animationFrames[n] = n == 0
                     ? new AnimationFrame(bitReader, skeleton)
                     : new AnimationFrame(bitReader, skeleton, animationFrames[n - 1]);

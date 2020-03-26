@@ -36,7 +36,7 @@ namespace OpenVIII
             if (uncompressedSize < 0) throw new ArgumentOutOfRangeException(nameof(uncompressedSize)); // if 0 ignore checks.
             //Memory.Log.WriteLine($"{nameof(LZSS)}::{nameof(DecompressAllNew)} :: decompressing data");
             byte[] outFileArray;
-            using (MemoryStream infile = new MemoryStream(!skip ? data : data.Skip(4).ToArray()))
+            using (var infile = new MemoryStream(!skip ? data : data.Skip(4).ToArray()))
             {
                 Decode(infile, out outFileArray);
             }
@@ -48,11 +48,11 @@ namespace OpenVIII
         //Code borrowed from Java's implementation of LZSS by antiquechrono
         private static void Decode(Stream infile, out byte[] outFileArray)
         {
-            List<byte> outfile = new List<byte>();
+            var outfile = new List<byte>();
 
-            int[] textBuf = new int[N + F - 1];    // ring buffer of size N, with extra F-1 bytes to facilitate string comparison
+            var textBuf = new int[N + F - 1];    // ring buffer of size N, with extra F-1 bytes to facilitate string comparison
 
-            int r = N - F; int flags = 0;
+            var r = N - F; var flags = 0;
             for (; ; )
             {
                 int c;

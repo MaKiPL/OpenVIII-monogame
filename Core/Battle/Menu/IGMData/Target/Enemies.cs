@@ -70,10 +70,10 @@ namespace OpenVIII.IGMData.Target
         {
             if (Memory.State?.Characters != null)
             {
-                int pos = 0;
+                var pos = 0;
                 if (Enemy.Party != null)
                 {
-                    foreach (Enemy e in Enemy.Party)
+                    foreach (var e in Enemy.Party)
                     {
                         //if(e.EII)
                         ITEM[pos, 0] = new IGMDataItem.Text { Data = e.Name, Pos = SIZE[pos], FontColor = Font.ColorID.White };

@@ -180,7 +180,7 @@ namespace OpenVIII
         public static T Create<T>(Damageable damageable = null) where T : Menu, new()
         {
             Memory.Log.WriteLine($"{nameof(Menu)} :: {nameof(Create)} :: {typeof(T)} :: {nameof(Damageable)} :: {damageable}");
-            T r = new T
+            var r = new T
             {
                 Damageable = damageable,
             };
@@ -192,9 +192,9 @@ namespace OpenVIII
         {
             if (textScale == null) textScale = Vector2.One;
             if (boxScale == null) boxScale = Vector2.One;
-            Point cursor = Point.Zero;
-            Rectangle font = new Rectangle();
-            Rectangle backup = dst;
+            var cursor = Point.Zero;
+            var font = new Rectangle();
+            var backup = dst;
             if (buffer != null && buffer.Length > 0)
             {
                 font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
@@ -211,9 +211,9 @@ namespace OpenVIII
                     backup = dst;
                 }
             }
-            Vector2 bgscale = new Vector2(_menuitemscale) * textScale.Value;
-            Rectangle box = dst.Scale(boxScale.Value);
-            Rectangle hotspot = dst;
+            var bgscale = new Vector2(_menuitemscale) * textScale.Value;
+            var box = dst.Scale(boxScale.Value);
+            var hotspot = dst;
             if ((options & Box_Options.SkipDraw) == 0 && dst.Size != Point.Zero)
             {
                 if (dst.Width > 256 * bgscale.X)
@@ -260,12 +260,12 @@ namespace OpenVIII
         {
             if (offset == null)
                 offset = new Vector2(-1.15f, -.3f);
-            Vector2 scale = new Vector2(_menuitemscale);
-            Entry Finger_Right = Memory.Icons.GetEntry(Icons.ID.Finger_Right, 0);
+            var scale = new Vector2(_menuitemscale);
+            var Finger_Right = Memory.Icons.GetEntry(Icons.ID.Finger_Right, 0);
             if (Finger_Right != null)
             {
-                Vector2 size = Finger_Right.Size * scale;
-                Rectangle dst = new Rectangle(cursor, Point.Zero);
+                var size = Finger_Right.Size * scale;
+                var dst = new Rectangle(cursor, Point.Zero);
                 byte pallet = 2;
                 byte fadedpallet = 7;
                 dst.Offset(size * offset.Value);
@@ -336,7 +336,7 @@ namespace OpenVIII
         public virtual void DrawData()
         {
             if (!skipdata && Enabled && Data != null)
-                foreach (Menu_Base i in Data.Where(x => x.Value != null && x.Value.Enabled).OrderBy(x => x.Key).Select(x => x.Value))
+                foreach (var i in Data.Where(x => x.Value != null && x.Value.Enabled).OrderBy(x => x.Key).Select(x => x.Value))
                     i?.Draw();
         }
 
@@ -369,7 +369,7 @@ namespace OpenVIII
         public override void Reset()
         {
             if (!skipdata)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data)
+                foreach (var i in Data)
                 {
                     i.Value?.Reset();
                 }
@@ -395,7 +395,7 @@ namespace OpenVIII
 
         public override bool Update()
         {
-            bool ret = false;
+            var ret = false;
             if (!SkipFocus)
                 GenerateFocus();
             if(Size != Vector2.Zero)
@@ -410,7 +410,7 @@ namespace OpenVIII
                 //           where i.Value != null && i.Value.Update()
                 //           select new { isTrue = true }).FirstOrDefault()?.isTrue ?? false) || ret;
                 //}
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x => x.Value != null))
+                foreach (var i in Data.Where(x => x.Value != null))
                 {
                     ret = (i.Value.Update()) || ret;
                 }
@@ -422,10 +422,10 @@ namespace OpenVIII
 
         protected void GenerateFocus(Vector2? inputsize = null, Box_Options options = Box_Options.Default)
         {
-            Vector2 size = inputsize ?? Size;
-            Vector2 Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
-            Vector2 OffsetScreen = size/2f;
-            Vector2 CenterOfScreen = new Vector2(vp.X, vp.Y ) / 2f;
+            var size = inputsize ?? Size;
+            var Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
+            var OffsetScreen = size/2f;
+            var CenterOfScreen = new Vector2(vp.X, vp.Y ) / 2f;
             if ((options & Box_Options.Top) != 0)
             {
                 CenterOfScreen.Y = 0;
@@ -448,7 +448,7 @@ namespace OpenVIII
         protected override void RefreshChild()
         {
             if (!skipdata)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x=>x.Value !=null))
+                foreach (var i in Data.Where(x=>x.Value !=null))
                 // children might have a damageable set.
                 // if parents may not always have one set.
                 {

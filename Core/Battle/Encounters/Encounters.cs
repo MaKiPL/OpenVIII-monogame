@@ -37,14 +37,14 @@ namespace OpenVIII.Battle
         {
             Memory.Log.WriteLine($"{nameof(InitDebuggerBattle)} :: {nameof(Encounters)} :: {nameof(Read)}");
             if (enc == null || enc.Length == 0) return null;
-            int encounterCount = enc.Length / 128;
-            Encounters e = new Encounters(encounterCount);
+            var encounterCount = enc.Length / 128;
+            var e = new Encounters(encounterCount);
 
             MemoryStream ms = null;
 
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(enc)))
+            using (var br = new BinaryReader(ms = new MemoryStream(enc)))
             {
-                for (int i = 0; i < encounterCount; i++)
+                for (var i = 0; i < encounterCount; i++)
                     e.encounters.Add(Encounter.Read(br,e.Count));
 
 

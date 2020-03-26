@@ -16,7 +16,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Bullet Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            Bullet r = Create<Bullet>(count + 1, 2, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
+            var r = Create<Bullet>(count + 1, 2, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
             if (battle)
                 r.Target_Group = Target.Group.Create(r.Damageable);
             return r;
@@ -24,7 +24,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (InputITEM(Target_Group, ref ret))
             { }
             else
@@ -45,7 +45,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            Item_In_Menu item = Contents[CURSOR_SELECT];
+            var item = Contents[CURSOR_SELECT];
             if (!BLANKS[CURSOR_SELECT])
             {
                 Target_Group?.SelectTargetWindows(item, true);
@@ -57,9 +57,9 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Memory.State?.Items != null)
             {
-                List<Saves.Item> ammo = Memory.State.Items.Where(x => x.Data != null && x.QTY > 0 && x.Data?.Type == Item_In_Menu._Type.Ammo).OrderBy(x => x.ID).ToList();
-                int i = 0;
-                int skip = Page * Rows;
+                var ammo = Memory.State.Items.Where(x => x.Data != null && x.QTY > 0 && x.Data?.Type == Item_In_Menu._Type.Ammo).OrderBy(x => x.ID).ToList();
+                var i = 0;
+                var skip = Page * Rows;
                 bool AddItem(Saves.Item item)
                 {
                     if (i >= Rows) return false;
@@ -76,7 +76,7 @@ namespace OpenVIII.IGMData.Pool
                     }
                     return true;
                 }
-                foreach (Saves.Item bullet in ammo)
+                foreach (var bullet in ammo)
                     AddItem(bullet);
                 DefaultPages = ammo.Count / Rows;
                 for (; i < Rows; i++)
@@ -132,7 +132,7 @@ namespace OpenVIII.IGMData.Pool
         {
             base.Init();
             const int widthofnumber = 60;
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
                 ITEM[i, 0] = new IGMDataItem.Text
                 {

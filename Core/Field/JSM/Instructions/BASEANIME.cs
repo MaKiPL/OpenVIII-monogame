@@ -35,7 +35,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
             currentObject.Animation.ChangeBaseAnimation(_animationId, _firstFrame, _lastFrame);
             return DummyAwaitable.Instance;
         }

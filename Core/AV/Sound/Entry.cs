@@ -79,11 +79,11 @@ namespace OpenVIII.AV
 
             public static IReadOnlyList<Entry> Read(Stream s)
             {
-                using (BinaryReader br = new BinaryReader(s))
+                using (var br = new BinaryReader(s))
                 {
                     //The FMT is headed by 4 bytes representing the number of sound file headers
                     //in the rest of the FMT file, then by a 36 byte header that isn't interesting.
-                    int count = br.ReadInt32();
+                    var count = br.ReadInt32();
                     s.Seek(36, SeekOrigin.Current);
                     return Enumerable.Range(0, count).Select(_ => CreateInstance(br)).Where(x => x != null).ToList()
                         .AsReadOnly();
@@ -92,7 +92,7 @@ namespace OpenVIII.AV
 
             private static Entry CreateInstance(BinaryReader br)
             {
-                uint size = br.ReadUInt32();
+                var size = br.ReadUInt32();
                 if (size != 0) return new Entry(br, size);
                 br.BaseStream.Seek(34, SeekOrigin.Current);
                 return null;
@@ -102,8 +102,8 @@ namespace OpenVIII.AV
 
             private byte[] FillHeader(byte[] headerBytes)
             {
-                byte[] headerData = new byte[OutputHeaderSize + 28];
-                using (BinaryWriter bw = new BinaryWriter(new MemoryStream(headerData)))
+                var headerData = new byte[OutputHeaderSize + 28];
+                using (var bw = new BinaryWriter(new MemoryStream(headerData)))
                 {
                     bw.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
                     bw.Write(OutputTotalSize);

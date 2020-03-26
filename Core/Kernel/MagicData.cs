@@ -43,7 +43,7 @@ namespace OpenVIII
                 Statuses1 = (BattleOnlyStatuses)br.ReadUInt32();
                 Statuses0 = (PersistentStatuses)br.ReadUInt16();
                 StatusAttack = br.ReadByte();
-                Dictionary<Stat, byte> jVal = new Dictionary<Stat, byte>()
+                var jVal = new Dictionary<Stat, byte>()
                 {
                     {Stat.HP, br.ReadByte()},
                     {Stat.STR, br.ReadByte()},

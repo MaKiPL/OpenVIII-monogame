@@ -83,7 +83,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    float a = 0f;
+                    var a = 0f;
                     if (_quantity.HasFlag(Quantity._0625f)) a += .0625f;
                     if (_quantity.HasFlag(Quantity._1250f)) a += .1250f;
                     if (_quantity.HasFlag(Quantity._1f)) a += 1f;

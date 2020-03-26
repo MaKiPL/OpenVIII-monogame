@@ -23,8 +23,8 @@ namespace OpenVIII.Battle
 
             private Model(BinaryReader br)
             {
-                bool bSpecial = false;
-                uint header = Extended.UintLittleEndian(br.ReadUInt32());
+                var bSpecial = false;
+                var header = Extended.UintLittleEndian(br.ReadUInt32());
                 if (header != 0x01000100) //those may be some switches, but I don't know what they mean
                 {
                     Memory.Log.WriteLine("WARNING- THIS STAGE IS DIFFERENT! It has weird object section. INTERESTING, TO REVERSE!");
@@ -39,8 +39,8 @@ namespace OpenVIII.Battle
                     return;
                 }
                 br.BaseStream.Seek((br.BaseStream.Position % 4) + 4, SeekOrigin.Current);
-                ushort trianglesCount = br.ReadUInt16();
-                ushort quadsCount = br.ReadUInt16();
+                var trianglesCount = br.ReadUInt16();
+                var quadsCount = br.ReadUInt16();
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 Triangles = Enumerable.Range(0, trianglesCount).Select(_ => Triangle.Read(br)).ToList().AsReadOnly();
                 Quads = Enumerable.Range(0, quadsCount).Select(_ => Quad.Read(br)).ToList().AsReadOnly();

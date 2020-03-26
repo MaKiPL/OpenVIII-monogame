@@ -33,14 +33,14 @@ namespace OpenVIII.Fields
         {
             if (inf == null || inf.Length == 0) return default;
 
-            INF r = new INF();
+            var r = new INF();
             r.ReadData(inf);
             return r;
         }
 
         private void ReadData(byte[] inf)
         {
-            using (BinaryReader br = new BinaryReader(new MemoryStream(inf)))
+            using (var br = new BinaryReader(new MemoryStream(inf)))
             {
                 switch (inf.Length)
                 {
@@ -76,7 +76,7 @@ namespace OpenVIII.Fields
                 }
                 CameraHeight = br.ReadInt16();
                 CamerasRanges = new Rectangle[Type <= 2 ? 8 : 1];
-                foreach (int i in Enumerable.Range(0, CamerasRanges.Length))
+                foreach (var i in Enumerable.Range(0, CamerasRanges.Length))
                 {
                     CamerasRanges[i].Y = br.ReadInt16();
                     CamerasRanges[i].Height = br.ReadInt16();
@@ -88,7 +88,7 @@ namespace OpenVIII.Fields
                 if (Type <= 2)
                 {
                     ScreenRanges = new Rectangle[2];
-                    foreach (int i in Enumerable.Range(0, ScreenRanges.Length))
+                    foreach (var i in Enumerable.Range(0, ScreenRanges.Length))
                     {
                         ScreenRanges[i].Y = br.ReadInt16();
                         ScreenRanges[i].Height = br.ReadInt16();

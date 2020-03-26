@@ -40,7 +40,7 @@ namespace OpenVIII.Fields.IGMData
             if (Input2.DelayedButton(MouseButtons.MiddleButton))
             {
                 Debug.WriteLine($"=== Tiles Under MouseLocation: {Module.Background.MouseLocation} ===");
-                foreach (Background.Tile tile in Module.Background.TilesUnderMouse())
+                foreach (var tile in Module.Background.TilesUnderMouse())
                 {
                     Debug.WriteLine(tile);
                 }
@@ -69,7 +69,7 @@ namespace OpenVIII.Fields.IGMData
 
         public override bool Inputs_OKAY()
         {
-            int i = 0;
+            var i = 0;
             if (CURSOR_SELECT == i++)
             {
                 Module.Background?.Dispose();//force all textures to reload.
@@ -171,13 +171,13 @@ namespace OpenVIII.Fields.IGMData
                 ForceDump.Data = $"Onload Dump Textures: {Module.Toggles.HasFlag(Toggles.DumpingData)}";
                 Deswizzle.Data = "Deswizzle Tiles";
                 Reswizzle.Data = "Reswizzle Tiles";
-                foreach (int i in Enumerable.Range(1, Rows))
+                foreach (var i in Enumerable.Range(1, Rows))
                 {
                     ITEM[i, 0].Show();
                     if (i != 3)
                         BLANKS[i] = false;
                 }
-                foreach (int i in Enumerable.Range(8, Rows - 8))
+                foreach (var i in Enumerable.Range(8, Rows - 8))
                 {
                     ITEM[i, 0].Hide();
                     BLANKS[i] = true;
@@ -185,7 +185,7 @@ namespace OpenVIII.Fields.IGMData
             }
             else
             {
-                foreach (int i in Enumerable.Range(1, Rows))
+                foreach (var i in Enumerable.Range(1, Rows))
                 {
                     ITEM[i, 0].Hide();
                     BLANKS[i] = true;
@@ -208,7 +208,7 @@ namespace OpenVIII.Fields.IGMData
         protected override void Init()
         {
             base.Init();
-            foreach (int i in Enumerable.Range(0, Count))
+            foreach (var i in Enumerable.Range(0, Count))
             {
                 ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }

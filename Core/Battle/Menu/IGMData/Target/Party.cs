@@ -45,11 +45,11 @@ namespace OpenVIII.IGMData.Target
         {
             if (Memory.State?.Characters != null && Memory.State?.Party != null)
             {
-                List<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
+                var party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
                 byte pos = 0;
-                foreach (KeyValuePair<int, Characters> pm in party)
+                foreach (var pm in party)
                 {
-                    Saves.CharacterData data = Memory.State[Memory.State.PartyData[pm.Key]];
+                    var data = Memory.State[Memory.State.PartyData[pm.Key]];
 
                     ((IGMDataItem.Text)ITEM[pos, 0]).Data = data.Name;
                     ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = data.IsDead ? Font.ColorID.Dark_Grey : Font.ColorID.White;
@@ -70,7 +70,7 @@ namespace OpenVIII.IGMData.Target
         protected override void Init()
         {
             base.Init();
-            for (int pos = 0; pos < Count; pos++)
+            for (var pos = 0; pos < Count; pos++)
                 ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
         }
 

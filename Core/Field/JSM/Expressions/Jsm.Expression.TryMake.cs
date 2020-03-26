@@ -8,7 +8,7 @@ namespace OpenVIII.Fields.Scripts
         {
             public static IJsmExpression TryMake(Jsm.Opcode opcode, Int32 param, IStack<IJsmExpression> stack)
             {
-                IJsmExpression result = TryMakeInternal(opcode, param, stack);
+                var result = TryMakeInternal(opcode, param, stack);
                 return result?.Evaluate(StatelessServices.Instance); // Simplify the expression
             }
 

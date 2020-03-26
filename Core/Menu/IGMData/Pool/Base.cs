@@ -52,14 +52,14 @@
         public static J Create<J>(int count, int depth, Menu_Base container = null, int? rows = null, int? pages = null, Damageable damageable = null, bool battle = false)
                                                                     where J : Base<SourceType, ContentsType>, new()
         {
-            J r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable, battle: battle);
+            var r = IGMData.Base.Create<J>(count, depth, container, 1, rows, damageable, battle: battle);
             r.DefaultPages = pages ?? 1;
             return r;
         }
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (Pages > 1 && CONTAINER.Pos.Contains(MouseLocation))
             {
                 if (Input2.DelayedButton(MouseButtons.MouseWheelup))

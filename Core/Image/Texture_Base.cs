@@ -77,7 +77,7 @@ namespace OpenVIII
             if (pixel == 0 && !ignoreAlpha) return Color.TransparentBlack;
             //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
             // had the masks. though they were doing rgb but we are doing bgr so i switched red and blue.
-            Color ret = new Color
+            var ret = new Color
             {
                 R = (byte)MathHelper.Clamp((pixel & red_mask) << 3, 0, 255),
                 G = (byte)MathHelper.Clamp(((pixel & green_mask) >> 5) << 3, 0, 255),
@@ -109,7 +109,7 @@ namespace OpenVIII
             if (pixel == 0 && !ignoreAlpha) return Color.TransparentBlack;
             //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
             // had the masks. though they were doing rgb but we are doing bgr so i switched red and blue.
-            Color ret = new Color
+            var ret = new Color
             {
                 R = (byte)MathHelper.Clamp(((pixel & c_red_mask) >> c_red_shift) << 3, 0, 255),
                 G = (byte)MathHelper.Clamp(((pixel & c_green_mask) >> c_green_shift) << 3, 0, 255),
@@ -154,7 +154,7 @@ namespace OpenVIII
         public Texture2D GetTexture(Dictionary<int, Color> colorOverride,sbyte clut = -1)
         {
             if (colorOverride == null || colorOverride.Count == 0) return null;
-            Color[] colors = clut>0 && clut < GetClutCount ? GetClutColors((ushort)clut):new Color[GetColorsCountPerPalette];
+            var colors = clut>0 && clut < GetClutCount ? GetClutColors((ushort)clut):new Color[GetColorsCountPerPalette];
             if (colors == null) return null;
             colorOverride.Where(x=>x.Key<colors.Length).ForEach(x=>colors[x.Key]=x.Value);
             return GetTexture((colors));

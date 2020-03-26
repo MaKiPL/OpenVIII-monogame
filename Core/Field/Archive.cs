@@ -40,7 +40,7 @@ namespace OpenVIII.Fields
 
         public static Archive Load(ushort inputFieldID, Sections flags = Sections.ALL)
         {
-            Archive r = new Archive();
+            var r = new Archive();
             return !r.Init(inputFieldID, flags) ? null : r;
         }
 
@@ -85,11 +85,11 @@ namespace OpenVIII.Fields
         {
             Flags = flags;
             Memory.SuppressDraw = true;
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
-            string[] test = aw.GetListOfFiles();
+            var aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
+            var test = aw.GetListOfFiles();
             //TODO fix endless look on FieldID 50.
             ID = inputFieldID ?? Memory.FieldHolder.FieldID;
-            int count = (Memory.FieldHolder.fields?.Length ?? 0);
+            var count = (Memory.FieldHolder.fields?.Length ?? 0);
             if (ID >= count)
                 return false;
             FileName = Memory.FieldHolder.GetString(ID);
@@ -101,8 +101,8 @@ namespace OpenVIII.Fields
                 return false;
             }
 
-            ArchiveBase fieldArchive = aw.GetArchive(ArchiveName);
-            string[] listOfFiles = fieldArchive.GetListOfFiles();
+            var fieldArchive = aw.GetArchive(ArchiveName);
+            var listOfFiles = fieldArchive.GetListOfFiles();
             string findString(string s) =>
                 listOfFiles.FirstOrDefault(x => x.IndexOf(s, StringComparison.OrdinalIgnoreCase) >= 0);
 
@@ -123,8 +123,8 @@ namespace OpenVIII.Fields
             }
 
             //let's start with scripts
-            string sJsm = findString(".jsm");
-            string sSy = findString(".sy");
+            var sJsm = findString(".jsm");
+            var sSy = findString(".sy");
             if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(sJsm)&& (FileName != "test3"))
             {
                     JSMObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(sJsm));
@@ -133,17 +133,17 @@ namespace OpenVIII.Fields
                 {
                     if (!string.IsNullOrWhiteSpace(sSy))
                     {
-                        Sym.GameObjects symObjects = Sym.Reader.FromBytes(fieldArchive.GetBinaryFile(sSy));
+                        var symObjects = Sym.Reader.FromBytes(fieldArchive.GetBinaryFile(sSy));
 
                         Services = Initializer.GetServices();
                         EventEngine = ServiceId.Field[Services].Engine;
                         EventEngine.Reset();
-                        for (int objIndex = 0; objIndex < JSMObjects.Count; objIndex++)
+                        for (var objIndex = 0; objIndex < JSMObjects.Count; objIndex++)
                         {
-                            Scripts.Jsm.GameObject obj = JSMObjects[objIndex];
-                            FieldObject fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
+                            var obj = JSMObjects[objIndex];
+                            var fieldObject = new FieldObject(obj.Id, symObjects.GetObjectOrDefault(objIndex).Name);
 
-                            foreach (Scripts.Jsm.GameScript script in obj.Scripts)
+                            foreach (var script in obj.Scripts)
                                 fieldObject.Scripts.Add(script.ScriptId, script.Segment.GetExecuter());
 
                             EventEngine.RegisterObject(fieldObject);
@@ -180,28 +180,28 @@ namespace OpenVIII.Fields
             //}
             if (flags.HasFlag(Sections.INF))
             {
-                byte[] infData = getFile(".inf");//gateways
+                var infData = getFile(".inf");//gateways
                 if (infData != null && infData.Length > 0)
                     INF = INF.Load(infData);
             }
 
             if (flags.HasFlag(Sections.TDW))
             {
-                byte[] tdwData = getFile(".tdw");//extra font
+                var tdwData = getFile(".tdw");//extra font
                 if (tdwData != null && tdwData.Length > 0)
                     TDW = new TDW(tdwData);
             }
 
             if (flags.HasFlag(Sections.MSK))
             {
-                byte[] mskData = getFile(".msk");//movie cam
+                var mskData = getFile(".msk");//movie cam
                 if (mskData != null && mskData.Length > 0)
                     MSK = new MSK(mskData);
             }
             if (flags.HasFlag(Sections.RAT | Sections.MRT))
             {
-                byte[] ratData = getFile(".rat");//battle on field
-                byte[] mrtData = getFile(".mrt");//battle on field
+                var ratData = getFile(".rat");//battle on field
+                var mrtData = getFile(".mrt");//battle on field
                 if (ratData != null && mrtData != null && ratData.Length > 0 && mrtData.Length > 0)
                     MrtRat = new MrtRat(mrtData, ratData);
             }
@@ -215,13 +215,13 @@ namespace OpenVIII.Fields
             //}
             if (flags.HasFlag(Sections.PMP))
             {
-                byte[] pmpData = getFile(".pmp");//particle graphic?
+                var pmpData = getFile(".pmp");//particle graphic?
                 if (pmpData != null && pmpData.Length > 4)
                     PMP = new PMP(pmpData);
             }
             if (flags.HasFlag(Sections.SFX))
             {
-                byte[] sfxData = getFile(".sfx");//sound effects
+                var sfxData = getFile(".sfx");//sound effects
                 if (sfxData != null && sfxData.Length > 0)
                     SFX = new SFX(sfxData);
             }

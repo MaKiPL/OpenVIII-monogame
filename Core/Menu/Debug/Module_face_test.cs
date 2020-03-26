@@ -87,19 +87,19 @@ namespace OpenVIII
         {
             if (pointer >= 0)
             {
-                Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+                var vp = Memory.graphics.GraphicsDevice.Viewport;
 
-                int rows = 2;
-                int cols = 8;
-                int totalitems = rows * cols;
-                Faces.ID id = FaceValue[pointer];
-                int pos = (int)id;
+                var rows = 2;
+                var cols = 8;
+                var totalitems = rows * cols;
+                var id = FaceValue[pointer];
+                var pos = (int)id;
                 int i = Memory.Faces.GetEntry(id).File;
-                int col = (pos % cols);
-                int row = (pos / cols) % rows;
+                var col = (pos % cols);
+                var row = (pos / cols) % rows;
 
-                float scale = vp.Height / Memory.Faces.GetEntry(id).Height;
-                Rectangle dst = new Rectangle(new Point(0), (Memory.Faces.GetEntry(id).Size * scale).ToPoint());
+                var scale = vp.Height / Memory.Faces.GetEntry(id).Height;
+                var dst = new Rectangle(new Point(0), (Memory.Faces.GetEntry(id).Size * scale).ToPoint());
                 dst.Offset(vp.Width / 2 - dst.Center.X, 0);
                 Memory.SpriteBatchStartAlpha();
                 Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);

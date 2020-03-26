@@ -128,15 +128,15 @@ namespace OpenVIII.Fields
 
             public static Tile Load(BinaryReader br, int id, byte type)
             {
-                long p = br.BaseStream.Position;
-                Tile t = new Tile { X = br.ReadInt16() };
+                var p = br.BaseStream.Position;
+                var t = new Tile { X = br.ReadInt16() };
                 if (t.X == 0x7FFF)
                     return null;
                 t.Y = br.ReadInt16();
                 if (type == 1)
                 {
                     t.Z = br.ReadUInt16();
-                    ushort texIdBuffer = br.ReadUInt16();
+                    var texIdBuffer = br.ReadUInt16();
                     t.TextureID = GetTextureID(texIdBuffer);
                     t.PaletteID = GetPaletteID(br);
                     t.SourceX = br.ReadByte();
@@ -155,7 +155,7 @@ namespace OpenVIII.Fields
                     t.SourceX = br.ReadUInt16();
                     t.SourceY = br.ReadUInt16();
                     t.Z = br.ReadUInt16();
-                    ushort texIdBuffer = br.ReadUInt16();
+                    var texIdBuffer = br.ReadUInt16();
                     t.TextureID = GetTextureID(texIdBuffer);
                     t.PaletteID = GetPaletteID(br);
                     t.AnimationID = br.ReadByte();
@@ -191,9 +191,9 @@ namespace OpenVIII.Fields
 
             public VertexPositionTexture[] GetQuad(float scale)
             {
-                List<VertexPositionTexture> vertexPositionTextures = GetCorners(scale); // 4 unique corners.
+                var vertexPositionTextures = GetCorners(scale); // 4 unique corners.
                 //create 2 triangles
-                List<VertexPositionTexture> r = new List<VertexPositionTexture>
+                var r = new List<VertexPositionTexture>
                 {
                     vertexPositionTextures[3],
                     vertexPositionTextures[1],
@@ -208,12 +208,12 @@ namespace OpenVIII.Fields
 
             public bool Intersect(Tile tile, bool rev = false)
             {
-                bool flip = !rev && tile.Intersect(this, true);
-                bool ret = flip ||
-                    X >= tile.X &&
-                    X < tile.X + Size &&
-                    Y >= tile.Y &&
-                    Y < tile.Y + Size;// &&
+                var flip = !rev && tile.Intersect(this, true);
+                var ret = flip ||
+                          X >= tile.X &&
+                          X < tile.X + Size &&
+                          Y >= tile.Y &&
+                          Y < tile.Y + Size;// &&
                                       //Z == tile.Z &&
                                       //LayerID == tile.LayerID &&
                                       //BlendMode == tile.BlendMode &&
@@ -256,7 +256,7 @@ namespace OpenVIII.Fields
                 const int bitsPerLong = sizeof(ulong) * 8;
                 const int bitsPerByte = sizeof(byte) * 8;
                 const int bitsPerNibble = bitsPerByte / 2;
-                int bits = bitsPerLong;
+                var bits = bitsPerLong;
                 bits -= bitsPerNibble;
                 PupuID = (((uint)LayerID & 0xF) << bits);
                 bits -= bitsPerNibble;
@@ -273,12 +273,12 @@ namespace OpenVIII.Fields
 
             private List<VertexPositionTexture> GetCorners(float scale)
             {
-                Vector2 sizeVertex = new Vector2(Size, Size) / scale;
-                Vector2 sizeUV = new Vector2(Size) / TextureSize;
-                List<VertexPositionTexture> r = new List<VertexPositionTexture>(4);
-                for (int i = 0; i < r.Capacity; i++)
+                var sizeVertex = new Vector2(Size, Size) / scale;
+                var sizeUV = new Vector2(Size) / TextureSize;
+                var r = new List<VertexPositionTexture>(4);
+                for (var i = 0; i < r.Capacity; i++)
                 {
-                    VertexPositionTexture vpt = new VertexPositionTexture(((Vector3)this) / scale, UV);
+                    var vpt = new VertexPositionTexture(((Vector3)this) / scale, UV);
                     switch (i)
                     {
                         case 0://top left
@@ -315,7 +315,7 @@ namespace OpenVIII.Fields
                             vpt.TextureCoordinate.Y += sizeUV.Y;
                             break;
                     }
-                    Vector3 vectorFlip = new Vector3(-1, -1, 1);
+                    var vectorFlip = new Vector3(-1, -1, 1);
                     vpt.Position *= vectorFlip;
                     r.Add(vpt);
                 }

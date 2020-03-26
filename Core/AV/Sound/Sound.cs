@@ -52,7 +52,7 @@ namespace OpenVIII.AV
         public static void Init()
         {
             Memory.Log.WriteLine($"{nameof(Sound)} :: {nameof(Init)}");
-            string path = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.fmt");
+            var path = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.fmt");
             Stream s = null;
             if (File.Exists(path))
             {
@@ -60,7 +60,7 @@ namespace OpenVIII.AV
             }
             else
             {
-                ArchiveBase other = ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
+                var other = ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
                 if (other.GetBinaryFile("audio.dat", true) != null) //cache's audio.dat
                     s = new MemoryStream(other.GetBinaryFile("audio.fmt"), false);
             }
@@ -92,7 +92,7 @@ namespace OpenVIII.AV
             {
                 return null;
             }
-            Audio ffcc = Audio.Load(_entries[soundId], loop ? 0 : -1);
+            var ffcc = Audio.Load(_entries[soundId], loop ? 0 : -1);
             if (!persist)
                 SoundChannels[CurrentChannel++] = ffcc;
             ffcc.Play(volume, pitch, pan);

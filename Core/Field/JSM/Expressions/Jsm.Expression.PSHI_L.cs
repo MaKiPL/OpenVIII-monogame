@@ -30,10 +30,10 @@ namespace OpenVIII.Fields.Scripts
 
                 public IJsmExpression Evaluate(IServices services)
                 {
-                    IInteractionService interaction = ServiceId.Interaction[services];
+                    var interaction = ServiceId.Interaction[services];
                     if (interaction.IsSupported)
                     {
-                        Int32 value = interaction[_index];
+                        var value = interaction[_index];
                         return ValueExpression.Create(value);
                     }
 

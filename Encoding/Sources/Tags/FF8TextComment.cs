@@ -27,12 +27,12 @@ namespace OpenVIII.Encoding.Tags
             if (left < 2 || chars[offset] != '/')
                 return null;
 
-            CommentType commentType = (CommentType)chars[offset + 1];
+            var commentType = (CommentType)chars[offset + 1];
             if (commentType != CommentType.Line && commentType != CommentType.Block)
                 return null;
 
             String value;
-            Int32 index = IndexOfAny(chars, offset + 2, left - 2, out string finded, commentType == CommentType.Line ? LineCommentEnd : BlockCommentEnd);
+            var index = IndexOfAny(chars, offset + 2, left - 2, out var finded, commentType == CommentType.Line ? LineCommentEnd : BlockCommentEnd);
 
             if (index < 0)
             {
@@ -44,11 +44,11 @@ namespace OpenVIII.Encoding.Tags
             {
                 if (commentType == CommentType.Line)
                 {
-                    if (offset != 0 && IndexOfAny(chars, offset, -6, out string prev, LineCommentEnd) < 0)
+                    if (offset != 0 && IndexOfAny(chars, offset, -6, out var prev, LineCommentEnd) < 0)
                         finded = string.Empty;
                 }
 
-                Int32 length = index - offset;
+                var length = index - offset;
                 value = new String(chars, offset + 2, length - 2);
                 left -= length + finded.Length;
                 offset = index + finded.Length;
@@ -59,15 +59,15 @@ namespace OpenVIII.Encoding.Tags
 
         private static Int32 IndexOfAny(Char[] chars, Int32 offset, Int32 left, out String finded, params String[] subStrings)
         {
-            Int32[] counters = new Int32[subStrings.Length];
+            var counters = new Int32[subStrings.Length];
 
             if (left > 0)
             {
-                for (Int32 i = offset; i < chars.Length && left > 0; i++, left--)
+                for (var i = offset; i < chars.Length && left > 0; i++, left--)
                 {
-                    for (Int32 k = 0; k < subStrings.Length; k++)
+                    for (var k = 0; k < subStrings.Length; k++)
                     {
-                        String str = subStrings[k];
+                        var str = subStrings[k];
                         if (chars[i] != str[counters[k]++])
                             counters[k] = 0;
                         else if (counters[k] == str.Length)
@@ -80,11 +80,11 @@ namespace OpenVIII.Encoding.Tags
             }
             else
             {
-                for (Int32 i = offset; i >= 0 && left < 0; i--, left++)
+                for (var i = offset; i >= 0 && left < 0; i--, left++)
                 {
-                    for (Int32 k = 0; k < subStrings.Length; k++)
+                    for (var k = 0; k < subStrings.Length; k++)
                     {
-                        String str = subStrings[k];
+                        var str = subStrings[k];
                         if (chars[i] != str[str.Length - 1 - counters[k]++])
                             counters[k] = 0;
                         else if (counters[k] == str.Length)

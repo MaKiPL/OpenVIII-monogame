@@ -8,16 +8,16 @@
         public static void Init()
         {
             Memory.Log.WriteLine($"{nameof(Fields)} :: {nameof(Initializer)} :: {nameof(Init)}");
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
+            var aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             
             // ReSharper disable once StringLiteralTypo
-            ArchiveBase mapData = aw.GetArchive("mapdata.fs");
+            var mapData = aw.GetArchive("mapdata.fs");
             if (mapData == null) return;
             // ReSharper disable once StringLiteralTypo
             const string map = "maplist";
-            byte[] bytes = mapData.GetBinaryFile(map);
+            var bytes = mapData.GetBinaryFile(map);
             if (bytes == null) return;
-            string[] mapList = System.Text.Encoding.UTF8.GetString(bytes)
+            var mapList = System.Text.Encoding.UTF8.GetString(bytes)
                 .Replace("\r", "")
                 .Split('\n');
 
@@ -28,8 +28,8 @@
 
         public static IServices GetServices()
         {
-            ServiceProvider services = new ServiceProvider();
-            EventEngine engine = new EventEngine();
+            var services = new ServiceProvider();
+            var engine = new EventEngine();
 
             services.Register(ServiceId.Interaction, new InteractionService());
             services.Register(ServiceId.Field, new FieldService(engine));

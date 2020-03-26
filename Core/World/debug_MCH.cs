@@ -180,7 +180,7 @@ namespace OpenVIII
         public void AssignTextureSizes(Texture2D[] textures, int[] textureIndexes)
         {
             textureSizes = new Vector2[textureIndexes.Length];
-            for (int i = 0; i < textureIndexes.Length; i++)
+            for (var i = 0; i < textureIndexes.Length; i++)
                 textureSizes[i] = new Vector2(textures[textureIndexes[i]].Width, textures[textureIndexes[i]].Height);
         }
         /// <summary>
@@ -191,7 +191,7 @@ namespace OpenVIII
         public void AssignTextureSizes(TextureHandler[] textures, int[] textureIndexes)
         {
             textureSizes = new Vector2[textureIndexes.Length];
-            for (int i = 0; i < textureIndexes.Length; i++)
+            for (var i = 0; i < textureIndexes.Length; i++)
                 textureSizes[i] = new Vector2(textures[textureIndexes[i]].ClassicWidth, textures[textureIndexes[i]].ClassicHeight);
         }
         public bool bValid() => header.Unk == 0;
@@ -206,8 +206,8 @@ namespace OpenVIII
         private void PairSkinWithVertex()
         {
             gVertices = new GroupedVertices[header.cVertices];
-            int innerIndex = 0;
-            for(int i = 0; i<skeleton.skins.Length; i++)
+            var innerIndex = 0;
+            for(var i = 0; i<skeleton.skins.Length; i++)
             {
                 for(int n = skeleton.skins[i].vertIndex; n<skeleton.skins[i].vertIndex + skeleton.skins[i].cVerts; n++)
                 {
@@ -230,7 +230,7 @@ namespace OpenVIII
                 return; //error handler
             skeleton = new Skeleton();
             skeleton.bones = new Bone[header.cSkeletonBones];
-            for (int i = 0; i < header.cSkeletonBones; i++)
+            for (var i = 0; i < header.cSkeletonBones; i++)
                 skeleton.bones[i] = Extended.ByteArrayToStructure<Bone>(br.ReadBytes(64));
             ReadSkinning();
             return;
@@ -244,7 +244,7 @@ namespace OpenVIII
                 return; //error handler
 
             skeleton.skins = new SkinData[header.cSkinObjects];
-            for (int i = 0; i < header.cSkinObjects; i++)
+            for (var i = 0; i < header.cSkinObjects; i++)
                 skeleton.skins[i] = Extended.ByteArrayToStructure<SkinData>(br.ReadBytes(8));
             return;
         }
@@ -255,12 +255,12 @@ namespace OpenVIII
             if (ms.Position > ms.Length || header.pVertices+ms.Position > ms.Length) //pvert error handler
                 return; //error handler
             vertices = new Vector4[header.cVertices];
-            for (int i = 0; i < vertices.Length; i++)
+            for (var i = 0; i < vertices.Length; i++)
               vertices[i] = new Vector4(br.ReadInt16(), -br.ReadInt16(), br.ReadInt16(), br.ReadInt16()); //change second to -Y because of warped geom
 
             ms.Seek(pBase + header.pFaces, SeekOrigin.Begin);
-            List<Face> face = new List<Face>();
-            for(int i = 0; i<header.cFaces; i++)
+            var face = new List<Face>();
+            for(var i = 0; i<header.cFaces; i++)
                 face.Add(Extended.ByteArrayToStructure<Face>(br.ReadBytes(64)));
             faces = face.ToArray();
             return;
@@ -278,26 +278,26 @@ namespace OpenVIII
 
             if (ms.Position > ms.Length)
                 return; //error handler
-            ushort animationCount = br.ReadUInt16();
-            int innerIndex = 0;
+            var animationCount = br.ReadUInt16();
+            var innerIndex = 0;
             animation = new Animation() { cAnimations = animationCount, animations= new AnimationEntry[animationCount] };
             while (animationCount > 0)
             {
-                ushort animationFramesCount = br.ReadUInt16();
-                ushort cBones = br.ReadUInt16();
+                var animationFramesCount = br.ReadUInt16();
+                var cBones = br.ReadUInt16();
                 if (animationFramesCount * cBones >= ms.Length || cBones == 0 || cBones>100)
                 {
                     Console.WriteLine($"Debug_MCH: Error at ReadAnimation()- animFrameCount was {animationFramesCount} and cBones were {cBones}, but that's more than file size!");
                     break;
                 }
                 animation.animations[innerIndex] = new AnimationEntry() { cAnimFrames = animationFramesCount, animationFrames = new AnimFrame[animationFramesCount] };
-                List<AnimFrame> animKeypoints = new List<AnimFrame>();
+                var animKeypoints = new List<AnimFrame>();
                 while (animationFramesCount > 0)
                 {
-                    AnimFrame keyPoint = new AnimFrame() { bone0pos= new Vector3(x:br.ReadInt16(),z:-br.ReadInt16(), y:br.ReadInt16())};
-                    Vector3[] vetRot = new Vector3[cBones];
-                    Matrix[] matrixRot = new Matrix[cBones];
-                    for (int i = 0; i < cBones; i++)
+                    var keyPoint = new AnimFrame() { bone0pos= new Vector3(x:br.ReadInt16(),z:-br.ReadInt16(), y:br.ReadInt16())};
+                    var vetRot = new Vector3[cBones];
+                    var matrixRot = new Matrix[cBones];
+                    for (var i = 0; i < cBones; i++)
                         {
                         short x, y, z;
                         if (currentMchMode == mchMode.World)
@@ -308,15 +308,15 @@ namespace OpenVIII
                         }
                         else //Field NPC dataset - s16 4bytes simplified
                         {
-                            byte rot1 = br.ReadByte();
-                            byte rot2 = br.ReadByte();
-                            byte rot3 = br.ReadByte();
-                            byte rot4 = br.ReadByte();
+                            var rot1 = br.ReadByte();
+                            var rot2 = br.ReadByte();
+                            var rot3 = br.ReadByte();
+                            var rot4 = br.ReadByte();
                             x = (short)(rot1 << 2 | (rot4 >> 2 * 0 & 3) << 10);
                             y = (short)(rot2 << 2 | (rot4 >> 2 * 1 & 3) << 10);
                             z = (short)(rot3 << 2 | (rot4 >> 2 * 2 & 3) << 10);
                         }
-                        Vector3 shortVector = new Vector3()
+                        var shortVector = new Vector3()
                         {
                             X = -y,
                             Y = -x,
@@ -339,14 +339,14 @@ namespace OpenVIII
 
         private void CalculateBoneMatrix()
         {
-            for (int animId = 0; animId < animation.animations.Length; animId++)
-                for (int frameId = 0; frameId < animation.animations[animId].cAnimFrames; frameId++)
-                    for (int boneId = 0; boneId < skeleton.bones.Length; boneId++)
+            for (var animId = 0; animId < animation.animations.Length; animId++)
+                for (var frameId = 0; frameId < animation.animations[animId].cAnimFrames; frameId++)
+                    for (var boneId = 0; boneId < skeleton.bones.Length; boneId++)
                     {
                     var boneRotation = animation.animations[animId].animationFrames[frameId].vecRot[boneId];
-                    Matrix xRot = Extended.GetRotationMatrixX(-boneRotation.X);
-                    Matrix yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
-                    Matrix zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
+                    var xRot = Extended.GetRotationMatrixX(-boneRotation.X);
+                    var yRot = Extended.GetRotationMatrixY(-boneRotation.Y);
+                    var zRot = Extended.GetRotationMatrixZ(-boneRotation.Z);
                     var MatrixZ = Extended.MatrixMultiply_transpose(yRot, xRot);
                     MatrixZ = Extended.MatrixMultiply_transpose(zRot, MatrixZ);
                     if (skeleton.bones[boneId].parentBone == 0) //if parentId is 0 then the current bone is core aka bone0
@@ -359,9 +359,9 @@ namespace OpenVIII
                         }
                     else
                     {
-                        Matrix parentBone = animation.animations[animId].animationFrames[frameId].matrixRot[skeleton.bones[boneId].parentBone-1]; //gets the parent bone
+                        var parentBone = animation.animations[animId].animationFrames[frameId].matrixRot[skeleton.bones[boneId].parentBone-1]; //gets the parent bone
                         MatrixZ.M43 = skeleton.bones[skeleton.bones[boneId].parentBone-1].GetSize();
-                        Matrix rMatrix = Matrix.Multiply(parentBone, MatrixZ);
+                        var rMatrix = Matrix.Multiply(parentBone, MatrixZ);
                         rMatrix.M41 = parentBone.M11 * MatrixZ.M41 + parentBone.M12 * MatrixZ.M42 + parentBone.M13 * MatrixZ.M43 + parentBone.M41;
                         rMatrix.M42 = parentBone.M21 * MatrixZ.M41 + parentBone.M22 * MatrixZ.M42 + parentBone.M23 * MatrixZ.M43 + parentBone.M42;
                         rMatrix.M43 = parentBone.M31 * MatrixZ.M41 + parentBone.M32 * MatrixZ.M42 + parentBone.M33 * MatrixZ.M43 + parentBone.M43;
@@ -383,9 +383,9 @@ namespace OpenVIII
         /// <returns>Tuple{item1= VertexPositionColorTexture; item2= clutIndex</returns>
         public Tuple<VertexPositionColorTexture[], byte[]> GetVertexPositions(Vector3 position, Quaternion rotation, int animationId, int animationFrame)
         {
-            List<VertexPositionColorTexture> facesVertices = new List<VertexPositionColorTexture>();
-            List<byte> texIndexes = new List<byte>();
-            for(int i = 0; i<faces.Length; i++)
+            var facesVertices = new List<VertexPositionColorTexture>();
+            var texIndexes = new List<byte>();
+            for(var i = 0; i<faces.Length; i++)
             {
 
                 //We should have pre-calculated Matrices for all bones, frames, animations. Therefore we need to calculate final Vertex position
@@ -395,13 +395,13 @@ namespace OpenVIII
                     //let's first get the vertices we need from face. Those are indexes. We need to get their associated boneId to perform
                     //operations on them. Let's loop by face
 
-                    for (int k = 0; k < 3; k++)
+                    for (var k = 0; k < 3; k++)
                     {
                         var face = CalculateFinalVertex(gVertices[vertsCollection[k]], animationId, animationFrame);
                         face = Vector3.Transform(face, Matrix.CreateFromQuaternion(rotation));
                         face = Vector3.Transform(face, Matrix.CreateTranslation(position));
 
-                        Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
+                        var clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
                         Vector2 texData;
                         if(textureSizes != null)
                             texData = new Vector2(faces[i].TextureMap[k].u/ textureSizes[faces[i].texIndex].X, faces[i].TextureMap[k].v/ textureSizes[faces[i].texIndex].Y);
@@ -430,14 +430,14 @@ namespace OpenVIII
                     faceD = Vector3.Transform(faceD, Matrix.CreateFromQuaternion(rotation));
                     faceD = Vector3.Transform(faceD, Matrix.CreateTranslation(position));
 
-                    float widthDividor = textureSizes == null ? TEX_SIZEW : textureSizes[faces[i].texIndex].X; //if VRAM indexes of tex sizes are not null, then use them for UV calculation
-                    float heightDividor = textureSizes == null ? TEX_SIZEH : textureSizes[faces[i].texIndex].Y;
-                    Vector2 t1 = new Vector2(faces[i].TextureMap[0].u / widthDividor, faces[i].TextureMap[0].v / heightDividor);
-                    Vector2 t2 = new Vector2(faces[i].TextureMap[1].u / widthDividor, faces[i].TextureMap[1].v / heightDividor);
-                    Vector2 t3 = new Vector2(faces[i].TextureMap[2].u / widthDividor, faces[i].TextureMap[2].v / heightDividor);
-                    Vector2 t4 = new Vector2(faces[i].TextureMap[3].u / widthDividor, faces[i].TextureMap[3].v / heightDividor);
+                    var widthDividor = textureSizes == null ? TEX_SIZEW : textureSizes[faces[i].texIndex].X; //if VRAM indexes of tex sizes are not null, then use them for UV calculation
+                    var heightDividor = textureSizes == null ? TEX_SIZEH : textureSizes[faces[i].texIndex].Y;
+                    var t1 = new Vector2(faces[i].TextureMap[0].u / widthDividor, faces[i].TextureMap[0].v / heightDividor);
+                    var t2 = new Vector2(faces[i].TextureMap[1].u / widthDividor, faces[i].TextureMap[1].v / heightDividor);
+                    var t3 = new Vector2(faces[i].TextureMap[2].u / widthDividor, faces[i].TextureMap[2].v / heightDividor);
+                    var t4 = new Vector2(faces[i].TextureMap[3].u / widthDividor, faces[i].TextureMap[3].v / heightDividor);
 
-                    Color clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
+                    var clr = new Color(faces[i].vertColor[0], faces[i].vertColor[1], faces[i].vertColor[2], faces[i].vertColor[3]);
 
                     facesVertices.Add(new VertexPositionColorTexture(faceA, clr, t1));
                     facesVertices.Add(new VertexPositionColorTexture(faceB, clr, t2));
@@ -471,10 +471,10 @@ namespace OpenVIII
         {
 
             var vertex = groupedVertex.vertex / MODEL_SCALE;
-            Matrix faceMatrix = animation.animations[animationId].animationFrames[animationFrame].matrixRot[groupedVertex.boneId];
+            var faceMatrix = animation.animations[animationId].animationFrames[animationFrame].matrixRot[groupedVertex.boneId];
 
 
-            Vector3 face = new Vector3(
+            var face = new Vector3(
                 faceMatrix.M11 * vertex.X + faceMatrix.M41 + faceMatrix.M12 * vertex.Z + faceMatrix.M13 * -vertex.Y,
                 faceMatrix.M21 * vertex.X + faceMatrix.M42 + faceMatrix.M22 * vertex.Z + faceMatrix.M23 * -vertex.Y,
                 faceMatrix.M31 * vertex.X + faceMatrix.M43 + faceMatrix.M32 * vertex.Z + faceMatrix.M33 * -vertex.Y

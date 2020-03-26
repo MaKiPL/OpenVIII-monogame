@@ -8,7 +8,7 @@ namespace OpenVIII.Fields
     {
         public static IEnumerable<String> PossibleNames(Int32 movieId)
         {
-            Boolean isFound = false;
+            var isFound = false;
 
             if (movieId < Disk1.Length)
             {

@@ -26,9 +26,9 @@ namespace OpenVIII.Fields
 
             public IEnumerable<Info> Enumerate(String mask)
             {
-                foreach (String filePath in Directory.EnumerateFiles(_rootPath, mask, SearchOption.AllDirectories))
+                foreach (var filePath in Directory.EnumerateFiles(_rootPath, mask, SearchOption.AllDirectories))
                 {
-                    String fieldName = Path.GetFileNameWithoutExtension(filePath);
+                    var fieldName = Path.GetFileNameWithoutExtension(filePath);
                     if (SkipInvalidFields(fieldName))
                         continue;
 

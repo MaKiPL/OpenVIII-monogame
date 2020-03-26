@@ -19,7 +19,7 @@ namespace OpenVIII.Fields.Scripts
 
             public void FormatType(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
             {
-                formatterContext.GetObjectScriptNamesById(Id, out String typeName, out _);
+                formatterContext.GetObjectScriptNamesById(Id, out var typeName, out _);
                 sw.AppendLine($"public sealed class {typeName}");
                 {
                     sw.AppendLine("{");

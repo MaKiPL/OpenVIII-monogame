@@ -56,7 +56,7 @@ namespace OpenVIII
             {
                 ID = id ?? ID;
                 if (ID <= 0) return this;
-                byte q = (byte)MathHelper.Clamp(qty + QTY, 0, 100);
+                var q = (byte)MathHelper.Clamp(qty + QTY, 0, 100);
                 if (q > QTY)
                 {
                     QTY = q;
@@ -73,7 +73,7 @@ namespace OpenVIII
             public Item Clone()
             {
                 //shadow copy
-                Item d = new Item(ID, QTY);
+                var d = new Item(ID, QTY);
                 //deep copy anything that needs it here.
                 return d;
             }

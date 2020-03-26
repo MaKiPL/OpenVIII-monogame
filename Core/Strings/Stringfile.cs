@@ -23,7 +23,7 @@ namespace OpenVIII
         {
             get
             {
-                if (SPositions != null && SPositions.TryGetValue(i, out List<FF8StringReference> listOfStrings) && listOfStrings.Count > j)
+                if (SPositions != null && SPositions.TryGetValue(i, out var listOfStrings) && listOfStrings.Count > j)
                     return SPositions[i][j];
                 return null;
             }

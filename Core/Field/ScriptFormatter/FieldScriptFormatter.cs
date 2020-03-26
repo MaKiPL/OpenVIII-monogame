@@ -7,8 +7,8 @@ namespace OpenVIII.Fields.Scripts
     {
         public static IEnumerable<FormattedObject> FormatAllObjects(Field.ILookupService lookupService)
         {
-            foreach (Field.Info field in lookupService.EnumerateAll())
-            foreach (FormattedObject formattedObject in FormatFieldObjects(field))
+            foreach (var field in lookupService.EnumerateAll())
+            foreach (var formattedObject in FormatFieldObjects(field))
                 yield return formattedObject;
         }
 
@@ -17,26 +17,26 @@ namespace OpenVIII.Fields.Scripts
             if (!field.TryReadData(Field.Part.Jsm, out var jsmData))
                 yield break;
 
-            List<Jsm.GameObject> gameObjects = Jsm.File.Read(jsmData);
+            var gameObjects = Jsm.File.Read(jsmData);
 
             if (gameObjects.Count == 0)
                 yield break;
 
             IScriptFormatterContext formatterContext = GetFormatterContext(field);
-            IServices executionContext = StatelessServices.Instance;
-            ScriptWriter sw = new ScriptWriter();
+            var executionContext = StatelessServices.Instance;
+            var sw = new ScriptWriter();
 
             foreach (var obj in gameObjects)
             {
-                formatterContext.GetObjectScriptNamesById(obj.Id, out String objectName, out _);
-                String formattedScript = FormatObject(obj, sw, formatterContext, executionContext);
+                formatterContext.GetObjectScriptNamesById(obj.Id, out var objectName, out _);
+                var formattedScript = FormatObject(obj, sw, formatterContext, executionContext);
                 yield return new FormattedObject(field, objectName, formattedScript);
             }
         }
 
         private static ScriptFormatterContext GetFormatterContext(Field.Info field)
         {
-            ScriptFormatterContext context = new ScriptFormatterContext();
+            var context = new ScriptFormatterContext();
 
             if (field.TryReadData(Field.Part.Sym, out var symData))
                 context.SetSymbols(Sym.Reader.FromBytes(symData));

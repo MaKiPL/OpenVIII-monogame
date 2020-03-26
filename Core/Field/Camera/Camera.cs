@@ -15,7 +15,7 @@ namespace OpenVIII.Fields
 
         private Camera(byte[] cab, long offset)
         {
-            using (BinaryReader br = new BinaryReader(new MemoryStream(cab)))
+            using (var br = new BinaryReader(new MemoryStream(cab)))
             {
                 br.BaseStream.Seek(offset, SeekOrigin.Begin);
                 const float multiple = 4096f;

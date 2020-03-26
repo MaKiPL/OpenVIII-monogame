@@ -93,7 +93,7 @@ namespace OpenVIII.IGMData
 
                 if (!LoadBarSlide.Done)
                 {
-                    Rectangle r = RedBar.Pos;
+                    var r = RedBar.Pos;
                     r.Width = (int)LoadBarSlide.Update();
                     RedBar.Pos = r;
                 }
@@ -115,7 +115,7 @@ namespace OpenVIII.IGMData
                 Data = Icons.ID.Bar_BG,
                 Pos = SIZE[0]
             };
-            Rectangle r = SIZE[0];
+            var r = SIZE[0];
             //r.Offset(0, 0);
             r.Inflate(-4, -4);
             TotalWidth = r.Width;

@@ -27,7 +27,7 @@ namespace OpenVIII.Fields.Scripts
 
             public override String ToString()
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 ToString(sb);
                 return sb.ToString();
             }
@@ -42,7 +42,7 @@ namespace OpenVIII.Fields.Scripts
             {
                 sb.AppendLine("{");
 
-                Int32 pos = sb.Length;
+                var pos = sb.Length;
                 AppendItems(sb, items);
                 if (sb.Length == pos)
                     sb.AppendLine("// do nothing");
@@ -68,7 +68,7 @@ namespace OpenVIII.Fields.Scripts
 
             private static void AppendItems(StringBuilder sb, IEnumerable<Object> items)
             {
-                Int32 position = -1;
+                var position = -1;
                 JMP lastItem = null;
                 foreach (var item in items)
                 {

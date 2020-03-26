@@ -47,10 +47,10 @@ namespace OpenVIII.Battle.Dat
         {
             // nothing final in here just was trying to dump data to see what was there.
             br.BaseStream.Seek(start, SeekOrigin.Begin);
-            uint[] offsets = new uint[br.ReadUInt16()];
+            var offsets = new uint[br.ReadUInt16()];
             for (ushort i = 0; i < offsets.Length; i++)
             {
-                ushort offset = br.ReadUInt16();
+                var offset = br.ReadUInt16();
                 if (offset == 0)
                     continue;
                 offsets[i] = offset + start;

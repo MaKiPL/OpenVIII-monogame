@@ -24,16 +24,16 @@ namespace OpenVIII.Fields.Scripts
 
                 public override String ToString()
                 {
-                    StringBuilder sb = new StringBuilder();
+                    var sb = new StringBuilder();
 
                     sb.Append("while(");
                     sb.Append((JPF)_instructions[_segment.From]);
                     sb.AppendLine(")");
 
                     sb.AppendLine("{");
-                    for (Int32 i = _segment.From + 1; i < _segment.To; i++)
+                    for (var i = _segment.From + 1; i < _segment.To; i++)
                     {
-                        JsmInstruction instruction = _instructions[i];
+                        var instruction = _instructions[i];
                         sb.Append('\t').AppendLine(instruction.ToString());
                     }
 

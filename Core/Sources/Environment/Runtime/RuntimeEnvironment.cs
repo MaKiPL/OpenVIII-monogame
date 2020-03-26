@@ -9,7 +9,7 @@ namespace OpenVIII
 
         private static RuntimePlatform Init()
         {
-            PlatformID platform = Environment.OSVersion.Platform;
+            var platform = Environment.OSVersion.Platform;
             switch (platform)
             {
                 case PlatformID.Win32S:
@@ -28,7 +28,7 @@ namespace OpenVIII
 
         private static RuntimePlatform GetUnixPlatform()
         {
-            IntPtr buffer = IntPtr.Zero;
+            var buffer = IntPtr.Zero;
             try
             {
                 buffer = Marshal.AllocHGlobal(8192);

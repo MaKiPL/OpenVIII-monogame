@@ -43,8 +43,8 @@ namespace OpenVIII
 
         public override bool Inputs()
         {
-            bool ret = false;
-            if (InputFunctions != null && InputFunctions.TryGetValue((Mode)GetMode(), out Func<bool> fun))
+            var ret = false;
+            if (InputFunctions != null && InputFunctions.TryGetValue((Mode)GetMode(), out var fun))
             {
                 ret = fun();
             }
@@ -131,9 +131,9 @@ namespace OpenVIII
             NoInputOnUpdate = true;
             Size = new Vector2(881, 606);
             base.Init();
-            Menu_Base[] tmp = new Menu_Base[3];
+            var tmp = new Menu_Base[3];
 
-            Action[] actions = new Action[]
+            var actions = new Action[]
             {
                 () => Data.TryAdd(Mode.All, IGMData.Group.Base.Create(
                         new IGMDataItem.Box{ Data = new FF8String(new byte[] {

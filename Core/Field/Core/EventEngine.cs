@@ -37,9 +37,9 @@ namespace OpenVIII.Fields
 
         public void Update(IServices services)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
 
-            foreach (FieldObject obj in _objects.Values)
+            foreach (var obj in _objects.Values)
             {
                 Console.WriteLine("Object: {0}", obj.InternalName);
                 CurrentObject = obj;

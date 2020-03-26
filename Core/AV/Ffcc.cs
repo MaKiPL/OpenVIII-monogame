@@ -32,7 +32,7 @@ namespace OpenVIII.AV
                 throw new InvalidEnumArgumentException(nameof(ffccMode), (int) ffccMode, typeof(FfccMode));
             if (!Enum.IsDefined(typeof(AVMediaType), avType))
                 throw new InvalidEnumArgumentException(nameof(avType), (int) avType, typeof(AVMediaType));
-            T r = new T();
+            var r = new T();
 
             void play(BufferData* d)
             {
@@ -68,7 +68,7 @@ namespace OpenVIII.AV
                 throw new InvalidEnumArgumentException(nameof(mediaType), (int) mediaType, typeof(AVMediaType));
             if (!Enum.IsDefined(typeof(FfccMode), mode))
                 throw new InvalidEnumArgumentException(nameof(mode), (int) mode, typeof(FfccMode));
-            T r = new T();
+            var r = new T();
             r.Init(filename, mediaType, mode, loopStart);
             if (mode == FfccMode.ProcessAll)
                 r.Dispose(false);
@@ -341,7 +341,7 @@ namespace OpenVIII.AV
         {
             get
             {
-                double r = FPSVideo;
+                var r = FPSVideo;
                 if (Math.Abs(r) > double.Epsilon)
                 {
                     return r;
@@ -676,9 +676,9 @@ namespace OpenVIII.AV
         {
             lock (Decoder)
             {
-                Texture2D frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
+                var frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
                 const int bpp = 4;
-                byte[] texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
+                var texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
                 fixed (byte* ptr = &texBuffer[0])
                 {
                     byte*[] srcData = { ptr, null, null, null };
@@ -736,7 +736,7 @@ namespace OpenVIII.AV
                         if (ResampleContext != null)
                         {
                             ffmpeg.swr_close(ResampleContext);
-                            SwrContext* pResampleContext = ResampleContext;
+                            var pResampleContext = ResampleContext;
                             ffmpeg.swr_free(&pResampleContext);
                         }
                         ffmpeg.av_frame_unref(ResampleFrame);
@@ -810,7 +810,7 @@ namespace OpenVIII.AV
         /// <returns>Total bytes read, or EOF</returns>
         private static unsafe int ReadPacket(void* opaque, byte* buf, int bufSize)
         {
-            BufferData* bd = (BufferData*)opaque;
+            var bd = (BufferData*)opaque;
 
             return bd->Read(buf, bufSize);
         }
@@ -821,7 +821,7 @@ namespace OpenVIII.AV
         private static unsafe string AvError(int ret)
         {
             const ulong bufferSize = 256;
-            byte[] buffer = new byte[bufferSize];
+            var buffer = new byte[bufferSize];
             fixed (byte* ptr = &buffer[0])
             {
                 ffmpeg.av_strerror(ret, ptr, bufferSize);
@@ -928,14 +928,14 @@ namespace OpenVIII.AV
             AVDictionaryEntry* tag = null;
             while ((tag = ffmpeg.av_dict_get(metadata, "", tag, ffmpeg.AV_DICT_IGNORE_SUFFIX)) != null)
             {
-                string key = "";
-                string val = "";
-                for (int i = 0; tag->value[i] != 0; i++)
+                var key = "";
+                var val = "";
+                for (var i = 0; tag->value[i] != 0; i++)
                 {
                     val += (char)tag->value[i];
                 }
 
-                for (int i = 0; tag->key[i] != 0; i++)
+                for (var i = 0; tag->key[i] != 0; i++)
                 {
                     key += (char)tag->key[i];
                 }
@@ -950,13 +950,13 @@ namespace OpenVIII.AV
                 }
                 else if (key.Trim().IndexOf("LoopEnd", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (!int.TryParse(val, out int _))
+                    if (!int.TryParse(val, out var _))
                         Memory.Log.WriteLine($"Failed Parse {key} = {val}");
                     
                 }
                 else if (key.Trim().IndexOf("LoopLength", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (!int.TryParse(val, out int _))
+                    if (!int.TryParse(val, out var _))
                         Memory.Log.WriteLine($"Failed Parse {key} = {val}");
                 }
             }
@@ -1034,7 +1034,7 @@ namespace OpenVIII.AV
 
         private static unsafe long Seek(void* opaque, long offset, int whence)
         {
-            BufferData* bd = (BufferData*)opaque;
+            var bd = (BufferData*)opaque;
 
             return bd->Seek(offset, whence);
         }
@@ -1335,7 +1335,7 @@ namespace OpenVIII.AV
             ResampleFrame->channels = Decoder.CodecContext->channels;
             ResampleFrame->sample_rate = Decoder.CodecContext->sample_rate;
 
-            int convertedFrameBufferSize = ffmpeg.av_samples_get_buffer_size(null, ResampleFrame->channels,
+            var convertedFrameBufferSize = ffmpeg.av_samples_get_buffer_size(null, ResampleFrame->channels,
                                                  ResampleFrame->nb_samples,
                                                  (AVSampleFormat)ResampleFrame->format, 0);
 
@@ -1370,7 +1370,7 @@ namespace OpenVIII.AV
         /// <ref>https://stackoverflow.com/questions/32051847/c-ffmpeg-distorted-sound-when-converting-audio?rq=1#_=_</ref>
         private unsafe void Process()
         {
-            while (Decode(out AVFrame decodedFrame))
+            while (Decode(out var decodedFrame))
             {
                 if (MediaType == AVMediaType.AVMEDIA_TYPE_VIDEO)
                 {
@@ -1452,7 +1452,7 @@ namespace OpenVIII.AV
                     //https://ffmpeg.org/doxygen/3.2/group__lswr.html#gaa5bb6cab830146efa8c760fa66ee582a
                     CheckReturn(ffmpeg.swr_convert(ResampleContext, &tmp, ResampleFrame->nb_samples, null, 0));
                 }
-                int bufferSize = ffmpeg.av_samples_get_buffer_size(null,
+                var bufferSize = ffmpeg.av_samples_get_buffer_size(null,
                     ResampleFrame->channels,
                     ResampleFrame->nb_samples,
                     (AVSampleFormat)ResampleFrame->format,

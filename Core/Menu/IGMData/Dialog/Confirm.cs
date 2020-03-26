@@ -21,7 +21,7 @@ namespace OpenVIII.IGMData.Dialog
 
         public static T Create<T>(FF8String data, Icons.ID title, FF8String opt1, FF8String opt2, Rectangle? pos, int startcursor = 0) where T : Confirm, new()
         {
-            T r = Base.Create<T>(2, 1, new IGMDataItem.Box { Data = data, Pos = pos ?? Rectangle.Empty, Title = title }, 1, 2);
+            var r = Base.Create<T>(2, 1, new IGMDataItem.Box { Data = data, Pos = pos ?? Rectangle.Empty, Title = title }, 1, 2);
             r.startcursor = startcursor;
             r.opt = new FF8String[r.Count];
             r.opt[0] = opt1;

@@ -12,11 +12,11 @@ namespace OpenVIII.IGMData.Slots
         {
             base.Refresh();
 
-            if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Memory.State?.Characters != null && Damageable != null && Damageable.GetCharacterData(out var c))
             {
-                for (int i = 0; i < Count; i++)
+                for (var i = 0; i < Count; i++)
                 {
-                    int slots = 2;
+                    var slots = 2;
                     if (c.UnlockedGFAbilities.Contains(Kernel.Abilities.Ability3))
                         slots = 3;
                     if (c.UnlockedGFAbilities.Contains(Kernel.Abilities.Ability4))
@@ -50,7 +50,7 @@ namespace OpenVIII.IGMData.Slots
         protected override void Init()
         {
             base.Init();
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
             {
                 ITEM[i, 0] = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right2, Pos = SIZE[i], Palette = 9 };
                 ITEM[i, 0].Hide();

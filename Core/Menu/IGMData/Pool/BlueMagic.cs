@@ -49,7 +49,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs_OKAY()
         {
-            Kernel.BlueMagicQuistisLimitBreak c = Contents[CURSOR_SELECT];
+            var c = Contents[CURSOR_SELECT];
             //c.Target;
             TargetGroup.SelectTargetWindows(c);
             TargetGroup.ShowTargetWindows();
@@ -68,11 +68,11 @@ namespace OpenVIII.IGMData.Pool
                 bm++;
             }
 
-            int skip = Rows * Page;
+            var skip = Rows * Page;
             int i;
             for (i = skip; i < _unlocked.Count && i < Rows + skip; i++)
             {
-                int j = i % Rows;
+                var j = i % Rows;
                 ITEM[j, 0].Show();
                 BLANKS[j] = false;
                 Contents[j] = Memory.Kernel_Bin.BlueMagicQuistisLimitBreak[_unlocked[i]];
@@ -80,7 +80,7 @@ namespace OpenVIII.IGMData.Pool
             }
             for (; i < Rows + skip; i++)
             {
-                int j = i % Rows;
+                var j = i % Rows;
                 ITEM[j, 0].Hide();
                 BLANKS[j] = true;
             }
@@ -106,7 +106,7 @@ namespace OpenVIII.IGMData.Pool
         protected override void Init()
         {
             base.Init();
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
                 ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }

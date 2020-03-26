@@ -19,15 +19,15 @@ namespace OpenVIII.Encoding
 
         public Int32 GetByteCount(Char[] chars, Int32 index, Int32 count)
         {
-            Int32 result = 0;
+            var result = 0;
 
-            Byte[] buff = new Byte[2];
+            var buff = new Byte[2];
             while (count > 0)
             {
-                FF8TextTag tag = FF8TextTag.TryRead(chars, ref index, ref count);
+                var tag = FF8TextTag.TryRead(chars, ref index, ref count);
                 if (tag != null)
                 {
-                    Int32 offset = 0;
+                    var offset = 0;
                     result += tag.Write(buff, ref offset);
                 }
                 else if (FF8TextComment.TryRead(chars, ref index, ref count) == null)
@@ -43,11 +43,11 @@ namespace OpenVIII.Encoding
 
         public Int32 GetBytes(Char[] chars, Int32 charIndex, Int32 charCount, Byte[] bytes, Int32 byteIndex)
         {
-            Int32 result = 0;
+            var result = 0;
 
             while (charCount > 0)
             {
-                FF8TextTag tag = FF8TextTag.TryRead(chars, ref charIndex, ref charCount);
+                var tag = FF8TextTag.TryRead(chars, ref charIndex, ref charCount);
                 if (tag != null)
                 {
                     result += tag.Write(bytes, ref byteIndex);

@@ -111,10 +111,10 @@ namespace OpenVIII.AV
 
             // binaryReader disposes of fs
             if (s == null) throw new NullReferenceException($"{nameof(BufferData)}::{nameof(ReadData)} stream is null");
-            using (BinaryReader br = new BinaryReader(s))
+            using (var br = new BinaryReader(s))
             {
                 s.Seek(DataSeekLoc, SeekOrigin.Begin);
-                using (UnmanagedMemoryStream ums = new UnmanagedMemoryStream(buf, bufSize, bufSize, FileAccess.Write))
+                using (var ums = new UnmanagedMemoryStream(buf, bufSize, bufSize, FileAccess.Write))
                 {
                     // copy public buffer data to buf
                     ums.Write(br.ReadBytes(bufSize), 0, bufSize);

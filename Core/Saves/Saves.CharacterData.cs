@@ -196,7 +196,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    if (Memory.Kernel_Bin?.CharacterStats != null && Memory.Kernel_Bin.CharacterStats.TryGetValue(_id, out CharacterStats value))
+                    if (Memory.Kernel_Bin?.CharacterStats != null && Memory.Kernel_Bin.CharacterStats.TryGetValue(_id, out var value))
                         return value;
                     return null;
                 }
@@ -289,13 +289,13 @@ namespace OpenVIII
             {
                 get
                 {
-                    BitArray total = new BitArray(16 * 8);
-                    List<Abilities> abilities = new List<Abilities>();
-                    foreach (GFs gf in JunctionedGFs)
+                    var total = new BitArray(16 * 8);
+                    var abilities = new List<Abilities>();
+                    foreach (var gf in JunctionedGFs)
                     {
                         total.Or(Memory.State.GFs[gf].Complete);
                     }
-                    for (int i = 1; i < total.Length; i++)//0 is none so skipping it.
+                    for (var i = 1; i < total.Length; i++)//0 is none so skipping it.
                     {
                         if (total[i])
                             abilities.Add((Abilities)i);
@@ -338,7 +338,7 @@ namespace OpenVIII
             public override Damageable Clone()
             {
                 //Shadow copy
-                CharacterData c = (CharacterData)MemberwiseClone();
+                var c = (CharacterData)MemberwiseClone();
                 //Deep copy
                 c.Name = Name?.Clone();
                 c.CompatibilityWithGFs = CompatibilityWithGFs?.ToDictionary(e => e.Key, e => e.Value);
@@ -363,7 +363,7 @@ namespace OpenVIII
 
             public ushort CurrentHP(Characters c)
             {
-                ushort max = MaxHP(c);
+                var max = MaxHP(c);
                 if (max < _CurrentHP) _CurrentHP = max;
                 return _CurrentHP;
             }
@@ -382,15 +382,15 @@ namespace OpenVIII
             /// <remarks>TODO: Need to confirm the formula is correct via reverse</remarks>
             public sbyte GenerateCrisisLevel()
             {
-                ushort current = CurrentHP();
-                ushort max = MaxHP();
+                var current = CurrentHP();
+                var max = MaxHP();
                 //if ((ID == Characters.Seifer_Almasy && CurrentHP() < (max * 84 / 100)))
                 //{
-                int hpMod = CharacterStats.Crisis * 10 * current / max;
-                int deathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
-                int statusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
-                int randomMod = Memory.Random.Next(byte.MaxValue + 1) + 160;
-                int crisisLevel = (statusBonus + deathBonus - hpMod) / randomMod; // better random number?
+                var hpMod = CharacterStats.Crisis * 10 * current / max;
+                var deathBonus = Memory.State.DeadPartyMembers() * 200 + 1600;
+                var statusBonus = (int)(Statuses0.Count() * 10); // I think this is status of all party members
+                var randomMod = Memory.Random.Next(byte.MaxValue + 1) + 160;
+                var crisisLevel = (statusBonus + deathBonus - hpMod) / randomMod; // better random number?
                 switch (crisisLevel)
                 {
                     case 5:
@@ -423,7 +423,7 @@ namespace OpenVIII
                 //see if magic is in use, if so remove it
                 if (StatJ.ContainsValue(spell))
                 {
-                    Stat key = StatJ.FirstOrDefault(x => x.Value == spell).Key;
+                    var key = StatJ.FirstOrDefault(x => x.Value == spell).Key;
                     StatJ[key] = 0;
                 }
                 //junction magic
@@ -480,11 +480,11 @@ namespace OpenVIII
                 if (c != _id && c < Characters.Laguna_Loire)
                     throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({_id}) unless Laguna Kiros or Ward!");
 
-                int total = 0;
+                var total = 0;
                 if (Memory.Kernel_Bin.StatPercentAbilities != null)
-                    foreach (Abilities i in Abilities)
+                    foreach (var i in Abilities)
                     {
-                        if (Memory.Kernel_Bin.StatPercentAbilities.TryGetValue(i, out StatPercentageAbilities ability) && ability.Stat == s)
+                        if (Memory.Kernel_Bin.StatPercentAbilities.TryGetValue(i, out var ability) && ability.Stat == s)
                             total += ability.Value;
                     }
 
@@ -600,10 +600,10 @@ namespace OpenVIII
                     [Stat.Luck] = br.ReadByte()//0x0F
                 };
                 Magics = new OrderedDictionary<byte, byte>(MagicCapacity);
-                for (int i = 0; i < MagicCapacity; i++)
+                for (var i = 0; i < MagicCapacity; i++)
                 {
-                    byte key = br.ReadByte();
-                    byte val = br.ReadByte();
+                    var key = br.ReadByte();
+                    var val = br.ReadByte();
                     if (!Magics.ContainsKey(key))
                         Magics.Add(key, val);//0x10
                 }
@@ -614,17 +614,17 @@ namespace OpenVIII
                 Unknown1 = br.ReadByte();//0x5A
                 AlternativeModel = br.ReadByte();//0x5B (Normal, SeeD, Soldier...)
                 StatJ = new Dictionary<Stat, byte>(9);
-                for (int i = 0; i < 19; i++)
+                for (var i = 0; i < 19; i++)
                 {
-                    Stat key = (Stat)i;
-                    byte val = br.ReadByte();
+                    var key = (Stat)i;
+                    var val = br.ReadByte();
                     if (!StatJ.ContainsKey(key))
                         StatJ.Add(key, val);
                 }
 
                 Unknown2 = br.ReadByte();//0x6F (padding?)
                 CompatibilityWithGFs = new Dictionary<GFs, CompatibilitywithGF>(16);
-                for (int i = 0; i < 16; i++)
+                for (var i = 0; i < 16; i++)
                     CompatibilityWithGFs.Add((GFs)i, br.ReadUInt16());//0x70
                 NumberOfKills = br.ReadUInt16();//0x90
                 NumberOfKOs = br.ReadUInt16();//0x92
@@ -638,11 +638,11 @@ namespace OpenVIII
             {
                 RemoveMagic();
 
-                List<Abilities> unlockedList = UnlockedGFAbilities;
-                foreach (Stat stat in list)
+                var unlockedList = UnlockedGFAbilities;
+                foreach (var stat in list)
                 {
                     if (!Unlocked(unlockedList, stat)) continue;
-                    foreach (MagicData spell in SortedMagic(stat))
+                    foreach (var spell in SortedMagic(stat))
                     {
                         if (StatJ.ContainsValue(spell.MagicDataID)) continue;
                         //TODO make smarter.

@@ -36,7 +36,7 @@ namespace OpenVIII.Fields.Scripts
 
                 public IJsmExpression Evaluate(IServices services)
                 {
-                    IGlobalVariableService global = ServiceId.Global[services];
+                    var global = ServiceId.Global[services];
                     if (global.IsSupported)
                     {
                         var value = global.Get(_globalVariable);

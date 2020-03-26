@@ -61,10 +61,10 @@ namespace OpenVIII.Fields
 
         public override Texture2D GetTexture(Color[] colors)
         {
-            Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, _width, _height);
-            TextureBuffer textureBuffer = new TextureBuffer(_width, _height, false);
-            int i = 0;
-            foreach (byte b in _buffer)
+            var tex = new Texture2D(Memory.graphics.GraphicsDevice, _width, _height);
+            var textureBuffer = new TextureBuffer(_width, _height, false);
+            var i = 0;
+            foreach (var b in _buffer)
                 textureBuffer[i++] = colors[b];
             textureBuffer.SetData(tex);
             return tex;
@@ -77,18 +77,18 @@ namespace OpenVIII.Fields
             if (buffer.Length - offset <= 4) return;
             _clut = new Cluts();
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(offset, SeekOrigin.Begin);//unknown
                 Unknown = br.ReadBytes(4);
-                foreach (int i in Enumerable.Range(0, 16))
+                foreach (var i in Enumerable.Range(0, 16))
                 {
-                    Color[] colors = Enumerable.Range(0, 16).Select(_ => ABGR1555toRGBA32bit(br.ReadUInt16()))
+                    var colors = Enumerable.Range(0, 16).Select(_ => ABGR1555toRGBA32bit(br.ReadUInt16()))
                         .ToArray();
                     _clut.Add((byte)i, colors);
                 }
 
-                long size = ms.Length - ms.Position;
+                var size = ms.Length - ms.Position;
                 _height = checked((int)(size / 128));
                 _width = checked((int)(size / _height));
                 _buffer = br.ReadBytes(checked((int)size));

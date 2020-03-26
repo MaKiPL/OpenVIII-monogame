@@ -64,7 +64,7 @@ namespace OpenVIII
 
         public override void Save(string path)
         {
-            using (FileStream fs = File.Create(path))
+            using (var fs = File.Create(path))
                 tex.SaveAsPng(fs, tex.Width, tex.Height);
         }
 

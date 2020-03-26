@@ -33,7 +33,7 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         public static ATB Create(Rectangle? pos = null)
         {
-            ATB r = new ATB()
+            var r = new ATB()
             {
                 _pos = pos ?? Rectangle.Empty,
                 Restriction = pos ?? Rectangle.Empty,
@@ -55,10 +55,10 @@ namespace OpenVIII.IGMDataItem.Gradient
             {
                 const float dark = 0.067f;
                 const float fade = 0.933f;
-                int total = width;
-                Color lightLine = new Color(118, 118, 118, 255);
-                Color darkLine = new Color(58, 58, 58, 255);
-                Color[] cFade = new Color[total];
+                var total = width;
+                var lightLine = new Color(118, 118, 118, 255);
+                var darkLine = new Color(58, 58, 58, 255);
+                var cFade = new Color[total];
                 int i;
                 for (i = 0; i < cFade.Length - (dark * total); i++)
                     cFade[i] = Color.Lerp(Color.Black, lightLine, i / (fade * total));

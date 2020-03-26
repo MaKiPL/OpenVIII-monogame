@@ -117,9 +117,9 @@ namespace OpenVIII
             Size = new Vector2 { X = 960, Y = 720 };
             //AltSize = new Vector2(1280, 720);
             const int HeaderHeight = 140;
-            Rectangle SlotsRectangle = new Rectangle(0, HeaderHeight + space, (int)Size.X, (int)Size.Y - HeaderHeight - space);
-            Rectangle LoadBarRectangle = SlotsRectangle;
-            Rectangle BlocksRectangle = SlotsRectangle;
+            var SlotsRectangle = new Rectangle(0, HeaderHeight + space, (int)Size.X, (int)Size.Y - HeaderHeight - space);
+            var LoadBarRectangle = SlotsRectangle;
+            var BlocksRectangle = SlotsRectangle;
             SlotsRectangle.Inflate(-Size.X * .32f, -Size.Y * .28f); // (307,341,346,178)
             LoadBarRectangle.Inflate(-Size.X * .15f, -Size.Y * .35f);
 

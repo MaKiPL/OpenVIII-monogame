@@ -35,14 +35,14 @@ namespace OpenVIII.Fields.Scripts.Instructions
             if (_conditions.Count != 1)
                 throw new NotSupportedException($"Conditional jump already merged with an other one: {this}");
 
-            IJsmExpression expression = _conditions[0];
+            var expression = _conditions[0];
             if (!(expression is ILogicalExpression constExpression))
                 _conditions[0] = new Jsm.Expression.CAL.LogNot(expression);
             else
                 _conditions[0] = constExpression.LogicalInverse();
 
-            Int32 jmpIndex = nextJmp.Index;
-            Int32 jmpOffset = nextJmp.Offset;
+            var jmpIndex = nextJmp.Index;
+            var jmpOffset = nextJmp.Offset;
             nextJmp.Index = Index;
             nextJmp.Offset = Offset;
             Index = jmpIndex;
@@ -82,10 +82,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
-            ScriptWriter.State state = sw.RememberState();
+            var state = sw.RememberState();
 
-            Boolean isTrue = true;
-            foreach (IJsmExpression expression in _conditions)
+            var isTrue = true;
+            foreach (var expression in _conditions)
             {
                 if (expression is IConstExpression number)
                 {

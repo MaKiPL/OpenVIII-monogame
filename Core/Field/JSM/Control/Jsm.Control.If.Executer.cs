@@ -21,12 +21,12 @@ namespace OpenVIII.Fields.Scripts
 
                     public IEnumerable<IAwaitable> Execute(IServices services)
                     {
-                        IEnumerable<IJsmInstruction> executable = GetExecutableInstructions(services);
+                        var executable = GetExecutableInstructions(services);
                         if (executable == null)
                             yield break;
 
-                        IScriptExecuter executer = ExecutableSegment.GetExecuter(executable);
-                        foreach (IAwaitable result in executer.Execute(services))
+                        var executer = ExecutableSegment.GetExecuter(executable);
+                        foreach (var result in executer.Execute(services))
                             yield return result;
                     }
 

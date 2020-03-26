@@ -77,10 +77,10 @@ namespace OpenVIII
             /// <param name="br"></param>
             private void GetFileLocations(BinaryReader br)
             {
-                uint count = br.ReadUInt32();
+                var count = br.ReadUInt32();
                 while (count-- > 0)
                 {
-                    uint seek = br.ReadUInt32();
+                    var seek = br.ReadUInt32();
                     uint length;
                     if (count <= 0) length = (uint)br.BaseStream.Length - seek;
                     else
@@ -99,15 +99,15 @@ namespace OpenVIII
             protected override void LoadArchiveFiles()
             {
                 Settings = (FF8StringReference.Settings.MultiCharByte | FF8StringReference.Settings.Namedic);
-                ArchiveBase aw = ArchiveWorker.Load(Archive);
+                var aw = ArchiveWorker.Load(Archive);
                 StringFiles = new StringFile(56);
-                byte[] buffer = aw.GetBinaryFile(FileNames[0], true);
+                var buffer = aw.GetBinaryFile(FileNames[0], true);
                 if (buffer == null) return;
-                using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                using (var br = new BinaryReader(new MemoryStream(buffer)))
                 {
                     GetFileLocations(br);
 
-                    for (int key = 0; key < StringFiles.SubPositions.Count; key++)
+                    for (var key = 0; key < StringFiles.SubPositions.Count; key++)
                     {
                         if (StringLocations.ContainsKey(key))
                         {

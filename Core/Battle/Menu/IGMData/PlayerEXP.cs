@@ -31,7 +31,7 @@ namespace OpenVIII.IGMData
                     if (_exp == 0 || !Damageable.IsGameOver)
                     {
                         if (value < 0) value = 0;
-                        if (_exp != 0 && Damageable.GetCharacterData(out Saves.CharacterData c) && !NoEarnExp)
+                        if (_exp != 0 && Damageable.GetCharacterData(out var c) && !NoEarnExp)
                             c.Experience += (uint)Math.Abs((MathHelper.Distance(_exp, value)));
                         _exp = value;
                     }
@@ -50,7 +50,7 @@ namespace OpenVIII.IGMData
         public static PlayerEXP Create(sbyte partypos, Rectangle? pos = null)
         {
             Debug.Assert(partypos >= 0 && partypos <= 2);
-            PlayerEXP r = Create<PlayerEXP>(1, 12, new IGMDataItem.Box { Pos = pos ?? new Rectangle(35, 78 + partypos * 150, 808, 150), Title = Icons.ID.NAME }, 1, 1, partypos: partypos);
+            var r = Create<PlayerEXP>(1, 12, new IGMDataItem.Box { Pos = pos ?? new Rectangle(35, 78 + partypos * 150, 808, 150), Title = Icons.ID.NAME }, 1, 1, partypos: partypos);
             r._exp = 0;
             return r;
         }
@@ -59,14 +59,14 @@ namespace OpenVIII.IGMData
         {
             if (Enabled && Memory.State?.Characters != null && Memory.State.Characters.Count>0 && Memory.State.PartyData != null)
             {
-                if (Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
+                if (Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out var c))
                 { }
                 base.Update();
                 if ((Damageable = c) != null)
                 {
-                    for (int i = 0; i < Count; i++)
+                    for (var i = 0; i < Count; i++)
                     {
-                        for (int k = 0; k < 10 && k < Depth; k++)
+                        for (var k = 0; k < 10 && k < Depth; k++)
                         {
                             ITEM[i, k]?.Show();
                         }
@@ -78,7 +78,7 @@ namespace OpenVIII.IGMData
                         ((IGMDataItem.Integer)ITEM[0, 4]).Data = _exp;
                         ((IGMDataItem.Integer)ITEM[0, 6]).Data = checked((int)c.Experience);
                         ((IGMDataItem.Integer)ITEM[0, 8]).Data = c.ExperienceToNextLevel;
-                        byte lvl = Damageable.Level;
+                        var lvl = Damageable.Level;
 
                         if (lvl != _lvl && _lvl != 0 && !NoEarnExp)
                         {
@@ -91,7 +91,7 @@ namespace OpenVIII.IGMData
                 }
                 else
                 {
-                    foreach (Menu_Base i in ITEM)
+                    foreach (var i in ITEM)
                         if (i != null)
                             i.Hide();
                 }

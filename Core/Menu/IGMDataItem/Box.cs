@@ -21,7 +21,7 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled)
             {
-                Rectangle pos = Pos;
+                var pos = Pos;
                 if (OffsetAnchor != null)
                     pos.Offset(OffsetAnchor);
                 Dims = Menu.DrawBox(pos, Data, Title, options: skipdraw ? (Options | Box_Options.SkipDraw) : Options);

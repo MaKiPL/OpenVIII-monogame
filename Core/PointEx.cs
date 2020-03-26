@@ -23,12 +23,12 @@ namespace OpenVIII
         /// <see cref="https://answers.unity.com/questions/661383/whats-the-most-efficient-way-to-rotate-a-vector2-o.html"/>
         public static Vector2 Rotate(this Vector2 v, float degrees)
         {
-            float rad = MathHelper.ToRadians(degrees);
-            float sin = (float)Math.Sin(rad);
-            float cos = (float)Math.Cos(rad);
+            var rad = MathHelper.ToRadians(degrees);
+            var sin = (float)Math.Sin(rad);
+            var cos = (float)Math.Cos(rad);
 
-            float tx = v.X;
-            float ty = v.Y;
+            var tx = v.X;
+            var ty = v.Y;
             v.X = (cos * tx) - (sin * ty);
             v.Y = (sin * tx) + (cos * ty);
             return v;
@@ -58,8 +58,8 @@ namespace OpenVIII
 
         public static Rectangle Scale(this Rectangle source, Matrix matrix)
         {
-            Vector2 scale = Memory.Scale();
-            Vector2 loc = source.Location.ToVector2();
+            var scale = Memory.Scale();
+            var loc = source.Location.ToVector2();
             source.Offset(matrix.Translation.X, matrix.Translation.Y);
             source.Location = Vector2.Transform(loc, Matrix.Invert(matrix)).RoundedPoint();
             source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
@@ -75,7 +75,7 @@ namespace OpenVIII
 
         public static Rectangle Scale(this Rectangle source)
         {
-            Vector2 scale = Memory.Scale();
+            var scale = Memory.Scale();
             source.Location = (source.Location.ToVector2() * scale).RoundedPoint();
             source.Size = (source.Size.ToVector2() * scale).RoundedPoint();
             return source;
@@ -89,7 +89,7 @@ namespace OpenVIII
 
         public static Point Scale(this Point source)
         {
-            Vector2 scale = Memory.Scale();
+            var scale = Memory.Scale();
             source = (source.ToVector2() * scale).RoundedPoint();
             return source;
         }
@@ -124,7 +124,7 @@ namespace OpenVIII
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
         public static uint Count(this Kernel.JunctionStatuses statuses)
         {
-            uint v = (uint)statuses;
+            var v = (uint)statuses;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
             return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count
@@ -138,7 +138,7 @@ namespace OpenVIII
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
         public static uint Count(this Kernel.Element element)
         {
-            uint v = (uint)element;
+            var v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
             return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count
@@ -151,7 +151,7 @@ namespace OpenVIII
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
         public static uint Count(this Kernel.BattleOnlyStatuses element)
         {
-            uint v = (uint)element;
+            var v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
             return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count
@@ -165,7 +165,7 @@ namespace OpenVIII
         /// <see cref="https://stackoverflow.com/questions/677204/counting-the-number-of-flags-set-on-an-enumeration"/>
         public static uint Count(this Kernel.PersistentStatuses element)
         {
-            uint v = (uint)element;
+            var v = (uint)element;
             v = v - ((v >> 1) & 0x55555555); // reuse input as temporary
             v = (v & 0x33333333) + ((v >> 2) & 0x33333333); // temp
             return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // Count

@@ -54,11 +54,11 @@ namespace OpenVIII.IGMData.Pool
             if (Source != null && Damageable != null)
             {
                 byte pos = 0;
-                int skip = Page * Rows;
+                var skip = Page * Rows;
                 for (byte i = 0; pos < Rows && i < Contents.Length; i++)
                 {
-                    bool unlocked = Source.UnlockedGFs.Contains(Contents[i].GF);
-                    bool junctioned = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.StatJ.ContainsValue(Contents[i].ID));
+                    var unlocked = Source.UnlockedGFs.Contains(Contents[i].GF);
+                    var junctioned = (Damageable.GetCharacterData(out var c) && c.StatJ.ContainsValue(Contents[i].ID));
                     ((IGMDataItem.Text)(ITEM[pos, 0])).Data = Contents[i].Name;
                     ((IGMDataItem.Text)(ITEM[pos, 0])).Show();
                     if (junctioned)
@@ -81,7 +81,7 @@ namespace OpenVIII.IGMData.Pool
         protected override void Init()
         {
             base.Init();
-            Rectangle r = CONTAINER.Pos;
+            var r = CONTAINER.Pos;
             r.Inflate(-Width * .25f, -Height * .25f);
             for (byte pos = 0; pos < Rows; pos++)
             {

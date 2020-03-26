@@ -15,8 +15,8 @@ namespace OpenVIII
 
         public static T RemoveLast<T>(this IList<T> list)
         {
-            Int32 lastIndex = list.LastIndex();
-            T removedItem = list[lastIndex];
+            var lastIndex = list.LastIndex();
+            var removedItem = list[lastIndex];
             
             list.RemoveAt(lastIndex);
             

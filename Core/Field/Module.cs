@@ -113,7 +113,7 @@ namespace OpenVIII.Fields
 
         public static string GetFieldName()
         {
-            string fieldName = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
+            var fieldName = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
             if (string.IsNullOrWhiteSpace(fieldName))
                 fieldName = $"unk{Memory.FieldHolder.FieldID}";
             return fieldName;
@@ -123,7 +123,7 @@ namespace OpenVIII.Fields
         {
             if (string.IsNullOrWhiteSpace(fieldName))
                 fieldName = GetFieldName();
-            string folder = Path.Combine(Path.GetTempPath(), "Fields", fieldName.Substring(0, 2), fieldName, subfolder);
+            var folder = Path.Combine(Path.GetTempPath(), "Fields", fieldName.Substring(0, 2), fieldName, subfolder);
             Directory.CreateDirectory(folder);
             return folder;
         }
@@ -146,7 +146,7 @@ namespace OpenVIII.Fields
                 switch (Mod)
                 {
                     case FieldModes.Init:
-                        bool init = _archive.Init();
+                        var init = _archive.Init();
                         if (init && Mod == FieldModes.Init)
                             Mod++;
                         if (FieldMenu == null)

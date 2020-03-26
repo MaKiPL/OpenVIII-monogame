@@ -41,9 +41,9 @@ internal sealed class CTURN : JsmInstruction
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
 
-            Int32 frameDuration = _frameDuration.Int32(services);
+            var frameDuration = _frameDuration.Int32(services);
             currentObject.Model.RotateToObject(_targetObject, frameDuration);
 
             return DummyAwaitable.Instance;

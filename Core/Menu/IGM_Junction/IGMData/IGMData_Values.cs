@@ -43,9 +43,9 @@ namespace OpenVIII
 
             protected void FillData<T>(Dictionary<T, byte> oldtotal, Dictionary<T, byte> total, Enum[] availableFlagsarray, Icons.ID starticon, sbyte offset = 0, byte palette = 2, Icons.ID[] skip = null) where T : Enum
             {
-                int _nag = 0;
-                int _pos = 0;
-                sbyte endoffset = (sbyte)(offset > 0 ? offset : 0);
+                var _nag = 0;
+                var _pos = 0;
+                var endoffset = (sbyte)(offset > 0 ? offset : 0);
 
                 for (sbyte pos = 0; pos < Count - endoffset; pos++)
                 {
@@ -101,15 +101,15 @@ namespace OpenVIII
             protected Dictionary<T, byte> getTotal<T>(out Enum[] availableFlagsarray, byte max, Kernel.Stat stat, params byte[] spells) where T : Enum
             {
                 const int maxspellcount = 100;
-                Dictionary<T, byte> total = new Dictionary<T, byte>(8);
-                IEnumerable<Enum> availableFlags = Enum.GetValues(typeof(T)).Cast<Enum>();
-                foreach (Enum flag in availableFlags.Where(d => !total.ContainsKey((T)d)))
+                var total = new Dictionary<T, byte>(8);
+                var availableFlags = Enum.GetValues(typeof(T)).Cast<Enum>();
+                foreach (var flag in availableFlags.Where(d => !total.ContainsKey((T)d)))
                     total.Add((T)flag, 0);
-                for (int i = 0; i < spells.Length; i++)
+                for (var i = 0; i < spells.Length; i++)
                 {
                     Enum flags = null;
-                    byte spell = spells[i];
-                    Kernel.MagicData magic_Data = Memory.Kernel_Bin.MagicData[spell];
+                    var spell = spells[i];
+                    var magic_Data = Memory.Kernel_Bin.MagicData[spell];
                     switch (stat)
                     {
                         case Kernel.Stat.ElAtk:
@@ -134,12 +134,12 @@ namespace OpenVIII
                             flags = magic_Data.StDef;
                             break;
                     }
-                    if (flags != null && Damageable.GetCharacterData(out Saves.CharacterData c))
-                        foreach (Enum flag in availableFlags.Where(flags.HasFlag))
+                    if (flags != null && Damageable.GetCharacterData(out var c))
+                        foreach (var flag in availableFlags.Where(flags.HasFlag))
                         {
-                            if (c.Magics.TryGetByKey(spell, out byte count) && magic_Data.JVal.TryGetValue(stat, out byte value))
+                            if (c.Magics.TryGetByKey(spell, out var count) && magic_Data.JVal.TryGetValue(stat, out var value))
                             {
-                                int t = total[(T)flag] + (value * count / maxspellcount);
+                                var t = total[(T)flag] + (value * count / maxspellcount);
                                 total[(T)flag] = (byte)MathHelper.Clamp(t, 0, max);
                             }
                         }

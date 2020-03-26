@@ -31,12 +31,12 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                if (Contents[CURSOR_SELECT] != Kernel.Abilities.None && !BLANKS[CURSOR_SELECT] && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Contents[CURSOR_SELECT] != Kernel.Abilities.None && !BLANKS[CURSOR_SELECT] && Damageable.GetCharacterData(out var c))
                 {
                     skipsnd = true;
                     AV.Sound.Play(31);
                     base.Inputs_OKAY();
-                    int target = ((IGMData.Base)IGM_Junction.Data[SectionName.TopMenu_Abilities]).CURSOR_SELECT - 1;
+                    var target = ((IGMData.Base)IGM_Junction.Data[SectionName.TopMenu_Abilities]).CURSOR_SELECT - 1;
                     c.Commands[target] = Contents[CURSOR_SELECT];
                     IGM_Junction.SetMode(Mode.Abilities);
                     IGM_Junction.Data[SectionName.TopMenu_Abilities].Refresh();
@@ -54,16 +54,16 @@ namespace OpenVIII
                 {
                     Cursor_Status |= Cursor_Status.Enabled;
                 }
-                int pos = 0;
-                int skip = Page * Rows;
-                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
-                    for (int i = 0;
+                var pos = 0;
+                var skip = Page * Rows;
+                if (Damageable != null && Damageable.GetCharacterData(out var c))
+                    for (var i = 0;
                         Memory.State.Characters != null &&
                         i < c.UnlockedGFAbilities.Count &&
                         pos < Rows; i++)
                     {
                         if (c.UnlockedGFAbilities[i] == Kernel.Abilities.None) continue;
-                        Kernel.Abilities j = (c.UnlockedGFAbilities[i]);
+                        var j = (c.UnlockedGFAbilities[i]);
                         if (!Source.ContainsKey(j) || skip-- > 0) continue;
                         Font.ColorID cid;
                         if (c.Commands.Contains(j))
@@ -128,7 +128,7 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                for (int pos = 0; pos < Rows; pos++)
+                for (var pos = 0; pos < Rows; pos++)
                     ITEM[pos, 0] = new IGMDataItem.Text
                     {
                         Icon = Icons.ID.Ability_Command,

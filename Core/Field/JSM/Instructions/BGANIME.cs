@@ -33,8 +33,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Int32 firstFrame = _lastFrame.Int32(services);
-            Int32 lastFrame = _firstFrame.Int32(services);
+            var firstFrame = _lastFrame.Int32(services);
+            var lastFrame = _firstFrame.Int32(services);
             ServiceId.Rendering[services].AnimateBackground(firstFrame, lastFrame);
             return DummyAwaitable.Instance;
         }

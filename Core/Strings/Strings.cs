@@ -91,7 +91,7 @@ namespace OpenVIII
                 case Faces.ID.Cactuar:
                 case Faces.ID.Tonberry:
                 case Faces.ID.Eden:
-                    if (d.GFs != null && d.GFs.TryGetValue(id.ToGFs(), out Saves.GFData value) && value.Name != null &&
+                    if (d.GFs != null && d.GFs.TryGetValue(id.ToGFs(), out var value) && value.Name != null &&
                         value.Name.Length > 0)
                         return value.Name;
 
@@ -120,7 +120,7 @@ namespace OpenVIII
 
         public FF8StringReference ReadByOffset(FileID fileID, int sectionID, int offset)
         {
-            FF8StringReference r = new FF8StringReference(Memory.Strings[FileID.Kernel].GetArchive(),
+            var r = new FF8StringReference(Memory.Strings[FileID.Kernel].GetArchive(),
                 Memory.Strings[FileID.Kernel].GetFileNames()[0],
                 Memory.Strings[FileID.Kernel].GetFiles()
                     .SubPositions[(int) ((Kernel) Memory.Strings[FileID.Kernel]).StringLocations[0].StringLocation] +
@@ -158,7 +158,7 @@ namespace OpenVIII
                     () => _files.TryAdd(FileID.AreaNames, Areames.Load()),
                     () => _files.TryAdd(FileID.Kernel, Kernel.Load()),
                 };
-                    IEnumerable<bool> tasks = Memory.ProcessFuncs(func);
+                    var tasks = Memory.ProcessFuncs(func);
                     if (tasks.Any(x => !x))
                         throw new ArgumentException($"{this}::Failed to add to dictionary...");
                 }

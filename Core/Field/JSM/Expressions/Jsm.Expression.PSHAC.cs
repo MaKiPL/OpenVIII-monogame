@@ -34,7 +34,7 @@ namespace OpenVIII.Fields.Scripts
 
                 public void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
                 {
-                    String name = formatterContext.GetObjectNameByIndex(_fieldObjectId.Value);
+                    var name = formatterContext.GetObjectNameByIndex(_fieldObjectId.Value);
                     sw.Append($"typeof({name})");
                 }
 

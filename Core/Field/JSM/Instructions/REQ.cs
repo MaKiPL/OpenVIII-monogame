@@ -26,16 +26,16 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
-            formatterContext.GetObjectScriptNamesById(_scriptId, out String typeName, out String methodName);
+            formatterContext.GetObjectScriptNamesById(_scriptId, out var typeName, out var methodName);
 
             sw.AppendLine($"{nameof(REQ)}(priority: {_priority}, GetObject<{typeName}>().{methodName}());");
         }
 
         public override IAwaitable TestExecute(IServices services)
         {
-            EventEngine engine = ServiceId.Field[services].Engine;
+            var engine = ServiceId.Field[services].Engine;
 
-            FieldObject targetObject = engine.GetObject(_objectIndex);
+            var targetObject = engine.GetObject(_objectIndex);
             if (!targetObject.IsActive)
                 throw new NotSupportedException($"Unknown expected behavior when trying to call a method of the inactive object (Id: {_objectIndex}).");
 

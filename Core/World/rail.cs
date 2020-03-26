@@ -47,13 +47,13 @@ namespace OpenVIII.World
 
         public rail(byte[] buffer)
         {
-            int railEntries = buffer.Length / RAIL_BLOCK_SIZE;
+            var railEntries = buffer.Length / RAIL_BLOCK_SIZE;
             this.railEntries = new RailEntry[railEntries];
             MemoryStream ms = null;
 
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
-                for (int i = 0; i < railEntries; i++)
+                for (var i = 0; i < railEntries; i++)
                     this.railEntries[i] = ParseBlock(br.ReadBytes(2048));
                 ms = null;
             }
@@ -61,7 +61,7 @@ namespace OpenVIII.World
 
         private RailEntry ParseBlock(byte[] block)
         {
-            RailEntry entry = new RailEntry()
+            var entry = new RailEntry()
             {
                 cKeypoints = block[0],
                 unk = block[1],
@@ -70,7 +70,7 @@ namespace OpenVIII.World
                 trainStop2 = BitConverter.ToUInt32(block, 8)
             };
             entry.keypoints = new Keypoint[entry.cKeypoints];
-            for (int i = 0; i < entry.cKeypoints; i++)
+            for (var i = 0; i < entry.cKeypoints; i++)
                 entry.keypoints[i] = Extended.ByteArrayToStructure<Keypoint>(block.Skip(BLOCK_HEADER_SIZE + (i * 16)).Take(16).ToArray());
             return entry;
         }
@@ -96,7 +96,7 @@ namespace OpenVIII.World
         /// <returns></returns>
         public Vector3 GetTrackFrameVector(int trackId, int frameId)
         {
-            Keypoint kp = railEntries[trackId].keypoints[frameId];
+            var kp = railEntries[trackId].keypoints[frameId];
             return new Vector3(Extended.ConvertVanillaWorldXAxisToOpenVIII(kp.x),
                                Extended.ConvertVanillaWorldYAxisToOpenVIII(kp.y),
                                Extended.ConvertVanillaWorldZAxisToOpenVIII(kp.Z)

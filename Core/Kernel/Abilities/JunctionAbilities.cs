@@ -38,7 +38,7 @@ namespace OpenVIII
                 //0x0004  1 byte
                 AP = br.ReadByte();
                 //0x0005  3 byte J_Flag
-                byte[] tmp = br.ReadBytes(3);
+                var tmp = br.ReadBytes(3);
                 Flags = (JunctionAbilityFlags)(tmp[2] << 16 | tmp[1] << 8 | tmp[0]);
             }
 

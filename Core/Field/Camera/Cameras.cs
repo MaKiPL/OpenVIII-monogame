@@ -47,7 +47,7 @@ namespace OpenVIII.Fields
         {
             if (idb == null || idb.Length == 0) return null;
 
-            int sizeofCamera = SizeOfCamera;
+            var sizeofCamera = SizeOfCamera;
             int count;
             if (idb.Length / SizeOfCamera > idb.Length / AltSizeOfCamera)
                 count = idb.Length / SizeOfCamera;

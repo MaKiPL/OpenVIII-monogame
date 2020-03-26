@@ -42,18 +42,18 @@ namespace OpenVIII
 
         public HSL(Color @in)
         {
-            float cMax = @in.Max() / 255f;
-            float cMin = @in.Min() / 255f;
-            float delta = cMax - cMin;
+            var cMax = @in.Max() / 255f;
+            var cMin = @in.Min() / 255f;
+            var delta = cMax - cMin;
             float R = @in.R / 255f, G = @in.G / 255f, B = @in.B / 255f;
             H = Hue();
-            float l = L = Luminosity();
+            var l = L = Luminosity();
             S = Saturation();
             A = @in.A / 255f;
 
             float Hue()
             {
-                float ret = 0f;
+                var ret = 0f;
                 if (delta == 0)
                 { }
                 else if (cMax == R)
@@ -84,11 +84,11 @@ namespace OpenVIII
         /// <see cref="https://www.rapidtables.com/convert/color/hsl-to-rgb.html"/>
         public static implicit operator Color(HSL @in)
         {
-            float C = (1 - Math.Abs(2 * @in.L - 1)) * @in.S;
-            float H = @in.H / 60f;
-            float X = C * (1 - Math.Abs(H % 2 - 1));
-            float m = @in.L - C / 2;
-            Vector3 rgb = getRGB();
+            var C = (1 - Math.Abs(2 * @in.L - 1)) * @in.S;
+            var H = @in.H / 60f;
+            var X = C * (1 - Math.Abs(H % 2 - 1));
+            var m = @in.L - C / 2;
+            var rgb = getRGB();
 
             return new Color()
             {
@@ -118,7 +118,7 @@ namespace OpenVIII
             }
             Vector3 getRGB()
             {
-                Vector3 prime = getPrime();
+                var prime = getPrime();
                 prime += new Vector3(m);
                 prime *= new Vector3(255);
                 return prime;

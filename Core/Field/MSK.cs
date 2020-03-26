@@ -17,7 +17,7 @@ namespace OpenVIII.Fields
         public MSK(byte[] mskB)
         {
             if (mskB == null || mskB.Length <= 4) return;
-            using (BinaryReader br = new BinaryReader(new MemoryStream(mskB)))
+            using (var br = new BinaryReader(new MemoryStream(mskB)))
                 _camPositions = Enumerable.Range(0, br.ReadInt32())
                     .Select(_ => new Vector3(br.ReadInt16(), br.ReadInt16(), br.ReadInt16())).ToList().AsReadOnly();
             

@@ -19,7 +19,7 @@ namespace OpenVIII
 
         public static void Inputs()
         {
-            Files files = Files.Instance;
+            var files = Files.Instance;
             if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
                 Return();

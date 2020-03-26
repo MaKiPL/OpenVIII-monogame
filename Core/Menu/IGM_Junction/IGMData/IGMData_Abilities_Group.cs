@@ -28,7 +28,7 @@ namespace OpenVIII
             public override bool Inputs()
             {
                 skipdata = true;
-                bool ret = base.Inputs();
+                var ret = base.Inputs();
                 skipdata = false;
                 if (Commands != null)
                 {
@@ -62,7 +62,7 @@ namespace OpenVIII
                 base.Inputs_Menu();
                 skipdata = false;
 
-                if (Commands != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Commands != null && Damageable.GetCharacterData(out var c))
                 {
                     if (CURSOR_SELECT < Commands.Count)
                     {
@@ -96,20 +96,20 @@ namespace OpenVIII
             {
                 base.Refresh();
 
-                int total_Count = (Commands?.Count ?? 0) + (Ability?.Count ?? 0);
+                var total_Count = (Commands?.Count ?? 0) + (Ability?.Count ?? 0);
                 if (Memory.State?.Characters != null)
                 {//TODO fix this. these values should be set in init() not refresh...
                     SIZE = new Rectangle[total_Count];
                     CURSOR = new Point[total_Count];
                     BLANKS = new BitArray(total_Count,false);
-                    int i = 0;
+                    var i = 0;
                     test(Commands, ref i);
                     test(Ability, ref i);
                 }
 
                 void test(IGMData.Base t, ref int i)
                 {
-                    int pos = 0;
+                    var pos = 0;
                     for (; t != null && pos < t.Count && i < total_Count; i++)
                     {
                         SIZE[i] = t.SIZE[pos];
@@ -124,7 +124,7 @@ namespace OpenVIII
 
             public override bool Update()
             {
-                bool ret = base.Update();
+                var ret = base.Update();
 
                 if (IGM_Junction != null && IGM_Junction.GetMode().Equals(Mode.Abilities))
                 {
@@ -134,14 +134,14 @@ namespace OpenVIII
                     {
                         if (CURSOR_SELECT >= Commands.Count)
                         {
-                            if (Ability.Descriptions != null && Ability.Descriptions.TryGetValue(CURSOR_SELECT - Commands.Count, out FF8String v))
+                            if (Ability.Descriptions != null && Ability.Descriptions.TryGetValue(CURSOR_SELECT - Commands.Count, out var v))
                             {
                                 IGM_Junction.ChangeHelp(v);
                             }
                         }
                         else
                         {
-                            if (Commands.Descriptions != null && Commands.Descriptions.TryGetValue(CURSOR_SELECT, out FF8String v))
+                            if (Commands.Descriptions != null && Commands.Descriptions.TryGetValue(CURSOR_SELECT, out var v))
                             {
                                 IGM_Junction.ChangeHelp(v);
                             }

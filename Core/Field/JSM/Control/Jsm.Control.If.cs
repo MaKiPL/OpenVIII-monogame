@@ -27,7 +27,7 @@ namespace OpenVIII.Fields.Scripts
 
                 public void AddIf(Int32 from, Int32 to)
                 {
-                    ElseIfSegment elseIf = new ElseIfSegment(from, to);
+                    var elseIf = new ElseIfSegment(from, to);
                     elseIf.Add(_instructions[from]);
                     ElseIfRanges.Add(elseIf);
                 }
@@ -42,7 +42,7 @@ namespace OpenVIII.Fields.Scripts
 
                 public override String ToString()
                 {
-                    StringBuilder sb = new StringBuilder();
+                    var sb = new StringBuilder();
                     FormatIf(sb, IfRange);
                     FormatBranch(sb, IfRange);
                     foreach (var item in ElseIfRanges)
@@ -99,9 +99,9 @@ namespace OpenVIII.Fields.Scripts
                 private void FormatBranch(StringBuilder sb, Segment range)
                 {
                     sb.AppendLine("{");
-                    for (Int32 i = range.From + 1; i < range.To; i++)
+                    for (var i = range.From + 1; i < range.To; i++)
                     {
-                        JsmInstruction instruction = _instructions[i];
+                        var instruction = _instructions[i];
                         sb.Append('\t').AppendLine(instruction.ToString());
                     }
 

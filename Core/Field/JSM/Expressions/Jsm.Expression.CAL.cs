@@ -15,9 +15,9 @@ namespace OpenVIII.Fields.Scripts
             {
                 public static IJsmExpression Read(Int32 typeValue, IStack<IJsmExpression> stack)
                 {
-                    Operation type = (Operation)typeValue;
+                    var type = (Operation)typeValue;
 
-                    IJsmExpression last = stack.Pop();
+                    var last = stack.Pop();
                     switch (type)
                     {
                         case Operation.Minus:
@@ -112,7 +112,7 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression result = _value.Evaluate(services);
+                        var result = _value.Evaluate(services);
                         if (result is IConstExpression number)
                             return ValueExpression.Create((Int32)(-number.Value));
                         return result;
@@ -146,7 +146,7 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression result = _value.Evaluate(services);
+                        var result = _value.Evaluate(services);
                         if (result is IConstExpression number)
                             return ValueExpression.Create((Int32)~number.Value);
                         return result;
@@ -180,7 +180,7 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression result = _value.Evaluate(services);
+                        var result = _value.Evaluate(services);
                         if (result is IConstExpression number)
                             return ValueExpression.Create(number.Value == 0 ? 1 : 0);
                         return result;
@@ -225,8 +225,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value + n2.Value));
                         return new BitAnd(first, last);
@@ -265,8 +265,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value - n2.Value));
                         return new Sub(first, last);
@@ -305,8 +305,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value * n2.Value));
                         return new Mul(first, last);
@@ -345,8 +345,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value % n2.Value));
                         return new Mod(first, last);
@@ -385,8 +385,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value / n2.Value));
                         return new Div(first, last);
@@ -425,8 +425,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create(n1.Value == n2.Value ? 1 : 0);
                         
@@ -471,8 +471,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create(n1.Value > n2.Value ? 1 : 0);
                         return new Great(first, last);
@@ -516,8 +516,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create(n1.Value >= n2.Value ? 1 : 0);
                         return new GreatOrEquals(first, last);
@@ -561,8 +561,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create(n1.Value < n2.Value ? 1 : 0);
                         return new Less(first, last);
@@ -606,8 +606,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create(n1.Value <= n2.Value ? 1 : 0);
                         return new LessOrEquals(first, last);
@@ -651,8 +651,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create(n1.Value != n2.Value ? 1 : 0);
                         return new NotEquals(first, last);
@@ -696,8 +696,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value & n2.Value));
                         return new BitAnd(first, last);
@@ -736,8 +736,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value | n2.Value));
                         return new BitOr(first, last);
@@ -776,8 +776,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        IJsmExpression first = _first.Evaluate(services);
-                        IJsmExpression last = _last.Evaluate(services);
+                        var first = _first.Evaluate(services);
+                        var last = _last.Evaluate(services);
                         if (first is IConstExpression n1 && last is IConstExpression n2)
                             return ValueExpression.Create((Int32)(n1.Value ^ n2.Value));
                         return new BitXor(first, last);
@@ -816,8 +816,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        ILogicalExpression first = _first.LogicalEvaluate(services);
-                        ILogicalExpression last = _last.LogicalEvaluate(services);
+                        var first = _first.LogicalEvaluate(services);
+                        var last = _last.LogicalEvaluate(services);
                         if (first is IConstExpression n1)
                         {
                             if (n1.Value == 0)
@@ -899,8 +899,8 @@ namespace OpenVIII.Fields.Scripts
 
                     public IJsmExpression Evaluate(IServices services)
                     {
-                        ILogicalExpression first = _first.LogicalEvaluate(services);
-                        ILogicalExpression last = _last.LogicalEvaluate(services);
+                        var first = _first.LogicalEvaluate(services);
+                        var last = _last.LogicalEvaluate(services);
 
                         if (first is IConstExpression n1)
                         {

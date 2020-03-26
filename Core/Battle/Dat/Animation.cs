@@ -21,7 +21,7 @@ namespace OpenVIII.Battle.Dat
 
         public Animation(BinaryReader br, Skeleton skeleton) : this()
         {
-            byte cFrames = br.ReadByte();
+            var cFrames = br.ReadByte();
             _animationFrames = AnimationFrame.CreateInstances(br, cFrames, skeleton);
         }
 

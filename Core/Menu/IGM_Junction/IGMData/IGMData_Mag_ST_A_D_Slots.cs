@@ -38,7 +38,7 @@ namespace OpenVIII
                 skipdata = true;
                 base.Inputs_Menu();
                 skipdata = false;
-                if (Contents[CURSOR_SELECT] == Kernel.Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Contents[CURSOR_SELECT] == Kernel.Stat.None && Damageable.GetCharacterData(out var c))
                 {
                     c.StatJ[Contents[CURSOR_SELECT]] = 0;
                     IGM_Junction.Refresh();
@@ -75,7 +75,7 @@ namespace OpenVIII
             public override void UndoChange()
             {
                 //override this use it to take value of prevSetting and restore the setting unless default method works
-                if (GetPrevSetting() != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (GetPrevSetting() != null && Damageable.GetCharacterData(out var c))
                 {
                     c.Magics = GetPrevSetting().CloneMagic();
                     c.StatJ = GetPrevSetting().CloneMagicJunction();

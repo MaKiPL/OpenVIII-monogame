@@ -27,7 +27,7 @@ namespace OpenVIII.Fields.Scripts
 
             public IJsmExpression Pop()
             {
-                IJsmExpression result = _stack.Pop();
+                var result = _stack.Pop();
 
                 CurrentLabel = _positions[result];
                 _positions.Remove(result);

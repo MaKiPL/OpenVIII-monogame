@@ -54,7 +54,7 @@ namespace OpenVIII
                 StatusAttack = br.ReadByte();
                 //0x000F  1 byte Status Attack Enabler
                 ButtonCombo = new List<IReadOnlyList<FF8TextTagKey>>(5);
-                for (int b = 0; b < 5; b++)
+                for (var b = 0; b < 5; b++)
                 {
                     ButtonCombo.Add(Input2.Convert_Flags((Button_Flags)br.ReadUInt16()));
                 }

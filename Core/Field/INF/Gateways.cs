@@ -35,8 +35,8 @@ namespace OpenVIII.Fields
 
         public static Gateways Read(BinaryReader br, int type)
         {
-            Gateways g = new Gateways();
-            foreach (int i in Enumerable.Range(0, g.gateways.Capacity))
+            var g = new Gateways();
+            foreach (var i in Enumerable.Range(0, g.gateways.Capacity))
                 g.gateways.Add(Gateway.Read(br, type));
             return g;
         }

@@ -20,7 +20,7 @@ namespace OpenVIII.Fields
 
         public void CancelAll()
         {
-            while (_executionQueue.TryDequeue(out Executer executor))
+            while (_executionQueue.TryDequeue(out var executor))
                 executor.Complete();
         }
 
@@ -31,7 +31,7 @@ namespace OpenVIII.Fields
         /// </summary>
         public IAwaitable Execute(int scriptId, int priority)
         {
-            Executer executer = new Executer(GetScriptExecuter(scriptId));
+            var executer = new Executer(GetScriptExecuter(scriptId));
             _executionQueue.Enqueue(executer, priority);
             return executer;
         }
@@ -65,7 +65,7 @@ namespace OpenVIII.Fields
 
                 if (_currentExecutor != null)
                 {
-                    while (_currentExecutor.Next(out IAwaitable current))
+                    while (_currentExecutor.Next(out var current))
                     {
                         if (current == null)
                             throw new InvalidOperationException();

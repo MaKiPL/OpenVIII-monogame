@@ -43,7 +43,7 @@ namespace OpenVIII.IGMData
             get
             {
                 if (Spells == null) return default;
-                IReadOnlyList<Slot> spells = Spells;
+                var spells = Spells;
                 return spells[Memory.Random.Next(spells.Count)];
             }
         }
@@ -65,7 +65,7 @@ namespace OpenVIII.IGMData
         /// <summary>
         /// Selphie's TombolaLevel
         /// </summary>
-        private short TombolaLevel => Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) ? checked((short)(Damageable.Level / 10 + c.CurrentCrisisLevel + Memory.Random.Next(5) - 1)) : (short)0;
+        private short TombolaLevel => Damageable != null && Damageable.GetCharacterData(out var c) ? checked((short)(Damageable.Level / 10 + c.CurrentCrisisLevel + Memory.Random.Next(5) - 1)) : (short)0;
 
         /// <summary>
         /// Selphie's TombolaLevel
@@ -74,7 +74,7 @@ namespace OpenVIII.IGMData
         {
             get
             {
-                byte rnd = checked((byte)Memory.Random.Next(256));
+                var rnd = checked((byte)Memory.Random.Next(256));
                 if (rnd >= 249) return 4;
                 if (rnd >= 209) return 3;
                 if (rnd >= 159) return 2;
@@ -128,7 +128,7 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            Slot spell_data = SpellData;
+            var spell_data = SpellData;
             MagicData = spell_data.MagicData;
             Casts = spell_data.Casts;
             SetCursor_select(3);

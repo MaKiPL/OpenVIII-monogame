@@ -25,13 +25,13 @@ namespace OpenVIII.Kernel
         private KernelBin()
         {
             Memory.Log.WriteLine($"{nameof(KernelBin)} :: new ");
-            ArchiveBase aw = ArchiveWorker.Load(ArchiveString);
-            byte[] buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.Kernel].GetFileNames()[0]);
-            List<Loc> subPositions = Memory.Strings[Strings.FileID.Kernel].GetFiles().SubPositions;
+            var aw = ArchiveWorker.Load(ArchiveString);
+            var buffer = aw.GetBinaryFile(Memory.Strings[Strings.FileID.Kernel].GetFileNames()[0]);
+            var subPositions = Memory.Strings[Strings.FileID.Kernel].GetFiles().SubPositions;
 
             MemoryStream ms;
             if (buffer == null) return;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(subPositions[BattleCommand.ID], SeekOrigin.Begin);
                 BattleCommands = BattleCommand.Read(br);
@@ -96,19 +96,19 @@ namespace OpenVIII.Kernel
                 MiscSection = Kernel.MiscSection.Read(br);
                 MiscTextPointers = Kernel.MiscTextPointers.Read();
 
-                Dictionary<Abilities, IAbility> allAbilities = new Dictionary<Abilities, IAbility>(
+                var allAbilities = new Dictionary<Abilities, IAbility>(
                     Kernel.MenuAbilities.Count + Kernel.JunctionAbilities.Count + Kernel.CommandAbility.Count +
                     StatPercentageAbilities.Count + Kernel.CharacterAbilities.Count + Kernel.PartyAbilities.Count +
                     Kernel.GFAbilities.Count);
 
-                Dictionary<Abilities, IEquippableAbility> equippableAbilities =
+                var equippableAbilities =
                     new Dictionary<Abilities, IEquippableAbility>(
                         StatPercentageAbilities.Count +
                         Kernel.CharacterAbilities.Count +
                         Kernel.PartyAbilities.Count +
                         Kernel.GFAbilities.Count);
 
-                foreach (Abilities ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
+                foreach (var ability in (Abilities[])(Enum.GetValues(typeof(Abilities))))
                 {
                     combine(MenuAbilities);
                     combine(StatPercentAbilities);
@@ -126,14 +126,14 @@ namespace OpenVIII.Kernel
                     void combine<T>(IReadOnlyDictionary<Abilities, T> dict)
                             where T : IAbility
                     {
-                        if (!dict.TryGetValue(ability, out T a) || allAbilities.ContainsKey(ability)) return;
+                        if (!dict.TryGetValue(ability, out var a) || allAbilities.ContainsKey(ability)) return;
                         allAbilities.Add(ability, a);
                     }
 
                     void combine2<T>(IReadOnlyDictionary<Abilities, T> dict)
                         where T : IEquippableAbility
                     {
-                        if (!dict.TryGetValue(ability, out T a) || equippableAbilities.ContainsKey(ability)) return;
+                        if (!dict.TryGetValue(ability, out var a) || equippableAbilities.ContainsKey(ability)) return;
                         equippableAbilities.Add(ability, a);
                     }
                 }

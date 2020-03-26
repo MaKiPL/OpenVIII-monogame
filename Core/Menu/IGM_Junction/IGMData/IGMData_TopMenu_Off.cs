@@ -43,7 +43,7 @@ namespace OpenVIII
 
             public override bool Update()
             {
-                bool ret = base.Update();
+                var ret = base.Update();
                 Update_String();
 
                 if (IGM_Junction != null)

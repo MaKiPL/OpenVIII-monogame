@@ -39,7 +39,7 @@ namespace OpenVIII
 
             public static IGMData_TargetPool Create()
             {
-                IGMData_TargetPool r = Create<IGMData_TargetPool>(9, 3, new IGMDataItem.Box { Pos = new Rectangle(420, 150, 420, 360), Title = Icons.ID.TARGET }, 9, 1);
+                var r = Create<IGMData_TargetPool>(9, 3, new IGMDataItem.Box { Pos = new Rectangle(420, 150, 420, 360), Title = Icons.ID.TARGET }, 9, 1);
                 r.Cursor_Status &= ~Cursor_Status.Enabled;
                 return r;
             }
@@ -53,7 +53,7 @@ namespace OpenVIII
                 {
                     // if all draw blinking pointers on everyone.
                     byte i = 0;
-                    foreach (Point c in CURSOR)
+                    foreach (var c in CURSOR)
                     {
                         if (!BLANKS[i] && ITEM[i, 0] != null && ITEM[i, 0].Enabled && c != Point.Zero)
                             DrawPointer(c, blink: true);
@@ -79,7 +79,7 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                bool ret = false;
+                var ret = false;
                 if (All)
                     ret = Item.Use(Faces.ID.Blank);
                 else if (!BLANKS[CURSOR_SELECT])
@@ -127,7 +127,7 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                for (int i = 0; i < Rows; i++)
+                for (var i = 0; i < Rows; i++)
                 {
                     ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
                     ITEM[i, 0].Hide();
@@ -181,13 +181,13 @@ namespace OpenVIII
             private void Fill()
             {
                 Faces.ID id = 0;
-                int skip = Page * Rows;
-                for (int i = 0; i < Rows; i++)
+                var skip = Page * Rows;
+                for (var i = 0; i < Rows; i++)
                 {
-                    bool gftest = false;
-                    bool ctest = false;
-                    Characters character = Characters.Blank;
-                    GFs gf = GFs.Blank;
+                    var gftest = false;
+                    var ctest = false;
+                    var character = Characters.Blank;
+                    var gf = GFs.Blank;
                     while (!Enum.IsDefined(typeof(Faces.ID), id)
                         || !((ctest = Item.TestCharacter(ref id, out character)) || (gftest = Item.TestGF(ref id, out gf)))
                         || skip-- > 0)
@@ -206,7 +206,7 @@ namespace OpenVIII
                         }
                     ((IGMDataItem.Text)ITEM[i, 0]).Data = Memory.Strings.GetName(id);
                     ITEM[i, 0].Show();
-                    int hp = (ctest || gftest) ? Memory.State[id]?.CurrentHP() ?? -1 : -1;
+                    var hp = (ctest || gftest) ? Memory.State[id]?.CurrentHP() ?? -1 : -1;
                     BLANKS[i] = false;
                     Contents[i] = id;
                     if (hp > -1)
@@ -232,7 +232,7 @@ namespace OpenVIII
                 if (!Item.Equals(e.Key) || Page > 0)
                 {
                     Page = 0;
-                    bool sameTargets = Item.Target != e.Key.Target || Item.Type != e.Key.Type;
+                    var sameTargets = Item.Target != e.Key.Target || Item.Type != e.Key.Type;
                     if (!sameTargets)
                     {
                         sameTargets = (Item.Type == Item_In_Menu._Type.GF_Learn && Item.Learn != e.Key.Learn);

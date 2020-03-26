@@ -110,7 +110,7 @@ namespace OpenVIII.IGMData
 
         public override void Inputs_Left()
         {
-            if (_inputsLeft.TryGetValue((DebugItems)CURSOR_SELECT, out Func<bool> f) && f.Invoke())
+            if (_inputsLeft.TryGetValue((DebugItems)CURSOR_SELECT, out var f) && f.Invoke())
             {
                 base.Inputs_Left();
                 Refresh();
@@ -119,7 +119,7 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs_OKAY()
         {
-            if (_inputsOkay.TryGetValue((DebugItems)CURSOR_SELECT, out Func<bool> f))
+            if (_inputsOkay.TryGetValue((DebugItems)CURSOR_SELECT, out var f))
             {
                 return f.Invoke() && base.Inputs_OKAY();
             }
@@ -128,7 +128,7 @@ namespace OpenVIII.IGMData
 
         public override void Inputs_Right()
         {
-            if (_inputsRight.TryGetValue((DebugItems)CURSOR_SELECT, out Func<bool> f) && f.Invoke())
+            if (_inputsRight.TryGetValue((DebugItems)CURSOR_SELECT, out var f) && f.Invoke())
             {
                 base.Inputs_Right();
                 Refresh();
@@ -138,9 +138,9 @@ namespace OpenVIII.IGMData
         public override void Refresh()
         {
             base.Refresh();
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
             {
-                if (_dynamicDebugStrings.TryGetValue((DebugItems)i, out Func<FF8String> f))
+                if (_dynamicDebugStrings.TryGetValue((DebugItems)i, out var f))
                 {
                     ((IGMDataItem.Text)ITEM[i, 0]).Data = f();
                 }
@@ -150,14 +150,14 @@ namespace OpenVIII.IGMData
         protected override void Init()
         {
             base.Init();
-            foreach (int i in Enumerable.Range(0, (int)DebugItems.Count))
+            foreach (var i in Enumerable.Range(0, (int)DebugItems.Count))
             {
-                if (StrDebugLobby.TryGetValue((DebugItems)i, out FF8String str))
+                if (StrDebugLobby.TryGetValue((DebugItems)i, out var str))
                 {
                     ITEM[i, 0] = new IGMDataItem.Text { Data = str, Pos = SIZE[i] };
                 }
             }
-            Rectangle rect = CONTAINER.Pos;
+            var rect = CONTAINER.Pos;
             rect.Inflate(-12, -60);
             rect.Offset(12, 60);
             ITEM[(int)DebugItems.BattlePool, 0] = DebugSelectPool<Battle.Encounter>.Create(rect, Memory.Encounters, SetEncounterOkayBattle, FilterEncounters);
@@ -234,7 +234,7 @@ namespace OpenVIII.IGMData
                     return true;
                 }  },
             };
-            Files files = Files.Instance;
+            var files = Files.Instance;
             _inputsLeft = new Dictionary<DebugItems, Func<bool>>()
             {
                 { DebugItems.Movie, ()=> {
@@ -293,7 +293,7 @@ namespace OpenVIII.IGMData
                     if(files.Count ==0)
                         return "";
                     if (files.Count <= ModuleMovieTest.Index) return "";
-                    string end=Path.GetFileNameWithoutExtension(files[ModuleMovieTest.Index]);
+                    var end=Path.GetFileNameWithoutExtension(files[ModuleMovieTest.Index]);
                     if(StrDebugLobby[DebugItems.Movie]!=null)
                         return StrDebugLobby[DebugItems.Movie].Clone().Append(end);
                     return end;
@@ -301,7 +301,7 @@ namespace OpenVIII.IGMData
                 { DebugItems.Music, ()=> {
                     if (Memory.dicMusic.Count <= Memory.MusicIndex ||
                         Memory.dicMusic[(MusicId) Memory.MusicIndex].Count <= 0) return "";
-                    string end=Path.GetFileNameWithoutExtension(Memory.dicMusic[(MusicId)Memory.MusicIndex][0]);
+                    var end=Path.GetFileNameWithoutExtension(Memory.dicMusic[(MusicId)Memory.MusicIndex][0]);
                     if(StrDebugLobby[DebugItems.Music]!=null)
                         return StrDebugLobby[DebugItems.Music].Clone().Append(end);
                     return end;

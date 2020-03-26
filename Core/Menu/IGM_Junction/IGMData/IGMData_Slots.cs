@@ -39,7 +39,7 @@ namespace OpenVIII
 
             public static T Create<T>(int count, int depth, Menu_Base container = null, int? cols = null, int? rows = null) where T : IGMData_Slots<C>, new()
             {
-                T r = IGMData.Base.Create<T>(count, depth, container, cols, rows);
+                var r = IGMData.Base.Create<T>(count, depth, container, cols, rows);
                 r.Contents = new Kernel.Stat[r.Count];
                 return r;
             }
@@ -76,7 +76,7 @@ namespace OpenVIII
 
             public override bool Inputs()
             {
-                bool ret = false;
+                var ret = false;
                 if (CONTAINER.Pos.Contains(MouseLocation))
                 {
                     if (Input2.DelayedButton(MouseButtons.MouseWheelup))
@@ -111,7 +111,7 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Damageable != null && Damageable.GetCharacterData(out var c))
                 {
                     unlocked = c.UnlockedGFAbilities;
                     AddEventListener();
@@ -137,18 +137,18 @@ namespace OpenVIII
 
             protected void FillData(Icons.ID starticon, Kernel.Stat statatk, Kernel.Stat statdef)
             {
-                if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Damageable.GetCharacterData(out var c))
                     for (byte pos = 0; pos < Count; pos++)
                     {
-                        Kernel.Stat stat = pos != 0 ? statdef + pos - 1 : statatk;
+                        var stat = pos != 0 ? statdef + pos - 1 : statatk;
                         Contents[pos] = stat;
-                        getColor(pos, out byte palette, out Font.ColorID _colorid, out bool unlocked);
-                        FF8String name = GetName(stat);
+                        getColor(pos, out var palette, out var _colorid, out var unlocked);
+                        var name = GetName(stat);
                         UpdateItems();
 
                         FF8String GetName(Kernel.Stat key)
                         {
-                            FF8String _name = Memory.Kernel_Bin.MagicData[c.StatJ[key]].Name;
+                            var _name = Memory.Kernel_Bin.MagicData[c.StatJ[key]].Name;
                             if (_name == null || _name.Length == 0)
                                 _name = Strings.Name._;
                             return _name;

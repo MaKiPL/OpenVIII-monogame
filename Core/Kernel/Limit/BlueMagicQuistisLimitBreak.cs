@@ -157,7 +157,7 @@ namespace OpenVIII
 
             private static IReadOnlyList<BlueMagicQuistisLimitBreakParameters> GetCrisisLevels(BinaryReader br, byte i)
             {
-                long current = br.BaseStream.Position;
+                var current = br.BaseStream.Position;
                 try
                 {
                     br.BaseStream.Seek(

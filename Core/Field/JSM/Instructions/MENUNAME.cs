@@ -35,7 +35,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            NamedEntity targetEntity = (NamedEntity)_entityName.Int32(services);
+            var targetEntity = (NamedEntity)_entityName.Int32(services);
             return ServiceId.Menu[services].ShowEnterNameDialog(targetEntity);
         }
     }

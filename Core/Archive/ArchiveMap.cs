@@ -22,17 +22,17 @@ namespace OpenVIII
             if (fI == null || fL == null)
                 throw new ArgumentNullException($"{nameof(ArchiveMap)}::{nameof(ArchiveMap)} {nameof(fI)} or {nameof(fL)} is null");
             Max = max;
-            Stream s1 = Uncompress(fL, out long flOffset);
-            Stream s2 = Uncompress(fI, out long fiOffset);
-            long fiSize = fI.UncompressedSize == 0 ? fI.Size : fI.UncompressedSize;
+            var s1 = Uncompress(fL, out var flOffset);
+            var s2 = Uncompress(fI, out var fiOffset);
+            var fiSize = fI.UncompressedSize == 0 ? fI.Size : fI.UncompressedSize;
 
-            using (StreamReader sr = new StreamReader(s1, System.Text.Encoding.UTF8))
-            using (BinaryReader br = new BinaryReader(s2))
+            using (var sr = new StreamReader(s1, System.Text.Encoding.UTF8))
+            using (var br = new BinaryReader(s2))
             {
                 s1.Seek(flOffset, SeekOrigin.Begin);
                 s2.Seek(fiOffset, SeekOrigin.Begin);
                 _entries = new Dictionary<string, FI>();
-                long count = fiSize / 12;
+                var count = fiSize / 12;
                 while (count-- > 0)
                     _entries.Add(sr.ReadLine()?.TrimEnd() ?? throw new InvalidOperationException(), Extended.ByteArrayToClass<FI>(br.ReadBytes(12)));
             }
@@ -72,7 +72,7 @@ namespace OpenVIII
         {
             Memory.Log.WriteLine($"{nameof(ArchiveMap)}::{nameof(Lz4Uncompress)} :: decompressing data");
             //ReadOnlySpan<byte> input = new ReadOnlySpan<byte>(file);
-            byte[] output = new byte[fsUncompressedSize];
+            var output = new byte[fsUncompressedSize];
             //Span<byte> output = new Span<byte>(r);
             while (input.Length - offset > 0 && LZ4Codec.Decode(input, offset, input.Length - offset, output, 0, output.Length) <= -1)
             {
@@ -93,14 +93,14 @@ namespace OpenVIII
 
         public FI FindString(ref string input, out int size)
         {
-            string localInput = input;
-            KeyValuePair<string, FI> result = OrderedByName.FirstOrDefault(x => x.Key.IndexOf(localInput, StringComparison.OrdinalIgnoreCase) > -1);
+            var localInput = input;
+            var result = OrderedByName.FirstOrDefault(x => x.Key.IndexOf(localInput, StringComparison.OrdinalIgnoreCase) > -1);
             if (string.IsNullOrWhiteSpace(result.Key) || result.Value == default)
             {
                 size = 0;
                 return null;
             }
-            KeyValuePair<string, FI> result2 = OrderedByOffset.FirstOrDefault(x => x.Value.Offset > result.Value.Offset);
+            var result2 = OrderedByOffset.FirstOrDefault(x => x.Value.Offset > result.Value.Offset);
             if (result2.Value == default)
             {
                 switch (result.Value.CompressionType)
@@ -124,7 +124,7 @@ namespace OpenVIII
 
         public byte[] GetBinaryFile(FI fi, Stream data, string input, int size, long offset = 0)
         {
-            long max = data.Length;
+            var max = data.Length;
             if (data is StreamWithRangeValues s)
             {
                 max = s.Max;
@@ -139,7 +139,7 @@ namespace OpenVIII
             if (size == 0)
                 size = checked((int)(max - (fi.Offset + offset)));
             byte[] buffer;
-            using (BinaryReader br = new BinaryReader(data))
+            using (var br = new BinaryReader(data))
             {
                 br.BaseStream.Seek(fi.Offset + offset, SeekOrigin.Begin);
                 switch (fi.CompressionType)
@@ -147,7 +147,7 @@ namespace OpenVIII
                     case CompressionType.LZSS:
                     case CompressionType.LZSS_UnknownSize:
                     case CompressionType.LZSS_LZSS:
-                        int readSize = br.ReadInt32();
+                        var readSize = br.ReadInt32();
                         if (size != readSize + sizeof(int))
                             throw new InvalidDataException($"{nameof(ArchiveMap)}::{nameof(GetBinaryFile)} Size inside of lzs {{{readSize}}} doesn't match size calculated by region {{{size}}}.");
                         size = readSize;
@@ -186,12 +186,12 @@ namespace OpenVIII
             long offset = 0;
             if (data.GetType() == typeof(StreamWithRangeValues))
             {
-                StreamWithRangeValues s = (StreamWithRangeValues)data;
+                var s = (StreamWithRangeValues)data;
 
                 data = Uncompress(s, out offset);
                 //do I need to do something here? :P
             }
-            FI fi = FindString(ref input, out int size);
+            var fi = FindString(ref input, out var size);
             return GetBinaryFile(fi, data, input, size, offset);
         }
 
@@ -201,7 +201,7 @@ namespace OpenVIII
 
         public KeyValuePair<string, FI> GetFileData(string fileName)
         {
-            if (!TryGetValue(fileName, out FI value))
+            if (!TryGetValue(fileName, out var value))
                 return OrderedByName.FirstOrDefault(x => x.Key.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
             return new KeyValuePair<string, FI>(fileName, value);
         }
@@ -220,7 +220,7 @@ namespace OpenVIII
         /// </summary>
         private void CorrectCompressionForLzsFiles()
         {
-            IEnumerable<KeyValuePair<string, FI>> lszFiles = _entries.Where(x => x.Key.EndsWith("lzs", StringComparison.OrdinalIgnoreCase));
+            var lszFiles = _entries.Where(x => x.Key.EndsWith("lzs", StringComparison.OrdinalIgnoreCase));
             // ReSharper disable once PossibleMultipleEnumeration
             lszFiles.Where(x => x.Value.CompressionType == CompressionType.None).ForEach(x => _entries[x.Key].CompressionType = CompressionType.LZSS_UnknownSize);
             // ReSharper disable once PossibleMultipleEnumeration
@@ -235,7 +235,7 @@ namespace OpenVIII
             byte[] open(int skip = 0)
             {
                 @in.Seek(@in.Offset + skip, SeekOrigin.Begin);
-                using (BinaryReader br = new BinaryReader(@in))
+                using (var br = new BinaryReader(@in))
                     return br.ReadBytes(checked((int)(@in.Size - skip)));
             }
             if (@in.Compression > 0)
@@ -243,7 +243,7 @@ namespace OpenVIII
                 {
                     case CompressionType.LZSS:
                         buffer = open();
-                        int compressedSize = BitConverter.ToInt32(buffer, 0);
+                        var compressedSize = BitConverter.ToInt32(buffer, 0);
                         if (compressedSize != buffer.Length - sizeof(int))
                             throw new InvalidDataException($"{nameof(ArchiveMap)}::{nameof(Uncompress)} buffer size incorrect ({compressedSize}) != ({buffer.Length - sizeof(int)})");
                         return new MemoryStream(LZSS.DecompressAllNew(buffer, @in.UncompressedSize, true));

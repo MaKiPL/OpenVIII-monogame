@@ -89,11 +89,11 @@ namespace OpenVIII.IGMData.Pool
 
         public void FillMagic()
         {
-            int pos = 0;
-            int skip = Page * Rows;
+            var pos = 0;
+            var skip = Page * Rows;
 
             if (Battle || Sort == null)
-                if (Damageable.GetEnemy(out Enemy e))
+                if (Damageable.GetEnemy(out var e))
                 {
 
                     bool add(Kernel.MagicData magic)
@@ -108,7 +108,7 @@ namespace OpenVIII.IGMData.Pool
                         return true;
                     }
 
-                    HashSet<Kernel.MagicData> Unique_Magic = new HashSet<Kernel.MagicData>();
+                    var Unique_Magic = new HashSet<Kernel.MagicData>();
 
                     foreach (var m in e.Abilities.Where(x => x.Magic != null))
                         Unique_Magic.Add(m.Magic);
@@ -124,17 +124,17 @@ namespace OpenVIII.IGMData.Pool
                     UpdateTitle();
                 }
                 else
-                    for (int i = 0; pos < Rows && Source?.Magics != null && i < Source.Magics.Count; i++)
+                    for (var i = 0; pos < Rows && Source?.Magics != null && i < Source.Magics.Count; i++)
                     {
                         // Magic ID and Count
-                        KeyValuePair<byte, byte> dat = Source.Magics[i];
+                        var dat = Source.Magics[i];
                         // if invalid
                         if (dat.Key == 0 || Memory.Kernel_Bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
                         addMagic(ref pos, Memory.Kernel_Bin.MagicData[dat.Key], @default);
                     }
             else
 
-                foreach (Kernel.MagicData i in Sort)
+                foreach (var i in Sort)
 
 
                 {
@@ -215,7 +215,7 @@ namespace OpenVIII.IGMData.Pool
 
         public void Get_Slots_Values()
         {
-            if (Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Damageable.GetCharacterData(out var c))
                 Source = c;
         }
 
@@ -253,7 +253,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (InputITEM(Target_Group, ref ret))
             { }
             else
@@ -303,7 +303,7 @@ namespace OpenVIII.IGMData.Pool
                     }
 
                     Cursor_Status &= ~Cursor_Status.Enabled;
-                    if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                    if (Damageable.GetCharacterData(out var c))
                         Source = c;
 
                     return true;
@@ -424,7 +424,7 @@ namespace OpenVIII.IGMData.Pool
             SIZE[Rows].Y = Y;
             ITEM[Rows, 2] = new IGMDataItem.Icon { Data = Icons.ID.NUM_, Pos = new Rectangle(SIZE[Rows].X + SIZE[Rows].Width - 45, SIZE[Rows].Y, 0, 0), Scale = new Vector2(2.5f) };
 
-            for (int pos = 0; pos < Rows; pos++)
+            for (var pos = 0; pos < Rows; pos++)
             {
                 ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
                 ITEM[pos, 0].Hide();
@@ -487,11 +487,11 @@ namespace OpenVIII.IGMData.Pool
         private void addMagic(ref int pos, Kernel.MagicData spell, Font.ColorID color = @default)
 
         {
-            if (!Damageable.GetEnemy(out Enemy e))
+            if (!Damageable.GetEnemy(out var e))
             {
                 e = null;
             }
-            bool j = false;
+            var j = false;
 
             if (color == @default && e == null && Source != null && Source.StatJ.ContainsValue(spell.MagicDataID))
 
@@ -567,7 +567,7 @@ namespace OpenVIII.IGMData.Pool
         private bool Undo()
         {
             SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)(Menu.IGM_Junction.GetMode()));
-            if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Memory.State.Characters != null && Damageable.GetCharacterData(out var c))
                 Source = c;
             return true;
         }
@@ -596,7 +596,7 @@ namespace OpenVIII.IGMData.Pool
                 Get_Slots_Values();
                 if (SortMode != LastMode || this.Stat != LastStat || Damageable != LastCharacter)
                     Get_Sort();
-                bool skipundo = false;
+                var skipundo = false;
                 if (Battle || !(SortMode == LastMode && Damageable == LastCharacter && this.Stat == LastStat && Page == LastPage))
                 {
                     // goal of these checks were to avoid updating the whole list if we don't need to.

@@ -135,8 +135,8 @@ namespace OpenVIII
                 int Damage_Curative_Item_Action(int dmg, Kernel.AttackFlags flags)
                 {
                     //ChangeHP(-dmg);
-                    bool noheal = (Statuses0 & (Kernel.PersistentStatuses.Death | Kernel.PersistentStatuses.Petrify)) != 0 || (Statuses1 & (Kernel.BattleOnlyStatuses.SummonGF)) != 0 || _CurrentHP == 0;
-                    bool healisdmg = (Statuses0 & (Kernel.PersistentStatuses.Zombie)) != 0;
+                    var noheal = (Statuses0 & (Kernel.PersistentStatuses.Death | Kernel.PersistentStatuses.Petrify)) != 0 || (Statuses1 & (Kernel.BattleOnlyStatuses.SummonGF)) != 0 || _CurrentHP == 0;
+                    var healisdmg = (Statuses0 & (Kernel.PersistentStatuses.Zombie)) != 0;
                     if (!noheal)
                     {
                         dmg = (healisdmg ? dmg : -dmg);
@@ -188,7 +188,7 @@ namespace OpenVIII
 
                 int Damage_Revive_Action(int dmg, Kernel.AttackFlags flags)
                 {
-                    ushort r = ReviveHP();
+                    var r = ReviveHP();
 
                     if ((Statuses0 & Kernel.PersistentStatuses.Zombie) != 0)
                     {
@@ -206,7 +206,7 @@ namespace OpenVIII
 
                 int Damage_Revive_At_Full_HP_Action(int dmg, Kernel.AttackFlags flags)
                 {
-                    ushort r = MaxHP();
+                    var r = MaxHP();
                     if ((Statuses0 & Kernel.PersistentStatuses.Zombie) != 0)
                     {
                         //Debug.WriteLine($"{this}: Dealt {r}, previous hp: {_CurrentHP}, current hp: {_CurrentHP-r}");
@@ -379,8 +379,8 @@ namespace OpenVIII
 
                 int Statuses_Curative_Item_Action(Kernel.PersistentStatuses statuses0, Kernel.BattleOnlyStatuses statuses1, Kernel.AttackFlags flags)
                 {
-                    Kernel.PersistentStatuses bak0 = Statuses0;
-                    Kernel.BattleOnlyStatuses bak1 = Statuses1;
+                    var bak0 = Statuses0;
+                    var bak1 = Statuses1;
                     Statuses0 &= ~statuses0;
                     Statuses1 &= ~statuses1;
                     if (!bak0.Equals(Statuses0) || !bak1.Equals(Statuses1))
@@ -492,7 +492,7 @@ namespace OpenVIII
 
         public static T Load<T>(BinaryReader br, Enum @enum, Saves.Data data) where T : Damageable, new()
         {
-            T r = new T { Data = data };
+            var r = new T { Data = data };
             r.ReadData(br, @enum);
             r.Init();
             return r;
@@ -511,7 +511,7 @@ namespace OpenVIII
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
         public virtual int ATBBarStart(int spd)
         {
-            int i = 0;
+            var i = 0;
             //this verison loops till it gets a value between 0 and ATBBarSize. Unsure which is best.
             //do
             //{
@@ -550,8 +550,8 @@ namespace OpenVIII
         {
             if (dmg == 0 || (Statuses1 & Kernel.BattleOnlyStatuses.Invincible) != 0)
                 return false;
-            int hp = _CurrentHP - dmg;
-            ushort lasthp = _CurrentHP;
+            var hp = _CurrentHP - dmg;
+            var lasthp = _CurrentHP;
             if (hp <= 0)
             {
                 Statuses0 |= (Kernel.PersistentStatuses.Death);
@@ -589,7 +589,7 @@ namespace OpenVIII
         /// <returns></returns>
         public virtual ushort CurrentHP()
         {
-            ushort max = MaxHP();
+            var max = MaxHP();
             if (_CurrentHP > max) _CurrentHP = max;
             return _CurrentHP;
         }
@@ -615,7 +615,7 @@ namespace OpenVIII
         {
             if (StatusesActions.ContainsKey(type))
             {
-                int total = StatusesActions[type](
+                var total = StatusesActions[type](
                 statuses0 ?? Kernel.PersistentStatuses.None,
                 statuses1 ?? Kernel.BattleOnlyStatuses.None,
                 flags ?? Kernel.AttackFlags.None);
@@ -767,8 +767,8 @@ namespace OpenVIII
 
         public float TicksToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
         {
-            int top = (ATBBarSize - start);
-            int bot = BarIncrement(spd, speedMod);
+            var top = (ATBBarSize - start);
+            var bot = BarIncrement(spd, speedMod);
             if (bot == 0)
                 return float.MinValue;
             return (top / bot);
@@ -778,7 +778,7 @@ namespace OpenVIII
 
         public float TimeToFillBar(int start, int spd, SpeedMod speedMod = SpeedMod.Normal)
         {
-            float tickspersec = 60f;
+            var tickspersec = 60f;
             return TicksToFillBar(start, spd, speedMod) / tickspersec;
         }
 

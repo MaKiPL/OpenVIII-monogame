@@ -26,7 +26,7 @@ namespace OpenVIII.Fields.Scripts
                 if (!(instruction.Instruction is IJumpToOpcode jump))
                     return;
 
-                Int32 target = position + jump.Offset;
+                var target = position + jump.Offset;
                 if (target < 0)
                     throw new InvalidProgramException($"Trying to jump out of script ({position} -> {target}). The field \"test3.jsm\" isn't supported.");
 
@@ -49,12 +49,12 @@ namespace OpenVIII.Fields.Scripts
 
             public HashSet<Int32> Commit()
             {
-                HashSet<Int32> result = new HashSet<Int32>();
+                var result = new HashSet<Int32>();
 
                 foreach (var pair in _targets)
                 {
                     var offset = pair.Key;
-                    if (!_candidates.TryGetValue(offset, out IndexedInstruction target))
+                    if (!_candidates.TryGetValue(offset, out var target))
                         throw new InvalidProgramException($"Invalid jump target: {pair.Key}");
 
                     foreach (var jump in pair.Value)

@@ -22,7 +22,7 @@ namespace OpenVIII.Battle.Dat
 
         private DatHeader(BinaryReader br)
         {
-            int cSections = br.ReadInt32();
+            var cSections = br.ReadInt32();
             _pSections = Enumerable.Range(0, cSections).Select(_ => br.ReadUInt32()).ToArray();
             Eof = br.ReadUInt32();
         }

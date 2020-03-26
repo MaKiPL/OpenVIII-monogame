@@ -135,7 +135,7 @@ namespace OpenVIII.Fields
 
             if (_debugModelId >= _charaOne.fieldModels.Length)
                 _debugModelId = 0;
-            int whichModel = _debugModelId;
+            var whichModel = _debugModelId;
 
             if (_charaOne.fieldModels[whichModel].mch == null)
                 goto _doNotDraw;
@@ -151,22 +151,22 @@ namespace OpenVIII.Fields
             if (_animFrame >= maxFrame)
                 _animFrame = 0;
 
-            Tuple<VertexPositionColorTexture[], byte[]> charaCollection = 
+            var charaCollection = 
                 _charaOne.fieldModels[whichModel].mch.GetVertexPositions(Vector3.Zero,Quaternion.Identity, _animId, _animFrame);
 
-            Dictionary<Texture2D, List<VertexPositionColorTexture>> vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
-            for (int i = 0; i < charaCollection.Item2.Length; i += 3)
+            var vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
+            for (var i = 0; i < charaCollection.Item2.Length; i += 3)
             {
-                Texture2D charaTexture = _charaOne.fieldModels[whichModel].textures[charaCollection.Item2[i]];
+                var charaTexture = _charaOne.fieldModels[whichModel].textures[charaCollection.Item2[i]];
                 if (!vptCollection.ContainsKey(charaTexture))
                     vptCollection.Add(charaTexture, new List<VertexPositionColorTexture>());
                 vptCollection[charaTexture].AddRange(charaCollection.Item1.Skip(i).Take(3).ToArray());
             }
 
-            foreach (KeyValuePair<Texture2D, List<VertexPositionColorTexture>> kvp in vptCollection)
+            foreach (var kvp in vptCollection)
             {
                 Ate.Texture = kvp.Key;
-                foreach (EffectPass pass in Ate.CurrentTechnique.Passes)
+                foreach (var pass in Ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);

@@ -37,10 +37,10 @@ namespace OpenVIII
 
         public GameLocation GetGameLocation()
         {
-            if (_hardcoded.FindGameLocation(out GameLocation gameLocation))
+            if (_hardcoded.FindGameLocation(out var gameLocation))
                 return gameLocation;
 
-            foreach (RegistryView registryView in new RegistryView[] { RegistryView.Registry32, RegistryView.Registry64 })
+            foreach (var registryView in new RegistryView[] { RegistryView.Registry32, RegistryView.Registry64 })
             {
                 GameLocation r;
                 if ((r = Check(SteamRegistyPath, SteamGamePathTag)) == null &&
@@ -52,13 +52,13 @@ namespace OpenVIII
 
                 GameLocation Check(string path, string tag)
                 {
-                    using (RegistryKey localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView))
-                    using (RegistryKey registryKey = localMachine.OpenSubKey(path))
+                    using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView))
+                    using (var registryKey = localMachine.OpenSubKey(path))
                     {
                         if (registryKey != null)
                         {
-                            string installLocation = (string)registryKey.GetValue(tag);
-                            string dataPath = installLocation;
+                            var installLocation = (string)registryKey.GetValue(tag);
+                            var dataPath = installLocation;
                             if (Directory.Exists(dataPath))
                                 return new GameLocation(dataPath);
                         }

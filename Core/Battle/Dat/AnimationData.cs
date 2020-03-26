@@ -21,7 +21,7 @@ namespace OpenVIII.Battle.Dat
 
         public AnimationData(BinaryReader br, long byteOffset, Skeleton skeleton) : this()
         {
-            int cAnimations = br.ReadInt32();
+            var cAnimations = br.ReadInt32();
             IReadOnlyList<uint> pAnimations = Enumerable.Range(0, cAnimations).Select(_ => checked((uint)(byteOffset + br.ReadUInt32()))).ToList()
                 .AsReadOnly();
             _animations = Animation.CreateInstances(br, pAnimations, skeleton);

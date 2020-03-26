@@ -146,8 +146,8 @@ namespace OpenVIII.IGMData.Group
                         }
                         else
                         {
-                            int total = 0;
-                            foreach (System.Collections.Generic.KeyValuePair<Characters, int> e in EXPExtra)
+                            var total = 0;
+                            foreach (var e in EXPExtra)
                             {
                                 if (e.Value > 0)
                                     total += (EXPExtra[e.Key] -= (int)remaining);
@@ -194,10 +194,10 @@ namespace OpenVIII.IGMData.Group
 
         private void RefreshEXP()
         {
-            foreach (Menu_Base i in ITEM)
+            foreach (var i in ITEM)
             {
-                int tmpexp = EXP;
-                if (EXPExtra != null && i.Damageable.GetCharacterData(out Saves.CharacterData c) && EXPExtra.TryGetValue(c.ID, out int bonus))
+                var tmpexp = EXP;
+                if (EXPExtra != null && i.Damageable.GetCharacterData(out var c) && EXPExtra.TryGetValue(c.ID, out var bonus))
                     tmpexp += bonus;
                 ((IGMData.PlayerEXP)i).NoEarnExp = NoEarnExp;
                 ((IGMData.PlayerEXP)i).EXP = tmpexp;

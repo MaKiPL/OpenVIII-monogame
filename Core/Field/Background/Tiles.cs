@@ -20,8 +20,8 @@ namespace OpenVIII.Fields
             /// </summary>
             public void UniquePupuIDs()
             {
-                List<Tile[]> duplicateIDs = GetOverLapTiles().ToList();
-                foreach (Tile[] i in duplicateIDs)
+                var duplicateIDs = GetOverLapTiles().ToList();
+                foreach (var i in duplicateIDs)
                 {
                     i[1].PupuID = i[0].PupuID + 1;
                 }
@@ -68,12 +68,12 @@ namespace OpenVIII.Fields
 
             public static Tiles Load(byte[] mapB, byte textureType)
             {
-                List<Tile> tiles = new List<Tile>();
+                var tiles = new List<Tile>();
                 //128x256
-                using (BinaryReader br = new BinaryReader(new MemoryStream(mapB)))
+                using (var br = new BinaryReader(new MemoryStream(mapB)))
                     while (br.BaseStream.Position + 16 < br.BaseStream.Length)
                     {
-                        Tile tile = Tile.Load(br, tiles.Count, textureType);
+                        var tile = Tile.Load(br, tiles.Count, textureType);
                         if (tile != null)
                             tiles.Add(tile);
                     }

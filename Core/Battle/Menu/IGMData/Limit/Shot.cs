@@ -50,7 +50,7 @@ namespace OpenVIII.IGMData.Limit
 
         public override void Refresh()
         {
-            if (Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+            if (Damageable != null && Damageable.GetCharacterData(out var c))
             {
                 TimeSpan timeleft;
                 switch (c.CurrentCrisisLevel)

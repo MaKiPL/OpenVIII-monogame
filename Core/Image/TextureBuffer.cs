@@ -76,7 +76,7 @@ namespace OpenVIII
         {
             get
             {
-                int i = x + (y * Width);
+                var i = x + (y * Width);
                 if (i < Count && i >= 0)
                     return colors[i];
                 Memory.Log.WriteLine($"{nameof(TextureBuffer)} :: this[int x, int y] => get :: {nameof(IndexOutOfRangeException)} :: {new Point(x, y)} = {i}");
@@ -84,7 +84,7 @@ namespace OpenVIII
             }
             set
             {
-                int i = x + (y * Width);
+                var i = x + (y * Width);
                 if (i < Count && i >= 0)
                     this[i] = value;
                 else
@@ -102,9 +102,9 @@ namespace OpenVIII
         {
             get
             {
-                int pos = (x + y * Width);
-                List<Color> r = new List<Color>(width * height);
-                int row = 0;
+                var pos = (x + y * Width);
+                var r = new List<Color>(width * height);
+                var row = 0;
                 while (r.Count < width * height)
                 {
                     r.AddRange(colors.Skip(pos + row * Width).Take(width));
@@ -114,10 +114,10 @@ namespace OpenVIII
             }
             set
             {
-                for (int _y = y; (_y - y) < height; _y++)
-                    for (int _x = x; (_x - x) < width; _x++)
+                for (var _y = y; (_y - y) < height; _y++)
+                    for (var _x = x; (_x - x) < width; _x++)
                     {
-                        int pos = (_x + _y * Width);
+                        var pos = (_x + _y * Width);
                         colors[pos] = value[(_x - x) + (_y - y) * width];
                     }
             }
@@ -131,7 +131,7 @@ namespace OpenVIII
         {
             if (Memory.graphics?.GraphicsDevice != null&& @in.Width>0 && @in.Height >0)
             {
-                Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, @in.Width, @in.Height);
+                var tex = new Texture2D(Memory.graphics.GraphicsDevice, @in.Width, @in.Height);
                 @in.SetData(tex);
                 return tex;
             }
@@ -144,14 +144,14 @@ namespace OpenVIII
 
         public static explicit operator TextureBuffer(Texture2D @in)
         {
-            TextureBuffer texture = new TextureBuffer(@in.Width, @in.Height);
+            var texture = new TextureBuffer(@in.Width, @in.Height);
 
             @in.GetData(texture.colors);
             return texture;
         }
         public static explicit operator TextureBuffer(Texture2DWrapper @in)
         {
-            TextureBuffer texture = new TextureBuffer(@in.GetWidth, @in.GetHeight);
+            var texture = new TextureBuffer(@in.GetWidth, @in.GetHeight);
             var tex = @in.GetTexture();
             tex.GetData(texture.colors);
             return texture;
@@ -180,8 +180,8 @@ namespace OpenVIII
 
         public override void Save(string path)
         {
-            using (Texture2D tex = GetTexture())
-            using (FileStream fs = File.Create(path))
+            using (var tex = GetTexture())
+            using (var fs = File.Create(path))
                 tex.SaveAsPng(fs, tex.Width, tex.Height);
         }
 

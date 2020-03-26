@@ -45,16 +45,16 @@ namespace OpenVIII.MonoGame
             if (RuntimeEnvironment.Platform != RuntimePlatform.Windows)
                 return;
 
-            Assembly gameFrameworkDll = typeof(Game).Assembly;
+            var gameFrameworkDll = typeof(Game).Assembly;
 
-            Type openAL = gameFrameworkDll.RequireType("MonoGame.OpenAL.AL");
+            var openAL = gameFrameworkDll.RequireType("MonoGame.OpenAL.AL");
 
             // Invoke static .ctor to avoid overwriting fields
             RuntimeHelpers.RunClassConstructor(openAL.TypeHandle);
 
             // Get loaded library
-            FieldInfo nativeLibraryField = openAL.RequireStaticField("NativeLibrary");
-            IntPtr nativeLibrary = (IntPtr)nativeLibraryField.GetValue(obj: /*static*/ null);
+            var nativeLibraryField = openAL.RequireStaticField("NativeLibrary");
+            var nativeLibrary = (IntPtr)nativeLibraryField.GetValue(obj: /*static*/ null);
 
             // Return if OpenAL initialized correctly
             if (nativeLibrary != IntPtr.Zero)
@@ -67,13 +67,13 @@ namespace OpenVIII.MonoGame
             nativeLibraryField.SetValue(obj: /*static*/ null, value: nativeLibrary);
 
             // Overwrite Function fields
-            foreach (KeyValuePair<string, string> pair in FieldToFunctionMap)
+            foreach (var pair in FieldToFunctionMap)
             {
-                String fieldName = pair.Key;
-                FieldInfo field = openAL.RequireStaticField(fieldName);
+                var fieldName = pair.Key;
+                var field = openAL.RequireStaticField(fieldName);
 
-                String functionName = pair.Value;
-                Object function = RequireFunction(nativeLibrary, functionName, field.FieldType);
+                var functionName = pair.Value;
+                var function = RequireFunction(nativeLibrary, functionName, field.FieldType);
 
                 field.SetValue(obj: /*static*/ null, value: function);
             }
@@ -81,13 +81,13 @@ namespace OpenVIII.MonoGame
 
         private static IntPtr RequireOpenAL()
         {
-            String platform = Environment.Is64BitProcess ? "x64" : "x86";
+            var platform = Environment.Is64BitProcess ? "x64" : "x86";
 
-            String libraryPath = $"{platform}/soft_oal.dll";
+            var libraryPath = $"{platform}/soft_oal.dll";
             if (!File.Exists(libraryPath))
                 throw new DllNotFoundException($"Cannot find OpenAL DLL: {libraryPath}");
 
-            IntPtr library = NativeMethods.LoadLibraryW($"{platform}/soft_oal.dll");
+            var library = NativeMethods.LoadLibraryW($"{platform}/soft_oal.dll");
             if (library == IntPtr.Zero)
                 throw new Win32Exception();
 
@@ -96,7 +96,7 @@ namespace OpenVIII.MonoGame
 
         public static Object RequireFunction(IntPtr library, String function, Type delegateType)
         {
-            IntPtr ptr = NativeMethods.GetProcAddress(library, function);
+            var ptr = NativeMethods.GetProcAddress(library, function);
             if (ptr == IntPtr.Zero)
                 throw new Win32Exception();
 

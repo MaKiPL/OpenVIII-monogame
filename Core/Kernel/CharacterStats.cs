@@ -89,7 +89,7 @@ namespace OpenVIII
 
             public byte Eva(int lvl, int magicID = 0, int magicCount = 0, int statBonus = 0, int spd = 0, int percentMod = 0)
             {
-                int value = (((Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.EVA] * magicCount) / 100 + spd / 4) *
+                var value = (((Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.EVA] * magicCount) / 100 + spd / 4) *
                              (percentMod + PercentMod)) / 100;
                 return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
@@ -103,7 +103,7 @@ namespace OpenVIII
 
             public byte Hit(int magicID = 0, int magicCount = 0, int weapon = 0)
             {
-                int value = Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.HIT] * magicCount + Memory.Kernel_Bin.WeaponsData[weapon].Hit;
+                var value = Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.HIT] * magicCount + Memory.Kernel_Bin.WeaponsData[weapon].Hit;
                 return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
 
@@ -118,7 +118,7 @@ namespace OpenVIII
             public ushort HP(sbyte lvl, int magicID = 0, int magicCount = 0, int statBonus = 0, int percentMod = 0)
             {
                 if (Memory.Kernel_Bin == null) return 0;
-                int value = (((Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.HP] * magicCount) + statBonus + (lvl * _hp[0]) - ((10 * lvl * lvl) / _hp[1]) + _hp[2]) * (percentMod + PercentMod)) / 100;
+                var value = (((Memory.Kernel_Bin.MagicData[magicID].JVal[Stat.HP] * magicCount) + statBonus + (lvl * _hp[0]) - ((10 * lvl * lvl) / _hp[1]) + _hp[2]) * (percentMod + PercentMod)) / 100;
                 return (ushort)MathHelper.Clamp(value, 0, KernelBin.MaxHPValue);
             }
 
@@ -154,13 +154,13 @@ namespace OpenVIII
 
             private static byte SPD_LUCK(int a, int b, int c, int d, int lvl, int magicJVal, int magicCount, int statBonus, int percentMod = 0, int unk = 0)
             {
-                int value = ((unk + (magicJVal * magicCount) / 100 + statBonus + lvl / b - lvl / d + lvl * a + c) * (percentMod + PercentMod)) / 100;
+                var value = ((unk + (magicJVal * magicCount) / 100 + statBonus + lvl / b - lvl / d + lvl * a + c) * (percentMod + PercentMod)) / 100;
                 return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }
 
             private static byte STR_VIT_MAG_SPR(int a, int b, int c, int d, int lvl, int magicJVal, int magicCount, int statBonus, int percentMod = 0, int unk = 0)
             {
-                int value = ((unk + (magicJVal * magicCount) / 100 + statBonus + ((lvl * a) / 10 + lvl / b - (lvl * lvl) / d / 2 + c) / 4) * (percentMod + PercentMod)) / 100;
+                var value = ((unk + (magicJVal * magicCount) / 100 + statBonus + ((lvl * a) / 10 + lvl / b - (lvl * lvl) / d / 2 + c) / 4) * (percentMod + PercentMod)) / 100;
 
                 return (byte)MathHelper.Clamp(value, 0, KernelBin.MaxStatValue);
             }

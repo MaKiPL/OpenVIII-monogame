@@ -33,7 +33,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Item Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            Item r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable,battle:battle);
+            var r = Create<Item>(count + 1, 3, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ITEM }, count, 198 / count + 1, damageable,battle:battle);
             if (battle)
                 r.ITEM[r.Targets_Window, 0] = IGMData.Target.Group.Create(r.Damageable);
             return r;
@@ -57,7 +57,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (InputITEM(Target_Group, ref ret))
             {
             }
@@ -86,7 +86,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs_OKAY()
         {
-            Item_In_Menu item = Contents[CURSOR_SELECT];
+            var item = Contents[CURSOR_SELECT];
             if (Battle)
             {
                 Target_Group?.SelectTargetWindows(item);
@@ -129,16 +129,16 @@ namespace OpenVIII.IGMData.Pool
             {
                 ((IGMDataItem.Box)CONTAINER).Title = Pages <= 1 ? (Icons.ID?)Icons.ID.ITEM : (Icons.ID?)(Icons.ID.ITEM_PG1 + (byte)Page);
                 byte pos = 0;
-                short skip = checked((short)(Page * Rows));
+                var skip = checked((short)(Page * Rows));
                 Enemy e = null;
                 if (Damageable?.GetEnemy(out e) ?? false)
                 {
                     sbyte addEnemyItem(Item_In_Menu itemdata)
                     {
-                        Saves.Item item = new Saves.Item (itemdata.ID, byte.MaxValue );
+                        var item = new Saves.Item (itemdata.ID, byte.MaxValue );
                         return AddItem(ref pos, ref skip, item, itemdata);
                     }
-                    HashSet<Item_In_Menu> items = new HashSet<Item_In_Menu>();
+                    var items = new HashSet<Item_In_Menu>();
                     foreach(var a in e.Abilities.Where(x=>x.Item != null))
                         items.Add(a.Item.Value);
                     foreach (var a in e.DropList.Where(x => x.ID != 0 && x.Data != null))
@@ -153,8 +153,8 @@ namespace OpenVIII.IGMData.Pool
                 else
                 for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
                     {
-                        Saves.Item item = Source.Items[i];
-                        Item_In_Menu itemdata = item.Data ?? new Item_In_Menu();
+                        var item = Source.Items[i];
+                        var itemdata = item.Data ?? new Item_In_Menu();
                         if (AddItem(ref pos, ref skip, item, itemdata) == 0) break;
                     }
                 for (; pos < Rows; pos++)
@@ -184,8 +184,8 @@ namespace OpenVIII.IGMData.Pool
             if ((Damageable?.GetEnemy(out e) ?? false))
             {
             }
-            Font.ColorID color = Font.ColorID.White;
-            byte palette = itemdata.Palette;
+            var color = Font.ColorID.White;
+            var palette = itemdata.Palette;
             if (!itemdata.ValidTarget(Battle))
             {
                 color = Font.ColorID.Grey;
@@ -246,14 +246,14 @@ namespace OpenVIII.IGMData.Pool
             //SIZE[i].Y -= 5 * row;
             SIZE[i].Inflate(-22, -8);
             //SIZE[i].Offset(0, 12 + (-8 * row));
-            int v = (int)(12 * TextScale.Y);
+            var v = (int)(12 * TextScale.Y);
             SIZE[i].Height = v;
             SIZE[i].Y = Y + 18 + row * ((Height - 16) / Rows);
         }
 
         protected override void PAGE_NEXT()
         {
-            int cnt = Pages;
+            var cnt = Pages;
             do
             {
                 base.PAGE_NEXT();
@@ -266,7 +266,7 @@ namespace OpenVIII.IGMData.Pool
 
         protected override void PAGE_PREV()
         {
-            int cnt = Pages;
+            var cnt = Pages;
             do
             {
                 base.PAGE_PREV();

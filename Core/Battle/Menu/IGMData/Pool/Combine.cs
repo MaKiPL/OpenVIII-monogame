@@ -16,7 +16,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Combine Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 2)
         {
-            Combine r = Create<Combine>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
+            var r = Create<Combine>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
             if (battle)
                 r.Target_Group = Target.Group.Create(r.Damageable);
             return r;
@@ -24,7 +24,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (InputITEM(Target_Group, ref ret))
             { }
             else
@@ -45,7 +45,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            KernelItem item = Contents[CURSOR_SELECT];
+            var item = Contents[CURSOR_SELECT];
             if (!BLANKS[CURSOR_SELECT])
             {
                 Target_Group?.SelectTargetWindows(item);
@@ -56,8 +56,8 @@ namespace OpenVIII.IGMData.Pool
 
         public override void Refresh()
         {
-            int i = 0;
-            int skip = Page * Rows;
+            var i = 0;
+            var skip = Page * Rows;
             bool AddAngelo(KernelItem item)
             {
                 if (i >= Rows) return false;
@@ -72,7 +72,7 @@ namespace OpenVIII.IGMData.Pool
                 return true;
             }
             if (Memory.Kernel_Bin.RinoaLimitBreaksPart1 != null)
-                foreach (Kernel.RinoaLimitBreaksPart1 lb in Memory.Kernel_Bin.RinoaLimitBreaksPart1)
+                foreach (var lb in Memory.Kernel_Bin.RinoaLimitBreaksPart1)
                     if (!AddAngelo(new KernelItem
                     {
                         rinoa_Limit_Breaks_Part_1 = lb,
@@ -80,13 +80,13 @@ namespace OpenVIII.IGMData.Pool
                         Memory.Kernel_Bin.RinoaLimitBreaksPart2.First(x => x.Angelo == lb.Angelo) : null
                     })) break;
             if (Memory.Kernel_Bin.RinoaLimitBreaksPart2 != null)
-                foreach (Kernel.RinoaLimitBreaksPart2 lb in Memory.Kernel_Bin.RinoaLimitBreaksPart2)
+                foreach (var lb in Memory.Kernel_Bin.RinoaLimitBreaksPart2)
                     if (lb.Angelo != Angelo.Angel_Wing && !AddAngelo(
                         new KernelItem { rinoa_Limit_Breaks_Part_2 = lb })) break;
-            IEnumerable<Kernel.NonJunctionableGFsAttacksData> non_Junctionable_GFs_Attacks_Datas =
+            var non_Junctionable_GFs_Attacks_Datas =
                 Memory.Kernel_Bin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
             if (non_Junctionable_GFs_Attacks_Datas != null)
-                foreach (Kernel.NonJunctionableGFsAttacksData lb in non_Junctionable_GFs_Attacks_Datas)
+                foreach (var lb in non_Junctionable_GFs_Attacks_Datas)
                     if (!AddAngelo(
                         new KernelItem { non_Junctionable_GFs_Attacks_Data = lb })) break;
             DefaultPages = ((Memory.Kernel_Bin.RinoaLimitBreaksPart1?.Count ?? 0) +
@@ -110,7 +110,7 @@ namespace OpenVIII.IGMData.Pool
         protected override void Init()
         {
             base.Init();
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
                 ITEM[i, 0] = new IGMDataItem.Text
                 {

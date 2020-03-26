@@ -67,9 +67,9 @@ namespace OpenVIII.Battle
 
             Memory.graphics.GraphicsDevice.SetVertexBuffer(VertexBuffer);
             Memory.graphics.GraphicsDevice.Indices = Indices;
-            RasterizerState tmp = Memory.graphics.GraphicsDevice.RasterizerState;
+            var tmp = Memory.graphics.GraphicsDevice.RasterizerState;
             Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 Memory.graphics.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Indices.IndexCount);
@@ -83,16 +83,16 @@ namespace OpenVIII.Battle
         {
             if (color == null || color.Length == 0)
             {
-                Color c = Color.Yellow;
+                var c = Color.Yellow;
                 color = new Color[] { c, c, c, c, c };
             }
             else if (color.Length < uniqueVertices.Length)
             {
-                Color c = color[0];
+                var c = color[0];
                 color = new Color[] { c, c, c, c, c };
             }
             //techinally there are 5 unique. but everything is triangles.
-            float bottom = height < 0 ? -height : 0f;
+            var bottom = height < 0 ? -height : 0f;
             if (height < 0) height = 0;
             uniqueVertices[0].Position = new Vector3(0f, height, 0f);
             uniqueVertices[0].Color = color[0];
@@ -135,8 +135,8 @@ namespace OpenVIII.Battle
             // Update Fade
             alpha = fader.Update();
             // Update Rotation
-            Matrix rotation = Matrix.CreateRotationY(radians.Update());
-            for (int i = 0; i < tempVertices.Length; i++)
+            var rotation = Matrix.CreateRotationY(radians.Update());
+            for (var i = 0; i < tempVertices.Length; i++)
             {
                 tempVertices[i].Position = Vector3.Transform(Vector3.Transform(uniqueVertices[i].Position, rotation), offset);
             }
@@ -145,7 +145,7 @@ namespace OpenVIII.Battle
 
         private void GenerateVertices()
         {
-            short[] indices = new short[]
+            var indices = new short[]
             {
                 //side 1
                 0,

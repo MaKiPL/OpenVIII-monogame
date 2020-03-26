@@ -12,7 +12,7 @@ namespace OpenVIII.Fields.Scripts
             if (!sw.HasWhiteLine)
                 sw.AppendLine();
 
-            foreach (String str in SplitMonologue(message))
+            foreach (var str in SplitMonologue(message))
             {
                 if (String.IsNullOrEmpty(str))
                     continue;
@@ -39,10 +39,10 @@ namespace OpenVIII.Fields.Scripts
             //   Answer 3
             //☜ Answer 4
 
-            Int32 to = t.Int32();
-            Int32 bo = b.Int32();
-            Int32 be = -1;
-            Int32 ca = -1;
+            var to = t.Int32();
+            var bo = b.Int32();
+            var be = -1;
+            var ca = -1;
 
             if (begin is IConstExpression beg)
                 be = beg.Int32();
@@ -50,9 +50,9 @@ namespace OpenVIII.Fields.Scripts
             if (cancel is IConstExpression can)
                 ca = can.Int32();
 
-            String[] lines = SplitMonologue(message);
+            var lines = SplitMonologue(message);
 
-            for (Int32 i = 0; i < lines.Length; i++)
+            for (var i = 0; i < lines.Length; i++)
             {
                 sw.Append("//");
                 if (i >= to && i <= bo)
@@ -202,7 +202,7 @@ namespace OpenVIII.Fields.Scripts
 
             public MethodFormatter Method(String methodName)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 sw.Append(".");
                 sw.Append(methodName);
                 sw.Append("(");
@@ -229,7 +229,7 @@ namespace OpenVIII.Fields.Scripts
 
             public MethodFormatter Method(String methodName)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 sw.Append(".");
                 sw.Append(methodName);
                 sw.Append("(");
@@ -238,7 +238,7 @@ namespace OpenVIII.Fields.Scripts
 
             public PropertyFormatter Assign(Boolean value)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 sw.Append(" = ");
                 sw.Append(value ? "true" : "false");
                 sw.Append(";");
@@ -247,7 +247,7 @@ namespace OpenVIII.Fields.Scripts
 
             public PropertyFormatter Assign(Int64 value)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 sw.Append(" = ");
                 sw.Append(value.ToString(CultureInfo.InvariantCulture));
                 sw.Append(";");
@@ -256,7 +256,7 @@ namespace OpenVIII.Fields.Scripts
 
             public PropertyFormatter Assign(IJsmExpression assignExpression)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 sw.Append(" = ");
                 assignExpression.Format(sw, Formatter.FormatterContext, Formatter.ExecutionContext);
                 sw.Append(";");
@@ -306,7 +306,7 @@ namespace OpenVIII.Fields.Scripts
 
             public MethodFormatter Argument(String argumentName, IJsmExpression argumentExpression)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 
                 if (_hasArguments)
                     sw.Append(", ");
@@ -325,7 +325,7 @@ namespace OpenVIII.Fields.Scripts
 
             public MethodFormatter Argument<T>(String argumentName, IJsmExpression argumentExpression)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 
                 if (_hasArguments)
                     sw.Append(", ");
@@ -348,7 +348,7 @@ namespace OpenVIII.Fields.Scripts
 
             public MethodFormatter Argument(String argumentValue)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 
                 if (_hasArguments)
                     sw.Append(", ");
@@ -361,7 +361,7 @@ namespace OpenVIII.Fields.Scripts
 
             public MethodFormatter Argument(String argumentName, String argumentValue)
             {
-                ScriptWriter sw = Formatter.Sw;
+                var sw = Formatter.Sw;
                 
                 if (_hasArguments)
                     sw.Append(", ");

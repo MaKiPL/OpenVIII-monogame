@@ -12,7 +12,7 @@
 
             public static new IGMData_GF_Group Create(params Menu_Base[] d)
             {
-                IGMData_GF_Group r = Create<IGMData_GF_Group>(d);
+                var r = Create<IGMData_GF_Group>(d);
                 r.Hide();
                 return r;
             }

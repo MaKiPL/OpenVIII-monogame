@@ -42,7 +42,7 @@ namespace OpenVIII
 
             public override void BackupSetting()
             {
-                if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Damageable.GetCharacterData(out var c))
                     SetPrevSetting((Saves.CharacterData)c.Clone());
             }
 
@@ -84,7 +84,7 @@ namespace OpenVIII
                 skipdata = true;
                 base.Inputs_Menu();
                 skipdata = false;
-                if (Contents[CURSOR_SELECT] == Stat.None && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (Contents[CURSOR_SELECT] == Stat.None && Damageable.GetCharacterData(out var c))
                 {
                     c.StatJ[Contents[CURSOR_SELECT]] = 0;
                     IGM_Junction.Refresh();
@@ -152,18 +152,18 @@ namespace OpenVIII
                                unlocked.Contains(Abilities.ElDefJ2) ||
                                unlocked.Contains(Abilities.ElDefJ4) ? 2 : 7);
                     BLANKS[5] = true;
-                    foreach (Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
+                    foreach (var stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                     {
-                        if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                        if (Damageable.GetCharacterData(out var c))
                         {
-                            bool isUnlocked = unlocked.Contains(Kernel.KernelBin.Stat2Ability[stat]);
-                            int pos = (int)stat;
+                            var isUnlocked = unlocked.Contains(Kernel.KernelBin.Stat2Ability[stat]);
+                            var pos = (int)stat;
                             if (pos >= 5) pos++;
                             Contents[pos] = stat;
-                            FF8String name = Memory.Kernel_Bin.MagicData[c.StatJ[stat]].Name;
+                            var name = Memory.Kernel_Bin.MagicData[c.StatJ[stat]].Name;
                             if (name == null || name.Length == 0) name = Strings.Name._;
-                            ushort currentValue = Damageable.TotalStat(stat);
-                            ushort previousValue = GetPrevSetting()?.TotalStat(stat) ?? currentValue;
+                            var currentValue = Damageable.TotalStat(stat);
+                            var previousValue = GetPrevSetting()?.TotalStat(stat) ?? currentValue;
                             ((IGMDataItem.Text)ITEM[pos, 1]).Data = name;
                             ((IGMDataItem.Integer)ITEM[pos, 2]).Data = currentValue;
 
@@ -200,8 +200,8 @@ namespace OpenVIII
             public override void UndoChange()
             {
                 //override this use it to take value of prevSetting and restore the setting unless default method works
-                if (GetPrevSetting() == null || !Damageable.GetCharacterData(out Saves.CharacterData c) ||
-                    !GetPrevSetting().GetCharacterData(out Saves.CharacterData prev)) return;
+                if (GetPrevSetting() == null || !Damageable.GetCharacterData(out var c) ||
+                    !GetPrevSetting().GetCharacterData(out var prev)) return;
                 c.Magics = prev.CloneMagic();
                 c.StatJ = prev.CloneMagicJunction();
             }
@@ -230,9 +230,9 @@ namespace OpenVIII
                 ITEM[5, 2] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Attack, Pos = new Rectangle(SIZE[5].X + 280, SIZE[5].Y, 0, 0) };
                 ITEM[5, 3] = new IGMDataItem.Icon { Data = Icons.ID.Icon_Elemental_Defense, Pos = new Rectangle(SIZE[5].X + 320, SIZE[5].Y, 0, 0) };
 
-                foreach (Stat stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
+                foreach (var stat in Stat2Icon.Keys.OrderBy(o => (byte)o))
                 {
-                    int pos = (int)stat;
+                    var pos = (int)stat;
                     if (pos >= 5) pos++;
                     ITEM[pos, 0] = new IGMDataItem.Icon { Data = Stat2Icon[stat], Pos = new Rectangle(SIZE[pos].X, SIZE[pos].Y, 0, 0) };
                     ITEM[pos, 1] = new IGMDataItem.Text { Pos = new Rectangle(SIZE[pos].X + 80, SIZE[pos].Y, 0, 0) };

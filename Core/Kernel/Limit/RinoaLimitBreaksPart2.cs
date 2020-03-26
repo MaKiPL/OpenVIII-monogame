@@ -53,7 +53,7 @@ namespace OpenVIII
                         Angelo = Angelo.None;
                         break;
                 }
-                ushort offset = br.ReadUInt16();
+                var offset = br.ReadUInt16();
                 Name = new FF8StringReference(Memory.Strings[Strings.FileID.Kernel].GetArchive(), Memory.Strings[Strings.FileID.Kernel].GetFileNames()[0],
                     Memory.Strings[Strings.FileID.Kernel].GetFiles().SubPositions[(int)((Strings.Kernel)Memory.Strings[Strings.FileID.Kernel]).StringLocations[ID].Item1] + offset, settings: (FF8StringReference.Settings.Namedic | FF8StringReference.Settings.MultiCharByte));
                 //0x0000	2 bytes Offset to name

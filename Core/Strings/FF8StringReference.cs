@@ -172,14 +172,14 @@ namespace OpenVIII
         private void InsertNamedic()
         {
             if (Length <= 0) return;
-            int i = 0;
+            var i = 0;
             do
             {
                 i = Array.FindIndex(base.Value, i, Length - i, x => x == 0x0E);
                 if (i < 0) continue;
-                byte id = (byte)(value[i + 1] - 0x20);
+                var id = (byte)(value[i + 1] - 0x20);
                 byte[] newData = Memory.Strings.Read(Strings.FileID.Namedic, 0, id);
-                byte[] end = value.Skip(2 + i).ToArray();
+                var end = value.Skip(2 + i).ToArray();
 
                 Array.Resize(ref value, Length + newData.Length - 2);
                 Array.Copy(newData, 0, value, i, newData.Length);
@@ -195,20 +195,20 @@ namespace OpenVIII
                 if (base.Length == 0 && !_hadRead)
                 {
                     _hadRead = true;
-                    ArchiveBase aw = ArchiveWorker.Load(Archive, true);
-                    using (BinaryReader br = new BinaryReader(new MemoryStream(aw.GetBinaryFile(Filename, true))))
+                    var aw = ArchiveWorker.Load(Archive, true);
+                    using (var br = new BinaryReader(new MemoryStream(aw.GetBinaryFile(Filename, true))))
                     {
                         br.BaseStream.Seek(Offset, SeekOrigin.Begin);
                         if (ReadLength > 0 && (StringSettings & Settings.MultiCharByte) == 0) // ReadLength set, read that. unless contains multi-char bytes
                             Value = br.ReadBytes(ReadLength);
                         else // Length unknown read to null
                         {
-                            using (BinaryWriter bw = new BinaryWriter(new MemoryStream()))
+                            using (var bw = new BinaryWriter(new MemoryStream()))
                             {
-                                for (int i = 0; i < br.BaseStream.Length; i++)
+                                for (var i = 0; i < br.BaseStream.Length; i++)
                                 {
                                     if (ReadLength > 0 && i > ReadLength) break;
-                                    byte b = br.ReadByte();
+                                    var b = br.ReadByte();
                                     if (i == 0 || b != 0)
                                     {
                                         if (b > 0xE1 && (StringSettings & Settings.MultiCharByte) != 0 && ByteToString.ContainsKey(b))

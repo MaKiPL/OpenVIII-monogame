@@ -22,13 +22,13 @@ namespace OpenVIII.AV
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            string RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW", "GLOBAL", "Music"));
+            var RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW", "GLOBAL", "Music"));
             // From what I gather the OGG files and the sgt files have the same numerical prefix. I
             // might try to add the functionality to the debug screen monday.
 
-            string dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
-            string music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
-            string music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
+            var dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
+            var music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
+            var music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
 
             // goal of dicmusic is to be able to select a track by prefix. it adds an list of files
             // with the same prefix. so you can later on switch out which one you want.
@@ -40,12 +40,12 @@ namespace OpenVIII.AV
             {
                 Memory.dicMusic.Add(eyesOnMePrefix, Memory.dicMusic[altEyesOnMePrefix]);
             }
-            ArchiveBase a = ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
-            string[] list = a?.GetListOfFiles();
+            var a = ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
+            var list = a?.GetListOfFiles();
             if (list != null && list.Length > 0)
             {
                 ZZZ = true;
-                foreach (string m in list.Where(x => ext.Any(y => x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
+                foreach (var m in list.Where(x => ext.Any(y => x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
                 {
                     AddMusic(m);
                 }
@@ -54,7 +54,7 @@ namespace OpenVIII.AV
             {
                 if (!string.IsNullOrWhiteSpace(p) && Directory.Exists(p))
                 {
-                    foreach (string m in Directory.GetFiles(p).Where(x => ext.Any(y => x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
+                    foreach (var m in Directory.GetFiles(p).Where(x => ext.Any(y => x.EndsWith(y, StringComparison.OrdinalIgnoreCase))))
                     {
                         AddMusic(m);
                     }
@@ -62,7 +62,7 @@ namespace OpenVIII.AV
             }
             void AddMusic(string m)
             {
-                if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out ushort key))
+                if (ushort.TryParse(Path.GetFileName(m).Substring(0, 3), out var key))
                 {
                     //mismatched prefix's go here
                     if ((MusicId)key == altLoserPrefix)
@@ -173,7 +173,7 @@ namespace OpenVIII.AV
             Memory.MusicIndex = index ?? Memory.MusicIndex;
 
             if (musicplaying && lastplayed == Memory.MusicIndex) return;
-            string ext = "";
+            var ext = "";
 
             if (Memory.dicMusic.Count > 0 && Memory.dicMusic[(MusicId)Memory.MusicIndex].Count > 0)
             {
@@ -182,7 +182,7 @@ namespace OpenVIII.AV
             else
                 return;
 
-            string filename = Memory.dicMusic[(MusicId)Memory.MusicIndex][0];
+            var filename = Memory.dicMusic[(MusicId)Memory.MusicIndex][0];
 
             Stop();
 

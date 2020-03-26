@@ -130,7 +130,7 @@ namespace OpenVIII
         {
             get
             {
-                BattleMenu bm = GetCurrentBattleMenu();
+                var bm = GetCurrentBattleMenu();
                 if (bm?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false)
                 {
                     return bm.PartyPos;
@@ -173,7 +173,7 @@ namespace OpenVIII
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             InputMouse.Mode = MouseLockMode.Screen;
             Memory.IsMouseVisible = true;
             if (InputFunctions?.ContainsKey((Mode)GetMode()) ?? false)
@@ -246,7 +246,7 @@ namespace OpenVIII
             if (Enemy.Party != null && Enemy.Party.Count > 0)
             {
                 byte i = 0;
-                foreach (Enemy e in Enemy.Party)
+                foreach (var e in Enemy.Party)
                 {
                     Data[SectionName.Enemy1 + i].SetDamageable(e);
                     Data[SectionName.Enemy1 + i].Show();
@@ -266,10 +266,10 @@ namespace OpenVIII
             if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Memory.State.Party != null)
             {
                 byte i = 0;
-                IEnumerable<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank));
-                int count = party.Count();
+                var party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank));
+                var count = party.Count();
 
-                foreach (KeyValuePair<int, Characters> m in party)
+                foreach (var m in party)
                 {
                     Data[SectionName.Party1 + i].SetDamageable(Memory.State[Memory.State.PartyData[m.Key]]);
                     Data[SectionName.Party1 + i].Show();
@@ -307,10 +307,10 @@ namespace OpenVIII
 
         public override bool Update()
         {
-            bool ret = false;
+            var ret = false;
             if (GetMode() != null)
             {
-                if (UpdateFunctions != null && UpdateFunctions.TryGetValue((Mode)GetMode(), out Func<bool> u))
+                if (UpdateFunctions != null && UpdateFunctions.TryGetValue((Mode)GetMode(), out var u))
                 {
                     ret = u();
                 }
@@ -388,12 +388,12 @@ namespace OpenVIII
 
         private bool InputBattleFunction()
         {
-            bool ret = false;
+            var ret = false;
             if (BoolRenzokeken())
             {
                 return GetOneRenzokeken().Inputs();
             }
-            foreach (BattleMenu m in GetBattleMenus().Where(m => m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
+            foreach (var m in GetBattleMenus().Where(m => m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
             {
                 ret = m.Inputs() || ret;
                 if (ret) return ret;
@@ -402,7 +402,7 @@ namespace OpenVIII
             {
                 if (GetCurrentBattleMenu().Damageable?.Switch() ?? true)
                 {
-                    int cnt = 0;
+                    var cnt = 0;
                     do
                     {
                         if (++Player > (int)SectionName.Enemy8) Player = 0;
@@ -453,16 +453,16 @@ namespace OpenVIII
 
         private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
         {
-            int exp = 0;
+            var exp = 0;
             uint ap = 0;
-            ConcurrentDictionary<byte, byte> items = new ConcurrentDictionary<byte, byte>();
-            ConcurrentDictionary<Cards.ID, byte> cards = new ConcurrentDictionary<Cards.ID, byte>();
-            foreach (Enemy e in Enemy.Party)
+            var items = new ConcurrentDictionary<byte, byte>();
+            var cards = new ConcurrentDictionary<Cards.ID, byte>();
+            foreach (var e in Enemy.Party)
             {
                 exp += e.EXP;
                 ap += e.AP;
-                Saves.Item drop = e.Drop(Memory.State.PartyHasAbility(Kernel.Abilities.RareItem));
-                Cards.ID carddrop = e.CardDrop();
+                var drop = e.Drop(Memory.State.PartyHasAbility(Kernel.Abilities.RareItem));
+                var carddrop = e.CardDrop();
                 if (drop.QTY > 0 && drop.ID > 0)
                     if (!items.TryAdd(drop.ID, drop.QTY))
                         items[drop.ID] += drop.QTY;
@@ -477,19 +477,19 @@ namespace OpenVIII
 
         private bool UpdateBattleFunction()
         {
-            bool ret = false;
-            List<BattleMenu> bml = GetBattleMenus().ToList();
+            var ret = false;
+            var bml = GetBattleMenus().ToList();
             if (bml.Count == 0) return false;// issue here.
-            foreach (BattleMenu m in bml)
+            foreach (var m in bml)
             {
                 ret = m.Update() || ret;
             }
             if (!(GetCurrentBattleMenu()?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false))
             {
-                int cnt = bml.Count;
+                var cnt = bml.Count;
                 if (Player + 1 == cnt)
                     Player = 0;
-                for (byte i = Player; cnt > 0; cnt--)
+                for (var i = Player; cnt > 0; cnt--)
                 {
                     if (i < bml.Count && bml[i].Damageable.StartTurn())
                     {

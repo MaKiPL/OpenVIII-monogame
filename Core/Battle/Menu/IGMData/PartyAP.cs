@@ -71,7 +71,7 @@ namespace OpenVIII.IGMData
 
         public static PartyAP Create(Rectangle pos)
         {
-            PartyAP r = new PartyAP();
+            var r = new PartyAP();
             r.Init(1, 7, new IGMDataItem.Empty { Pos = pos }, 1, 1);
             return r;
         }
@@ -118,7 +118,7 @@ namespace OpenVIII.IGMData
 
         public void Learn()
         {
-            if (Abilities.TryDequeue(out KeyValuePair<GFs, Kernel.Abilities> Ability))
+            if (Abilities.TryDequeue(out var Ability))
             {
                 GF = Ability.Key;
                 ((IGMData.Dialog.Small)ITEM[0, 3]).Data =

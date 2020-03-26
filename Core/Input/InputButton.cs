@@ -22,9 +22,9 @@ namespace OpenVIII
 
         public InputButton Clone()
         {
-            InputButton i = (InputButton)MemberwiseClone();
+            var i = (InputButton)MemberwiseClone();
             i.Combo = new List<InputButton>(Combo.Count);
-            foreach (InputButton item in Combo)
+            foreach (var item in Combo)
             {
                 i.Combo.Add(item.Clone());
             }
@@ -33,7 +33,7 @@ namespace OpenVIII
 
         public override bool Equals(object obj)
         {
-            InputButton o = (InputButton)obj;
+            var o = (InputButton)obj;
             if (o.Key == Key &&
                 o.MouseButton == MouseButton &&
                 o.GamePadButton == GamePadButton &&
@@ -45,7 +45,7 @@ namespace OpenVIII
 
         public override int GetHashCode()
         {
-            int hashCode = 37823841;
+            var hashCode = 37823841;
             hashCode = hashCode * -1521134295 + EqualityComparer<List<InputButton>>.Default.GetHashCode(Combo);
             hashCode = hashCode * -1521134295 + GamePadButton.GetHashCode();
             hashCode = hashCode * -1521134295 + Key.GetHashCode();
@@ -54,7 +54,7 @@ namespace OpenVIII
         }
         public override string ToString()
         {
-            string s = "";
+            var s = "";
             if (Key != Keys.None)
                 s = Key.ToString();
             if (GamePadButton != GamePadButtons.None)
@@ -64,7 +64,7 @@ namespace OpenVIII
 
             if (Combo != null)
             {
-                foreach (InputButton item in Combo)
+                foreach (var item in Combo)
                 {
                     s = $"{s}+{item}";
                 }

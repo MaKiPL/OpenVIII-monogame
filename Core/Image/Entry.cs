@@ -132,7 +132,7 @@ namespace OpenVIII
         public void SetTrim_1stPass(Rectangle value, bool skipoffset = false)
         {
             Trimmed = true;
-            Vector2 newLoc = value.Location.ToVector2();
+            var newLoc = value.Location.ToVector2();
             //Offset may need to change.
             //I had to preserve a good offset for the D-pad to work.
             //So i was getting the difference in the two locations and adding to the offset.
@@ -160,8 +160,8 @@ namespace OpenVIII
         public override string ToString()
         {        //public override string ToString() => $"{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
 
-            string prefix = "";
-            string suffix = "";
+            var prefix = "";
+            var suffix = "";
             if (ID != null)
                 prefix = ID.ToString();
             if (NumberValue.HasValue)

@@ -45,7 +45,7 @@ namespace OpenVIII.Fields.Scripts
         {
             if (_newLine)
             {
-                for (Int32 i = 0; i < Indent; i++)
+                for (var i = 0; i < Indent; i++)
                     _sb.Append("    ");
 
                 _newLine = false;
@@ -55,7 +55,7 @@ namespace OpenVIII.Fields.Scripts
 
         public String Release()
         {
-            String result = _sb.ToString();
+            var result = _sb.ToString();
 
             _sb.Clear();
             Indent = 0;

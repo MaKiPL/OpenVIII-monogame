@@ -35,8 +35,8 @@ namespace OpenVIII.Fields
 
         public static Triggers Read(BinaryReader br)
         {
-            Triggers t = new Triggers();
-            foreach (int i in Enumerable.Range(0, t.triggers.Capacity))
+            var t = new Triggers();
+            foreach (var i in Enumerable.Range(0, t.triggers.Capacity))
                 t.triggers.Add(Trigger.Read(br));
             return t;
         }

@@ -23,7 +23,7 @@ namespace OpenVIII.IGMData
 
         public static ThreePieceHeader Create(FF8String topleft, FF8String topright, FF8String help, Rectangle pos)
         {
-            ThreePieceHeader r = Create<ThreePieceHeader>(3, 1, new IGMDataItem.Empty { Pos = pos });
+            var r = Create<ThreePieceHeader>(3, 1, new IGMDataItem.Empty { Pos = pos });
             r.TOPLeft.Data = topleft;
             r.TOPRight.Data = topright;
             r.HELP.Data = help;
@@ -77,7 +77,7 @@ namespace OpenVIII.IGMData
 
         public override bool Update()
         {
-            bool r = base.Update();
+            var r = base.Update();
             r = r || UpdateSize();
             return r;
         }
@@ -99,10 +99,10 @@ namespace OpenVIII.IGMData
                 CONTAINER.X = ScreenTopLeft.X;
                 CONTAINER.Width = ScreenTopRight.X - ScreenTopLeft.X;
                 InitSize(true);
-                int space = IGM_LGSG.space;
-                int widthright = (int)(base.Width * 0.18f) - space;
+                var space = IGM_LGSG.space;
+                var widthright = (int)(base.Width * 0.18f) - space;
                 widthright = widthright - widthright % 4;
-                int widthleft = Width - widthright - space;
+                var widthleft = Width - widthright - space;
                 TOPRight.Pos = new Rectangle(widthleft + space + X, 0, widthright, (base.Height - space) / 2);
                 TOPLeft.Pos = new Rectangle(X, 0, widthleft, TOPRight.Height);
                 HELP.Pos = new Rectangle((int)(Width * 0.03f) + X, TOPLeft.Height + space, (int)(Width * 0.94f), TOPLeft.Height);

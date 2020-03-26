@@ -63,7 +63,7 @@ namespace OpenVIII
 
             public TripleTriad Clone()
             {
-                TripleTriad tt = (TripleTriad)MemberwiseClone();
+                var tt = (TripleTriad)MemberwiseClone();
                 tt.cards = new OrderedDictionary<Cards.ID, TTCardInfo>(cards.Count);
                 foreach (KeyValuePair<Cards.ID, TTCardInfo> i in cards)
                     tt.cards.TryAdd(i.Key, i.Value.Clone());

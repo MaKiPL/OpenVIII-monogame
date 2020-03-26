@@ -37,7 +37,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Int32 frameNumber = _frameNumber.Int32(services);
+            var frameNumber = _frameNumber.Int32(services);
             return ServiceId.Interaction[services].Wait(frameNumber);
         }
     }

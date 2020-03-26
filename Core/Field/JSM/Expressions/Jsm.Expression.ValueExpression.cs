@@ -70,7 +70,7 @@ namespace OpenVIII.Fields.Scripts
 
                 public override String ToString()
                 {
-                    ScriptWriter sw = new ScriptWriter(capacity: 16);
+                    var sw = new ScriptWriter(capacity: 16);
                     Format(sw, DummyFormatterContext.Instance, StatelessServices.Instance);
                     return sw.Release();
                 }

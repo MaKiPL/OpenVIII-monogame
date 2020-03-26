@@ -22,11 +22,11 @@ namespace OpenVIII
 
             private Files()
             {
-                ArchiveZzz a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
+                var a = (ArchiveZzz)ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
                 List<string> files;
                 if (a != null)
                 {
-                    string[] listOfFiles = a.GetListOfFiles();
+                    var listOfFiles = a.GetListOfFiles();
                     files = (from file in listOfFiles
                              from extension in Extensions
                              where file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)
@@ -37,7 +37,7 @@ namespace OpenVIII
                 else
                 {
                     //Gather all movie files.
-                    Directories d = Directories.Instance;
+                    var d = Directories.Instance;
                     files = (from directory in d
                              where Directory.Exists(directory)
                              from file in Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
@@ -57,7 +57,7 @@ namespace OpenVIII
                  orderby s2.Key descending
                  select s2.Key).ForEach(key => files.RemoveAt(key));
 
-                foreach (string s in files)
+                foreach (var s in files)
                     Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Files)} :: {s} ");
                 _files = files.AsReadOnly();
             }

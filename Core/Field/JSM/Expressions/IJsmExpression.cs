@@ -37,7 +37,7 @@ namespace OpenVIII.Fields.Scripts
 
         public static Boolean Boolean(this IJsmExpression expression, IServices services)
         {
-            Int32 value = Int32(expression, services);
+            var value = Int32(expression, services);
             if (value == 0)
                 return false;
             if (value == 1)
@@ -86,7 +86,7 @@ namespace OpenVIII.Fields.Scripts
 
         public static ILogicalExpression LogicalEvaluate(this ILogicalExpression expression, IServices services)
         {
-            IJsmExpression jsm = expression.Evaluate(services);
+            var jsm = expression.Evaluate(services);
             return (ILogicalExpression)jsm;
         }
 

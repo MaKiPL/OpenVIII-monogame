@@ -6,7 +6,7 @@ namespace OpenVIII.MonoGame
     {
         public static void Initialize()
         {
-            foreach (IMonoGameHook hook in EnumerateHooks())
+            foreach (var hook in EnumerateHooks())
                 hook.Initialize();
         }
 

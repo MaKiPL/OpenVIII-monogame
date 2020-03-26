@@ -23,9 +23,9 @@ namespace OpenVIII.Fields.Scripts
                     {
                         while (CanExecute(_seg.Jpf, services))
                         {
-                            IEnumerable<IJsmInstruction> executable = _seg.GetBodyInstructions();
-                            IScriptExecuter executer = ExecutableSegment.GetExecuter(executable);
-                            foreach (IAwaitable result in executer.Execute(services))
+                            var executable = _seg.GetBodyInstructions();
+                            var executer = ExecutableSegment.GetExecuter(executable);
+                            foreach (var result in executer.Execute(services))
                                 yield return result;
 
                             // Skip one iteration to give control to other operations.

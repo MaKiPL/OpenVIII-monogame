@@ -69,7 +69,7 @@ namespace OpenVIII.Battle
 
         public static Encounter Read(BinaryReader br, int id)
         {
-            Encounter e = new Encounter
+            var e = new Encounter
             {
                 Scenario = br.ReadByte(),
                 BattleFlags = (EncounterFlag)br.ReadByte(),
@@ -88,8 +88,8 @@ namespace OpenVIII.Battle
                 ID = id
             };
 
-            Vector3 total = Vector3.Zero;
-            List<Vector3> enabledCoordinates = e.EnemyCoordinates.Select((x, i) => new {i, x})
+            var total = Vector3.Zero;
+            var enabledCoordinates = e.EnemyCoordinates.Select((x, i) => new {i, x})
                 .Where(x => e.EnabledEnemy[7 - x.i]).Select(x => new Vector3(x.x.X, x.x.Y, x.x.Z)).ToList();
             if (enabledCoordinates.Count <= 0) return e;
             {

@@ -22,11 +22,11 @@ namespace OpenVIII.Fields
 
             public static GameObjects FromReader(StreamReader reader)
             {
-                GameObjects result = new GameObjects();
+                var result = new GameObjects();
 
                 while (!reader.EndOfStream)
                 {
-                    String str = reader.ReadLine();
+                    var str = reader.ReadLine();
                     if (String.IsNullOrWhiteSpace(str))
                         continue;
 
@@ -38,7 +38,7 @@ namespace OpenVIII.Fields
 
             private static void Parse(String str, GameObjects result)
             {
-                String[] pair = str.Split(new[] {"::"}, StringSplitOptions.None);
+                var pair = str.Split(new[] {"::"}, StringSplitOptions.None);
                 if (pair.Length == 1)
                     result.AddObject(pair[0].Trim());
                 else if (pair.Length == 2)

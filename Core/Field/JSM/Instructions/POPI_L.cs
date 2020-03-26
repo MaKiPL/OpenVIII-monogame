@@ -44,7 +44,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Int32 value = _value.Int32(services);
+            var value = _value.Int32(services);
             ServiceId.Interaction[services][_index] = value;
             return DummyAwaitable.Instance;
         }

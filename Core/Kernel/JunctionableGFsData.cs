@@ -47,9 +47,9 @@ namespace OpenVIII
                 Ability = new OrderedDictionary<Abilities, Unlocker>(21);
                 for (i = 0; i < 21; i++)
                 {
-                    Unlocker val = (Unlocker)br.ReadByte();
+                    var val = (Unlocker)br.ReadByte();
                     br.BaseStream.Seek(1, SeekOrigin.Current);
-                    Abilities key = (Abilities)br.ReadUInt16();
+                    var key = (Abilities)br.ReadUInt16();
                     Ability.Add(key, val);
                 }
                 //doomtrain shows this is a decimal number. i got formula from code.

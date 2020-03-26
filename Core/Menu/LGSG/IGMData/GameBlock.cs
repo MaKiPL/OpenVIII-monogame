@@ -58,7 +58,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    Vector2 p = ScreenTopLeft.ToVector2();
+                    var p = ScreenTopLeft.ToVector2();
                     p.X -= Width;
                     return p;
                 }
@@ -83,7 +83,7 @@ namespace OpenVIII
 
             public static GameBlock Create(Rectangle pos)
             {
-                GameBlock r = Create<GameBlock>(1, 16, new IGMDataItem.Box { Pos = pos });
+                var r = Create<GameBlock>(1, 16, new IGMDataItem.Box { Pos = pos });
                 return r;
             }
 
@@ -99,7 +99,7 @@ namespace OpenVIII
                     Face1.Data = Data.Party[0].ToFacesID();
                     Face2.Data = Data.Party[1].ToFacesID();
                     Face3.Data = Data.Party[2].ToFacesID();
-                    Saves.CharacterData characterData = Data[Data.Party.First(x => !x.Equals(Characters.Blank))];
+                    var characterData = Data[Data.Party.First(x => !x.Equals(Characters.Blank))];
                     Name.Data = characterData.Name;
                     LV_Num.Data = characterData.Level;
                     Disc_Num.Data = checked((int)Data.CurrentDisk);
@@ -110,12 +110,12 @@ namespace OpenVIII
                         Mins.Data = 99;
                     Gil.Data = checked((int)Data.AmountOfGil);
                     Location.Data = Memory.Strings.Read(Strings.FileID.AreaNames, 0, Data.LocationID);
-                    foreach (Menu_Base i in ITEM)
+                    foreach (var i in ITEM)
                         i?.Show();
                 }
                 else
                 {
-                    foreach (Menu_Base i in ITEM)
+                    foreach (var i in ITEM)
                         i?.Hide();
                 }
             }
@@ -154,13 +154,13 @@ namespace OpenVIII
                 Face1 = new IGMDataItem.Face { Pos = new Rectangle(BlockNumber.X + 44, SIZE[0].Y, 124, SIZE[0].Height), Border = true };
                 Face2 = new IGMDataItem.Face { Pos = new Rectangle(Face1.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };
                 Face3 = new IGMDataItem.Face { Pos = new Rectangle(Face2.X + Face1.Width, SIZE[0].Y, Face1.Width, SIZE[0].Height), Border = true };
-                int Face3offsetx = Face3.X + Face1.Width + 4;
+                var Face3offsetx = Face3.X + Face1.Width + 4;
                 Name = new IGMDataItem.Text { Pos = new Rectangle(Face3offsetx, SIZE[0].Y, 0, 0) };
                 LV = new IGMDataItem.Text { Data = Strings.Name.LV, Pos = new Rectangle(Name.X, SIZE[0].Y + 64, 0, 0) };
                 LV_Num = new IGMDataItem.Integer { Pos = new Rectangle(Name.X + 80, LV.Y, 0, 0), NumType = Icons.NumType.SysFntBig };
                 Disc = new IGMDataItem.Icon { Data = Icons.ID.DISC, Pos = new Rectangle(LV_Num.X + 100, LV.Y, 0, 0) };
                 Disc_Num = new IGMDataItem.Integer { Pos = new Rectangle(Disc.X + 80, LV.Y, 0, 0) };
-                int col3x = SIZE[0].X + SIZE[0].Width - 180;
+                var col3x = SIZE[0].X + SIZE[0].Width - 180;
                 Play = new IGMDataItem.Icon { Data = Icons.ID.PLAY, Pos = new Rectangle(col3x, SIZE[0].Y, 0, 0), Palette = 13 };
                 Hours = new IGMDataItem.Integer { Pos = new Rectangle(Play.X + 80, SIZE[0].Y, 0, 0), Spaces = 2 };
                 Colon = new IGMDataItem.Icon { Data = Icons.ID.Colon, Pos = new Rectangle(Hours.X + 40, SIZE[0].Y, 0, 0), Blink = true, Palette = 13, Faded_Palette = 2, Blink_Adjustment = .5f };
@@ -171,7 +171,7 @@ namespace OpenVIII
                 Location = new IGMDataItem.Box { Pos = new Rectangle(Face3offsetx, base.Y + base.Height - locationheight, base.Width + base.X - Face3offsetx, locationheight) };
 
                 CONTAINER.OffsetAnchor = new OffsetAnchor();
-                foreach (Menu_Base i in ITEM)
+                foreach (var i in ITEM)
                 {
                     if (i != null)
                         i.OffsetAnchor = CONTAINER.OffsetAnchor;
