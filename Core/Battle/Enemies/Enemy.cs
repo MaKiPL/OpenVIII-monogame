@@ -11,7 +11,6 @@ namespace OpenVIII
         #region Fields
 
         private const int statusdefault = 100;
-        private byte _fixedLevel;
         private bool mugged = false;
 
         #endregion Fields
@@ -137,7 +136,7 @@ namespace OpenVIII
         /// </summary>
         public override int EXP => convert3(Info.exp, Memory.State.AveragePartyLevel);
 
-        public byte FixedLevel { get => _fixedLevel; set => _fixedLevel = value; }
+        public byte FixedLevel { get; set; }
 
         /// <summary>
         /// Enemy attacks determine hit%
