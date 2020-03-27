@@ -465,5 +465,25 @@ namespace OpenVIII
         {
             ;
         }
+
+        /// <summary>
+        /// This void converts vertexPositionTexture[] so it's texture coordinates
+        /// are changing based on requested sprite (atlas)
+        /// </summary>
+        /// <param name="vpt"></param>
+        /// <param name="maxSprite"></param>
+        /// <param name="current"></param>
+        public static void ConvertToSprite(ref VertexPositionTexture[] vpt, int maxSprite, int current)
+        {
+            float spriteLength = vpt.Max(x => x.TextureCoordinate.X) / maxSprite;
+            float startAt = current * spriteLength;
+            for(int i = 0; i<vpt.Length; i++)
+            {
+                if (vpt[i].TextureCoordinate.X == 0)
+                    vpt[i].TextureCoordinate.X = startAt;
+                if (vpt[i].TextureCoordinate.X == 1)
+                    vpt[i].TextureCoordinate.X = startAt + spriteLength;
+            }
+        }
     }
 }
