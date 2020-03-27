@@ -127,7 +127,7 @@ namespace OpenVIII
 
             public byte TPage => (byte)((TPage_clut >> 4) & 0x0F);
             public byte Clut => (byte)(TPage_clut & 0x0F);
-            private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_UNK2 | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
+            private Texflags TexFlags { get => Texflags.TEXFLAGS_ISENTERABLE | Texflags.TEXFLAGS_MISC | Texflags.TEXFLAGS_ROAD | Texflags.TEXFLAGS_SHADOW | Texflags.TEXFLAGS_UNK | Texflags.TEXFLAGS_TRANSPARENT | Texflags.TEXFLAGS_WATER; set => texFlags = value; }
             //public byte TPage_clut1 { set => TPage_clut = value; }
 
             public override string ToString() => $"GP={groundtype.ToString()} TP={TPage.ToString()} Clut={Clut.ToString()} TexFlags={Convert.ToString((byte)texFlags, 2).PadLeft(8, '0')} vertFlags={Convert.ToString(vertFlags, 2).PadLeft(8, '0')} UV={U1.ToString()} {V1.ToString()} {U2.ToString()} {V2.ToString()} {U3.ToString()} {V3.ToString()}";
@@ -196,7 +196,7 @@ namespace OpenVIII
             TEXFLAGS_SHADOW = 0b11,
             TEXFLAGS_UNK = 0b100,
             TEXFLAGS_ISENTERABLE = 0b00001000,
-            TEXFLAGS_UNK2 = 0b00010000,
+            TEXFLAGS_TRANSPARENT = 0b00010000,
             TEXFLAGS_ROAD = 0b00100000,
             TEXFLAGS_WATER = 0b01000000,
             TEXFLAGS_MISC = 0b10000000
@@ -266,6 +266,7 @@ namespace OpenVIII
                 worldShaderModel.Parameters["bendVector"].SetValue(BEND_VECTOR);
                 worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
                 worldShaderModel.Parameters["fogColor"].SetValue(FOG_COLOR);
+                worldShaderModel.Parameters["Transparency"].SetValue(1f);
             }
             //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
             //Memory.musicIndex = 30;
@@ -1469,7 +1470,8 @@ namespace OpenVIII
 
                     Extended.ConvertToSprite(ref shadowGeom, 4, worldEffects[i].atlasId);
 
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush, 0);
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush, 
+                    MathHelper.Clamp(activeCollidePolygon.Value.Clut-8, 0, 5)); //this is wrong 
                 ate.Alpha = 0.75f;
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                 {
@@ -2115,6 +2117,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 translationVector = new Vector3(32 * 512, 0, 24 * -512);
 
             Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>> groupedPolygons = new Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>>();
+            Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>> transparentGroupedPolygons = new Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>>();
 
             for (int k = 0; k < seg.parsedTriangle.Length; k++)
             {
@@ -2149,30 +2152,35 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 }
                 else
                     ate.Texture = (Texture2D)texl.GetTexture(poly.TPage, poly.Clut);
-                if (groupedPolygons.ContainsKey(ate.Texture))
-                    groupedPolygons[ate.Texture].Item1.AddRange(vpc);
-                else
-                    groupedPolygons.Add(ate.Texture, new Tuple<List<VertexPositionTexture>, bool>(new List<VertexPositionTexture>() { vpc[0], vpc[1], vpc[2] }, bIsWaterBlock));
 
-                //if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER) && Extended.In(poly.groundtype, 32, 34))
-                //{
-                //    Memory.graphics.GraphicsDevice.BlendState = BlendState.Additive;
-                //    ate.Texture = wmset.GetWaterAnimationTextureFrame(0, wmset.WaterAnimations[0].currentAnimationIndex);
-                //    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                //    {
-                //        pass.Apply();
-                //        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpc, 0, 1);
-                //    }
-                //    Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
-                //}
+                if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_TRANSPARENT))
+                {
+                    if (transparentGroupedPolygons.ContainsKey(ate.Texture))
+                        transparentGroupedPolygons[ate.Texture].Item1.AddRange(vpc);
+                    else
+                        transparentGroupedPolygons.Add(ate.Texture, new Tuple<List<VertexPositionTexture>, bool>(new List<VertexPositionTexture>() { vpc[0], vpc[1], vpc[2] }, bIsWaterBlock));
+                }
+                else
+                {
+                    if (groupedPolygons.ContainsKey(ate.Texture))
+                        groupedPolygons[ate.Texture].Item1.AddRange(vpc);
+                    else
+                        groupedPolygons.Add(ate.Texture, new Tuple<List<VertexPositionTexture>, bool>(new List<VertexPositionTexture>() { vpc[0], vpc[1], vpc[2] }, bIsWaterBlock));
+                }
             }
 
-            foreach (KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons)
+            //I hate to do so much redundancy here, but that's dictionary lookup, also it's important to draw important stuff 
+            //at the very end after opaque triangles
+            foreach (KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons) //normal draw
             {
                 ate.Texture = kvp.Key;
                 VertexPositionTexture[] vptFinal = kvp.Value.Item1.ToArray();
+                ate.Alpha = 1f;
                 if (bUseCustomShaderTest)
+                {
                     worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
+                    worldShaderModel.Parameters["Transparency"].SetValue(1f);
+                }
 
                 if (kvp.Value.Item2 && bUseCustomShaderTest)
                     worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend_waterAnim"];
@@ -2185,6 +2193,30 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                     Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
                 }
             }
+
+            foreach (KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in transparentGroupedPolygons) //transparent draw
+            {
+                ate.Texture = kvp.Key;
+                VertexPositionTexture[] vptFinal = kvp.Value.Item1.ToArray();
+                ate.Alpha = 0.5f;
+                if (bUseCustomShaderTest)
+                {
+                    worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
+                    worldShaderModel.Parameters["Transparency"].SetValue(0.5f);
+                }
+
+                if (kvp.Value.Item2 && bUseCustomShaderTest)
+                    worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend_waterAnim"];
+                else if (bUseCustomShaderTest)
+                    worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
+
+                foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
+                }
+            }
+
         }
 
         private enum interZone : int
