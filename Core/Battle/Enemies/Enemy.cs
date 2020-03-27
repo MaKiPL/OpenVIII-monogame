@@ -10,109 +10,131 @@ namespace OpenVIII
     {
         #region Fields
 
-        private const int statusdefault = 100;
+        private const int statusDefault = 100;
         private bool mugged = false;
 
         #endregion Fields
 
         #region Methods
 
-        private byte Convert1(byte[] @in)
-        {
-            //from Ifrit's help file
+        /// <summary>
+        /// Returns STR/MAG value based on the formula and given bytes.
+        /// Calculations are based on the Ifrit's help file.
+        /// </summary>
+        /// <param name="bytes">Value which will be converted to a numeric value.</param>
+        private byte GetPrimaryStat(byte[] bytes) {
+            // PLEASE NOTE: I'm not 100% sure on the STR/MAG formula, but it should be accurate enough to get the general idea.
+            // Wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
             byte level = Level;
-            int i = level * @in[0] / 10 + level / @in[1] - level * level / 2 / (@in[3] + @in[2]) / 4;
-            //PLEASE NOTE: I'm not 100% sure on the STR/MAG formula, but it should be accurate enough to get the general idea.
-            // wiki states something like ([3(Lv)] + [(Lv) / 5] - [(Lv)² / 260] + 12) / 4
-
+            int i = level * bytes[0] / 10 + level / bytes[1] - level * level / 2 / (bytes[3] + bytes[2]) / 4;
             return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
         }
 
-        private byte Convert2(byte[] @in)
-        {
-            //from Ifrit's help file
+        /// <summary>
+        /// Returns EVA/SPD/SPR/VIT value based on the formula and given bytes.
+        /// </summary>
+        /// <param name="bytes">Value which will be converted to a numeric value.</param>
+        private byte GetSecondaryStat(byte[] bytes) {
             byte level = Level;
-            int i = level / @in[1] - level / @in[3] + level * @in[0] + @in[2];
+            int i = level / bytes[1] - level / bytes[3] + level * bytes[0] + bytes[2];
             return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
         }
 
-        private int Convert3(ushort @in, byte inLevel)
-        {
-            //from Ifrit's help file
-            byte level = Level;
-            if (inLevel == 0)
+        /// <summary>
+        /// Returns value of EXP which entity will get after the fight.
+        /// </summary>
+        /// <param name="bytes">Value which will be converted to a numeric value.</param>
+        /// <param name="averagePartyLevel">Average level of party whom EXP will be given.</param>
+        private int GetEXP(ushort bytes, byte averagePartyLevel) {
+            byte averageEnemyLevel = Level;
+            if (averagePartyLevel == 0) {
                 return 0;
-            else
-                return @in * (5 * (level - inLevel) / inLevel + 4);
+            }
+            else {
+                return bytes * (5 * (averageEnemyLevel - averagePartyLevel) / averagePartyLevel + 4);
+            }
         }
 
-        private T Hml<T>(T h, T m, T l)
-        {
-            byte level = Level;
-            if (level > Info.highLevelStart)
-                return h;
-            else if (level > Info.medLevelStart)
-                return m;
-            else return l;
+        private T Hml<T>(T high, T mid, T low) {
+            byte averageEnemyLevel = Level;
+            if (averageEnemyLevel > Info.highLevelStart) {
+                return high;
+            }
+            else if (averageEnemyLevel > Info.medLevelStart) {
+                return mid;
+            }
+            else {
+                return low;
+            }
         }
 
-        private int LevelGroup()
-        {
-            byte l = Level;
-            if (l > Info.highLevelStart)
-                return 2;
-            if (l > Info.medLevelStart)
-                return 1;
-            else return 0;
+        private int LevelGroup() {
+            byte averageEnemyLevel = Level;
+            if (averageEnemyLevel > Info.highLevelStart) {
+                return 2; // what means 2?
+            }
+            else if (averageEnemyLevel > Info.medLevelStart) {
+                return 1; // what means 1?
+            }
+            else {
+                return 0; // what means 0?
+            }
         }
 
         #endregion Methods
 
         #region Constructors
 
-        private Enemy()
-        {
-        }
-
         protected override void ReadData(BinaryReader br, Enum @enum) => throw new NotImplementedException("This method is not used by Enemy");
 
-        public static Enemy Load(Battle.EnemyInstanceInformation eII, byte fixedLevel = 0, ushort? startinghp = null)
-        {
-            Enemy r = new Enemy
+        public static Enemy Load(Battle.EnemyInstanceInformation eii, byte level = 0, ushort? startHp = null) {
+            Enemy loadedEnemy = new Enemy
             {
-                EII = eII,
-                FixedLevel = fixedLevel
+                EII = eii,
+                FixedLevel = level
             };
-            r._CurrentHP = startinghp ?? r.MaxHP();
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0)
-            {
-                r.Statuses0 |= Kernel_bin.Persistent_Statuses.Zombie;
+
+            loadedEnemy._CurrentHP = startHp ?? loadedEnemy.MaxHP();
+
+            if ((loadedEnemy.Info.bitSwitch & Debug_battleDat.Information.Flag1.Zombie) != 0) {
+                loadedEnemy.Statuses0 |= Kernel_bin.Persistent_Statuses.Zombie;
             }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0)
-            {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Protect;
+            if ((loadedEnemy.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Protect) != 0) {
+                loadedEnemy.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Protect;
             }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0)
-            {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
+            if ((loadedEnemy.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Reflect) != 0) {
+                loadedEnemy.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Reflect;
             }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0)
-            {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
+            if ((loadedEnemy.Info.bitSwitch & Debug_battleDat.Information.Flag1.Auto_Shell) != 0) {
+                loadedEnemy.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Shell;
             }
-            if ((r.Info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0)
-            {
-                r.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Float;
+            if ((loadedEnemy.Info.bitSwitch & Debug_battleDat.Information.Flag1.Fly) != 0) {
+                loadedEnemy.Statuses1 |= Kernel_bin.Battle_Only_Statuses.Float;
             }
-            r.Init();
-            return r;
+            loadedEnemy.Init();
+            return loadedEnemy;
         }
 
         #endregion Constructors
 
         #region Properties
-        public IEnumerable<Kernel_bin.Enemy_Attacks_Data> Enemy_Attacks_Datas => Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
-        public IEnumerable<GFs> JunctionedGFs => Memory.State != null? DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct() : null;
+        public IEnumerable<Kernel_bin.Enemy_Attacks_Data> Enemy_Attacks_Datas {
+            get {
+                return Abilities.Where(x => x.MONSTER != null).Select(x => x.MONSTER);
+            }
+        }
+
+        public IEnumerable<GFs> JunctionedGFs {
+            get {
+                if (Memory.State != null) {
+                    return DrawList.Select(x => x.GF).Where(gf => gf >= GFs.Quezacotl && gf <= GFs.Eden && !Memory.State.UnlockedGFs.Contains(gf)).Distinct();
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+
         public static List<Enemy> Party { get; set; }
 
         public byte AP => Info.ap;
@@ -129,12 +151,12 @@ namespace OpenVIII
 
         public Battle.EnemyInstanceInformation EII { get; set; }
 
-        public override byte EVA => Convert2(Info.eva);
+        public override byte EVA => GetSecondaryStat(Info.eva);
 
         /// <summary>
         /// The EXP everyone gets.
         /// </summary>
-        public override int EXP => Convert3(Info.exp, Memory.State.AveragePartyLevel);
+        public override int EXP => GetEXP(Info.exp, Memory.State.AveragePartyLevel);
 
         public byte FixedLevel { get; set; }
 
@@ -152,10 +174,8 @@ namespace OpenVIII
         /// Level of enemy based on average of party or fixed value.
         /// </summary>
         /// <see cref="https://finalfantasy.fandom.com/wiki/Level#Enemy_levels"/>
-        public override byte Level
-        {
-            get
-            {
+        public override byte Level {
+            get {
                 if (FixedLevel != default)
                     return FixedLevel;
                 byte a = Memory.State.AveragePartyLevel;
@@ -169,7 +189,7 @@ namespace OpenVIII
         /// </summary>
         public override byte LUCK => 0;
 
-        public override byte MAG => Convert1(Info.mag);
+        public override byte MAG => GetPrimaryStat(Info.mag);
 
         /// <summary>
         /// Randomly gain 1 or 0 from this list.
@@ -180,17 +200,24 @@ namespace OpenVIII
 
         public override FF8String Name => Info.name;
 
-        public override byte SPD => Convert2(Info.spd);
+        public override byte SPD => GetSecondaryStat(Info.spd);
 
-        public override byte SPR => Convert2(Info.spr);
+        public override byte SPR => GetSecondaryStat(Info.spr);
 
-        public override byte STR => Convert1(Info.str);
+        public override byte STR => GetPrimaryStat(Info.str);
 
-        public override byte VIT => Convert2(Info.vit);
+        public override byte VIT => GetSecondaryStat(Info.vit);
 
-        public Kernel_bin.Devour Devour => Info.devour[LevelGroup()] >= Kernel_bin.Devour_.Count ?
-            Kernel_bin.Devour_[Kernel_bin.Devour_.Count - 1] :
-            Kernel_bin.Devour_[Info.devour[LevelGroup()]];
+        public Kernel_bin.Devour Devour {
+            get {
+                if (Info.devour[LevelGroup()] >= Kernel_bin.Devour_.Count) {
+                    return Kernel_bin.Devour_[Kernel_bin.Devour_.Count - 1];
+                }
+                else {
+                    return Kernel_bin.Devour_[Info.devour[LevelGroup()]];
+                }
+            }
+        }
 
         public Debug_battleDat.Information Info => EII.Data.information;
 
@@ -203,8 +230,7 @@ namespace OpenVIII
         /// </summary>
         /// <returns></returns>
         /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
-        public Cards.ID Card()
-        {
+        public Cards.ID Card() {
             if (Info.card.Skip(1).All(x => x == Cards.ID.Immune)) return Cards.ID.Immune;
             int p = (256 * MaxHP() - 255 * CurrentHP()) / MaxHP();
             int r = Memory.Random.Next(256);
@@ -212,8 +238,7 @@ namespace OpenVIII
             return r < (p + 1) ? (r < 17 ? Info.card[2] : Info.card[1]) : Cards.ID.Fail;
         }
 
-        public Cards.ID CardDrop()
-        {
+        public Cards.ID CardDrop() {
             //9 / 256
             if (Info.card[0] == Cards.ID.Immune) return Info.card[1];
 
@@ -223,45 +248,49 @@ namespace OpenVIII
 
         public override Damageable Clone() => throw new NotImplementedException();
 
-        public Saves.Item Drop(bool RareITEM = false)
-        {
-            if (mugged) return default;
+        public Saves.Item Drop(bool rareItem = false) {
+            if (mugged) {
+                return default;
+            }
+
             int percent = DropRate;
             Saves.Item[] list = DropList;
             int i = Memory.Random.Next(100 + 1);
-            if (i < percent && list.Length > 0)
-            {
+            if (i < percent && list.Length > 0) {
                 //Slot              |  0        | 1         | 2        | 3
                 //------------------|  ---------| --------- | ---------| --------
                 //Without Rare Item | 178 / 256 | 51 / 256  | 15 / 256 | 12 / 256
                 //------------------|  ---------| --------- | ---------| --------
                 //With Rare Item    | 128 / 256 | 114 / 256 | 14 / 256 | 0 / 256 <- kinda makes no sence to me
                 int r = Memory.Random.Next(256);
-                if (RareITEM)
-                {
-                    if (r < 128)
+                if (rareItem) {
+                    if (r < 128) {
                         return list[0];
-                    else if ((r -= 128) < 114)
+                    }
+                    else if ((r -= 128) < 114) {
                         return list[1];
-                    else if ((r -= 114) < 14)
-                        return list[2];
-                    else
-                        return list[3];
+                    }
+                    else {
+                        return (r -= 114) < 14 ? list[2] : list[3];
+                    }
                 }
-                if (r < 178)
+                if (r < 178) {
                     return list[0];
-                else if ((r -= 178) < 51)
+                }
+                else if ((r -= 178) < 51) {
                     return list[1];
-                else if ((r -= 51) < 15)
+                }
+                else if ((r -= 51) < 15) {
                     return list[2];
-                else
+                }
+                else {
                     return list[3];
+                }
             }
             return default;
         }
 
-        public override short ElementalResistance(Kernel_bin.Element @in)
-        {
+        public override short ElementalResistance(Kernel_bin.Element @in) {
             List<Kernel_bin.Element> l = (Enum.GetValues(typeof(Kernel_bin.Element))).Cast<Kernel_bin.Element>().ToList();
             if (@in == Kernel_bin.Element.Non_Elemental)
                 return 100;
@@ -276,10 +305,9 @@ namespace OpenVIII
         /// </summary>
         /// <param name="lasthitlevel">Level of character whom got last hit.</param>
         /// <returns></returns>
-        public int EXPExtra(byte lasthitlevel) => Convert3(Info.expExtra, lasthitlevel);
+        public int EXPExtra(byte lasthitlevel) => GetEXP(Info.expExtra, lasthitlevel);
 
-        public override ushort MaxHP()
-        {
+        public override ushort MaxHP() {
             //from Ifrit's help file
             if (Info.hp == null)
                 return 0;
@@ -287,39 +315,51 @@ namespace OpenVIII
             return (ushort)MathHelper.Clamp(i, 0, ushort.MaxValue);
         }
 
-        public Saves.Item Mug(byte spd, bool RareITEM = false)
-        {
-            if (mugged) return default;
+        // Mug is a combination of the Attack and Steal commands, 
+        // allowing the user to attempt to steal an item in the same turn they attack. 
+        // Like its counterpart, Steal, Mug is associated with the Thief class
+        public Saves.Item Mug(byte spd, bool rareItem = false) {
+            if (mugged) {
+                return default;
+            }
             int percent = (MugRate + spd);
             Saves.Item[] list = DropList;
             int i = Memory.Random.Next(100 + 1);
-            try
-            {
-                if (i < percent && list.Length > 0)
-                {
+            try {
+                if (i < percent && list.Length > 0) {
                     byte r = (byte)Memory.Random.Next(256);
-                    if (RareITEM)
-                    {
-                        if (r < 128)
+                    if (rareItem) {
+                        if (r < 128) {
                             return list[0];
-                        else if ((r -= 128) < 114)
+                        }
+                        else if ((r -= 128) < 114) {
                             return list[1];
-                        else if ((r -= 114) < 14)
+                        }
+                        else if ((r -= 114) < 14) {
                             return list[2];
-                        else
+                        }
+                        else {
                             return list[3];
+                        }
                     }
-                    if (r < 178)
+                    if (r < 178) {
                         return list[0];
-                    else if ((r -= 178) < 51)
+                    }
+                    else if ((r -= 178) < 51) {
                         return list[1];
-                    else if ((r -= 51) < 15)
+                    }
+                    else if ((r -= 51) < 15) {
                         return list[2];
-                    else
+                    }
+                    else {
                         return list[3];
+                    }
                 }
             }
-            finally { mugged = true; }
+            finally {
+                mugged = true;
+            }
+            // Looks like no matter what happends above, mugged is set to false. Buy why?
             mugged = false;
             return default;
         }
@@ -330,11 +370,9 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s)
-        {
+        public override sbyte StatusResistance(Kernel_bin.Persistent_Statuses s) {
             byte r = 100;
-            switch (s)
-            {
+            switch (s) {
                 case Kernel_bin.Persistent_Statuses.Death:
                     r = Info.deathResistanceMental;
                     break;
@@ -373,11 +411,9 @@ namespace OpenVIII
         /// <param name="s">status effect</param>
         /// <returns>percent of resistance</returns>
         /// <see cref="https://finalfantasy.fandom.com/wiki/G-Soldier#Stats"/>
-        public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s)
-        {
-            byte r = statusdefault;
-            switch (s)
-            {
+        public override sbyte StatusResistance(Kernel_bin.Battle_Only_Statuses s) {
+            byte r = statusDefault;
+            switch (s) {
                 case Kernel_bin.Battle_Only_Statuses.Sleep:
                     r = Info.sleepResistanceMental;
                     break;
@@ -450,10 +486,8 @@ namespace OpenVIII
         /// <see cref="https://finalfantasy.fandom.com/wiki/Level#Enemy_levels"/>
         public override string ToString() => Name.Value_str;
 
-        public override ushort TotalStat(Kernel_bin.Stat s)
-        {
-            switch (s)
-            {
+        public override ushort TotalStat(Kernel_bin.Stat s) {
+            switch (s) {
                 case Kernel_bin.Stat.HP:
                     return CurrentHP();
 
