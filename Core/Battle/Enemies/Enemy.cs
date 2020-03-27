@@ -17,7 +17,7 @@ namespace OpenVIII
 
         #region Methods
 
-        private byte convert1(byte[] @in)
+        private byte Convert1(byte[] @in)
         {
             //from Ifrit's help file
             byte level = Level;
@@ -28,7 +28,7 @@ namespace OpenVIII
             return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
         }
 
-        private byte convert2(byte[] @in)
+        private byte Convert2(byte[] @in)
         {
             //from Ifrit's help file
             byte level = Level;
@@ -36,7 +36,7 @@ namespace OpenVIII
             return (byte)MathHelper.Clamp(i, 0, byte.MaxValue);
         }
 
-        private int convert3(ushort @in, byte inLevel)
+        private int Convert3(ushort @in, byte inLevel)
         {
             //from Ifrit's help file
             byte level = Level;
@@ -46,7 +46,7 @@ namespace OpenVIII
                 return @in * (5 * (level - inLevel) / inLevel + 4);
         }
 
-        private T hml<T>(T h, T m, T l)
+        private T Hml<T>(T h, T m, T l)
         {
             byte level = Level;
             if (level > Info.highLevelStart)
@@ -56,7 +56,7 @@ namespace OpenVIII
             else return l;
         }
 
-        private int levelgroup()
+        private int LevelGroup()
         {
             byte l = Level;
             if (l > Info.highLevelStart)
@@ -117,24 +117,24 @@ namespace OpenVIII
 
         public byte AP => Info.ap;
 
-        public Debug_battleDat.Magic[] DrawList => hml(Info.drawhigh, Info.drawmed, Info.drawlow);
+        public Debug_battleDat.Magic[] DrawList => Hml(Info.drawhigh, Info.drawmed, Info.drawlow);
 
         /// <summary>
         /// Randomly gain 1 or 0 from this list.
         /// </summary>
-        public Saves.Item[] DropList => hml(Info.drophigh, Info.dropmed, Info.droplow);
-        public Debug_battleDat.Abilities[] Abilities => hml(Info.abilitiesHigh, Info.abilitiesMed, Info.abilitiesLow);
+        public Saves.Item[] DropList => Hml(Info.drophigh, Info.dropmed, Info.droplow);
+        public Debug_battleDat.Abilities[] Abilities => Hml(Info.abilitiesHigh, Info.abilitiesMed, Info.abilitiesLow);
 
         public byte DropRate => (byte)(MathHelper.Clamp(Info.dropRate * 100 / byte.MaxValue, 0, 100));
 
         public Battle.EnemyInstanceInformation EII { get; set; }
 
-        public override byte EVA => convert2(Info.eva);
+        public override byte EVA => Convert2(Info.eva);
 
         /// <summary>
         /// The EXP everyone gets.
         /// </summary>
-        public override int EXP => convert3(Info.exp, Memory.State.AveragePartyLevel);
+        public override int EXP => Convert3(Info.exp, Memory.State.AveragePartyLevel);
 
         public byte FixedLevel { get; set; }
 
@@ -169,28 +169,28 @@ namespace OpenVIII
         /// </summary>
         public override byte LUCK => 0;
 
-        public override byte MAG => convert1(Info.mag);
+        public override byte MAG => Convert1(Info.mag);
 
         /// <summary>
         /// Randomly gain 1 or 0 from this list.
         /// </summary>
-        public Saves.Item[] MugList => hml(Info.mughigh, Info.mugmed, Info.muglow);
+        public Saves.Item[] MugList => Hml(Info.mughigh, Info.mugmed, Info.muglow);
 
         public byte MugRate => (byte)(MathHelper.Clamp(Info.mugRate * 100 / byte.MaxValue, 0, 100));
 
         public override FF8String Name => Info.name;
 
-        public override byte SPD => convert2(Info.spd);
+        public override byte SPD => Convert2(Info.spd);
 
-        public override byte SPR => convert2(Info.spr);
+        public override byte SPR => Convert2(Info.spr);
 
-        public override byte STR => convert1(Info.str);
+        public override byte STR => Convert1(Info.str);
 
-        public override byte VIT => convert2(Info.vit);
+        public override byte VIT => Convert2(Info.vit);
 
-        public Kernel_bin.Devour Devour => Info.devour[levelgroup()] >= Kernel_bin.Devour_.Count ?
+        public Kernel_bin.Devour Devour => Info.devour[LevelGroup()] >= Kernel_bin.Devour_.Count ?
             Kernel_bin.Devour_[Kernel_bin.Devour_.Count - 1] :
-            Kernel_bin.Devour_[Info.devour[levelgroup()]];
+            Kernel_bin.Devour_[Info.devour[LevelGroup()]];
 
         public Debug_battleDat.Information Info => EII.Data.information;
 
@@ -276,7 +276,7 @@ namespace OpenVIII
         /// </summary>
         /// <param name="lasthitlevel">Level of character whom got last hit.</param>
         /// <returns></returns>
-        public int EXPExtra(byte lasthitlevel) => convert3(Info.expExtra, lasthitlevel);
+        public int EXPExtra(byte lasthitlevel) => Convert3(Info.expExtra, lasthitlevel);
 
         public override ushort MaxHP()
         {
