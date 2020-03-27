@@ -2,22 +2,31 @@
 
 namespace OpenVIII.Fields
 {
-public struct Coords3D
+    public struct Coords3D
     {
-        public readonly Int32 X;
-        public readonly Int32 Y;
-        public readonly Int32 Z;
+        #region Fields
 
-        public Coords3D(Int32 x, Int32 y, Int32 z)
+        public readonly int X;
+        public readonly int Y;
+        public readonly int Z;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public Coords3D(int x, int y, int z)
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public override String ToString()
-        {
-            return $"(X: {X}, Y: {Y}, Z: {Z})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"(X: {X}, Y: {Y}, Z: {Z})";
+
+        #endregion Methods
     }
 }

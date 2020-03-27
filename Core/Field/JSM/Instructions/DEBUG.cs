@@ -9,9 +9,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/01B_DEBUG"/>
     internal sealed class DEBUG : JsmInstruction
     {
-        public DEBUG()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public DEBUG() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

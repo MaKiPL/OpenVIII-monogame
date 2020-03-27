@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class INITSOUND : JsmInstruction
     {
+        #region Constructors
+
         public INITSOUND()
         {
         }
 
-        public INITSOUND(Int32 parameter, IStack<IJsmExpression> stack)
+        public INITSOUND(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(INITSOUND)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(INITSOUND)}()";
+
+        #endregion Methods
     }
 }

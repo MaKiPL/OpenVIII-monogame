@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class FOOTSTEPCUT : JsmInstruction
     {
+        #region Constructors
+
         public FOOTSTEPCUT()
         {
         }
 
-        public FOOTSTEPCUT(Int32 parameter, IStack<IJsmExpression> stack)
+        public FOOTSTEPCUT(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(FOOTSTEPCUT)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(FOOTSTEPCUT)}()";
+
+        #endregion Methods
     }
 }

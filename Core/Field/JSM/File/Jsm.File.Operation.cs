@@ -1,6 +1,4 @@
-﻿using System;
-
-#pragma warning disable 649 // field is never assigned
+﻿#pragma warning disable 649 // field is never assigned
 
 namespace OpenVIII.Fields.Scripts
 {
@@ -10,7 +8,7 @@ namespace OpenVIII.Fields.Scripts
         {
             public struct Operation
             {
-                private readonly Int32 _value;
+                private readonly int _value;
 
                 public Jsm.Opcode Opcode
                 {
@@ -22,13 +20,13 @@ namespace OpenVIII.Fields.Scripts
                     }
                 }
 
-                public Int32 Parameter
+                public int Parameter
                 {
                     get
                     {
                         if ((_value & 0x00800000) == 0)
-                            return (Int32)(_value & 0x00FFFFFF);
-                        return (Int32)(_value | 0xFF000000);
+                            return _value & 0x00FFFFFF;
+                        return (int)(_value | 0xFF000000);
                     }
                 }
             }

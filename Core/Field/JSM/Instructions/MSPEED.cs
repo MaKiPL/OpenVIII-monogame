@@ -1,38 +1,35 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Sets this entity's movement speed. 
+    /// Sets this entity's movement speed.
     /// </summary>
     internal sealed class MSPEED : JsmInstruction
     {
-        private IJsmExpression _speed;
+        #region Fields
 
-        public MSPEED(IJsmExpression speed)
-        {
-            _speed = speed;
-        }
+        private readonly IJsmExpression _speed;
 
-        public MSPEED(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public MSPEED(IJsmExpression speed) => _speed = speed;
+
+        public MSPEED(int parameter, IStack<IJsmExpression> stack)
             : this(
                 speed: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MSPEED)}({nameof(_speed)}: {_speed})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
                 .Property(nameof(FieldObjectInteraction.MovementSpeed))
                 .Assign(_speed)
                 .Comment(nameof(MSPEED));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -40,5 +37,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             currentObject.Interaction.MovementSpeed = _speed.Int32(services);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(MSPEED)}({nameof(_speed)}: {_speed})";
+
+        #endregion Methods
     }
 }

@@ -1,16 +1,17 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Request remote execution (synchronous, guaranteed)
     /// Go to the method Label in the group Argument with a specified Priority.
-    /// Requests that a remote entity executes one of its member functions at a specified priority. The request will block until remote execution has finished before returning. 
+    /// Requests that a remote entity executes one of its member functions at a specified priority. The request will block until remote execution has finished before returning.
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/016_REQEW"/>
     public sealed class REQEW : Abstract.REQ
     {
+        #region Constructors
+
         public REQEW(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
         }
@@ -19,10 +20,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(REQEW)}({nameof(_objectIndex)}: {_objectIndex}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -41,5 +41,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
             return targetObject.Scripts.Execute(_scriptId, _priority);
         }
+
+        public override string ToString() => $"{nameof(REQEW)}({nameof(_objectIndex)}: {_objectIndex}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
+
+        #endregion Methods
     }
 }

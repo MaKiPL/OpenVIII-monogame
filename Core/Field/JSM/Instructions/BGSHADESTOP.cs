@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// stop shade?
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0D1_BGSHADESTOP&action=edit&redlink=1"/>
     public sealed class BGSHADESTOP : JsmInstruction
     {
+        #region Constructors
+
         public BGSHADESTOP()
         {
         }
 
-        public BGSHADESTOP(Int32 parameter, IStack<IJsmExpression> stack)
+        public BGSHADESTOP(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BGSHADESTOP)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(BGSHADESTOP)}()";
+
+        #endregion Methods
     }
 }

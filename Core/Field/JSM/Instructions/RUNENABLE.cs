@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class RUNENABLE : JsmInstruction
     {
+        #region Constructors
+
         public RUNENABLE()
         {
         }
 
-        public RUNENABLE(Int32 parameter, IStack<IJsmExpression> stack)
+        public RUNENABLE(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(RUNENABLE)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(RUNENABLE)}()";
+
+        #endregion Methods
     }
 }

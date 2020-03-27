@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static OpenVIII.Fields.Scripts.Jsm;
+
+#pragma warning disable 184
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
@@ -8,31 +11,32 @@ namespace OpenVIII.Fields.Scripts.Instructions
     {
     }
 
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static class JsmInstructionEx
     {
         #region Methods
 
         public static IEnumerable<IJsmInstruction> Flatten(this IJsmInstruction e)
         {
-            bool checktype(IJsmInstruction inst)
+            bool checkType(IJsmInstruction inst)
             {
                 return
-                    typeof(Control.While.WhileSegment) == inst.GetType() ||
-                typeof(Control.If.ElseIfSegment) == inst.GetType() ||
-                typeof(Control.If.ElseSegment) == inst.GetType() ||
-                typeof(Control.If.IfSegment) == inst.GetType() ||
-                typeof(Jsm.ExecutableSegment) == inst.GetType();
+                    (inst is Control.While.WhileSegment ||
+                     inst is Control.If.ElseIfSegment ||
+                     inst is Control.If.ElseSegment ||
+                     inst is Control.If.IfSegment ||
+                     inst is ExecutableSegment);
             }
 
-            if (checktype(e))
+            if (checkType(e))
             {
                 var es = ((ExecutableSegment)e);
-                foreach (var child in es.Where(x => checktype(x)).Select(x => (ExecutableSegment)x))
+                foreach (var child in es.Where(checkType).Select(x => (ExecutableSegment)x))
                 {
                     foreach (var i in Flatten(child))
                         yield return i;
                 }
-                foreach (var child in es.Where(x => !checktype(x)))
+                foreach (var child in es.Where(x => !checkType(x)))
                 {
                     yield return child;
                 }

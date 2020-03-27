@@ -7,34 +7,48 @@ namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public class ExecutableSegment : Segment, IJsmInstruction, IEnumerable<IJsmInstruction>
         {
-            public ExecutableSegment(Int32 from, Int32 to)
+            #region Constructors
+
+            public ExecutableSegment(int from, int to)
                 : base(from, to)
             {
             }
 
-            public virtual IScriptExecuter GetExecuter()
-            {
-                return GetExecuter(_list);
-            }
+            #endregion Constructors
 
-            internal static IScriptExecuter GetExecuter(IEnumerable<IJsmInstruction> instructions)
-            {
-                return new Executer(instructions);
-            }
+            #region Methods
 
             public IEnumerator<IJsmInstruction> GetEnumerator() => _list.GetEnumerator();
+
             IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
 
-            private sealed class Executer : IScriptExecuter, IEnumerable<IJsmInstruction>
+            public virtual IScriptExecutor GetExecuter() => GetExecuter(_list);
+
+            internal static IScriptExecutor GetExecuter(IEnumerable<IJsmInstruction> instructions) => new Executor(instructions);
+
+            #endregion Methods
+
+            #region Classes
+
+            private sealed class Executor : IScriptExecutor, IEnumerable<IJsmInstruction>
             {
+                #region Fields
+
                 private readonly IEnumerable<IJsmInstruction> _list;
 
-                public Executer(IEnumerable<IJsmInstruction> list)
-                {
-                    _list = list;
-                }
+                #endregion Fields
+
+                #region Constructors
+
+                public Executor(IEnumerable<IJsmInstruction> list) => _list = list;
+
+                #endregion Constructors
+
+                #region Methods
 
                 public IEnumerable<IAwaitable> Execute(IServices services)
                 {
@@ -59,8 +73,15 @@ namespace OpenVIII.Fields.Scripts
                 }
 
                 public IEnumerator<IJsmInstruction> GetEnumerator() => _list.GetEnumerator();
+
                 IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+
+                #endregion Methods
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

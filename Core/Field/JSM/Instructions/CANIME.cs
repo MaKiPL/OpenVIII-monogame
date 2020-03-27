@@ -1,9 +1,5 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
-
     /// <summary>
     /// <para>Play an animation.</para>
     /// <para>ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP</para>
@@ -14,6 +10,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/02F_CANIME"/>
     public sealed class CANIME : Abstract.ANIMELOOP
     {
+        #region Constructors
+
         public CANIME(int animationId, int firstFrame, int lastFrame) : base(animationId, firstFrame, lastFrame)
         {
         }
@@ -22,14 +20,11 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(CANIME)}({nameof(_animationId)}: {_animationId}, {nameof(_lastFrame)}: {_lastFrame}, {nameof(_firstFrame)}: {_firstFrame})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Await()
                 .Property(nameof(FieldObject.Animation))
                 .Method(nameof(FieldObjectAnimation.Play))
@@ -37,12 +32,13 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 .Argument("firstFrame", _firstFrame)
                 .Argument("lastFrame", _lastFrame)
                 .Comment(nameof(CANIME));
-        }
 
-        public override IAwaitable TestExecute(IServices services)
-        {
+        public override IAwaitable TestExecute(IServices services) =>
             // Sync call
-            return ServiceId.Field[services].Engine.CurrentObject.Animation.Play(_animationId, _firstFrame, _lastFrame, freeze: false);
-        }
+            ServiceId.Field[services].Engine.CurrentObject.Animation.Play(_animationId, _firstFrame, _lastFrame, freeze: false);
+
+        public override string ToString() => $"{nameof(CANIME)}({nameof(_animationId)}: {_animationId}, {nameof(_lastFrame)}: {_lastFrame}, {nameof(_firstFrame)}: {_firstFrame})";
+
+        #endregion Methods
     }
 }

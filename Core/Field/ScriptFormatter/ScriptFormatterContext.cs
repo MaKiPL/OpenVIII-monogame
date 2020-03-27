@@ -1,13 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 namespace OpenVIII.Fields.Scripts
 {
     public sealed class ScriptFormatterContext : IScriptFormatterContext
     {
-        private Sym.GameObjects _symbols;
-        private IReadOnlyList<FF8String> _messages;
+        #region Fields
 
-        public void GetObjectScriptNamesById(Int32 id, out String objectName, out String scriptName)
+        private IReadOnlyList<FF8String> _messages;
+        private Sym.GameObjects _symbols;
+
+        #endregion Fields
+
+        #region Methods
+
+        public string GetMessage(int messageIndex)
+        {
+            if (messageIndex < _messages.Count)
+                return _messages[messageIndex];
+
+            return $"INVALID MESSAGE {messageIndex:D3}";
+        }
+
+        public string GetObjectNameByIndex(int index)
+        {
+            var objectName = string.Empty;
+            if (_symbols != null)
+                objectName = _symbols.GetObjectOrDefault(index, defaultValue: string.Empty).Name;
+
+            if (string.IsNullOrEmpty(objectName))
+                return $"ObjectIndex_{index:D2}";
+
+            return objectName;
+        }
+
+        public void GetObjectScriptNamesById(int id, out string objectName, out string scriptName)
         {
             if (_symbols != null && _symbols.FindByLabel(id, out var obj, out scriptName))
             {
@@ -19,34 +45,10 @@ namespace OpenVIII.Fields.Scripts
             scriptName = $"Script_{id:D2}";
         }
 
-        public String GetObjectNameByIndex(Int32 index)
-        {
-            var objectName = String.Empty;
-            if (_symbols != null)
-                objectName = _symbols.GetObjectOrDefault(index, defaultValue: String.Empty).Name;
+        public void SetMessages(IReadOnlyList<FF8String> messages) => _messages = messages;
 
-            if (String.IsNullOrEmpty(objectName))
-                return $"ObjectIndex_{index:D2}";
+        public void SetSymbols(Sym.GameObjects symbols) => _symbols = symbols;
 
-            return objectName;
-        }
-
-        public String GetMessage(Int32 messageIndex)
-        {
-            if (messageIndex < _messages.Count)
-                return _messages[messageIndex];
-
-            return $"INVALID MESSAGE {messageIndex:D3}";
-        }
-
-        public void SetSymbols(Sym.GameObjects symbols)
-        {
-            _symbols = symbols;
-        }
-
-        public void SetMessages(IReadOnlyList<FF8String> messages)
-        {
-            _messages = messages;
-        }
+        #endregion Methods
     }
 }

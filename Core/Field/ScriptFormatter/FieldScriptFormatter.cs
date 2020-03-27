@@ -1,15 +1,15 @@
-﻿using OpenVIII.Encoding;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
+
 namespace OpenVIII.Fields.Scripts
 {
     public static class FieldScriptFormatter
     {
+        #region Methods
+
         public static IEnumerable<FormattedObject> FormatAllObjects(Field.ILookupService lookupService)
         {
-            foreach (var field in lookupService.EnumerateAll())
-            foreach (var formattedObject in FormatFieldObjects(field))
-                yield return formattedObject;
+            return lookupService.EnumerateAll().SelectMany(FormatFieldObjects);
         }
 
         public static IEnumerable<FormattedObject> FormatFieldObjects(Field.Info field)
@@ -34,6 +34,12 @@ namespace OpenVIII.Fields.Scripts
             }
         }
 
+        private static string FormatObject(Jsm.GameObject gameObject, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
+        {
+            gameObject.FormatType(sw, formatterContext, executionContext);
+            return sw.Release();
+        }
+
         private static ScriptFormatterContext GetFormatterContext(Field.Info field)
         {
             var context = new ScriptFormatterContext();
@@ -46,10 +52,6 @@ namespace OpenVIII.Fields.Scripts
             return context;
         }
 
-        private static String FormatObject(Jsm.GameObject gameObject, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
-        {
-            gameObject.FormatType(sw, formatterContext, executionContext);
-            return sw.Release();
-        }
+        #endregion Methods
     }
 }

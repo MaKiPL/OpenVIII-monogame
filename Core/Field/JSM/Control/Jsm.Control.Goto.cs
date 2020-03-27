@@ -1,42 +1,57 @@
 ﻿using OpenVIII.Fields.Scripts.Instructions;
-using System;
 using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class Control
         {
+            #region Classes
+
             public sealed class Goto : IJsmControl, IFormattableScript
             {
+                #region Fields
+
                 private readonly List<JsmInstruction> _instructions;
-                private readonly Int32 _label;
+                private readonly int _label;
                 private readonly Segment _segment;
 
-                public Goto(List<JsmInstruction> instructions, Int32 from, Int32 label)
+                #endregion Fields
+
+                #region Constructors
+
+                public Goto(List<JsmInstruction> instructions, int from, int label)
                 {
                     _instructions = instructions;
-                    _segment = new ExecutableSegment(from, from + 1);
-                    _segment.Add(_instructions[from]);
+                    _segment = new ExecutableSegment(from, from + 1)
+                    {
+                        _instructions[from]
+                    };
                     _label = label;
                 }
 
-                public override String ToString()
-                {
-                    return $"goto {_segment.From} -> {_label} ({_instructions[_label]})";
-                }
+                #endregion Constructors
 
-                public void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-                {
-                    sw.AppendLine($"goto LABEL{_label};");
-                }
+                #region Methods
 
                 public IEnumerable<Segment> EnumerateSegments()
                 {
                     yield return _segment;
                 }
+
+                public void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.AppendLine($"goto LABEL{_label};");
+
+                public override string ToString() => $"goto {_segment.From} -> {_label} ({_instructions[_label]})";
+
+                #endregion Methods
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

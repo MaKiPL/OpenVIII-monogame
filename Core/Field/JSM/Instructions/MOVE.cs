@@ -1,17 +1,20 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Make this entity walk/run to the given coordinates. 
+    /// Make this entity walk/run to the given coordinates.
     /// </summary>
     internal sealed class MOVE : JsmInstruction
     {
-        private IJsmExpression _x;
-        private IJsmExpression _y;
-        private IJsmExpression _z;
-        private IJsmExpression _unknown;
+        #region Fields
+
+        private readonly IJsmExpression _unknown;
+        private readonly IJsmExpression _x;
+        private readonly IJsmExpression _y;
+        private readonly IJsmExpression _z;
+
+        #endregion Fields
+
+        #region Constructors
 
         public MOVE(IJsmExpression x, IJsmExpression y, IJsmExpression z, IJsmExpression unknown)
         {
@@ -21,7 +24,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _unknown = unknown;
         }
 
-        public MOVE(Int32 parameter, IStack<IJsmExpression> stack)
+        public MOVE(int parameter, IStack<IJsmExpression> stack)
             : this(
                 unknown: stack.Pop(),
                 z: stack.Pop(),
@@ -30,14 +33,11 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MOVE)}({nameof(_x)}: {_x}, {nameof(_y)}: {_y}, {nameof(_z)}: {_z}, {nameof(_unknown)}: {_unknown})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
                 .Method(nameof(FieldObjectInteraction.Move))
                 .Argument("x", _x)
@@ -45,7 +45,6 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 .Argument("z", _z)
                 .Argument("unknown", _unknown)
                 .Comment(nameof(MOVE));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -61,5 +60,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(MOVE)}({nameof(_x)}: {_x}, {nameof(_y)}: {_y}, {nameof(_z)}: {_z}, {nameof(_unknown)}: {_unknown})";
+
+        #endregion Methods
     }
 }

@@ -1,39 +1,35 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Make this entity face "Angle" in degrees. 
+    /// Make this entity face "Angle" in degrees.
     /// </summary>
     internal sealed class DIR : JsmInstruction
     {
-        private IJsmExpression _angle;
+        #region Fields
 
-        public DIR(IJsmExpression angle)
-        {
-            _angle = angle;
-        }
+        private readonly IJsmExpression _angle;
 
-        public DIR(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public DIR(IJsmExpression angle) => _angle = angle;
+
+        public DIR(int parameter, IStack<IJsmExpression> stack)
             : this(
                 angle: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(DIR)}({nameof(_angle)}: {_angle})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
                 .Method(nameof(FieldObjectModel.SetDirection))
                 .Argument("angle256", _angle)
                 .Comment(nameof(SET3));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -41,5 +37,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             currentObject.Model.SetDirection(Degrees.FromAngle256(_angle.Int32(services)));
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(DIR)}({nameof(_angle)}: {_angle})";
+
+        #endregion Methods
     }
 }

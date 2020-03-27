@@ -99,11 +99,11 @@ namespace OpenVIII
 
         public bool Contains(KeyValuePair<TKey, TValue> item) => _list.Contains(item);
 
-        public Boolean ContainsIndex(Int32 index) => index < _list.Count;
+        public bool ContainsIndex(int index) => index < _list.Count;
 
-        public Boolean ContainsKey(TKey key) => _list.Any(kvp => kvp.Key.Equals(key));
+        public bool ContainsKey(TKey key) => _list.Any(kvp => kvp.Key.Equals(key));
 
-        public Boolean ContainsValue(TValue value) => _list.Any(kvp => kvp.Value.Equals(value));
+        public bool ContainsValue(TValue value) => _list.Any(kvp => kvp.Value.Equals(value));
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
@@ -138,7 +138,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetByIndex(Int32 index, out TValue value)
+        public bool TryGetByIndex(int index, out TValue value)
         {
             if (ContainsIndex(index))
             {
@@ -150,7 +150,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetByKey(TKey key, out TValue value)
+        public bool TryGetByKey(TKey key, out TValue value)
         {
             if (ContainsKey(key))
             {
@@ -161,7 +161,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetIndexByKey(TKey key, out int value)
+        public bool TryGetIndexByKey(TKey key, out int value)
         {
             if (ContainsKey(key))
             {
@@ -172,7 +172,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetKeyByIndex(Int32 index, out TKey value)
+        public bool TryGetKeyByIndex(int index, out TKey value)
         {
             if (ContainsIndex(index))
             {
@@ -184,7 +184,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetKVPByIndex(Int32 index, out KeyValuePair<TKey, TValue> value)
+        public bool TryGetKVPByIndex(int index, out KeyValuePair<TKey, TValue> value)
         {
             if (ContainsIndex(index))
             {

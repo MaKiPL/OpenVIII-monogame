@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class SCROLLSYNC : JsmInstruction
     {
+        #region Constructors
+
         public SCROLLSYNC()
         {
         }
 
-        public SCROLLSYNC(Int32 parameter, IStack<IJsmExpression> stack)
+        public SCROLLSYNC(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SCROLLSYNC)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SCROLLSYNC)}()";
+
+        #endregion Methods
     }
 }

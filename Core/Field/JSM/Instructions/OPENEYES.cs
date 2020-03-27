@@ -1,5 +1,3 @@
-using System;
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -8,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/15C_OPENEYES&action=edit&redlink=1"/>
     public sealed class OPENEYES : JsmInstruction
     {
+        #region Constructors
+
         public OPENEYES()
         {
         }
 
-        public OPENEYES(Int32 parameter, IStack<IJsmExpression> stack)
+        public OPENEYES(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(OPENEYES)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(OPENEYES)}()";
+
+        #endregion Methods
     }
 }

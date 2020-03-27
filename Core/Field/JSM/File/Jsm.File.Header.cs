@@ -1,20 +1,30 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts
+﻿namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class File
         {
+            #region Structs
+
             public struct Header
             {
-                public Byte CountAreas;
-                public Byte CountDoors;
-                public Byte CountModules;
-                public Byte CountObjects;
-                public UInt16 ScriptsOffset;
-                public UInt16 OperationsOffset;
+                #region Fields
+
+                public byte CountAreas;
+                public byte CountDoors;
+                public byte CountModules;
+                public byte CountObjects;
+                public ushort OperationsOffset;
+                public ushort ScriptsOffset;
+
+                #endregion Fields
             };
+
+            #endregion Structs
         }
+
+        #endregion Classes
     }
 }

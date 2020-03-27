@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Preserve Sound Channel</para>
@@ -11,25 +8,31 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/179_UNKNOWN14"/>
     public sealed class Unknown14 : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Sound channel
         /// </summary>
-        private IJsmExpression _soundChannel;
+        private readonly IJsmExpression _soundChannel;
 
-        public Unknown14(IJsmExpression soundChannel)
-        {
-            _soundChannel = soundChannel;
-        }
+        #endregion Fields
 
-        public Unknown14(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public Unknown14(IJsmExpression soundChannel) => _soundChannel = soundChannel;
+
+        public Unknown14(int parameter, IStack<IJsmExpression> stack)
             : this(
                 soundChannel: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(Unknown14)}({nameof(_soundChannel)}: {_soundChannel})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(Unknown14)}({nameof(_soundChannel)}: {_soundChannel})";
+
+        #endregion Methods
     }
 }

@@ -54,7 +54,7 @@ namespace OpenVIII
         internal static class NativeMethods
         {
             [DllImport("libc")]
-            internal static extern Int32 uname(IntPtr buf);
+            internal static extern int uname(IntPtr buf);
         }
     }
 }

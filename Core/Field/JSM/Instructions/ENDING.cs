@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class ENDING : JsmInstruction
     {
-        public ENDING()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public ENDING() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

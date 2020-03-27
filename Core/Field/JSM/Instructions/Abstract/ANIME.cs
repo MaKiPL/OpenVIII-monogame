@@ -1,22 +1,30 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions.Abstract
+﻿namespace OpenVIII.Fields.Scripts.Instructions.Abstract
 {
     public abstract class ANIME : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Model Animation ID
         /// </summary>
-        protected readonly Int32 _animationId;
+        protected readonly int _animationId;
 
-        public ANIME(Int32 animationId)
-        {
-            _animationId = animationId;
+        #endregion Fields
 
-        }
-        public ANIME(Int32 animationId, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public ANIME(int animationId) => _animationId = animationId;
+
+        public ANIME(int animationId, IStack<IJsmExpression> stack)
             : this(animationId)
         { }
+
+        #endregion Constructors
+
+        #region Methods
+
         public abstract override string ToString();
+
+        #endregion Methods
     }
 }

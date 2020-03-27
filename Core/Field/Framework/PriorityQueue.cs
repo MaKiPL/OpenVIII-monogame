@@ -7,14 +7,14 @@ namespace OpenVIII.Fields
     {
         private LinkedList<Item> _list;
 
-        public Int32 Count => _list.Count;
+        public int Count => _list.Count;
 
         public PriorityQueue()
         {
             _list = new LinkedList<Item>();
         }
 
-        public void Enqueue(T value, Int32 priority = 0)
+        public void Enqueue(T value, int priority = 0)
         {
             var item = new Item(value, priority);
 
@@ -61,7 +61,7 @@ namespace OpenVIII.Fields
             throw new InvalidOperationException("The queue is empty.");
         }
 
-        public Boolean TryDequeue(out T value)
+        public bool TryDequeue(out T value)
         {
             if (Count == 0)
             {
@@ -76,7 +76,7 @@ namespace OpenVIII.Fields
             return true;
         }
 
-        public Boolean HasPriority(Int32 priority)
+        public bool HasPriority(int priority)
         {
             if (_list.Count == 0)
                 return false;
@@ -118,9 +118,9 @@ namespace OpenVIII.Fields
         private sealed class Item
         {
             public readonly T Value;
-            public readonly Int32 Priority;
+            public readonly int Priority;
 
-            public Item(T value, Int32 priority)
+            public Item(T value, int priority)
             {
                 Value = value;
                 Priority = priority;

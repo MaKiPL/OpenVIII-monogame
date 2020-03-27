@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// MENU tutorial? used in bgroom_5 only which is your computer in the classroom.
@@ -14,7 +12,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public MENUTUTO(Int32 parameter, IStack<IJsmExpression> stack)
+        public MENUTUTO(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
@@ -23,7 +21,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(MENUTUTO)}()";
+        public override string ToString() => $"{nameof(MENUTUTO)}()";
 
         #endregion Methods
     }

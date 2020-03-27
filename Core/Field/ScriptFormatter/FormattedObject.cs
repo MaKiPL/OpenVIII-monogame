@@ -1,17 +1,24 @@
-﻿using System;
-namespace OpenVIII.Fields.Scripts
+﻿namespace OpenVIII.Fields.Scripts
 {
     public sealed class FormattedObject
     {
-        public Field.Info Field { get; }
-        public String ObjectName { get; }
-        public String Scripts { get; }
+        #region Constructors
 
-        public FormattedObject(Field.Info field, String objectName, String scripts)
+        public FormattedObject(Field.Info field, string objectName, string scripts)
         {
             Field = field;
             ObjectName = objectName;
             Scripts = scripts;
         }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public Field.Info Field { get; }
+        public string ObjectName { get; }
+        public string Scripts { get; }
+
+        #endregion Properties
     }
 }

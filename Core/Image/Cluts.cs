@@ -35,12 +35,13 @@ namespace OpenVIII
         #region Properties
 
         public IReadOnlyList<byte> ClutIDs => Clut.Keys.OrderBy(x => x).ToList();
-        public int MaxColors => Clut.Values.Max(x => x.Length);
         public int Count => ((IDictionary<byte, Color[]>)Clut).Count;
         public bool IsReadOnly => ((IDictionary<byte, Color[]>)Clut).IsReadOnly;
         public ICollection<byte> Keys => ((IDictionary<byte, Color[]>)Clut).Keys;
-
+        public int MaxColors => Clut.Values.Max(x => x.Length);
         public ICollection<Color[]> Values => ((IDictionary<byte, Color[]>)Clut).Values;
+
+        private byte MaxClut => Keys.Max(x => x);
 
         #endregion Properties
 
@@ -72,14 +73,11 @@ namespace OpenVIII
 
         public bool Remove(KeyValuePair<byte, Color[]> item) => ((IDictionary<byte, Color[]>)Clut).Remove(item);
 
-        public bool TryGetValue(byte key, out Color[] value) => ((IDictionary<byte, Color[]>)Clut).TryGetValue(key, out value);
-
-        byte MaxClut => Keys.Max(x => x);
         public void Save(string path)
         {
-            using (var clutTexture = new Texture2D(Memory.graphics.GraphicsDevice, MaxColors, MaxClut+1))
+            using (var clutTexture = new Texture2D(Memory.graphics.GraphicsDevice, MaxColors, MaxClut + 1))
             {
-                foreach(var _Y_Colors in Clut.OrderBy(x=>x.Key))
+                foreach (var _Y_Colors in Clut.OrderBy(x => x.Key))
                 {
                     var colors = _Y_Colors.Value;
                     var y = _Y_Colors.Key;
@@ -89,7 +87,9 @@ namespace OpenVIII
                     clutTexture.SaveAsPng(fs, clutTexture.Width, clutTexture.Height);
             }
         }
-        #endregion Methods
 
+        public bool TryGetValue(byte key, out Color[] value) => ((IDictionary<byte, Color[]>)Clut).TryGetValue(key, out value);
+
+        #endregion Methods
     }
 }

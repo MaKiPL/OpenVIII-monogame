@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Lock walkmesh ID</para>
@@ -10,24 +7,30 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/01F_IDLOCK"/>
     public sealed class IDLOCK : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Walkmesh triangle ID
         /// </summary>
-        private Int32 _parameter;
+        private readonly int _parameter;
 
-        public IDLOCK(Int32 parameter)
-        {
-            _parameter = parameter;
-        }
+        #endregion Fields
 
-        public IDLOCK(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public IDLOCK(int parameter) => _parameter = parameter;
+
+        public IDLOCK(int parameter, IStack<IJsmExpression> stack)
             : this(parameter)
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(IDLOCK)}({nameof(_parameter)}: {_parameter})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(IDLOCK)}({nameof(_parameter)}: {_parameter})";
+
+        #endregion Methods
     }
 }

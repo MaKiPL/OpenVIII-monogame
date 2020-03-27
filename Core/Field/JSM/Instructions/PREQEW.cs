@@ -1,15 +1,16 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Requests that the entity associated with a character in the current party executes one of its member functions at a specified priority.
-    /// The request will block until remote execution has finished before returning. 
+    /// The request will block until remote execution has finished before returning.
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/019_PREQEW"/>
     public sealed class PREQEW : Abstract.PREQ
     {
+        #region Constructors
+
         public PREQEW(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
         }
@@ -18,10 +19,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(PREQEW)}({nameof(_partyId)}: {_partyId}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -41,5 +41,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
             return targetObject.Scripts.Execute(_scriptId, _priority);
         }
+
+        public override string ToString() => $"{nameof(PREQEW)}({nameof(_partyId)}: {_partyId}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
+
+        #endregion Methods
     }
 }

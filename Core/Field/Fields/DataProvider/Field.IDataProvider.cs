@@ -1,12 +1,18 @@
-﻿using System;
-
-namespace OpenVIII.Fields
+﻿namespace OpenVIII.Fields
 {
     public static partial class Field
     {
+        #region Interfaces
+
         public interface IDataProvider
         {
-            Byte[] FindPart(Part part);
+            #region Methods
+
+            byte[] FindPart(Part part);
+
+            #endregion Methods
         }
+
+        #endregion Interfaces
     }
 }

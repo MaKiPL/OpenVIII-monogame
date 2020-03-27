@@ -1,15 +1,18 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class WINSIZE : JsmInstruction
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
-        private IJsmExpression _arg2;
-        private IJsmExpression _arg3;
-        private IJsmExpression _arg4;
+        #region Fields
+
+        private readonly IJsmExpression _arg0;
+        private readonly IJsmExpression _arg1;
+        private readonly IJsmExpression _arg2;
+        private readonly IJsmExpression _arg3;
+        private readonly IJsmExpression _arg4;
+
+        #endregion Fields
+
+        #region Constructors
 
         public WINSIZE(IJsmExpression arg0, IJsmExpression arg1, IJsmExpression arg2, IJsmExpression arg3, IJsmExpression arg4)
         {
@@ -20,7 +23,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _arg4 = arg4;
         }
 
-        public WINSIZE(Int32 parameter, IStack<IJsmExpression> stack)
+        public WINSIZE(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg4: stack.Pop(),
                 arg3: stack.Pop(),
@@ -30,9 +33,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(WINSIZE)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2}, {nameof(_arg3)}: {_arg3}, {nameof(_arg4)}: {_arg4})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(WINSIZE)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2}, {nameof(_arg3)}: {_arg3}, {nameof(_arg4)}: {_arg4})";
+
+        #endregion Methods
     }
 }

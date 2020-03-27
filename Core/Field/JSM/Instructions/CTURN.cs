@@ -1,43 +1,43 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
-{ 
-/// <summary>
-/// Make this entity face the entity with the ID of the first parameter.
-/// </summary>
-internal sealed class CTURN : JsmInstruction
+﻿namespace OpenVIII.Fields.Scripts.Instructions
+{
+    /// <summary>
+    /// Make this entity face the entity with the ID of the first parameter.
+    /// </summary>
+    internal sealed class CTURN : JsmInstruction
     {
-        private readonly Int32 _targetObject;
-        private IJsmExpression _frameDuration;
+        #region Fields
 
-        public CTURN(Int32 targetObject, IJsmExpression frameDuration)
+        private readonly IJsmExpression _frameDuration;
+        private readonly int _targetObject;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public CTURN(int targetObject, IJsmExpression frameDuration)
         {
             _targetObject = targetObject;
             _frameDuration = frameDuration;
         }
 
-        public CTURN(Int32 parameter, IStack<IJsmExpression> stack)
+        public CTURN(int parameter, IStack<IJsmExpression> stack)
             : this(
                 frameDuration: stack.Pop(),
                 targetObject: ((IConstExpression)stack.Pop()).Int32())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(CTURN)}({nameof(_targetObject)}: {_targetObject}, {nameof(_frameDuration)}: {_frameDuration})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Await()
                 .Property(nameof(FieldObject.Model))
                 .Method(nameof(FieldObjectModel.RotateToObject))
                 .Argument("targetObject", _targetObject)
                 .Argument("frameDuration", _frameDuration)
                 .Comment(nameof(CTURN));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -48,5 +48,9 @@ internal sealed class CTURN : JsmInstruction
 
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(CTURN)}({nameof(_targetObject)}: {_targetObject}, {nameof(_frameDuration)}: {_frameDuration})";
+
+        #endregion Methods
     }
 }

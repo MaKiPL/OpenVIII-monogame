@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Set Battle Music</para>
@@ -20,38 +17,41 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
     public sealed class SETBATTLEMUSIC : JsmInstruction
     {
-        private MusicId _musicId;
+        #region Fields
 
-        public SETBATTLEMUSIC(MusicId musicId)
-        {
-            _musicId = musicId;
-        }
+        private readonly MusicId _musicId;
 
-        public SETBATTLEMUSIC(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public SETBATTLEMUSIC(MusicId musicId) => _musicId = musicId;
+
+        public SETBATTLEMUSIC(int parameter, IStack<IJsmExpression> stack)
             : this(
                 musicId: (MusicId)((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SETBATTLEMUSIC)}({nameof(_musicId)}: {_musicId})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .CommentLine(MusicName.Get(_musicId))
                 .StaticType(nameof(IMusicService))
                 .Method(nameof(IMusicService.ChangeBattleMusic))
                 .Enum(_musicId)
                 .Comment(nameof(SETBATTLEMUSIC));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Music[services].ChangeBattleMusic(_musicId);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(SETBATTLEMUSIC)}({nameof(_musicId)}: {_musicId})";
+
+        #endregion Methods
     }
 }

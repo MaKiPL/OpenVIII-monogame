@@ -1,23 +1,35 @@
 ﻿using OpenVIII.Fields.Scripts.Instructions;
-using System;
 using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class Control
         {
+            #region Classes
+
             public sealed partial class While
             {
-                private sealed class Executer : IScriptExecuter
+                #region Classes
+
+                private sealed class Executor : IScriptExecutor
                 {
+                    #region Fields
+
                     private readonly WhileSegment _seg;
 
-                    public Executer(WhileSegment seg)
-                    {
-                        _seg = seg;
-                    }
+                    #endregion Fields
+
+                    #region Constructors
+
+                    public Executor(WhileSegment seg) => _seg = seg;
+
+                    #endregion Constructors
+
+                    #region Methods
 
                     public IEnumerable<IAwaitable> Execute(IServices services)
                     {
@@ -33,7 +45,7 @@ namespace OpenVIII.Fields.Scripts
                         }
                     }
 
-                    private Boolean CanExecute(JPF jpf, IServices services)
+                    private bool CanExecute(JPF jpf, IServices services)
                     {
                         foreach (var condition in jpf.Conditions)
                         {
@@ -43,8 +55,16 @@ namespace OpenVIII.Fields.Scripts
 
                         return true;
                     }
+
+                    #endregion Methods
                 }
+
+                #endregion Classes
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

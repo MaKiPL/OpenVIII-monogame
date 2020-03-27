@@ -1,21 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Opens a field message window and lets player choose a single line.
     /// ASK saves the chosen line index into a temp variable which you can retrieve with PSHI_L 0.
-    /// AASK is an upgrade that also lets you set the window position. 
+    /// AASK is an upgrade that also lets you set the window position.
     /// </summary>
     internal sealed class ASK : JsmInstruction
     {
-        private IJsmExpression _channel;
-        private IJsmExpression _messageId;
-        private IJsmExpression _firstLine;
-        private IJsmExpression _lastLine;
-        private IJsmExpression _beginLine;
-        private IJsmExpression _cancelLine;
+        #region Fields
+
+        private readonly IJsmExpression _beginLine;
+        private readonly IJsmExpression _cancelLine;
+        private readonly IJsmExpression _channel;
+        private readonly IJsmExpression _firstLine;
+        private readonly IJsmExpression _lastLine;
+        private readonly IJsmExpression _messageId;
+
+        #endregion Fields
+
+        #region Constructors
 
         public ASK(IJsmExpression channel, IJsmExpression messageId, IJsmExpression firstLine, IJsmExpression lastLine, IJsmExpression beginLine, IJsmExpression cancelLine)
         {
@@ -27,7 +30,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _cancelLine = cancelLine;
         }
 
-        public ASK(Int32 parameter, IStack<IJsmExpression> stack)
+        public ASK(int parameter, IStack<IJsmExpression> stack)
             : this(
                 cancelLine: stack.Pop(),
                 beginLine: stack.Pop(),
@@ -38,10 +41,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(ASK)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_firstLine)}: {_firstLine}, {nameof(_lastLine)}: {_lastLine}, {nameof(_beginLine)}: {_beginLine}, {nameof(_cancelLine)}: {_cancelLine})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -61,15 +63,16 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 .Comment(nameof(AASK));
         }
 
-        public override IAwaitable TestExecute(IServices services)
-        {
-            return ServiceId.Message[services].ShowQuestion(
+        public override IAwaitable TestExecute(IServices services) => ServiceId.Message[services].ShowQuestion(
                 _channel.Int32(services),
                 _messageId.Int32(services),
                 _firstLine.Int32(services),
                 _lastLine.Int32(services),
                 _beginLine.Int32(services),
                 _cancelLine.Int32(services));
-        }
+
+        public override string ToString() => $"{nameof(ASK)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_firstLine)}: {_firstLine}, {nameof(_lastLine)}: {_lastLine}, {nameof(_beginLine)}: {_beginLine}, {nameof(_cancelLine)}: {_cancelLine})";
+
+        #endregion Methods
     }
 }

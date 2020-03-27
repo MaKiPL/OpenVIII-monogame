@@ -4,10 +4,10 @@ namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
-        public static readonly Int32[] GlobalUInt32 = {360, 400, 404};
-        public static readonly Int32[] GlobalUInt16 = {350, 352, 380, 528, 592, 634, 656, 666, 672, 724, 726, 732};
+        public static readonly int[] GlobalUInt32 = {360, 400, 404};
+        public static readonly int[] GlobalUInt16 = {350, 352, 380, 528, 592, 634, 656, 666, 672, 724, 726, 732};
 
-        public static readonly Int32[] GlobalUInt8 =
+        public static readonly int[] GlobalUInt8 =
         {
             261, 264, 265, 266, 268, 269, 270, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282,
             283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300,

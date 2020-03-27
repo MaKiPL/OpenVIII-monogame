@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace OpenVIII.Fields
 {
     public sealed class FieldObjectScripts
     {
-        private readonly OrderedDictionary<int, IScriptExecuter> _dic = new OrderedDictionary<int, IScriptExecuter>();
+        #region Fields
+
+        private readonly OrderedDictionary<int, IScriptExecutor> _dic = new OrderedDictionary<int, IScriptExecutor>();
         private readonly PriorityQueue<Executer> _executionQueue = new PriorityQueue<Executer>();
 
-        private bool _isInitialized;
-        private IAwaiter _currentState;
         private Executer _currentExecutor;
+        private IAwaiter _currentState;
+        private bool _isInitialized;
 
-        public void Add(int scriptId, IScriptExecuter executor)
-        {
-            _dic.Add(scriptId, executor);
-        }
+        #endregion Fields
+
+        #region Methods
+
+        public void Add(int scriptId, IScriptExecutor executor) => _dic.Add(scriptId, executor);
 
         public void CancelAll()
         {
@@ -39,7 +41,7 @@ namespace OpenVIII.Fields
         /// <summary>
         /// Requests that a remote entity executes one of its member functions at a specified priority.
         /// The request is asynchronous and returns immediately without waiting for the remote execution to start or finish.
-        /// If the specified priority is already busy executing, the request will fail silently. 
+        /// If the specified priority is already busy executing, the request will fail silently.
         /// </summary>
         public IAwaitable TryExecute(int scriptId, int priority)
         {
@@ -106,7 +108,7 @@ namespace OpenVIII.Fields
             _isInitialized = true;
         }
 
-        private IScriptExecuter GetScriptExecuter(int scriptId)
+        private IScriptExecutor GetScriptExecuter(int scriptId)
         {
             if (_dic.TryGetByKey(scriptId, out var obj))
                 return obj;
@@ -114,17 +116,33 @@ namespace OpenVIII.Fields
             throw new ArgumentException($"A script (Id: {scriptId}) isn't exists.", nameof(scriptId));
         }
 
+        #endregion Methods
+
+        #region Classes
+
         private sealed class Executer : IAwaitable, IAwaiter
         {
-            private readonly IScriptExecuter _executer;
+            #region Fields
+
+            private readonly IScriptExecutor _executor;
             private IEnumerator<IAwaitable> _en;
 
-            public Executer(IScriptExecuter executer)
-            {
-                _executer = executer;
-            }
+            #endregion Fields
+
+            #region Constructors
+
+            public Executer(IScriptExecutor executor) => _executor = executor;
+
+            #endregion Constructors
+
+            #region Properties
 
             public bool IsCompleted { get; set; }
+
+            #endregion Properties
+
+            #region Methods
+
             public void Complete() => IsCompleted = true;
 
             public void Execute(IServices services)
@@ -132,7 +150,13 @@ namespace OpenVIII.Fields
                 if (IsCompleted)
                     throw new InvalidOperationException("The script has already been executed once.");
 
-                _en = _executer.Execute(services).GetEnumerator();
+                _en = _executor.Execute(services).GetEnumerator();
+            }
+
+            public IAwaiter GetAwaiter() => this;
+
+            public void GetResult()
+            {
             }
 
             public bool Next(out IAwaitable awaitable)
@@ -151,19 +175,11 @@ namespace OpenVIII.Fields
                 return false;
             }
 
-            public IAwaiter GetAwaiter()
-            {
-                return this;
-            }
+            public void OnCompleted(Action continuation) => continuation();
 
-            public void OnCompleted(Action continuation)
-            {
-                continuation();
-            }
-
-            public void GetResult()
-            {
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

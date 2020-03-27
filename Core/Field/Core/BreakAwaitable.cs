@@ -2,11 +2,16 @@
 {
     public sealed class BreakAwaitable : IAwaitable
     {
+        #region Properties
+
         public static IAwaitable Instance { get; } = new BreakAwaitable();
 
-        public IAwaiter GetAwaiter()
-        {
-            return DummyAwaiter.Instance;
-        }
+        #endregion Properties
+
+        #region Methods
+
+        public IAwaiter GetAwaiter() => DummyAwaiter.Instance;
+
+        #endregion Methods
     }
 }

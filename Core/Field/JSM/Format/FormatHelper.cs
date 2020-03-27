@@ -5,24 +5,17 @@ namespace OpenVIII.Fields.Scripts
 {
     public static class FormatHelper
     {
-        private static readonly String[] Separators = {"\r\n", "\n", "{Line}", "{Next}"};
+        #region Fields
 
-        public static void FormatMonologue(ScriptWriter sw, String message)
-        {
-            if (!sw.HasWhiteLine)
-                sw.AppendLine();
+        private static readonly string[] Separators = { "\r\n", "\n", "{Line}", "{Next}" };
 
-            foreach (var str in SplitMonologue(message))
-            {
-                if (String.IsNullOrEmpty(str))
-                    continue;
+        #endregion Fields
 
-                sw.Append("// ");
-                sw.AppendLine(str);
-            }
-        }
+        #region Methods
 
-        public static void FormatAnswers(ScriptWriter sw, String message, IJsmExpression top, IJsmExpression bottom, IJsmExpression begin, IJsmExpression cancel)
+        public static Formatter Format(this ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext) => new Formatter(sw, formatterContext, executionContext);
+
+        public static void FormatAnswers(ScriptWriter sw, string message, IJsmExpression top, IJsmExpression bottom, IJsmExpression begin, IJsmExpression cancel)
         {
             if (!(top is IConstExpression t) || !(bottom is IConstExpression b))
             {
@@ -73,12 +66,7 @@ namespace OpenVIII.Fields.Scripts
             }
         }
 
-        public static String[] SplitMonologue(String message)
-        {
-            return message.Split(Separators, StringSplitOptions.None);
-        }
-
-        public static void FormatGlobalGet<T>(GlobalVariableId<T> globalVariable, Int32[] knownVariables, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext) where T: unmanaged
+        public static void FormatGlobalGet<T>(GlobalVariableId<T> globalVariable, int[] knownVariables, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext) where T : unmanaged
         {
             if (knownVariables == null || Array.BinarySearch(knownVariables, globalVariable.VariableId) < 0)
             {
@@ -98,7 +86,7 @@ namespace OpenVIII.Fields.Scripts
             sw.Append("]");
         }
 
-        public static void FormatGlobalSet<T>(GlobalVariableId<T> globalVariable, IJsmExpression value, Int32[] knownVariables, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext) where T: unmanaged
+        public static void FormatGlobalSet<T>(GlobalVariableId<T> globalVariable, IJsmExpression value, int[] knownVariables, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext) where T : unmanaged
         {
             sw.Append("G");
 
@@ -125,16 +113,30 @@ namespace OpenVIII.Fields.Scripts
             sw.AppendLine(";");
         }
 
-        public static Formatter Format(this ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
+        public static void FormatMonologue(ScriptWriter sw, string message)
         {
-            return new Formatter(sw, formatterContext, executionContext);
+            if (!sw.HasWhiteLine)
+                sw.AppendLine();
+
+            foreach (var str in SplitMonologue(message))
+            {
+                if (string.IsNullOrEmpty(str))
+                    continue;
+
+                sw.Append("// ");
+                sw.AppendLine(str);
+            }
         }
+
+        public static string[] SplitMonologue(string message) => message.Split(Separators, StringSplitOptions.None);
+
+        #endregion Methods
+
+        #region Classes
 
         public sealed class Formatter
         {
-            public ScriptWriter Sw { get; }
-            public IScriptFormatterContext FormatterContext { get; }
-            public IServices ExecutionContext { get; }
+            #region Constructors
 
             public Formatter(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
             {
@@ -143,6 +145,18 @@ namespace OpenVIII.Fields.Scripts
                 ExecutionContext = executionContext;
             }
 
+            #endregion Constructors
+
+            #region Properties
+
+            public IServices ExecutionContext { get; }
+            public IScriptFormatterContext FormatterContext { get; }
+            public ScriptWriter Sw { get; }
+
+            #endregion Properties
+
+            #region Methods
+
             public Formatter Await()
             {
                 Sw.Append("await ");
@@ -150,29 +164,7 @@ namespace OpenVIII.Fields.Scripts
                 return this;
             }
 
-            public PropertyFormatter Property(String methodName)
-            {
-                Sw.Append("this.");
-                Sw.Append(methodName);
-
-                return new PropertyFormatter(this);
-            }
-
-            public MethodFormatter Method(String methodName)
-            {
-                Sw.Append("this.");
-                Sw.Append(methodName);
-                Sw.Append("(");
-                return new MethodFormatter(this);
-            }
-
-            public StaticTypeFormatter StaticType(String typeName)
-            {
-                Sw.Append(typeName);
-                return new StaticTypeFormatter(this);
-            }
-
-            public Formatter CommentLine(String text)
+            public Formatter CommentLine(string text)
             {
                 if (!Sw.HasWhiteLine)
                     Sw.AppendLine();
@@ -181,133 +173,62 @@ namespace OpenVIII.Fields.Scripts
                 Sw.AppendLine(text);
                 return this;
             }
-        }
 
-        public sealed class StaticTypeFormatter
-        {
-            public Formatter Formatter { get; }
-
-            public StaticTypeFormatter(Formatter formatter)
+            public MethodFormatter Method(string methodName)
             {
-                Formatter = formatter;
+                Sw.Append("this.");
+                Sw.Append(methodName);
+                Sw.Append("(");
+                return new MethodFormatter(this);
             }
 
-            public PropertyFormatter Property(String propertyName)
+            public PropertyFormatter Property(string methodName)
             {
-                Formatter.Sw.Append(".");
-                Formatter.Sw.Append(propertyName);
+                Sw.Append("this.");
+                Sw.Append(methodName);
 
-                return new PropertyFormatter(Formatter);
+                return new PropertyFormatter(this);
             }
 
-            public MethodFormatter Method(String methodName)
+            public StaticTypeFormatter StaticType(string typeName)
             {
-                var sw = Formatter.Sw;
-                sw.Append(".");
-                sw.Append(methodName);
-                sw.Append("(");
-                return new MethodFormatter(Formatter);
-            }
-        }
-
-        public sealed class PropertyFormatter
-        {
-            public Formatter Formatter { get; }
-
-            public PropertyFormatter(Formatter formatter)
-            {
-                Formatter = formatter;
+                Sw.Append(typeName);
+                return new StaticTypeFormatter(this);
             }
 
-            public PropertyFormatter Property(String propertyName)
-            {
-                Formatter.Sw.Append(".");
-                Formatter.Sw.Append(propertyName);
-
-                return new PropertyFormatter(Formatter);
-            }
-
-            public MethodFormatter Method(String methodName)
-            {
-                var sw = Formatter.Sw;
-                sw.Append(".");
-                sw.Append(methodName);
-                sw.Append("(");
-                return new MethodFormatter(Formatter);
-            }
-
-            public PropertyFormatter Assign(Boolean value)
-            {
-                var sw = Formatter.Sw;
-                sw.Append(" = ");
-                sw.Append(value ? "true" : "false");
-                sw.Append(";");
-                return this;
-            }
-
-            public PropertyFormatter Assign(Int64 value)
-            {
-                var sw = Formatter.Sw;
-                sw.Append(" = ");
-                sw.Append(value.ToString(CultureInfo.InvariantCulture));
-                sw.Append(";");
-                return this;
-            }
-
-            public PropertyFormatter Assign(IJsmExpression assignExpression)
-            {
-                var sw = Formatter.Sw;
-                sw.Append(" = ");
-                assignExpression.Format(sw, Formatter.FormatterContext, Formatter.ExecutionContext);
-                sw.Append(";");
-                return this;
-            }
-
-            public void Comment(String nativeName)
-            {
-                Formatter.Sw.Append(" // ");
-                Formatter.Sw.AppendLine(nativeName);
-            }
+            #endregion Methods
         }
 
         public sealed class MethodFormatter
         {
+            #region Fields
+
+            private bool _hasArguments = false;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public MethodFormatter(Formatter formatter) => Formatter = formatter;
+
+            #endregion Constructors
+
+            #region Properties
+
             public Formatter Formatter { get; }
 
-            public MethodFormatter(Formatter formatter)
-            {
-                Formatter = formatter;
-            }
+            #endregion Properties
 
-            private Boolean _hasArguments = false;
+            #region Methods
 
-            public MethodFormatter Enum<T>(T argumentValue) where T : struct
-            {
-                return Argument(typeof(T).Name + '.' + argumentValue);
-            }
+            public MethodFormatter Argument(string argumentName, int argumentValue) => Argument(argumentName, argumentValue.ToString(CultureInfo.InvariantCulture));
 
-            public MethodFormatter Enum<T>(IJsmExpression argumentExpression) where T : struct
-            {
-                if (argumentExpression is IConstExpression expr)
-                    return Argument(typeof(T).Name + '.' + (T)(Object)expr.Int32());
+            public MethodFormatter Argument(string argumentName, bool argumentValue) => Argument(argumentName, argumentValue ? "true" : "false");
 
-                return Argument<T>(null, argumentExpression);
-            }
-
-            public MethodFormatter Argument(String argumentName, Int32 argumentValue)
-            {
-                return Argument(argumentName, argumentValue.ToString(CultureInfo.InvariantCulture));
-            }
-
-            public MethodFormatter Argument(String argumentName, Boolean argumentValue)
-            {
-                return Argument(argumentName, argumentValue ? "true" : "false");
-            }
-
-            public MethodFormatter Argument(String argumentName, IJsmExpression argumentExpression)
+            public MethodFormatter Argument(string argumentName, IJsmExpression argumentExpression)
             {
                 var sw = Formatter.Sw;
-                
+
                 if (_hasArguments)
                     sw.Append(", ");
 
@@ -323,10 +244,10 @@ namespace OpenVIII.Fields.Scripts
                 return this;
             }
 
-            public MethodFormatter Argument<T>(String argumentName, IJsmExpression argumentExpression)
+            public MethodFormatter Argument<T>(string argumentName, IJsmExpression argumentExpression)
             {
                 var sw = Formatter.Sw;
-                
+
                 if (_hasArguments)
                     sw.Append(", ");
 
@@ -346,10 +267,10 @@ namespace OpenVIII.Fields.Scripts
                 return this;
             }
 
-            public MethodFormatter Argument(String argumentValue)
+            public MethodFormatter Argument(string argumentValue)
             {
                 var sw = Formatter.Sw;
-                
+
                 if (_hasArguments)
                     sw.Append(", ");
 
@@ -359,10 +280,10 @@ namespace OpenVIII.Fields.Scripts
                 return this;
             }
 
-            public MethodFormatter Argument(String argumentName, String argumentValue)
+            public MethodFormatter Argument(string argumentName, string argumentValue)
             {
                 var sw = Formatter.Sw;
-                
+
                 if (_hasArguments)
                     sw.Append(", ");
 
@@ -374,11 +295,130 @@ namespace OpenVIII.Fields.Scripts
                 return this;
             }
 
-            public void Comment(String nativeName)
+            public void Comment(string nativeName)
             {
                 Formatter.Sw.Append("); // ");
                 Formatter.Sw.AppendLine(nativeName);
             }
+
+            public MethodFormatter Enum<T>(T argumentValue) where T : struct => Argument(typeof(T).Name + '.' + argumentValue);
+
+            public MethodFormatter Enum<T>(IJsmExpression argumentExpression) where T : struct
+            {
+                if (argumentExpression is IConstExpression expr)
+                    return Argument(typeof(T).Name + '.' + (T)(object)expr.Int32());
+
+                return Argument<T>(null, argumentExpression);
+            }
+
+            #endregion Methods
         }
+
+        public sealed class PropertyFormatter
+        {
+            #region Constructors
+
+            public PropertyFormatter(Formatter formatter) => Formatter = formatter;
+
+            #endregion Constructors
+
+            #region Properties
+
+            public Formatter Formatter { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public PropertyFormatter Assign(bool value)
+            {
+                var sw = Formatter.Sw;
+                sw.Append(" = ");
+                sw.Append(value ? "true" : "false");
+                sw.Append(";");
+                return this;
+            }
+
+            public PropertyFormatter Assign(long value)
+            {
+                var sw = Formatter.Sw;
+                sw.Append(" = ");
+                sw.Append(value.ToString(CultureInfo.InvariantCulture));
+                sw.Append(";");
+                return this;
+            }
+
+            public PropertyFormatter Assign(IJsmExpression assignExpression)
+            {
+                var sw = Formatter.Sw;
+                sw.Append(" = ");
+                assignExpression.Format(sw, Formatter.FormatterContext, Formatter.ExecutionContext);
+                sw.Append(";");
+                return this;
+            }
+
+            public void Comment(string nativeName)
+            {
+                Formatter.Sw.Append(" // ");
+                Formatter.Sw.AppendLine(nativeName);
+            }
+
+            public MethodFormatter Method(string methodName)
+            {
+                var sw = Formatter.Sw;
+                sw.Append(".");
+                sw.Append(methodName);
+                sw.Append("(");
+                return new MethodFormatter(Formatter);
+            }
+
+            public PropertyFormatter Property(string propertyName)
+            {
+                Formatter.Sw.Append(".");
+                Formatter.Sw.Append(propertyName);
+
+                return new PropertyFormatter(Formatter);
+            }
+
+            #endregion Methods
+        }
+
+        public sealed class StaticTypeFormatter
+        {
+            #region Constructors
+
+            public StaticTypeFormatter(Formatter formatter) => Formatter = formatter;
+
+            #endregion Constructors
+
+            #region Properties
+
+            public Formatter Formatter { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public MethodFormatter Method(string methodName)
+            {
+                var sw = Formatter.Sw;
+                sw.Append(".");
+                sw.Append(methodName);
+                sw.Append("(");
+                return new MethodFormatter(Formatter);
+            }
+
+            public PropertyFormatter Property(string propertyName)
+            {
+                Formatter.Sw.Append(".");
+                Formatter.Sw.Append(propertyName);
+
+                return new PropertyFormatter(Formatter);
+            }
+
+            #endregion Methods
+        }
+
+        #endregion Classes
     }
 }

@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class ISMEMBER : JsmInstruction
     {
-        public ISMEMBER()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public ISMEMBER() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

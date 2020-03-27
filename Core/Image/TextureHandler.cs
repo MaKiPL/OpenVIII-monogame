@@ -190,15 +190,15 @@ namespace OpenVIII
             var bn1 = bn;
             var limited = pngStrings.Where(x => x.IndexOf(bn1, StringComparison.OrdinalIgnoreCase) >= 0)
                 .OrderBy(x => x.Length).ThenBy(x => x, StringComparer.InvariantCultureIgnoreCase);
-            
+
             if (limited.Any())
             {
                 var re1 = new Regex(@".+[\\/]+" + bn + @"_(\d{1,2})\.png",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled);
                 var re2 = new Regex(@".+[\\/]+" + bn + @"\.png", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-                var matches = (limited.Select(x => new {x, m1 = re1.Match(x)})
-                    .Select(t => new {t, m2 = re2.Match(t.x)})
+                var matches = (limited.Select(x => new { x, m1 = re1.Match(x) })
+                    .Select(t => new { t, m2 = re2.Match(t.x) })
                     .Where(t => (t.t.m1.Success || t.m2.Success))
                     .OrderByDescending(t => t.t.m1.Success)
                     .Select(t => t.t.m1.Success ? t.t.m1 : t.m2));
@@ -209,11 +209,10 @@ namespace OpenVIII
                 if (!string.IsNullOrWhiteSpace(tex)) return (tex, null);
             }
 
-            
             var zzz = ArchiveZzz.Load(Memory.Archives.ZZZ_MAIN);
             if (zzz == null || !zzz.IsOpen) return (null, null);
             bn += ".png";
-            if(zzz.ArchiveMap.FindString(ref bn, out _) != default)
+            if (zzz.ArchiveMap.FindString(ref bn, out _) != default)
                 return PngCache.ContainsKey(bn) ? (bn, null) : (bn, zzz.GetBinaryFile(bn));
             return (null, null);
         }
@@ -255,7 +254,6 @@ namespace OpenVIII
             {
                 if (PngCache.TryGetValue(pngPath, out tex))
                 {
-
                 }
                 else if (zzzPNG != null && zzzPNG.Length > 0)
                 {
@@ -265,7 +263,7 @@ namespace OpenVIII
                         PngCache.TryAdd(pngPath, tex);
                     }
                 }
-                else if(File.Exists(pngPath))
+                else if (File.Exists(pngPath))
                 {
                     using (var fs = new FileStream(pngPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {

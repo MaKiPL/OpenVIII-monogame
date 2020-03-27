@@ -10,7 +10,7 @@ namespace OpenVIII.Fields
     {
         public static class Reader
         {
-            public static IReadOnlyList<FF8String> FromBytes(Byte[] buff)
+            public static IReadOnlyList<FF8String> FromBytes(byte[] buff)
             {
                 var monologues = new List<FF8String>();
 
@@ -48,7 +48,7 @@ namespace OpenVIII.Fields
                         var nextoffset = i+1<Offsets.Capacity ? Offsets[i+1] : (uint)br.BaseStream.Length;
                         if (offset == nextoffset)
                         {
-                            monologues.Add(String.Empty);
+                            monologues.Add(string.Empty);
                             continue;
                         }
                         var length = checked((int)(nextoffset - offset - 1));
@@ -58,7 +58,7 @@ namespace OpenVIII.Fields
                 }
             }
 
-            private static UInt32 GetMessageNumber(UInt32 dataOffset, long bufferSize)
+            private static uint GetMessageNumber(uint dataOffset, long bufferSize)
             {
                 var count = dataOffset / 4;
 

@@ -1,16 +1,17 @@
 ﻿using OpenVIII.Fields.Scripts.Instructions;
-using System;
 using System.Collections.Generic;
-
-
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static class InstructionMerger
         {
-            public static List<JsmInstruction> Merge(List<JsmInstruction> instructions, HashSet<Int32> labelIndices)
+            #region Methods
+
+            public static List<JsmInstruction> Merge(List<JsmInstruction> instructions, HashSet<int> labelIndices)
             {
                 var result = new List<JsmInstruction>(instructions.Count);
 
@@ -48,6 +49,10 @@ namespace OpenVIII.Fields.Scripts
 
                 return result;
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

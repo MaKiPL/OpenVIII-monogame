@@ -3,18 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class File
         {
-            public static List<GameObject> Read(Byte[] data)
+            #region Methods
+
+            public static List<GameObject> Read(byte[] data)
             {
                 unsafe
                 {
-                    fixed (Byte* ptr = data)
+                    fixed (byte* ptr = data)
                     {
                         if (ptr == null) return null;
                         var header = (Header*)ptr;
@@ -44,7 +47,7 @@ namespace OpenVIII.Fields.Scripts
                                 var position = scripts->Position;
                                 scripts++;
 
-                                var count = (UInt16)(scripts->Position - position);
+                                var count = (ushort)(scripts->Position - position);
                                 var scriptSegment = MakeScript(operation + position, count);
 
                                 objectScripts.Add(new GameScript(scriptLabel, scriptSegment));
@@ -58,7 +61,7 @@ namespace OpenVIII.Fields.Scripts
                 }
             }
 
-            private static unsafe Jsm.ExecutableSegment MakeScript(Operation* operation, UInt16 count)
+            private static unsafe Jsm.ExecutableSegment MakeScript(Operation* operation, ushort count)
             {
                 var instructions = new List<JsmInstruction>(count / 2);
                 var stack = new LabeledStack();
@@ -110,6 +113,10 @@ namespace OpenVIII.Fields.Scripts
                 // Arrange instructions by segments and return root
                 return Jsm.Segment.Builder.Build(instructions, controls);
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

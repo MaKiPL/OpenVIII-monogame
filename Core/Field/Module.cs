@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Xna.Framework;
 
 namespace OpenVIII.Fields
 {
@@ -20,66 +20,59 @@ namespace OpenVIII.Fields
 
         #endregion Fields
 
-        #region Enums
-
-
-
-        #endregion Enums
-
         #region Properties
 
-        public static Background Background => _archive?.Background;
-/*
-        public static Cameras Cameras => _archive?.Cameras;
-*/
-/*
-        private static EventEngine EventEngine => _archive?.EventEngine;
-*/
-        public static FieldMenu FieldMenu { get; set; }
-/*
-        private static INF INF => _archive?.INF;
-*/
         public static FF8String AreaName => _archive?.GetAreaNames()?.FirstOrDefault();
-
-/*
-        public static ushort GetForcedBattleEncounter
-        {
-            get
-            {
-                HashSet<ushort> t = _archive?.GetForcedBattleEncounters();
-                if (t == null || t.Count == 0)
-                    return ushort.MaxValue;
-                return t.First();
-            }
-        }
-*/
+        public static Background Background => _archive?.Background;
+        /*
+                public static Cameras Cameras => _archive?.Cameras;
+        */
+        /*
+                private static EventEngine EventEngine => _archive?.EventEngine;
+        */
+        public static FieldMenu FieldMenu { get; set; }
+        /*
+                private static INF INF => _archive?.INF;
+        */
+        /*
+                public static ushort GetForcedBattleEncounter
+                {
+                    get
+                    {
+                        HashSet<ushort> t = _archive?.GetForcedBattleEncounters();
+                        if (t == null || t.Count == 0)
+                            return ushort.MaxValue;
+                        return t.First();
+                    }
+                }
+        */
 
         public static FieldModes Mod
         {
             get => _archive.Mod; private set => _archive.Mod = value;
         }
 
-/*
-        public static MrtRat MrtRat => _archive.MrtRat;
-*/
+        /*
+                public static MrtRat MrtRat => _archive.MrtRat;
+        */
 
-/*
-        private static MSK MSK => _archive.MSK;
-*/
+        /*
+                private static MSK MSK => _archive.MSK;
+        */
 
         public static PMP PMP => _archive.PMP;
 
-/*
-        private static IServices Services => _archive.Services;
-*/
+        /*
+                private static IServices Services => _archive.Services;
+        */
 
-/*
-        private static SFX SFX => _archive.SFX;
-*/
+        /*
+                private static SFX SFX => _archive.SFX;
+        */
 
-/*
-        private static TDW TDW => _archive.TDW;
-*/
+        /*
+                private static TDW TDW => _archive.TDW;
+        */
 
         public static Toggles Toggles { get; set; } = Toggles.Quad | Toggles.Menu | Toggles.DumpingData;
 
@@ -106,6 +99,7 @@ namespace OpenVIII.Fields
                 case FieldModes.Disabled:
                     FieldMenu.Draw();
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -167,6 +161,7 @@ namespace OpenVIII.Fields
                     case FieldModes.Disabled:
                         FieldMenu.Update();
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

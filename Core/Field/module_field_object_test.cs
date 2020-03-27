@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,30 +10,129 @@ namespace OpenVIII.Fields
     /// </summary>
     public class ModuleFieldObjectTest
     {
-        private static int _lastFieldId = -1;
+        #region Fields
 
-        private static int _debugModelId;
-        private static int _animId;
-        private static int _animFrame;
+        public static AlphaTestEffect Ate;
+        public static BasicEffect Effect;
 
-        private static double _timer;
-
-        private static FieldCharaOne _charaOne;
-
-        private static FPS_Camera _fpsCamera;
-        private static Matrix _projectionMatrix, _viewMatrix, _worldMatrix;
-        private static float _degrees;
         //private static float _camDistance = 10.0f;
         private const float RenderCamDistance = 1200f;
-        private static Vector3 _camPosition, _camTarget;
-        public static BasicEffect Effect;
-        public static AlphaTestEffect Ate;
 
+        private static int _animFrame;
+        private static int _animId;
         private static bool _bInitialized;
+        private static Vector3 _camPosition, _camTarget;
+        private static FieldCharaOne _charaOne;
+        private static int _debugModelId;
+        private static float _degrees;
+        private static FPS_Camera _fpsCamera;
+        private static int _lastFieldId = -1;
+        private static Matrix _projectionMatrix, _viewMatrix, _worldMatrix;
+        private static double _timer;
+
+        #endregion Fields
+
+        #region Methods
+
+        public static void Draw()
+        {
+            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            //Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.graphics.GraphicsDevice.Clear(Color.Aqua);
+            if (!_bInitialized)
+                return;
+            uint maxAnim = 0;
+            uint maxFrame = 0;
+
+            Ate.Projection = _projectionMatrix;
+            Ate.View = _viewMatrix;
+            Ate.World = _worldMatrix;
+            Effect.Projection = _projectionMatrix;
+            Effect.View = _viewMatrix;
+            Effect.World = _worldMatrix;
+
+            if (_charaOne.FieldModels == null)
+                goto _doNotDraw;
+
+            if (_debugModelId >= _charaOne.FieldModels.Length)
+                _debugModelId = 0;
+            var whichModel = _debugModelId;
+
+            if (_charaOne.FieldModels[whichModel].MCH == null)
+                goto _doNotDraw;
+
+            _charaOne.FieldModels[whichModel].MCH.AssignTextureSizes(
+                _charaOne.FieldModels[whichModel].Textures,
+                Enumerable.Range(0, _charaOne.FieldModels[whichModel].Textures.Length).ToArray());
+
+            maxAnim = _charaOne.FieldModels[whichModel].MCH.GetAnimationCount();
+            if (_animId >= maxAnim)
+                _animId = 0;
+            maxFrame = _charaOne.FieldModels[whichModel].MCH.GetAnimationFramesCount(_animId);
+            if (_animFrame >= maxFrame)
+                _animFrame = 0;
+
+            var charaCollection =
+                _charaOne.FieldModels[whichModel].MCH.GetVertexPositions(Vector3.Zero, Quaternion.Identity, _animId, _animFrame);
+
+            var vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
+            for (var i = 0; i < charaCollection.Item2.Length; i += 3)
+            {
+                var charaTexture = _charaOne.FieldModels[whichModel].Textures[charaCollection.Item2[i]];
+                if (!vptCollection.ContainsKey(charaTexture))
+                    vptCollection.Add(charaTexture, new List<VertexPositionColorTexture>());
+                vptCollection[charaTexture].AddRange(charaCollection.Item1.Skip(i).Take(3).ToArray());
+            }
+
+            foreach (var kvp in vptCollection)
+            {
+                Ate.Texture = kvp.Key;
+                foreach (var pass in Ate.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
+                }
+            }
+
+            _doNotDraw:
+            Memory.SpriteBatchStartAlpha();
+            if (_charaOne.FieldModels == null)
+            {
+                Memory.font.RenderBasicText(
+    $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
+    $"World Map Camera: ={_camPosition}\n" +
+    $"FPS camera degrees: ={_degrees}°\n" +
+    "Current model is: =BROKEN\n" +
+    $"Animation={_animId + 1} of {maxAnim} -- frame: {_animFrame + 1} of {maxFrame}\n" +
+    "F1 - re-init (for reparsing and live code debugging)\n" +
+    "F2 - Next field\n" +
+    "F3 - Previous field\n" +
+    "F4 - Next animation\n" +
+    "LMB - Next NPC model\n" +
+    "NULL: =0", 30, 20, 1f, 2f, lineSpacing: 5);
+            }
+            else
+                Memory.font.RenderBasicText(
+    $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
+    $"World Map Camera: ={_camPosition}\n" +
+    $"FPS camera degrees: ={_degrees}°\n" +
+    $"Current model is: ={_debugModelId + 1} of {_charaOne.FieldModels.Length} which is {new string(_charaOne.FieldModels[_debugModelId].ModelName, 0, 4)}\n" +
+    $"Animation={_animId + 1} of {maxAnim} -- frame: {_animFrame + 1} of {maxFrame}\n" +
+    "F1 - re-init (for reparsing and live code debugging)\n" +
+    "F2 - Next field\n" +
+    "F3 - Previous field\n" +
+    "F4 - Next animation\n" +
+    "LMB - Next NPC model\n" +
+    "NULL: =0", 30, 20, 1f, 2f, lineSpacing: 5);
+            Memory.SpriteBatchEnd();
+        }
 
         public static void Update()
         {
-            if(!_bInitialized)
+            if (!_bInitialized)
             {
                 _fpsCamera = new FPS_Camera();
                 //init renderer
@@ -102,109 +200,13 @@ namespace OpenVIII.Fields
             }
         }
 
-
         private static void ReInit()
         {
             _lastFieldId = Memory.FieldHolder.FieldID;
-            
+
             _charaOne = new FieldCharaOne(Memory.FieldHolder.FieldID);
         }
 
-        public static void Draw()
-        {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            //Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            Memory.graphics.GraphicsDevice.Clear(Color.Aqua);
-            if (!_bInitialized)
-                return;
-            uint maxAnim = 0;
-            uint maxFrame = 0;
-
-            Ate.Projection = _projectionMatrix;
-            Ate.View = _viewMatrix;
-            Ate.World = _worldMatrix;
-            Effect.Projection = _projectionMatrix;
-            Effect.View = _viewMatrix;
-            Effect.World = _worldMatrix;
-
-            if (_charaOne.fieldModels == null)
-                goto _doNotDraw;
-
-            if (_debugModelId >= _charaOne.fieldModels.Length)
-                _debugModelId = 0;
-            var whichModel = _debugModelId;
-
-            if (_charaOne.fieldModels[whichModel].mch == null)
-                goto _doNotDraw;
-
-            _charaOne.fieldModels[whichModel].mch.AssignTextureSizes(
-                _charaOne.fieldModels[whichModel].textures, 
-                Enumerable.Range(0,_charaOne.fieldModels[whichModel].textures.Length).ToArray());
-
-            maxAnim = _charaOne.fieldModels[whichModel].mch.GetAnimationCount();
-            if (_animId >= maxAnim)
-                _animId = 0;
-            maxFrame = _charaOne.fieldModels[whichModel].mch.GetAnimationFramesCount(_animId);
-            if (_animFrame >= maxFrame)
-                _animFrame = 0;
-
-            var charaCollection = 
-                _charaOne.fieldModels[whichModel].mch.GetVertexPositions(Vector3.Zero,Quaternion.Identity, _animId, _animFrame);
-
-            var vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
-            for (var i = 0; i < charaCollection.Item2.Length; i += 3)
-            {
-                var charaTexture = _charaOne.fieldModels[whichModel].textures[charaCollection.Item2[i]];
-                if (!vptCollection.ContainsKey(charaTexture))
-                    vptCollection.Add(charaTexture, new List<VertexPositionColorTexture>());
-                vptCollection[charaTexture].AddRange(charaCollection.Item1.Skip(i).Take(3).ToArray());
-            }
-
-            foreach (var kvp in vptCollection)
-            {
-                Ate.Texture = kvp.Key;
-                foreach (var pass in Ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
-                }
-            }
-
-            _doNotDraw:
-            Memory.SpriteBatchStartAlpha();
-            if(_charaOne.fieldModels == null)
-            {
-                Memory.font.RenderBasicText(
-    $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
-    $"World Map Camera: ={_camPosition}\n" +
-    $"FPS camera degrees: ={_degrees}°\n" +
-    "Current model is: =BROKEN\n" +
-    $"Animation={_animId + 1} of {maxAnim} -- frame: {_animFrame + 1} of {maxFrame}\n" +
-    "F1 - re-init (for reparsing and live code debugging)\n" +
-    "F2 - Next field\n" +
-    "F3 - Previous field\n" +
-    "F4 - Next animation\n" +
-    "LMB - Next NPC model\n" +
-    "NULL: =0", 30, 20, 1f, 2f, lineSpacing: 5);
-            }
-            else
-                Memory.font.RenderBasicText(
-    $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
-    $"World Map Camera: ={_camPosition}\n" +
-    $"FPS camera degrees: ={_degrees}°\n" +
-    $"Current model is: ={_debugModelId+1} of {_charaOne.fieldModels.Length} which is {new string(_charaOne.fieldModels[_debugModelId].modelName,0,4)}\n" +
-    $"Animation={_animId+1} of {maxAnim} -- frame: {_animFrame+1} of {maxFrame}\n" +
-    "F1 - re-init (for reparsing and live code debugging)\n" +
-    "F2 - Next field\n" +
-    "F3 - Previous field\n" +
-    "F4 - Next animation\n" +
-    "LMB - Next NPC model\n" +
-    "NULL: =0", 30, 20, 1f, 2f, lineSpacing: 5);
-            Memory.SpriteBatchEnd();
-
-        }
+        #endregion Methods
     }
 }

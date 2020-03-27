@@ -1,13 +1,16 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MUSICVOLTRANS : JsmInstruction
     {
-        private IJsmExpression _flag;
-        private IJsmExpression _transitionDuration;
-        private IJsmExpression _volume;
+        #region Fields
+
+        private readonly IJsmExpression _flag;
+        private readonly IJsmExpression _transitionDuration;
+        private readonly IJsmExpression _volume;
+
+        #endregion Fields
+
+        #region Constructors
 
         public MUSICVOLTRANS(IJsmExpression flag, IJsmExpression transitionDuration, IJsmExpression volume)
         {
@@ -16,7 +19,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _volume = volume;
         }
 
-        public MUSICVOLTRANS(Int32 parameter, IStack<IJsmExpression> stack)
+        public MUSICVOLTRANS(int parameter, IStack<IJsmExpression> stack)
             : this(
                 volume: stack.Pop(),
                 transitionDuration: stack.Pop(),
@@ -24,21 +27,17 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MUSICVOLTRANS)}({nameof(_flag)}: {_flag}, {nameof(_transitionDuration)}: {_transitionDuration}, {nameof(_volume)}: {_volume})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IMusicService))
                 .Method(nameof(IMusicService.ChangeMusicVolume))
                 .Argument("volume", _volume)
                 .Argument("flag", _flag)
                 .Argument("transitionDuration", _transitionDuration)
                 .Comment(nameof(MUSICVOL));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -48,5 +47,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 _transitionDuration.Int32(services));
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(MUSICVOLTRANS)}({nameof(_flag)}: {_flag}, {nameof(_transitionDuration)}: {_transitionDuration}, {nameof(_volume)}: {_volume})";
+
+        #endregion Methods
     }
 }

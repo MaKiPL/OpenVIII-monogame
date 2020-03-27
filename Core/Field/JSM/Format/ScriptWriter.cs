@@ -1,19 +1,36 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace OpenVIII.Fields.Scripts
 {
     public sealed class ScriptWriter
     {
-        public Int32 Indent { get; set; }
+        #region Fields
 
         private readonly StringBuilder _sb;
-        private Boolean _newLine;
-        public Boolean HasWhiteLine { get; set; }
+        private bool _newLine;
 
-        public ScriptWriter(Int32 capacity = 8096)
+        #endregion Fields
+
+        #region Constructors
+
+        public ScriptWriter(int capacity = 8096) => _sb = new StringBuilder(capacity);
+
+        #endregion Constructors
+
+        #region Properties
+
+        public bool HasWhiteLine { get; set; }
+        public int Indent { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public void Append(string text)
         {
-            _sb = new StringBuilder(capacity);
+            AppendIndent();
+
+            _sb.Append(text);
         }
 
         public void AppendLine()
@@ -25,7 +42,7 @@ namespace OpenVIII.Fields.Scripts
             _newLine = true;
         }
 
-        public void AppendLine(String text)
+        public void AppendLine(string text)
         {
             AppendIndent();
 
@@ -34,12 +51,21 @@ namespace OpenVIII.Fields.Scripts
             HasWhiteLine = (text == "{");
         }
 
-        public void Append(String text)
+        public string Release()
         {
-            AppendIndent();
+            var result = _sb.ToString();
 
-            _sb.Append(text);
+            _sb.Clear();
+            Indent = 0;
+            _newLine = true;
+            HasWhiteLine = false;
+
+            return result;
         }
+
+        public State RememberState() => new State(this);
+
+        public override string ToString() => _sb.ToString();
 
         private void AppendIndent()
         {
@@ -53,36 +79,24 @@ namespace OpenVIII.Fields.Scripts
             }
         }
 
-        public String Release()
-        {
-            var result = _sb.ToString();
+        #endregion Methods
 
-            _sb.Clear();
-            Indent = 0;
-            _newLine = true;
-            HasWhiteLine = false;
-
-            return result;
-        }
-
-        public override String ToString()
-        {
-            return _sb.ToString();
-        }
-
-        public State RememberState()
-        {
-            return new State(this);
-        }
+        #region Classes
 
         public sealed class State
         {
+            #region Fields
+
             private readonly ScriptWriter _sw;
 
-            private Int32 _indent;
-            private Boolean _newLine;
-            private Boolean _hasEmptyLine;
-            private Int32 _length;
+            private bool _hasEmptyLine;
+            private int _indent;
+            private int _length;
+            private bool _newLine;
+
+            #endregion Fields
+
+            #region Constructors
 
             public State(ScriptWriter sw)
             {
@@ -94,7 +108,15 @@ namespace OpenVIII.Fields.Scripts
                 _hasEmptyLine = _sw.HasWhiteLine;
             }
 
+            #endregion Constructors
+
+            #region Properties
+
             public bool IsChanged => _length != _sw._sb.Length;
+
+            #endregion Properties
+
+            #region Methods
 
             public void Cancel()
             {
@@ -103,6 +125,10 @@ namespace OpenVIII.Fields.Scripts
                 _sw.HasWhiteLine = _hasEmptyLine;
                 _sw._sb.Length = _length;
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

@@ -1,35 +1,30 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Disables this entity's "push" script. See PUSHON. 
+    /// Disables this entity's "push" script. See PUSHON.
     /// </summary>
     internal sealed class PUSHOFF : JsmInstruction
     {
+        #region Constructors
+
         public PUSHOFF()
         {
         }
 
-        public PUSHOFF(Int32 parameter, IStack<IJsmExpression> stack)
+        public PUSHOFF(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(PUSHOFF)}()";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
                 .Property(nameof(FieldObjectInteraction.IsPushScriptActive))
                 .Assign(false)
                 .Comment(nameof(PUSHOFF));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -37,5 +32,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             currentObject.Interaction.IsPushScriptActive = false;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(PUSHOFF)}()";
+
+        #endregion Methods
     }
 }

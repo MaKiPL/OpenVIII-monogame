@@ -5,16 +5,21 @@ namespace OpenVIII.Fields
 {
     public static class SoundEffectName
     {
-        public static String Get(SoundEffectId id)
-        {
-            if (_dic.TryGetValue(id, out var name))
-                return name;
+        #region Fields
 
-            return $"Unknown sound effect: {id}";
-        }
-
-        private static readonly Dictionary<SoundEffectId, String> _dic = new Dictionary<SoundEffectId, String>()
+        private static readonly Dictionary<int, string> _dic = new Dictionary<int, string>()
         {
         };
+
+        #endregion Fields
+
+        #region Methods
+
+        public static string Get(int id)
+        {
+            return _dic.TryGetValue(id, out var name) ? name : $"Unknown sound effect: {id}";
+        }
+
+        #endregion Methods
     }
 }

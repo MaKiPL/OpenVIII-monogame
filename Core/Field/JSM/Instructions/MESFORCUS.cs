@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MESFORCUS : JsmInstruction
     {
-        public MESFORCUS()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public MESFORCUS() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

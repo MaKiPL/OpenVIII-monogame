@@ -1,7 +1,4 @@
-﻿using System;
-using OpenVIII.Fields.Scripts.Instructions.Abstract;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Key
@@ -9,6 +6,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/139_KEY&action=edit&redlink=1"/>
     public sealed class KEY : Abstract.KEY
     {
+        #region Constructors
+
         public KEY(KeyFlags flags) : base(flags)
         {
         }
@@ -17,9 +16,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(KEY)}({nameof(_flags)}: {_flags})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(KEY)}({nameof(_flags)}: {_flags})";
+
+        #endregion Methods
     }
 }

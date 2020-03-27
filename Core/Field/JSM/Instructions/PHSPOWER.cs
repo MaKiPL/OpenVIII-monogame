@@ -1,41 +1,41 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class PHSPOWER : JsmInstruction
     {
-        private Boolean _isPartySwitchEnabled;
+        #region Fields
 
-        public PHSPOWER(Boolean isPartySwitchEnabled)
-        {
-            _isPartySwitchEnabled = isPartySwitchEnabled;
-        }
+        private readonly bool _isPartySwitchEnabled;
 
-        public PHSPOWER(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public PHSPOWER(bool isPartySwitchEnabled) => _isPartySwitchEnabled = isPartySwitchEnabled;
+
+        public PHSPOWER(int parameter, IStack<IJsmExpression> stack)
             : this(
                 isPartySwitchEnabled: ((Jsm.Expression.PSHN_L)stack.Pop()).Boolean())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(PHSPOWER)}({nameof(_isPartySwitchEnabled)}: {_isPartySwitchEnabled})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IPartyService))
                 .Property(nameof(IPartyService.IsPartySwitchEnabled))
                 .Assign(_isPartySwitchEnabled)
                 .Comment(nameof(PHSPOWER));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Party[services].IsPartySwitchEnabled = _isPartySwitchEnabled;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(PHSPOWER)}({nameof(_isPartySwitchEnabled)}: {_isPartySwitchEnabled})";
+
+        #endregion Methods
     }
 }

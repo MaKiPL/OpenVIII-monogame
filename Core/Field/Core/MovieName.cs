@@ -1,44 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+
 // ReSharper disable StringLiteralTypo
 
 namespace OpenVIII.Fields
 {
     public static class MovieName
     {
-        public static IEnumerable<String> PossibleNames(Int32 movieId)
-        {
-            var isFound = false;
+        #region Fields
 
-            if (movieId < Disk1.Length)
-            {
-                isFound = true;
-                yield return "Disk 1: " + Disk1[movieId];
-            }
-
-            if (movieId < Disk2.Length)
-            {
-                isFound = true;
-                yield return "Disk 2: " + Disk2[movieId];
-            }
-
-            if (movieId < Disk3.Length)
-            {
-                isFound = true;
-                yield return "Disk 3: " + Disk3[movieId];
-            }
-
-            if (movieId < Disk4.Length)
-            {
-                isFound = true;
-                yield return "Disk 4: " + Disk3[movieId];
-            }
-
-            if (!isFound)
-                throw new NotSupportedException($"Unknown movie ID: {movieId}");
-        }
-
-        private static readonly String[] Disk1 =
+        private static readonly string[] Disk1 =
         {
             "Balamb Garden explore",
             "Quistis Appears",
@@ -73,7 +44,7 @@ namespace OpenVIII.Fields
             "Liberi Fatali"
         };
 
-        private static readonly String[] Disk2 =
+        private static readonly string[] Disk2 =
         {
             "Squall's Cell",
             "Prison Desert Overlook",
@@ -111,7 +82,7 @@ namespace OpenVIII.Fields
             "Paratrooper fight"
         };
 
-        private static readonly String[] Disk3 =
+        private static readonly string[] Disk3 =
         {
             "Esthar Decloaks",
             "Esthar Elevator 1",
@@ -147,7 +118,7 @@ namespace OpenVIII.Fields
             "Lunar Cry Begins"
         };
 
-        private static readonly String[] Disk4 =
+        private static readonly string[] Disk4 =
         {
             "Rinoa and Adel",
             "Time Compression",
@@ -157,5 +128,43 @@ namespace OpenVIII.Fields
             "Credits 2 (Balcony)",
             "Ending and Credits"
         };
+
+        #endregion Fields
+
+        #region Methods
+
+        public static IEnumerable<string> PossibleNames(int movieId)
+        {
+            var isFound = false;
+
+            if (movieId < Disk1.Length)
+            {
+                isFound = true;
+                yield return "Disk 1: " + Disk1[movieId];
+            }
+
+            if (movieId < Disk2.Length)
+            {
+                isFound = true;
+                yield return "Disk 2: " + Disk2[movieId];
+            }
+
+            if (movieId < Disk3.Length)
+            {
+                isFound = true;
+                yield return "Disk 3: " + Disk3[movieId];
+            }
+
+            if (movieId < Disk4.Length)
+            {
+                isFound = true;
+                yield return "Disk 4: " + Disk3[movieId];
+            }
+
+            if (!isFound)
+                throw new NotSupportedException($"Unknown movie ID: {movieId}");
+        }
+
+        #endregion Methods
     }
 }

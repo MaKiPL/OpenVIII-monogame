@@ -2,24 +2,50 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public sealed class LabelBuilder
         {
-            private readonly Dictionary<Int32, List<IJumpToOpcode>> _targets = new Dictionary<Int32, List<IJumpToOpcode>>();
-            private Dictionary<Int32, IndexedInstruction> _candidates = new Dictionary<Int32, IndexedInstruction>();
+            #region Fields
 
-            private readonly UInt16 _opcodeCount;
+            private readonly ushort _opcodeCount;
+            private readonly Dictionary<int, List<IJumpToOpcode>> _targets = new Dictionary<int, List<IJumpToOpcode>>();
+            private Dictionary<int, IndexedInstruction> _candidates = new Dictionary<int, IndexedInstruction>();
 
-            public LabelBuilder(UInt16 opcodeCount)
+            #endregion Fields
+
+            #region Constructors
+
+            public LabelBuilder(ushort opcodeCount) => _opcodeCount = opcodeCount;
+
+            #endregion Constructors
+
+            #region Methods
+
+            public HashSet<int> Commit()
             {
-                _opcodeCount = opcodeCount;
+                var result = new HashSet<int>();
+
+                foreach (var pair in _targets)
+                {
+                    var offset = pair.Key;
+                    if (!_candidates.TryGetValue(offset, out var target))
+                        throw new InvalidProgramException($"Invalid jump target: {pair.Key}");
+
+                    foreach (var jump in pair.Value)
+                        jump.Index = target.Index;
+
+                    result.Add(target.Index);
+                }
+
+                return result;
             }
 
-            public void TraceInstruction(Int32 position, Int32 label, IndexedInstruction instruction)
+            public void TraceInstruction(int position, int label, IndexedInstruction instruction)
             {
                 _candidates.Add(label, instruction);
 
@@ -47,24 +73,9 @@ namespace OpenVIII.Fields.Scripts
                 list.Add(jump);
             }
 
-            public HashSet<Int32> Commit()
-            {
-                var result = new HashSet<Int32>();
-
-                foreach (var pair in _targets)
-                {
-                    var offset = pair.Key;
-                    if (!_candidates.TryGetValue(offset, out var target))
-                        throw new InvalidProgramException($"Invalid jump target: {pair.Key}");
-
-                    foreach (var jump in pair.Value)
-                        jump.Index = target.Index;
-
-                    result.Add(target.Index);
-                }
-
-                return result;
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

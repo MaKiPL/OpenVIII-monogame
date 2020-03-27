@@ -8,9 +8,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/09E_SHADETIMER&action=edit&redlink=1"/>
     public sealed class SHADETIMER : JsmInstruction
     {
-        public SHADETIMER()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public SHADETIMER() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

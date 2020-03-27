@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII
@@ -12,13 +13,16 @@ namespace OpenVIII
     /// </remarks>
     public sealed class TIMOverture : TIM2
     {
-        public TIMOverture(byte[] buffer, uint offset = 0) : base() => _Init(buffer, offset);
+        #region Constructors
 
-        public TIMOverture(BinaryReader br, uint offset = 0) : base() => _Init(br, offset);
+        public TIMOverture(byte[] buffer, uint offset = 0) => _Init(buffer, offset);
 
-        private TIMOverture()
-        {
-        }
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        public TIMOverture(BinaryReader br, uint offset = 0) => _Init(br, offset);
+
+        #endregion Constructors
+
+        #region Methods
 
         private new void _Init(byte[] buffer, uint offset)
         {
@@ -59,6 +63,8 @@ namespace OpenVIII
             if (TrimExcess)
                 Buffer = Buffer.Skip((int)TIMOffset).Take((int)(Texture.ImageDataSize + TextureDataPointer - TIMOffset)).ToArray();
         }
+
+        #endregion Methods
 
         ///// <summary>
         ///// Splash is 640x400 16BPP typical TIM with palette of ggg bbbbb a rrrrr gg

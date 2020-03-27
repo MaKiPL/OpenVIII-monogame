@@ -151,12 +151,12 @@ namespace OpenVIII
 
         public abstract Color[] GetClutColors(ushort clut);
 
-        public Texture2D GetTexture(Dictionary<int, Color> colorOverride,sbyte clut = -1)
+        public Texture2D GetTexture(Dictionary<int, Color> colorOverride, sbyte clut = -1)
         {
             if (colorOverride == null || colorOverride.Count == 0) return null;
-            var colors = clut>0 && clut < GetClutCount ? GetClutColors((ushort)clut):new Color[GetColorsCountPerPalette];
+            var colors = clut > 0 && clut < GetClutCount ? GetClutColors((ushort)clut) : new Color[GetColorsCountPerPalette];
             if (colors == null) return null;
-            colorOverride.Where(x=>x.Key<colors.Length).ForEach(x=>colors[x.Key]=x.Value);
+            colorOverride.Where(x => x.Key < colors.Length).ForEach(x => colors[x.Key] = x.Value);
             return GetTexture((colors));
         }
 
@@ -172,9 +172,11 @@ namespace OpenVIII
 
         public abstract void SaveCLUT(string path);
 
-        #endregion Methods
-        public virtual void SavePNG(string path, short clut =-1)
+        public virtual void SavePNG(string path, short clut = -1)
         { }
+
+        #endregion Methods
+
         //public static class Transparency
         //{
         //    /// <summary>

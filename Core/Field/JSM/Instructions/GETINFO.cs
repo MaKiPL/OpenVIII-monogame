@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class GETINFO : JsmInstruction
     {
+        #region Constructors
+
         public GETINFO()
         {
         }
 
-        public GETINFO(Int32 parameter, IStack<IJsmExpression> stack)
+        public GETINFO(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(GETINFO)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(GETINFO)}()";
+
+        #endregion Methods
     }
 }

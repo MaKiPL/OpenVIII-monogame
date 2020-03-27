@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Where Card? I guess this is who has a rare card.
@@ -9,25 +6,31 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/160_WHERECARD&action=edit&redlink=1"/>
     public sealed class WHERECARD : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// card ID?
         /// </summary>
-        private IJsmExpression _cardID;
+        private readonly IJsmExpression _cardID;
 
-        public WHERECARD(IJsmExpression cardID)
-        {
-            _cardID = cardID;
-        }
+        #endregion Fields
 
-        public WHERECARD(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public WHERECARD(IJsmExpression cardID) => _cardID = cardID;
+
+        public WHERECARD(int parameter, IStack<IJsmExpression> stack)
             : this(
                 cardID: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(WHERECARD)}({nameof(_cardID)}: {_cardID})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(WHERECARD)}({nameof(_cardID)}: {_cardID})";
+
+        #endregion Methods
     }
 }

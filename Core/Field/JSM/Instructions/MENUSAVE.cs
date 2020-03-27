@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MENUSAVE : JsmInstruction
     {
+        #region Constructors
+
         public MENUSAVE()
         {
         }
 
-        public MENUSAVE(Int32 parameter, IStack<IJsmExpression> stack)
+        public MENUSAVE(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MENUSAVE)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MENUSAVE)}()";
+
+        #endregion Methods
     }
 }

@@ -1,21 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public sealed class GameObject
         {
-            public Int32 Id { get; }
-            public IReadOnlyList<GameScript> Scripts { get; }
-            public override string ToString() => $"{{{Id}, {nameof(Scripts)} {nameof(Scripts.Count)} = {Scripts.Count}}}";
-            public GameObject(Int32 id, IReadOnlyList<GameScript> scripts)
+            #region Constructors
+
+            public GameObject(int id, IReadOnlyList<GameScript> scripts)
             {
                 Id = id;
                 Scripts = scripts;
             }
+
+            #endregion Constructors
+
+            #region Properties
+
+            public int Id { get; }
+            public IReadOnlyList<GameScript> Scripts { get; }
+
+            #endregion Properties
+
+            #region Methods
 
             public void FormatType(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
             {
@@ -41,7 +52,9 @@ namespace OpenVIII.Fields.Scripts
                 }
             }
 
-            private void FormatConstructor(String typeName, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
+            public override string ToString() => $"{{{Id}, {nameof(Scripts)} {nameof(Scripts.Count)} = {Scripts.Count}}}";
+
+            private void FormatConstructor(string typeName, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
             {
                 sw.AppendLine($"private readonly {nameof(IServices)} _ctx;");
                 sw.AppendLine();
@@ -58,6 +71,10 @@ namespace OpenVIII.Fields.Scripts
                     sw.AppendLine("}");
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

@@ -1,9 +1,5 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
-
     /// <summary>
     /// <para>Play an animation.</para>
     /// <para>ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP</para>
@@ -14,6 +10,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/031_RANIME"/>
     public sealed class RANIME : Abstract.ANIME
     {
+        #region Constructors
+
         public RANIME(int animationId) : base(animationId)
         {
         }
@@ -22,19 +20,15 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(RANIME)}({nameof(_animationId)}: {_animationId})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Animation))
                 .Method(nameof(FieldObjectAnimation.Play))
                 .Argument("animationId", _animationId)
                 .Comment(nameof(RANIME));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -43,5 +37,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             // Async call
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(RANIME)}({nameof(_animationId)}: {_animationId})";
+
+        #endregion Methods
     }
 }

@@ -1,29 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public sealed class LabeledStack : IStack<IJsmExpression>
         {
+            #region Fields
+
+            private readonly Dictionary<IJsmExpression, int> _positions = new Dictionary<IJsmExpression, int>();
             private readonly Stack<IJsmExpression> _stack = new Stack<IJsmExpression>();
-            private readonly Dictionary<IJsmExpression, Int32> _positions = new Dictionary<IJsmExpression, Int32>();
 
-            public Int32 Count => _stack.Count;
-            public Int32 CurrentLabel { get; set; }
+            #endregion Fields
 
-            public void Push(IJsmExpression item)
-            {
-                _positions.Add(item, CurrentLabel);
-                _stack.Push(item);
-            }
+            #region Properties
 
-            public IJsmExpression Peek()
-            {
-                return _stack.Peek();
-            }
+            public int Count => _stack.Count;
+            public int CurrentLabel { get; set; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public IJsmExpression Peek() => _stack.Peek();
 
             public IJsmExpression Pop()
             {
@@ -34,6 +35,16 @@ namespace OpenVIII.Fields.Scripts
 
                 return result;
             }
+
+            public void Push(IJsmExpression item)
+            {
+                _positions.Add(item, CurrentLabel);
+                _stack.Push(item);
+            }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

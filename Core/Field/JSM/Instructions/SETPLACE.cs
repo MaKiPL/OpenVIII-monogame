@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Set Area Display Name</para>
@@ -11,15 +9,15 @@ namespace OpenVIII.Fields.Scripts.Instructions
     {
         #region Fields
 
-        private readonly Int32 _areaId;
+        private readonly int _areaId;
 
         #endregion Fields
 
         #region Constructors
 
-        public SETPLACE(Int32 areaId) => _areaId = areaId;
+        public SETPLACE(int areaId) => _areaId = areaId;
 
-        public SETPLACE(Int32 parameter, IStack<IJsmExpression> stack)
+        public SETPLACE(int parameter, IStack<IJsmExpression> stack)
             : this(
                 areaId: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
         {
@@ -56,7 +54,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             return DummyAwaitable.Instance;
         }
 
-        public override String ToString() => $"{nameof(SETPLACE)}({nameof(_areaId)}: {_areaId}, {nameof(AreaName)}: {AreaName()})";
+        public override string ToString() => $"{nameof(SETPLACE)}({nameof(_areaId)}: {_areaId}, {nameof(AreaName)}: {AreaName()})";
 
         #endregion Methods
     }

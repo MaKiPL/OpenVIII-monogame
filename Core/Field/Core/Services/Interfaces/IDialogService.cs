@@ -1,18 +1,29 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace OpenVIII.Fields
 {
     public interface IMessageService
     {
-        Boolean IsSupported { get; }
+        #region Properties
 
-        void Show(Int32 channel, Int32 messageId);
-        void Show(Int32 channel, Int32 messageId, Int32 posX, Int32 posY);
-        void Close(Int32 channel);
+        bool IsSupported { get; }
 
-        IAwaitable ShowDialog(Int32 channel, Int32 messageId, Int32 posX, Int32 posY);
-        IAwaitable ShowQuestion(Int32 channel, Int32 messageId, Int32 firstLine, Int32 lastLine, Int32 beginLine, Int32 cancelLine);
-        IAwaitable ShowQuestion(Int32 channel, Int32 messageId, Int32 firstLine, Int32 lastLine, Int32 beginLine, Int32 cancelLine, Int32 posX, Int32 posY);
+        #endregion Properties
+
+        #region Methods
+
+        void Close(int channel);
+
+        void Show(int channel, int messageId);
+
+        void Show(int channel, int messageId, int posX, int posY);
+
+        IAwaitable ShowDialog(int channel, int messageId, int posX, int posY);
+
+        IAwaitable ShowQuestion(int channel, int messageId, int firstLine, int lastLine, int beginLine, int cancelLine);
+
+        IAwaitable ShowQuestion(int channel, int messageId, int firstLine, int lastLine, int beginLine, int cancelLine, int posX, int posY);
+
+        #endregion Methods
     }
 }

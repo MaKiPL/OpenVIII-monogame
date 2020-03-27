@@ -1,9 +1,9 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions.Abstract
+﻿namespace OpenVIII.Fields.Scripts.Instructions.Abstract
 {
     public abstract class PREQ : REQ
     {
+        #region Constructors
+
         public PREQ(int objectIndex, IStack<IJsmExpression> stack) : base(objectIndex, stack)
         {
         }
@@ -12,9 +12,15 @@ namespace OpenVIII.Fields.Scripts.Instructions.Abstract
         {
         }
 
+        #endregion Constructors
+
+        #region Properties
+
         /// <summary>
         /// The ID of the current party member Entity (0, 1 or 2).
         /// </summary>
-        protected Int32 _partyId => checked((byte)_objectIndex);
+        protected int _partyId => checked((byte)_objectIndex);
+
+        #endregion Properties
     }
 }

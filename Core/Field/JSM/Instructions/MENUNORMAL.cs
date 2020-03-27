@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MENUNORMAL : JsmInstruction
     {
+        #region Constructors
+
         public MENUNORMAL()
         {
         }
 
-        public MENUNORMAL(Int32 parameter, IStack<IJsmExpression> stack)
+        public MENUNORMAL(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MENUNORMAL)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MENUNORMAL)}()";
+
+        #endregion Methods
     }
 }

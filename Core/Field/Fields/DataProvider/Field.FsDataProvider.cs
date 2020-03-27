@@ -5,12 +5,20 @@ namespace OpenVIII.Fields
 {
     public static partial class Field
     {
+        #region Classes
+
         public sealed class FsDataProvider : IDataProvider
         {
-            private readonly String _fieldPath;
-            private readonly String _fieldDirectory;
+            #region Fields
 
-            public FsDataProvider(String fieldPath)
+            private readonly string _fieldDirectory;
+            private readonly string _fieldPath;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public FsDataProvider(string fieldPath)
             {
                 if (!File.Exists(fieldPath))
                     throw new FileNotFoundException(fieldPath);
@@ -19,7 +27,11 @@ namespace OpenVIII.Fields
                 _fieldDirectory = Path.GetDirectoryName(fieldPath);
             }
 
-            public Byte[] FindPart(Part part)
+            #endregion Constructors
+
+            #region Methods
+
+            public byte[] FindPart(Part part)
             {
                 var filePath = GetFilePath(part);
                 if (File.Exists(filePath))
@@ -28,7 +40,7 @@ namespace OpenVIII.Fields
                 return null;
             }
 
-            private String GetFilePath(Part part)
+            private string GetFilePath(Part part)
             {
                 switch (part)
                 {
@@ -52,6 +64,10 @@ namespace OpenVIII.Fields
                     default: throw new NotSupportedException(part.ToString());
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

@@ -4,10 +4,22 @@ namespace OpenVIII.Fields
 {
     public interface IInteractionService
     {
-        Boolean IsSupported { get; }
+        #region Properties
 
-        Int32 this[ScriptResultId id] { get; set; }
- 
-        IAwaitable Wait(Int32 frameNumber);
+        bool IsSupported { get; }
+
+        #endregion Properties
+
+        #region Indexers
+
+        int this[ScriptResultId id] { get; set; }
+
+        #endregion Indexers
+
+        #region Methods
+
+        IAwaitable Wait(int frameNumber);
+
+        #endregion Methods
     }
 }

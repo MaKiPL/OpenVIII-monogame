@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class OFFSETSYNC : JsmInstruction
     {
+        #region Constructors
+
         public OFFSETSYNC()
         {
         }
 
-        public OFFSETSYNC(Int32 parameter, IStack<IJsmExpression> stack)
+        public OFFSETSYNC(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(OFFSETSYNC)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(OFFSETSYNC)}()";
+
+        #endregion Methods
     }
 }

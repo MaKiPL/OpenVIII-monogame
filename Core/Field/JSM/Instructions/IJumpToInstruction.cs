@@ -1,9 +1,11 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     public interface IJumpToInstruction : IJsmInstruction
     {
-        Int32 Index { get; set; }
+        #region Properties
+
+        int Index { get; set; }
+
+        #endregion Properties
     }
 }

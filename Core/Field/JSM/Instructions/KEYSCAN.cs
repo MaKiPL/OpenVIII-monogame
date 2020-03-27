@@ -1,7 +1,4 @@
-﻿using System;
-using OpenVIII.Fields.Scripts.Instructions.Abstract;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Scan for pressed key</para>
@@ -10,6 +7,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/06D_KEYSCAN"/>
     public sealed class KEYSCAN : Abstract.KEY
     {
+        #region Constructors
+
         public KEYSCAN(KeyFlags flags) : base(flags)
         {
         }
@@ -18,9 +17,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(KEYSCAN)}({nameof(_flags)}: {_flags})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(KEYSCAN)}({nameof(_flags)}: {_flags})";
+
+        #endregion Methods
     }
 }

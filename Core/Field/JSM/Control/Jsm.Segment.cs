@@ -7,25 +7,40 @@ namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public abstract partial class Segment : IFormattableScript
         {
-            public Int32 From { get; }
-            public Int32 To { get; }
+            #region Fields
 
             protected readonly List<IJsmInstruction> _list = new List<IJsmInstruction>();
 
-            public Segment(Int32 from, Int32 to)
+            #endregion Fields
+
+            #region Constructors
+
+            public Segment(int from, int to)
             {
                 From = from;
                 To = to;
             }
 
-            public void Add(IJsmInstruction value)
-            {
-                _list.Add(value);
-            }
+            #endregion Constructors
 
-            public override String ToString()
+            #region Properties
+
+            public int From { get; }
+            public int To { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public void Add(IJsmInstruction value) => _list.Add(value);
+
+            public virtual void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => FormatItems(sw, formatterContext, services, _list);
+
+            public override string ToString()
             {
                 var sb = new StringBuilder();
                 ToString(sb);
@@ -38,7 +53,7 @@ namespace OpenVIII.Fields.Scripts
                     sb.AppendLine(item.ToString());
             }
 
-            protected void FormatBranch(StringBuilder sb, IEnumerable<Object> items)
+            protected void FormatBranch(StringBuilder sb, IEnumerable<object> items)
             {
                 sb.AppendLine("{");
 
@@ -66,7 +81,7 @@ namespace OpenVIII.Fields.Scripts
                 sw.AppendLine("}");
             }
 
-            private static void AppendItems(StringBuilder sb, IEnumerable<Object> items)
+            private static void AppendItems(StringBuilder sb, IEnumerable<object> items)
             {
                 var position = -1;
                 JMP lastItem = null;
@@ -85,11 +100,6 @@ namespace OpenVIII.Fields.Scripts
                     sb.Length = position;
             }
 
-            public virtual void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-            {
-                FormatItems(sw, formatterContext, services, _list);
-            }
-
             private static void FormatItems(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext, IEnumerable<IJsmInstruction> items)
             {
                 foreach (var item in items)
@@ -100,6 +110,10 @@ namespace OpenVIII.Fields.Scripts
                         sw.AppendLine(item.ToString());
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

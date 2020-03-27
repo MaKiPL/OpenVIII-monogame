@@ -330,6 +330,7 @@
     <Compile Include="Field\Archive.cs" />
     <Compile Include="Field\Camera\Camera.cs" />
     <Compile Include="Field\Camera\Cameras.cs" />
+    <Compile Include="Field\Core\NamedEntity.cs" />
     <Compile Include="Field\EnumFlagExt.cs" />
     <Compile Include="Field\Field_modes.cs" />
     <Compile Include="Field\INF\Gateway.cs" />
@@ -371,11 +372,12 @@
     <Compile Include="FPSCounter.cs" />
     <Compile Include="Image\Bppflag.cs" />
     <Compile Include="Image\Cluts.cs" />
+    <Compile Include="Image\ColorABGR1555.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
     <Compile Include="Image\TextureBuffer.cs" />
     <Compile Include="Image\Texture_Base.cs" />
-    <Compile Include="Image\TIM_OVERTURE.cs" />
+    <Compile Include="Image\TIMOverture.cs" />
     <Compile Include="ImGuiRenderer.cs" />
     <Compile Include="Input\Buttons.cs" />
     <Compile Include="Input\ButtonTrigger.cs" />
@@ -490,11 +492,10 @@
     <Compile Include="Field\Core\GlobalVariableId.cs" />
     <Compile Include="Field\Core\IAwaitable.cs" />
     <Compile Include="Field\Core\IAwaiter.cs" />
-    <Compile Include="Field\Core\IScriptExecuter.cs" />
+    <Compile Include="Field\Core\IScriptExecutor.cs" />
     <Compile Include="Field\Core\MovieName.cs" />
     <Compile Include="Field\Core\MusicId.cs" />
     <Compile Include="Field\Core\MusicName.cs" />
-    <Compile Include="Field\Core\NamedEntity.cs" />
     <Compile Include="Field\Core\ScriptResultId.cs" />
     <Compile Include="Field\Core\Services\Implementation\FieldService.cs" />
     <Compile Include="Field\Core\Services\Implementation\GameplayService.cs" />
@@ -522,10 +523,9 @@
     <Compile Include="Field\Core\Services\Interfaces\ISoundService.cs" />
     <Compile Include="Field\Core\Services\ServiceId.cs" />
     <Compile Include="Field\Core\Services\ServiceProvider.cs" />
-    <Compile Include="Field\Core\SfxId.cs" />
     <Compile Include="Field\Core\SoundEffectName.cs" />
     <Compile Include="Field\Core\SpinAwaitable.cs" />
-    <Compile Include="Field\Core\WalkmeshCoords.cs" />
+    <Compile Include="Field\Core\WalkMeshCoords.cs" />
     <Compile Include="Field\Fields\DataProvider\Field.FsDataProvider.cs" />
     <Compile Include="Field\Fields\DataProvider\Field.IDataProvider.cs" />
     <Compile Include="Field\Fields\Field.FieldPart.cs" />
@@ -533,7 +533,7 @@
     <Compile Include="Field\Fields\LookupService\Field.FSLookupService.cs" />
     <Compile Include="Field\Fields\LookupService\Field.ILookupService.cs" />
     <Compile Include="ExceptionExtensionMethods.cs" />
-    <Compile Include="Field\Framework\IEnumerableExtensionMethods.cs" />
+    <Compile Include="Field\Framework\EnumerableExtensionMethods.cs" />
     <Compile Include="IListExtensionMethods.cs" />
     <Compile Include="Field\Framework\IStack.cs" />
     <Compile Include="OrderedDictionary.cs" />

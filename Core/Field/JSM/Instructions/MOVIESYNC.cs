@@ -1,38 +1,38 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Pauses execution of this script until the current FMV movie is finished playing. 
+    /// Pauses execution of this script until the current FMV movie is finished playing.
     /// </summary>
     internal sealed class MOVIESYNC : JsmInstruction
     {
+        #region Constructors
+
         public MOVIESYNC()
         {
         }
 
-        public MOVIESYNC(Int32 parameter, IStack<IJsmExpression> stack)
+        public MOVIESYNC(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MOVIESYNC)}()";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IMovieService))
                 .Method(nameof(IMovieService.Wait))
                 .Comment(nameof(MOVIE));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Movie[services].Wait();
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(MOVIESYNC)}()";
+
+        #endregion Methods
     }
 }

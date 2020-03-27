@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class BATTLERESULT : JsmInstruction
     {
+        #region Constructors
+
         public BATTLERESULT()
         {
         }
 
-        public BATTLERESULT(Int32 parameter, IStack<IJsmExpression> stack)
+        public BATTLERESULT(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BATTLERESULT)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(BATTLERESULT)}()";
+
+        #endregion Methods
     }
 }

@@ -1,15 +1,18 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Turns this entity. 
+    /// Turns this entity.
     /// </summary>
     internal sealed class CTURNL : JsmInstruction
     {
-        private IJsmExpression _angle;
-        private IJsmExpression _frameDuration;
+        #region Fields
+
+        private readonly IJsmExpression _angle;
+        private readonly IJsmExpression _frameDuration;
+
+        #endregion Fields
+
+        #region Constructors
 
         public CTURNL(IJsmExpression angle, IJsmExpression frameDuration)
         {
@@ -17,28 +20,24 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _frameDuration = frameDuration;
         }
 
-        public CTURNL(Int32 parameter, IStack<IJsmExpression> stack)
+        public CTURNL(int parameter, IStack<IJsmExpression> stack)
             : this(
                 frameDuration: stack.Pop(),
                 angle: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(CTURNL)}({nameof(_angle)}: {_angle}, {nameof(_frameDuration)}: {_frameDuration})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Await()
                 .Property(nameof(FieldObject.Model))
                 .Method(nameof(FieldObjectModel.Rotate))
                 .Argument("angle", _angle)
                 .Argument("frameDuration", _frameDuration)
                 .Comment(nameof(CTURNL));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -50,5 +49,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(CTURNL)}({nameof(_angle)}: {_angle}, {nameof(_frameDuration)}: {_frameDuration})";
+
+        #endregion Methods
     }
 }

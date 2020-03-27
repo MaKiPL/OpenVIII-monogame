@@ -4,11 +4,16 @@ namespace OpenVIII.Fields
 {
     public sealed class FieldObjectAnimation
     {
+        #region Properties
+
         public int BaseAnimationId { get; set; }
         public int FirstFrame { get; set; }
+        public int FPS { get; set; }
         public int LastFrame { get; set; }
 
-        public int FPS { get; set; }
+        #endregion Properties
+
+        #region Methods
 
         public void ChangeBaseAnimation(int animationId, int firstFrame, int lastFrame)
         {
@@ -18,14 +23,6 @@ namespace OpenVIII.Fields
 
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(FieldObjectAnimation)}.{nameof(ChangeBaseAnimation)}({nameof(animationId)}: {animationId}, {nameof(firstFrame)}: {firstFrame}, {nameof(lastFrame)}: {lastFrame})");
-        }
-
-        public IAwaitable Wait()
-        {
-            // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(FieldObjectAnimation)}.{nameof(Wait)}()");
-
-            return DummyAwaitable.Instance;
         }
 
         public IAwaitable Play(int animationId, bool freeze)
@@ -43,5 +40,15 @@ namespace OpenVIII.Fields
 
             return DummyAwaitable.Instance;
         }
+
+        public IAwaitable Wait()
+        {
+            // TODO: Field script
+            Console.WriteLine($"NotImplemented: {nameof(FieldObjectAnimation)}.{nameof(Wait)}()");
+
+            return DummyAwaitable.Instance;
+        }
+
+        #endregion Methods
     }
 }

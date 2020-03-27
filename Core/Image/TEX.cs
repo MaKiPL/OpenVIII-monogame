@@ -98,7 +98,6 @@ namespace OpenVIII
             return colors;
         }
 
-
         /// <summary>
         /// Get Texture2D converted to 32bit color
         /// </summary>

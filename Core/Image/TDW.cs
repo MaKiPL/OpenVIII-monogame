@@ -5,23 +5,35 @@ namespace OpenVIII
 {
     public class TDW : TIM2
     {
+        #region Constructors
+
         public TDW(BinaryReader br, uint offset = 0)
         {
             br.BaseStream.Seek(offset, SeekOrigin.Begin);
             var widthPointer = br.ReadUInt32();
             var dataPointer = br.ReadUInt32();
-            br.BaseStream.Seek(widthPointer+offset, SeekOrigin.Begin);
+            br.BaseStream.Seek(widthPointer + offset, SeekOrigin.Begin);
             GetWidths(br.ReadBytes((int)(dataPointer - widthPointer)));
-            _Init(br, dataPointer+offset);
+            _Init(br, dataPointer + offset);
         }
 
         public TDW(byte[] buffer, uint offset = 0)
         {
-            var widthPointer = BitConverter.ToUInt32(buffer, (int)(0+offset));
-            var dataPointer = BitConverter.ToUInt32(buffer, (int)(4+offset));
+            var widthPointer = BitConverter.ToUInt32(buffer, (int)(0 + offset));
+            var dataPointer = BitConverter.ToUInt32(buffer, (int)(4 + offset));
             GetWidths(buffer, widthPointer + offset, dataPointer - widthPointer);
             _Init(buffer, dataPointer + offset);
         }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public byte[] CharWidths { get; private set; }
+
+        #endregion Properties
+
+        #region Methods
 
         private void GetWidths(byte[] buffer) => GetWidths(buffer, 0, (uint)buffer.Length);
 
@@ -31,7 +43,7 @@ namespace OpenVIII
             var ms = new MemoryStream(Tdw);
             var os = new MemoryStream(checked((int)length * 2));
             //BinaryWriter and BinaryReader dispose of streams
-            using (var bw = new BinaryWriter(os)) 
+            using (var bw = new BinaryWriter(os))
             using (var br = new BinaryReader(ms))
             {
                 //bw.Write((byte)10);//width of space
@@ -48,6 +60,6 @@ namespace OpenVIII
             }
         }
 
-        public byte[] CharWidths { get; private set; }
+        #endregion Methods
     }
 }

@@ -1,18 +1,22 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
-
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class FCOLADD : JsmInstruction
     {
-        private IJsmExpression _r1;
-        private IJsmExpression _g1;
-        private IJsmExpression _b1;
-        private IJsmExpression _r2;
-        private IJsmExpression _g2;
-        private IJsmExpression _b2;
-        private IJsmExpression _transitionDuration;
+        #region Fields
+
+        private readonly IJsmExpression _b1;
+        private readonly IJsmExpression _b2;
+        private readonly IJsmExpression _g1;
+        private readonly IJsmExpression _g2;
+        private readonly IJsmExpression _r1;
+        private readonly IJsmExpression _r2;
+        private readonly IJsmExpression _transitionDuration;
+
+        #endregion Fields
+
+        #region Constructors
 
         public FCOLADD(IJsmExpression r1, IJsmExpression g1, IJsmExpression b1, IJsmExpression r2, IJsmExpression g2, IJsmExpression b2, IJsmExpression transitionDuration)
         {
@@ -25,7 +29,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _transitionDuration = transitionDuration;
         }
 
-        public FCOLADD(Int32 parameter, IStack<IJsmExpression> stack)
+        public FCOLADD(int parameter, IStack<IJsmExpression> stack)
             : this(
                 transitionDuration: stack.Pop(),
                 b2: stack.Pop(),
@@ -37,14 +41,11 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(FCOLADD)}({nameof(_r1)}: {_r1}, {nameof(_g1)}: {_g1}, {nameof(_b1)}: {_b1}, {nameof(_r2)}: {_r2}, {nameof(_g2)}: {_g2}, {nameof(_b2)}: {_b2}, {nameof(_transitionDuration)}: {_transitionDuration})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IRenderingService))
                 .Method(nameof(IRenderingService.AddScreenColor))
                 .Argument("r1", _r1)
@@ -55,7 +56,6 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 .Argument("b2", _b2)
                 .Argument("transitionDuration", _transitionDuration)
                 .Comment(nameof(FCOLADD));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -69,8 +69,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
                     _g2.Int32(services),
                     _b2.Int32(services)),
                 _transitionDuration.Int32(services));
-            
+
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(FCOLADD)}({nameof(_r1)}: {_r1}, {nameof(_g1)}: {_g1}, {nameof(_b1)}: {_b1}, {nameof(_r2)}: {_r2}, {nameof(_g2)}: {_g2}, {nameof(_b2)}: {_b2}, {nameof(_transitionDuration)}: {_transitionDuration})";
+
+        #endregion Methods
     }
 }

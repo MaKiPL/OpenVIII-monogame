@@ -8,17 +8,17 @@ namespace OpenVIII.Fields
 {
     public class Archive
     {
-        #region Constructors
-
-        #endregion Constructors
-
         #region Properties
 
+        public string ArchiveName { get; set; }
         public Background Background { get; set; }
         public Cameras Cameras { get; set; }
         public EventEngine EventEngine { get; set; }
+        public string FileName { get; set; }
         public Sections Flags { get; set; }
+        public ushort ID { get; set; }
         public INF INF { get; set; }
+        public List<Scripts.Jsm.GameObject> JSMObjects { get; set; }
         public FieldModes Mod { get; set; } = 0;
         public MrtRat MrtRat { get; set; }
         public MSK MSK { get; set; }
@@ -27,16 +27,10 @@ namespace OpenVIII.Fields
         public SFX SFX { get; set; }
         public TDW TDW { get; set; }
         public WalkMesh WalkMesh { get; set; }
-        public ushort ID { get; set; }
-        public string FileName { get; set; }
-        public string ArchiveName { get; set; }
-        public List<Scripts.Jsm.GameObject> JSMObjects { get; set; }
 
         #endregion Properties
 
         #region Methods
-
-        public override string ToString() => $"{{{ID}, {FileName}, {Mod}}}";
 
         public static Archive Load(ushort inputFieldID, Sections flags = Sections.ALL)
         {
@@ -44,16 +38,25 @@ namespace OpenVIII.Fields
             return !r.Init(inputFieldID, flags) ? null : r;
         }
 
-/*
-        public HashSet<ushort> GetForcedBattleEncounters() => JSMObjects != null && JSMObjects.Count > 0 ?
-            (
-             from jsmObject in JSMObjects
-             from script in jsmObject.Scripts
-             from instruction in script.Segment.Flatten()
-             where instruction is BATTLE
-             let battle = ((BATTLE)instruction)
-             select battle.Encounter).ToHashSet() : null;
-*/
+        public void Draw()
+        {
+            switch (Mod)
+            {
+                case FieldModes.Init:
+                    break;
+
+                case FieldModes.Disabled:
+                    break;
+
+                case FieldModes.DebugRender:
+                case FieldModes.NoJSM:
+                    Background.Draw();
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         public HashSet<FF8String> GetAreaNames() => JSMObjects != null && JSMObjects.Count > 0 ?
             (
@@ -63,23 +66,6 @@ namespace OpenVIII.Fields
              where instruction is SETPLACE
              let setPlace = ((SETPLACE)instruction)
              select setPlace.AreaName()).ToHashSet() : null;
-
-        public void Draw()
-        {
-            switch (Mod)
-            {
-                case FieldModes.Init:
-                    break;
-                case FieldModes.Disabled:
-                    break;
-                case FieldModes.DebugRender:
-                case FieldModes.NoJSM:
-                    Background.Draw();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
 
         public bool Init(ushort? inputFieldID = null, Sections flags = Sections.ALL)
         {
@@ -125,10 +111,10 @@ namespace OpenVIII.Fields
             //let's start with scripts
             var sJsm = findString(".jsm");
             var sSy = findString(".sy");
-            if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(sJsm)&& (FileName != "test3"))
+            if (flags.HasFlag(Sections.JSM | Sections.SYM) && !string.IsNullOrWhiteSpace(sJsm) && (FileName != "test3"))
             {
-                    JSMObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(sJsm));
-             
+                JSMObjects = Scripts.Jsm.File.Read(fieldArchive.GetBinaryFile(sJsm));
+
                 if (Mod != FieldModes.NoJSM)
                 {
                     if (!string.IsNullOrWhiteSpace(sSy))
@@ -235,6 +221,19 @@ namespace OpenVIII.Fields
                    Background != null || Services != null;
         }
 
+        public override string ToString() => $"{{{ID}, {FileName}, {Mod}}}";
+
+        /*
+                public HashSet<ushort> GetForcedBattleEncounters() => JSMObjects != null && JSMObjects.Count > 0 ?
+                    (
+                     from jsmObject in JSMObjects
+                     from script in jsmObject.Scripts
+                     from instruction in script.Segment.Flatten()
+                     where instruction is BATTLE
+                     let battle = ((BATTLE)instruction)
+                     select battle.Encounter).ToHashSet() : null;
+        */
+
         public void Update()
         {
             switch (Mod)
@@ -251,6 +250,7 @@ namespace OpenVIII.Fields
                     break; //await events here
                 case FieldModes.Disabled:
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }

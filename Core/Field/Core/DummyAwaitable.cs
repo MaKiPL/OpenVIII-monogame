@@ -1,14 +1,17 @@
-﻿using System;
-
-namespace OpenVIII.Fields
+﻿namespace OpenVIII.Fields
 {
     public sealed class DummyAwaitable : IAwaitable
     {
+        #region Properties
+
         public static IAwaitable Instance { get; } = new DummyAwaitable();
 
-        public IAwaiter GetAwaiter()
-        {
-            return DummyAwaiter.Instance;
-        }
+        #endregion Properties
+
+        #region Methods
+
+        public IAwaiter GetAwaiter() => DummyAwaiter.Instance;
+
+        #endregion Methods
     }
 }

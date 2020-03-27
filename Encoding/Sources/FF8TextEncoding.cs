@@ -7,7 +7,7 @@ namespace OpenVIII.Encoding
         private readonly FF8TextEncoder _encoder;
         private readonly FF8TextDecoder _decoder;
 
-        private static readonly Object _lock = new Object();
+        private static readonly object _lock = new object();
         private static volatile FF8TextEncoding _instance;
 
         public new static FF8TextEncoding Default
@@ -35,32 +35,32 @@ namespace OpenVIII.Encoding
             _decoder = new FF8TextDecoder(codepage);
         }
 
-        public override Int32 GetByteCount(Char[] chars, Int32 index, Int32 count)
+        public override int GetByteCount(char[] chars, int index, int count)
         {
             return _encoder.GetByteCount(chars, index, count);
         }
 
-        public override Int32 GetBytes(Char[] chars, Int32 charIndex, Int32 charCount, Byte[] bytes, Int32 byteIndex)
+        public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes, int byteIndex)
         {
             return _encoder.GetBytes(chars, charIndex, charCount, bytes, byteIndex);
         }
 
-        public override Int32 GetCharCount(Byte[] bytes, Int32 index, Int32 count)
+        public override int GetCharCount(byte[] bytes, int index, int count)
         {
             return _decoder.GetCharCount(bytes, index, count);
         }
 
-        public override Int32 GetChars(Byte[] bytes, Int32 byteIndex, Int32 byteCount, Char[] chars, Int32 charIndex)
+        public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
         {
             return _decoder.GetChars(bytes, byteIndex, byteCount, chars, charIndex);
         }
 
-        public override Int32 GetMaxByteCount(Int32 charCount)
+        public override int GetMaxByteCount(int charCount)
         {
             return _encoder.GetMaxByteCount(charCount);
         }
 
-        public override Int32 GetMaxCharCount(Int32 byteCount)
+        public override int GetMaxCharCount(int byteCount)
         {
             return _decoder.GetMaxCharCount(byteCount);
         }

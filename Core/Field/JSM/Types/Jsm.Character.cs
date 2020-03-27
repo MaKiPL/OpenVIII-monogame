@@ -6,9 +6,9 @@ namespace OpenVIII.Fields.Scripts
     {
         public struct FieldObjectId
         {
-            public Int32 Value { get; }
+            public int Value { get; }
 
-            public FieldObjectId(Int32 value)
+            public FieldObjectId(int value)
             {
                 if (value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), $"Invalid character variable index: {value}");
@@ -16,7 +16,7 @@ namespace OpenVIII.Fields.Scripts
                 Value = value;
             }
 
-            public override String ToString()
+            public override string ToString()
             {
                 return $"character{Value}";
             }

@@ -4,19 +4,29 @@ namespace OpenVIII.Fields
 {
     public interface IPartyService
     {
-        Boolean IsSupported { get; }
+        #region Properties
 
-        Boolean IsPartySwitchEnabled { get; set; }
+        bool IsPartySwitchEnabled { get; set; }
+        bool IsSupported { get; }
 
-        void AddPlayableCharacter(Characters characterId);
-        void RemovePlayableCharacter(Characters characterId);
+        #endregion Properties
+
+        #region Methods
 
         void AddPartyCharacter(Characters characterId);
+
+        void AddPlayableCharacter(Characters characterId);
+
+        void ChangeCharacterState(Characters characterId, bool isSwitchable, bool isSelectable);
+
+        void ChangeParty(Characters characterId1, Characters characterId2, Characters characterId3);
+
+        FieldObject FindPartyCharacterObject(int partyId);
+
         void RemovePartyCharacter(Characters characterId);
 
-        void ChangeCharacterState(Characters characterId, Boolean isSwitchable, Boolean isSelectable);
-        void ChangeParty(Characters characterId1, Characters characterId2, Characters characterId3);
-        
-        FieldObject FindPartyCharacterObject(Int32 partyId);
+        void RemovePlayableCharacter(Characters characterId);
+
+        #endregion Methods
     }
 }

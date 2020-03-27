@@ -1,9 +1,5 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
-
     /// <summary>
     /// <para>Play an animation.</para>
     /// <para>ANIME, CANIME, RANIME, RCANIME, ANIMEKEEP, CANIMEKEEP, RANIMEKEEP, RCANIMEKEEP</para>
@@ -14,6 +10,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/034_RCANIMEKEEP"/>
     public sealed class RCANIMEKEEP : Abstract.ANIMELOOP
     {
+        #region Constructors
+
         public RCANIMEKEEP(int animationId, int firstFrame, int lastFrame) : base(animationId, firstFrame, lastFrame)
         {
         }
@@ -22,21 +20,17 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(RCANIMEKEEP)}({nameof(_animationId)}: {_animationId}, {nameof(_lastFrame)}: {_lastFrame}, {nameof(_firstFrame)}: {_firstFrame})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Animation))
                 .Method(nameof(FieldObjectAnimation.Play))
                 .Argument("animationId", _animationId)
                 .Argument("firstFrame", _firstFrame)
                 .Argument("lastFrame", _lastFrame)
                 .Comment(nameof(RCANIMEKEEP));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -45,5 +39,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             // Async call
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(RCANIMEKEEP)}({nameof(_animationId)}: {_animationId}, {nameof(_lastFrame)}: {_lastFrame}, {nameof(_firstFrame)}: {_firstFrame})";
+
+        #endregion Methods
     }
 }

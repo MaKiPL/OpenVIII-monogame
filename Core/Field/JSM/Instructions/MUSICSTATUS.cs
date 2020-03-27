@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// See if music is playing?
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/140_MUSICSTATUS&action=edit&redlink=1"/>
     public sealed class MUSICSTATUS : JsmInstruction
     {
+        #region Constructors
+
         public MUSICSTATUS()
         {
         }
 
-        public MUSICSTATUS(Int32 parameter, IStack<IJsmExpression> stack)
+        public MUSICSTATUS(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MUSICSTATUS)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MUSICSTATUS)}()";
+
+        #endregion Methods
     }
 }

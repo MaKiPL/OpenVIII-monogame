@@ -94,7 +94,7 @@ namespace OpenVIII.MonoGame
             return library;
         }
 
-        public static Object RequireFunction(IntPtr library, String function, Type delegateType)
+        public static object RequireFunction(IntPtr library, string function, Type delegateType)
         {
             var ptr = NativeMethods.GetProcAddress(library, function);
             if (ptr == IntPtr.Zero)
@@ -106,14 +106,14 @@ namespace OpenVIII.MonoGame
         private static class NativeMethods
         {
             [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-            internal static extern IntPtr LoadLibraryW(String lpszLib);
+            internal static extern IntPtr LoadLibraryW(string lpszLib);
 
             [DllImport("kernel32", CharSet = CharSet.Ansi /* GetProcAddress doesn't have an Unicode version. */, SetLastError = true,ThrowOnUnmappableChar = true, BestFitMapping = false)]
-            internal static extern IntPtr GetProcAddress(IntPtr hModule, String procName);
+            internal static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
         }
 
         // ReSharper disable StringLiteralTypo
-        private static readonly Dictionary<String, String> FieldToFunctionMap = new Dictionary<String, String>
+        private static readonly Dictionary<string, string> FieldToFunctionMap = new Dictionary<string, string>
         {
             {"Enable", "alEnable"},
             {"alBufferData", "alBufferData"},

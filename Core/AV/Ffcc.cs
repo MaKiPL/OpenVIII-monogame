@@ -384,7 +384,7 @@ namespace OpenVIII.AV
         /// <summary>
         /// Metadata container for tags.
         /// </summary>
-        public Dictionary<String, String> Metadata { get;  } = new Dictionary<string, string>();
+        public Dictionary<string, string> Metadata { get;  } = new Dictionary<string, string>();
 
         /// <summary>
         /// SoundEffect for class allows control out of class. Mode must be in PROCESS_ALL

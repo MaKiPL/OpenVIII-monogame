@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class FOLLOWOFF : JsmInstruction
     {
+        #region Constructors
+
         public FOLLOWOFF()
         {
         }
 
-        public FOLLOWOFF(Int32 parameter, IStack<IJsmExpression> stack)
+        public FOLLOWOFF(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(FOLLOWOFF)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(FOLLOWOFF)}()";
+
+        #endregion Methods
     }
 }

@@ -131,7 +131,7 @@ namespace OpenVIII
 
         public virtual Entry GetEntry(Enum id) => GetEntry(Convert.ToUInt32(id));
 
-        public virtual Entry GetEntry(UInt32 id)
+        public virtual Entry GetEntry(uint id)
         {
             if (EntriesPerTexture <= 0 && Entries.ContainsKey(id))
                 return Entries[id];

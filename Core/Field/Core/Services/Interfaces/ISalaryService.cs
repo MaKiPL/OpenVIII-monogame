@@ -4,9 +4,12 @@ namespace OpenVIII.Fields
 {
     public interface ISalaryService
     {
-        Boolean IsSupported { get; }
+        #region Properties
 
-        Boolean IsSalaryEnabled { get; set; }
-        Boolean IsSalaryAlertEnabled { get; set; }
+        bool IsSalaryAlertEnabled { get; set; }
+        bool IsSalaryEnabled { get; set; }
+        bool IsSupported { get; }
+
+        #endregion Properties
     }
 }

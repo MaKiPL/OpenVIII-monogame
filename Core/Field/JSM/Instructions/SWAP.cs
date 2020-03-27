@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Swap?
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/162_SWAP&action=edit&redlink=1"/>
     public sealed class SWAP : JsmInstruction
     {
+        #region Constructors
+
         public SWAP()
         {
         }
 
-        public SWAP(Int32 parameter, IStack<IJsmExpression> stack)
+        public SWAP(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SWAP)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SWAP)}()";
+
+        #endregion Methods
     }
 }

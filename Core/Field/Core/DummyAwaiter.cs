@@ -4,17 +4,22 @@ namespace OpenVIII.Fields
 {
     public sealed class DummyAwaiter : IAwaiter
     {
+        #region Properties
+
         public static IAwaiter Instance { get; } = new DummyAwaiter();
 
-        public void OnCompleted(Action continuation)
-        {
-            continuation();
-        }
+        public bool IsCompleted => true;
 
-        public Boolean IsCompleted => true;
+        #endregion Properties
+
+        #region Methods
 
         public void GetResult()
         {
         }
+
+        public void OnCompleted(Action continuation) => continuation();
+
+        #endregion Methods
     }
 }

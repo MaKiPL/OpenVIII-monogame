@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Add Gil to Team Laguna
@@ -9,25 +6,31 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/152_ADDPASTGIL&action=edit&redlink=1"/>
     public sealed class ADDPASTGIL : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Amount of Gil
         /// </summary>
-        private IJsmExpression _arg0;
+        private readonly IJsmExpression _arg0;
 
-        public ADDPASTGIL(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        #endregion Fields
 
-        public ADDPASTGIL(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public ADDPASTGIL(IJsmExpression arg0) => _arg0 = arg0;
+
+        public ADDPASTGIL(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(ADDPASTGIL)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(ADDPASTGIL)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

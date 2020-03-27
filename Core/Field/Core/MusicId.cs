@@ -1,11 +1,9 @@
-﻿using System;
-
-namespace OpenVIII
+﻿namespace OpenVIII
 {
     public enum MusicId
     {
         Loser = 0, // The Loser
-        Winner = 1, // The Winner 
+        Winner = 1, // The Winner
         Music04 = 4, // Never Look Back
 
         Battle01 = 5, // Don't be Afraid (Regular Battle)
@@ -86,7 +84,7 @@ namespace OpenVIII
         Battle08 = 90, // The Legendary Beast (Junctioned Griever))
         Music91 = 91, // Slide Show Part 1
         Music92 = 92, // Slide Show Part 2
-        Battle09 = 93, // The Extreme (Ultimecia final battle) 
+        Battle09 = 93, // The Extreme (Ultimecia final battle)
 
         Music96 = 96, // The Successor
         Music97 = 97, // Compression of Time

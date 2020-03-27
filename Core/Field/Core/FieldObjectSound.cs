@@ -4,15 +4,21 @@ namespace OpenVIII.Fields
 {
     public sealed class FieldObjectInteraction
     {
-        public Boolean SoundFootsteps { get; set; }
-        public Boolean IsTalkScriptActive { get; set; }
-        public Boolean IsPushScriptActive { get; set; }
-        public Int32 MovementSpeed { get; set; }
+        #region Properties
 
-        public void Move(Coords3D coords, Int32 unknown)
-        {
+        public bool IsPushScriptActive { get; set; }
+        public bool IsTalkScriptActive { get; set; }
+        public int MovementSpeed { get; set; }
+        public bool SoundFootsteps { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public void Move(Coords3D coords, int unknown) =>
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(FieldObjectAnimation)}.{nameof(Move)}({nameof(coords)}: {coords}, {nameof(unknown)}: {unknown})");
-        }
+
+        #endregion Methods
     }
 }

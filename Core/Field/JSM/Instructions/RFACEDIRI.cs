@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class RFACEDIRI : JsmInstruction
     {
-        public RFACEDIRI()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public RFACEDIRI() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

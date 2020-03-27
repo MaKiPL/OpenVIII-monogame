@@ -2,18 +2,23 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public partial class Segment
         {
+            #region Classes
+
             public static class Builder
             {
+                #region Methods
+
                 public static ExecutableSegment Build(List<JsmInstruction> instructions, IReadOnlyList<IJsmControl> controls)
                 {
-                    var dic = new Dictionary<Int32, List<Segment>>();
+                    var dic = new Dictionary<int, List<Segment>>();
                     foreach (var control in controls)
                     {
                         foreach (var seg in control.EnumerateSegments())
@@ -29,7 +34,7 @@ namespace OpenVIII.Fields.Scripts
                     }
 
                     var rootSegment = new ExecutableSegment(0, instructions.Count);
-                    dic.Add(0, new List<Segment> {rootSegment});
+                    dic.Add(0, new List<Segment> { rootSegment });
 
                     var segments = new Stack<Segment>();
                     Segment segment = rootSegment;
@@ -65,7 +70,13 @@ namespace OpenVIII.Fields.Scripts
 
                     return rootSegment;
                 }
+
+                #endregion Methods
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

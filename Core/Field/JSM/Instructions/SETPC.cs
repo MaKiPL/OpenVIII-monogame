@@ -1,35 +1,31 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class SETPC : JsmInstruction
     {
-        private Characters _characterId;
+        #region Fields
 
-        public SETPC(Characters characterId)
-        {
-            _characterId = characterId;
-        }
+        private readonly Characters _characterId;
 
-        public SETPC(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public SETPC(Characters characterId) => _characterId = characterId;
+
+        public SETPC(int parameter, IStack<IJsmExpression> stack)
             : this(
                 characterId: (Characters)((Jsm.Expression.PSHN_L)stack.Pop()).Value)
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SETPC)}({nameof(_characterId)}: {_characterId})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Method(nameof(FieldObject.BindCharacter))
                 .Enum(_characterId)
                 .Comment(nameof(SETPC));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -37,5 +33,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             currentObject.BindCharacter(_characterId);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(SETPC)}({nameof(_characterId)}: {_characterId})";
+
+        #endregion Methods
     }
 }

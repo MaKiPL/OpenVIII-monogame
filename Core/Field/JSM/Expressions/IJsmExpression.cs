@@ -6,7 +6,7 @@ namespace OpenVIII.Fields.Scripts
     {
         #region Properties
 
-        Int64 Value { get; }
+        long Value { get; }
 
         #endregion Properties
     }
@@ -15,7 +15,7 @@ namespace OpenVIII.Fields.Scripts
     {
         #region Methods
 
-        Int64 Calculate(IServices services);
+        long Calculate(IServices services);
 
         IJsmExpression Evaluate(IServices services);
 
@@ -35,26 +35,40 @@ namespace OpenVIII.Fields.Scripts
     {
         #region Methods
 
-        public static Boolean Boolean(this IJsmExpression expression, IServices services)
+        public static bool Boolean(this IJsmExpression expression, IServices services)
         {
             var value = Int32(expression, services);
-            if (value == 0)
-                return false;
-            if (value == 1)
-                return true;
-
-            throw new NotSupportedException($"Cannot convert value {value} to Boolean.");
+            switch (value)
+            {
+                case 0:
+                    return false;
+                case 1:
+                    return true;
+                default:
+                    throw new NotSupportedException($"Cannot convert value {value} to Boolean.");
+            }
         }
 
-        public static Boolean Boolean(this IConstExpression expression)
+        public static bool Boolean(this IConstExpression expression)
         {
-            if (expression.Value == 0)
-                return false;
-            if (expression.Value == 1)
-                return true;
-
-            throw new NotSupportedException($"Cannot convert value {expression.Value} to Boolean.");
+            switch (expression.Value)
+            {
+                case 0:
+                    return false;
+                case 1:
+                    return true;
+                default:
+                    throw new NotSupportedException($"Cannot convert value {expression.Value} to Boolean.");
+            }
         }
+
+        public static byte Byte(this IJsmExpression expression, IServices services) => checked((byte)expression.Calculate(services));
+
+        public static byte Byte(this IConstExpression expression) => checked((byte)expression.Value);
+
+        public static Cards.ID Cards(this IJsmExpression expression, IServices services) => checked((Cards.ID)expression.Calculate(services));
+
+        public static Cards.ID Cards(this IConstExpression expression) => checked((Cards.ID)expression.Value);
 
         public static Characters Characters(this IJsmExpression expression, IServices services) => checked((Characters)expression.Calculate(services));
 
@@ -64,31 +78,23 @@ namespace OpenVIII.Fields.Scripts
 
         public static GFs GFs(this IConstExpression expression) => checked((GFs)expression.Value);
 
-        public static Cards.ID Cards(this IJsmExpression expression, IServices services) => checked((Cards.ID)expression.Calculate(services));
+        public static short Int16(this IJsmExpression expression, IServices services) => checked((short)expression.Calculate(services));
 
-        public static Cards.ID Cards(this IConstExpression expression) => checked((Cards.ID)expression.Value);
+        public static short Int16(this IConstExpression expression) => checked((short)expression.Value);
 
-        public static Byte Byte(this IJsmExpression expression, IServices services) => checked((Byte)expression.Calculate(services));
+        public static int Int32(this IJsmExpression expression, IServices services) => checked((int)expression.Calculate(services));
 
-        public static Byte Byte(this IConstExpression expression) => checked((Byte)expression.Value);
-
-        public static UInt16 UInt16(this IJsmExpression expression, IServices services) => checked((UInt16)expression.Calculate(services));
-
-        public static UInt16 UInt16(this IConstExpression expression) => checked((UInt16)expression.Value);
-
-        public static Int16 Int16(this IJsmExpression expression, IServices services) => checked((Int16)expression.Calculate(services));
-
-        public static Int16 Int16(this IConstExpression expression) => checked((Int16)expression.Value);
-
-        public static Int32 Int32(this IJsmExpression expression, IServices services) => checked((Int32)expression.Calculate(services));
-
-        public static Int32 Int32(this IConstExpression expression) => checked((Int32)expression.Value);
+        public static int Int32(this IConstExpression expression) => checked((int)expression.Value);
 
         public static ILogicalExpression LogicalEvaluate(this ILogicalExpression expression, IServices services)
         {
             var jsm = expression.Evaluate(services);
             return (ILogicalExpression)jsm;
         }
+
+        public static ushort UInt16(this IJsmExpression expression, IServices services) => checked((ushort)expression.Calculate(services));
+
+        public static ushort UInt16(this IConstExpression expression) => checked((ushort)expression.Value);
 
         #endregion Methods
     }

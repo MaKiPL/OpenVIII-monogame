@@ -1,24 +1,28 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Sets whether the PC character can be moved/selected in the switch menu. 
+    /// Sets whether the PC character can be moved/selected in the switch menu.
     /// </summary>
     internal sealed class HOLD : JsmInstruction
     {
-        private IJsmExpression _characterId;
-        private Boolean _isSwitchable;
-        private Boolean _isSelectable;
+        #region Fields
 
-        public HOLD(IJsmExpression characterId, Boolean isSwitchable, Boolean isSelectable)
+        private readonly IJsmExpression _characterId;
+        private readonly bool _isSelectable;
+        private readonly bool _isSwitchable;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public HOLD(IJsmExpression characterId, bool isSwitchable, bool isSelectable)
         {
             _characterId = characterId;
             _isSwitchable = isSwitchable;
             _isSelectable = isSelectable;
         }
 
-        public HOLD(Int32 parameter, IStack<IJsmExpression> stack)
+        public HOLD(int parameter, IStack<IJsmExpression> stack)
             : this(
                 isSelectable: ((Jsm.Expression.PSHN_L)stack.Pop()).Boolean(),
                 isSwitchable: ((Jsm.Expression.PSHN_L)stack.Pop()).Boolean(),
@@ -26,21 +30,17 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(HOLD)}({nameof(_characterId)}: {_characterId}, {nameof(_isSwitchable)}: {_isSwitchable}, {nameof(_isSelectable)}: {_isSelectable})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IPartyService))
                 .Method(nameof(IPartyService.ChangeCharacterState))
                 .Enum<Characters>(_characterId)
                 .Argument("isSwitchable", _isSwitchable)
                 .Argument("isSelectable", _isSelectable)
                 .Comment(nameof(HOLD));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -48,5 +48,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             ServiceId.Party[services].ChangeCharacterState(characterId, _isSwitchable, _isSelectable);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(HOLD)}({nameof(_characterId)}: {_characterId}, {nameof(_isSwitchable)}: {_isSwitchable}, {nameof(_isSelectable)}: {_isSelectable})";
+
+        #endregion Methods
     }
 }

@@ -8,7 +8,7 @@ namespace OpenVIII.Fields
     {
         public static class Reader
         {
-            public static GameObjects FromBytes(Byte[] buffer)
+            public static GameObjects FromBytes(byte[] buffer)
             {
                 using (var ms = new MemoryStream(buffer))
                     return FromStream(ms);
@@ -27,7 +27,7 @@ namespace OpenVIII.Fields
                 while (!reader.EndOfStream)
                 {
                     var str = reader.ReadLine();
-                    if (String.IsNullOrWhiteSpace(str))
+                    if (string.IsNullOrWhiteSpace(str))
                         continue;
 
                     Parse(str, result);
@@ -36,7 +36,7 @@ namespace OpenVIII.Fields
                 return result;
             }
 
-            private static void Parse(String str, GameObjects result)
+            private static void Parse(string str, GameObjects result)
             {
                 var pair = str.Split(new[] {"::"}, StringSplitOptions.None);
                 if (pair.Length == 1)

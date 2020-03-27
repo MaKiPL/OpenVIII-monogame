@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class RUNDISABLE : JsmInstruction
     {
+        #region Constructors
+
         public RUNDISABLE()
         {
         }
 
-        public RUNDISABLE(Int32 parameter, IStack<IJsmExpression> stack)
+        public RUNDISABLE(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(RUNDISABLE)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(RUNDISABLE)}()";
+
+        #endregion Methods
     }
 }

@@ -1,26 +1,29 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class SETTIMER : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
 
-        public SETTIMER(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        private readonly IJsmExpression _arg0;
 
-        public SETTIMER(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public SETTIMER(IJsmExpression arg0) => _arg0 = arg0;
+
+        public SETTIMER(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SETTIMER)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SETTIMER)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

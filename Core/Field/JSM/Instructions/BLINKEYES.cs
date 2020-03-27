@@ -1,5 +1,3 @@
-using System;
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -8,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/15C_BLINKEYES&action=edit&redlink=1"/>
     public sealed class BLINKEYES : JsmInstruction
     {
+        #region Constructors
+
         public BLINKEYES()
         {
         }
 
-        public BLINKEYES(Int32 parameter, IStack<IJsmExpression> stack)
+        public BLINKEYES(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BLINKEYES)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(BLINKEYES)}()";
+
+        #endregion Methods
     }
 }

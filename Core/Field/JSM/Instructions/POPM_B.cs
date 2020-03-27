@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Global[index] = (Byte)value;
@@ -11,36 +8,42 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/00B_POPM_B"/>
     public sealed class POPM_B : JsmInstruction
     {
-        private GlobalVariableId<Byte> _globalVariable;
-        private IJsmExpression _value;
+        #region Fields
 
-        public POPM_B(GlobalVariableId<Byte> globalVariable, IJsmExpression value)
+        private readonly GlobalVariableId<byte> _globalVariable;
+        private readonly IJsmExpression _value;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public POPM_B(GlobalVariableId<byte> globalVariable, IJsmExpression value)
         {
             _globalVariable = globalVariable;
             _value = value;
         }
 
-        public POPM_B(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(new GlobalVariableId<Byte>(parameter),
+        public POPM_B(int parameter, IStack<IJsmExpression> stack)
+            : this(new GlobalVariableId<byte>(parameter),
                 value: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(POPM_B)}({nameof(_globalVariable)}: {_globalVariable}, {nameof(_value)}: {_value})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            FormatHelper.FormatGlobalSet(_globalVariable, _value, Jsm.GlobalUInt8, sw, formatterContext, services);
-        }
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => FormatHelper.FormatGlobalSet(_globalVariable, _value, Jsm.GlobalUInt8, sw, formatterContext, services);
 
         public override IAwaitable TestExecute(IServices services)
         {
-            var value = (Byte)_value.Calculate(services);
+            var value = (byte)_value.Calculate(services);
             ServiceId.Global[services].Set(_globalVariable, value);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(POPM_B)}({nameof(_globalVariable)}: {_globalVariable}, {nameof(_value)}: {_value})";
+
+        #endregion Methods
     }
 }

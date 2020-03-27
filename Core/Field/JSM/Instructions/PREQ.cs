@@ -1,16 +1,17 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Requests that the entity associated with a character in the current party executes one of its member functions at a specified priority.
     /// The request is asynchronous and returns immediately without waiting for the remote execution to start or finish.
-    /// If the specified priority is already busy executing, the request will fail silently. 
+    /// If the specified priority is already busy executing, the request will fail silently.
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/017_PREQ"/>
     public sealed class PREQ : Abstract.PREQ
     {
+        #region Constructors
+
         public PREQ(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
         }
@@ -19,10 +20,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(PREQ)}({nameof(_partyId)}: {_partyId}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -43,5 +43,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             targetObject.Scripts.TryExecute(_scriptId, _priority);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(PREQ)}({nameof(_partyId)}: {_partyId}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
+
+        #endregion Methods
     }
 }

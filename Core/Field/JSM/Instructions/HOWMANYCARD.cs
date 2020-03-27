@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>How Many cards? how many cards you have?</para>
@@ -14,9 +12,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         #region Fields
 
         /// <summary>
-        /// Card ID? only value is 12 = Buel. 
+        /// Card ID? only value is 12 = Buel.
         /// </summary>
-        private Cards.ID _cardID;
+        private readonly Cards.ID _cardID;
 
         #endregion Fields
 
@@ -24,7 +22,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public HOWMANYCARD(Cards.ID cardID) => _cardID = cardID;
 
-        public HOWMANYCARD(Int32 parameter, IStack<IJsmExpression> stack)
+        public HOWMANYCARD(int parameter, IStack<IJsmExpression> stack)
             : this(
                 cardID: ((IConstExpression)stack.Pop()).Cards())
         {
@@ -34,7 +32,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(HOWMANYCARD)}({nameof(_cardID)}: {_cardID})";
+        public override string ToString() => $"{nameof(HOWMANYCARD)}({nameof(_cardID)}: {_cardID})";
 
         #endregion Methods
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -11,6 +10,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/015_REQSW"/>
     public sealed class REQSW : Abstract.REQ
     {
+        #region Constructors
+
         public REQSW(int objectIndex, int priority, int scriptId) : base(objectIndex, priority, scriptId)
         {
         }
@@ -19,10 +20,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(REQSW)}({nameof(_objectIndex)}: {_objectIndex}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -42,5 +42,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             targetObject.Scripts.Execute(_scriptId, _priority);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(REQSW)}({nameof(_objectIndex)}: {_objectIndex}, {nameof(_priority)}: {_priority}, {nameof(_scriptId)}: {_scriptId})";
+
+        #endregion Methods
     }
 }

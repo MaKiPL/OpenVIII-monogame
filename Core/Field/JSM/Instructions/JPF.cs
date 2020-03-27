@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -11,53 +10,35 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/003_JPF"/>
     public sealed class JPF : JsmInstruction, IJumpToOpcode, IFormattableScript
     {
-        /// <summary>
-        /// Number of instructions to jump forward. (in Deling's editor, this is just a label)
-        /// </summary>
-        public Int32 Offset { get; set; }
-        public IReadOnlyList<IJsmExpression> Conditions => _conditions;
+        #region Fields
+
         private readonly List<IJsmExpression> _conditions = new List<IJsmExpression>();
 
-        public JPF(Int32 offset, IJsmExpression condition)
+        private int _index = -1;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public JPF(int offset, IJsmExpression condition)
         {
             Offset = offset;
             _conditions.Add(condition);
         }
 
-        public JPF(Int32 offset, IStack<IJsmExpression> stack)
-            : this(offset,
-                condition: stack.Pop())
+        public JPF(int offset, IStack<IJsmExpression> stack)
+                    : this(offset,
+                        condition: stack.Pop())
         {
         }
 
-        public void Inverse(JMP nextJmp)
-        {
-            if (_conditions.Count != 1)
-                throw new NotSupportedException($"Conditional jump already merged with an other one: {this}");
+        #endregion Constructors
 
-            var expression = _conditions[0];
-            if (!(expression is ILogicalExpression constExpression))
-                _conditions[0] = new Jsm.Expression.CAL.LogNot(expression);
-            else
-                _conditions[0] = constExpression.LogicalInverse();
+        #region Properties
 
-            var jmpIndex = nextJmp.Index;
-            var jmpOffset = nextJmp.Offset;
-            nextJmp.Index = Index;
-            nextJmp.Offset = Offset;
-            Index = jmpIndex;
-            Offset = jmpOffset;
-        }
+        public IReadOnlyList<IJsmExpression> Conditions => _conditions;
 
-        public void Union(JPF newJpf)
-        {
-            foreach (var cond in newJpf.Conditions)
-                _conditions.Add(cond);
-        }
-
-        private Int32 _index = -1;
-
-        public Int32 Index
+        public int Index
         {
             get
             {
@@ -65,20 +46,20 @@ namespace OpenVIII.Fields.Scripts.Instructions
                     throw new ArgumentException($"{nameof(JPF)} instruction isn't indexed yet.", nameof(Index));
                 return _index;
             }
-            set
-            {
+            set =>
                 //if (_index != -1)
                 //    throw new ArgumentException($"{nameof(JPF)} instruction has already been indexed: {_index}.", nameof(Index));
                 _index = value;
-            }
         }
 
-        public override String ToString()
-        {
-            return _index < 0
-                ? $"{nameof(JPF)}[{nameof(Offset)}: {Offset}, {nameof(Conditions)}: ( {String.Join(") && (", Conditions)} )]"
-                : $"{nameof(JPF)}[{nameof(Index)}: {Index}, {nameof(Conditions)}: ( {String.Join(") && (", Conditions)} )]";
-        }
+        /// <summary>
+        /// Number of instructions to jump forward. (in Deling's editor, this is just a label)
+        /// </summary>
+        public int Offset { get; set; }
+
+        #endregion Properties
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -117,5 +98,36 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 sw.Append("true");
             }
         }
+
+        public void Inverse(JMP nextJmp)
+        {
+            if (_conditions.Count != 1)
+                throw new NotSupportedException($"Conditional jump already merged with an other one: {this}");
+
+            var expression = _conditions[0];
+            if (!(expression is ILogicalExpression constExpression))
+                _conditions[0] = new Jsm.Expression.CAL.LogNot(expression);
+            else
+                _conditions[0] = constExpression.LogicalInverse();
+
+            var jmpIndex = nextJmp.Index;
+            var jmpOffset = nextJmp.Offset;
+            nextJmp.Index = Index;
+            nextJmp.Offset = Offset;
+            Index = jmpIndex;
+            Offset = jmpOffset;
+        }
+
+        public override string ToString() => _index < 0
+                ? $"{nameof(JPF)}[{nameof(Offset)}: {Offset}, {nameof(Conditions)}: ( {string.Join(") && (", Conditions)} )]"
+                : $"{nameof(JPF)}[{nameof(Index)}: {Index}, {nameof(Conditions)}: ( {string.Join(") && (", Conditions)} )]";
+
+        public void Union(JPF newJpf)
+        {
+            foreach (var cond in newJpf.Conditions)
+                _conditions.Add(cond);
+        }
+
+        #endregion Methods
     }
 }

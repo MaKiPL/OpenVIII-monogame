@@ -1,37 +1,34 @@
 ﻿using System;
-using System.ComponentModel;
-
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Return</para>
-    /// If the script was called by another script, return to the another script where the current script was requested. Else the script is halted. 
+    /// If the script was called by another script, return to the another script where the current script was requested. Else the script is halted.
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/006_RET"/>
     public sealed class IRET : JsmInstruction
     {
-        public Int32 Unknown { get; }
+        #region Constructors
 
-        public IRET(Int32 unknown)
-        {
-            Unknown = unknown;
-        }
+        public IRET(int unknown) => Unknown = unknown;
 
-        public IRET(Int32 unknown, IStack<IJsmExpression> stack)
+        public IRET(int unknown, IStack<IJsmExpression> stack)
             : this(unknown)
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(IRET)}({nameof(Unknown)}: {Unknown})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.AppendLine($"return {nameof(IRET)}({Unknown});");
-        }
+        #region Properties
+
+        public int Unknown { get; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.AppendLine($"return {nameof(IRET)}({Unknown});");
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -45,5 +42,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
             return BreakAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(IRET)}({nameof(Unknown)}: {Unknown})";
+
+        #endregion Methods
     }
 }

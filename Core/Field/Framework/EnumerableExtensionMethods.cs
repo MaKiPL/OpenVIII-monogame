@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII.Fields
 {
-    public static class IEnumerableExtensionMethods
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public static class EnumerableExtensionMethods
     {
         public static IEnumerable<T> Prepend<T>(this IEnumerable<T> enumerable, T prefix)
         {
