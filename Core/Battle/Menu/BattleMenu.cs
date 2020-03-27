@@ -27,7 +27,7 @@ namespace OpenVIII
         {
             Commands,
             HP,
-            Renzokeken,
+            Renzokuken,
             Shot
         }
 
@@ -37,12 +37,12 @@ namespace OpenVIII
 
         public sbyte CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
 
-        public IGMData.Limit.Renzokeken Renzokeken
+        public IGMData.Limit.Renzokuken Renzokuken
         {
             get
             {
-                if (Data.TryGetValue(SectionName.Renzokeken, out Menu_Base val))
-                    return (IGMData.Limit.Renzokeken)val;
+                if (Data.TryGetValue(SectionName.Renzokuken, out Menu_Base val))
+                    return (IGMData.Limit.Renzokuken)val;
                 return null;
             }
         }
@@ -79,8 +79,8 @@ namespace OpenVIII
 
         public override bool Inputs()
         {
-            if (Data[SectionName.Renzokeken].Enabled)
-                return Data[SectionName.Renzokeken].Inputs();
+            if (Data[SectionName.Renzokuken].Enabled)
+                return Data[SectionName.Renzokuken].Inputs();
             else if (Data[SectionName.Shot].Enabled)
                 return Data[SectionName.Shot].Inputs();
             return Data[SectionName.Commands].Inputs();
@@ -133,7 +133,7 @@ namespace OpenVIII
 
         private void InitAsync()
         {
-            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokeken, IGMData.Limit.Renzokeken.Create(new Rectangle(0, (int)Size.Y - 164, (int)Size.X, 124))));
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokuken, IGMData.Limit.Renzokuken.Create(new Rectangle(0, (int)Size.Y - 164, (int)Size.X, 124))));
             int width = 100, height = 100;
             Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, IGMData.Limit.Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 164, width, height))));
             Action[] actions = new Action[]

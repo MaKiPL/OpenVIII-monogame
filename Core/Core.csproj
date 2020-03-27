@@ -257,7 +257,7 @@
     <Compile Include="Battle\Menu\BattleMenus.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\ATB.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\GF.cs" />
-    <Compile Include="Battle\Menu\IGMDataItem\Gradient\Renzokeken.cs" />
+    <Compile Include="Battle\Menu\IGMDataItem\Gradient\Renzokuken.cs" />
     <Compile Include="Battle\Menu\IGMData\Group\PlayerEXP.cs" />
     <Compile Include="Battle\Menu\IGMData\NamesHPATB.cs" />
     <Compile Include="Battle\Menu\IGMData\PartyAP.cs" />
@@ -269,7 +269,7 @@
     <Compile Include="Battle\Menu\IGMData\Limit\Shot.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
-    <Compile Include="Battle\Menu\IGMData\Limit\Renzokeken.cs" />
+    <Compile Include="Battle\Menu\IGMData\Limit\Renzokuken.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Party.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
     <Compile Include="Battle\Camera\BattleCameraCollection.cs" />
@@ -963,7 +963,7 @@
     <Compile Include="Kernel\Kernel_bin.Persistant_Statuses.cs" />
     <Compile Include="Kernel\Kernel_bin.Quanity.cs" />
     <Compile Include="Kernel\Kernel_bin.Quistis_limit_break_parameters.cs" />
-    <Compile Include="Kernel\Kernel_bin.Renzokeken_Level.cs" />
+    <Compile Include="Kernel\Kernel_bin.Renzokuken_Level.cs" />
     <Compile Include="Kernel\Kernel_bin.Renzokuken_Finishers_Data.cs" />
     <Compile Include="Kernel\Kernel_bin.Rinoa_limit_breaks_part_1.cs" />
     <Compile Include="Kernel\Kernel_bin.Rinoa_limit_breaks_part_2.cs" />

@@ -56,12 +56,12 @@ namespace OpenVIII
                 Statuses1 = (Battle_Only_Statuses)br.ReadUInt32();       //0x0014	4 bytes status_1; //statuses 8-39
             }
 
-            public static Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data> Read(BinaryReader br)
+            public static Dictionary<Renzokuken_Finisher, Renzokuken_Finishers_Data> Read(BinaryReader br)
             {
-                List<Kernel_bin.Renzokeken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokeken_Finisher))
-                   .Cast<Kernel_bin.Renzokeken_Finisher>()
+                List<Kernel_bin.Renzokuken_Finisher> flags = Enum.GetValues(typeof(Kernel_bin.Renzokuken_Finisher))
+                   .Cast<Kernel_bin.Renzokuken_Finisher>()
                    .ToList();
-                var ret = new Dictionary<Renzokeken_Finisher, Renzokuken_Finishers_Data>(count);
+                var ret = new Dictionary<Renzokuken_Finisher, Renzokuken_Finishers_Data>(count);
 
                 for (int i = 0; i < count; i++)
                 {
