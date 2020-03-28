@@ -345,7 +345,7 @@ namespace OpenVIII
 
         private bool BoolBattleMenu() => Data?.Any(m => m.Value.GetType().Equals(typeof(BattleMenu)) && m.Value.Enabled) ?? false;
 
-        private bool BoolRenzokeken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokeken?.Enabled ?? false)) ?? false;
+        private bool BoolRenzokuken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokuken?.Enabled ?? false)) ?? false;
 
         private bool BoolShot() => GetBattleMenus()?.Any(m => m.Enabled && (m.Shot?.Enabled ?? false)) ?? false;
         public override void StartDraw()
@@ -359,8 +359,8 @@ namespace OpenVIII
         {
             StartDraw();
             //Had to split up the HP and Commands drawing. So that Commands would draw over HP.
-            if (BoolRenzokeken())
-                GetOneRenzokeken().DrawData(BattleMenu.SectionName.Renzokeken);
+            if (BoolRenzokuken())
+                GetOneRenzokuken().DrawData(BattleMenu.SectionName.Renzokuken);
 
             else if (BoolShot())
                 GetOneShot().DrawData(BattleMenu.SectionName.Shot);
@@ -383,15 +383,15 @@ namespace OpenVIII
 
         private void DrawVictoryAction() => Victory_Menu.Draw();
 
-        private BattleMenu GetOneRenzokeken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokeken.Enabled);
+        private BattleMenu GetOneRenzokuken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokuken.Enabled);
         private BattleMenu GetOneShot() => GetBattleMenus()?.First(m => m.Enabled && m.Shot.Enabled);
 
         private bool InputBattleFunction()
         {
-            var ret = false;
-            if (BoolRenzokeken())
+            bool ret = false;
+            if (BoolRenzokuken())
             {
-                return GetOneRenzokeken().Inputs();
+                return GetOneRenzokuken().Inputs();
             }
             foreach (var m in GetBattleMenus().Where(m => m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
             {

@@ -6,11 +6,11 @@ using System.Linq;
 
 namespace OpenVIII.IGMData.Limit
 {
-    public class Renzokeken : IGMData.Base
+    public class Renzokuken : IGMData.Base
     {
         #region Fields
 
-        private const int Renzokeken_Gradient_Width = 192;
+        private const int Renzokuken_Gradient_Width = 192;
         private static object locker = new object();
         private static Texture2D pixel;
         private static Color Renzokenken_Seperator_Color;
@@ -35,7 +35,7 @@ namespace OpenVIII.IGMData.Limit
 
         public override bool Inputs() => base.Inputs() || true;
 
-        public static Renzokeken Create(Rectangle? pos = null) => Create<Renzokeken>(15, 1, new IGMDataItem.Box { Pos = pos ?? new Rectangle(24, 501, 912, 123), Title = Icons.ID.SPECIAL }, 0, 0, Memory.State?[Characters.Squall_Leonhart]);
+        public static Renzokuken Create(Rectangle? pos = null) => Create<Renzokuken>(15, 1, new IGMDataItem.Box { Pos = pos ?? new Rectangle(24, 501, 912, 123), Title = Icons.ID.SPECIAL }, 0, 0, Memory.State?[Characters.Squall_Leonhart]);
 
         public static void ThreadUnsafeOperations()
         {
@@ -46,8 +46,8 @@ namespace OpenVIII.IGMData.Limit
                     pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
                     pixel.SetData(new Color[] { Color.White });
                 }
-                Renzokenken_Seperator_Color = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 6);
-                Renzokenken_Seperator_Color_Faded = Memory.Icons.MostSaturated(Icons.ID.Renzokeken_Seperator, 2);
+                Renzokenken_Seperator_Color = Memory.Icons.MostSaturated(Icons.ID.Renzokuken_Seperator, 6);
+                Renzokenken_Seperator_Color_Faded = Memory.Icons.MostSaturated(Icons.ID.Renzokuken_Seperator, 2);
             }
         }
 
@@ -58,9 +58,9 @@ namespace OpenVIII.IGMData.Limit
             skipsnd = true;
             foreach (var i in ITEM)
             {
-                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
+                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokuken))
                 {
-                    if (((IGMDataItem.Gradient.Renzokeken)i).Trigger)
+                    if (((IGMDataItem.Gradient.Renzokuken)i).Trigger)
                     {
                         skipsnd = true;
                         base.Inputs_OKAY();
@@ -107,9 +107,9 @@ namespace OpenVIII.IGMData.Limit
             var pos = 0;
             foreach (var i in ITEM)
             {
-                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokeken) && pos++ < _hits)
+                if (i?.GetType() == typeof(IGMDataItem.Gradient.Renzokuken) && pos++ < _hits)
                 {
-                    var gr = (IGMDataItem.Gradient.Renzokeken)i;
+                    var gr = (IGMDataItem.Gradient.Renzokuken)i;
                     done = !gr.Done || done;
                     hot = gr.Trigger || hot;
                     if (gr.Done)
@@ -162,14 +162,14 @@ namespace OpenVIII.IGMData.Limit
             float scale;
             int w;
             int trigwidtharea, xbak;
-            Renzokeken_Seperator_Prep(out r, out hotspot, out tr);
+            Renzokuken_Seperator_Prep(out r, out hotspot, out tr);
             Trigger_Prep(ref r, ref tr, out scale, out w, out trigwidtharea, out xbak);
 
             newattack = new Color(104, 80, 255);
-            var pos = new Rectangle(r.X, r.Y + 4, Renzokeken_Gradient_Width, r.Height - 8);
+            Rectangle pos = new Rectangle(r.X, r.Y + 4, Renzokuken_Gradient_Width, r.Height - 8);
             r.Inflate(-4, -4);
-            for (var x = 0; x <= _hits && x <= 7; x++)
-                ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokeken.Create(pos, newattack, Renzokenken_Seperator_Color, 1f, hotspot, r, time: RenzoTime, TimeSpan.FromTicks(RenzoDelay.Ticks * x));
+            for (int x = 0; x <= _hits && x <= 7; x++)
+                ITEM[2 + x, 0] = IGMDataItem.Gradient.Renzokuken.Create(pos, newattack, Renzokenken_Seperator_Color, 1f, hotspot, r, time: RenzoTime, TimeSpan.FromTicks(RenzoDelay.Ticks * x));
             tr = _0_Hit_Prep(r, tr, out scale, out w, trigwidtharea, xbak);
             Perfect_Prep(r, tr, out scale, out w, trigwidtharea, xbak);
 
@@ -246,9 +246,9 @@ namespace OpenVIII.IGMData.Limit
             ITEM[Count - 1, 0] = new IGMDataItem.Icon { Data = Icons.ID.Trigger_, Pos = tr, Palette = 6, Scale = new Vector2(scale) };
         }
 
-        private void Renzokeken_Seperator_Prep(out Rectangle r, out Rectangle hotspot, out Rectangle tr)
+        private void Renzokuken_Seperator_Prep(out Rectangle r, out Rectangle hotspot, out Rectangle tr)
         {
-            var e = Memory.Icons[Icons.ID.Renzokeken_Seperator];
+            var e = Memory.Icons[Icons.ID.Renzokuken_Seperator];
             var w = 0;
             var scale = 1f;
             r = CONTAINER.Pos;
@@ -266,8 +266,8 @@ namespace OpenVIII.IGMData.Limit
             ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Renzokenken_Seperator_Color_Faded };
             r.Inflate(-4, -4);
             ITEM[1, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Color.Black };
-            ITEM[Count - 3, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokeken_Seperator, Pos = new Rectangle(r.X + 80, r.Y, w, r.Height), Scale = new Vector2(scale) };
-            ITEM[Count - 2, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokeken_Seperator, Pos = new Rectangle(r.X + 208, r.Y, w, r.Height), Scale = new Vector2(scale) };
+            ITEM[Count - 3, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokuken_Seperator, Pos = new Rectangle(r.X + 80, r.Y, w, r.Height), Scale = new Vector2(scale) };
+            ITEM[Count - 2, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokuken_Seperator, Pos = new Rectangle(r.X + 208, r.Y, w, r.Height), Scale = new Vector2(scale) };
             hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
             ITEM[Count - 4, 0] = new IGMDataItem.Texture { Data = pixel, Pos = hotspot, Color = Color.TransparentBlack };
             hotspot.Width += (int)(hotspot.Width * .50f);
@@ -279,9 +279,9 @@ namespace OpenVIII.IGMData.Limit
             var pos = 0;
             foreach (var i in ITEM)
             {
-                if (i.GetType() == typeof(IGMDataItem.Gradient.Renzokeken))
+                if (i.GetType() == typeof(IGMDataItem.Gradient.Renzokuken))
                 {
-                    var rg = (IGMDataItem.Gradient.Renzokeken)i;
+                    var rg = (IGMDataItem.Gradient.Renzokuken)i;
                     if (pos++ < _hits)
                         rg.Show();
                     else

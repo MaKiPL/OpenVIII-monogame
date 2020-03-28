@@ -4,7 +4,7 @@ using System;
 
 namespace OpenVIII.IGMDataItem.Gradient
 {
-    public class Renzokeken : Texture
+    public class Renzokuken : Texture
     {
         #region Fields
 
@@ -17,7 +17,7 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         #region Constructors
 
-        private Renzokeken()
+        private Renzokuken()
         {
         }
 
@@ -33,7 +33,7 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         #region Methods
 
-        public static Renzokeken Create(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, TimeSpan time = default, TimeSpan delay = default, Color? darkcolor = null, bool rev = false, bool vanish = true)
+        public static Renzokuken Create(Rectangle? pos = null, Color? color = null, Color? faded_color = null, float blink_adjustment = 1f, Rectangle? hotspot = null, Rectangle? restriction = null, TimeSpan time = default, TimeSpan delay = default, Color? darkcolor = null, bool rev = false, bool vanish = true)
         {
             var total = 12 + 180;
             if (pos.HasValue && pos.Value.Width > 0)
@@ -41,7 +41,7 @@ namespace OpenVIII.IGMDataItem.Gradient
                 total = pos.Value.Width;
             }
             var cfade = new Color[total];
-            var r = new Renzokeken
+            var r = new Renzokuken
             {
                 Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1),
                 _pos = pos ?? Rectangle.Empty,

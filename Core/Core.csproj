@@ -287,7 +287,7 @@
     <Compile Include="Battle\Menu\BattleMenus.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\ATB.cs" />
     <Compile Include="Battle\Menu\IGMDataItem\Gradient\GF.cs" />
-    <Compile Include="Battle\Menu\IGMDataItem\Gradient\Renzokeken.cs" />
+    <Compile Include="Battle\Menu\IGMDataItem\Gradient\Renzokuken.cs" />
     <Compile Include="Battle\Menu\IGMData\Group\PlayerEXP.cs" />
     <Compile Include="Battle\Menu\IGMData\NamesHPATB.cs" />
     <Compile Include="Battle\Menu\IGMData\PartyAP.cs" />
@@ -299,7 +299,7 @@
     <Compile Include="Battle\Menu\IGMData\Limit\Shot.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Enemies.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Group.cs" />
-    <Compile Include="Battle\Menu\IGMData\Limit\Renzokeken.cs" />
+    <Compile Include="Battle\Menu\IGMData\Limit\Renzokuken.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Party.cs" />
     <Compile Include="Battle\Menu\IGMData\Target\Random.cs" />
     <Compile Include="Battle\Camera\BattleCameraCollection.cs" />

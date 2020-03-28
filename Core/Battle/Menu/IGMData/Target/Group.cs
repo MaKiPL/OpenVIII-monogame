@@ -311,9 +311,9 @@ namespace OpenVIII.IGMData.Target
                     var finisherchance = (c.CurrentCrisisLevel + 1) * 60;
                     var willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
                     var choosefinish = Memory.Random.Next(3 + 1);
-                    var weapondata = Memory.Kernel_Bin.WeaponsData[weaponid];
-                    var renzokekenfinisher = weapondata.Renzokuken;
-                    if (renzokekenfinisher == 0)
+                    var weapondata = Kernel_bin.WeaponsData[weaponid];
+                    var renzokukenfinisher = weapondata.Renzokuken;
+                    if (renzokukenfinisher == 0)
                         willfinish = false;
 
                     //per wiki the chance of which finisher is 25% each and the highest value finisher get the remaining of 100 percent.
@@ -323,16 +323,16 @@ namespace OpenVIII.IGMData.Target
                     //when you unlock all 4 it's 25% each.
 
                     //finishers each have their own target
-                    Menu.BattleMenus.GetCurrentBattleMenu().Renzokeken.Reset(hits);
-                    Menu.BattleMenus.GetCurrentBattleMenu().Renzokeken.Show();
+                    Menu.BattleMenus.GetCurrentBattleMenu().Renzokuken.Reset(hits);
+                    Menu.BattleMenus.GetCurrentBattleMenu().Renzokuken.Show();
                     if (willfinish)
                     {
-                        var flags = Enum.GetValues(typeof(Kernel.RenzokukenFinisher))
-                            .Cast<Kernel.RenzokukenFinisher>()
-                            .Where(f => (f & renzokekenfinisher) != 0)
-                            .ToList();
+                        var flags = Enum.GetValues(typeof(Kernel_bin.Renzokuken_Finisher))
+                            .Cast<Kernel_bin.Renzokuken_Finisher>()
+                            .Where(f => (f & renzokukenfinisher) != 0)
+                            .ToList().AsReadOnly();
                         var finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
-                        Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.BattleID}) then uses {Memory.Kernel_Bin.RenzokukenFinishersData[finisher].Name}.");
+                        Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.ID}) then uses {Kernel_bin.RenzokukenFinishersData[finisher].Name}.");
                     }
                     else
                         Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.BattleID}) then fails to use a finisher.");

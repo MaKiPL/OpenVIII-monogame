@@ -286,7 +286,7 @@ namespace OpenVIII
                 Trim(ID._0_Hit_ + i, 2);
             Trim(ID.Trigger_, 2);
             Trim(ID.Perfect__, 2);
-            Trim(ID.Renzokeken_Seperator, 6);
+            Trim(ID.Renzokuken_Seperator, 6);
         }
 
         #endregion Methods
