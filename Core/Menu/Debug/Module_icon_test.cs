@@ -169,9 +169,9 @@ namespace OpenVIII
         private static void DrawIcons()
         {
             Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp);
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Gray);
+            Memory.SpriteBatch.GraphicsDevice.Clear(Color.Gray);
             Memory.SpriteBatchEnd();
-            var vp = Memory.graphics.GraphicsDevice.Viewport;
+            var vp = Memory.Graphics.GraphicsDevice.Viewport;
 
             var scale = new Vector2(zoom);
             var dst = new Rectangle()
@@ -193,7 +193,7 @@ namespace OpenVIII
             dst.Size = Point.Zero;
             Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp);
             Memory.Icons.Draw(icon, palette, dst, scale);
-            Memory.font.RenderBasicText(
+            Memory.Font.RenderBasicText(
                 $"{(icon).ToString().Replace('_', ' ')}\n" +
                 $"ID: {(ushort)icon}\n\n" +
                 $"palette: {palette}\n\n" +

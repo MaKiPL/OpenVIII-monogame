@@ -144,19 +144,19 @@ namespace OpenVIII.Battle
 
         public void Draw()
         {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             //Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
-            using (var ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            using (var ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice)
             {
                 Projection = ProjectionMatrix,
                 View = ViewMatrix,
                 World = WorldMatrix,
             })
-            using (new BasicEffect(Memory.graphics.GraphicsDevice)
+            using (new BasicEffect(Memory.Graphics.GraphicsDevice)
             {
                 TextureEnabled = true,
             })
@@ -177,7 +177,7 @@ namespace OpenVIII.Battle
                         var localVertexIndex = 0;
                         foreach (var gis in vpt.GeometryInfoSupplier.Where(x => !x.GPU.HasFlag(GPU.v2_add)))
                         {
-                            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+                            Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
                             process(gis);
                         }
 
@@ -192,7 +192,7 @@ namespace OpenVIII.Battle
                         //};
                         foreach (var gis in vpt.GeometryInfoSupplier.Where(x => x.GPU.HasFlag(GPU.v2_add)))
                         {
-                            Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;//bs;
+                            Memory.Graphics.GraphicsDevice.BlendState = Memory.BlendStateAdd;//bs;
                             process(gis);
                         }
                         // bs?.Dispose();
@@ -206,13 +206,13 @@ namespace OpenVIII.Battle
                                 pass.Apply();
                                 if (gis.bQuad)
                                 {
-                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
+                                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
                                         vpt.VertexPositionTexture, localVertexIndex, 2);
                                     localVertexIndex += 6;
                                 }
                                 else
                                 {
-                                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
+                                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
                                         vpt.VertexPositionTexture, localVertexIndex, 1);
                                     localVertexIndex += 3;
                                 }
@@ -375,21 +375,21 @@ namespace OpenVIII.Battle
                     Directory.CreateDirectory(p);
                     filename = $"{filename}_{clut}_{texturePage}.png";
                     using (var tex = textureInterface.GetTexture(clut))
-                    using (var tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, 256, 256))
+                    using (var tmp = new RenderTarget2D(Memory.Graphics.GraphicsDevice, 256, 256))
                     {
-                        Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
+                        Memory.Graphics.GraphicsDevice.SetRenderTarget(tmp);
                         Memory.SpriteBatchStartAlpha();
-                        Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                        Memory.Graphics.GraphicsDevice.Clear(Color.TransparentBlack);
                         foreach (var r in clutGroup.Select(x => x.rectangle))
                         {
                             var src = r;
                             var dst = r;
                             src.Offset(texturePage * 128, 0);
-                            Memory.spriteBatch.Draw(tex, dst, src, Color.White);
+                            Memory.SpriteBatch.Draw(tex, dst, src, Color.White);
                         }
 
                         Memory.SpriteBatchEnd();
-                        Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                        Memory.Graphics.GraphicsDevice.SetRenderTarget(null);
                         using (var fs = new FileStream(Path.Combine(p, filename), FileMode.Create,
                             FileAccess.Write, FileShare.ReadWrite))
                             tmp.SaveAsPng(fs, 256, 256);

@@ -90,7 +90,7 @@ namespace OpenVIII.Battle
                          Vector3.Up);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                    MathHelper.ToRadians(fovD),
-                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                   Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 1000f);
             //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
             //              Forward, Vector3.Up);

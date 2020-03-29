@@ -61,7 +61,7 @@ namespace OpenVIII.Fields
 
         public override Texture2D GetTexture(Color[] colors)
         {
-            var tex = new Texture2D(Memory.graphics.GraphicsDevice, _width, _height);
+            var tex = new Texture2D(Memory.Graphics.GraphicsDevice, _width, _height);
             var textureBuffer = new TextureBuffer(_width, _height, false);
             var i = 0;
             foreach (var b in _buffer)

@@ -315,7 +315,7 @@ namespace OpenVIII
                     //sourceRect.Width -= 1;
                     //sourceRect.Height -= 1;
 
-                    Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                    Memory.SpriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
                     destRect,
                     sourceRect,
                 color * Fade);

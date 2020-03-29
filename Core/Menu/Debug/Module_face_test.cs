@@ -87,7 +87,7 @@ namespace OpenVIII
         {
             if (pointer >= 0)
             {
-                var vp = Memory.graphics.GraphicsDevice.Viewport;
+                var vp = Memory.Graphics.GraphicsDevice.Viewport;
 
                 var rows = 2;
                 var cols = 8;
@@ -102,9 +102,9 @@ namespace OpenVIII
                 var dst = new Rectangle(new Point(0), (Memory.Faces.GetEntry(id).Size * scale).ToPoint());
                 dst.Offset(vp.Width / 2 - dst.Center.X, 0);
                 Memory.SpriteBatchStartAlpha();
-                Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+                Memory.SpriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Faces.Draw(id, dst);
-                Memory.font.RenderBasicText($"{FaceValue[pointer].ToString().Replace('_', ' ')}\n" +
+                Memory.Font.RenderBasicText($"{FaceValue[pointer].ToString().Replace('_', ' ')}\n" +
                     $"pos: {pos}\n" +
                     $"file: {i}\n" +
                     $"col: {col}\n" +

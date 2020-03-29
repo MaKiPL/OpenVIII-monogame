@@ -196,7 +196,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    if (Memory.Kernel_Bin?.CharacterStats != null && Memory.Kernel_Bin.CharacterStats.TryGetValue(_id, out var value))
+                    if (Memory.KernelBin?.CharacterStats != null && Memory.KernelBin.CharacterStats.TryGetValue(_id, out var value))
                         return value;
                     return null;
                 }
@@ -462,7 +462,7 @@ namespace OpenVIII
             /// </summary>
             /// <param name="stat">Stat sorting by.</param>
             /// <returns>Ordered Enumerable</returns>
-            public IOrderedEnumerable<MagicData> SortedMagic(Stat stat) => Memory.Kernel_Bin.MagicData.OrderBy(x => (-x.TotalStatVal(stat) * (Magics.ContainsKey(x.MagicDataID) ? Magics[x.MagicDataID] : 0)) / 100);
+            public IOrderedEnumerable<MagicData> SortedMagic(Stat stat) => Memory.KernelBin.MagicData.OrderBy(x => (-x.TotalStatVal(stat) * (Magics.ContainsKey(x.MagicDataID) ? Magics[x.MagicDataID] : 0)) / 100);
 
             public override sbyte StatusResistance(BattleOnlyStatuses s) => throw new NotImplementedException();
 
@@ -481,10 +481,10 @@ namespace OpenVIII
                     throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({_id}) unless Laguna Kiros or Ward!");
 
                 var total = 0;
-                if (Memory.Kernel_Bin.StatPercentAbilities != null)
+                if (Memory.KernelBin.StatPercentAbilities != null)
                     foreach (var i in Abilities)
                     {
-                        if (Memory.Kernel_Bin.StatPercentAbilities.TryGetValue(i, out var ability) && ability.Stat == s)
+                        if (Memory.KernelBin.StatPercentAbilities.TryGetValue(i, out var ability) && ability.Stat == s)
                             total += ability.Value;
                     }
 

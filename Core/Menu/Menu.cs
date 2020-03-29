@@ -139,7 +139,7 @@ namespace OpenVIII
         /// <summary>
         /// Viewport dimensions
         /// </summary>
-        protected Vector2 vp => new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+        protected Vector2 vp => new Vector2(Memory.Graphics.GraphicsDevice.Viewport.Width, Memory.Graphics.GraphicsDevice.Viewport.Height);
 
         /// <summary>
         /// <para>Time to fade out in milliseconds</para>
@@ -197,7 +197,7 @@ namespace OpenVIII
             var backup = dst;
             if (buffer != null && buffer.Length > 0)
             {
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
+                font = Memory.Font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
                 if (dst.Size == Point.Zero)
                 {
                     dst.Size = font.Size;
@@ -248,7 +248,7 @@ namespace OpenVIII
                     dst.Offset(0, 21);
 
                 dst.Y = (int)(dst.Y * boxScale.Value.Y);
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
+                font = Memory.Font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
                 cursor = dst.Location;
                 cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
             }
@@ -423,7 +423,7 @@ namespace OpenVIII
         protected void GenerateFocus(Vector2? inputsize = null, Box_Options options = Box_Options.Default)
         {
             var size = inputsize ?? Size;
-            var Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
+            var Zoom = Memory.Scale(size.X, size.Y, ScaleMode.FitBoth);
             var OffsetScreen = size/2f;
             var CenterOfScreen = new Vector2(vp.X, vp.Y ) / 2f;
             if ((options & Box_Options.Top) != 0)

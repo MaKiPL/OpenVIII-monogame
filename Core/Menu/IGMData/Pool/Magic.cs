@@ -129,8 +129,8 @@ namespace OpenVIII.IGMData.Pool
                         // Magic ID and Count
                         var dat = Source.Magics[i];
                         // if invalid
-                        if (dat.Key == 0 || Memory.Kernel_Bin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
-                        addMagic(ref pos, Memory.Kernel_Bin.MagicData[dat.Key], @default);
+                        if (dat.Key == 0 || Memory.KernelBin.MagicData.Count <= dat.Key || dat.Value == 0 || skip-- > 0) continue;
+                        addMagic(ref pos, Memory.KernelBin.MagicData[dat.Key], @default);
                     }
             else
 
@@ -246,7 +246,7 @@ namespace OpenVIII.IGMData.Pool
                         break;
 
                     default:
-                        Sort = Memory.Kernel_Bin.MagicData.AsEnumerable();
+                        Sort = Memory.KernelBin.MagicData.AsEnumerable();
                         break;
                 }
         }
@@ -317,7 +317,7 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Battle)
             {
-                Target_Group.SelectTargetWindows(Memory.Kernel_Bin.MagicData[Contents[CURSOR_SELECT]]);
+                Target_Group.SelectTargetWindows(Memory.KernelBin.MagicData[Contents[CURSOR_SELECT]]);
                 Target_Group.ShowTargetWindows();
             }
             else

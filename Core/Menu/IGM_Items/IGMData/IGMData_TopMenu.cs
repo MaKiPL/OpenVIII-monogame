@@ -104,7 +104,7 @@ namespace OpenVIII
                 foreach (var pair in Pairs)
                 {
                     _helpStr[pos] = pair.Value;
-                    var rectangle = Memory.font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
+                    var rectangle = Memory.Font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
                     widths[pos] = rectangle.Width;
                     if (rectangle.Width > largestwidth) largestwidth = rectangle.Width;
                     if (rectangle.Height > largestheight) largestheight = rectangle.Height;

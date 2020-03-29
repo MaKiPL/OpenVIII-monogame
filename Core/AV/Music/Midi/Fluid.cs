@@ -853,7 +853,7 @@ namespace OpenVIII.AV.Midi
 #endif
             synth = NativeMethods.new_fluid_synth(settings);
             driver = NativeMethods.new_fluid_audio_driver(settings, synth);
-            var music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
+            var music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DirData, "Music", "dmusic"));
             var dlsPath = Path.Combine(music_pt, "FF8.dls");
             NativeMethods.fluid_synth_sfload(synth, dlsPath, 1); //we should allow user to choose other SoundFont if he wants to
             player = NativeMethods.new_fluid_player(synth);

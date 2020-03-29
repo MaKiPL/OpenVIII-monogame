@@ -43,7 +43,7 @@ namespace OpenVIII
                 foreach (var pair in pairs)
                 {
                     r._helpStr[pos] = pair.Value;
-                    var rectangle = Memory.font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
+                    var rectangle = Memory.Font.RenderBasicText(pair.Key, 0, 0, skipdraw: true);
                     r._widths[pos] = rectangle.Width;
                     if (rectangle.Width > r._largestWidth) r._largestWidth = rectangle.Width;
                     if (rectangle.Height > r._largestHeight) r._largestHeight = rectangle.Height;
@@ -100,7 +100,7 @@ namespace OpenVIII
                         BattleMenus.CameFrom();
                         //Menu.Module.State = MenuModule.MainMenuStates.BattleMenu;
                         ModuleBattleDebug.ResetState();
-                        Memory.Module = MODULE.BATTLE_DEBUG;
+                        Memory.Module = OpenVIII.Module.BattleDebug;
                         BattleMenus.Refresh();
                         FadeIn();
                         return true;

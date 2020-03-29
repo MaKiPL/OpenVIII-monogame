@@ -21,7 +21,7 @@ namespace OpenVIII.Tests
             //TODO initiate kernel_bin with out new;
             // ReSharper disable once ObjectCreationAsStatement
             Console.WriteLine("Printing items: ");
-            foreach (var item in Memory.Kernel_Bin.NonBattleItemsData)
+            foreach (var item in Memory.KernelBin.NonBattleItemsData)
             {
                 Console.WriteLine("item: " + item.NonBattleItemsDataID + " - " + item.Name + " - " + item.Description);
             }

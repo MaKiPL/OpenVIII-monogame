@@ -71,26 +71,26 @@ namespace OpenVIII.IGMData.Pool
                 }
                 return true;
             }
-            if (Memory.Kernel_Bin.RinoaLimitBreaksPart1 != null)
-                foreach (var lb in Memory.Kernel_Bin.RinoaLimitBreaksPart1)
+            if (Memory.KernelBin.RinoaLimitBreaksPart1 != null)
+                foreach (var lb in Memory.KernelBin.RinoaLimitBreaksPart1)
                     if (!AddAngelo(new KernelItem
                     {
                         rinoa_Limit_Breaks_Part_1 = lb,
                         rinoa_Limit_Breaks_Part_2 = lb.Angelo == Angelo.Angel_Wing ?
-                        Memory.Kernel_Bin.RinoaLimitBreaksPart2.First(x => x.Angelo == lb.Angelo) : null
+                        Memory.KernelBin.RinoaLimitBreaksPart2.First(x => x.Angelo == lb.Angelo) : null
                     })) break;
-            if (Memory.Kernel_Bin.RinoaLimitBreaksPart2 != null)
-                foreach (var lb in Memory.Kernel_Bin.RinoaLimitBreaksPart2)
+            if (Memory.KernelBin.RinoaLimitBreaksPart2 != null)
+                foreach (var lb in Memory.KernelBin.RinoaLimitBreaksPart2)
                     if (lb.Angelo != Angelo.Angel_Wing && !AddAngelo(
                         new KernelItem { rinoa_Limit_Breaks_Part_2 = lb })) break;
             var non_Junctionable_GFs_Attacks_Datas =
-                Memory.Kernel_Bin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
+                Memory.KernelBin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
             if (non_Junctionable_GFs_Attacks_Datas != null)
                 foreach (var lb in non_Junctionable_GFs_Attacks_Datas)
                     if (!AddAngelo(
                         new KernelItem { non_Junctionable_GFs_Attacks_Data = lb })) break;
-            DefaultPages = ((Memory.Kernel_Bin.RinoaLimitBreaksPart1?.Count ?? 0) +
-                (Memory.Kernel_Bin.RinoaLimitBreaksPart2?.Count ?? 0) +
+            DefaultPages = ((Memory.KernelBin.RinoaLimitBreaksPart1?.Count ?? 0) +
+                (Memory.KernelBin.RinoaLimitBreaksPart2?.Count ?? 0) +
                 (non_Junctionable_GFs_Attacks_Datas?.Count() ?? 1) - 1) / Rows;
             for (; i < Rows; i++)
             {

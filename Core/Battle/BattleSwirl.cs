@@ -28,7 +28,7 @@ namespace OpenVIII
         {
             bInitialized = false;
             //Memory.Encounters.Current().BattleFlags. //which flags is about the boss or normal swirl?
-            Memory.Module = MODULE.BATTLE_SWIRL;
+            Memory.Module = Module.BattleSwirl;
             backBufferTexture = Extended.BackBufferTexture;
             bInitialized = true;
             bFirstClear = true;
@@ -39,8 +39,8 @@ namespace OpenVIII
             translateModifier = 0.0f;
 
             //let's now generate the black lines screen cleaning buffer
-            blackLines = new Texture2D(Memory.graphics.GraphicsDevice, 0xFF + 120, //ok, so 0xff to fade alpha and 120 for maximum delay
-                                                 Memory.graphics.GraphicsDevice.Viewport.Height, false,
+            blackLines = new Texture2D(Memory.Graphics.GraphicsDevice, 0xFF + 120, //ok, so 0xff to fade alpha and 120 for maximum delay
+                                                 Memory.Graphics.GraphicsDevice.Viewport.Height, false,
                                                  SurfaceFormat.Color);
            var colors = new Color[blackLines.Height*blackLines.Width];
             for (var i = 0; i < blackLines.Height; i++)
@@ -108,14 +108,14 @@ namespace OpenVIII
             if (sequenceTimer < 0.50) //frame repeat by scaling on un-cleaned buffer
             {
             scaleModifier += 0.003f;
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
                 var resolution = new Vector2(backBufferTexture.Width, backBufferTexture.Height);
                 var transformedScale = Vector2.Transform(resolution, Matrix.CreateScale(scaleModifier));
-                Memory.spriteBatch.Draw(backBufferTexture, new Rectangle((int)(transformedScale.X - resolution.X) / -3
+                Memory.SpriteBatch.Draw(backBufferTexture, new Rectangle((int)(transformedScale.X - resolution.X) / -3
                     ,0 /*(int)(transformedScale.Y - resolution.Y) / -3*/
                     , (int)transformedScale.X, (int)transformedScale.Y),
                     Color.White * 0.15f);
-                Memory.spriteBatch.End();
+                Memory.SpriteBatch.End();
             }
             if(sequenceTimer > 0.50) //black lines going from left (grayscale 127 transition mask-just like in RPG Maker)
             {
@@ -132,18 +132,18 @@ namespace OpenVIII
             translateModifier += 2f;
             //translateModifier += 0.002f;
             //Memory.graphics.GraphicsDevice.Clear(Color.Black);
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
+            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             //Memory.spriteBatch.Draw(backBufferTexture, 
             //    new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
             //    Color.White * 1f);
 
-            Memory.spriteBatch.Draw(blackLines, new Rectangle(x-Memory.graphics.GraphicsDevice.Viewport.Width
+            Memory.SpriteBatch.Draw(blackLines, new Rectangle(x-Memory.Graphics.GraphicsDevice.Viewport.Width
                 , 0
-                , Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                , Memory.Graphics.GraphicsDevice.Viewport.Width, Memory.Graphics.GraphicsDevice.Viewport.Height),
                 Color.White * 1f);
-            Memory.spriteBatch.End();
-            if (x > Memory.graphics.GraphicsDevice.Viewport.Width+blackLines.Width+0xff)
-                Memory.Module = MODULE.BATTLE_DEBUG;
+            Memory.SpriteBatch.End();
+            if (x > Memory.Graphics.GraphicsDevice.Viewport.Width+blackLines.Width+0xff)
+                Memory.Module = Module.BattleDebug;
         }
 
         private static void BossSwirlDraw()

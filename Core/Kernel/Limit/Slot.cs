@@ -38,7 +38,7 @@ namespace OpenVIII
 
             public byte Casts => checked((byte)(Memory.Random.Next(_count) + 1));
 
-            public MagicData MagicData => Memory.Kernel_Bin.MagicData != null && _magicID < Memory.Kernel_Bin.MagicData.Count ? Memory.Kernel_Bin.MagicData[_magicID] : null;
+            public MagicData MagicData => Memory.KernelBin.MagicData != null && _magicID < Memory.KernelBin.MagicData.Count ? Memory.KernelBin.MagicData[_magicID] : null;
 
             #endregion Properties
 

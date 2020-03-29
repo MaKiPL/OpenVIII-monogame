@@ -156,7 +156,7 @@ namespace OpenVIII
             {
                 if (_red_pixel == null)
                 {
-                    _red_pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                    _red_pixel = new Texture2D(Memory.Graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                     _red_pixel.SetData(new Color[] { Color.White }, 0, _red_pixel.Width * _red_pixel.Height);
                 }
                 for (var pos = 0; pos < Count; pos++)

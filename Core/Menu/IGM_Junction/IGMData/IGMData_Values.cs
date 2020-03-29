@@ -109,7 +109,7 @@ namespace OpenVIII
                 {
                     Enum flags = null;
                     var spell = spells[i];
-                    var magic_Data = Memory.Kernel_Bin.MagicData[spell];
+                    var magic_Data = Memory.KernelBin.MagicData[spell];
                     switch (stat)
                     {
                         case Kernel.Stat.ElAtk:

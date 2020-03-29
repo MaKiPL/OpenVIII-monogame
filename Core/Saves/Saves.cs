@@ -54,7 +54,7 @@ namespace OpenVIII
         {
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Init)}");
             FileList = new Data[Slots, GamesPerSlot];
-            CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");
+            CD2000Folder = Path.Combine(Memory.FF8Dir, "Save");
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(CD2000Folder)} :: {CD2000Folder}");
             Steam2013Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Steam2013Folder)} :: {Steam2013Folder}");

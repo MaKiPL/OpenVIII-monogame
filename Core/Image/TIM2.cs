@@ -251,7 +251,7 @@ namespace OpenVIII
         {
             if (!CLP) return;
             using (var br = new BinaryReader(new MemoryStream(Buffer)))
-            using (var clut = new Texture2D(Memory.graphics.GraphicsDevice, Texture.NumOfColors, Texture.NumOfCluts))
+            using (var clut = new Texture2D(Memory.Graphics.GraphicsDevice, Texture.NumOfColors, Texture.NumOfCluts))
             {
                 for (ushort i = 0; i < Texture.NumOfCluts; i++)
                 {

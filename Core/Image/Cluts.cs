@@ -75,7 +75,7 @@ namespace OpenVIII
 
         public void Save(string path)
         {
-            using (var clutTexture = new Texture2D(Memory.graphics.GraphicsDevice, MaxColors, MaxClut + 1))
+            using (var clutTexture = new Texture2D(Memory.Graphics.GraphicsDevice, MaxColors, MaxClut + 1))
             {
                 foreach (var _Y_Colors in Clut.OrderBy(x => x.Key))
                 {

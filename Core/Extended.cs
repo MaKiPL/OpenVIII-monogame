@@ -155,7 +155,7 @@ namespace OpenVIII
             => System.IO.File.WriteAllBytes(path, ms.GetBuffer());
 
         public static void DumpBuffer(System.IO.MemoryStream ms)
-            => System.IO.File.WriteAllBytes(GetUnixFullPath(System.IO.Path.Combine(Memory.FF8DIR, "debugUnpack.debug")), ms.GetBuffer());
+            => System.IO.File.WriteAllBytes(GetUnixFullPath(System.IO.Path.Combine(Memory.FF8Dir, "debugUnpack.debug")), ms.GetBuffer());
 
         public static void DumpTexture(Texture2D tex, string s)
         {
@@ -372,7 +372,7 @@ namespace OpenVIII
 
         public static string GetLanguageShort(bool bUseAlternative = false)
         {
-            var languageIndicator = Memory.languages.ToString();
+            var languageIndicator = Memory.Languages.ToString();
             return bUseAlternative ? languageIndicator == "en" ? "us" : languageIndicator : languageIndicator;
         }
 

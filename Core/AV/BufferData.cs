@@ -75,7 +75,7 @@ namespace OpenVIII.AV
         private unsafe int ReadData(byte* buf, int bufSize)
         {
             if (string.IsNullOrWhiteSpace(DataFileName))
-                DataFileName = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.dat");
+                DataFileName = Path.Combine(Memory.FF8DirData, "Sound", "audio.dat");
 
             bufSize = Math.Min(bufSize, (int)DataSize);
 

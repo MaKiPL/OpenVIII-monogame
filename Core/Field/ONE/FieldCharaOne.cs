@@ -122,7 +122,7 @@ namespace OpenVIII.Fields
             var aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
             var test = aw.GetListOfFiles();
 
-            var collectionEntry = test.Where(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0).ToList().AsReadOnly();
+            var collectionEntry = test.Where(x => x.IndexOf(Memory.FieldHolder.Fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0).ToList().AsReadOnly();
             if (!collectionEntry.Any()) return;
             var fieldArchiveName = collectionEntry.First();
             var fieldArchive = aw.GetArchive(fieldArchiveName);

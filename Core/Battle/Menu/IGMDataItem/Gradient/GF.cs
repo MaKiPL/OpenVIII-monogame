@@ -71,7 +71,7 @@ namespace OpenVIII.IGMDataItem.Gradient
                     for (; i < cfade.Length; i++)
                         cfade[i] = darkline;
 
-                    common = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
+                    common = new Texture2D(Memory.Graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
                     common.SetData(cfade);
                     //}
                     //else throw new Exception("Must be in main thread!");

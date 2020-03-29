@@ -36,12 +36,12 @@ namespace OpenVIII.Fields
 
         public static void Draw()
         {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             //Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            Memory.graphics.GraphicsDevice.Clear(Color.Aqua);
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.Clear(Color.Aqua);
             if (!_bInitialized)
                 return;
             uint maxAnim = 0;
@@ -93,7 +93,7 @@ namespace OpenVIII.Fields
                 foreach (var pass in Ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
                 }
             }
 
@@ -101,7 +101,7 @@ namespace OpenVIII.Fields
             Memory.SpriteBatchStartAlpha();
             if (_charaOne.FieldModels == null)
             {
-                Memory.font.RenderBasicText(
+                Memory.Font.RenderBasicText(
     $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
     $"World Map Camera: ={_camPosition}\n" +
     $"FPS camera degrees: ={_degrees}°\n" +
@@ -115,7 +115,7 @@ namespace OpenVIII.Fields
     "NULL: =0", 30, 20, 1f, 2f, lineSpacing: 5);
             }
             else
-                Memory.font.RenderBasicText(
+                Memory.Font.RenderBasicText(
     $"FIELD AT: {Memory.FieldHolder.FieldID} - {Memory.FieldHolder.GetString()}\n" +
     $"World Map Camera: ={_camPosition}\n" +
     $"FPS camera degrees: ={_degrees}°\n" +
@@ -136,7 +136,7 @@ namespace OpenVIII.Fields
             {
                 _fpsCamera = new FPS_Camera();
                 //init renderer
-                Effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+                Effect = new BasicEffect(Memory.Graphics.GraphicsDevice);
                 Effect.EnableDefaultLighting();
                 Effect.TextureEnabled = true;
                 Effect.DirectionalLight0.Enabled = true;
@@ -153,7 +153,7 @@ namespace OpenVIII.Fields
                 _camPosition = new Vector3(0, 0f, 0f);
                 _projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                    MathHelper.ToRadians(60),
-                                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                                   Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
                     1f, 10000f);
                 _viewMatrix = Matrix.CreateLookAt(_camPosition, _camTarget,
                              new Vector3(0f, 1f, 0f));// Y up
@@ -163,7 +163,7 @@ namespace OpenVIII.Fields
                 //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
                 //Memory.musicIndex = 30;
                 //AV.Music.Play();
-                Ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+                Ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice)
                 {
                     Projection = _projectionMatrix,
                     View = _viewMatrix,

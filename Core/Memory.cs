@@ -1,41 +1,24 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.Kernel;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenVIII.Kernel;
-
-#pragma warning disable CS0649
 
 namespace OpenVIII
 {
-    public enum MODULE : int
-    {
-        BATTLE = 3,
-        BATTLE_SWIRL = 4,
-        FIELD = 5,
-        FIELD_DEBUG = -5,
-        BATTLE_DEBUG = -3,
-        MOVIETEST = -9,
-        OVERTURE_DEBUG = -12,
-        MAINMENU_DEBUG = -13,
-        WORLD_DEBUG = -17,
-        FACE_TEST = -20,
-        ICON_TEST = -21,
-        CARD_TEST = -22,
-        FIELD_MODEL_TEST = -51,
-    }
-
     /// <summary>
     /// Battle Speed Settings
     /// </summary>
     /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public enum BattleSpeed : byte
     {
         Fastest = 1,
@@ -45,10 +28,51 @@ namespace OpenVIII
         Slowest,
     }
 
+    public enum Module : sbyte
+    {
+        Battle = 3,
+        BattleSwirl = 4,
+        Field = 5,
+        FieldDebug = -5,
+        BattleDebug = -3,
+        MovieTest = -9,
+        OvertureDebug = -12,
+        MainMenuDebug = -13,
+        WorldDebug = -17,
+        FaceTest = -20,
+        IconTest = -21,
+        CardTest = -22,
+        FieldModelTest = -51,
+    }
+
+    public enum ScaleMode
+    {
+        /// <summary>
+        /// scale object to have the same height as viewport
+        /// </summary>
+        FitVertical,
+
+        /// <summary>
+        /// scale object to have the same width as viewport
+        /// </summary>
+        FitHorizontal,
+
+        /// <summary>
+        /// Same as FitVertical unless width is too large, then it becomes FitHorizontal
+        /// </summary>
+        FitBoth,
+
+        /// <summary>
+        /// fill the entire viewport
+        /// </summary>
+        Stretch
+    }
+
     /// <summary>
     /// Speed Mod
     /// </summary>
     /// <see cref="https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/58936"/>
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public enum SpeedMod : byte
     {
         Stop = 0,
@@ -58,219 +82,46 @@ namespace OpenVIII
         AlwaysFull = 0xFF //not sure what i should set this too.
     }
 
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static partial class Memory
     {
-        public static float CameraScale { get; internal set; } = 100f;
-        public static float BattleStageScale { get; internal set; } = 100f;
-        public static float EnemyCoordinateScale { get; internal set; } = 100f;
-
-        public static Log Log;
-        public static bool EnableDumpingData = false;
-        public static BattleSpeed CurrentBattleSpeed => Memory.State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
-        public static List<Task> FfccLeftOverTask = new List<Task>();
-
-        public enum GraphicModes
-        {
-            OpenGL,
-            DirectX
-        };
-
-        public static GraphicModes CurrentGraphicMode;
-
-        //MonoGame
-        public static GraphicsDeviceManager graphics;
-
-        public static SpriteBatch spriteBatch;
-
-        public static Core.ImGuiRenderer imgui;
-
-        private static int mainThreadID;
-
-        public static ContentManager content;
-
-        public static bool IsActive = true;
-        public static Font font;
-
-        public static Task InitTask;
-        //public static Texture2D[] iconsTex;
-
-        public static Cards Cards;
-        public static Card.Game Card_Game;
-        public static Faces Faces;
-        public static Icons Icons;
-        public static Strings Strings;
-        public static Kernel.KernelBin Kernel_Bin;
-
-        public static Texture2D shadowTexture;
-        public static VertexPositionTexture[] shadowGeometry;
-
-        public static Extended.Languages languages = Extended.Languages.en;
-
-        public enum ScaleMode
-        {
-            /// <summary>
-            /// scale object to have the same height as viewport
-            /// </summary>
-            FitVertical,
-
-            /// <summary>
-            /// scale object to have the same width as viewport
-            /// </summary>
-            FitHorizontal,
-
-            /// <summary>
-            /// Same as FitVertical unless width is too large, then it becomes FitHorizontal
-            /// </summary>
-            FitBoth,
-
-            /// <summary>
-            /// fill the entire viewport
-            /// </summary>
-            Stretch
-        }
-
-        public static bool ProcessActions(Action[] actions)
-        {
-            if (Threaded)
-            {
-                var tasks = new List<Task>(actions.Length);
-                actions.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
-                //Some code that cannot be threaded on init.
-                if (!Task.WaitAll(tasks.ToArray(), 10000))
-                    throw new TimeoutException("Task took too long!");
-            }
-            else actions.ForEach(x => x.Invoke());
-            return !Token.IsCancellationRequested;
-        }
-
-        public static IEnumerable<bool> ProcessFuncs(Func<bool>[] funcs)
-        {
-            if (Threaded)
-            {
-                var tasks = new List<Task<bool>>(funcs.Length);
-                funcs.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
-                //Some code that cannot be threaded on init.
-                if (!Task.WaitAll(tasks.ToArray(), 10000))
-                    throw new TimeoutException("Task took too long!");
-                return tasks.Select(x => x.Result);
-            }
-            else return funcs.Select(x => x.Invoke());
-        }
-
-        public static Point Center => new Point(graphics.GraphicsDevice.Viewport.Width / 2, graphics.GraphicsDevice.Viewport.Height / 2);
-        public const ScaleMode _scaleMode = ScaleMode.Stretch;
-
-        public static Vector2 Scale(float Width = PreferredViewportWidth, float Height = PreferredViewportHeight, ScaleMode scaleMode = _scaleMode, int targetX = 0, int targetY = 0)
-        {
-            if (targetX == 0)
-                targetX = graphics.GraphicsDevice.Viewport.Width;
-            if (targetY == 0)
-                targetY = graphics.GraphicsDevice.Viewport.Height;
-            var h = targetX / Width;
-            var v = targetY / Height;
-            switch (scaleMode)
-            {
-#pragma warning disable CS0162 // Unreachable code detected
-                case ScaleMode.FitHorizontal:
-                    return new Vector2(h, h);
-
-                case ScaleMode.FitVertical:
-                    return new Vector2(v, v);
-
-                case ScaleMode.FitBoth:
-                    return (v * Width > targetX) ? new Vector2(h, h) : new Vector2(v, v);
-
-                case ScaleMode.Stretch:
-                default:
-                    return new Vector2(h, v);
-#pragma warning restore CS0162 // Unreachable code detected
-            }
-        }
-
-        //original resolution I am working on, therefore if user scales it we need to propertially scale everything
-        public const int PreferredViewportWidth = 1280;
+        #region Fields
 
         public const int PreferredViewportHeight = 720;
 
-        private static GameTime gameTime;
+        //original resolution I am working on, therefore if user scales it we need to proportionally scale everything
+        public const int PreferredViewportWidth = 1280;
 
-        public static GameTime GameTime
-        {
-            get => gameTime;
-            set => gameTime = value;
-        }
-
-        public static TimeSpan TotalGameTime => gameTime?.TotalGameTime ?? TimeSpan.Zero;
-        public static TimeSpan ElapsedGameTime => gameTime?.ElapsedGameTime ?? TimeSpan.Zero;
-        public static TimeSpan DateTimeNow => TimeSpan.FromTicks(DateTime.Now.Ticks);
-
-        private static ushort prevmusic = 0;
-        private static ushort currmusic = 0;
+        public const ScaleMode ScaleMode = OpenVIII.ScaleMode.Stretch;
 
         /// <summary>
-        /// Stores current savestate. When you save this is wrote. When you load this is replaced.
+        /// add. seems to work if colors are pre-blended like if they overlap the colors combined ahead of time. Used for light.
         /// </summary>
-        private static Saves.Data _state = new Saves.Data();
-
-        public static ushort MusicIndex
+        /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
+        public static readonly BlendState BlendStateAdd = new BlendState
         {
-            get
-            {
-                if (dicMusic.Count > 0)
-                {
-                    var max = (ushort)dicMusic.Keys.Max();
-                    var min = (ushort)dicMusic.Keys.Min();
-                    while ((prevmusic > currmusic || prevmusic == ushort.MinValue && currmusic == ushort.MaxValue) &&
-                        !dicMusic.ContainsKey((MusicId)currmusic))
-                    {
-                        if (max < currmusic)
-                        {
-                            currmusic = max;
-                        }
-                        else
-                        {
-                            currmusic--;
-                        }
-                    }
-                    while (dicMusic.Count > 0 && prevmusic < currmusic && !dicMusic.ContainsKey((MusicId)currmusic))
-                    {
-                        if (max < currmusic)
-                        {
-                            currmusic = min;
-                        }
-                        else
-                        {
-                            currmusic++;
-                        }
-                    }
-                    return currmusic;
-                }
-                else return 0;
-            }
-            set
-            {
-                prevmusic = currmusic;
-                currmusic = value;
-            }
-        }
+            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
+            ColorSourceBlend = Blend.One,
+            //AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            //AlphaDestinationBlend = Blend.One,
+            ColorBlendFunction = BlendFunction.Add
+        };
 
-        public static readonly Dictionary<MusicId, List<string>> dicMusic = new Dictionary<MusicId, List<string>>(); //ogg and sgt files have same 3 digit prefix.
+        /// <summary>
+        /// untested add with blend factor. You set the GraphicsDevice.BlendFactor before drawing.
+        /// </summary>
+        public static readonly BlendState BlendStateAddBlendFactor = new BlendState
+        {
+            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
+            ColorSourceBlend = Blend.BlendFactor,
+            //AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            //AlphaDestinationBlend = Blend.One,
+            ColorBlendFunction = BlendFunction.Add
+        };
 
-        public static void SpriteBatchStartStencil(SamplerState ss = null) =>
-
-            spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss ?? SamplerState.PointClamp, graphics.GraphicsDevice.DepthStencilState);
-
-        public static void SpriteBatchStart(BlendState bs = null, SamplerState ss = null) =>
-
-    spriteBatch.Begin(SpriteSortMode.Deferred, bs ?? BlendState.AlphaBlend, ss ?? SamplerState.PointClamp, graphics.GraphicsDevice.DepthStencilState);
-
-        public static void SpriteBatchStartAlpha(SpriteSortMode sortMode = SpriteSortMode.Deferred, SamplerState ss = null, Matrix? tm = null) =>
-
-            spriteBatch.Begin(sortMode: sortMode, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
-
-        public static void SpriteBatchEnd() => spriteBatch.End();
-
-        public static readonly BlendState blendState_BasicAdd = new BlendState()
+        public static readonly BlendState BlendStateBasicAdd = new BlendState()
         {
             ColorSourceBlend = Blend.SourceColor,
             ColorDestinationBlend = Blend.DestinationColor,
@@ -281,48 +132,7 @@ namespace OpenVIII
             AlphaBlendFunction = BlendFunction.Add
         };
 
-        /// <summary>
-        /// subtract. Used for windows/glass makes color darker of things behind this layer.
-        /// </summary>
-        /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
-        public static readonly BlendState blendState_Subtract = new BlendState
-        {
-            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
-            ColorSourceBlend = Blend.One,
-            //AlphaSourceBlend = Blend.One,
-            ColorDestinationBlend = Blend.One,
-            //AlphaDestinationBlend = Blend.One,
-            ColorBlendFunction = BlendFunction.ReverseSubtract
-        };
-
-        /// <summary>
-        /// add. seems to work if colors are preblended like if they overlap the colors combined ahead of time. Used for light.
-        /// </summary>
-        /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
-        public static readonly BlendState blendState_Add = new BlendState
-        {
-            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
-            ColorSourceBlend = Blend.One,
-            //AlphaSourceBlend = Blend.One,
-            ColorDestinationBlend = Blend.One,
-            //AlphaDestinationBlend = Blend.One,
-            ColorBlendFunction = BlendFunction.Add
-        };
-
-        /// <summary>
-        /// untested add with blendfactor. You set the GraphicsDevice.BlendFactor before drawing.
-        /// </summary>
-        public static readonly BlendState blendState_Add_BlendFactor = new BlendState
-        {
-            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
-            ColorSourceBlend = Blend.BlendFactor,
-            //AlphaSourceBlend = Blend.One,
-            ColorDestinationBlend = Blend.One,
-            //AlphaDestinationBlend = Blend.One,
-            ColorBlendFunction = BlendFunction.Add
-        };
-
-        public static readonly BlendState blendState_forceDraw = new BlendState()
+        public static readonly BlendState BlendStateForceDraw = new BlendState()
         {
             ColorSourceBlend = Blend.SourceColor,
             ColorDestinationBlend = Blend.SourceColor,
@@ -333,505 +143,27 @@ namespace OpenVIII
             AlphaBlendFunction = BlendFunction.Add,
         };
 
-        private static MODULE module = MODULE.OVERTURE_DEBUG;
-
-        public static string FF8DIR
-        {
-            get => _ff8Dir;
-            private set => _ff8Dir = value;
-        }
-
-        public static string FF8DIRdata
-        {
-            get => _ff8DirData;
-            private set => _ff8DirData = value;
-        }
-
-        public static string FF8DIRdata_lang { get; private set; }
-
-        public static int InitTaskMethod(object obj)
-        {
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(Memory)} :: {nameof(Init)}");
-            var token = (CancellationToken)obj;
-
-            if (!token.IsCancellationRequested)
-                Memory.Strings = new Strings();
-
-            // requires strings because it uses an array generated in strings.
-            // saves data will reference kernel_bin.
-            if (!token.IsCancellationRequested)
-                Kernel_Bin = KernelBin.CreateInstance();
-            var actions = new List<Action>()
-            {
-                // this has a soft requirement on kernel_bin. It checks for null so should work without it.
-                () => {MItems = Items_In_Menu.Read(); },
-                Saves.Init,
-                //loads all savegames from steam2013 or cd2000 or steam2019 directories. first come first serve.
-                //TODO allow chosing of which save folder to use.
-                InitStrings,
-                //this initializes the field module, it's worth to have this at the beginning
-                Fields.Initializer.Init,
-                //this initializes the encounters
-                InitDebuggerBattle.Init,
-            };
-
-            if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
-            {
-                actions.AddRange(new Action[]
-                {
-                    //this initializes the fonts and drawing system- holds fonts in-memory
-                    () => { font = new Font(); },
-                    // card images in menu.
-                    () => { Cards = Cards.Load(); },
-
-                    () => { Card_Game = new Card.Game(); },
-
-                    () => { Faces = Faces.Load(); },
-
-                    () => { Icons = Icons.Load(); },
-
-                    () => { Magazines = Magazine.Load(); }
-                });
-            }
-            actions.Add(() =>
-            {
-                InitState = Saves.Data.LoadInitOut();
-                State = InitState?.Clone();
-            });
-
-            var tasks = new List<Task>();
-
-            if (!token.IsCancellationRequested)
-            {
-                if (Threaded)
-                {
-                    foreach (var a in actions)
-                    {
-                        if (!token.IsCancellationRequested)
-                            tasks.Add(Task.Run(a, token));
-                    }
-                    Task.WaitAll(tasks.ToArray());
-                }
-                else
-                    foreach (var a in actions)
-                    {
-                        if (!token.IsCancellationRequested)
-                            a.Invoke();
-                    }
-                if (graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
-                {
-                    // requires font, faces, and icons. currently cards only used in debug menu. will
-                    // have support for cards when added to menu.
-                    if (!token.IsCancellationRequested)
-                        Menu.InitStaticMembers();
-                }
-            }
-            //EXE_Offsets test = new EXE_Offsets();
-            Initiated = true;
-            //ArchiveBase.PurgeCache();//remove files probably no longer needed.
-            return 0;
-        }
-
-        public static bool Initiated { get; private set; } = false;
-        public static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == mainThreadID;
-        public static ConcurrentQueue<Action> MainThreadOnlyActions;
-
-        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content, string[] arguments)
-        {
-            if (Log == null) Log = new Log();
-            Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)}");
-            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics}");
-            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics?.GraphicsDevice.Adapter.CurrentDisplayMode}");
-            if (graphics != null)
-                foreach (var i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
-                    Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
-            //Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics.GraphicsDevice.Adapter.DeviceName}");
-            //Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch}");
-            Log.WriteLine($"{nameof(ContentManager)} :: {content}");
-
-            Memory.Log.WriteLine($"{nameof(Random)} :: new");
-            Random = new Random((int)DateTime.Now.Ticks);
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(mainThreadID)} = {nameof(Thread)} :: {nameof(Thread.CurrentThread)} :: {nameof(Thread.ManagedThreadId)} = {Thread.CurrentThread.ManagedThreadId}");
-            mainThreadID = Thread.CurrentThread.ManagedThreadId;
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(MainThreadOnlyActions)}");
-            MainThreadOnlyActions = new ConcurrentQueue<Action>();
-
-            FF8DIR = GameLocation.Current.DataPath;
-            void SetData() =>
-            FF8DIRdata = Extended.GetUnixFullPath(Path.Combine(FF8DIR, "Data"));
-
-            SetData();
-            var languageSet = false;
-            void setLang(string lang)
-            {
-                switch (lang.ToLower())
-                {
-                    case "2":
-                    case "de":
-                        languages = Extended.Languages.de;
-                        break;
-
-                    case "0":
-                    case "en":
-                        languages = Extended.Languages.en;
-                        break;
-
-                    case "3":
-                    case "es":
-                        languages = Extended.Languages.es;
-                        break;
-
-                    case "1":
-                    case "fr":
-                        languages = Extended.Languages.fr;
-                        break;
-
-                    case "4":
-                    case "it":
-                        languages = Extended.Languages.it;
-                        break;
-
-                    case "5":
-                    case "jp":
-                        languages = Extended.Languages.jp;
-                        break;
-
-                    default:
-                        throw new InvalidEnumArgumentException($"{nameof(Memory)}::{nameof(Init)}::{nameof(lang)} ({lang}) is not a supported language code. (de,en,es,fr,it,jp)");
-                }
-
-                languageSet = true;
-            }
-            if (arguments != null && arguments.Length > 0)
-            {
-                IEnumerable<string[]> splitArguments = (from a in arguments
-                                                        where a.Contains('=')
-                                                        select a.Trim().Split(new[] { '=' }, 2)).OrderByDescending(x=>x[0],StringComparer.OrdinalIgnoreCase);
-                foreach (var s in splitArguments)
-                {
-                    bool test(string @in, ref string @out)
-                    {
-                        if (!s[0].Equals(@in, StringComparison.OrdinalIgnoreCase)) return false;
-                        @out = s[1].Trim(('"'));
-                        return true;
-                    }
-
-                    var lang = "";
-                    if (test("dir", ref _ff8Dir)) //override ff8 directory
-                    {
-                        if (!Directory.Exists(_ff8Dir))
-                            throw new DirectoryNotFoundException(
-                                $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8Dir)} ({s[0]}) Cannot find path: \"{_ff8Dir}\"");
-                        SetData();
-                    }
-                    else if (test("data", ref _ff8DirData)) //override data folder location
-                    {
-                        if (!Directory.Exists(_ff8DirData))
-                            throw new DirectoryNotFoundException(
-                                $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8DirData)} ({s[0]}) Cannot find path: \"{_ff8DirData}\"");
-                    }
-                    else if (test("lang", ref lang)) //override language
-                    {
-                        setLang(lang);
-                    }
-                }
-            }
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIR)} = {FF8DIR}");
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata)} = {FF8DIRdata}");
-            var langDatPath = Path.Combine(FF8DIR, "lang.dat");
-            if (!languageSet && File.Exists(langDatPath))
-                using (var streamReader = new StreamReader(
-                    new FileStream(langDatPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.UTF8))
-                {
-                    var lang = streamReader.ReadLine()?.Trim();
-                    setLang(lang);
-                }
-
-            Memory.Log.WriteLine($"{nameof(Extended)} :: {nameof(Extended.GetLanguageShort)} = {Extended.GetLanguageShort()}");
-            var testDir = Extended.GetUnixFullPath(Path.Combine(FF8DIRdata, $"lang-{Extended.GetLanguageShort()}"));
-            FF8DIRdata_lang = Directory.Exists(testDir) ? testDir : FF8DIRdata;
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DIRdata_lang)} = {FF8DIRdata_lang}");
-
-            Archives.Init();
-
-            Memory.graphics = graphics;
-            Memory.spriteBatch = spriteBatch;
-            Memory.content = content;
-            Memory.Arguments = arguments;
-
-            TokenSource = new CancellationTokenSource();
-            Token = TokenSource.Token;
-            Threaded = false;
-            if (Threaded)
-            {
-                InitTask = new Task<int>(InitTaskMethod, Token);
-                InitTask.Start();
-            }
-            else
-                InitTaskMethod(Token);
-        }
-
-        public static string[] Arguments { get; set; }
-
         /// <summary>
-        /// If true by the end of Update() will skip the next Draw()
+        /// subtract. Used for windows/glass makes color darker of things behind this layer.
         /// </summary>
-        public static bool SuppressDraw { get; set; }
-
-        public static bool IsMouseVisible { get; set; } = false;
-
-        public static Saves.Data PrevState { get; set; }
-
-        public static Saves.Data State
+        /// <see cref="http://community.monogame.net/t/solved-custom-blendstate-advice/11006"/>
+        public static readonly BlendState BlendStateSubtract = new BlendState
         {
-            get => _state; set
-            {
-                _state = value;
-                if (_state != null)
-                    _state.LoadTime = Memory.gameTime?.TotalGameTime ?? new TimeSpan();
-            }
-        }
-
-        public static CancellationTokenSource TokenSource { get; private set; }
-        public static CancellationToken Token { get; private set; }
-        public static Items_In_Menu MItems { get; private set; }
-        public static Magazine Magazines { get; private set; }
-        public static Saves.Data InitState { get; private set; }
-
-        public static event EventHandler<MODULE> ModuleChangeEvent;
-
-        public static MODULE Module
-        {
-            get => module; set
-            {
-                if (module != value)
-                {
-                    module = value;
-                    ModuleChangeEvent?.Invoke(null, value);
-                }
-            }
-        }
-
-        #region battleProvider
-
-        /// <summary>
-        /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle.
-        /// </summary>
-        //public static int battle_encounter = 0;
-
-        /// <summary>
-        /// Battle music pointer. Set by SETBATTLEMUSIC in field module or by world module. Default=6
-        /// </summary>
-        public static int SetBattleMusic = 6;
-
-        public static Battle.Encounters Encounters { get; set; }
-        public static bool Threaded { get; private set; } = true;
-
-        #endregion battleProvider
-
-        #region MusicDataMidi
-
-        public static Dictionary<ushort, string> Songssgt = new Dictionary<ushort, string>()
-        {
-            {0, "Lose" },
-            {1, "Win" },
-            {2, "Open" },
-            {3, "Combat" },
-            {4, "Run" },
-            {5, "Battle" },
-            {6, "Funsui" },
-            {7, "End" },
-            {8, "Antenna" },
-            {9, "Waiting" },
-            {10, "Ante " },
-            {11, "Wind" },
-            {12, "Crab" },
-            {13, "Battle2" },
-            {14, "Friend2" },
-            {15, "Fuan2" },
-            {16, "March2" },
-            {17, "Land" },
-            {18, "Julia" },
-            {19, "Waltz" },
-            {20, "Friend " },
-            {21, "Dungeon" },
-            {22, "Pianosolo" },
-            {23, "Parade" },
-            {24, "March1" },
-            {25, "Secret" },
-            {26, "Garden" },
-            {27, "Fuan " },
-            {28, "Polka2" },
-            {29, "Anthem" },
-            {30, "FlangChorus" },
-            {31, "DubChorus" },
-            {32, "SoloChorus" },
-            {33, "FemaleChorus" },
-            {34, "Chorus" },
-            {35, "M7F5" },
-            {36, "Sorceress" },
-            {37, "Reet" },
-            {38, "Soyo" },
-            {39, "Rouka" },
-            {40, "Night" },
-            {41, "Field" },
-            {42, "Guitar" },
-            {43, "Concert" },
-            {44, "Sea" },
-            {45, "Silent" },
-            {46, "Resistance" },
-            {47, "Kaiso" },
-            {48, "Horizon" },
-            {49, "Master" },
-            {50, "Battle2" },
-            {51, "Rinoa" },
-            {52, "Trabia" },
-            {53, "Horizon2" },
-            {54, "Truth" },
-            {55, "Prison" },
-            {56, "GalbadiaGarden" },
-            {57, "Timber" },
-            {58, "Galbadia " },
-            {59, "Pinchi" },
-            {60, "Scene1" },
-            {61, "Pub" },
-            {62, "Bat3" },
-            {63, "Stage" },
-            {64, "Choco" },
-            {65, "White" },
-            {66, "Majomv" },
-            {67, "Musho" },
-            {68, "Missile" },
-            {69, "Speech" },
-            {70, "Card" },
-            {71, "Gomon" },
-            {72, "Soto" },
-            {73, "Majobat" },
-            {74, "Train" },
-            {75, "Garden2" },
-            {76, "Bossbat2" },
-            {77, "LastDungeon" },
-            {78, "Gafly" },
-            {79, "Demo" },
-            {80, "Spy" },
-            {81, "VoiceDeChocobo" },
-            {82, "Salt" },
-            {83, "Alien" },
-            {84, "Sekichu" },
-            {85, "Esta" },
-            {86, "Moonmv" },
-            {87, "Mdmotor" },
-            {88, "Moonmv2" },
-            {89, "Fly" },
-            {90, "BossBat1" },
-            {91, "Rag1" },
-            {92, "Rag2" },
-            {93, "LastBoss" },
-            {94, "Lastwhite" },
-            {95, "Lasbl" },
-            {96, "Keisho" },
-            {97, "Compression" },
+            ColorWriteChannels = ColorWriteChannels.Blue | ColorWriteChannels.Green | ColorWriteChannels.Red,
+            ColorSourceBlend = Blend.One,
+            //AlphaSourceBlend = Blend.One,
+            ColorDestinationBlend = Blend.One,
+            //AlphaDestinationBlend = Blend.One,
+            ColorBlendFunction = BlendFunction.ReverseSubtract
         };
 
-        #endregion MusicDataMidi
+        public static readonly Dictionary<MusicId, List<string>> DicMusic = new Dictionary<MusicId, List<string>>();
+        public static Card.Game CardGame;
+        public static Cards Cards;
+        public static ContentManager Content;
+        public static GraphicModes CurrentGraphicMode;
 
-        #region MusicDataOGG
-
-        public static Dictionary<ushort, FF8String> Songsogg;
-
-        private static void InitStrings()
-        {//is there Songogg being used for anything?
-            Memory.Log.WriteLine($"{nameof(Memory)} :: {nameof(InitStrings)} :: {nameof(Songsogg)} ");
-            Songsogg = new Dictionary<ushort, FF8String>()
-            {
-                {0,"Lose" },
-                {1,"The Winner" },
-                {4,"Never Look Back" },
-                {5,"Don't Be Afraid" },
-                {7,"Dead End" },
-                {8,"Starting Up" },
-                {9,"Intruders" },
-                {12,"Don't Be Afraid (X-ATM092)" },
-                {13,"Force Your Way" },
-                {14,"FITHOS LUSEC WECOS VINOSEC (No Intro)" },
-                {15,"Unrest" },
-                {16,"The Stage is Set" },
-                {17,"The Landing" },
-                {18,"Love Grows" },
-                {19,"Waltz for the Moon" },
-                {20,"Ami" },
-                {21,"Find Your Way" },
-                {22,"Julia" },
-                {23,"FITHOS LUSEC WECOS VINOSEC" },
-                {24,"SeeD" },
-                {25,"Tell Me" },
-                {26,"Balamb GARDEN" },
-                {27,"Fear" },
-                {28,"Dance with the Balamb-Fish" },
-                {29,"Cactus Jack" },
-                {35,"The Mission" },
-                {36,"SUCCESSION OF WITCHES" },
-                {41,"Blue Fields" },
-                {42,"Breezy" },
-                {43,"Concert" },
-                {46,"Timber Owls" },
-                {47,"Fragments of Memories" },
-                {48,"Fisherman's Horizon" },
-                {49,"Heresy" },
-                {51,"My Mind" },
-                {52,"Where I Belong" },
-                {53,"Starting Up (Looped)" },
-                {54,"Truth" },
-                {55,"Trust Me" },
-                {56,"Galbadia GARDEN" },
-                {57,"Martial Law" },
-                {58,"Under Her Control" },
-                {59,"Only a Plank Between One and Perdition" },
-                {60,"Junction" },
-                {61,"Roses and Wine" },
-                {62,"The Man with the Machine Gun" },
-                {63,"A Sacrifice" },
-                {64,"ODEKA ke Chocobo" },
-                {65,"Drifting" },
-                {66,"Wounded" },
-                {67,"Jailed" },
-                {68,"Retaliation" },
-                {69,"The Oath" },
-                {70,"Shuffle or Boogie" },
-                {71,"Rivals" },
-                {72,"Blue Sky" },
-                {73,"Premonition" },
-                {75,"Galbadia GARDEN (No Intro)" },
-                {76,"Maybe I'm a Lion" },
-                {77,"The Castle" },
-                {78,"Movin'" },
-                {79,"Overture" },
-                {80,"The Spy" },
-                {81,"Mods de Chocobo" },
-                {82,"The Salt Flats" },
-                {83,"The Residents" },
-                {84,"Lunatic Pandora" },
-                {85,"Silence and Motion" },
-                {86,"Tears of the Moon" },
-                {88,"Tears of the Moon (Alternate)" },
-                {89,"Ride On" },
-                {90,"The Legendary Beast" },
-                {91,"Slide Show Part 1" },
-                {92,"Slide Show Part 2" },
-                {93,"The Extreme" },
-                {96,"The Successor" },
-                {97,"Compression of Time" },
-                {99,"The Landing (No Intro)" },
-                {512,"The Loser" },
-                {513,"Eyes on Me" },
-                {514,"Irish Jig (Concert)" },
-                {515,"Eyes on Me (Concert)" },
-                {516,"Movin' (No Intro)" },
-                {517,"The Landing (Alternate)" },
-                {518,"The Landing (Alternate - No Intro)" },
-                {519,"Galbadia GARDEN (Alternate)" },
-            };
-            DrawPointMagic = new Dictionary<byte, FF8String>()
+        public static IReadOnlyDictionary<byte, FF8String> DrawPointMagic = new Dictionary<byte, FF8String>()
         {
             {0, "Cure - Balamb Garden courtyard"},
             {1, "Blizzard - Balamb Garden training center"},
@@ -1090,26 +422,678 @@ namespace OpenVIII
             {254, "Ultima"},
             {255, "Scan"}
         };
-        }
 
-        #endregion MusicDataOGG
+        public static bool EnableDumpingData = false;
 
-        #region DrawPointMagic
+        public static Faces Faces;
 
-        public static Dictionary<byte, FF8String> DrawPointMagic;
+        public static List<Task> FfccLeftOverTask = new List<Task>();
+        public static Font Font;
+
+        public static GraphicsDeviceManager Graphics;
+
+        public static Icons Icons;
+        public static Core.ImGuiRenderer ImGui;
+        public static Task InitTask;
         public static Input2 Input2;
+        public static bool IsActive = true;
+        public static KernelBin KernelBin;
+        public static Extended.Languages Languages = Extended.Languages.en;
+        public static Log Log;
+        public static ConcurrentQueue<Action> MainThreadOnlyActions;
 
         /// <summary>
         /// Random number generator seeded with time.
         /// </summary>
         /// <remarks>creates global random class for all sort of things</remarks>
-        public static Random Random = null;
+        public static Random Random;
 
-        public static int Year = 2013; // need to dynamicly detect if 2000/2013/2019, maybe need 2000 1.2 as well.
+        /// <summary>
+        /// Battle music pointer. Set by SET BATTLE MUSIC in field module or by world module. Default=6
+        /// </summary>
+        public static int SetBattleMusic = 6;
+
+        public static VertexPositionTexture[] ShadowGeometry;
+        public static Texture2D ShadowTexture;
+
+        public static IReadOnlyDictionary<ushort, FF8String> SongsOGG = new Dictionary<ushort, FF8String>()
+            {
+                {0,"Lose" },
+                {1,"The Winner" },
+                {4,"Never Look Back" },
+                {5,"Don't Be Afraid" },
+                {7,"Dead End" },
+                {8,"Starting Up" },
+                {9,"Intruders" },
+                {12,"Don't Be Afraid (X-ATM092)" },
+                {13,"Force Your Way" },
+                {14,"FITHOS LUSEC WECOS VINOSEC (No Intro)" },
+                {15,"Unrest" },
+                {16,"The Stage is Set" },
+                {17,"The Landing" },
+                {18,"Love Grows" },
+                {19,"Waltz for the Moon" },
+                {20,"Ami" },
+                {21,"Find Your Way" },
+                {22,"Julia" },
+                {23,"FITHOS LUSEC WECOS VINOSEC" },
+                {24,"SeeD" },
+                {25,"Tell Me" },
+                {26,"Balamb GARDEN" },
+                {27,"Fear" },
+                {28,"Dance with the Balamb-Fish" },
+                {29,"Cactus Jack" },
+                {35,"The Mission" },
+                {36,"SUCCESSION OF WITCHES" },
+                {41,"Blue Fields" },
+                {42,"Breezy" },
+                {43,"Concert" },
+                {46,"Timber Owls" },
+                {47,"Fragments of Memories" },
+                {48,"Fisherman's Horizon" },
+                {49,"Heresy" },
+                {51,"My Mind" },
+                {52,"Where I Belong" },
+                {53,"Starting Up (Looped)" },
+                {54,"Truth" },
+                {55,"Trust Me" },
+                {56,"Galbadia GARDEN" },
+                {57,"Martial Law" },
+                {58,"Under Her Control" },
+                {59,"Only a Plank Between One and Perdition" },
+                {60,"Junction" },
+                {61,"Roses and Wine" },
+                {62,"The Man with the Machine Gun" },
+                {63,"A Sacrifice" },
+                {64,"ODEKA ke Chocobo" },
+                {65,"Drifting" },
+                {66,"Wounded" },
+                {67,"Jailed" },
+                {68,"Retaliation" },
+                {69,"The Oath" },
+                {70,"Shuffle or Boogie" },
+                {71,"Rivals" },
+                {72,"Blue Sky" },
+                {73,"Premonition" },
+                {75,"Galbadia GARDEN (No Intro)" },
+                {76,"Maybe I'm a Lion" },
+                {77,"The Castle" },
+                {78,"Movin'" },
+                {79,"Overture" },
+                {80,"The Spy" },
+                {81,"Mods de Chocobo" },
+                {82,"The Salt Flats" },
+                {83,"The Residents" },
+                {84,"Lunatic Pandora" },
+                {85,"Silence and Motion" },
+                {86,"Tears of the Moon" },
+                {88,"Tears of the Moon (Alternate)" },
+                {89,"Ride On" },
+                {90,"The Legendary Beast" },
+                {91,"Slide Show Part 1" },
+                {92,"Slide Show Part 2" },
+                {93,"The Extreme" },
+                {96,"The Successor" },
+                {97,"Compression of Time" },
+                {99,"The Landing (No Intro)" },
+                {512,"The Loser" },
+                {513,"Eyes on Me" },
+                {514,"Irish Jig (Concert)" },
+                {515,"Eyes on Me (Concert)" },
+                {516,"Movin' (No Intro)" },
+                {517,"The Landing (Alternate)" },
+                {518,"The Landing (Alternate - No Intro)" },
+                {519,"Galbadia GARDEN (Alternate)" },
+            };
+
+        public static IReadOnlyDictionary<ushort, string> SongsSGT = new Dictionary<ushort, string>()
+        {
+            {0, "Lose" },
+            {1, "Win" },
+            {2, "Open" },
+            {3, "Combat" },
+            {4, "Run" },
+            {5, "Battle" },
+            {6, "Funsui" },
+            {7, "End" },
+            {8, "Antenna" },
+            {9, "Waiting" },
+            {10, "Ante " },
+            {11, "Wind" },
+            {12, "Crab" },
+            {13, "Battle2" },
+            {14, "Friend2" },
+            {15, "Fuan2" },
+            {16, "March2" },
+            {17, "Land" },
+            {18, "Julia" },
+            {19, "Waltz" },
+            {20, "Friend " },
+            {21, "Dungeon" },
+            {22, "Pianosolo" },
+            {23, "Parade" },
+            {24, "March1" },
+            {25, "Secret" },
+            {26, "Garden" },
+            {27, "Fuan " },
+            {28, "Polka2" },
+            {29, "Anthem" },
+            {30, "FlangChorus" },
+            {31, "DubChorus" },
+            {32, "SoloChorus" },
+            {33, "FemaleChorus" },
+            {34, "Chorus" },
+            {35, "M7F5" },
+            {36, "Sorceress" },
+            {37, "Reet" },
+            {38, "Soyo" },
+            {39, "Rouka" },
+            {40, "Night" },
+            {41, "Field" },
+            {42, "Guitar" },
+            {43, "Concert" },
+            {44, "Sea" },
+            {45, "Silent" },
+            {46, "Resistance" },
+            {47, "Kaiso" },
+            {48, "Horizon" },
+            {49, "Master" },
+            {50, "Battle2" },
+            {51, "Rinoa" },
+            {52, "Trabia" },
+            {53, "Horizon2" },
+            {54, "Truth" },
+            {55, "Prison" },
+            {56, "GalbadiaGarden" },
+            {57, "Timber" },
+            {58, "Galbadia " },
+            {59, "Pinchi" },
+            {60, "Scene1" },
+            {61, "Pub" },
+            {62, "Bat3" },
+            {63, "Stage" },
+            {64, "Choco" },
+            {65, "White" },
+            {66, "Majomv" },
+            {67, "Musho" },
+            {68, "Missile" },
+            {69, "Speech" },
+            {70, "Card" },
+            {71, "Gomon" },
+            {72, "Soto" },
+            {73, "Majobat" },
+            {74, "Train" },
+            {75, "Garden2" },
+            {76, "Bossbat2" },
+            {77, "LastDungeon" },
+            {78, "Gafly" },
+            {79, "Demo" },
+            {80, "Spy" },
+            {81, "VoiceDeChocobo" },
+            {82, "Salt" },
+            {83, "Alien" },
+            {84, "Sekichu" },
+            {85, "Esta" },
+            {86, "Moonmv" },
+            {87, "Mdmotor" },
+            {88, "Moonmv2" },
+            {89, "Fly" },
+            {90, "BossBat1" },
+            {91, "Rag1" },
+            {92, "Rag2" },
+            {93, "LastBoss" },
+            {94, "Lastwhite" },
+            {95, "Lasbl" },
+            {96, "Keisho" },
+            {97, "Compression" },
+        };
+
+        public static SpriteBatch SpriteBatch;
+        public static Strings Strings;
+        public static int Year = 2013;
+        private static ushort _currentMusic;
+
+        // need to dynamically detect if 2000/2013/2019, maybe need 2000 1.2 as well.
         private static string _ff8Dir;
-        private static string _ff8DirData;
 
-        #endregion DrawPointMagic
+        private static string _ff8DirData;
+        private static int _mainThreadID;
+        private static Module _module = Module.OvertureDebug;
+        private static ushort _previousMusic;
+
+        /// <summary>
+        /// Stores current save state. When you save this is wrote. When you load this is replaced.
+        /// </summary>
+        private static Saves.Data _state = new Saves.Data();
+
+        #endregion Fields
+
+        #region Events
+
+        public static event EventHandler<Module> ModuleChangeEvent;
+
+        #endregion Events
+
+        #region Enums
+
+        public enum GraphicModes
+        {
+            OpenGL,
+            DirectX
+        };
+
+        #endregion Enums
+
+        #region Properties
+
+        public static string[] Arguments { get; set; }
+        public static float BattleStageScale { get; internal set; } = 100f;
+        public static float CameraScale { get; internal set; } = 100f;
+        public static Point Center => new Point(Graphics.GraphicsDevice.Viewport.Width / 2, Graphics.GraphicsDevice.Viewport.Height / 2);
+        public static BattleSpeed CurrentBattleSpeed => State?.Configuration?.BattleSpeed ?? BattleSpeed.Normal;
+        public static TimeSpan DateTimeNow => TimeSpan.FromTicks(DateTime.Now.Ticks);
+        public static TimeSpan ElapsedGameTime => GameTime?.ElapsedGameTime ?? TimeSpan.Zero;
+
+        /// <summary>
+        /// Active battle encounter. Set by field or battle module. You shouldn't change it in-battle.
+        /// </summary>
+        public static Battle.Encounters Encounters { get; set; }
+
+        public static float EnemyCoordinateScale { get; internal set; } = 100f;
+
+        public static string FF8Dir
+        {
+            get => _ff8Dir;
+            private set => _ff8Dir = value;
+        }
+
+        public static string FF8DirData
+        {
+            get => _ff8DirData;
+            private set => _ff8DirData = value;
+        }
+
+        public static string FF8DirDataLang { get; private set; }
+
+        /// <summary>
+        /// Game time value. Could be null check for null.
+        /// </summary>
+        public static GameTime GameTime { get; set; }
+
+        public static bool Initiated { get; private set; }
+
+        public static Saves.Data InitState { get; private set; }
+
+        public static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == _mainThreadID;
+
+        public static bool IsMouseVisible { get; set; } = false;
+
+        public static Magazine Magazines { get; private set; }
+
+        public static Items_In_Menu MItems { get; private set; }
+
+        public static Module Module
+        {
+            get => _module; set
+            {
+                if (_module == value) return;
+                _module = value;
+                ModuleChangeEvent?.Invoke(null, value);
+            }
+        }
+
+        public static ushort MusicIndex
+        {
+            get
+            {
+                if (DicMusic.Count > 0)
+                {
+                    var max = (ushort)DicMusic.Keys.Max();
+                    var min = (ushort)DicMusic.Keys.Min();
+                    while ((_previousMusic > _currentMusic || _previousMusic == ushort.MinValue && _currentMusic == ushort.MaxValue) &&
+                        !DicMusic.ContainsKey((MusicId)_currentMusic))
+                    {
+                        if (max < _currentMusic)
+                        {
+                            _currentMusic = max;
+                        }
+                        else
+                        {
+                            _currentMusic--;
+                        }
+                    }
+                    while (DicMusic.Count > 0 && _previousMusic < _currentMusic && !DicMusic.ContainsKey((MusicId)_currentMusic))
+                    {
+                        if (max < _currentMusic)
+                        {
+                            _currentMusic = min;
+                        }
+                        else
+                        {
+                            _currentMusic++;
+                        }
+                    }
+                    return _currentMusic;
+                }
+                else return 0;
+            }
+            set
+            {
+                _previousMusic = _currentMusic;
+                _currentMusic = value;
+            }
+        }
+
+        public static Saves.Data PrevState { get; set; }
+
+        public static Saves.Data State
+        {
+            get => _state; set
+            {
+                _state = value;
+                if (_state != null)
+                    _state.LoadTime = GameTime?.TotalGameTime ?? new TimeSpan();
+            }
+        }
+
+        /// <summary>
+        /// If true by the end of Update() will skip the next Draw()
+        /// </summary>
+        public static bool SuppressDraw { get; set; }
+
+        public static bool Threaded { get; private set; } = true;
+
+        public static CancellationToken Token { get; private set; }
+
+        public static CancellationTokenSource TokenSource { get; private set; }
+
+        public static TimeSpan TotalGameTime => GameTime?.TotalGameTime ?? TimeSpan.Zero;
+
+        #endregion Properties
+
+        #region Methods
+
+        public static void Init(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, ContentManager content, string[] arguments)
+        {
+            if (Log == null) Log = new Log();
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(Init)}");
+            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics}");
+            Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.CurrentDisplayMode)} :: {graphics?.GraphicsDevice.Adapter.CurrentDisplayMode}");
+            if (graphics != null)
+                foreach (var i in graphics.GraphicsDevice.Adapter.SupportedDisplayModes)
+                    Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {nameof(graphics.GraphicsDevice.Adapter.SupportedDisplayModes)} :: {i}");
+            //Log.WriteLine($"{nameof(GraphicsDeviceManager)} :: {graphics.GraphicsDevice.Adapter.DeviceName}");
+            //Log.WriteLine($"{nameof(SpriteBatch)} :: {spriteBatch}");
+            Log.WriteLine($"{nameof(ContentManager)} :: {content}");
+
+            Log.WriteLine($"{nameof(Random)} :: new");
+            Random = new Random((int)DateTime.Now.Ticks);
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(_mainThreadID)} = {nameof(Thread)} :: {nameof(Thread.CurrentThread)} :: {nameof(Thread.ManagedThreadId)} = {Thread.CurrentThread.ManagedThreadId}");
+            _mainThreadID = Thread.CurrentThread.ManagedThreadId;
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(MainThreadOnlyActions)}");
+            MainThreadOnlyActions = new ConcurrentQueue<Action>();
+
+            FF8Dir = GameLocation.Current.DataPath;
+            void SetData() =>
+            FF8DirData = Extended.GetUnixFullPath(Path.Combine(FF8Dir, "Data"));
+
+            SetData();
+            var languageSet = false;
+            void setLang(string lang)
+            {
+                switch (lang.ToLower())
+                {
+                    case "2":
+                    case "de":
+                        Languages = Extended.Languages.de;
+                        break;
+
+                    case "0":
+                    case "en":
+                        Languages = Extended.Languages.en;
+                        break;
+
+                    case "3":
+                    case "es":
+                        Languages = Extended.Languages.es;
+                        break;
+
+                    case "1":
+                    case "fr":
+                        Languages = Extended.Languages.fr;
+                        break;
+
+                    case "4":
+                    case "it":
+                        Languages = Extended.Languages.it;
+                        break;
+
+                    case "5":
+                    case "jp":
+                        Languages = Extended.Languages.jp;
+                        break;
+
+                    default:
+                        throw new InvalidEnumArgumentException($"{nameof(Memory)}::{nameof(Init)}::{nameof(lang)} ({lang}) is not a supported language code. (de,en,es,fr,it,jp)");
+                }
+
+                languageSet = true;
+            }
+            if (arguments != null && arguments.Length > 0)
+            {
+                IEnumerable<string[]> splitArguments = (from a in arguments
+                                                        where a.Contains('=')
+                                                        select a.Trim().Split(new[] { '=' }, 2)).OrderByDescending(x => x[0], StringComparer.OrdinalIgnoreCase);
+                foreach (var s in splitArguments)
+                {
+                    bool test(string @in, ref string @out)
+                    {
+                        if (!s[0].Equals(@in, StringComparison.OrdinalIgnoreCase)) return false;
+                        @out = s[1].Trim(('"'));
+                        return true;
+                    }
+
+                    var lang = "";
+                    if (test("dir", ref _ff8Dir)) //override ff8 directory
+                    {
+                        if (!Directory.Exists(_ff8Dir))
+                            throw new DirectoryNotFoundException(
+                                $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8Dir)} ({s[0]}) Cannot find path: \"{_ff8Dir}\"");
+                        SetData();
+                    }
+                    else if (test("data", ref _ff8DirData)) //override data folder location
+                    {
+                        if (!Directory.Exists(_ff8DirData))
+                            throw new DirectoryNotFoundException(
+                                $"{nameof(Memory)}::{nameof(Init)}::{nameof(arguments)}::{nameof(_ff8DirData)} ({s[0]}) Cannot find path: \"{_ff8DirData}\"");
+                    }
+                    else if (test("lang", ref lang)) //override language
+                    {
+                        setLang(lang);
+                    }
+                }
+            }
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8Dir)} = {FF8Dir}");
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DirData)} = {FF8DirData}");
+            var langDatPath = Path.Combine(FF8Dir, "lang.dat");
+            if (!languageSet && File.Exists(langDatPath))
+                using (var streamReader = new StreamReader(
+                    new FileStream(langDatPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), System.Text.Encoding.UTF8))
+                {
+                    var lang = streamReader.ReadLine()?.Trim();
+                    setLang(lang);
+                }
+
+            Log.WriteLine($"{nameof(Extended)} :: {nameof(Extended.GetLanguageShort)} = {Extended.GetLanguageShort()}");
+            var testDir = Extended.GetUnixFullPath(Path.Combine(FF8DirData, $"lang-{Extended.GetLanguageShort()}"));
+            FF8DirDataLang = Directory.Exists(testDir) ? testDir : FF8DirData;
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(FF8DirDataLang)} = {FF8DirDataLang}");
+
+            Archives.Init();
+
+            Graphics = graphics;
+            SpriteBatch = spriteBatch;
+            Content = content;
+            Arguments = arguments;
+
+            TokenSource = new CancellationTokenSource();
+            Token = TokenSource.Token;
+            Threaded = false;
+            if (Threaded)
+            {
+                InitTask = new Task<int>(InitTaskMethod, Token);
+                InitTask.Start();
+            }
+            else
+                InitTaskMethod(Token);
+        }
+
+        public static int InitTaskMethod(object obj)
+        {
+            Log.WriteLine($"{nameof(Memory)} :: {nameof(Memory)} :: {nameof(Init)}");
+            var token = (CancellationToken)obj;
+
+            if (!token.IsCancellationRequested)
+                Strings = new Strings();
+
+            // requires strings because it uses an array generated in strings.
+            // saves data will reference kernel_bin.
+            if (!token.IsCancellationRequested)
+                KernelBin = KernelBin.CreateInstance();
+            var actions = new List<Action>()
+            {
+                // this has a soft requirement on kernel_bin. It checks for null so should work without it.
+                () => {MItems = Items_In_Menu.Read(); },
+                Saves.Init,
+                //loads all save games from steam2013 or cd2000 or steam2019 directories. first come first serve.
+                //TODO allow choosing of which save folder to use.
+                //this initializes the field module, it's worth to have this at the beginning
+                Fields.Initializer.Init,
+                //this initializes the encounters
+                InitDebuggerBattle.Init,
+            };
+
+            if (Graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
+            {
+                actions.AddRange(new Action[]
+                {
+                    //this initializes the fonts and drawing system- holds fonts in-memory
+                    () => { Font = new Font(); },
+                    // card images in menu.
+                    () => { Cards = Cards.Load(); },
+
+                    () => { CardGame = new Card.Game(); },
+
+                    () => { Faces = Faces.Load(); },
+
+                    () => { Icons = Icons.Load(); },
+
+                    () => { Magazines = Magazine.Load(); }
+                });
+            }
+            actions.Add(() =>
+            {
+                InitState = Saves.Data.LoadInitOut();
+                State = InitState?.Clone();
+            });
+
+            var tasks = new List<Task>();
+
+            if (!token.IsCancellationRequested)
+            {
+                if (Threaded)
+                {
+                    tasks.AddRange(from a in actions where !token.IsCancellationRequested select Task.Run(a, token));
+                    Task.WhenAll(tasks.ToArray()).GetAwaiter().GetResult();
+                }
+                else
+                    foreach (var a in actions.Where(a => !token.IsCancellationRequested))
+                    {
+                        a.Invoke();
+                    }
+                if (Graphics?.GraphicsDevice != null) // all below require graphics to work. to load textures graphics device needed.
+                {
+                    // requires font, faces, and icons. currently cards only used in debug menu. will
+                    // have support for cards when added to menu.
+                    if (!token.IsCancellationRequested)
+                        Menu.InitStaticMembers();
+                }
+            }
+            //EXE_Offsets test = new EXE_Offsets();
+            Initiated = true;
+            //ArchiveBase.PurgeCache();//remove files probably no longer needed.
+            return 0;
+        }
+
+        public static bool ProcessActions(Action[] actions)
+        {
+            if (Threaded)
+            {
+                var tasks = new List<Task>(actions.Length);
+                actions.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
+                //Some code that cannot be threaded on init.
+                if (!Task.WaitAll(tasks.ToArray(), 10000))
+                    throw new TimeoutException("Task took too long!");
+            }
+            else actions.ForEach(x => x.Invoke());
+            return !Token.IsCancellationRequested;
+        }
+
+        public static bool[] ProcessFunctions(Func<bool>[] functions)
+        {
+            if (!Threaded) return functions.Select(x => x.Invoke()).ToArray();
+
+            //var tasks = new List<Task<bool>>(functions.Length);
+            //functions.ForEach(x => { if (!Token.IsCancellationRequested) tasks.Add(Task.Run(x, Token)); });
+            var tasks = functions.Select(x => Task.Run(x, Token));
+            //Some code that cannot be threaded on init.
+            return Task.WhenAll(tasks.ToArray()).GetAwaiter().GetResult();
+            //if (!Task.WaitAll(tasks.ToArray(), 10000))
+            //    throw new TimeoutException("Task took too long!");
+        }
+
+        public static Vector2 Scale(float width = PreferredViewportWidth, float height = PreferredViewportHeight, ScaleMode scaleMode = ScaleMode, int targetX = 0, int targetY = 0)
+        {
+            if (targetX == 0)
+                targetX = Graphics.GraphicsDevice.Viewport.Width;
+            if (targetY == 0)
+                targetY = Graphics.GraphicsDevice.Viewport.Height;
+            var h = targetX / width;
+            var v = targetY / height;
+            switch (scaleMode)
+            {
+                case ScaleMode.FitHorizontal:
+                    return new Vector2(h, h);
+
+                case ScaleMode.FitVertical:
+                    return new Vector2(v, v);
+
+                case ScaleMode.FitBoth:
+                    return (v * width > targetX) ? new Vector2(h, h) : new Vector2(v, v);
+
+                case ScaleMode.Stretch:
+                    return new Vector2(h, v);
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(scaleMode), scaleMode, null);
+            }
+        }
+
+        //ogg and sgt files have same 3 digit prefix.
+
+        public static void SpriteBatchEnd() => SpriteBatch.End();
+
+        public static void SpriteBatchStart(BlendState bs = null, SamplerState ss = null) =>
+
+    SpriteBatch.Begin(SpriteSortMode.Deferred, bs ?? BlendState.AlphaBlend, ss ?? SamplerState.PointClamp, Graphics.GraphicsDevice.DepthStencilState);
+
+        public static void SpriteBatchStartAlpha(SpriteSortMode sortMode = SpriteSortMode.Deferred, SamplerState ss = null, Matrix? tm = null) =>
+
+            SpriteBatch.Begin(sortMode: sortMode, blendState: BlendState.AlphaBlend, samplerState: ss ?? SamplerState.PointClamp, transformMatrix: tm);
+
+        public static void SpriteBatchStartStencil(SamplerState ss = null) =>
+
+                                    SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Opaque, ss ?? SamplerState.PointClamp, Graphics.GraphicsDevice.DepthStencilState);
 
         public static void Update()
         {
@@ -1118,23 +1102,36 @@ namespace OpenVIII
             { a.Invoke(); }
             for (var i = 0; IsMainThread && i < FfccLeftOverTask.Count; i++)
             {
-                if (FfccLeftOverTask[i].IsCompleted)
-                {
-                    FfccLeftOverTask[i].Dispose();
-                    FfccLeftOverTask.RemoveAt(i--);
-                }
+                if (!FfccLeftOverTask[i].IsCompleted) continue;
+                FfccLeftOverTask[i].Dispose();
+                FfccLeftOverTask.RemoveAt(i--);
             }
         }
 
+        #endregion Methods
+
+        #region Classes
+
         public static class FieldHolder
         {
+            #region Fields
+
             //public static string[] MapList;
             public static ushort FieldID = 756;
 
-            public static string[] fields;
+            public static string[] Fields;
+
+            #endregion Fields
+
             //public static int[] FieldMemory;
 
-            public static string GetString(ushort? inputFieldID = null) => fields?.ElementAtOrDefault(inputFieldID ?? FieldID);
+            #region Methods
+
+            public static string GetString(ushort? inputFieldID = null) => Fields?.ElementAtOrDefault(inputFieldID ?? FieldID);
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

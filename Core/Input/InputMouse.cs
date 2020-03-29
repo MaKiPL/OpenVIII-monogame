@@ -62,8 +62,8 @@ namespace OpenVIII
                 switch (k)
                 {
                     case MouseButtons.MouseToStick:
-                        var tmpX = MathHelper.Clamp((_state.X - Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f), -1f, 1f);
-                        var tmpY = MathHelper.Clamp((Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - _state.Y) / (50f), -1f, 1f);
+                        var tmpX = MathHelper.Clamp((_state.X - Memory.Graphics.GraphicsDevice.Viewport.Bounds.Width / 2) / (50f), -1f, 1f);
+                        var tmpY = MathHelper.Clamp((Memory.Graphics.GraphicsDevice.Viewport.Bounds.Height / 2 - _state.Y) / (50f), -1f, 1f);
                         return new Vector2(tmpX, tmpY);
                 }
             return Vector2.Zero;
@@ -158,11 +158,11 @@ namespace OpenVIII
             {
                 if (mode == MouseLockMode.Center) //center mouse in screen after grabbing state, release mouse if alt tabbed out.
                 {
-                    Microsoft.Xna.Framework.Input.Mouse.SetPosition(Memory.graphics.GraphicsDevice.Viewport.Bounds.Width / 2, Memory.graphics.GraphicsDevice.Viewport.Bounds.Height / 2);
+                    Microsoft.Xna.Framework.Input.Mouse.SetPosition(Memory.Graphics.GraphicsDevice.Viewport.Bounds.Width / 2, Memory.Graphics.GraphicsDevice.Viewport.Bounds.Height / 2);
                 }
                 else if (mode == MouseLockMode.Screen) //alt lock that clamps to viewport every frame. would be useful if using mouse to navigate menus and stuff.
                 {
-                    var vpb = Memory.graphics.GraphicsDevice.Viewport.Bounds;
+                    var vpb = Memory.Graphics.GraphicsDevice.Viewport.Bounds;
                     //there is a better way to clamp as if you move mouse fast enough it will escape for a short time.
                     if (!(state.X >= 0 && state.X <= vpb.Width) || !(state.Y >= 0 && state.Y <= vpb.Height))
                     {

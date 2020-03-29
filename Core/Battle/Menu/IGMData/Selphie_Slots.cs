@@ -51,12 +51,12 @@ namespace OpenVIII.IGMData
         /// <summary>
         /// List of Spells
         /// </summary>
-        private IReadOnlyList<Slot> Spells => (SpellSet?.SlotID ?? -1) == -1 ? null : Memory.Kernel_Bin.SelphieLimitBreakSets[SpellSet.SlotID]?.Slots;
+        private IReadOnlyList<Slot> Spells => (SpellSet?.SlotID ?? -1) == -1 ? null : Memory.KernelBin.SelphieLimitBreakSets[SpellSet.SlotID]?.Slots;
 
         /// <summary>
         /// Spell set
         /// </summary>
-        private SlotArray SpellSet => Memory.Kernel_Bin.SlotArray != null ? Memory.Kernel_Bin.SlotArray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Memory.Kernel_Bin.SlotArray.Count - 1)] : null;
+        private SlotArray SpellSet => Memory.KernelBin.SlotArray != null ? Memory.KernelBin.SlotArray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Memory.KernelBin.SlotArray.Count - 1)] : null;
 
         private Target.Group TargetGroup { get => (Target.Group)ITEM[8, 0]; set => ITEM[8, 0] = value; }
 

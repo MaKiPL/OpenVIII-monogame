@@ -98,7 +98,7 @@ namespace OpenVIII.IGMDataItem
         {
             if (blank == null)
             {
-                blank = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                blank = new Texture2D(Memory.Graphics.GraphicsDevice, 1, 1);
                 blank.SetData(new Color[] { Color.White });
             }
         }

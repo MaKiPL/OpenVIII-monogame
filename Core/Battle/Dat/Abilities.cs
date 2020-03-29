@@ -33,13 +33,13 @@ namespace OpenVIII.Battle.Dat
                 : null;
 
         public Kernel.MagicData Magic =>
-                    (KernelID & KernelFlag.Magic) != 0 && Memory.Kernel_Bin.MagicData.Count > AbilityID
-                ? Memory.Kernel_Bin.MagicData[AbilityID]
+                    (KernelID & KernelFlag.Magic) != 0 && Memory.KernelBin.MagicData.Count > AbilityID
+                ? Memory.KernelBin.MagicData[AbilityID]
                 : null;
 
         public Kernel.EnemyAttacksData Monster =>
-            (KernelID & KernelFlag.Monster) != 0 && Memory.Kernel_Bin.EnemyAttacksData.Count > AbilityID
-                ? Memory.Kernel_Bin.EnemyAttacksData[AbilityID]
+            (KernelID & KernelFlag.Monster) != 0 && Memory.KernelBin.EnemyAttacksData.Count > AbilityID
+                ? Memory.KernelBin.EnemyAttacksData[AbilityID]
                 : null;
 
         #endregion Properties

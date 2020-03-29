@@ -66,7 +66,7 @@ namespace OpenVIII.IGMDataItem.Gradient
                 for (; i < cFade.Length; i++)
                     cFade[i] = darkLine;
 
-                _common = new Texture2D(Memory.graphics.GraphicsDevice, cFade.Length, 1, false, SurfaceFormat.Color);
+                _common = new Texture2D(Memory.Graphics.GraphicsDevice, cFade.Length, 1, false, SurfaceFormat.Color);
                 _common.SetData(cFade);
             }
             return _common;

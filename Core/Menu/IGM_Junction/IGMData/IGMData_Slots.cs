@@ -148,7 +148,7 @@ namespace OpenVIII
 
                         FF8String GetName(Kernel.Stat key)
                         {
-                            var _name = Memory.Kernel_Bin.MagicData[c.StatJ[key]].Name;
+                            var _name = Memory.KernelBin.MagicData[c.StatJ[key]].Name;
                             if (_name == null || _name.Length == 0)
                                 _name = Strings.Name._;
                             return _name;

@@ -75,7 +75,7 @@ namespace OpenVIII.IGMData.Pool
                 var j = i % Rows;
                 ITEM[j, 0].Show();
                 BLANKS[j] = false;
-                Contents[j] = Memory.Kernel_Bin.BlueMagicQuistisLimitBreak[_unlocked[i]];
+                Contents[j] = Memory.KernelBin.BlueMagicQuistisLimitBreak[_unlocked[i]];
                 ((IGMDataItem.Text)ITEM[j, 0]).Data = Contents[j].Name;
             }
             for (; i < Rows + skip; i++)

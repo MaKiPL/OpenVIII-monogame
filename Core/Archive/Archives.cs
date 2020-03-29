@@ -20,16 +20,16 @@ namespace OpenVIII
             public static void Init()
             {
                 Memory.Log.WriteLine($"{nameof(Archive)}::{nameof(Init)}");
-                var parent = new Archive(FF8DIR);
+                var parent = new Archive(FF8Dir);
                 ZZZ_MAIN = new Archive("main.zzz", true, parent);
                 ZZZ_OTHER = new Archive("other.zzz", true, parent);
-                A_BATTLE = new Archive("battle", FF8DIRdata_lang, ZZZ_MAIN);
-                A_FIELD = new Archive("field", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MAGIC = new Archive("magic", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MAIN = new Archive("main", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MENU = new Archive("menu", FF8DIRdata_lang, ZZZ_MAIN);
-                A_WORLD = new Archive("world", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MOVIES = new Archive("movies", FF8DIRdata_lang, ZZZ_OTHER, FF8DIRdata);
+                A_BATTLE = new Archive("battle", FF8DirDataLang, ZZZ_MAIN);
+                A_FIELD = new Archive("field", FF8DirDataLang, ZZZ_MAIN);
+                A_MAGIC = new Archive("magic", FF8DirDataLang, ZZZ_MAIN);
+                A_MAIN = new Archive("main", FF8DirDataLang, ZZZ_MAIN);
+                A_MENU = new Archive("menu", FF8DirDataLang, ZZZ_MAIN);
+                A_WORLD = new Archive("world", FF8DirDataLang, ZZZ_MAIN);
+                A_MOVIES = new Archive("movies", FF8DirDataLang, ZZZ_OTHER, FF8DirData);
 
                 /*var aw =*/
                 ArchiveZzz.Load(ZZZ_MAIN); //try to load main.zzz also caches it.

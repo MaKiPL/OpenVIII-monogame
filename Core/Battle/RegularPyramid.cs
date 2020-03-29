@@ -29,15 +29,15 @@ namespace OpenVIII.Battle
         public RegularPyramid()
         {
             uniqueVertices = new VertexPositionColor[5];
-            VertexBuffer = new VertexBuffer(Memory.graphics.GraphicsDevice, uniqueVertices[0].GetType(), 5, BufferUsage.WriteOnly);
-            Indices = new IndexBuffer(Memory.graphics.GraphicsDevice, typeof(short), 18, BufferUsage.WriteOnly);
+            VertexBuffer = new VertexBuffer(Memory.Graphics.GraphicsDevice, uniqueVertices[0].GetType(), 5, BufferUsage.WriteOnly);
+            Indices = new IndexBuffer(Memory.Graphics.GraphicsDevice, typeof(short), 18, BufferUsage.WriteOnly);
             radians = new Slide<float>(0f, MathHelper.TwoPi, RotationTime, MathHelper.Lerp)
             {
                 Repeat = true
             };
 
             fader = new Slide<float>(0f, 1f, FadeTime, MathHelper.Lerp);
-            effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            effect = new BasicEffect(Memory.Graphics.GraphicsDevice);
             Set(1, 1, null);
         }
 
@@ -65,16 +65,16 @@ namespace OpenVIII.Battle
 
             //PyramidEffect.EnableDefaultLighting();
 
-            Memory.graphics.GraphicsDevice.SetVertexBuffer(VertexBuffer);
-            Memory.graphics.GraphicsDevice.Indices = Indices;
-            var tmp = Memory.graphics.GraphicsDevice.RasterizerState;
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.Graphics.GraphicsDevice.SetVertexBuffer(VertexBuffer);
+            Memory.Graphics.GraphicsDevice.Indices = Indices;
+            var tmp = Memory.Graphics.GraphicsDevice.RasterizerState;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Indices.IndexCount);
+                Memory.Graphics.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, Indices.IndexCount);
             }
-            Memory.graphics.GraphicsDevice.RasterizerState = tmp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = tmp;
         }
 
         public void Set(float height, float basewidth, params Color[] color) => Set(height, basewidth, basewidth, color);

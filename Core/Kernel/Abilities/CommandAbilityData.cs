@@ -31,7 +31,7 @@ namespace OpenVIII
             public static explicit operator CommandAbility(CommandAbilityData commandAbilityData)
             {
                 CommandAbility value = null;
-                if (Memory.Kernel_Bin?.CommandAbilities?.TryGetValue(commandAbilityData.Ability, out value) ?? false)
+                if (Memory.KernelBin?.CommandAbilities?.TryGetValue(commandAbilityData.Ability, out value) ?? false)
                 { }
                 return value;
             }

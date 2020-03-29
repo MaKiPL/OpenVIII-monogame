@@ -43,7 +43,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             var cfade = new Color[total];
             var r = new Renzokuken
             {
-                Data = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1),
+                Data = new Texture2D(Memory.Graphics.GraphicsDevice, cfade.Length, 1),
                 _pos = pos ?? Rectangle.Empty,
                 HotSpot = hotspot ?? Rectangle.Empty,
                 Restriction = restriction ?? Rectangle.Empty,

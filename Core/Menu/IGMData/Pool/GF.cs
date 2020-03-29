@@ -76,21 +76,21 @@ namespace OpenVIII.IGMData.Pool
                     var a = (characterData).UnlockedGFAbilities;
                     characterData.RemoveJunctionedGF(select);
                     var b = (characterData).UnlockedGFAbilities;
-                    foreach (var r in a.Except(b).Where(v => !Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
+                    foreach (var r in a.Except(b).Where(v => !Memory.KernelBin.JunctionAbilities.ContainsKey(v)))
                     {
-                        if (Memory.Kernel_Bin.CommandAbilities.ContainsKey(r))
+                        if (Memory.KernelBin.CommandAbilities.ContainsKey(r))
                         {
                             characterData.Commands.Remove(r);
                             characterData.Commands.Add(Abilities.None);
                         }
-                        else if (Memory.Kernel_Bin.EquippableAbilities.ContainsKey(r))
+                        else if (Memory.KernelBin.EquippableAbilities.ContainsKey(r))
                         {
                             characterData.Abilities.Remove(r);
                             characterData.Abilities.Add(Abilities.None);
                         }
                     }
 
-                    foreach (var r in a.Except(b).Where(v => Memory.Kernel_Bin.JunctionAbilities.ContainsKey(v)))
+                    foreach (var r in a.Except(b).Where(v => Memory.KernelBin.JunctionAbilities.ContainsKey(v)))
                     {
                         if (Kernel.KernelBin.Stat2Ability.Any(item => item.Value == r))
                             switch (r)

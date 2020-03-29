@@ -174,9 +174,9 @@ namespace OpenVIII.Movie
             //draw frame;
             Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);//by default xna filters all textures SamplerState.PointClamp disables that. so video is being filtered why playing.
             ClearScreen();
-            var dst = new Rectangle(new Point(0), (new Vector2(_texture.Width, _texture.Height) * Memory.Scale(_texture.Width, _texture.Height, LetterBox.Contains(Id) ? Memory.ScaleMode.FitHorizontal : Memory.ScaleMode.FitBoth)).ToPoint());
+            var dst = new Rectangle(new Point(0), (new Vector2(_texture.Width, _texture.Height) * Memory.Scale(_texture.Width, _texture.Height, LetterBox.Contains(Id) ? ScaleMode.FitHorizontal : ScaleMode.FitBoth)).ToPoint());
             dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
-            Memory.spriteBatch.Draw(_texture, dst, Color.White);
+            Memory.SpriteBatch.Draw(_texture, dst, Color.White);
             Memory.SpriteBatchEnd();
         }
 
@@ -282,7 +282,7 @@ namespace OpenVIII.Movie
             _disposedValue = true;
         }
 
-        private static void ClearScreen() => Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+        private static void ClearScreen() => Memory.SpriteBatch.GraphicsDevice.Clear(Color.Black);
 
         #endregion Methods
 

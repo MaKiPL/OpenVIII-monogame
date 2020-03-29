@@ -117,9 +117,9 @@ namespace OpenVIII
 
         public static explicit operator Texture2D(TextureBuffer @in)
         {
-            if (Memory.graphics?.GraphicsDevice != null && @in.Width > 0 && @in.Height > 0)
+            if (Memory.Graphics?.GraphicsDevice != null && @in.Width > 0 && @in.Height > 0)
             {
-                var tex = new Texture2D(Memory.graphics.GraphicsDevice, @in.Width, @in.Height);
+                var tex = new Texture2D(Memory.Graphics.GraphicsDevice, @in.Width, @in.Height);
                 @in.SetData(tex);
                 return tex;
             }

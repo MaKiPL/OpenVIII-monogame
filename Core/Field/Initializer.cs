@@ -45,7 +45,7 @@
                 .Split('\n');
 
             //Memory.FieldHolder.FieldMemory = new int[1024];
-            Memory.FieldHolder.fields = mapList;
+            Memory.FieldHolder.Fields = mapList;
             FieldId.FieldId_ = mapList;
         }
 

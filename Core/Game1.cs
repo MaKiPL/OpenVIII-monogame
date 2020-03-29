@@ -74,7 +74,7 @@ namespace OpenVIII
         {
             _imgui = new Core.ImGuiRenderer(this);
             _imgui.RebuildFontAtlas();
-            Memory.imgui = _imgui;
+            Memory.ImGui = _imgui;
             Window.TextInput += TextEntered;
             Memory.Log = new Log();
             if (Arguments != null)
@@ -115,7 +115,7 @@ namespace OpenVIII
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Memory.spriteBatch = _spriteBatch;
+            Memory.SpriteBatch = _spriteBatch;
             // Memory.shadowTexture = Content.Load<Texture2D>("Shadow");
             GenerateShadowModel();
             base.LoadContent();
@@ -225,7 +225,7 @@ namespace OpenVIII
                 new VertexPositionTexture(vertices[2], textureCoordinates[4]),
                 };
 
-            Memory.shadowGeometry = vpt;
+            Memory.ShadowGeometry = vpt;
         }
 
         private static async void GracefullyExit()

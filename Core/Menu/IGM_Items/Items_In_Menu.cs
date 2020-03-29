@@ -103,8 +103,8 @@ namespace OpenVIII
 
         private Kernel.AttackType Attack_Type => Battle?.AttackType ?? Kernel.AttackType.None;
 
-        public Kernel.BattleItemData Battle => (Memory.Kernel_Bin.BattleItemsData?.Count ?? 0) > ID ? Memory.Kernel_Bin.BattleItemsData[ID] : null;
-        public Kernel.ShotIrvineLimitBreak Shot => (Memory.Kernel_Bin.ShotIrvineLimitBreak?.Count ?? 0) < ID - bulletoffset || ID - bulletoffset < 0 ? null : Memory.Kernel_Bin.ShotIrvineLimitBreak[ID - bulletoffset];
+        public Kernel.BattleItemData Battle => (Memory.KernelBin.BattleItemsData?.Count ?? 0) > ID ? Memory.KernelBin.BattleItemsData[ID] : null;
+        public Kernel.ShotIrvineLimitBreak Shot => (Memory.KernelBin.ShotIrvineLimitBreak?.Count ?? 0) < ID - bulletoffset || ID - bulletoffset < 0 ? null : Memory.KernelBin.ShotIrvineLimitBreak[ID - bulletoffset];
 
         /// <summary>
         /// Which persistant statuses are removed.
@@ -158,7 +158,7 @@ namespace OpenVIII
 
         public Kernel.BlueMagic Learned_Blue_Magic => Type == _Type.Blue_Magic ? (Kernel.BlueMagic)b2 : Kernel.BlueMagic.None;
         public FF8String Name => Battle?.Name ?? Non_Battle?.Name;
-        public Kernel.NonBattleItemsData Non_Battle => Battle == null ? Memory.Kernel_Bin.NonBattleItemsData[ID - (Memory.Kernel_Bin.BattleItemsData?.Count ?? 0)] : null;
+        public Kernel.NonBattleItemsData Non_Battle => Battle == null ? Memory.KernelBin.NonBattleItemsData[ID - (Memory.KernelBin.BattleItemsData?.Count ?? 0)] : null;
         public byte Palette => 9;
         public Kernel.Stat Stat => Type == _Type.Stat ? (Kernel.Stat)b3 : Kernel.Stat.None;
         public byte Stat_Increase => (byte)(Type == _Type.Stat ? b2 : 0);

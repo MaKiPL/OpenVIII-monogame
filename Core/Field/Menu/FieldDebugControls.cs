@@ -60,7 +60,7 @@ namespace OpenVIII.Fields.IGMData
                 if (Memory.FieldHolder.FieldID > 0)
                     Memory.FieldHolder.FieldID--;
                 else
-                    Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.fields.Length - 1));
+                    Memory.FieldHolder.FieldID = checked((ushort)(Memory.FieldHolder.Fields.Length - 1));
                 Module.ResetField();
             }
             else skipsnd = true;
@@ -131,7 +131,7 @@ namespace OpenVIII.Fields.IGMData
         {
             if (CURSOR_SELECT == 0)
             {
-                if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.fields.Length - 1)))
+                if (Memory.FieldHolder.FieldID < checked((ushort)(Memory.FieldHolder.Fields.Length - 1)))
                     Memory.FieldHolder.FieldID++;
                 else
                     Memory.FieldHolder.FieldID = 0;

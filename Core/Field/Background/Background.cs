@@ -122,10 +122,10 @@ namespace OpenVIII.Fields
                 _fpsCamera = new FPS_Camera(),
                 Degrees = 90f
             };
-            if (Memory.graphics != null)
+            if (Memory.Graphics != null)
             {
-                r._ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice);
-                r._effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+                r._ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice);
+                r._effect = new BasicEffect(Memory.Graphics.GraphicsDevice);
             }
             r._worldMatrix = Matrix.CreateWorld(r._camPosition, Vector3.
                           Forward, Vector3.Up);
@@ -164,7 +164,7 @@ namespace OpenVIII.Fields
 
         public void Deswizzle()
         {
-            using (var mask = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4))
+            using (var mask = new Texture2D(Memory.Graphics.GraphicsDevice, 4, 4))
             {
                 mask.SetData(Enumerable.Range(0, 16).Select(x => Color.White).ToArray());
                 var fieldName = Module.GetFieldName();
@@ -178,11 +178,11 @@ namespace OpenVIII.Fields
                 foreach (var pupuGroup in _quads.GroupBy(x => x.GetTile.PupuID)
                 ) //group the quads by their pupu ID.
                 {
-                    using (var outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, tilesWidth, tilesHeight))
+                    using (var outTex = new RenderTarget2D(Memory.Graphics.GraphicsDevice, tilesWidth, tilesHeight))
                     {
                         //start drawing
-                        Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
-                        Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                        Memory.Graphics.GraphicsDevice.SetRenderTarget(outTex);
+                        Memory.Graphics.GraphicsDevice.Clear(Color.TransparentBlack);
                         Memory.SpriteBatchStartAlpha();
                         foreach (var quad in pupuGroup)
                         {
@@ -198,7 +198,7 @@ namespace OpenVIII.Fields
                         }
                         Memory.SpriteBatchEnd();
                         //end drawing
-                        Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                        Memory.Graphics.GraphicsDevice.SetRenderTarget(null);
                         //set path
                         var path = Path.Combine(folder,
                             $"{fieldName}_{pupuGroup.Key:X8}.png");
@@ -208,11 +208,11 @@ namespace OpenVIII.Fields
                             outTex.SaveAsPng(fs, tilesWidth, tilesHeight);
                         }
                     }
-                    using (var outTex = new RenderTarget2D(Memory.graphics.GraphicsDevice, tilesWidth, tilesHeight))
+                    using (var outTex = new RenderTarget2D(Memory.Graphics.GraphicsDevice, tilesWidth, tilesHeight))
                     {
                         //start drawing
-                        Memory.graphics.GraphicsDevice.SetRenderTarget(outTex);
-                        Memory.graphics.GraphicsDevice.Clear(Color.Black);
+                        Memory.Graphics.GraphicsDevice.SetRenderTarget(outTex);
+                        Memory.Graphics.GraphicsDevice.Clear(Color.Black);
                         Memory.SpriteBatchStartAlpha();
                         var src = new Rectangle(0, 0, 4, 4);
                         foreach (var quad in pupuGroup)
@@ -224,11 +224,11 @@ namespace OpenVIII.Fields
                             dst.Offset(Math.Abs(GetTiles.TopLeft.X), Math.Abs(GetTiles.TopLeft.Y));
                             //src = src.Scale(scale);
                             dst = dst.Scale(scale);
-                            Memory.spriteBatch.Draw(mask, dst, src, Color.White);
+                            Memory.SpriteBatch.Draw(mask, dst, src, Color.White);
                         }
                         Memory.SpriteBatchEnd();
                         //end drawing
-                        Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                        Memory.Graphics.GraphicsDevice.SetRenderTarget(null);
                         //set path
                         var path = Path.Combine(folder,
                             $"{fieldName}_{pupuGroup.Key:X8}_MASK.png");
@@ -290,7 +290,7 @@ namespace OpenVIII.Fields
                         CultureInfo.InvariantCulture, out var pupuID))
                     {
                         using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        using (var tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs))
+                        using (var tex = Texture2D.FromStream(Memory.Graphics.GraphicsDevice, fs))
                         {
                             var scale = new Vector2(tex.Width, tex.Height) / size;
                             width = (int)(256 * scale.X);
@@ -411,20 +411,20 @@ namespace OpenVIII.Fields
                 if (_camPosition.Z > minDistanceFromBG)
                     _camPosition.Z = minDistanceFromBG;
 
-                _projectionMatrix = Matrix.CreatePerspectiveFieldOfView(fieldOfView, Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
+                _projectionMatrix = Matrix.CreatePerspectiveFieldOfView(fieldOfView, Memory.Graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
                 _viewMatrix = !Module.Toggles.HasFlag(Toggles.Menu)
                     ? _fpsCamera.Update(ref _camPosition, ref _camTarget, ref Degrees)
                     : Matrix.CreateLookAt(_camPosition, _camTarget, Vector3.Up);
             }
             else
             {
-                var vp = Memory.graphics.GraphicsDevice.Viewport;
-                var scale = Memory.Scale(tilesWidth, tilesHeight, Memory.ScaleMode.FitBoth);
+                var vp = Memory.Graphics.GraphicsDevice.Viewport;
+                var scale = Memory.Scale(tilesWidth, tilesHeight, ScaleMode.FitBoth);
                 _projectionMatrix = Matrix.CreateOrthographic(vp.Width / scale.X, vp.Height / scale.Y, 0f, 100f);
                 _viewMatrix = Matrix.CreateLookAt(Vector3.Forward * 10f, Vector3.Zero, Vector3.Up);
             }
             var ml = InputMouse.Location.ToVector2();
-            var ml3d = Memory.graphics.GraphicsDevice.Viewport.Unproject(ml.ToVector3(), _projectionMatrix, _viewMatrix, _worldMatrix);
+            var ml3d = Memory.Graphics.GraphicsDevice.Viewport.Unproject(ml.ToVector3(), _projectionMatrix, _viewMatrix, _worldMatrix);
             ml3d.Y *= -1;
             MouseLocation = ml3d;
         }
@@ -501,7 +501,7 @@ namespace OpenVIII.Fields
             {
                 pass.Apply();
 
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                 vertexData: temp, vertexOffset: 0, primitiveCount: 2);
             }
         }
@@ -528,33 +528,33 @@ namespace OpenVIII.Fields
                 // we can change SamplerState to Anisotropic.
                 //But swizzled textures are a Texture Atlas so it will draw bad pixels from near by.
                 default:
-                    Memory.graphics.GraphicsDevice.BlendFactor = full;
-                    Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+                    Memory.Graphics.GraphicsDevice.BlendFactor = full;
+                    Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
                 case BlendMode.Add:
-                    Memory.graphics.GraphicsDevice.BlendFactor = full;
-                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add;
+                    Memory.Graphics.GraphicsDevice.BlendFactor = full;
+                    Memory.Graphics.GraphicsDevice.BlendState = Memory.BlendStateAdd;
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
                 case BlendMode.Subtract:
-                    Memory.graphics.GraphicsDevice.BlendFactor = full;
-                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Subtract;
+                    Memory.Graphics.GraphicsDevice.BlendFactor = full;
+                    Memory.Graphics.GraphicsDevice.BlendState = Memory.BlendStateSubtract;
                     _ate.Alpha = .85f; //doesn't darken so much.
                                       //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
                 case BlendMode.HalfAdd:
-                    Memory.graphics.GraphicsDevice.BlendFactor = half;
-                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
+                    Memory.Graphics.GraphicsDevice.BlendFactor = half;
+                    Memory.Graphics.GraphicsDevice.BlendState = Memory.BlendStateAddBlendFactor;
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
 
                 case BlendMode.QuarterAdd:
-                    Memory.graphics.GraphicsDevice.BlendFactor = quarter;
-                    Memory.graphics.GraphicsDevice.BlendState = Memory.blendState_Add_BlendFactor;
+                    Memory.Graphics.GraphicsDevice.BlendFactor = quarter;
+                    Memory.Graphics.GraphicsDevice.BlendState = Memory.BlendStateAddBlendFactor;
                     //Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
                     break;
             }
@@ -562,12 +562,12 @@ namespace OpenVIII.Fields
 
         private void DrawBackgroundQuadsStart()
         {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             _ate.Projection = _projectionMatrix; _ate.View = _viewMatrix; _ate.World = _worldMatrix;
 
             _effect.Projection = _projectionMatrix; _effect.View = _viewMatrix; _effect.World = _worldMatrix;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             _effect.TextureEnabled = true;
             _ate.VertexColorEnabled = false;
@@ -597,20 +597,20 @@ namespace OpenVIII.Fields
                                 break;
 
                             case BlendMode.HalfAdd:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
+                                Memory.SpriteBatchStart(bs: Memory.BlendStateAdd, ss: SamplerState.AnisotropicClamp);
                                 break;
 
                             case BlendMode.QuarterAdd:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
+                                Memory.SpriteBatchStart(bs: Memory.BlendStateAdd, ss: SamplerState.AnisotropicClamp);
                                 break;
 
                             case BlendMode.Add:
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Add, ss: SamplerState.AnisotropicClamp);
+                                Memory.SpriteBatchStart(bs: Memory.BlendStateAdd, ss: SamplerState.AnisotropicClamp);
                                 break;
 
                             case BlendMode.Subtract:
                                 alpha = .9f;
-                                Memory.SpriteBatchStart(bs: Memory.blendState_Subtract, ss: SamplerState.AnisotropicClamp);
+                                Memory.SpriteBatchStart(bs: Memory.BlendStateSubtract, ss: SamplerState.AnisotropicClamp);
                                 break;
                         }
                         lastBlendMode = kvp.Key;
@@ -619,11 +619,11 @@ namespace OpenVIII.Fields
                     var src = new Rectangle(0, 0, tex.Width, tex.Height);
                     var dst = src;
 
-                    dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height, Memory.ScaleMode.FitBoth)).ToPoint();
+                    dst.Size = (dst.Size.ToVector2() * Memory.Scale(tex.Width, tex.Height, ScaleMode.FitBoth)).ToPoint();
                     //In game I think we'd keep the field from leaving the screen edge but would center on the Squall and the party when it can.
                     //I setup scaling after noticing the field didn't size with the screen. I set it to center on screen.
                     dst.Offset(Memory.Center.X - dst.Center.X, Memory.Center.Y - dst.Center.Y);
-                    Memory.spriteBatch.Draw(tex, dst, src, Color.White * alpha);
+                    Memory.SpriteBatch.Draw(tex, dst, src, Color.White * alpha);
                     //new Microsoft.Xna.Framework.Rectangle(0, 0, 1280 + (width - 320), 720 + (height - 224)),
                     //new Microsoft.Xna.Framework.Rectangle(0, 0, tex.Width, tex.Height)
                 }
@@ -637,14 +637,14 @@ namespace OpenVIII.Fields
             if (!Module.Toggles.HasFlag(Toggles.WalkMesh)) return;
 
             _effect.TextureEnabled = false;
-            Memory.graphics.GraphicsDevice.BlendFactor = Color.White;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.Opaque;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.BlendFactor = Color.White;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.Opaque;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             //using (DepthStencilState depthStencilState = new DepthStencilState() { DepthBufferEnable = true })
             using (var rasterizerState = new RasterizerState() { CullMode = CullMode.None })
             {
-                Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;//depthStencilState;
-                Memory.graphics.GraphicsDevice.RasterizerState = rasterizerState;
+                Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;//depthStencilState;
+                Memory.Graphics.GraphicsDevice.RasterizerState = rasterizerState;
                 _ate.Texture = null;
                 _ate.VertexColorEnabled = true;
                 _effect.VertexColorEnabled = true;
@@ -655,7 +655,7 @@ namespace OpenVIII.Fields
                 //effect.Projection = Module.Cameras[0].CreateProjection();
 
                 _effect.Projection = Matrix.CreatePerspectiveFieldOfView(fieldOfView,
-                    Memory.graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
+                    Memory.Graphics.GraphicsDevice.Viewport.AspectRatio, float.Epsilon, 1000f);
                 _effect.View = !Module.Toggles.HasFlag(Toggles.Menu)
                     ? _fpsCamera.Update(ref _camPosition, ref _camTarget, ref Degrees)
                     : Matrix.CreateLookAt(_camPosition, _camTarget, Vector3.Up);
@@ -663,7 +663,7 @@ namespace OpenVIII.Fields
                 {
                     pass.Apply();
 
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                     vertexData: Module.WalkMesh.Vertices.ToArray(), vertexOffset: 0, primitiveCount: Module.WalkMesh.Count);
                 }
             }
@@ -966,7 +966,7 @@ namespace OpenVIII.Fields
                         new ConcurrentDictionary<byte, ConcurrentDictionary<BlendMode, Texture2D>>());
                 var dictBlend =
                     dictOverlapID.GetOrAdd(overlapID, new ConcurrentDictionary<BlendMode, Texture2D>());
-                var tex = dictBlend.GetOrAdd(blendMode, new Texture2D(Memory.graphics.GraphicsDevice, Width, Height));
+                var tex = dictBlend.GetOrAdd(blendMode, new Texture2D(Memory.Graphics.GraphicsDevice, Width, Height));
                 textureBuffer.SetData(tex);
             }
             for (var i = 0; i < sortedTiles.Count; i++)
@@ -1068,7 +1068,7 @@ namespace OpenVIII.Fields
         {
             if (mim == null || (GetTiles?.Count ?? 0) == 0)
                 return false;
-            var path = Path.Combine(Memory.FF8DIR, "textures");
+            var path = Path.Combine(Memory.FF8Dir, "textures");
             var count = LoadUpscaleBackgrounds(path);
             if (count <= 0)
             {
@@ -1081,7 +1081,7 @@ namespace OpenVIII.Fields
                 IReadOnlyDictionary<byte, Texture2D> textureIDs = uniqueSetOfTileData.Select(x => x.TextureID)
                     .Distinct()
                     .ToDictionary(x => x,
-                        x => Memory.graphics != null ? new Texture2D(Memory.graphics.GraphicsDevice, 256, 256) : null);
+                        x => Memory.Graphics != null ? new Texture2D(Memory.Graphics.GraphicsDevice, 256, 256) : null);
                 IReadOnlyDictionary<byte, HashSet<byte>> overlap = GetTiles.Select(x => x.TextureID).Distinct()
                     .ToDictionary(x => x, x => new HashSet<byte>());
                 using (var br = new BinaryReader(new MemoryStream(mim)))
@@ -1103,7 +1103,7 @@ namespace OpenVIII.Fields
                             .Where(x => overlap[x.TextureID].Contains(x.PaletteID))
                             .Select(x => new TextureIDPaletteID {TextureID = x.TextureID, PaletteID = x.PaletteID})
                             .Distinct().ToDictionary(x => x,
-                                x => new Texture2D(Memory.graphics.GraphicsDevice, 256, 256));
+                                x => new Texture2D(Memory.Graphics.GraphicsDevice, 256, 256));
                         _textureIDsPalettes = textureIDsPalettes.ToDictionary(x => x.Key,
                             x => TextureHandler.Create($"{fieldName}_{x.Key.TextureID}", new Texture2DWrapper(x.Value),
                                 x.Key.PaletteID));

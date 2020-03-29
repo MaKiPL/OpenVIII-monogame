@@ -126,9 +126,9 @@ namespace OpenVIII
 
         public static Matrix WorldMatrix { get; private set; }
 
-        private static Vector3 CenterOfScreen => Memory.graphics.GraphicsDevice.Viewport.Unproject(
-            new Vector3(Memory.graphics.GraphicsDevice.Viewport.Width / 2f,
-                Memory.graphics.GraphicsDevice.Viewport.Height / 2f, 0f), ProjectionMatrix, ViewMatrix, WorldMatrix);
+        private static Vector3 CenterOfScreen => Memory.Graphics.GraphicsDevice.Viewport.Unproject(
+            new Vector3(Memory.Graphics.GraphicsDevice.Viewport.Width / 2f,
+                Memory.Graphics.GraphicsDevice.Viewport.Height / 2f, 0f), ProjectionMatrix, ViewMatrix, WorldMatrix);
 
         #endregion Properties
 
@@ -171,7 +171,7 @@ namespace OpenVIII
 
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            Memory.SpriteBatch.GraphicsDevice.Clear(Color.Black);
             switch (BattleModule)
             {
                 case BattleModule.DrawGeometry:
@@ -198,8 +198,8 @@ namespace OpenVIII
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            Memory.imgui.BeforeLayout(Memory.GameTime);
+            if(Memory.GameTime!=null)
+                Memory.ImGui.BeforeLayout(Memory.GameTime);
             ImGui.Begin("BATTLE DEBUG INFO");
             ImGui.Text($"Encounter ready at: {Memory.Encounters.ID} - {Memory.Encounters.Filename}");
             ImGui.Text($"Debug variable: {DebugFrame} ({DebugFrame >> 4},{DebugFrame & 0b1111})\n");
@@ -213,7 +213,7 @@ namespace OpenVIII
             ImGui.Text($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {_bUseFPSCamera}\n");
             ImGui.Text($"Sequence ID: {_sid}, press F10 to activate sequence, F11 SID--, F12 SID++");
             ImGui.End();
-            Memory.imgui.AfterLayout();
+            Memory.ImGui.AfterLayout();
         }
 
         public static void DrawCrossHair(Enemy enemy)
@@ -227,7 +227,7 @@ namespace OpenVIII
                 if (!d.GetEnemy(out var e) || !e.Equals(enemy)) continue;
                 var posIn3DSpace = e.EII.Data.IndicatorPoint(e.EII.Location);
                 posIn3DSpace.Y -= 1f;
-                var screenPos = Memory.graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
+                var screenPos = Memory.Graphics.GraphicsDevice.Viewport.Project(posIn3DSpace, ProjectionMatrix, ViewMatrix, WorldMatrix);
                 Memory.SpriteBatchStartAlpha();
                 _crossHair.Pos = new Rectangle(new Vector2(screenPos.X, screenPos.Y).ToPoint(), Point.Zero);
                 var icons = Memory.Icons[_crossHair.Data];
@@ -574,7 +574,7 @@ namespace OpenVIII
                     foreach (var pass in Ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
+                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList,
                         vertexPositionTexturePointersGRP.VPT, k * 3, 1);
                     }
                 }
@@ -586,10 +586,10 @@ namespace OpenVIII
         /// </summary>
         private static void DrawCharactersWeapons()
         {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             Ate.Projection = ProjectionMatrix; Ate.View = ViewMatrix; Ate.World = WorldMatrix;
             Effect.TextureEnabled = true;
             //CHARACTER
@@ -614,10 +614,10 @@ namespace OpenVIII
 
         private static void DrawMonsters()
         {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             Ate.Projection = ProjectionMatrix; Ate.View = ViewMatrix; Ate.World = WorldMatrix;
             Effect.TextureEnabled = true;
 
@@ -749,8 +749,8 @@ namespace OpenVIII
                 return 0;
             }
             var characterData = Memory.State[c];
-            if (characterData.WeaponID >= Memory.Kernel_Bin.WeaponsData.Count) return 0;
-            var altID = Memory.Kernel_Bin.WeaponsData[characterData.WeaponID].AltID;
+            if (characterData.WeaponID >= Memory.KernelBin.WeaponsData.Count) return 0;
+            var altID = Memory.KernelBin.WeaponsData[characterData.WeaponID].AltID;
 
             if (!Weapons.TryGetValue(c, out weapons) || weapons == null) return 0;
             if (weapons.Count > altID)
@@ -789,14 +789,14 @@ namespace OpenVIII
             _regularPyramid.Hide();
             //init renderer
             if (Effect == null)
-                Effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+                Effect = new BasicEffect(Memory.Graphics.GraphicsDevice);
 
             _camTarget = new Vector3(41.91198f, 33.59995f, 6.372305f);
             _camPosition = new Vector3(40.49409f, 39.70397f, -43.321299f);
 
             ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f),
-                               Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                               Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
                 1f, 1000f);
             ViewMatrix = Matrix.CreateLookAt(_camPosition, _camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
@@ -804,7 +804,7 @@ namespace OpenVIII
                           Forward, Vector3.Up);
             BattleModule++;
             if (Ate == null)
-                Ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+                Ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice)
                 {
                     Projection = ProjectionMatrix,
                     View = ViewMatrix,

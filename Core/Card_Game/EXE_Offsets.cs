@@ -155,8 +155,8 @@ namespace OpenVIII
         //private List<uint> badoffset;
         public static Dictionary<int, string> FileName => new Dictionary<int, string>
         {
-            { 2000, Path.Combine(Memory.FF8DIR, "FF8.exe") },
-            { 2013, Path.Combine(Memory.FF8DIR, "FF8_EN.exe") },
+            { 2000, Path.Combine(Memory.FF8Dir, "FF8.exe") },
+            { 2013, Path.Combine(Memory.FF8Dir, "FF8_EN.exe") },
         };
 
         public EXE_Offsets()

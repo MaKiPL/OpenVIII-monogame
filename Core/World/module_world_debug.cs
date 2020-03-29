@@ -230,7 +230,7 @@ namespace OpenVIII
         {
             fps_camera = new FPS_Camera();
             //init renderer
-            effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            effect = new BasicEffect(Memory.Graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
             effect.TextureEnabled = true;
             effect.DirectionalLight0.Enabled = true;
@@ -247,7 +247,7 @@ namespace OpenVIII
             camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(cameraFOV),
-                               Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                               Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
                 1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
@@ -257,7 +257,7 @@ namespace OpenVIII
 
             if (bUseCustomShaderTest)
             {
-                worldShaderModel = Memory.content.Load<Effect>("testShader");
+                worldShaderModel = Memory.Content.Load<Effect>("testShader");
                 worldShaderModel.Parameters["World"].SetValue(worldMatrix);
                 worldShaderModel.Parameters["View"].SetValue(viewMatrix);
                 worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
@@ -271,7 +271,7 @@ namespace OpenVIII
             //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
             //Memory.musicIndex = 30;
             //AV.Music.Play();
-            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice)
             {
                 Projection = projectionMatrix,
                 View = viewMatrix,
@@ -686,27 +686,27 @@ namespace OpenVIII
                 {
                     if (fulscrMapCurY < 0.070f)
                         fulscrMapCurY = 0.870f;
-                    fulscrMapCurY -= 0.005f * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds/25.0f;
+                    fulscrMapCurY -= 0.005f * (float)Memory.ElapsedGameTime.TotalMilliseconds/25.0f;
                 }
                 else if (Input2.Button(FF8TextTagKey.Down)/* || shift.Y < 0*/)
                 {
                     if (fulscrMapCurY > 0.870f)
                         fulscrMapCurY = 0.070f;
-                    fulscrMapCurY += 0.005f * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
+                    fulscrMapCurY += 0.005f * (float)Memory.ElapsedGameTime.TotalMilliseconds / 25.0f;
 
                 }
                 if (Input2.Button(FF8TextTagKey.Left) /*|| shift.X < 0*/)
                 {
                     if (fulscrMapCurX < 0.145f)
                         fulscrMapCurX = 0.745f;
-                    fulscrMapCurX -= 0.003f* (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
+                    fulscrMapCurX -= 0.003f* (float)Memory.ElapsedGameTime.TotalMilliseconds / 25.0f;
 
                 }
                 else if (Input2.Button(FF8TextTagKey.Right)/* || shift.X > 0*/)
                 {
                     if (fulscrMapCurX > 0.745)
                         fulscrMapCurX = 0.145f;
-                    fulscrMapCurX += 0.003f* (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
+                    fulscrMapCurX += 0.003f* (float)Memory.ElapsedGameTime.TotalMilliseconds / 25.0f;
                 }
             }
             else if (worldState != _worldState._9debugFly)
@@ -772,7 +772,7 @@ namespace OpenVIII
                         //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
                         diffvect *= dist / distmax;
                     }
-                    playerPosition = lastPlayerPosition + (diffvect * (float)(Memory.GameTime.ElapsedGameTime.TotalMilliseconds/ playerSpeed));
+                    playerPosition = lastPlayerPosition + (diffvect * (float)(Memory.ElapsedGameTime.TotalMilliseconds/ playerSpeed));
                 }
             }
             if (Input2.Button(Keys.F3))
@@ -1112,9 +1112,9 @@ namespace OpenVIII
             //Debug.WriteLine($"{rightstick.X}");
             shift += rightstick;
             if (Input2.Button(FF8TextTagKey.RotateLeft, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees -= RotationInterval * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds/25f;
+                degrees -= RotationInterval * (float)Memory.ElapsedGameTime.TotalMilliseconds/25f;
             if (Input2.Button(FF8TextTagKey.RotateRight, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees += RotationInterval *(float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25f;
+                degrees += RotationInterval *(float)Memory.ElapsedGameTime.TotalMilliseconds / 25f;
             degrees += shift.X;
             degrees %= 360f;
             if (degrees < 0)
@@ -1124,7 +1124,7 @@ namespace OpenVIII
             camTarget = new Vector3(playerPosition.X, 50f, playerPosition.Z);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                    MathHelper.ToRadians(cameraFOV),
-                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                   Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
@@ -1141,14 +1141,14 @@ namespace OpenVIII
 
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(bgGradient);
+            Memory.SpriteBatch.GraphicsDevice.Clear(bgGradient);
 
 
 
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix;
             ate.View = viewMatrix;
             ate.World = worldMatrix;
@@ -1246,8 +1246,8 @@ namespace OpenVIII
 
             var playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
             if (playerangle < 0) playerangle += 360f;
-
-            Memory.imgui.BeforeLayout(Memory.GameTime);
+            if (Memory.GameTime != null)
+                Memory.ImGui.BeforeLayout(Memory.GameTime);
             ImGuiNET.ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero, ImGuiNET.ImGuiCond.Once);
             ImGuiNET.ImGui.SetNextWindowBgAlpha(.25f);
             ImGuiNET.ImGui.Begin("WORLD DEBUG");
@@ -1349,12 +1349,12 @@ namespace OpenVIII
                     ImGuiNET.ImGui.SameLine();
                     imguiTex = (Texture2D)wmset.GetWorldMapTexture(
                         (Wmset.Section38_textures)enumValues.GetValue(i), 0);
-                    ImGuiNET.ImGui.Image(Memory.imgui.BindTexture(imguiTex), new System.Numerics.Vector2(64,64));
+                    ImGuiNET.ImGui.Image(Memory.ImGui.BindTexture(imguiTex), new System.Numerics.Vector2(64,64));
                     if(ImGuiNET.ImGui.IsItemHovered())
                     {
                         ImGuiNET.ImGui.BeginTooltip();
                         ImGuiNET.ImGui.Text($"W: {imguiTex.Width} H: {imguiTex.Height}");
-                        ImGuiNET.ImGui.Image(Memory.imgui.BindTexture(imguiTex), new System.Numerics.Vector2(imguiTex.Width, imguiTex.Height));
+                        ImGuiNET.ImGui.Image(Memory.ImGui.BindTexture(imguiTex), new System.Numerics.Vector2(imguiTex.Width, imguiTex.Height));
                         ImGuiNET.ImGui.End();
                     }
                 }
@@ -1400,7 +1400,7 @@ namespace OpenVIII
             //    new System.Numerics.Vector2(64,64));
             //ImGuiNET.ImGui.End();
             ImGuiNET.ImGui.End();
-            Memory.imgui.AfterLayout();
+            Memory.ImGui.AfterLayout();
         }
 
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
@@ -1441,7 +1441,7 @@ namespace OpenVIII
                 {
                     pass.Apply();
                     ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
                 }
                 ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 ate.Alpha = 1f;
@@ -1477,7 +1477,7 @@ namespace OpenVIII
                 {
                     pass.Apply();
                     ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
                 }
                 //ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 worldFx currentFx = worldEffects[i];
@@ -1537,7 +1537,7 @@ namespace OpenVIII
                 foreach (var pass in ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, vpc.ToArray(), 0, vpc.Count / 2);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, vpc.ToArray(), 0, vpc.Count / 2);
                 }
             }
         }
@@ -1556,7 +1556,7 @@ namespace OpenVIII
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, dMod.Item1, n, 1);
+                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, dMod.Item1, n, 1);
                     }
                 }
             }
@@ -1588,15 +1588,15 @@ namespace OpenVIII
                     foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
+                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
                     }
                 }
 
             foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, playerRaycastDownVerts, 0, 1);
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, playerRaycastDownVerts, 0, 1);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
             }
         }
 
@@ -1677,7 +1677,7 @@ namespace OpenVIII
                 foreach (var pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
                 }
             }
         }
@@ -1775,7 +1775,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 ate.DiffuseColor = Vector3.One * 1.8f;
                 ate.Alpha = 0.75f;
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, wm_backgroundCloudsLocalCylinderMeshTranslated, 0, wm_backgroundCloudsLocalCylinderMeshTranslated.Length / 3);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, wm_backgroundCloudsLocalCylinderMeshTranslated, 0, wm_backgroundCloudsLocalCylinderMeshTranslated.Length / 3);
                 ate.FogEnd = renderCamDistance;
             }
         }
@@ -1816,7 +1816,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
              Vector3.Up);
             effect.View = viewMatrix;
             effect.Projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.ToRadians(60), Memory.graphics.GraphicsDevice.Viewport.AspectRatio, 1, 10000f);
+                MathHelper.ToRadians(60), Memory.Graphics.GraphicsDevice.Viewport.AspectRatio, 1, 10000f);
 
 
             for (var i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
@@ -1887,21 +1887,21 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 effect.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
                 pass.Apply();
                 effect.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count / 3);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count / 3);
             }
 
             var src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
-            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
             var dst = new Rectangle(
-                (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 1.24f),
-                (int)((float)Memory.graphics.GraphicsDevice.Viewport.Height / 1.3f),
+                (int)(Memory.Graphics.GraphicsDevice.Viewport.Width / 1.24f),
+                (int)((float)Memory.Graphics.GraphicsDevice.Viewport.Height / 1.3f),
                 src.Width,
                 src.Height);
 
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
 
@@ -1918,15 +1918,15 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
         private static void DrawRectangleMiniMap()
         {
             var src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
-            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
             src.Width = (int)(src.Width * Scale.X);
             src.Height = (int)(src.Height * Scale.Y);
             src.Height /= 2;
             src.Width /= 2;
             var dst =
                 new Rectangle(
-                    Memory.graphics.GraphicsDevice.Viewport.Width - (src.Width) - 50,
-                    Memory.graphics.GraphicsDevice.Viewport.Height - (src.Height) - 50,
+                    Memory.Graphics.GraphicsDevice.Viewport.Width - (src.Width) - 50,
+                    Memory.Graphics.GraphicsDevice.Viewport.Height - (src.Height) - 50,
                     src.Width,
                     src.Height);
 
@@ -1938,10 +1938,10 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
             Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
             wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Draw(dst, Color.White * .7f);
-            Memory.spriteBatch.End();
+            Memory.SpriteBatch.End();
 
             src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
-            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
             dst = new Rectangle(
@@ -1951,7 +1951,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 src.Height);
 
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
         }
@@ -2039,17 +2039,17 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 screenMapLocations[18].locationName = wmset.GetLocationName(31); //tear point
                 screenMapLocations[18].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
 
-                fullScreenMapMark = new Texture2D(Memory.graphics.GraphicsDevice, 2, 1, false, SurfaceFormat.Color); //1x1 yellow and 1x1 red
+                fullScreenMapMark = new Texture2D(Memory.Graphics.GraphicsDevice, 2, 1, false, SurfaceFormat.Color); //1x1 yellow and 1x1 red
                 fullScreenMapMark.SetData(new Color[] { Color.Yellow, Color.Red });
 
                 bFullScreenMapInitialize = false;
             }
             //Draw full-screen minimap
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.Graphics.GraphicsDevice.Clear(Color.Black);
             Memory.SpriteBatchStartStencil();
             var texture = wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
-            var width = Memory.graphics.GraphicsDevice.Viewport.Width;
-            var height = Memory.graphics.GraphicsDevice.Viewport.Height;
+            var width = Memory.Graphics.GraphicsDevice.Viewport.Width;
+            var height = Memory.Graphics.GraphicsDevice.Viewport.Height;
             texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f),
                 (int)(width *0.6), (int)(height *0.8)), Color.White * 1f);
             Memory.SpriteBatchEnd();
@@ -2060,7 +2060,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             {
                 if (!screenMapLocations[i].bDraw)
                     continue;
-                Memory.spriteBatch.Draw(fullScreenMapMark, new Rectangle((int)(width * screenMapLocations[i].x),
+                Memory.SpriteBatch.Draw(fullScreenMapMark, new Rectangle((int)(width * screenMapLocations[i].x),
                     (int)(height * screenMapLocations[i].y), 8, 8),
                     new Rectangle(0, 0, 1, 1), Color.White);
             }
@@ -2073,7 +2073,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 var xDistance = Math.Abs((fulscrMapCurX + 0.05f) - screenMapLocations[i].x);
                 var yDistance = Math.Abs((fulscrMapCurY + 0.005f) - screenMapLocations[i].y);
                 if(xDistance < 0.015 && yDistance<0.015)
-                    Memory.font.RenderBasicText(screenMapLocations[i].locationName,
+                    Memory.Font.RenderBasicText(screenMapLocations[i].locationName,
                         new Vector2(width*0.7f, height*0.9f),new Vector2(2,2), Font.Type.sysFntBig);
             }
                 Memory.SpriteBatchEnd();
@@ -2190,7 +2190,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
                 }
             }
 
@@ -2213,7 +2213,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 foreach (var pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
                 }
             }
 

@@ -33,9 +33,9 @@ namespace OpenVIII
 
         public byte AP => Info.AP;
 
-        public Devour Devour => Info.Devour[LevelGroup()] >= Memory.Kernel_Bin.Devour.Count ?
-            Memory.Kernel_Bin.Devour[Memory.Kernel_Bin.Devour.Count - 1] :
-            Memory.Kernel_Bin.Devour[Info.Devour[LevelGroup()]];
+        public Devour Devour => Info.Devour[LevelGroup()] >= Memory.KernelBin.Devour.Count ?
+            Memory.KernelBin.Devour[Memory.KernelBin.Devour.Count - 1] :
+            Memory.KernelBin.Devour[Info.Devour[LevelGroup()]];
 
         public Magic[] DrawList => HML(Info.DrawHigh, Info.DrawMed, Info.DrawLow);
 

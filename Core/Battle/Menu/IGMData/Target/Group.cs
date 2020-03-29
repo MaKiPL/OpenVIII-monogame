@@ -155,7 +155,7 @@ namespace OpenVIII.IGMData.Target
         {
             var t = c.Target;
             SelectTargetWindows(t);
-            Command = Memory.Kernel_Bin.BattleCommands[19];
+            Command = Memory.KernelBin.BattleCommands[19];
             CombineKernelItem = c;
         }
 
@@ -166,7 +166,7 @@ namespace OpenVIII.IGMData.Target
             // http://forums.qhimm.com/index.php?topic=18384.0
             var t = Kernel.Target.Ally | Kernel.Target.Enemy | Kernel.Target.SingleTarget;
             SelectTargetWindows(t);
-            Command = Memory.Kernel_Bin.BattleCommands[1];
+            Command = Memory.KernelBin.BattleCommands[1];
             EnemyAttack = c;
         }
 
@@ -176,7 +176,7 @@ namespace OpenVIII.IGMData.Target
             if (shot)
                 t = c.Shot.Target;
             SelectTargetWindows(t);
-            Command = Memory.Kernel_Bin.BattleCommands[shot ? 14 : 4];
+            Command = Memory.KernelBin.BattleCommands[shot ? 14 : 4];
             Item = c;
         }
 
@@ -193,7 +193,7 @@ namespace OpenVIII.IGMData.Target
         {
             var t = c.Target;
             SelectTargetWindows(t, casts, random);
-            Command = Memory.Kernel_Bin.BattleCommands[2];
+            Command = Memory.KernelBin.BattleCommands[2];
             Magic = c;
         }
 
@@ -203,7 +203,7 @@ namespace OpenVIII.IGMData.Target
             //The target box does show up in game so I imagine the target data is in there somewhere.
             var t = c.Target;
             SelectTargetWindows(t);
-            Command = Memory.Kernel_Bin.BattleCommands[15];
+            Command = Memory.KernelBin.BattleCommands[15];
             BlueMagic = c;
         }
 
@@ -311,7 +311,7 @@ namespace OpenVIII.IGMData.Target
                     var finisherchance = (c.CurrentCrisisLevel + 1) * 60;
                     var willfinish = Memory.Random.Next(byte.MaxValue + 1) <= finisherchance;
                     var choosefinish = Memory.Random.Next(3 + 1);
-                    var weapondata = Kernel_bin.WeaponsData[weaponid];
+                    var weapondata = Memory.KernelBin.WeaponsData[weaponid];
                     var renzokukenfinisher = weapondata.Renzokuken;
                     if (renzokukenfinisher == 0)
                         willfinish = false;
@@ -327,12 +327,12 @@ namespace OpenVIII.IGMData.Target
                     Menu.BattleMenus.GetCurrentBattleMenu().Renzokuken.Show();
                     if (willfinish)
                     {
-                        var flags = Enum.GetValues(typeof(Kernel_bin.Renzokuken_Finisher))
-                            .Cast<Kernel_bin.Renzokuken_Finisher>()
+                        var flags = Enum.GetValues(typeof(Kernel.RenzokukenFinisher))
+                            .Cast<Kernel.RenzokukenFinisher>()
                             .Where(f => (f & renzokukenfinisher) != 0)
                             .ToList().AsReadOnly();
                         var finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
-                        Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.ID}) then uses {Kernel_bin.RenzokukenFinishersData[finisher].Name}.");
+                        Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.BattleID}) then uses {Memory.KernelBin.RenzokukenFinishersData[finisher].Name}.");
                     }
                     else
                         Debug.WriteLine($"{Damageable.Name} hits {hits} times with {Command.Name}({Command.BattleID}) then fails to use a finisher.");

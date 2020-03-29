@@ -41,8 +41,8 @@ namespace OpenVIII
         {
             get
             {
-                if (Data.TryGetValue(SectionName.Renzokeken, out var val))
-                    return (IGMData.Limit.Renzokeken)val;
+                if (Data.TryGetValue(SectionName.Renzokuken, out var val))
+                    return (IGMData.Limit.Renzokuken)val;
                 return null;
             }
         }

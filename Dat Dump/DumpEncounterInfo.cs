@@ -279,7 +279,7 @@ namespace OpenVIII.Dat_Dump
             {
                 FieldData = new ConcurrentDictionary<int, Archive>();
 
-                var tasks = new Task[Memory.FieldHolder.fields.Length];
+                var tasks = new Task[Memory.FieldHolder.Fields.Length];
                 void process(ushort i)
                 {
                     if (FieldData.ContainsKey(i)) return;
@@ -288,7 +288,7 @@ namespace OpenVIII.Dat_Dump
                     if (archive != null)
                         FieldData.TryAdd(i, archive);
                 }
-                foreach (var i1 in Enumerable.Range(0, Memory.FieldHolder.fields.Length))
+                foreach (var i1 in Enumerable.Range(0, Memory.FieldHolder.Fields.Length))
                 {
                     var j = (ushort)i1;
                     tasks[j] = (Task.Run(() => process(j)));

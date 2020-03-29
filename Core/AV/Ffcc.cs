@@ -676,7 +676,7 @@ namespace OpenVIII.AV
         {
             lock (Decoder)
             {
-                var frameTex = new Texture2D(Memory.spriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
+                var frameTex = new Texture2D(Memory.SpriteBatch.GraphicsDevice, Decoder.CodecContext->width, Decoder.CodecContext->height, false, SurfaceFormat.Color);
                 const int bpp = 4;
                 var texBuffer = new byte[Decoder.CodecContext->width * Decoder.CodecContext->height * bpp];
                 fixed (byte* ptr = &texBuffer[0])

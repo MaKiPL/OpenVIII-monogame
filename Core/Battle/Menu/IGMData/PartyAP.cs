@@ -125,11 +125,11 @@ namespace OpenVIII.IGMData
                     str_Learn.Clone()
                     .Replace(DialogSelectedGF, Memory.Strings.GetName(GF))
                     .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] {
-                            (byte)((short)Memory.Kernel_Bin.AllAbilities[Ability.Value].Icon & 0xFF),
-                            (byte)(((short)Memory.Kernel_Bin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
-                            (Memory.Kernel_Bin.AllAbilities[Ability.Value].Palette)
+                            (byte)((short)Memory.KernelBin.AllAbilities[Ability.Value].Icon & 0xFF),
+                            (byte)(((short)Memory.KernelBin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
+                            (Memory.KernelBin.AllAbilities[Ability.Value].Palette)
                     })
-                    .Replace(DialogSelectedAbility, Memory.Kernel_Bin.AllAbilities[Ability.Value].Name);
+                    .Replace(DialogSelectedAbility, Memory.KernelBin.AllAbilities[Ability.Value].Name);
                 skipsnd = true;
                 AV.Sound.Play(0x28);
             }

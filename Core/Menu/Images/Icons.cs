@@ -84,15 +84,15 @@ namespace OpenVIII
             switch (type)
             {
                 case NumType.SysFnt:
-                    DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
+                    DataSize = Memory.Font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
 
                 case NumType.SysFntBig:
-                    DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
+                    DataSize = Memory.Font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
 
                 case NumType.MenuFont:
-                    DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
+                    DataSize = Memory.Font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
 
                 case NumType.Num8X8:

@@ -7,14 +7,14 @@ namespace OpenVIII
 {
     public static class ModuleMovieTest
     {
-        private const MODULE DefaultReturnState = MODULE.MAINMENU_DEBUG;
+        private const Module DefaultReturnState = Module.MainMenuDebug;
         private static Player _player;
 
         /// <summary>
         /// Movie file list
         /// </summary>
 
-        public static MODULE ReturnState { get; set; } = DefaultReturnState;
+        public static Module ReturnState { get; set; } = DefaultReturnState;
         public static int Index { get; set; }
 
         public static void Inputs()

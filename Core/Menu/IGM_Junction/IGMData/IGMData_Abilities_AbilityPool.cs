@@ -14,10 +14,10 @@ namespace OpenVIII
             public static IGMData_Abilities_AbilityPool Create()
             {
                 IGMData_Abilities_AbilityPool r = null;
-                if (Memory.Kernel_Bin.EquippableAbilities != null)
+                if (Memory.KernelBin.EquippableAbilities != null)
                 {
-                    r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.ABILITY }, 11, Memory.Kernel_Bin.EquippableAbilities.Count / 11 + (Memory.Kernel_Bin.EquippableAbilities.Count % 11 > 0 ? 1 : 0));
-                    r.Source = Memory.Kernel_Bin.EquippableAbilities;
+                    r = Create<IGMData_Abilities_AbilityPool>(11, 1, new IGMDataItem.Box { Pos = new Rectangle(435, 150, 405, 480), Title = Icons.ID.ABILITY }, 11, Memory.KernelBin.EquippableAbilities.Count / 11 + (Memory.KernelBin.EquippableAbilities.Count % 11 > 0 ? 1 : 0));
+                    r.Source = Memory.KernelBin.EquippableAbilities;
                 }
                 return r;
             }

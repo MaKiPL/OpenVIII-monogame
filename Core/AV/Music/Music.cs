@@ -22,13 +22,13 @@ namespace OpenVIII.AV
             //Roses and Wine V07 moves most of the sgt files to dmusic_backup
             //it leaves a few files behind. I think because RaW doesn't replace everything.
             //ogg files stored in:
-            var RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIR, "RaW", "GLOBAL", "Music"));
+            var RaW_ogg_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8Dir, "RaW", "GLOBAL", "Music"));
             // From what I gather the OGG files and the sgt files have the same numerical prefix. I
             // might try to add the functionality to the debug screen monday.
 
-            var dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic_backup"));
-            var music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music", "dmusic"));
-            var music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "Music"));
+            var dmusic_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DirData, "Music", "dmusic_backup"));
+            var music_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DirData, "Music", "dmusic"));
+            var music_wav_pt = Extended.GetUnixFullPath(Path.Combine(Memory.FF8DirData, "Music"));
 
             // goal of dicmusic is to be able to select a track by prefix. it adds an list of files
             // with the same prefix. so you can later on switch out which one you want.
@@ -36,9 +36,9 @@ namespace OpenVIII.AV
             AddMusicPath(music_wav_pt);
             AddMusicPath(dmusic_pt);
             AddMusicPath(music_pt);
-            if (!Memory.dicMusic.ContainsKey(eyesOnMePrefix) && Memory.dicMusic.ContainsKey(altEyesOnMePrefix))
+            if (!Memory.DicMusic.ContainsKey(eyesOnMePrefix) && Memory.DicMusic.ContainsKey(altEyesOnMePrefix))
             {
-                Memory.dicMusic.Add(eyesOnMePrefix, Memory.dicMusic[altEyesOnMePrefix]);
+                Memory.DicMusic.Add(eyesOnMePrefix, Memory.DicMusic[altEyesOnMePrefix]);
             }
             var a = ArchiveZzz.Load(Memory.Archives.ZZZ_OTHER);
             var list = a?.GetListOfFiles();
@@ -75,13 +75,13 @@ namespace OpenVIII.AV
                 else
                     key = (ushort)unkPrefix;
 
-                if (!Memory.dicMusic.ContainsKey((MusicId)key))
+                if (!Memory.DicMusic.ContainsKey((MusicId)key))
                 {
-                    Memory.dicMusic.Add((MusicId)key, new List<string> { m });
+                    Memory.DicMusic.Add((MusicId)key, new List<string> { m });
                 }
                 else
                 {
-                    Memory.dicMusic[(MusicId)key].Add(m);
+                    Memory.DicMusic[(MusicId)key].Add(m);
                 }
             }
         }
@@ -175,14 +175,14 @@ namespace OpenVIII.AV
             if (musicplaying && lastplayed == Memory.MusicIndex) return;
             var ext = "";
 
-            if (Memory.dicMusic.Count > 0 && Memory.dicMusic[(MusicId)Memory.MusicIndex].Count > 0)
+            if (Memory.DicMusic.Count > 0 && Memory.DicMusic[(MusicId)Memory.MusicIndex].Count > 0)
             {
-                ext = Path.GetExtension(Memory.dicMusic[(MusicId)Memory.MusicIndex][0]).ToLower();
+                ext = Path.GetExtension(Memory.DicMusic[(MusicId)Memory.MusicIndex][0]).ToLower();
             }
             else
                 return;
 
-            var filename = Memory.dicMusic[(MusicId)Memory.MusicIndex][0];
+            var filename = Memory.DicMusic[(MusicId)Memory.MusicIndex][0];
 
             Stop();
 

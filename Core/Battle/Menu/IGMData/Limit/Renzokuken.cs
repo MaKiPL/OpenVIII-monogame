@@ -43,7 +43,7 @@ namespace OpenVIII.IGMData.Limit
             {
                 if (pixel == null)
                 {
-                    pixel = new Texture2D(Memory.graphics.GraphicsDevice, 1, 1);
+                    pixel = new Texture2D(Memory.Graphics.GraphicsDevice, 1, 1);
                     pixel.SetData(new Color[] { Color.White });
                 }
                 Renzokenken_Seperator_Color = Memory.Icons.MostSaturated(Icons.ID.Renzokuken_Seperator, 6);

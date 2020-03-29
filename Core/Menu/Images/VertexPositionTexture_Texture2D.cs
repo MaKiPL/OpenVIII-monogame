@@ -28,7 +28,7 @@ namespace OpenVIII
             TransformedVPT = (VertexPositionTexture[])VPT.Clone();
             Texture = texture;
 
-            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice)
             {
                 Texture = (Texture2D)Texture
             };
@@ -101,16 +101,16 @@ namespace OpenVIII
 
         public void Draw()
         {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ModuleBattleDebug.Effect.TextureEnabled = true;
 
             foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                 vertexData: TransformedVPT, vertexOffset: 0, primitiveCount: VPT.Length / 3);
             }
         }

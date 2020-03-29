@@ -182,7 +182,7 @@ namespace OpenVIII
 
             var bn = Regex.Escape(Path.GetFileNameWithoutExtension(Regex.Replace(path, @"\{[\d\.\:]+\}", "",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled)));
-            var textures = Path.Combine(Memory.FF8DIR, "textures");
+            var textures = Path.Combine(Memory.FF8Dir, "textures");
             if (!Directory.Exists(textures)) return (null, null);
 
             var pngStrings = Directory.GetFiles(textures, $"*{bn}*.png", SearchOption.AllDirectories);
@@ -259,7 +259,7 @@ namespace OpenVIII
                 {
                     using (var fs = new MemoryStream(zzzPNG, false))
                     {
-                        tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                        tex = Texture2D.FromStream(Memory.Graphics.GraphicsDevice, fs);
                         PngCache.TryAdd(pngPath, tex);
                     }
                 }
@@ -267,7 +267,7 @@ namespace OpenVIII
                 {
                     using (var fs = new FileStream(pngPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        tex = Texture2D.FromStream(Memory.graphics.GraphicsDevice, fs);
+                        tex = Texture2D.FromStream(Memory.Graphics.GraphicsDevice, fs);
                         PngCache.TryAdd(pngPath, tex);
                     }
                 }
@@ -275,15 +275,15 @@ namespace OpenVIII
 
             if (tex == null || !forceSquare || tex.Width == tex.Height) return tex;
             var s = Math.Max(tex.Width, tex.Height);
-            var tmp = new RenderTarget2D(Memory.graphics.GraphicsDevice, s, s);
+            var tmp = new RenderTarget2D(Memory.Graphics.GraphicsDevice, s, s);
             using (tex)
             {
-                Memory.graphics.GraphicsDevice.SetRenderTarget(tmp);
+                Memory.Graphics.GraphicsDevice.SetRenderTarget(tmp);
                 Memory.SpriteBatchStartAlpha();
-                Memory.graphics.GraphicsDevice.Clear(Color.TransparentBlack);
-                Memory.spriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
+                Memory.Graphics.GraphicsDevice.Clear(Color.TransparentBlack);
+                Memory.SpriteBatch.Draw(tex, new Rectangle(0, 0, tex.Width, tex.Height), Color.White);
                 Memory.SpriteBatchEnd();
-                Memory.graphics.GraphicsDevice.SetRenderTarget(null);
+                Memory.Graphics.GraphicsDevice.SetRenderTarget(null);
             }
             tex = tmp;
             return tex;
@@ -344,7 +344,7 @@ namespace OpenVIII
         public void Draw(Rectangle dst, Color color, float rotation, Vector2 origin, SpriteEffects effects, float depth)
         {
             if (Rows == 1 && Cols == 1)
-                Memory.spriteBatch.Draw(Textures[0, 0], dst, null, color, rotation, origin, effects, depth);
+                Memory.SpriteBatch.Draw(Textures[0, 0], dst, null, color, rotation, origin, effects, depth);
             else
             {
                 throw new Exception("had not coded this to draw from multiple textures");
@@ -386,7 +386,7 @@ namespace OpenVIII
                     Textures = null;
                     return;
                 }
-                var tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                var tex = new Texture2D(Memory.Graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
                 var dst = new Rectangle();
                 for (var r = 0; r < (int)Rows; r++)
                 {
@@ -473,7 +473,7 @@ namespace OpenVIII
 
         protected void Process()
         {
-            if (Memory.graphics?.GraphicsDevice == null) return;
+            if (Memory.Graphics?.GraphicsDevice == null) return;
             var size = Vector2.Zero;
             var oldSize = Vector2.Zero;
             Texture_Base tex = null;
@@ -519,7 +519,7 @@ namespace OpenVIII
 
         private static Rectangle _Draw(Texture2D tex, Rectangle dst, Rectangle src, Color color)
         {
-            Memory.spriteBatch.Draw(tex, dst, src, color);
+            Memory.SpriteBatch.Draw(tex, dst, src, color);
             return src;
         }
 
@@ -529,7 +529,7 @@ namespace OpenVIII
         private void _Draw(Rectangle dst, Color color)
         {
             if (Rows == 1 && Cols == 1 && dst.Height > 0 && dst.Width > 0)
-                Memory.spriteBatch.Draw(Textures[0, 0], dst, color);
+                Memory.SpriteBatch.Draw(Textures[0, 0], dst, color);
             else
             {
                 //throw new Exception($"{this}::code broken for multiple pcs. I think");
@@ -546,7 +546,7 @@ namespace OpenVIII
                         if (texture != null)
                         {
                             dstV = ToVector2(texture) * scale;
-                            Memory.spriteBatch.Draw(texture, dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+                            Memory.SpriteBatch.Draw(texture, dstOffset, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
                         }
 
                         dstOffset.X += dstV.X;

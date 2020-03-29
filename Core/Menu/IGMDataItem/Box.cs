@@ -26,7 +26,7 @@ namespace OpenVIII.IGMDataItem
                     pos.Offset(OffsetAnchor);
                 Dims = Menu.DrawBox(pos, Data, Title, options: skipdraw ? (Options | Box_Options.SkipDraw) : Options);
                 if (Blink) //needs tested and tuned
-                    Memory.spriteBatch.Draw(blank, pos, Color.DarkGray * Fade * .5f * Blink_Amount * Blink_Adjustment);
+                    Memory.SpriteBatch.Draw(blank, pos, Color.DarkGray * Fade * .5f * Blink_Amount * Blink_Adjustment);
             }
         }
 

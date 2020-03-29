@@ -75,7 +75,7 @@ namespace OpenVIII.Fields
             var test = aw.GetListOfFiles();
             //TODO fix endless look on FieldID 50.
             ID = inputFieldID ?? Memory.FieldHolder.FieldID;
-            var count = (Memory.FieldHolder.fields?.Length ?? 0);
+            var count = (Memory.FieldHolder.Fields?.Length ?? 0);
             if (ID >= count)
                 return false;
             FileName = Memory.FieldHolder.GetString(ID);

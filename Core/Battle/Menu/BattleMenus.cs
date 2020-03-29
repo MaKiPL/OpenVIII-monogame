@@ -17,7 +17,7 @@ namespace OpenVIII
 
         private Dictionary<Mode, Action> DrawActions;
         private Dictionary<Mode, Func<bool>> InputFunctions;
-        private MODULE lastgamestate;
+        private Module lastgamestate;
         private MenuModule.Mode lastmenu;
         private ushort lastmusic;
         private bool lastmusicplaying;
@@ -507,7 +507,7 @@ namespace OpenVIII
 
         private bool UpdateGameOverFunction()
         {
-            Memory.Module = MODULE.FIELD_DEBUG;
+            Memory.Module = OpenVIII.Module.FieldDebug;
             Memory.FieldHolder.FieldID = 75; //gover
             AV.Music.Play(0);
             Menu.Module.State = MenuModule.Mode.MainLobby;

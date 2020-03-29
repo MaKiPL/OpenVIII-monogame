@@ -64,8 +64,8 @@ namespace OpenVIII
                 Fields.Module.ResetField();
 
                 ModuleMovieTest.Index = 30;
-                ModuleMovieTest.ReturnState = MODULE.FIELD_DEBUG;
-                Memory.Module = MODULE.MOVIETEST;
+                ModuleMovieTest.ReturnState = OpenVIII.Module.FieldDebug;
+                Memory.Module = OpenVIII.Module.MovieTest;
                 Menu.Module.State = MenuModule.Mode.MainLobby;
                 Memory.IsMouseVisible = false;
                 //wait till next update to start drawing.

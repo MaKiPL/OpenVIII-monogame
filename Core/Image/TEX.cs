@@ -111,7 +111,7 @@ namespace OpenVIII
         /// </remarks>
         public override Texture2D GetTexture(Color[] colors)
         {
-            if (Memory.graphics.GraphicsDevice == null) return null;
+            if (Memory.Graphics.GraphicsDevice == null) return null;
             if (texture.PaletteFlag != 0)
             {
                 if (colors == null) throw new ArgumentNullException(nameof(colors));
@@ -206,7 +206,7 @@ namespace OpenVIII
 
         public override void SaveCLUT(string path)
         {
-            using (var CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
+            using (var CLUT = new Texture2D(Memory.Graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
             {
                 for (ushort i = 0; i < texture.NumOfCluts; i++)
                 {

@@ -218,7 +218,7 @@ namespace OpenVIII.Dat_Dump
                 var index = ModuleBattleDebug.Weapons[(Characters) characterID]?.Select(((b, i1) => new {i, b}))
                     .FirstOrDefault(v => v.b == i)?.i;
                 if(!index.HasValue) continue;
-                var currentWeaponData = Memory.Kernel_Bin.WeaponsData.FirstOrDefault(v =>
+                var currentWeaponData = Memory.KernelBin.WeaponsData.FirstOrDefault(v =>
                     v.Character == (Characters) characterID && v.AltID == checked((byte)index.Value));
 
                 if (currentWeaponData != default)

@@ -90,7 +90,7 @@ namespace OpenVIII.IGMData
             {
                 if (Memory.IsMainThread)
                 {
-                    var localdot = new Texture2D(Memory.graphics.GraphicsDevice, 4, 4);
+                    var localdot = new Texture2D(Memory.Graphics.GraphicsDevice, 4, 4);
                     var tmp = new Color[localdot.Height * localdot.Width];
                     for (var i = 0; i < tmp.Length; i++)
                         tmp[i] = Color.White;

@@ -23,7 +23,7 @@ namespace OpenVIII.Search
 
         private static readonly string[] Files = new string[]
         {
-            Path.Combine(Memory.FF8DIR,"FF8_EN.exe"),
+            Path.Combine(Memory.FF8Dir,"FF8_EN.exe"),
             //Path.Combine(Memory.FF8DIR,"AF3DN.P"),
             //Path.Combine(Memory.FF8DIR,"AF4DN.P")
         };

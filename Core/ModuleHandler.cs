@@ -7,8 +7,8 @@ namespace OpenVIII
 {
     public static class ModuleHandler
     {
-        private static MODULE module = Memory.Module;
-        private static MODULE lastModule = Memory.Module;
+        private static Module module = Memory.Module;
+        private static Module lastModule = Memory.Module;
 
         public static async void Update(GameTime gameTime)
         {
@@ -24,9 +24,9 @@ namespace OpenVIII
 #if DEBUG
             if (Input2.DelayedButton(FF8TextTagKey.Reset) || Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                if (Memory.Module != MODULE.MAINMENU_DEBUG && Memory.Module != MODULE.BATTLE_DEBUG)
+                if (Memory.Module != Module.MainMenuDebug && Memory.Module != Module.BattleDebug)
                 {
-                    Memory.Module = MODULE.MAINMENU_DEBUG;
+                    Memory.Module = Module.MainMenuDebug;
                     InputMouse.Mode = MouseLockMode.Screen;
                 }
             }
@@ -35,8 +35,8 @@ namespace OpenVIII
             switch (module)
             {
                 //doesn't need memory
-                case MODULE.OVERTURE_DEBUG:
-                case MODULE.MOVIETEST:
+                case Module.OvertureDebug:
+                case Module.MovieTest:
                     break;
 
                 default:
@@ -57,49 +57,49 @@ namespace OpenVIII
             }
             switch (module)
             {
-                case MODULE.BATTLE:
+                case Module.Battle:
                     ModuleBattle.Update();
                     break;
 
-                case MODULE.BATTLE_DEBUG:
+                case Module.BattleDebug:
                     Menu.UpdateOnce();
                     ModuleBattleDebug.Update();
                     break;
 
-                case MODULE.MOVIETEST:
+                case Module.MovieTest:
                     ModuleMovieTest.Update();
                     break;
 
-                case MODULE.FIELD_DEBUG:
+                case Module.FieldDebug:
                     Fields.Module.Update();
                     break;
 
-                case MODULE.OVERTURE_DEBUG:
+                case Module.OvertureDebug:
                     Module_overture_debug.Update();
                     break;
 
-                case MODULE.MAINMENU_DEBUG:
+                case Module.MainMenuDebug:
                     Menu.UpdateOnce();
                     Menu.Module.Update();
                     break;
 
-                case MODULE.WORLD_DEBUG:
+                case Module.WorldDebug:
                     Module_world_debug.Update(gameTime);
                     break;
 
-                case MODULE.FACE_TEST:
+                case Module.FaceTest:
                     Module_face_test.Update();
                     break;
 
-                case MODULE.ICON_TEST:
+                case Module.IconTest:
                     Module_icon_test.Update();
                     break;
 
-                case MODULE.CARD_TEST:
+                case Module.CardTest:
                     Module_card_test.Update();
                     break;
 
-                case MODULE.FIELD_MODEL_TEST:
+                case Module.FieldModelTest:
                     Fields.ModuleFieldObjectTest.Update();
                     break;
             }
@@ -110,8 +110,8 @@ namespace OpenVIII
             switch (module)
             {
                 //doesn't need memory
-                case MODULE.OVERTURE_DEBUG:
-                case MODULE.MOVIETEST:
+                case Module.OvertureDebug:
+                case Module.MovieTest:
                     break;
 
                 default:
@@ -122,58 +122,58 @@ namespace OpenVIII
                            Memory.InitTask.Status == TaskStatus.WaitingForActivation))
                     {
                         //suppress draw in update but if draw happens before update, blank screen, and end here
-                        Memory.graphics.GraphicsDevice.Clear(Color.Black);
+                        Memory.Graphics.GraphicsDevice.Clear(Color.Black);
                         return;
                     }
                     break;
             }
             switch (module)
             {
-                case MODULE.BATTLE:
+                case Module.Battle:
                     ModuleBattle.Draw();
                     break;
 
-                case MODULE.BATTLE_DEBUG:
+                case Module.BattleDebug:
                     ModuleBattleDebug.Draw();
                     break;
 
-                case MODULE.MOVIETEST:
+                case Module.MovieTest:
                     ModuleMovieTest.Draw();
                     break;
 
-                case MODULE.FIELD_DEBUG:
+                case Module.FieldDebug:
                     Fields.Module.Draw();
                     break;
 
-                case MODULE.OVERTURE_DEBUG:
+                case Module.OvertureDebug:
                     Module_overture_debug.Draw();
                     break;
 
-                case MODULE.MAINMENU_DEBUG:
+                case Module.MainMenuDebug:
                     Menu.Module.Draw();
                     break;
 
-                case MODULE.WORLD_DEBUG:
+                case Module.WorldDebug:
                     Module_world_debug.Draw();
                     break;
 
-                case MODULE.FACE_TEST:
+                case Module.FaceTest:
                     Module_face_test.Draw();
                     break;
 
-                case MODULE.ICON_TEST:
+                case Module.IconTest:
                     Module_icon_test.Draw();
                     break;
 
-                case MODULE.CARD_TEST:
+                case Module.CardTest:
                     Module_card_test.Draw();
                     break;
 
-                case MODULE.BATTLE_SWIRL:
+                case Module.BattleSwirl:
                     BattleSwirl.Draw();
                     break;
 
-                case MODULE.FIELD_MODEL_TEST:
+                case Module.FieldModelTest:
                     Fields.ModuleFieldObjectTest.Draw();
                     break;
             }

@@ -105,7 +105,7 @@ namespace OpenVIII
             /// <summary>
             /// Gf ability data
             /// </summary>
-            private IReadOnlyDictionary<Kernel.Abilities, Kernel.GFAbilities> GFabilities => Memory.Kernel_Bin.GFAbilities;
+            private IReadOnlyDictionary<Kernel.Abilities, Kernel.GFAbilities> GFabilities => Memory.KernelBin.GFAbilities;
 
             public override byte HIT => 0;
 
@@ -122,8 +122,8 @@ namespace OpenVIII
                 get
                 {
                     if (
-                        Memory.Kernel_Bin.JunctionableGFsData != null &&
-                        Memory.Kernel_Bin.JunctionableGFsData.TryGetValue(ID, out var value))
+                        Memory.KernelBin.JunctionableGFsData != null &&
+                        Memory.KernelBin.JunctionableGFsData.TryGetValue(ID, out var value))
                     {
                         return value;
                     }
@@ -255,9 +255,9 @@ namespace OpenVIII
                     if (EXPtoNextLevel <= ap && Level < 100)
                         ret = true;
                     Experience += ap;
-                    if (!Learning.Equals(Kernel.Abilities.None) && Memory.Kernel_Bin.AllAbilities.ContainsKey(Learning))
+                    if (!Learning.Equals(Kernel.Abilities.None) && Memory.KernelBin.AllAbilities.ContainsKey(Learning))
                     {
-                        var ap_tolearn = Memory.Kernel_Bin.AllAbilities[Learning].AP;
+                        var ap_tolearn = Memory.KernelBin.AllAbilities[Learning].AP;
                         if (JunctionableGFsData.Ability.TryGetIndexByKey(Learning, out var ind) && TestGFCanLearn(Learning, false))
                         {
                             if (ap_tolearn < APs[ind] + ap)

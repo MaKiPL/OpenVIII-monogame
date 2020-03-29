@@ -158,7 +158,7 @@ namespace OpenVIII
                     () => _files.TryAdd(FileID.AreaNames, Areames.Load()),
                     () => _files.TryAdd(FileID.Kernel, Kernel.Load()),
                 };
-                    var tasks = Memory.ProcessFuncs(func);
+                    var tasks = Memory.ProcessFunctions(func);
                     if (tasks.Any(x => !x))
                         throw new ArgumentException($"{this}::Failed to add to dictionary...");
                 }

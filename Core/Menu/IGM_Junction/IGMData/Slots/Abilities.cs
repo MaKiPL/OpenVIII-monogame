@@ -26,10 +26,10 @@ namespace OpenVIII.IGMData.Slots
                         ITEM[i, 0].Show();
                         if (c.Abilities[i] != Kernel.Abilities.None)
                         {
-                            ((IGMDataItem.Text)ITEM[i, 1]).Icon = Memory.Kernel_Bin.EquippableAbilities[c.Abilities[i]].Icon;
-                            ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.Kernel_Bin.EquippableAbilities[c.Abilities[i]].Name;
+                            ((IGMDataItem.Text)ITEM[i, 1]).Icon = Memory.KernelBin.EquippableAbilities[c.Abilities[i]].Icon;
+                            ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.KernelBin.EquippableAbilities[c.Abilities[i]].Name;
                             ((IGMDataItem.Text)ITEM[i, 1]).Show();
-                            Descriptions[i] = Memory.Kernel_Bin.EquippableAbilities[c.Abilities[i]].Description;
+                            Descriptions[i] = Memory.KernelBin.EquippableAbilities[c.Abilities[i]].Description;
                         }
                         else
                         {

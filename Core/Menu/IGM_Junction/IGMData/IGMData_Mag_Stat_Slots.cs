@@ -160,7 +160,7 @@ namespace OpenVIII
                             var pos = (int)stat;
                             if (pos >= 5) pos++;
                             Contents[pos] = stat;
-                            var name = Memory.Kernel_Bin.MagicData[c.StatJ[stat]].Name;
+                            var name = Memory.KernelBin.MagicData[c.StatJ[stat]].Name;
                             if (name == null || name.Length == 0) name = Strings.Name._;
                             var currentValue = Damageable.TotalStat(stat);
                             var previousValue = GetPrevSetting()?.TotalStat(stat) ?? currentValue;

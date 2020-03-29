@@ -20,8 +20,8 @@ namespace OpenVIII
             private Directories()
             {
                 _directories = new []{
-                    Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata, "movies")), //this folder has most movies
-                    Extended.GetUnixFullPath(Path.Combine(Memory.FF8DIRdata_lang, "movies")) //this folder has rest of movies
+                    Extended.GetUnixFullPath(Path.Combine(Memory.FF8DirData, "movies")), //this folder has most movies
+                    Extended.GetUnixFullPath(Path.Combine(Memory.FF8DirDataLang, "movies")) //this folder has rest of movies
                 }.Distinct().ToList().AsReadOnly();
                 foreach (var s in _directories)
                     Memory.Log.WriteLine($"{nameof(Movie)} :: {nameof(Directories)} :: {s} ");

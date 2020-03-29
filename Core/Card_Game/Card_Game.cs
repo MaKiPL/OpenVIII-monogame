@@ -99,7 +99,7 @@ namespace OpenVIII.Card
                 var filename = $"cards";
                 while (i < 110 && page < pages)
                 {
-                    var pagetex = new Texture2D(Memory.graphics.GraphicsDevice, cardback.Height, cardback.Height);
+                    var pagetex = new Texture2D(Memory.Graphics.GraphicsDevice, cardback.Height, cardback.Height);
                     for (var p = 0; p < 8 && i < 110; p++)
                     {
                         var cardface = cardtim.GetTexture(i);
@@ -226,7 +226,7 @@ namespace OpenVIII.Card
                 {
                     savepagetex();
                     File = checked((sbyte)e.File);
-                    pagetex = new Texture2D(Memory.graphics.GraphicsDevice, size, size);
+                    pagetex = new Texture2D(Memory.Graphics.GraphicsDevice, size, size);
                     filename = $"text_{File}.png";
                 }
                 if (CustomPalette != e.CustomPalette)

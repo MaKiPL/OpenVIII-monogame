@@ -96,7 +96,7 @@ namespace OpenVIII
         {
             if (pointer >= 0)
             {
-                var vp = Memory.graphics.GraphicsDevice.Viewport;
+                var vp = Memory.Graphics.GraphicsDevice.Viewport;
 
                 var id = CardValue[pointer];
                 var pos = (uint)((uint)id % Memory.Cards.EntriesPerTexture);
@@ -113,9 +113,9 @@ namespace OpenVIII
                 dst = dst.Scale(new Vector2(scale));
                 dst.Offset(vp.Width / 2 - dst.Center.X, vp.Height / 2 - dst.Center.Y);
                 Memory.SpriteBatchStartAlpha();
-                Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+                Memory.SpriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Cards.Draw(id, dst);
-                Memory.font.RenderBasicText(
+                Memory.Font.RenderBasicText(
                     $"{CardValue[pointer].ToString().Replace('_', ' ')}\n" +
                     $"pos: {(uint)id}\n" +
                     $"col: {col}\n" +

@@ -84,7 +84,7 @@ namespace OpenVIII.Fields
 
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+            Memory.SpriteBatch.GraphicsDevice.Clear(Color.Black);
             switch (Mod)
             {
                 case FieldModes.Init:
@@ -107,7 +107,7 @@ namespace OpenVIII.Fields
 
         public static string GetFieldName()
         {
-            var fieldName = Memory.FieldHolder.fields[Memory.FieldHolder.FieldID].ToLower();
+            var fieldName = Memory.FieldHolder.Fields[Memory.FieldHolder.FieldID].ToLower();
             if (string.IsNullOrWhiteSpace(fieldName))
                 fieldName = $"unk{Memory.FieldHolder.FieldID}";
             return fieldName;

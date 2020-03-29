@@ -69,10 +69,10 @@ namespace OpenVIII.IGMData
         {
             get => s_cidoff; set
             {
-                if (value >= Memory.Kernel_Bin.BattleCommands.Count)
+                if (value >= Memory.KernelBin.BattleCommands.Count)
                     value = 0;
                 else if (value < 0)
-                    value = Memory.Kernel_Bin.BattleCommands.Count - 1;
+                    value = Memory.KernelBin.BattleCommands.Count - 1;
                 s_cidoff = value;
             }
         }
@@ -348,14 +348,14 @@ namespace OpenVIII.IGMData
                         if (Attack)
                         {
                             var ecattacks = enemycommands.Where(x => x.Monster != null);
-                            AddCommand(Memory.Kernel_Bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().Monster.Name : null));
+                            AddCommand(Memory.KernelBin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().Monster.Name : null));
                         }
                         if (Magic || e.DrawList.Any(x => x.Data != null))
-                            AddCommand(Memory.Kernel_Bin.BattleCommands[2]);
+                            AddCommand(Memory.KernelBin.BattleCommands[2]);
                         if (Item || e.DropList.Any(x => x.Data?.Battle != null) || e.MugList.Any(x => x.Data?.Battle != null))
-                            AddCommand(Memory.Kernel_Bin.BattleCommands[4]);
+                            AddCommand(Memory.KernelBin.BattleCommands[4]);
                         if (e.JunctionedGFs?.Any() ?? false)
-                            AddCommand(Memory.Kernel_Bin.BattleCommands[3]);
+                            AddCommand(Memory.KernelBin.BattleCommands[3]);
                         void AddCommand(Kernel.BattleCommand c, FF8String alt = null)
                         {
                             commands[pos] = c;
@@ -378,7 +378,7 @@ namespace OpenVIII.IGMData
                         var DataSize = Rectangle.Empty;
                         page = 0;
                         Cursor_Status &= ~Cursor_Status.Horizontal;
-                        commands[0] = Memory.Kernel_Bin.BattleCommands[(c.Abilities.Contains(Kernel.Abilities.Mug) ? 12 : 1)];
+                        commands[0] = Memory.KernelBin.BattleCommands[(c.Abilities.Contains(Kernel.Abilities.Mug) ? 12 : 1)];
                         ITEM[0, 0] = new IGMDataItem.Text
                         {
                             Data = commands[0].Name,
@@ -391,13 +391,13 @@ namespace OpenVIII.IGMData
 
                             if (cmd != Kernel.Abilities.None)
                             {
-                                if (!Memory.Kernel_Bin.CommandAbilities.TryGetValue(cmd, out var cmdval))
+                                if (!Memory.KernelBin.CommandAbilities.TryGetValue(cmd, out var cmdval))
                                 {
                                     continue;
                                 }
 #if DEBUG
                                 if (!Battle) commands[pos] = cmdval.BattleCommand;
-                                else commands[pos] = Memory.Kernel_Bin.BattleCommands[Cidoff++];
+                                else commands[pos] = Memory.KernelBin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif

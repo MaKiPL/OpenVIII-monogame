@@ -738,7 +738,7 @@ namespace OpenVIII.World
 
         public void Section17()
         {
-            if (Memory.graphics?.GraphicsDevice != null)
+            if (Memory.Graphics?.GraphicsDevice != null)
             {
                 int[] innerPointers;
                 MemoryStream ms;
@@ -830,7 +830,7 @@ namespace OpenVIII.World
                 Color[] texBuffer;
                 if (texturePointer != -1)
                 {
-                    texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                    texture = new Texture2D(Memory.Graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
                     texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
 
                     if (palette.Length == 16)
@@ -1106,9 +1106,9 @@ namespace OpenVIII.World
              *  0   [24]     [17]    [22]      [23]
              *  64  [18]     [19]    [20]      [21]
              */
-            if (Memory.graphics?.GraphicsDevice != null)
+            if (Memory.Graphics?.GraphicsDevice != null)
             {
-                waterAtlas = new Texture2D(Memory.graphics.GraphicsDevice, WATERBLOCKTEXW << 2, WATERBLOCKTEXH << 1, false, SurfaceFormat.Color); //64<<2 is 256
+                waterAtlas = new Texture2D(Memory.Graphics.GraphicsDevice, WATERBLOCKTEXW << 2, WATERBLOCKTEXH << 1, false, SurfaceFormat.Color); //64<<2 is 256
 
                 WaterTextureAtlasPutChunk(Section38_textures.waterTex6, 0, 0); // 0 0
                 WaterTextureAtlasPutChunk(Section38_textures.waterTex2, WATERBLOCKTEXW, 0); // 64 0
@@ -1209,14 +1209,14 @@ namespace OpenVIII.World
         /// </summary>
         private void Section39()
         {
-            if (Memory.graphics?.GraphicsDevice != null)
+            if (Memory.Graphics?.GraphicsDevice != null)
             {
                 MemoryStream ms;
                 using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
                 {
                     ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
                     var innerSec = GetInnerPointers(br);
-                    var sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
+                    var sec39_texture = new Texture2D(Memory.Graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
 
                     for (var i = 0; i < innerSec.Length; i++)
                     {

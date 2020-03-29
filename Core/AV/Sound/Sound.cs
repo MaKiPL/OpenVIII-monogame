@@ -52,7 +52,7 @@ namespace OpenVIII.AV
         public static void Init()
         {
             Memory.Log.WriteLine($"{nameof(Sound)} :: {nameof(Init)}");
-            var path = Path.Combine(Memory.FF8DIRdata, "Sound", "audio.fmt");
+            var path = Path.Combine(Memory.FF8DirData, "Sound", "audio.fmt");
             Stream s = null;
             if (File.Exists(path))
             {

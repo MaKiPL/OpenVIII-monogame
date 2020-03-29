@@ -27,10 +27,10 @@ namespace OpenVIII
         /// </summary>
         public static Point MouseLocation => InputMouse.Location.Transform(Focus);
 
-        public static Point ScreenBottomLeft => new Point(0, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
-        public static Point ScreenBottomRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenBottomLeft => new Point(0, Memory.Graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenBottomRight => new Point(Memory.Graphics.GraphicsDevice.Viewport.Width, Memory.Graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
         public static Point ScreenTopLeft => new Point(0, 0).Transform(Focus);
-        public static Point ScreenTopRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
+        public static Point ScreenTopRight => new Point(Memory.Graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
         public Menu_Base CONTAINER { get; set; }
         public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 

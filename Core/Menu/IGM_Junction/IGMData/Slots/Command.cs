@@ -20,10 +20,10 @@ namespace OpenVIII.IGMData.Slots
                     {
                         if (c.Commands[i - 1] != Kernel.Abilities.None)
                         {
-                            ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.Kernel_Bin.CommandAbilities[c.Commands[i - 1]].Name;
+                            ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.KernelBin.CommandAbilities[c.Commands[i - 1]].Name;
                             ITEM[i, 1].Show();
                             var k = c.Commands[i - 1];
-                            Descriptions[i] = Memory.Kernel_Bin.CommandAbilities[k].BattleCommand.Description;
+                            Descriptions[i] = Memory.KernelBin.CommandAbilities[k].BattleCommand.Description;
                         }
                         else
                         {
@@ -32,7 +32,7 @@ namespace OpenVIII.IGMData.Slots
                     }
                     else if (i == 0)
                     {
-                        ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.Kernel_Bin.BattleCommands[
+                        ((IGMDataItem.Text)ITEM[i, 1]).Data = Memory.KernelBin.BattleCommands[
                                     c.Abilities.Contains(Kernel.Abilities.Mug) ?
                                     12 :
                                     1].Name;

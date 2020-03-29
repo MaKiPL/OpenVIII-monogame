@@ -28,9 +28,9 @@ namespace OpenVIII
 
         private void MainMenuStateChanged(object sender, Mode e) => Refresh();
 
-        private void ModuleChanged(object sender, MODULE e)
+        private void ModuleChanged(object sender, Module e)
         {
-            if(e == MODULE.MAINMENU_DEBUG)
+            if(e == OpenVIII.Module.MainMenuDebug)
             {
                 Refresh();
             }
@@ -86,7 +86,7 @@ namespace OpenVIII
 
         public override void Draw()
         {
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.Graphics.GraphicsDevice.Clear(Color.Black);
             switch (State)
             {
                 case Mode.MainLobby:
