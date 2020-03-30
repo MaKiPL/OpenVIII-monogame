@@ -66,13 +66,13 @@ namespace OpenVIII
 
         #region Methods
 
-        public static explicit operator Color(ColorABGR1555 v) => new Color(v.R, v.G, v.B, v.A);
+        public static implicit operator Color(ColorABGR1555 v) => new Color(v.R, v.G, v.B, v.A);
 
-        public static explicit operator ColorABGR1555(Color v) => new ColorABGR1555(v.R, v.G, v.B, v.A);
+        public static implicit operator ColorABGR1555(Color v) => new ColorABGR1555(v.R, v.G, v.B, v.A);
 
-        public static explicit operator ColorABGR1555(ushort v) => new ColorABGR1555(v);
+        public static implicit operator ColorABGR1555(ushort v) => new ColorABGR1555(v);
 
-        public static explicit operator ushort(ColorABGR1555 v) => v.Value;
+        public static implicit operator ushort(ColorABGR1555 v) => v.Value;
 
         #endregion Methods
     }

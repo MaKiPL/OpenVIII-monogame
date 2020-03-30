@@ -76,11 +76,6 @@
     <Reference Include="MonoGame.Framework.Net, Version=3.7.1.189, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -108,10 +103,6 @@
     <ProjectReference Include="..\Core\Core.csproj">
       <Project>{a5408515-75b8-4eea-8e9f-2c9cd7b56e59}</Project>
       <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Encoding\Encoding.csproj">
-      <Project>{a9b33bf4-9b03-4e3d-bf6a-181521046ee8}</Project>
-      <Name>Encoding</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

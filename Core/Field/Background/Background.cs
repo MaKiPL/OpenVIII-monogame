@@ -447,21 +447,25 @@ namespace OpenVIII.Fields
 
         private static Color Blend1(Color baseColor, Color color)
         {//ClassicSpriteBatch
-            Color r;
-            r.R = (byte)MathHelper.Clamp(baseColor.R + color.R, 0, 255);
-            r.G = (byte)MathHelper.Clamp(baseColor.G + color.G, 0, 255);
-            r.B = (byte)MathHelper.Clamp(baseColor.B + color.B, 0, 255);
-            r.A = 0xFF;
+            var r = new Color
+            {
+                R = (byte) MathHelper.Clamp(baseColor.R + color.R, 0, 255),
+                G = (byte) MathHelper.Clamp(baseColor.G + color.G, 0, 255),
+                B = (byte) MathHelper.Clamp(baseColor.B + color.B, 0, 255),
+                A = 0xFF
+            };
             return r;
         }
 
         private static Color Blend2(Color baseColor, Color color)
         {//ClassicSpriteBatch
-            Color r;
-            r.R = (byte)MathHelper.Clamp(baseColor.R - color.R, 0, 255);
-            r.G = (byte)MathHelper.Clamp(baseColor.G - color.G, 0, 255);
-            r.B = (byte)MathHelper.Clamp(baseColor.B - color.B, 0, 255);
-            r.A = 0xFF;
+            var r = new Color
+            {
+                R = (byte) MathHelper.Clamp(baseColor.R - color.R, 0, 255),
+                G = (byte) MathHelper.Clamp(baseColor.G - color.G, 0, 255),
+                B = (byte) MathHelper.Clamp(baseColor.B - color.B, 0, 255),
+                A = 0xFF
+            };
             return r;
         }
 

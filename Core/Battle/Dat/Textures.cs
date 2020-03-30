@@ -54,7 +54,7 @@ namespace OpenVIII.Battle.Dat
                     var filename = $"{fileName}_{i}";
                     var path = Path.Combine(Path.GetTempPath(), "battle.dat");
                     Directory.CreateDirectory(path);
-                    tm.SavePNG(Path.Combine(path,filename));
+                    //tm.SavePNG(Path.Combine(path,filename));
                     return TextureHandler.Create(filename, tm); // tm.GetTexture(0);
                 }
                 Memory.Log.WriteLine($"{nameof(Textures)}::{nameof(getTexture)}.{offset} :: Not a tim file!");
