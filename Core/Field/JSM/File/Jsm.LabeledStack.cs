@@ -25,15 +25,17 @@ namespace OpenVIII.Fields.Scripts
             #region Methods
 
             public IJsmExpression Peek() => _stack.Peek();
-
+            public bool StackEmpty() => _stack == null || _stack.Count <= 0;
             public IJsmExpression Pop()
             {
+                //if (_stack == null || _stack.Count <= 0) return default;
                 var result = _stack.Pop();
 
                 CurrentLabel = _positions[result];
                 _positions.Remove(result);
 
                 return result;
+
             }
 
             public void Push(IJsmExpression item)

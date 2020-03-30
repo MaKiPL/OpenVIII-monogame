@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
+using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMDataItem.Gradient
 {
@@ -33,10 +34,10 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         public static ATB Create(Rectangle? pos = null)
         {
-            var r = new ATB()
+            var r = new ATB
             {
                 _pos = pos ?? Rectangle.Empty,
-                Restriction = pos ?? Rectangle.Empty,
+                Restriction = pos ?? Rectangle.Empty
             };
             Memory.MainThreadOnlyActions.Enqueue(
                 () =>
@@ -93,15 +94,15 @@ namespace OpenVIII.IGMDataItem.Gradient
             {
                 Color = Faded_Color = Color.Gray * .8f;
             }
-            else if ((Damageable.Statuses1 & Kernel.BattleOnlyStatuses.Stop) != 0)
+            else if ((Damageable.Statuses1 & BattleOnlyStatuses.Stop) != 0)
             {
                 Color = Faded_Color = Color.DarkBlue * .8f;
             }
-            else if ((Damageable.Statuses1 & Kernel.BattleOnlyStatuses.Slow) != 0)
+            else if ((Damageable.Statuses1 & BattleOnlyStatuses.Slow) != 0)
             {
                 Color = Faded_Color = Color.DarkCyan * .8f;
             }
-            else if ((Damageable.Statuses1 & Kernel.BattleOnlyStatuses.Haste) != 0)
+            else if ((Damageable.Statuses1 & BattleOnlyStatuses.Haste) != 0)
             {
                 Color = Faded_Color = Color.Violet * .8f;
             }

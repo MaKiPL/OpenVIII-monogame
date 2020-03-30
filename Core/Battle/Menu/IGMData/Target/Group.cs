@@ -1,9 +1,10 @@
-﻿using Microsoft.Xna.Framework;
-using OpenVIII.IGMData.Pool;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMData.Pool;
+using OpenVIII.Kernel;
 using Magic = OpenVIII.Battle.Dat.Magic;
 
 namespace OpenVIII.IGMData.Target
@@ -14,20 +15,20 @@ namespace OpenVIII.IGMData.Target
 
         private readonly int[] Renzokuken_hits = { 4, 5, 6, 7 };
         private IReadOnlyDictionary<int, Func<bool>> CommandFunc;
-        private bool skipend = false;
+        private bool skipend;
 
         #endregion Fields
 
         #region Properties
 
-        public Kernel.BlueMagicQuistisLimitBreak BlueMagic { get; private set; }
+        public BlueMagicQuistisLimitBreak BlueMagic { get; private set; }
 
-        public Kernel.BattleCommand Command { get; private set; }
+        public BattleCommand Command { get; private set; }
         public Combine.KernelItem CombineKernelItem { get; private set; }
-        public Kernel.EnemyAttacksData EnemyAttack { get; private set; }
-        public Item_In_Menu Item { get; private set; }
+        public EnemyAttacksData EnemyAttack { get; private set; }
+        public ItemInMenu Item { get; private set; }
 
-        public Kernel.MagicData Magic { get; private set; }
+        public MagicData Magic { get; private set; }
         public Random RandomTarget { get; private set; } = false;
         public int Casts { get; private set; }
         public Kernel.Target Target { get; private set; }
@@ -54,8 +55,8 @@ namespace OpenVIII.IGMData.Target
             var r = Create<Group>(
                 Enemies.Create(new Rectangle(X1, Y, Width1, Height)),
                 Party.Create(new Rectangle(X2, Y, Width2, Height)),
-                makesubs ? IGMData.Pool.Draw.Create(new Rectangle(X1 + 50, Y - 50, 300, 40*3), damageable, true) : null);
-            r.SetDamageable(damageable, null);
+                makesubs ? Pool.Draw.Create(new Rectangle(X1 + 50, Y - 50, 300, 40*3), damageable, true) : null);
+            r.SetDamageable(damageable);
             r.CONTAINER.Pos = new Rectangle(X1, Y, Width1 + Width2, Height);
             r.after();
             return r;
@@ -71,10 +72,8 @@ namespace OpenVIII.IGMData.Target
                 TargetEnemies.Cursor_Status |= Cursor_Status.Blinking;
                 return Draw_Pool.Inputs();
             }
-            else
-            {
-                TargetEnemies.Cursor_Status &= ~Cursor_Status.Blinking;
-            }
+
+            TargetEnemies.Cursor_Status &= ~Cursor_Status.Blinking;
             if (TargetEnemies.Enabled && (((TargetEnemies.Cursor_Status | TargetParty.Cursor_Status) & Cursor_Status.Enabled) == 0 || !TargetParty.Enabled))
                 TargetEnemies.Cursor_Status |= Cursor_Status.Enabled;
             else if (TargetParty.Enabled && (((TargetEnemies.Cursor_Status | TargetParty.Cursor_Status) & Cursor_Status.Enabled) == 0 || !TargetEnemies.Enabled))
@@ -159,7 +158,7 @@ namespace OpenVIII.IGMData.Target
             CombineKernelItem = c;
         }
 
-        public void SelectTargetWindows(Kernel.EnemyAttacksData c)
+        public void SelectTargetWindows(EnemyAttacksData c)
         {
             // we don't know what the enemy attacks default target is. Setting a general default here.
             // The battle AI script sets the target for the enemies
@@ -170,7 +169,7 @@ namespace OpenVIII.IGMData.Target
             EnemyAttack = c;
         }
 
-        public void SelectTargetWindows(Item_In_Menu c, bool shot = false)
+        public void SelectTargetWindows(ItemInMenu c, bool shot = false)
         {
             var t = c.Battle?.Target ?? Kernel.Target.Enemy | Kernel.Target.SingleTarget;
             if (shot)
@@ -180,7 +179,7 @@ namespace OpenVIII.IGMData.Target
             Item = c;
         }
 
-        public void SelectTargetWindows(Kernel.BattleCommand c)
+        public void SelectTargetWindows(BattleCommand c)
         {
             var t = c.Target;
             SelectTargetWindows(t);
@@ -189,7 +188,7 @@ namespace OpenVIII.IGMData.Target
             BlueMagic = null;
         }
 
-        public void SelectTargetWindows(Kernel.MagicData c, int casts = 1, Random random = default)
+        public void SelectTargetWindows(MagicData c, int casts = 1, Random random = default)
         {
             var t = c.Target;
             SelectTargetWindows(t, casts, random);
@@ -197,7 +196,7 @@ namespace OpenVIII.IGMData.Target
             Magic = c;
         }
 
-        public void SelectTargetWindows(Kernel.BlueMagicQuistisLimitBreak c)
+        public void SelectTargetWindows(BlueMagicQuistisLimitBreak c)
         {
             //not sure if target data is missing for blue magic.
             //The target box does show up in game so I imagine the target data is in there somewhere.
@@ -261,7 +260,7 @@ namespace OpenVIII.IGMData.Target
                         {35,Command35_SINGLE },
                         {36,Command36_DOUBLE },
                         {37,Command37_TRIPLE },
-                        {38,Command38_MINIMOG },
+                        {38,Command38_MINIMOG }
                     };
 
             //bool Command00() => throw new NotImplementedException();
@@ -327,8 +326,8 @@ namespace OpenVIII.IGMData.Target
                     Menu.BattleMenus.GetCurrentBattleMenu().Renzokuken.Show();
                     if (willfinish)
                     {
-                        var flags = Enum.GetValues(typeof(Kernel.RenzokukenFinisher))
-                            .Cast<Kernel.RenzokukenFinisher>()
+                        var flags = Enum.GetValues(typeof(RenzokukenFinisher))
+                            .Cast<RenzokukenFinisher>()
                             .Where(f => (f & renzokukenfinisher) != 0)
                             .ToList().AsReadOnly();
                         var finisher = choosefinish >= flags.Count ? flags.Last() : flags[choosefinish];
@@ -388,7 +387,7 @@ namespace OpenVIII.IGMData.Target
                 {
                     var e = (Enemy)d.First();
                     //unsure if party member being ejected or if they need to be in the party for rare item to work
-                    var i = e.Mug(Damageable.SPD, Memory.State.PartyHasAbility(Kernel.Abilities.RareItem));
+                    var i = e.Mug(Damageable.SPD, Memory.State.PartyHasAbility(Abilities.RareItem));
                     Debug.WriteLine($"{Damageable.Name} stole {i.Data?.Name}({i.ID}) x {i.QTY} from { DebugMessageSuffix(d) }");
                 }
                 EndTurn();
@@ -637,7 +636,7 @@ namespace OpenVIII.IGMData.Target
             return r;
         }
 
-        private void DebugMessageCommand(IGMData.Target.Enemies i, Damageable[] d, Damageable fromvc) =>
+        private void DebugMessageCommand(Enemies i, Damageable[] d, Damageable fromvc) =>
             Debug.WriteLine(
                 $"{Damageable.Name} uses {Command.Name}({Command.BattleID}) command on {DebugMessageSuffix(d)}");
 
@@ -675,11 +674,11 @@ namespace OpenVIII.IGMData.Target
                     var rand = CombinedTargets.Random();
                     if (typeof(Enemy).Equals(rand.GetType()))
                     {
-                        e = new Damageable[] { rand };
+                        e = new[] { rand };
                     }
                     else if (typeof(Saves.CharacterData).Equals(rand.GetType()))
                     {
-                        vc = new Damageable[] { rand };
+                        vc = new[] { rand };
                     }
                 }
                 else
@@ -690,8 +689,8 @@ namespace OpenVIII.IGMData.Target
                         TargetEnemies.Random();
                     }
 
-                    e = new Enemy[] { Enemy.Party[TargetEnemies.CURSOR_SELECT < Enemy.Party.Count ? TargetEnemies.CURSOR_SELECT : Enemy.Party.Count - 1] };
-                    vc = new Saves.CharacterData[] { party.ElementAt(TargetParty.CURSOR_SELECT) };
+                    e = new[] { Enemy.Party[TargetEnemies.CURSOR_SELECT < Enemy.Party.Count ? TargetEnemies.CURSOR_SELECT : Enemy.Party.Count - 1] };
+                    vc = new[] { party.ElementAt(TargetParty.CURSOR_SELECT) };
                 }
             }
             else
@@ -756,7 +755,7 @@ namespace OpenVIII.IGMData.Target
             }
             else
                 TargetEnemies.Hide();
-            void TargetAll(IGMData.Base i)
+            void TargetAll(Base i)
             {
                 if (Target.HasFlag(Kernel.Target.SingleTarget))
                 {
@@ -767,7 +766,7 @@ namespace OpenVIII.IGMData.Target
             }
             if (Damageable.GetEnemy(out var e))
             {
-                if (TargetEnemies.Enabled == (TargetParty.Enabled == true))
+                if (TargetEnemies.Enabled == TargetParty.Enabled)
                 {
                     //do nothing
                 }

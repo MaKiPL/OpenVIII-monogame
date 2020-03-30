@@ -1,8 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
@@ -56,30 +57,46 @@ namespace OpenVIII
             //Angelo_Disabled I think is set when Rinoa is in space so angelo is out of reach;
             //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/25194
             if (Memory.State.BattleMiscFlags.HasFlag(Saves.BattleMiscFlags.AngeloDisabled) ||
-                !Memory.State.PartyData.Contains(Characters.Rinoa_Heartilly) ||
+                !Memory.State.Party.Contains(Characters.Rinoa_Heartilly) ||
                 !Memory.State.LimitBreakAngeloCompleted.HasFlag(ability)) return false;
-            else
-                switch (ability)
-                {
-                    case Angelo.Recover:
-                        return Memory.State.Characters.Any(x => x.Value.IsCritical && !x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 8;
+            switch (ability)
+            {
+                case Angelo.Recover:
+                    //Characters.Any(x => x.Value.IsCritical && !x.Value.IsDead && Memory.State.PartyData.Contains(x.Key))
+                    return !Memory.State.AnyDeadPartyMembers && Memory.State.AnyCriticalPartyMembers && Memory.Random.Next(256) < 8;
 
-                    case Angelo.Reverse:
-                        return Memory.State.Characters.Any(x => x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 2;
+                case Angelo.Reverse:
+                    return Memory.State.AnyDeadPartyMembers && Memory.Random.Next(256) < 2;
 
-                    case Angelo.Search:
-                        var c = Memory.State[Characters.Rinoa_Heartilly];
-                        if (!(c.IsGameOver ||
+                case Angelo.Search:
+                    var c = Memory.State[Characters.Rinoa_Heartilly];
+                    if (!(c.IsGameOver ||
 
-                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Sleep) ||
-                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Stop) ||
-                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.Confuse) ||
-                            c.Statuses0.HasFlag(Kernel.PersistentStatuses.Berserk) ||
-                            c.Statuses1.HasFlag(Kernel.BattleOnlyStatuses.AngelWing)))
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.Sleep) ||
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.Stop) ||
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.Confuse) ||
+                          c.Statuses0.HasFlag(PersistentStatuses.Berserk) ||
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.AngelWing)))
 
-                            return Memory.Random.Next(256) < 8;
-                        break;
-                }
+                        return Memory.Random.Next(256) < 8;
+                    break;
+                case Angelo.None:
+                    break;
+                case Angelo.Rush:
+                    break;
+                case Angelo.Cannon:
+                    break;
+                case Angelo.Strike:
+                    break;
+                case Angelo.Invincible_Moon:
+                    break;
+                case Angelo.Wishing_Star:
+                    break;
+                case Angelo.Angel_Wing:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(ability), ability, null);
+            }
             return false;
         }
 

@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMData.Pool
@@ -18,7 +19,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static EnemyAttacks Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            var r = Create<EnemyAttacks>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.ABILITY }, count, 1, damageable, battle: battle);
+            var r = Create<EnemyAttacks>(count + 1, 1, new Box { Pos = pos, Title = Icons.ID.ABILITY }, count, 1, damageable, battle: battle);
             if (battle)
                 r.TargetGroup = Target.Group.Create(r.Damageable);
             return r;
@@ -67,7 +68,7 @@ namespace OpenVIII.IGMData.Pool
                 {
                     if (i >= Rows) break;
                     if (skip-- > 0) continue;
-                    ((IGMDataItem.Text)ITEM[i, 0]).Data = enemyAttacksData.Name;
+                    ((Text)ITEM[i, 0]).Data = enemyAttacksData.Name;
                     ITEM[i, 0].Show();
                     BLANKS[i] = false;
                     Contents[i] = enemyAttacksData;
@@ -95,7 +96,7 @@ namespace OpenVIII.IGMData.Pool
             base.Init();
             for (var i = 0; i < Rows; i++)
             {
-                ITEM[i, 0] = new IGMDataItem.Text
+                ITEM[i, 0] = new Text
                 {
                     Pos = SIZE[i]
                 };

@@ -58,7 +58,7 @@ namespace OpenVIII
                 {
                     case Items.Junction:
                         Menu.Module.State = MenuModule.Mode.IGM_Junction;
-                        IGM_Junction.Refresh(_contents[CURSOR_SELECT], true);
+                        Junction.Refresh(_contents[CURSOR_SELECT], true);
                         return true;
                 }
                 return ret;
@@ -83,7 +83,7 @@ namespace OpenVIII
                 base.Refresh();
 
                 var totalCount = (Party?.Count ?? 0) + (NonParty?.Count ?? 0);
-                if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Party != null && NonParty != null)
+                if (Memory.State?.Characters != null && Memory.State.CharactersCount > 0 && Party != null && NonParty != null)
                 {
                     //TODO fix this... should be set in Init not Refresh
                     SIZE = new Rectangle[totalCount];

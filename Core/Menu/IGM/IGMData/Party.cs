@@ -44,7 +44,7 @@ namespace OpenVIII
                 }
                 InitSize(true);
 
-                if (Memory.State.Characters != null)
+                if (Memory.State.Characters)
                 {
                     base.Update();
                     for (sbyte i = 0; Memory.State.PartyData != null && i < SIZE.Length; i++)

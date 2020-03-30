@@ -1,11 +1,13 @@
-﻿using Microsoft.Xna.Framework;
-using OpenVIII.IGMDataItem;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using OpenVIII.AV;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII.IGMData.Group
 {
-    public class PlayerEXP : IGMData.Group.Base, IDisposable
+    public class PlayerEXP : Base, IDisposable
     {
         #region Fields
 
@@ -42,21 +44,21 @@ namespace OpenVIII.IGMData.Group
         /// <summary>
         /// Are we in counting down exp mode.
         /// </summary>
-        private bool countingDown = false;
+        private bool countingDown;
 
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         /// <summary>
         /// The looping exp sound. Need to track the object here to stop the loop.
         /// </summary>
-        private AV.Audio EXPsnd = null;
+        private Audio EXPsnd;
 
         private Box header;
 
         /// <summary>
         /// Keeps remainder between cycles
         /// </summary>
-        private double remaining = 0;
+        private double remaining;
 
         #endregion Fields
 
@@ -118,10 +120,11 @@ namespace OpenVIII.IGMData.Group
             {
                 countingDown = true;
                 if (EXPsnd == null)
-                    EXPsnd = AV.Sound.Play(34, loop: true);
+                    EXPsnd = Sound.Play(34, loop: true);
                 return true;
             }
-            else if (countingDown && remainEXP)
+
+            if (countingDown && remainEXP)
             {
                 countingDown = false;
                 EXPsnd.Stop();
@@ -147,14 +150,18 @@ namespace OpenVIII.IGMData.Group
                         else
                         {
                             var total = 0;
-                            foreach (var e in EXPExtra)
+                            if (EXPExtra != null)
                             {
-                                if (e.Value > 0)
-                                    total += (EXPExtra[e.Key] -= (int)remaining);
-                                RefreshEXP();
+                                foreach (var e in EXPExtra)
+                                {
+                                    if (e.Value > 0)
+                                        total += (EXPExtra[e.Key] -= (int) remaining);
+                                    RefreshEXP();
+                                }
+
+                                if (total <= 0)
+                                    EXPExtra = null;
                             }
-                            if (total <= 0)
-                                EXPExtra = null;
                         }
                         remaining -= (int)remaining;
                     }
@@ -189,7 +196,7 @@ namespace OpenVIII.IGMData.Group
         {
             base.Init();
             Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
-            header = new IGMDataItem.Box { Data = Strings.Name.EXP_received, Pos = new Rectangle(0, 0, CONTAINER.Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
+            header = new Box { Data = Strings.Name.EXP_received, Pos = new Rectangle(0, 0, CONTAINER.Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
         }
 
         private void RefreshEXP()
@@ -199,8 +206,8 @@ namespace OpenVIII.IGMData.Group
                 var tmpexp = EXP;
                 if (EXPExtra != null && i.Damageable.GetCharacterData(out var c) && EXPExtra.TryGetValue(c.ID, out var bonus))
                     tmpexp += bonus;
-                ((IGMData.PlayerEXP)i).NoEarnExp = NoEarnExp;
-                ((IGMData.PlayerEXP)i).EXP = tmpexp;
+                ((IGMData.PlayerExp)i).NoEarnExp = NoEarnExp;
+                ((IGMData.PlayerExp)i).Exp = tmpexp;
             }
             header.Width = Width;
         }

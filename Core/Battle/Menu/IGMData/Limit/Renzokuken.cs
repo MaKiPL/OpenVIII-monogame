@@ -1,12 +1,13 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.IGMDataItem;
+using Texture = OpenVIII.IGMDataItem.Texture;
 
 namespace OpenVIII.IGMData.Limit
 {
-    public class Renzokuken : IGMData.Base
+    public class Renzokuken : Base
     {
         #region Fields
 
@@ -15,7 +16,7 @@ namespace OpenVIII.IGMData.Limit
         private static Texture2D pixel;
         private static Color Renzokenken_Seperator_Color;
         private static Color Renzokenken_Seperator_Color_Faded;
-        private byte _count = 0;
+        private byte _count;
         private int _hits = 7;
         private TimeSpan delayMS;
         private Slide<Color> HitSlider = new Slide<Color>(Color.White, Color.TransparentBlack, HitTime, Color.Lerp);
@@ -35,7 +36,7 @@ namespace OpenVIII.IGMData.Limit
 
         public override bool Inputs() => base.Inputs() || true;
 
-        public static Renzokuken Create(Rectangle? pos = null) => Create<Renzokuken>(15, 1, new IGMDataItem.Box { Pos = pos ?? new Rectangle(24, 501, 912, 123), Title = Icons.ID.SPECIAL }, 0, 0, Memory.State?[Characters.Squall_Leonhart]);
+        public static Renzokuken Create(Rectangle? pos = null) => Create<Renzokuken>(15, 1, new Box { Pos = pos ?? new Rectangle(24, 501, 912, 123), Title = Icons.ID.SPECIAL }, 0, 0, Memory.State?[Characters.Squall_Leonhart]);
 
         public static void ThreadUnsafeOperations()
         {
@@ -44,7 +45,7 @@ namespace OpenVIII.IGMData.Limit
                 if (pixel == null)
                 {
                     pixel = new Texture2D(Memory.Graphics.GraphicsDevice, 1, 1);
-                    pixel.SetData(new Color[] { Color.White });
+                    pixel.SetData(new[] { Color.White });
                 }
                 Renzokenken_Seperator_Color = Memory.Icons.MostSaturated(Icons.ID.Renzokuken_Seperator, 6);
                 Renzokenken_Seperator_Color_Faded = Memory.Icons.MostSaturated(Icons.ID.Renzokuken_Seperator, 2);
@@ -100,8 +101,8 @@ namespace OpenVIII.IGMData.Limit
             var done = false;
             var hot = false;
 
-            ((IGMDataItem.Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
-            ((IGMDataItem.Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
+            ((Icon)ITEM[Count - 5, 0]).Data = Icons.ID._0_Hit_ + _count;
+            ((Texture)ITEM[Count - 4, 0]).Color = HitSlider.Update();
 
             var hotcnt = 0;
             var pos = 0;
@@ -126,18 +127,18 @@ namespace OpenVIII.IGMData.Limit
             }
             if (hot)
             {
-                ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 6;
-                ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 6;
-                ((IGMDataItem.Texture)ITEM[0, 0]).Color = Renzokenken_Seperator_Color;
+                ((Icon)ITEM[Count - 3, 0]).Palette = 6;
+                ((Icon)ITEM[Count - 2, 0]).Palette = 6;
+                ((Texture)ITEM[0, 0]).Color = Renzokenken_Seperator_Color;
                 ITEM[Count - 1, 0].Show();
                 ITEM[Count - 5, 0].Hide();
                 ITEM[Count - 6, 0].Hide();
             }
             else
             {
-                ((IGMDataItem.Icon)ITEM[Count - 3, 0]).Palette = 2;
-                ((IGMDataItem.Icon)ITEM[Count - 2, 0]).Palette = 2;
-                ((IGMDataItem.Texture)ITEM[0, 0]).Color = Renzokenken_Seperator_Color_Faded;
+                ((Icon)ITEM[Count - 3, 0]).Palette = 2;
+                ((Icon)ITEM[Count - 2, 0]).Palette = 2;
+                ((Texture)ITEM[0, 0]).Color = Renzokenken_Seperator_Color_Faded;
                 if ((hotcnt >= _hits) || !done)// && ITEM[Count - 1, 0].Enabled)
                 {
                     if (_count >= _hits)
@@ -188,7 +189,7 @@ namespace OpenVIII.IGMData.Limit
                 w = (int)(e.Width * scale);
             }
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 6, 0] = new IGMDataItem.Icon { Data = Icons.ID.Perfect__, Pos = tr, Palette = 8, Scale = new Vector2(scale) };
+            ITEM[Count - 6, 0] = new Icon { Data = Icons.ID.Perfect__, Pos = tr, Palette = 8, Scale = new Vector2(scale) };
         }
 
         private Rectangle _0_Hit_Prep(Rectangle r, Rectangle tr, out float scale, out int w, int trigwidtharea, int xbak)
@@ -224,7 +225,7 @@ namespace OpenVIII.IGMData.Limit
                 w = (int)(e.Width * scale);
             }
             tr.X = xbak + trigwidtharea / 2 - w / 2;
-            ITEM[Count - 5, 0] = new IGMDataItem.Icon { Data = Icons.ID._0_Hit_, Pos = tr, Scale = new Vector2(scale) };
+            ITEM[Count - 5, 0] = new Icon { Data = Icons.ID._0_Hit_, Pos = tr, Scale = new Vector2(scale) };
             return tr;
         }
 
@@ -243,7 +244,7 @@ namespace OpenVIII.IGMData.Limit
             xbak = tr.X;
             tr.X += trigwidtharea / 2 - w / 2;
 
-            ITEM[Count - 1, 0] = new IGMDataItem.Icon { Data = Icons.ID.Trigger_, Pos = tr, Palette = 6, Scale = new Vector2(scale) };
+            ITEM[Count - 1, 0] = new Icon { Data = Icons.ID.Trigger_, Pos = tr, Palette = 6, Scale = new Vector2(scale) };
         }
 
         private void Renzokuken_Seperator_Prep(out Rectangle r, out Rectangle hotspot, out Rectangle tr)
@@ -263,13 +264,13 @@ namespace OpenVIII.IGMData.Limit
                 scale = (float)r.Height / e.Height;
                 w = (int)(e.Width * scale);
             }
-            ITEM[0, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Renzokenken_Seperator_Color_Faded };
+            ITEM[0, 0] = new Texture { Data = pixel, Pos = r, Color = Renzokenken_Seperator_Color_Faded };
             r.Inflate(-4, -4);
-            ITEM[1, 0] = new IGMDataItem.Texture { Data = pixel, Pos = r, Color = Color.Black };
-            ITEM[Count - 3, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokuken_Seperator, Pos = new Rectangle(r.X + 80, r.Y, w, r.Height), Scale = new Vector2(scale) };
-            ITEM[Count - 2, 0] = new IGMDataItem.Icon { Data = Icons.ID.Renzokuken_Seperator, Pos = new Rectangle(r.X + 208, r.Y, w, r.Height), Scale = new Vector2(scale) };
+            ITEM[1, 0] = new Texture { Data = pixel, Pos = r, Color = Color.Black };
+            ITEM[Count - 3, 0] = new Icon { Data = Icons.ID.Renzokuken_Seperator, Pos = new Rectangle(r.X + 80, r.Y, w, r.Height), Scale = new Vector2(scale) };
+            ITEM[Count - 2, 0] = new Icon { Data = Icons.ID.Renzokuken_Seperator, Pos = new Rectangle(r.X + 208, r.Y, w, r.Height), Scale = new Vector2(scale) };
             hotspot = new Rectangle(r.X + 80 + (w / 2), r.Y + 4, 208 - 80, r.Height - 8);
-            ITEM[Count - 4, 0] = new IGMDataItem.Texture { Data = pixel, Pos = hotspot, Color = Color.TransparentBlack };
+            ITEM[Count - 4, 0] = new Texture { Data = pixel, Pos = hotspot, Color = Color.TransparentBlack };
             hotspot.Width += (int)(hotspot.Width * .50f);
             tr = new Rectangle(r.X + 208 + (w / 2), r.Y + 4, 0, r.Height - 4);
         }

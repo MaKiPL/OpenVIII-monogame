@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public class Item : IGMData.Pool.Base<Saves.Data, Item_In_Menu>
+    public class Item : IGMData.Pool.Base<Saves.Data, ItemInMenu>
     {
         #region Fields
 
@@ -17,7 +17,7 @@ namespace OpenVIII.IGMData.Pool
 
         #region Events
 
-        public event EventHandler<KeyValuePair<Item_In_Menu, FF8String>> ItemChangeHandler;
+        public event EventHandler<KeyValuePair<ItemInMenu, FF8String>> ItemChangeHandler;
 
         #endregion Events
 
@@ -78,7 +78,7 @@ namespace OpenVIII.IGMData.Pool
             }
             else
             {
-                Menu.IGM_Items.SetMode(IGM_Items.Mode.TopMenu);
+                Menu.IGMItems.SetMode(IGMItems.Mode.TopMenu);
                 base.Inputs_CANCEL();
             }
             return true;
@@ -92,20 +92,20 @@ namespace OpenVIII.IGMData.Pool
                 Target_Group?.SelectTargetWindows(item);
                 Target_Group?.ShowTargetWindows();
             }
-            if (item.Target == Item_In_Menu._Target.None)
+            if (item.ItemTarget == ItemTarget.None)
                 return false;
             base.Inputs_OKAY();
-            Menu.IGM_Items.SetMode(IGM_Items.Mode.UseItemOnTarget);
+            Menu.IGMItems.SetMode(IGMItems.Mode.UseItemOnTarget);
             return true;
         }
 
         public override void ModeChangeEvent(object sender, Enum e)
         {
-            if (e.Equals(IGM_Items.Mode.SelectItem) || Battle)
+            if (e.Equals(IGMItems.Mode.SelectItem) || Battle)
             {
                 Cursor_Status |= Cursor_Status.Enabled;
             }
-            else if (e.Equals(IGM_Items.Mode.UseItemOnTarget))
+            else if (e.Equals(IGMItems.Mode.UseItemOnTarget))
             {
                 Cursor_Status |= Cursor_Status.Blinking;
             }
@@ -117,10 +117,10 @@ namespace OpenVIII.IGMData.Pool
 
         public override void Refresh()
         {
-            if (!Battle && !eventSet && Menu.IGM_Items != null)
+            if (!Battle && !eventSet && Menu.IGMItems != null)
             {
-                Menu.IGM_Items.ModeChangeHandler += ModeChangeEvent;
-                Menu.IGM_Items.RefreshCompletedHandler += RefreshCompletedEvent;
+                Menu.IGMItems.ModeChangeHandler += ModeChangeEvent;
+                Menu.IGMItems.RefreshCompletedHandler += RefreshCompletedEvent;
                 eventSet = true;
             }
             base.Refresh();
@@ -133,12 +133,12 @@ namespace OpenVIII.IGMData.Pool
                 Enemy e = null;
                 if (Damageable?.GetEnemy(out e) ?? false)
                 {
-                    sbyte addEnemyItem(Item_In_Menu itemdata)
+                    sbyte addEnemyItem(ItemInMenu itemdata)
                     {
                         var item = new Saves.Item (itemdata.ID, byte.MaxValue );
                         return AddItem(ref pos, ref skip, item, itemdata);
                     }
-                    var items = new HashSet<Item_In_Menu>();
+                    var items = new HashSet<ItemInMenu>();
                     foreach(var a in e.Abilities.Where(x=>x.Item != null))
                         items.Add(a.Item.Value);
                     foreach (var a in e.DropList.Where(x => x.ID != 0 && x.Data != null))
@@ -154,7 +154,7 @@ namespace OpenVIII.IGMData.Pool
                 for (byte i = 0; pos < Rows && i < Source.Items.Count; i++)
                     {
                         var item = Source.Items[i];
-                        var itemdata = item.Data ?? new Item_In_Menu();
+                        var itemdata = item.Data ?? new ItemInMenu();
                         if (AddItem(ref pos, ref skip, item, itemdata) == 0) break;
                     }
                 for (; pos < Rows; pos++)
@@ -171,7 +171,7 @@ namespace OpenVIII.IGMData.Pool
             }
         }
 
-        private sbyte AddItem(ref byte pos, ref short skip, Saves.Item item, Item_In_Menu itemdata)
+        private sbyte AddItem(ref byte pos, ref short skip, Saves.Item item, ItemInMenu itemdata)
         {
             if ((pos >= Rows))  //reached max rows.
                 return 0;
@@ -190,7 +190,7 @@ namespace OpenVIII.IGMData.Pool
             {
                 color = Font.ColorID.Grey;
                 BLANKS[pos] = true;
-                palette = itemdata.Faded_Palette;
+                palette = itemdata.FadedPalette;
             }
             else
                 BLANKS[pos] = false;
@@ -261,7 +261,7 @@ namespace OpenVIII.IGMData.Pool
                 skipsnd = true;
             }
             while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
-            ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+            ItemChangeHandler?.Invoke(this, new KeyValuePair<ItemInMenu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
         }
 
         protected override void PAGE_PREV()
@@ -275,7 +275,7 @@ namespace OpenVIII.IGMData.Pool
                 skipsnd = true;
             }
             while (cnt-- > 0 && !((IGMDataItem.Integer)(ITEM[0, 1])).Enabled);
-            ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+            ItemChangeHandler?.Invoke(this, new KeyValuePair<ItemInMenu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
         }
 
         protected override void SetCursor_select(int value)
@@ -283,11 +283,11 @@ namespace OpenVIII.IGMData.Pool
             if (value != GetCursor_select())
             {
                 base.SetCursor_select(value);
-                ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[value], HelpStr[value]));
+                ItemChangeHandler?.Invoke(this, new KeyValuePair<ItemInMenu, FF8String>(Contents[value], HelpStr[value]));
             }
         }
 
-        private void RefreshCompletedEvent(object sender, EventArgs e) => ItemChangeHandler?.Invoke(this, new KeyValuePair<Item_In_Menu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
+        private void RefreshCompletedEvent(object sender, EventArgs e) => ItemChangeHandler?.Invoke(this, new KeyValuePair<ItemInMenu, FF8String>(Contents[CURSOR_SELECT], HelpStr[CURSOR_SELECT]));
 
         #endregion Methods
     }

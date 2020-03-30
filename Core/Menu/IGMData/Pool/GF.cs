@@ -45,8 +45,8 @@ namespace OpenVIII.IGMData.Pool
             else
             {
                 base.Inputs_CANCEL();
-                Menu.IGM_Junction.Data[IGM_Junction.SectionName.TopMenu_GF_Group].Hide();
-                Menu.IGM_Junction.SetMode(IGM_Junction.Mode.TopMenu_Junction);
+                Menu.Junction.Data[Junction.SectionName.TopMenu_GF_Group].Hide();
+                Menu.Junction.SetMode(Junction.Mode.TopMenu_Junction);
             }
             return true;
         }
@@ -467,7 +467,7 @@ namespace OpenVIII.IGMData.Pool
                             }
                     }
 
-                    Menu.IGM_Junction.Refresh();
+                    Menu.Junction.Refresh();
                     return true;
                 }
             }
@@ -646,11 +646,11 @@ namespace OpenVIII.IGMData.Pool
 
         private void UpdateCharacter()
         {
-            if (!Battle && Menu.IGM_Junction != null)
+            if (!Battle && Menu.Junction != null)
             {
                 var g = Contents[CURSOR_SELECT];
                 var i =
-                    (IGMDataItem.Box)((IGM_Junction.IGMData_GF_Group)Menu.IGM_Junction.Data[IGM_Junction.SectionName.TopMenu_GF_Group]).ITEM[2, 0];
+                    (IGMDataItem.Box)((Junction.IGMData_GF_Group)Menu.Junction.Data[Junction.SectionName.TopMenu_GF_Group]).ITEM[2, 0];
                 i.Data = JunctionedGFs.Count > 0 && JunctionedGFs.ContainsKey(g) ? Memory.Strings.GetName(JunctionedGFs[g]) : null;
             }
         }

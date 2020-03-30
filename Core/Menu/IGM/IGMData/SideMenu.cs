@@ -93,7 +93,7 @@ namespace OpenVIII
 
                     case Items.Item:
                         Menu.Module.State = MenuModule.Mode.IGM_Items;
-                        IGM_Items.Refresh();
+                        IGMItems.Refresh();
                         return true;
 
                     case Items.Battle:

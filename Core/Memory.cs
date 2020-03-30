@@ -730,7 +730,7 @@ namespace OpenVIII
 
         public static Magazine Magazines { get; private set; }
 
-        public static Items_In_Menu MItems { get; private set; }
+        public static ItemsInMenu MItems { get; private set; }
 
         public static Module Module
         {
@@ -963,7 +963,7 @@ namespace OpenVIII
             var actions = new List<Action>()
             {
                 // this has a soft requirement on kernel_bin. It checks for null so should work without it.
-                () => {MItems = Items_In_Menu.Read(); },
+                () => {MItems = ItemsInMenu.Read(); },
                 Saves.Init,
                 //loads all save games from steam2013 or cd2000 or steam2019 directories. first come first serve.
                 //TODO allow choosing of which save folder to use.

@@ -248,7 +248,7 @@ namespace OpenVIII
 
         public ushort HP => CurrentHP();
 
-        public bool IsDead => CurrentHP() == 0 || (Statuses0 & Kernel.PersistentStatuses.Death) != 0;
+        public bool IsDead => CurrentHP() == 0 || Statuses0.HasFlag(Kernel.PersistentStatuses.Death);
 
         /// <summary>
         /// If all partymemembers are in gameover trigger Phoenix Pinion if CanPhoenixPinion or

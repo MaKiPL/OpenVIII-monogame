@@ -1,15 +1,15 @@
-﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMData;
+using OpenVIII.IGMData.Limit;
 
 namespace OpenVIII
 {
     /// <summary>
     /// Character BattleMenu
     /// </summary>
-    public partial class BattleMenu : Menu
+    public class BattleMenu : Menu
     {
         #region Destructors
 
@@ -35,24 +35,24 @@ namespace OpenVIII
 
         #region Properties
 
-        public sbyte CrisisLevel => ((IGMData.Commands)Data[SectionName.Commands]).CrisisLevel;
+        public sbyte CrisisLevel => ((Commands)Data[SectionName.Commands]).CrisisLevel;
 
-        public IGMData.Limit.Renzokuken Renzokuken
+        public Renzokuken Renzokuken
         {
             get
             {
                 if (Data.TryGetValue(SectionName.Renzokuken, out var val))
-                    return (IGMData.Limit.Renzokuken)val;
+                    return (Renzokuken)val;
                 return null;
             }
         }
 
-        public IGMData.Limit.Shot Shot
+        public Shot Shot
         {
             get
             {
                 if (Data.TryGetValue(SectionName.Shot, out var val))
-                    return (IGMData.Limit.Shot)val;
+                    return (Shot)val;
                 return null;
             }
         }
@@ -81,7 +81,7 @@ namespace OpenVIII
         {
             if (Data[SectionName.Renzokuken].Enabled)
                 return Data[SectionName.Renzokuken].Inputs();
-            else if (Data[SectionName.Shot].Enabled)
+            if (Data[SectionName.Shot].Enabled)
                 return Data[SectionName.Shot].Inputs();
             return Data[SectionName.Commands].Inputs();
         }
@@ -133,13 +133,13 @@ namespace OpenVIII
 
         private void InitAsync()
         {
-            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokuken, IGMData.Limit.Renzokuken.Create(new Rectangle(0, (int)Size.Y - 164, (int)Size.X, 124))));
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Renzokuken, Renzokuken.Create(new Rectangle(0, (int)Size.Y - 164, (int)Size.X, 124))));
             int width = 100, height = 100;
-            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, IGMData.Limit.Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 164, width, height))));
+            Memory.MainThreadOnlyActions.Enqueue(() => Data.TryAdd(SectionName.Shot, Shot.Create(new Rectangle((int)Size.X - width, (int)Size.Y - 164, width, height))));
             var actions = new Action[]
             {
-                () => Data.TryAdd(SectionName.Commands, IGMData.Commands.Create(new Rectangle(50, (int)(Size.Y - 224), 210, 186), Damageable, true)),
-                () => Data.TryAdd(SectionName.HP, IGMData.NamesHPATB.Create(new Rectangle((int)(Size.X - 389), (int)(Size.Y - 164), 389, 40), Damageable)),
+                () => Data.TryAdd(SectionName.Commands, Commands.Create(new Rectangle(50, (int)(Size.Y - 224), 210, 186), Damageable, true)),
+                () => Data.TryAdd(SectionName.HP, NamesHPATB.Create(new Rectangle((int)(Size.X - 389), (int)(Size.Y - 164), 389, 40), Damageable))
             };
             Memory.ProcessActions(actions);
         }

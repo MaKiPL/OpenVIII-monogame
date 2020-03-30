@@ -371,7 +371,7 @@ namespace OpenVIII.IGMData
                             BLANKS[pos] = true;
                         }
                     }
-                    else if (Memory.State.Characters != null && Damageable.GetCharacterData(out var c))
+                    else if (Memory.State.Characters && Damageable.GetCharacterData(out var c))
                     {
                         if (Battle)
                             c.GenerateCrisisLevel();

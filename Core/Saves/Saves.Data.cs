@@ -111,12 +111,14 @@ namespace OpenVIII
                     var cnt = 0;
                     for (var p = 0; p < 3; p++)
                     {
-                        var c = PartyData?[p] ?? OpenVIII.Characters.Squall_Leonhart;
+                        var c = Party?[p] ?? OpenVIII.Characters.Squall_Leonhart;
                         if (c == OpenVIII.Characters.Blank) continue;
-                        level += Characters?[c].Level ?? 0;
+                        level += this[c]?.Level ?? 0;
                         cnt++;
                     }
-                    return (byte)MathHelper.Clamp(level / cnt, 0, 100);
+                    if(cnt>0)
+                        return (byte)MathHelper.Clamp(level / cnt, 0, 100);
+                    return 0;
                 }
             }
 
@@ -195,15 +197,9 @@ namespace OpenVIII
             /// <summary>
             /// 0x04A0-0x08C7 152 bytes each 8 of them. Characters: Squall-Edea
             /// </summary>
-            public IReadOnlyDictionary<Characters, CharacterData> Characters
-            {
-                get
-                {
-                    if (_characters.Values.Count > 0)
-                        return _characters;
-                    return null;
-                }
-            }
+            public bool Characters => _characters != null && _characters.Count > 0;
+
+            public int CharactersCount => _characters.Count;
 
             /// <summary>
             /// 0x1370 64 bytes Chocobo World (TODO)
@@ -366,9 +362,9 @@ namespace OpenVIII
             /// </summary>
             public ushort Module { get; set; }
 
-            public IEnumerable<CharacterData> NonPartyMembers => Characters == null
+            public IEnumerable<CharacterData> NonPartyMembers => _characters == null
                 ? null
-                : (from i in Characters where !Party.Contains(i.Key) && i.Value.Available select i.Value);
+                : (from i in _characters where !PartyData.Contains(i.Key) && i.Value.Available select i.Value);
 
             /// <summary>
             /// 0x0D6B 1 byte Padding
@@ -415,23 +411,9 @@ namespace OpenVIII
             /// </summary>
             public IReadOnlyList<Shop> Shops => _shops;
 
-            public bool SmallTeam
-            {
-                get
-                {
-                    if (Characters != null)
-                    {
-                        foreach (var i in Characters)
-                        {
-                            if (!Party.Contains(i.Key) && i.Value.Available)
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                }
-            }
+            public bool SmallTeam =>
+                _characters == null || 
+                _characters.All(i => PartyData.Contains(i.Key) || !i.Value.Available);
 
             /// <summary>
             /// 0x0028 12 bytes Preview: Squall's name (0x00 terminated)
@@ -576,7 +558,7 @@ namespace OpenVIII
                     character = id.ToCharacters();
                 if (gf == OpenVIII.GFs.Blank)
                     gf = id.ToGFs();
-                var hp = (Characters.ContainsKey(character) ? Characters[character].CurrentHP() : -1);
+                var hp = (this[character]?.CurrentHP() ?? -1);
                 hp = (hp < 0 && GFs.ContainsKey(gf) ? GFs[gf].CurrentHP() : hp);
                 return hp;
             }
@@ -586,16 +568,15 @@ namespace OpenVIII
             /// </summary>
             /// <returns>&gt;=0</returns>
             public int DeadCharacters() =>
-                Characters?.Count(m =>
-                    m.Value.Available && m.Value.CurrentHP() == 0 ||
-                    (m.Value.Statuses0 & PersistentStatuses.Death) != 0) ?? 0;
+                _characters?.Count(m =>
+                    m.Value.Available && m.Value.IsDead) ?? 0;
 
             /// <summary>
             /// How many dead party members there are.
             /// </summary>
             /// <returns>&gt;=0</returns>
             public int DeadPartyMembers() =>
-                PartyData?.Count(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead) ?? 0;
+                PartyData?.Count(m => m != OpenVIII.Characters.Blank && this[m].IsDead) ?? 0;
 
             public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Abilities>> abilities)
             {
@@ -653,12 +634,12 @@ namespace OpenVIII
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
                 var r = new Dictionary<GFs, Characters>();
-                if (Characters == null) return r;
-                foreach (var c in Characters)
+                if (_characters == null) return r;
+                foreach (var c in _characters)
                 {
                     foreach (var gf in c.Value.JunctionedGFs)
                         if(!r.ContainsKey(gf) && gf >= OpenVIII.GFs.Quezacotl && gf <= OpenVIII.GFs.Eden )
-                            r.Add(gf, c.Key);
+                            r.Add(gf, c.Value.ID);
 
 
                 }
@@ -672,7 +653,7 @@ namespace OpenVIII
                 if (PartyData == null) return false;
                 foreach (var c in PartyData)
                 {
-                    if (Characters.TryGetValue(c, out var cd) && cd.Abilities.Contains(a))
+                    if (_characters.TryGetValue(c, out var cd) && cd.Abilities.Contains(a))
                         return true;
                 }
                 return false;
@@ -794,17 +775,21 @@ namespace OpenVIII
             /// </summary>
             public IEnumerable<GFs> UnlockedGFs => GFs.Where(x => x.Value.Exists).Select(x => x.Key);
 
+            public bool AnyDeadPartyMembers => PartyData.Select(x => this[x]).Any(x => x != null && x.IsDead);
+
+            public bool AnyCriticalPartyMembers => PartyData.Select(x => this[x]).Any(x => x != null && x.IsCritical);
+
             private CharacterData GetDamageable(Characters id)
             {
+                if (!Enum.IsDefined(typeof(Characters), id) || id == OpenVIII.Characters.Blank)
+                    return null;
                 CharacterData c = null;
-                if (Characters != null && !Characters.TryGetValue(id, out c) && Characters.Count > 0 && Party != null)
-                {
-                    var ind = Party.FindIndex(x => x.Equals(id));
+                if (_characters == null || CharactersCount <= 0 || Party == null || PartyData == null ||
+                    _characters.TryGetValue(id, out c)) return c;
+                var ind = Party.FindIndex(x => x.Equals(id));
 
-                    if (ind == -1 || !Characters.TryGetValue(PartyData[ind], out c))
-                        throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
-                    return c;
-                }
+                if (ind == -1 || !_characters.TryGetValue(PartyData[ind], out c))
+                    throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
                 return c;
             }
 

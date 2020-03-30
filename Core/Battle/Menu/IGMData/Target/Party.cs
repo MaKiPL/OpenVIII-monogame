@@ -1,20 +1,20 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII.IGMData.Target
 {
-    public class Party : IGMData.Base
+    public class Party : Base
     {
         #region Properties
 
-        public IGMData.Target.Enemies Target_Enemies { get; set; }
+        public Enemies Target_Enemies { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        public static Party Create(Rectangle pos) => Create<Party>(3, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.NAME }, 1, 3);
+        public static Party Create(Rectangle pos) => Create<Party>(3, 1, new Box { Pos = pos, Title = Icons.ID.NAME }, 1, 3);
 
         public override void Inputs_Left()
         {
@@ -51,8 +51,8 @@ namespace OpenVIII.IGMData.Target
                 {
                     var data = Memory.State[Memory.State.PartyData[pm.Key]];
 
-                    ((IGMDataItem.Text)ITEM[pos, 0]).Data = data.Name;
-                    ((IGMDataItem.Text)ITEM[pos, 0]).FontColor = data.IsDead ? Font.ColorID.Dark_Grey : Font.ColorID.White;
+                    ((Text)ITEM[pos, 0]).Data = data.Name;
+                    ((Text)ITEM[pos, 0]).FontColor = data.IsDead ? Font.ColorID.Dark_Grey : Font.ColorID.White;
 
                     BLANKS[pos] = false;
 
@@ -71,7 +71,7 @@ namespace OpenVIII.IGMData.Target
         {
             base.Init();
             for (var pos = 0; pos < Count; pos++)
-                ITEM[pos, 0] = new IGMDataItem.Text { Pos = SIZE[pos] };
+                ITEM[pos, 0] = new Text { Pos = SIZE[pos] };
         }
 
         protected override void InitShift(int i, int col, int row)

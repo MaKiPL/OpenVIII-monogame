@@ -137,9 +137,9 @@ namespace OpenVIII
                     Damageable = damageable;
                     if (Damageable.GetCharacterData(out var c))
                     {
-                        PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
+                        PartyPos = (sbyte)(Memory.State?.Party?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
                     }
-                    else if (typeof(Enemy).Equals(Damageable.GetType()))
+                    else if (Damageable is Enemy)
                     {
                         PartyPos = checked((sbyte)(0 - Enemy.Party.FindIndex(x => x.Equals(Damageable)) - 1));
                     }

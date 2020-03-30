@@ -1,12 +1,15 @@
-﻿using Microsoft.Xna.Framework;
-using OpenVIII.Encoding.Tags;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.AV;
+using OpenVIII.Encoding.Tags;
+using OpenVIII.IGMData.Dialog;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII.IGMData
 {
-    public class PartyItems : IGMData.Base
+    public class PartyItems : Base
     {
         #region Fields
 
@@ -22,12 +25,12 @@ namespace OpenVIII.IGMData
 
         #region Constructors
 
-        public PartyItems() : base()
+        public PartyItems()
         {
             str_NotFound = Strings.Name.Items_NotFound;
             str_Over100 = Strings.Name.Items_Over100;
             str_Recieved = Strings.Name.Items_Recieved;
-            DialogSelectedItem = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedItem };
+            DialogSelectedItem = new[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedItem };
         }
 
         #endregion Constructors
@@ -42,12 +45,12 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static PartyItems Create(Rectangle pos) => Create<PartyItems>(1, 7, new IGMDataItem.Empty { Pos = pos }, 1, 1);
+        public static PartyItems Create(Rectangle pos) => Create<PartyItems>(1, 7, new Empty { Pos = pos }, 1, 1);
 
         public void Earn()
         {
             skipsnd = true;
-            AV.Sound.Play(17);
+            Sound.Play(17);
         }
 
         public override bool Inputs_CANCEL() => false;
@@ -103,11 +106,11 @@ namespace OpenVIII.IGMData
             base.Refresh();
             if (Items != null && Items.TryPeek(out _item))
             {
-                ((IGMDataItem.Box)ITEM[0, 1]).Data = Item.Data?.Name;
-                ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{Item.QTY}";
-                ((IGMDataItem.Box)ITEM[0, 3]).Data = Item.Data?.Description;
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.Data?.Name ?? "");
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.Data?.Name ?? "");
+                ((Box)ITEM[0, 1]).Data = Item.Data?.Name;
+                ((Box)ITEM[0, 2]).Data = $"{Item.QTY}";
+                ((Box)ITEM[0, 3]).Data = Item.Data?.Description;
+                ((Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.Data?.Name ?? "");
+                ((Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, Item.Data?.Name ?? "");
                 ITEM[0, 1].Show();
                 ITEM[0, 2].Show();
                 ITEM[0, 3].Show();
@@ -123,12 +126,12 @@ namespace OpenVIII.IGMData
                 for (; pos < name.Length; pos++)
                     if (name.Value[pos] == 2) break;
                 var trimname = new FF8String(name.Value.Take(pos - 1).ToArray());
-                ((IGMDataItem.Box)ITEM[0, 1]).Data = trimname;
+                ((Box)ITEM[0, 1]).Data = trimname;
                 //TODO grab card name from start of string
-                ((IGMDataItem.Box)ITEM[0, 2]).Data = $"{card.Value}";
-                ((IGMDataItem.Box)ITEM[0, 3]).Data = "";
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, trimname); 
-                ((IGMData.Dialog.Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, trimname);
+                ((Box)ITEM[0, 2]).Data = $"{card.Value}";
+                ((Box)ITEM[0, 3]).Data = "";
+                ((Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, trimname); 
+                ((Small)ITEM[0, 5]).Data = str_Over100.Clone().Replace(DialogSelectedItem, trimname);
                 ITEM[0, 1].Show();
                 ITEM[0, 2].Show();
                 ITEM[0, 3].Hide();
@@ -173,13 +176,13 @@ namespace OpenVIII.IGMData
         {
             base.Init();
             Hide();
-            ITEM[0, 0] = new IGMDataItem.Box { Data = Strings.Name.Items_Recieved, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
-            ITEM[0, 1] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Title = Icons.ID.ITEM, Options = Box_Options.Middle }; // item name
-            ITEM[0, 2] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Title = Icons.ID.NUM_, Options = Box_Options.Middle | Box_Options.Center }; // item Count
-            ITEM[0, 3] = new IGMDataItem.Box { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle }; // item description
-            ITEM[0, 4] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // Couldn't find any items
-            ITEM[0, 5] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // over 100 discarded
-            ITEM[0, 6] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // Recieved item
+            ITEM[0, 0] = new Box { Data = Strings.Name.Items_Recieved, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
+            ITEM[0, 1] = new Box { Pos = new Rectangle(SIZE[0].X + 140, SIZE[0].Y + 189, 475, 78), Title = Icons.ID.ITEM, Options = Box_Options.Middle }; // item name
+            ITEM[0, 2] = new Box { Pos = new Rectangle(SIZE[0].X + 615, SIZE[0].Y + 189, 125, 78), Title = Icons.ID.NUM_, Options = Box_Options.Middle | Box_Options.Center }; // item Count
+            ITEM[0, 3] = new Box { Pos = new Rectangle(SIZE[0].X, SIZE[0].Y + 444, SIZE[0].Width, 78), Title = Icons.ID.HELP, Options = Box_Options.Middle }; // item description
+            ITEM[0, 4] = Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // Couldn't find any items
+            ITEM[0, 5] = Small.Create(null, SIZE[0].X + 230, SIZE[0].Y + 291, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // over 100 discarded
+            ITEM[0, 6] = Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center, SIZE[0]); // Recieved item
             Cursor_Status |= (Cursor_Status.Hidden | (Cursor_Status.Enabled | Cursor_Status.Static));
         }
 

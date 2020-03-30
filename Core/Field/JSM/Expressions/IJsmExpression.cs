@@ -42,8 +42,10 @@ namespace OpenVIII.Fields.Scripts
             {
                 case 0:
                     return false;
+
                 case 1:
                     return true;
+
                 default:
                     throw new NotSupportedException($"Cannot convert value {value} to Boolean.");
             }
@@ -55,8 +57,10 @@ namespace OpenVIII.Fields.Scripts
             {
                 case 0:
                     return false;
+
                 case 1:
                     return true;
+
                 default:
                     throw new NotSupportedException($"Cannot convert value {expression.Value} to Boolean.");
             }

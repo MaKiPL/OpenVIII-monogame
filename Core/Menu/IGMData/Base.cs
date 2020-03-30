@@ -392,9 +392,11 @@ namespace OpenVIII.IGMData
             if (Memory.State?.PartyData != null &&
                 Damageable == null &&
                 PartyPos >= 0 &&
-                PartyPos < count &&
-                Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out var c))
-                Damageable = c;
+                PartyPos < count)
+            {
+                Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+            }
+
             base.Refresh();
         }
 

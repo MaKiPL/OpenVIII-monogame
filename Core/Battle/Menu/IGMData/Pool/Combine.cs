@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
+using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMData.Pool
 {
@@ -16,7 +17,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Combine Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 2)
         {
-            var r = Create<Combine>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
+            var r = Create<Combine>(count + 1, 1, new Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
             if (battle)
                 r.Target_Group = Target.Group.Create(r.Damageable);
             return r;
@@ -63,7 +64,7 @@ namespace OpenVIII.IGMData.Pool
                 if (i >= Rows) return false;
                 if (skip-- <= 0)
                 {
-                    ((IGMDataItem.Text)ITEM[i, 0]).Data = item.Name;
+                    ((Text)ITEM[i, 0]).Data = item.Name;
                     Contents[i] = item;
                     BLANKS[i] = false;
                     ITEM[i, 0].Show();
@@ -112,7 +113,7 @@ namespace OpenVIII.IGMData.Pool
             base.Init();
             for (var i = 0; i < Rows; i++)
             {
-                ITEM[i, 0] = new IGMDataItem.Text
+                ITEM[i, 0] = new Text
                 {
                     Pos = SIZE[i]
                 };
@@ -145,29 +146,29 @@ namespace OpenVIII.IGMData.Pool
             base.UpdateTitle();
             if (Pages == 1)
             {
-                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                ((Box)CONTAINER).Title = Icons.ID.SPECIAL;
             }
             else
                 switch (Page)
                 {
                     case 0:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG1;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG1;
                         break;
 
                     case 1:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG2;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG2;
                         break;
 
                     case 2:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG3;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG3;
                         break;
 
                     case 3:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
                         break;
 
                     default:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL;
                         break;
                 }
         }
@@ -180,9 +181,9 @@ namespace OpenVIII.IGMData.Pool
         {
             #region Fields
 
-            public Kernel.NonJunctionableGFsAttacksData non_Junctionable_GFs_Attacks_Data;
-            public Kernel.RinoaLimitBreaksPart1 rinoa_Limit_Breaks_Part_1;
-            public Kernel.RinoaLimitBreaksPart2 rinoa_Limit_Breaks_Part_2;
+            public NonJunctionableGFsAttacksData non_Junctionable_GFs_Attacks_Data;
+            public RinoaLimitBreaksPart1 rinoa_Limit_Breaks_Part_1;
+            public RinoaLimitBreaksPart2 rinoa_Limit_Breaks_Part_2;
 
             #endregion Fields
 

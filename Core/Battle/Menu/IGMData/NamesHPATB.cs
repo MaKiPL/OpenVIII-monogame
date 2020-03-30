@@ -1,20 +1,23 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII.IGMDataItem;
+using OpenVIII.IGMDataItem.Gradient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Texture = OpenVIII.IGMDataItem.Texture;
 
 namespace OpenVIII.IGMData
 {
-    public class NamesHPATB : IGMData.Base
+    public class NamesHPATB : Base
     {
         #region Fields
 
-        private const float ATBalpha = .8f;
+        private const float ATBAlpha = .8f;
         private const int ATBWidth = 150;
-        private static Texture2D dot;
-        private Damageable.BattleMode BattleMode = Damageable.BattleMode.EndTurn;
-        private bool EventAdded = false;
+        private static Texture2D _dot;
+        private Damageable.BattleMode _battleMode = Damageable.BattleMode.EndTurn;
+        private bool _eventAdded;
 
         #endregion Fields
 
@@ -22,7 +25,7 @@ namespace OpenVIII.IGMData
 
         ~NamesHPATB()
         {
-            if (EventAdded)
+            if (_eventAdded)
                 Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
         }
 
@@ -82,35 +85,14 @@ namespace OpenVIII.IGMData
 
         #region Methods
 
-        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new IGMDataItem.Empty { Pos = pos }, 1, 1, damageable);
-
-        public void ThreadUnsafeOperations()
-        {
-            if (dot == null)
-            {
-                if (Memory.IsMainThread)
-                {
-                    var localdot = new Texture2D(Memory.Graphics.GraphicsDevice, 4, 4);
-                    var tmp = new Color[localdot.Height * localdot.Width];
-                    for (var i = 0; i < tmp.Length; i++)
-                        tmp[i] = Color.White;
-                    localdot.SetData(tmp);
-                    dot = localdot;
-                    IGMDataItem.Gradient.ATB.ThreadUnsafeOperations(ATBWidth);
-                }
-                else throw new Exception("Must be in main thread!");
-            }
-            if (dot != null)
-                ((IGMDataItem.Texture)(ITEM[0, (byte)DepthID.ATBCharged])).
-                    Data = dot;
-        }
+        public static NamesHPATB Create(Rectangle pos, Damageable damageable) => Create<NamesHPATB>(1, (int)DepthID.Max, new Empty { Pos = pos }, 1, 1, damageable);
 
         public override void ModeChangeEvent(object sender, Enum e)
         {
-            if (!e.Equals(BattleMode))
+            if (!e.Equals(_battleMode))
             {
                 base.ModeChangeEvent(sender, e);
-                BattleMode = (Damageable.BattleMode)e;
+                _battleMode = (Damageable.BattleMode)e;
                 if (!e.Equals(Damageable.BattleMode.EndTurn)) //because endturn triggers BattleMenu refresh.
                     Refresh();
             }
@@ -118,9 +100,9 @@ namespace OpenVIII.IGMData
 
         public override void Refresh(Damageable damageable)
         {
-            if (EventAdded && damageable != Damageable)
+            if (_eventAdded && damageable != Damageable)
             {
-                EventAdded = false;
+                _eventAdded = false;
                 if (Damageable != null)
                     Damageable.BattleModeChangeEventHandler -= ModeChangeEvent;
             }
@@ -129,80 +111,78 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            if (Damageable != null)
+            if (Damageable == null) return;
+            if (Memory.State?.Characters != null && Damageable.GetCharacterData(out _))
             {
-                if (Memory.State?.Characters != null && Damageable.GetCharacterData(out var c))
-                {
-                    var party = GetParty();
-                    if (GetCharPos(party) == 0xFF) return;
-                }
-                else
-                {
-                }
-                var pos = PartyPos;
-                var rectangle = SIZE[0];
-                rectangle.Offset(0f, SIZE[0].Height * pos);
-                var atbbarpos = new Rectangle(rectangle.X + 230, rectangle.Y + 12, ATBWidth, 15);
-                ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Pos = atbbarpos;
-                ((IGMDataItem.Texture)ITEM[0, (byte)DepthID.ATBCharged]).Pos = atbbarpos;
-                ((IGMDataItem.Icon)ITEM[0, (byte)DepthID.ATBBorder]).Pos = atbbarpos;
-                ((IGMDataItem.Gradient.GF)ITEM[0, (byte)DepthID.GFCharging]).Pos = atbbarpos;
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Data = Damageable.Name;
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(rectangle.X - 60, rectangle.Y, 0, 0);
-                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Pos = new Rectangle(rectangle.X + 128, rectangle.Y, 0, 0);
+                var party = GetParty();
+                if (GetCharPos(party) == 0xFF) return;
+            }
 
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Draw(true);
-                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Draw(true);
+            var pos = PartyPos;
+            var rectangle = SIZE[0];
+            rectangle.Offset(0f, SIZE[0].Height * pos);
+            var atbBarPos = new Rectangle(rectangle.X + 230, rectangle.Y + 12, ATBWidth, 15);
+            ((ATB)ITEM[0, (int)DepthID.ATBCharging]).Pos = atbBarPos;
+            ((Texture)ITEM[0, (byte)DepthID.ATBCharged]).Pos = atbBarPos;
+            ((Icon)ITEM[0, (byte)DepthID.ATBBorder]).Pos = atbBarPos;
+            ((GF)ITEM[0, (byte)DepthID.GFCharging]).Pos = atbBarPos;
+            ((Text)ITEM[0, (byte)DepthID.Name]).Data = Damageable.Name;
+            ((Text)ITEM[0, (byte)DepthID.Name]).Pos = new Rectangle(rectangle.X - 60, rectangle.Y, 0, 0);
+            ((Integer)ITEM[0, (byte)DepthID.HP]).Pos = new Rectangle(rectangle.X + 128, rectangle.Y, 0, 0);
 
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Pos = Rectangle.Union(
-                    ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).DataSize,
-                    ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).DataSize);
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y -= 4;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Y = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Y;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Height = rectangle.Height;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).X =
-                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).X -
-                    (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width * 3) / 8;
-                ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Width = (((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Width * 7) / 8;
-                if (Damageable.SummonedGF != null)
-                {
-                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFNameBox]).Data = Damageable.SummonedGF.Name;
-                    ((IGMDataItem.Box)ITEM[0, (byte)DepthID.GFHPBox]).Data = $"{Damageable.SummonedGF.CurrentHP()}";
-                }
-                if (EventAdded == false)
-                {
-                    EventAdded = true;
-                    Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
-                }
-                var blink = false;
-                var charging = false;
-                BattleMode = (Damageable.BattleMode)Damageable.GetBattleMode();
+            ((Text)ITEM[0, (byte)DepthID.Name]).Draw(true);
+            ((Integer)ITEM[0, (byte)DepthID.HP]).Draw(true);
 
-                ITEM[0, (byte)DepthID.HP].Show();
-                ITEM[0, (byte)DepthID.Name].Show();
-                ITEM[0, (byte)DepthID.GFNameBox].Hide();
-                ITEM[0, (byte)DepthID.GFHPBox].Hide();
+            ((Box)ITEM[0, (byte)DepthID.GFHPBox]).Pos = Rectangle.Union(
+                ((Text)ITEM[0, (byte)DepthID.Name]).DataSize,
+                ((Integer)ITEM[0, (byte)DepthID.HP]).DataSize);
+            ((Box)ITEM[0, (byte)DepthID.GFHPBox]).Y -= 4;
+            ((Box)ITEM[0, (byte)DepthID.GFNameBox]).Y = ((Box)ITEM[0, (byte)DepthID.GFHPBox]).Y;
+            ((Box)ITEM[0, (byte)DepthID.GFNameBox]).Height = ((Box)ITEM[0, (byte)DepthID.GFHPBox]).Height = rectangle.Height;
+            ((Box)ITEM[0, (byte)DepthID.GFNameBox]).X =
+                ((Box)ITEM[0, (byte)DepthID.GFHPBox]).X -
+                (((Box)ITEM[0, (byte)DepthID.GFHPBox]).Width * 3) / 8;
+            ((Box)ITEM[0, (byte)DepthID.GFNameBox]).Width = (((Box)ITEM[0, (byte)DepthID.GFHPBox]).Width * 7) / 8;
+            if (Damageable.SummonedGF != null)
+            {
+                ((Box)ITEM[0, (byte)DepthID.GFNameBox]).Data = Damageable.SummonedGF.Name;
+                ((Box)ITEM[0, (byte)DepthID.GFHPBox]).Data = $"{Damageable.SummonedGF.CurrentHP()}";
+            }
+            if (_eventAdded == false)
+            {
+                _eventAdded = true;
+                Damageable.BattleModeChangeEventHandler += ModeChangeEvent;
+            }
+            var blink = false;
+            var charging = false;
+            _battleMode = (Damageable.BattleMode)Damageable.GetBattleMode();
 
-                ITEM[0, (int)DepthID.ATBCharged].Hide();
-                ITEM[0, (int)DepthID.GFCharging].Hide();
-                ITEM[0, (int)DepthID.ATBCharging].Hide();
-                if (BattleMode.Equals(Damageable.BattleMode.YourTurn))
-                {
-                    ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.LightYellow * ATBalpha;
+            ITEM[0, (byte)DepthID.HP].Show();
+            ITEM[0, (byte)DepthID.Name].Show();
+            ITEM[0, (byte)DepthID.GFNameBox].Hide();
+            ITEM[0, (byte)DepthID.GFHPBox].Hide();
+
+            ITEM[0, (int)DepthID.ATBCharged].Hide();
+            ITEM[0, (int)DepthID.GFCharging].Hide();
+            ITEM[0, (int)DepthID.ATBCharging].Hide();
+            switch (_battleMode)
+            {
+                case Damageable.BattleMode.YourTurn:
+                    ((Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.LightYellow * ATBAlpha;
                     blink = true;
-                }
-                else if (BattleMode.Equals(Damageable.BattleMode.ATB_Charged))
-                {
-                    ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.Yellow * ATBalpha;
-                }
-                else if (BattleMode.Equals(Damageable.BattleMode.ATB_Charging))
-                {
+                    break;
+
+                case Damageable.BattleMode.ATB_Charged:
+                    ((Texture)ITEM[0, (int)DepthID.ATBCharged]).Color = Color.Yellow * ATBAlpha;
+                    break;
+
+                case Damageable.BattleMode.ATB_Charging:
                     charging = true;
-                    ((IGMDataItem.Gradient.ATB)ITEM[0, (int)DepthID.ATBCharging]).Refresh(Damageable);
+                    ((ATB)ITEM[0, (int)DepthID.ATBCharging]).Refresh(Damageable);
                     ITEM[0, (int)DepthID.ATBCharging].Show();
-                }
-                else if (BattleMode.Equals(Damageable.BattleMode.GF_Charging))
-                {
+                    break;
+
+                case Damageable.BattleMode.GF_Charging:
                     charging = true;
                     ITEM[0, (byte)DepthID.HP].Hide();
                     ITEM[0, (byte)DepthID.Name].Hide();
@@ -210,42 +190,68 @@ namespace OpenVIII.IGMData
                     ITEM[0, (byte)DepthID.GFHPBox].Show();
                     ITEM[0, (int)DepthID.GFCharging].Show();
                     ITEM[0, (int)DepthID.GFCharging].Refresh(Damageable.SummonedGF);
-                }
-                if (!charging)
-                {
-                    ITEM[0, (int)DepthID.ATBCharged].Show();
-                }
-                ((IGMDataItem.Texture)ITEM[0, (int)DepthID.ATBCharged]).Blink = blink;
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).Blink = blink;
-                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Blink = blink;
+                    break;
 
-                base.Refresh();
+                case Damageable.BattleMode.EndTurn:
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
+            if (!charging)
+            {
+                ITEM[0, (int)DepthID.ATBCharged].Show();
+            }
+            ((Texture)ITEM[0, (int)DepthID.ATBCharged]).Blink = blink;
+            ((Text)ITEM[0, (byte)DepthID.Name]).Blink = blink;
+            ((Integer)ITEM[0, (byte)DepthID.HP]).Blink = blink;
+
+            base.Refresh();
+        }
+
+        public void ThreadUnsafeOperations()
+        {
+            if (_dot == null)
+            {
+                if (Memory.IsMainThread)
+                {
+                    var texture2D = new Texture2D(Memory.Graphics.GraphicsDevice, 4, 4);
+                    var tmp = new Color[texture2D.Height * texture2D.Width];
+                    for (var i = 0; i < tmp.Length; i++)
+                        tmp[i] = Color.White;
+                    texture2D.SetData(tmp);
+                    _dot = texture2D;
+                    ATB.ThreadUnsafeOperations(ATBWidth);
+                }
+                else throw new Exception("Must be in main thread!");
+            }
+            if (_dot != null)
+                ((Texture)(ITEM[0, (byte)DepthID.ATBCharged])).
+                    Data = _dot;
         }
 
         public override bool Update()
         {
-            if (ITEM[0, 2].GetType() == typeof(IGMDataItem.Gradient.ATB))
+            if (ITEM[0, 2] is ATB)
             {
-                var hg = (IGMDataItem.Gradient.ATB)ITEM[0, 2];
+                // unsure if need
             }
-            if (Damageable != null)
+
+            if (Damageable == null) return base.Update();
+            int hp = Damageable.CurrentHP();
+            int criticalHP = Damageable.CriticalHP();
+            var colorID = Font.ColorID.White;
+            if (hp < criticalHP)
             {
-                int HP = Damageable.CurrentHP();
-                int CriticalHP = Damageable.CriticalHP();
-                var colorid = Font.ColorID.White;
-                if (HP < CriticalHP)
-                {
-                    colorid = Font.ColorID.Yellow;
-                }
-                if (HP <= 0)
-                {
-                    colorid = Font.ColorID.Red;
-                }
-                ((IGMDataItem.Text)ITEM[0, (byte)DepthID.Name]).FontColor = colorid;
-                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).Data = HP;
-                ((IGMDataItem.Integer)ITEM[0, (byte)DepthID.HP]).FontColor = colorid;
+                colorID = Font.ColorID.Yellow;
             }
+            if (hp <= 0)
+            {
+                colorID = Font.ColorID.Red;
+            }
+            ((Text)ITEM[0, (byte)DepthID.Name]).FontColor = colorID;
+            ((Integer)ITEM[0, (byte)DepthID.HP]).Data = hp;
+            ((Integer)ITEM[0, (byte)DepthID.HP]).FontColor = colorID;
             return base.Update();
         }
 
@@ -255,35 +261,33 @@ namespace OpenVIII.IGMData
             Memory.MainThreadOnlyActions.Enqueue(ThreadUnsafeOperations);
 
             // TODO: make a font render that can draw right to left from a point. For Right aligning the names.
-            var atbbarpos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);
-            ITEM[0, (byte)DepthID.Name] = new IGMDataItem.Text { };
-            ITEM[0, (byte)DepthID.HP] = new IGMDataItem.Integer { Spaces = 4, NumType = Icons.NumType.Num8X16A };
-            ITEM[0, (byte)DepthID.GFHPBox] = new IGMDataItem.Box { Options = Box_Options.Right | Box_Options.Middle };
+            var atbBarPos = new Rectangle(SIZE[0].X + 230, SIZE[0].Y + 12, ATBWidth, 15);
+            ITEM[0, (byte)DepthID.Name] = new Text();
+            ITEM[0, (byte)DepthID.HP] = new Integer { Spaces = 4, NumType = Icons.NumType.Num8X16A };
+            ITEM[0, (byte)DepthID.GFHPBox] = new Box { Options = Box_Options.Right | Box_Options.Middle };
             ITEM[0, (byte)DepthID.GFHPBox].Hide();
-            ITEM[0, (byte)DepthID.GFNameBox] = new IGMDataItem.Box { Options = Box_Options.Center | Box_Options.Middle };
+            ITEM[0, (byte)DepthID.GFNameBox] = new Box { Options = Box_Options.Center | Box_Options.Middle };
             ITEM[0, (byte)DepthID.GFNameBox].Hide();
-            ITEM[0, (byte)DepthID.ATBBorder] = new IGMDataItem.Icon { Data = Icons.ID.Size_08x64_Bar, Palette = 0 };
-            ITEM[0, (byte)DepthID.ATBCharged] = new IGMDataItem.Texture { Color = Color.LightYellow * ATBalpha, Faded_Color = new Color(125, 125, 0, 255) * ATBalpha };
+            ITEM[0, (byte)DepthID.ATBBorder] = new Icon { Data = Icons.ID.Size_08x64_Bar, Palette = 0 };
+            ITEM[0, (byte)DepthID.ATBCharged] = new Texture { Color = Color.LightYellow * ATBAlpha, Faded_Color = new Color(125, 125, 0, 255) * ATBAlpha };
             ITEM[0, (byte)DepthID.ATBCharged].Hide();
-            ITEM[0, (int)DepthID.ATBCharging] = IGMDataItem.Gradient.ATB.Create(atbbarpos);
-            ITEM[0, (int)DepthID.GFCharging] = IGMDataItem.Gradient.GF.Create(atbbarpos);
-            ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Color = Color.Orange * ATBalpha;
-            ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * ATBalpha;
-            ((IGMDataItem.Gradient.ATB)ITEM[0, (byte)DepthID.ATBCharging]).Refresh(Damageable);
+            ITEM[0, (int)DepthID.ATBCharging] = ATB.Create(atbBarPos);
+            ITEM[0, (int)DepthID.GFCharging] = GF.Create(atbBarPos);
+            ((ATB)ITEM[0, (byte)DepthID.ATBCharging]).Color = Color.Orange * ATBAlpha;
+            ((ATB)ITEM[0, (byte)DepthID.ATBCharging]).Faded_Color = Color.Orange * ATBAlpha;
+            ((ATB)ITEM[0, (byte)DepthID.ATBCharging]).Refresh(Damageable);
         }
 
         private static List<KeyValuePair<int, Characters>> GetParty()
         {
-            if (Memory.State != null && Memory.State.Characters != null)
+            if (Memory.State != null && Memory.State.Characters)
                 return Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList();
             return null;
         }
 
-        private byte GetCharPos() => GetCharPos(GetParty());
-
         private byte GetCharPos(List<KeyValuePair<int, Characters>> party)
         {
-            var i = -1;
+            int i;
             if (party != null && (i = party.FindIndex(x => Damageable.GetCharacterData(out var c) && x.Value == c.ID)) > -1)
                 return checked((byte)i);
             return 0xFF;

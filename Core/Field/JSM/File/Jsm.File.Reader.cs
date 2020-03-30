@@ -61,7 +61,7 @@ namespace OpenVIII.Fields.Scripts
                 }
             }
 
-            private static unsafe Jsm.ExecutableSegment MakeScript(Operation* operation, ushort count)
+            private static unsafe ExecutableSegment MakeScript(Operation* operation, ushort count)
             {
                 var instructions = new List<JsmInstruction>(count / 2);
                 var stack = new LabeledStack();
@@ -74,7 +74,7 @@ namespace OpenVIII.Fields.Scripts
                     operation++;
 
                     stack.CurrentLabel = i;
-                    var expression = Jsm.Expression.TryMake(opcode, parameter, stack);
+                    var expression = Expression.TryMake(opcode, parameter, stack);
                     if (expression != null)
                     {
                         stack.Push(expression);
@@ -82,14 +82,9 @@ namespace OpenVIII.Fields.Scripts
                     }
 
                     var instruction = JsmInstruction.TryMake(opcode, parameter, stack);
-                    if (instruction != null)
-                    {
-                        labelBuilder.TraceInstruction(i, stack.CurrentLabel, new IndexedInstruction(instructions.Count, instruction));
-                        instructions.Add(instruction);
-                        continue;
-                    }
-
-                    throw new NotSupportedException(opcode.ToString());
+                    if (instruction == null) throw new NotSupportedException(opcode.ToString());
+                    labelBuilder.TraceInstruction(i, stack.CurrentLabel, new IndexedInstruction(instructions.Count, instruction));
+                    instructions.Add(instruction);
                 }
 
                 if (stack.Count != 0)
@@ -108,10 +103,10 @@ namespace OpenVIII.Fields.Scripts
                 instructions = InstructionMerger.Merge(instructions, labelIndices);
 
                 // Combine instructions to logical blocks
-                var controls = Jsm.Control.Builder.Build(instructions);
+                var controls = Control.Builder.Build(instructions);
 
                 // Arrange instructions by segments and return root
-                return Jsm.Segment.Builder.Build(instructions, controls);
+                return Segment.Builder.Build(instructions, controls);
             }
 
             #endregion Methods

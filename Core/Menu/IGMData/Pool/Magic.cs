@@ -30,7 +30,7 @@ namespace OpenVIII.IGMData.Pool
             {
                 if (!Battle)
                 {
-                    Menu.IGM_Junction.ModeChangeHandler -= ModeChangeEvent;
+                    Menu.Junction.ModeChangeHandler -= ModeChangeEvent;
                     StatEventListener -= StatChangeEvent;
                 }
                 else if (Damageable != null)
@@ -42,11 +42,11 @@ namespace OpenVIII.IGMData.Pool
 
         #region Events
 
-        public static event EventHandler<IGM_Junction.Mode> SlotConfirmListener;
+        public static event EventHandler<Junction.Mode> SlotConfirmListener;
 
         public static event EventHandler<Damageable> SlotRefreshListener;
 
-        public static event EventHandler<IGM_Junction.Mode> SlotUndoListener;
+        public static event EventHandler<Junction.Mode> SlotUndoListener;
 
         public static event EventHandler<Kernel.Stat> StatEventListener;
 
@@ -56,7 +56,7 @@ namespace OpenVIII.IGMData.Pool
 
         public Damageable LastCharacter { get; private set; }
 
-        public IGM_Junction.Mode LastMode { get; private set; }
+        public Junction.Mode LastMode { get; private set; }
 
         public int LastPage { get; private set; }
 
@@ -66,7 +66,7 @@ namespace OpenVIII.IGMData.Pool
         public IEnumerable<Kernel.MagicData> Sort { get; private set; }
 
 
-        public IGM_Junction.Mode SortMode { get; private set; }
+        public Junction.Mode SortMode { get; private set; }
 
         public Kernel.Stat Stat { get; private set; }
 
@@ -144,35 +144,35 @@ namespace OpenVIII.IGMData.Pool
                     {
                         switch (SortMode)
                         {
-                            case IGM_Junction.Mode.Mag_Pool_Stat:
+                            case Junction.Mode.Mag_Pool_Stat:
                                 if (i.JVal[Stat] == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
-                            case IGM_Junction.Mode.Mag_Pool_EL_D:
+                            case Junction.Mode.Mag_Pool_EL_D:
                                 if (i.JVal[Stat] * i.ElDef.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
-                            case IGM_Junction.Mode.Mag_Pool_EL_A:
+                            case Junction.Mode.Mag_Pool_EL_A:
                                 if (i.JVal[Stat] * i.ElAtk.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
-                            case IGM_Junction.Mode.Mag_Pool_ST_D:
+                            case Junction.Mode.Mag_Pool_ST_D:
                                 if (i.JVal[Stat] * i.StDef.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
                                     addMagic(ref pos, i, @default);
                                 break;
 
-                            case IGM_Junction.Mode.Mag_Pool_ST_A:
+                            case Junction.Mode.Mag_Pool_ST_A:
                                 if (i.JVal[Stat] * i.StAtk.Count() == 0)
                                     addMagic(ref pos, i, nostat);
                                 else
@@ -224,24 +224,24 @@ namespace OpenVIII.IGMData.Pool
             if (!Battle)
                 switch (SortMode)
                 {
-                    case IGM_Junction.Mode.Mag_Pool_Stat:
+                    case Junction.Mode.Mag_Pool_Stat:
                         if (Stat != Kernel.Stat.None)
                             Sort = Source.SortedMagic(Stat);
                         break;
 
-                    case IGM_Junction.Mode.Mag_Pool_EL_D:
+                    case Junction.Mode.Mag_Pool_EL_D:
                         Sort = Source.SortedMagic(Kernel.Stat.ElDef1);
                         break;
 
-                    case IGM_Junction.Mode.Mag_Pool_EL_A:
+                    case Junction.Mode.Mag_Pool_EL_A:
                         Sort = Source.SortedMagic(Kernel.Stat.ElAtk);
                         break;
 
-                    case IGM_Junction.Mode.Mag_Pool_ST_D:
+                    case Junction.Mode.Mag_Pool_ST_D:
                         Sort = Source.SortedMagic(Kernel.Stat.StDef1);
                         break;
 
-                    case IGM_Junction.Mode.Mag_Pool_ST_A:
+                    case Junction.Mode.Mag_Pool_ST_A:
                         Sort = Source.SortedMagic(Kernel.Stat.StAtk);
                         break;
 
@@ -266,7 +266,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs_CANCEL()
         {
-            if (Memory.State.Characters != null)
+            if (Memory.State.Characters)
             {
                 base.Inputs_CANCEL();
                 if (Battle)
@@ -276,29 +276,29 @@ namespace OpenVIII.IGMData.Pool
                 }
                 else
                 {
-                    SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
-                    SlotConfirmListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
+                    SlotUndoListener?.Invoke(this, (Junction.Mode)Menu.Junction.GetMode());
+                    SlotConfirmListener?.Invoke(this, (Junction.Mode)Menu.Junction.GetMode());
                     SlotRefreshListener?.Invoke(this, Damageable);
                     switch (SortMode)
                     {
-                        case IGM_Junction.Mode.Mag_Pool_Stat:
-                            Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_Stat);
+                        case Junction.Mode.Mag_Pool_Stat:
+                            Menu.Junction.SetMode(Junction.Mode.Mag_Stat);
                             break;
 
-                        case IGM_Junction.Mode.Mag_Pool_EL_A:
-                            Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_EL_A);
+                        case Junction.Mode.Mag_Pool_EL_A:
+                            Menu.Junction.SetMode(Junction.Mode.Mag_EL_A);
                             break;
 
-                        case IGM_Junction.Mode.Mag_Pool_EL_D:
-                            Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_EL_D);
+                        case Junction.Mode.Mag_Pool_EL_D:
+                            Menu.Junction.SetMode(Junction.Mode.Mag_EL_D);
                             break;
 
-                        case IGM_Junction.Mode.Mag_Pool_ST_A:
-                            Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_ST_A);
+                        case Junction.Mode.Mag_Pool_ST_A:
+                            Menu.Junction.SetMode(Junction.Mode.Mag_ST_A);
                             break;
 
-                        case IGM_Junction.Mode.Mag_Pool_ST_D:
-                            Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_ST_D);
+                        case Junction.Mode.Mag_Pool_ST_D:
+                            Menu.Junction.SetMode(Junction.Mode.Mag_ST_D);
                             break;
                     }
 
@@ -321,28 +321,28 @@ namespace OpenVIII.IGMData.Pool
                 Target_Group.ShowTargetWindows();
             }
             else
-            if (Memory.State.Characters != null)
+            if (Memory.State.Characters)
             {
                 if (!BLANKS[CURSOR_SELECT])
                 {
                     skipsnd = true;
                     AV.Sound.Play(31);
                     base.Inputs_OKAY();
-                    SlotConfirmListener?.Invoke(this, (IGM_Junction.Mode)Menu.IGM_Junction.GetMode());
-                    if (Menu.IGM_Junction.GetMode().Equals(IGM_Junction.Mode.Mag_Pool_Stat))
+                    SlotConfirmListener?.Invoke(this, (Junction.Mode)Menu.Junction.GetMode());
+                    if (Menu.Junction.GetMode().Equals(Junction.Mode.Mag_Pool_Stat))
                     {
-                        Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_Stat);
+                        Menu.Junction.SetMode(Junction.Mode.Mag_Stat);
                     }
-                    else if (Menu.IGM_Junction.GetMode().Equals(IGM_Junction.Mode.Mag_Pool_EL_A) || Menu.IGM_Junction.GetMode().Equals(IGM_Junction.Mode.Mag_Pool_EL_D))
+                    else if (Menu.Junction.GetMode().Equals(Junction.Mode.Mag_Pool_EL_A) || Menu.Junction.GetMode().Equals(Junction.Mode.Mag_Pool_EL_D))
                     {
-                        Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_EL_A);
+                        Menu.Junction.SetMode(Junction.Mode.Mag_EL_A);
                     }
-                    else if (Menu.IGM_Junction.GetMode().Equals(IGM_Junction.Mode.Mag_Pool_ST_A) || Menu.IGM_Junction.GetMode().Equals(IGM_Junction.Mode.Mag_Pool_ST_D))
+                    else if (Menu.Junction.GetMode().Equals(Junction.Mode.Mag_Pool_ST_A) || Menu.Junction.GetMode().Equals(Junction.Mode.Mag_Pool_ST_D))
                     {
-                        Menu.IGM_Junction.SetMode(IGM_Junction.Mode.Mag_ST_A);
+                        Menu.Junction.SetMode(Junction.Mode.Mag_ST_A);
                     }
                     Cursor_Status &= ~Cursor_Status.Enabled;
-                    Menu.IGM_Junction.Refresh();
+                    Menu.Junction.Refresh();
                     return true;
                 }
             }
@@ -351,8 +351,8 @@ namespace OpenVIII.IGMData.Pool
 
         public override void ModeChangeEvent(object sender, Enum e)
         {
-            if (e.GetType() == typeof(IGM_Junction.Mode))
-                UpdateOnEvent(sender, (IGM_Junction.Mode)e);
+            if (e.GetType() == typeof(Junction.Mode))
+                UpdateOnEvent(sender, (Junction.Mode)e);
             else if (e.GetType() == typeof(Damageable.BattleMode))
                 UpdateOnEvent(sender, null);
         }
@@ -362,11 +362,11 @@ namespace OpenVIII.IGMData.Pool
         {
             if (!skipRefresh)
             {
-                if (!eventAdded && Menu.IGM_Junction != null)
+                if (!eventAdded && Menu.Junction != null)
                 {
                     if (!Battle)
                     {
-                        Menu.IGM_Junction.ModeChangeHandler += ModeChangeEvent;
+                        Menu.Junction.ModeChangeHandler += ModeChangeEvent;
                         StatEventListener += StatChangeEvent; eventAdded = true;
                     }
                     else if (Damageable != null)
@@ -528,34 +528,34 @@ namespace OpenVIII.IGMData.Pool
             }
             else
             {
-                SortMode = (IGM_Junction.Mode)Menu.IGM_Junction.GetMode();
+                SortMode = (Junction.Mode)Menu.Junction.GetMode();
                 switch (SortMode)
                 {
                     default:
-                    case IGM_Junction.Mode.Mag_Stat:
-                    case IGM_Junction.Mode.Mag_Pool_Stat:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_Stat;
+                    case Junction.Mode.Mag_Stat:
+                    case Junction.Mode.Mag_Pool_Stat:
+                        SortMode = Junction.Mode.Mag_Pool_Stat;
                         break;
 
-                    case IGM_Junction.Mode.Mag_ST_D:
-                    case IGM_Junction.Mode.Mag_Pool_ST_D:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_ST_D;
+                    case Junction.Mode.Mag_ST_D:
+                    case Junction.Mode.Mag_Pool_ST_D:
+                        SortMode = Junction.Mode.Mag_Pool_ST_D;
                         break;
 
-                    case IGM_Junction.Mode.Mag_ST_A:
-                    case IGM_Junction.Mode.Mag_Pool_ST_A:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_ST_A;
+                    case Junction.Mode.Mag_ST_A:
+                    case Junction.Mode.Mag_Pool_ST_A:
+                        SortMode = Junction.Mode.Mag_Pool_ST_A;
                         Stat = Kernel.Stat.StAtk;
                         break;
 
-                    case IGM_Junction.Mode.Mag_EL_D:
-                    case IGM_Junction.Mode.Mag_Pool_EL_D:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_EL_D;
+                    case Junction.Mode.Mag_EL_D:
+                    case Junction.Mode.Mag_Pool_EL_D:
+                        SortMode = Junction.Mode.Mag_Pool_EL_D;
                         break;
 
-                    case IGM_Junction.Mode.Mag_EL_A:
-                    case IGM_Junction.Mode.Mag_Pool_EL_A:
-                        SortMode = IGM_Junction.Mode.Mag_Pool_EL_A;
+                    case Junction.Mode.Mag_EL_A:
+                    case Junction.Mode.Mag_Pool_EL_A:
+                        SortMode = Junction.Mode.Mag_Pool_EL_A;
                         Stat = Kernel.Stat.ElAtk;
                         break;
                 }
@@ -566,21 +566,21 @@ namespace OpenVIII.IGMData.Pool
 
         private bool Undo()
         {
-            SlotUndoListener?.Invoke(this, (IGM_Junction.Mode)(Menu.IGM_Junction.GetMode()));
-            if (Memory.State.Characters != null && Damageable.GetCharacterData(out var c))
+            SlotUndoListener?.Invoke(this, (Junction.Mode)(Menu.Junction.GetMode()));
+            if (Memory.State.Characters && Damageable.GetCharacterData(out var c))
                 Source = c;
             return true;
         }
 
-        private void UpdateOnEvent(object sender, IGM_Junction.Mode? mode = null, Kernel.Stat? stat = null)
+        private void UpdateOnEvent(object sender, Junction.Mode? mode = null, Kernel.Stat? stat = null)
         {
-            mode = mode ?? (IGM_Junction.Mode)Menu.IGM_Junction.GetMode();
+            mode = mode ?? (Junction.Mode)Menu.Junction.GetMode();
             if ((
-                mode == IGM_Junction.Mode.Mag_Pool_ST_A ||
-                mode == IGM_Junction.Mode.Mag_Pool_ST_D ||
-                mode == IGM_Junction.Mode.Mag_Pool_EL_A ||
-                mode == IGM_Junction.Mode.Mag_Pool_EL_D ||
-                mode == IGM_Junction.Mode.Mag_Pool_Stat) || Battle && Enabled)
+                mode == Junction.Mode.Mag_Pool_ST_A ||
+                mode == Junction.Mode.Mag_Pool_ST_D ||
+                mode == Junction.Mode.Mag_Pool_EL_A ||
+                mode == Junction.Mode.Mag_Pool_EL_D ||
+                mode == Junction.Mode.Mag_Pool_Stat) || Battle && Enabled)
 
             {
                 Cursor_Status |= Cursor_Status.Enabled;
@@ -589,7 +589,7 @@ namespace OpenVIII.IGMData.Pool
             {
                 Cursor_Status &= ~Cursor_Status.Enabled;
             }
-            if (Memory.State.Characters != null && Damageable != null)
+            if (Memory.State.Characters && Damageable != null)
             {
                 Get_Sort_Stat();
                 Stat = stat ?? Stat;
@@ -609,11 +609,11 @@ namespace OpenVIII.IGMData.Pool
                     UpdateTitle();
                 }
                 if (!Battle && (
-                    mode == IGM_Junction.Mode.Mag_Pool_ST_A ||
-                    mode == IGM_Junction.Mode.Mag_Pool_ST_D ||
-                    mode == IGM_Junction.Mode.Mag_Pool_EL_A ||
-                    mode == IGM_Junction.Mode.Mag_Pool_EL_D ||
-                    mode == IGM_Junction.Mode.Mag_Pool_Stat))
+                    mode == Junction.Mode.Mag_Pool_ST_A ||
+                    mode == Junction.Mode.Mag_Pool_ST_D ||
+                    mode == Junction.Mode.Mag_Pool_EL_A ||
+                    mode == Junction.Mode.Mag_Pool_EL_D ||
+                    mode == Junction.Mode.Mag_Pool_Stat))
                 {
                     Generate_Preview(skipundo);
                 }

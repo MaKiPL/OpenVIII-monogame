@@ -1,6 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 
 namespace OpenVIII.IGMDataItem.Gradient
 {
@@ -34,10 +34,10 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         public static GF Create(Rectangle? pos = null)
         {
-            var r = new GF()
+            var r = new GF
             {
                 _pos = pos ?? Rectangle.Empty,
-                Restriction = pos ?? Rectangle.Empty,
+                Restriction = pos ?? Rectangle.Empty
             };
             Memory.MainThreadOnlyActions.Enqueue(
             () =>
@@ -87,7 +87,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             damageable?.Refresh();
         }
 
-        public override bool Update() => Update(null);
+        public override bool Update() => Update();
 
         public bool Update(float? Percent = null)
         {

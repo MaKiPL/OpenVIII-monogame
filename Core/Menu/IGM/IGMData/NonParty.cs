@@ -64,10 +64,10 @@ namespace OpenVIII
                 Update();
                 if (!Memory.State.TeamLaguna && !Memory.State.SmallTeam)
                 {
-                    for (byte i = 0; Memory.State.Party != null && i < Memory.State.Characters.Count && SIZE != null && pos < SIZE.Length; i++)
+                    for (byte i = 0; Memory.State.Party != null && i < Memory.State.CharactersCount && SIZE != null && pos < SIZE.Length; i++)
                     {
                         if (Memory.State.Party.Contains((Characters)i) ||
-                            !Memory.State.Characters[(Characters)i].Available) continue;
+                            !Memory.State[(Characters)i].Available) continue;
                         BLANKS[pos] = false;
                         Refresh(pos++, Memory.State[(Characters)i]);
                     }

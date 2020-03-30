@@ -27,7 +27,7 @@ namespace OpenVIII.Battle.Dat
 
         #region Properties
 
-        public Item_In_Menu? Item =>
+        public ItemInMenu? Item =>
             (KernelID & KernelFlag.Item) != 0 && Memory.MItems != null && Memory.MItems.Items.Count > AbilityID
                 ? Memory.MItems?.Items[AbilityID]
                 : null;

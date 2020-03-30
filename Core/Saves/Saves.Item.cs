@@ -38,7 +38,7 @@ namespace OpenVIII
             #region Properties
 
             [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-            public Item_In_Menu? Data
+            public ItemInMenu? Data
             {
                 get
                 {

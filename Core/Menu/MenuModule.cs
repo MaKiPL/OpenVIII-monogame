@@ -113,11 +113,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.IGM_Junction:
-                    IGM_Junction.Draw();
+                    Junction.Draw();
                     break;
 
                 case Mode.IGM_Items:
-                    IGM_Items.Draw();
+                    IGMItems.Draw();
                     break;
 
                 case Mode.NewGameChoosed:
@@ -158,11 +158,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.IGM_Junction:
-                    IGM_Junction.Refresh();
+                    Junction.Refresh();
                     break;
 
                 case Mode.IGM_Items:
-                    IGM_Items.Refresh();
+                    IGMItems.Refresh();
                     break;
 
                // case Mode.NewGameChoosed:
@@ -218,11 +218,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.IGM_Junction:
-                    forceupdate = IGM_Junction.Update();
+                    forceupdate = Junction.Update();
                     break;
 
                 case Mode.IGM_Items:
-                    forceupdate = IGM_Items.Update();
+                    forceupdate = IGMItems.Update();
                     break;
 
                 case Mode.NewGameChoosed:
