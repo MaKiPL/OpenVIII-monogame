@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using OpenVIII.Battle;
-using OpenVIII.Battle.Dat;
 using OpenVIII.Fields;
 using OpenVIII.Fields.Scripts.Instructions;
 using OpenVIII.World;
@@ -288,6 +287,11 @@ namespace OpenVIII.Dat_Dump
                     if (archive != null)
                         FieldData.TryAdd(i, archive);
                 }
+                //foreach (var i1 in Enumerable.Range(0, Memory.FieldHolder.Fields.Length))
+                //{
+                //    var j = (ushort)i1;
+                //    await Task.Run(() => process(j));
+                //}
                 foreach (var i1 in Enumerable.Range(0, Memory.FieldHolder.Fields.Length))
                 {
                     var j = (ushort)i1;

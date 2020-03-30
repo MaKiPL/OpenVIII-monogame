@@ -8,7 +8,7 @@
         {
             #region Constructors
 
-            public GameScript(int scriptId, Jsm.ExecutableSegment segment)
+            public GameScript(int scriptId, ExecutableSegment segment)
             {
                 ScriptId = scriptId;
                 Segment = segment;
@@ -19,7 +19,7 @@
             #region Properties
 
             public int ScriptId { get; }
-            public Jsm.ExecutableSegment Segment { get; }
+            public ExecutableSegment Segment { get; }
 
             #endregion Properties
 

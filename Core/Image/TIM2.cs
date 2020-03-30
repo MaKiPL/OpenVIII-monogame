@@ -265,6 +265,7 @@ namespace OpenVIII
         [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public override void SavePNG(string path, short clut = -1)
         {
+            if (Buffer == null || Memory.Graphics == null) return;
             if (clut == -1)
             {
                 if (Texture.NumOfCluts > 0)
@@ -277,12 +278,15 @@ namespace OpenVIII
             }
 
             using (var br = new BinaryReader(new MemoryStream(Buffer)))
-            using (var tex = GetTexture(br, !CLP ? null : GetClutColors(br, (ushort)clut)))
-            using (var fs = new FileStream($"{path}{(CLP && Texture.NumOfCluts > 1 ? "_" + clut.ToString("D") : "")}.png", FileMode.Create,
-                FileAccess.Write, FileShare.ReadWrite))
-            {
-                tex.SaveAsPng(fs, GetWidth, GetHeight);
-            }
+            using (var tex = GetTexture(br, !CLP ? null : GetClutColors(br, (ushort) clut)))
+                if (tex != null)
+                    using (var fs = new FileStream(
+                        $"{path}{(CLP && Texture.NumOfCluts > 1 ? "_" + clut.ToString("D") : "")}.png",
+                        FileMode.Create,
+                        FileAccess.Write, FileShare.ReadWrite))
+                    {
+                        tex.SaveAsPng(fs, GetWidth, GetHeight);
+                    }
         }
 
         protected void _Init(byte[] buffer, uint offset = 0)
