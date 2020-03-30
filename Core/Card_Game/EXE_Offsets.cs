@@ -12,7 +12,7 @@ namespace OpenVIII
                     0x875074, // Card Names, Uint16 Count, Uint16[Count] Offsets, FF8String[Count] Null Ending.
                     0x875524, // Card Names2, Uint16 Count, Uint16[Count] Offsets, FF8String[Count] Null Ending. Ignore null Offsets.
                     0x874B58, // Card Text, Uint16 Count, Uint16[Count] Offsets, FF8String[Count] Null Ending.
-                    //There is no count at start of section only offsets
+                    //There is no Count at start of section only offsets
                     0x7921E4, // Text related to discs and draw points, Count = 9, Uint32[Count] Offsets, FF8String[Count] Null Ending.
                     0x14838D4 // Scan Text, Count = 160, Uint16[Count] Offset from start of first string. FF8String[Count] Null Ending.
                 }
@@ -155,8 +155,8 @@ namespace OpenVIII
         //private List<uint> badoffset;
         public static Dictionary<int, string> FileName => new Dictionary<int, string>
         {
-            { 2000, Path.Combine(Memory.FF8DIR, "FF8.exe") },
-            { 2013, Path.Combine(Memory.FF8DIR, "FF8_EN.exe") },
+            { 2000, Path.Combine(Memory.FF8Dir, "FF8.exe") },
+            { 2013, Path.Combine(Memory.FF8Dir, "FF8_EN.exe") },
         };
 
         public EXE_Offsets()

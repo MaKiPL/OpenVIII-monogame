@@ -12,22 +12,22 @@ namespace OpenVIII.Encoding
             _codepage = codepage ?? throw new ArgumentNullException(nameof(codepage));
         }
 
-        public Int32 GetMaxCharCount(Int32 byteCount)
+        public int GetMaxCharCount(int byteCount)
         {
             return byteCount * FF8TextTag.MaxTagLength;
         }
 
-        public Int32 GetCharCount(Byte[] bytes, Int32 index, Int32 count)
+        public int GetCharCount(byte[] bytes, int index, int count)
         {
-            Int32 result = 0;
+            var result = 0;
 
-            Char[] buff = new Char[FF8TextTag.MaxTagLength];
+            var buff = new char[FF8TextTag.MaxTagLength];
             while (count > 0)
             {
-                FF8TextTag tag = FF8TextTag.TryRead(bytes, ref index, ref count);
+                var tag = FF8TextTag.TryRead(bytes, ref index, ref count);
                 if (tag != null)
                 {
-                    Int32 offset = 0;
+                    var offset = 0;
                     result += tag.Write(buff, ref offset);
                 }
                 else
@@ -41,13 +41,13 @@ namespace OpenVIII.Encoding
             return result;
         }
 
-        public Int32 GetChars(Byte[] bytes, Int32 byteIndex, Int32 byteCount, Char[] chars, Int32 charIndex)
+        public int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars, int charIndex)
         {
-            Int32 result = 0;
+            var result = 0;
 
             while (byteCount > 0)
             {
-                FF8TextTag tag = FF8TextTag.TryRead(bytes, ref byteIndex, ref byteCount);
+                var tag = FF8TextTag.TryRead(bytes, ref byteIndex, ref byteCount);
                 if (tag != null)
                 {
                     result += tag.Write(chars, ref charIndex);

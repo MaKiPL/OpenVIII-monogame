@@ -1,54 +1,54 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII.Fields
 {
     public partial class Background
     {
-
         #region Classes
 
         private class BackgroundTextureType
         {
             #region Fields
 
-            public byte Palettes;
+            public readonly byte Palettes;
+            public readonly byte Type;
+
+            private const ushort OutHeight = 256;
+
+            private const ushort OutWidth = 128;
+
+            private static readonly BackgroundTextureType[] TextureTypes = {
+            new BackgroundTextureType(24, 13),
+            new BackgroundTextureType(16,12,0,2)};
+
             /// <remarks> first 8 are junk and are not used. </remarks>
-            public byte SkippedPalettes = 8;
-            public byte TexturePages;
-            public byte Type = 1;
-            private const ushort THeight = 256;
-            private const ushort TWidth = 128;
+            private readonly byte _skippedPalettes;
+
+            private readonly byte _texturePages;
 
             #endregion Fields
 
+            #region Constructors
+
+            private BackgroundTextureType(byte palettes, byte texturePages, byte skippedPalettes = 8, byte type = 1) =>
+                (Palettes, _texturePages, _skippedPalettes, Type) = (palettes, texturePages, skippedPalettes, type);
+
+            #endregion Constructors
+
             #region Properties
 
-            public int BytesSkippedPalettes => bytesPerPalette * SkippedPalettes;
-            public uint FileSize => checked((uint)(PaletteSectionSize + (Width * THeight)));
-            public uint PaletteSectionSize => checked((uint)(bytesPerPalette * Palettes));
-            public ushort Width => checked((ushort)(TWidth * TexturePages));
+            public int BytesSkippedPalettes => BytesPerPalette * _skippedPalettes;
+            public uint PaletteSectionSize => checked((uint)(BytesPerPalette * Palettes));
+            public ushort Width => checked((ushort)(OutWidth * _texturePages));
+            private uint FileSize => checked((uint)(PaletteSectionSize + (Width * OutHeight)));
 
             #endregion Properties
 
             #region Methods
 
-            public static BackgroundTextureType GetTextureType(byte[] mimb)
-                => mimb == null ? default: TextureTypes.First(x => x.FileSize == mimb.Length);
-
-
-            private static BackgroundTextureType[] TextureTypes = new BackgroundTextureType[]
-            {
-            new BackgroundTextureType {
-                Palettes =24,
-                TexturePages = 13
-            },
-            new BackgroundTextureType {
-                Palettes =16,
-                TexturePages = 12,
-                SkippedPalettes =0,
-                Type = 2
-            },
-            };
+            public static BackgroundTextureType GetTextureType(IReadOnlyCollection<byte> mimBytes)
+                => mimBytes == null ? default : TextureTypes.First(x => x.FileSize == mimBytes.Count);
 
             #endregion Methods
         }

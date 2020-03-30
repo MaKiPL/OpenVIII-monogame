@@ -1,52 +1,80 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
+        #region Classes
+
         /// <summary>
         /// Junction Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Junction-abilities"/>
-        public class Junction_abilities : Ability
+        public sealed class JunctionAbilities : Ability
         {
-            public new const int count = 20;
-            public new const int id = 11;
+            #region Fields
 
-            //public BitArray J_Flags { get; private set; }
-            public JunctionAbilityFlags J_Flags { get; private set; }
+            /// <summary>
+            /// Section Count
+            /// </summary>
+            public const int Count = 20;
 
-            public override void Read(BinaryReader br, int i)
+            /// <summary>
+            /// Section ID
+            /// </summary>
+            public const int ID = 11;
+
+            /// <summary>
+            /// Icon for this type.
+            /// </summary>
+            private new const Icons.ID Icon = Icons.ID.Ability_Junction;
+
+            #endregion Fields
+
+            #region Constructors
+
+            private JunctionAbilities(FF8String name, FF8String description, byte ap, JunctionAbilityFlags jFlags)
+                        : base(name, description, ap, Icon)
+                            => JFlags = jFlags;
+
+            #endregion Constructors
+
+            #region Properties
+
+            /// <summary>
+            /// Flags related to what abilities are enabled
+            /// </summary>
+            public JunctionAbilityFlags JFlags { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public static Dictionary<Abilities, JunctionAbilities> Read(BinaryReader br)
+
+                => Enumerable.Range(0, Count)
+                    .ToDictionary(i => (Abilities)i, i => CreateInstance(br, i));
+
+            private static JunctionAbilities CreateInstance(BinaryReader br, int i)
             {
-                Icon = Icons.ID.Ability_Junction;
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
-                //0x0000	2 bytes Offset to name
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
-                //0x0002	2 bytes Offset to description
+                //0x0000	2 bytes
+                FF8StringReference name = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2);
+                //0x0002	2 bytes
+                FF8StringReference description = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2 + 1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
-                AP = br.ReadByte();
-                //0x0004  1 byte AP Required to learn ability
-                //J_Flags = new BitArray(br.ReadBytes(3));
-                byte[] tmp = br.ReadBytes(3);
-                J_Flags = (JunctionAbilityFlags)(tmp[2] << 16 | tmp[1] << 8 | tmp[0]);
-
+                //0x0004  1 byte
+                byte ap = br.ReadByte();
                 //0x0005  3 byte J_Flag
+                byte[] tmp = br.ReadBytes(3);
+                JunctionAbilityFlags jFlags = (JunctionAbilityFlags)(tmp[2] << 16 | tmp[1] << 8 | tmp[0]);
+                return new JunctionAbilities(name, description, ap, jFlags);
             }
 
-            public static Dictionary<Abilities,Junction_abilities> Read(BinaryReader br)
-            {
-                Dictionary<Abilities, Junction_abilities> ret = new Dictionary<Abilities, Junction_abilities>(count);
-                
-                for (int i = 0; i < count; i++)
-                {
-                    
-                    Junction_abilities tmp = new Junction_abilities();
-                    tmp.Read(br, i);
-                    ret[(Abilities)i] = tmp;
-                }
-                return ret;
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

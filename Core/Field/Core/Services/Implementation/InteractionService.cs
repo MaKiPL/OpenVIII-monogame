@@ -4,21 +4,37 @@ namespace OpenVIII.Fields
 {
     public sealed class InteractionService : IInteractionService
     {
-        public Boolean IsSupported => true;
+        #region Fields
 
-        private readonly Int32[] _executionResults = new Int32[ScriptResultId.MaxIndex + 1];
+        private readonly int[] _executionResults = new int[ScriptResultId.MaxIndex + 1];
 
-        public Int32 this[ScriptResultId id]
+        #endregion Fields
+
+        #region Properties
+
+        public bool IsSupported => true;
+
+        #endregion Properties
+
+        #region Indexers
+
+        public int this[ScriptResultId id]
         {
             get => _executionResults[id.ResultId];
             set => _executionResults[id.ResultId] = value;
         }
 
-        public IAwaitable Wait(Int32 frameNumber)
+        #endregion Indexers
+
+        #region Methods
+
+        public IAwaitable Wait(int frameNumber)
         {
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(InteractionService)}.{nameof(Wait)}({nameof(frameNumber)}: {frameNumber})");
             return DummyAwaitable.Instance;
         }
+
+        #endregion Methods
     }
 }

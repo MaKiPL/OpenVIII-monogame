@@ -46,7 +46,7 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled)
             {
-                Rectangle pos = Pos;
+                var pos = Pos;
                 if (OffsetAnchor != null)
                     pos.Offset(OffsetAnchor);
 

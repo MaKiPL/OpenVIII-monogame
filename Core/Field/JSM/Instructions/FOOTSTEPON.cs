@@ -1,38 +1,37 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class FOOTSTEPON : JsmInstruction
     {
+        #region Constructors
+
         public FOOTSTEPON()
         {
         }
 
-        public FOOTSTEPON(Int32 parameter, IStack<IJsmExpression> stack)
+        public FOOTSTEPON(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(FOOTSTEPON)}()";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
                 .Property(nameof(FieldObjectInteraction.SoundFootsteps))
                 .Assign(true)
                 .Comment(nameof(FOOTSTEPON));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
             currentObject.Interaction.SoundFootsteps = true;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(FOOTSTEPON)}()";
+
+        #endregion Methods
     }
 }

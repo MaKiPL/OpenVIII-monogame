@@ -5,11 +5,11 @@ namespace OpenVIII
 {
     namespace IGMData
     {
-        public class SlotChoose : IGMData.Base
+        public class SlotChoose : Base
         {
             #region Properties
 
-            public bool Save { get; protected set; } = false;
+            public bool Save { get; protected set; }
             public IGMDataItem.Box Slot1Main { get => (IGMDataItem.Box)ITEM[0, 0]; set => ITEM[0, 0] = value; }
 
             public IGMDataItem.Box Slot1Title { get => (IGMDataItem.Box)ITEM[0, 1]; set => ITEM[0, 1] = value; }
@@ -24,12 +24,10 @@ namespace OpenVIII
 
             public static SlotChoose Create(Rectangle pos)
             {
-                SlotChoose r = new SlotChoose();
+                var r = new SlotChoose();
                 r.Init(2, 2, new IGMDataItem.Empty { Pos = pos }, 1, 2);
                 return r;
             }
-
-            public override bool Inputs() => base.Inputs();
 
             public override bool Inputs_CANCEL()
             {
@@ -45,14 +43,14 @@ namespace OpenVIII
             public override bool Inputs_OKAY()
             {
                 base.Inputs_OKAY();
-                IGM_LGSG.Mode mode = IGM_LGSG.Mode.Slot |
-                        IGM_LGSG.Mode.Checking |
-                        (Save ? IGM_LGSG.Mode.Save : IGM_LGSG.Mode.Nothing);
+                var mode = IGMLoadSaveGame.Mode.Slot |
+                           IGMLoadSaveGame.Mode.Checking |
+                           (Save ? IGMLoadSaveGame.Mode.Save : IGMLoadSaveGame.Mode.Nothing);
 
                 if (CURSOR_SELECT == 0)
-                    Menu.IGM_LGSG.SetMode(mode | IGM_LGSG.Mode.Slot1);
+                    Menu.IGMLoadSaveGame.SetMode(mode | IGMLoadSaveGame.Mode.Slot1);
                 else if (CURSOR_SELECT == 1)
-                    Menu.IGM_LGSG.SetMode(mode | IGM_LGSG.Mode.Slot2);
+                    Menu.IGMLoadSaveGame.SetMode(mode | IGMLoadSaveGame.Mode.Slot2);
 
                 return true;
             }
@@ -60,10 +58,10 @@ namespace OpenVIII
             public override void ModeChangeEvent(object sender, Enum e)
             {
                 base.ModeChangeEvent(sender, e);
-                if (e.GetType() == typeof(IGM_LGSG.Mode))
+                if (e.GetType() == typeof(IGMLoadSaveGame.Mode))
                 {
-                    Save = e.HasFlag(IGM_LGSG.Mode.Save);
-                    if (e.HasFlag(IGM_LGSG.Mode.Slot) && e.HasFlag(IGM_LGSG.Mode.Choose))
+                    Save = e.HasFlag(IGMLoadSaveGame.Mode.Save);
+                    if (e.HasFlag(IGMLoadSaveGame.Mode.Slot) && e.HasFlag(IGMLoadSaveGame.Mode.Choose))
                         Show();
                     else
                         Hide();
@@ -73,11 +71,11 @@ namespace OpenVIII
             protected override void Init()
             {
                 base.Init();
-                Point offset = new Point(-8, -28);
-                Point size = new Point(132, 60);
+                var offset = new Point(-8, -28);
+                var size = new Point(132, 60);
                 Slot1Main = new IGMDataItem.Box { Data = Strings.Name.FF8, Pos = SIZE[0], Options = Box_Options.Buttom | Box_Options.Center };
                 Slot2Main = new IGMDataItem.Box { Data = Strings.Name.FF8, Pos = SIZE[1], Options = Box_Options.Buttom | Box_Options.Center };
-                Point p = SIZE[0].Location;
+                var p = SIZE[0].Location;
                 p = p.Offset(offset);
                 Slot1Title = new IGMDataItem.Box { Data = Strings.Name.Slot1, Pos = new Rectangle(p, size), Options = Box_Options.Middle | Box_Options.Center };
                 p = SIZE[1].Location;
@@ -92,17 +90,16 @@ namespace OpenVIII
 
             protected override void InitShift(int i, int col, int row)
             {
-                int SpaceBetween = 60;
+                const int spaceBetween = 60;
                 base.InitShift(i, col, row);
                 switch (i)
                 {
                     case 0:
-                        SIZE[i].Y -= SpaceBetween / 2;
+                        SIZE[i].Y -= spaceBetween / 2;
                         break;
 
-                    case 1:
                     default:
-                        SIZE[i].Y += row * SpaceBetween / 2;
+                        SIZE[i].Y += row * spaceBetween / 2;
                         break;
                 }
             }

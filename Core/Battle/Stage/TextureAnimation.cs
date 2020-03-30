@@ -33,7 +33,7 @@ namespace OpenVIII.Battle
 
             #region Constructors
 
-            //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int count = 0, int x = 0, int y = 0, int skip = 1)
+            //public Animation(int width, int height, byte clut, byte texturePage, byte cols, byte rows, ModelGroups _mg, int Count = 0, int x = 0, int y = 0, int skip = 1)
             public TextureAnimation(TextureHandler tex, int width, int height, int texturePage, int cols, int rows, int count = 0, int x = 0, int y = 0, int skip = 1)
             {
                 this.tex = tex;
@@ -63,16 +63,16 @@ namespace OpenVIII.Battle
                     {
                         FrameNumber = skip;
                     }
-                    int row = (FrameNumber / cols) % rows;
-                    int col = FrameNumber % cols;
+                    var row = (FrameNumber / cols) % rows;
+                    var col = FrameNumber % cols;
                     time = TimeSpan.Zero;
-                    Vector2 scale = tex.ScaleFactor;
-                    Texture2D t = (Texture2D)tex;
-                    Rectangle dst = new Rectangle(x + (texturePage * 128), y, width, height);
-                    Rectangle src = new Rectangle(x + (texturePage * 128) + (col * width), y + (row * height), width, height);
+                    var scale = tex.ScaleFactor;
+                    var t = (Texture2D)tex;
+                    var dst = new Rectangle(x + (texturePage * 128), y, width, height);
+                    var src = new Rectangle(x + (texturePage * 128) + (col * width), y + (row * height), width, height);
                     src.Scale(scale);
                     dst.Scale(scale);
-                    Color[] colors = new Color[width * height];
+                    var colors = new Color[width * height];
                     t.GetData(0, src, colors, 0, colors.Length);
                     t.SetData(0, dst, colors, 0, colors.Length);
                 }

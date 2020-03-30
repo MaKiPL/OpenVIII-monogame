@@ -52,14 +52,14 @@ namespace OpenVIII
 
             public void Read(BinaryReader br)
             {
-                char_pos = new short[6]; for (int i = 0; i < char_pos.Length; i++) char_pos[i] = br.ReadInt16();// x z y ? ? rot(0->4095)
-                uknown_pos1 = new short[6]; for (int i = 0; i < uknown_pos1.Length; i++) uknown_pos1[i] = br.ReadInt16();
-                ragnarok_pos = new short[6]; for (int i = 0; i < ragnarok_pos.Length; i++) ragnarok_pos[i] = br.ReadInt16();
-                bgu_pos = new short[6]; for (int i = 0; i < bgu_pos.Length; i++) bgu_pos[i] = br.ReadInt16();
-                car_pos = new short[6]; for (int i = 0; i < car_pos.Length; i++) car_pos[i] = br.ReadInt16();
-                uknown_pos2 = new short[6]; for (int i = 0; i < uknown_pos2.Length; i++) uknown_pos2[i] = br.ReadInt16();
-                uknown_pos3 = new short[6]; for (int i = 0; i < uknown_pos3.Length; i++) uknown_pos3[i] = br.ReadInt16();
-                uknown_pos4 = new short[6]; for (int i = 0; i < uknown_pos4.Length; i++) uknown_pos4[i] = br.ReadInt16();
+                char_pos = new short[6]; for (var i = 0; i < char_pos.Length; i++) char_pos[i] = br.ReadInt16();// x z y ? ? rot(0->4095)
+                uknown_pos1 = new short[6]; for (var i = 0; i < uknown_pos1.Length; i++) uknown_pos1[i] = br.ReadInt16();
+                ragnarok_pos = new short[6]; for (var i = 0; i < ragnarok_pos.Length; i++) ragnarok_pos[i] = br.ReadInt16();
+                bgu_pos = new short[6]; for (var i = 0; i < bgu_pos.Length; i++) bgu_pos[i] = br.ReadInt16();
+                car_pos = new short[6]; for (var i = 0; i < car_pos.Length; i++) car_pos[i] = br.ReadInt16();
+                uknown_pos2 = new short[6]; for (var i = 0; i < uknown_pos2.Length; i++) uknown_pos2[i] = br.ReadInt16();
+                uknown_pos3 = new short[6]; for (var i = 0; i < uknown_pos3.Length; i++) uknown_pos3[i] = br.ReadInt16();
+                uknown_pos4 = new short[6]; for (var i = 0; i < uknown_pos4.Length; i++) uknown_pos4[i] = br.ReadInt16();
                 steps_related = br.ReadUInt16();
                 car_rent = br.ReadByte();// 0x00:forbidden|0xFF:none|0x51:balamb1|0x52:balamb2|0x57:esthar
                 u1 = br.ReadBytes(7);//u1[6] = deep sea?

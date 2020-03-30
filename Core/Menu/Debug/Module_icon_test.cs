@@ -53,7 +53,7 @@ namespace OpenVIII
         {
             FileStream fs = null;
             //fs is disposed by binary writer
-            using (BinaryWriter bw =
+            using (var bw =
                 new BinaryWriter(fs = File.Open("D:\\iconsdatadump.csv",
                 FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
             {
@@ -74,10 +74,10 @@ namespace OpenVIII
 
         public static new string ToString()
         {
-            string output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
+            var output = "{Enum Name},{Enum ID}," + Memory.Icons.GetEntry(Icons.ID.Finger_Right).ToStringHeader;
             for (uint i = 0; i < Memory.Icons.Count; i++)
             {
-                EntryGroup eg = Memory.Icons.GetEntryGroup((Icons.ID)i);
+                var eg = Memory.Icons.GetEntryGroup((Icons.ID)i);
                 foreach (Entry e in eg)
                 {
                     output += $"{((Icons.ID)i).ToString().Replace('_', ' ')},{i}," + e.ToString();
@@ -141,8 +141,8 @@ namespace OpenVIII
                 {
                     if (icon <= 0)
                         icon = Enum.GetValues(typeof(Icons.ID)).Cast<Icons.ID>().Max();
-                    //else if (Memory.Icons.GetEntry(icon) != null && Memory.Icons.GetEntry(icon).GetLoc.count > 1)
-                    //    icon -= Memory.Icons.GetEntry(icon).GetLoc.count;
+                    //else if (Memory.Icons.GetEntry(icon) != null && Memory.Icons.GetEntry(icon).GetLoc.Count > 1)
+                    //    icon -= Memory.Icons.GetEntry(icon).GetLoc.Count;
                     else
                         icon--;
                 }
@@ -169,12 +169,12 @@ namespace OpenVIII
         private static void DrawIcons()
         {
             Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp);
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Gray);
+            Memory.SpriteBatch.GraphicsDevice.Clear(Color.Gray);
             Memory.SpriteBatchEnd();
-            Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+            var vp = Memory.Graphics.GraphicsDevice.Viewport;
 
-            Vector2 scale = new Vector2(zoom);
-            Rectangle dst = new Rectangle()
+            var scale = new Vector2(zoom);
+            var dst = new Rectangle()
             {
                 Width = (int)(Memory.Icons.GetEntryGroup(icon).Width * scale.X),
                 Height = (int)(Memory.Icons.GetEntryGroup(icon).Height * scale.Y)
@@ -193,9 +193,9 @@ namespace OpenVIII
             dst.Size = Point.Zero;
             Memory.SpriteBatchStartAlpha(ss: SamplerState.PointClamp);
             Memory.Icons.Draw(icon, palette, dst, scale);
-            Memory.font.RenderBasicText(
+            Memory.Font.RenderBasicText(
                 $"{(icon).ToString().Replace('_', ' ')}\n" +
-                $"id: {(ushort)icon}\n\n" +
+                $"ID: {(ushort)icon}\n\n" +
                 $"palette: {palette}\n\n" +
                 $"width: {Memory.Icons[icon].Width}\n" +
                 $"height: {Memory.Icons[icon].Height}",

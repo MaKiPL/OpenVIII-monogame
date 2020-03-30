@@ -39,7 +39,7 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled && Data != Faces.ID.Blank)
             {
-                Rectangle pos = Pos;
+                var pos = Pos;
                 if (OffsetAnchor != null)
                     pos.Offset(OffsetAnchor);
                 Memory.Faces.Draw(Data, pos, Vector2.UnitY, Fade * (base.Blink ? (Blink_Amount * Blink_Adjustment) : 1f));

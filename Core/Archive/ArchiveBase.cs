@@ -65,7 +65,7 @@ namespace OpenVIII
         {
             get
             {
-                if (TryGetValue(key, out byte[] value))
+                if (TryGetValue(key, out var value))
                     return value;
                 return null;
             }
@@ -86,7 +86,7 @@ namespace OpenVIII
             {
                 if (archive.IsFileArchive || archive.IsFileIndex || archive.IsFileList)
                 {
-                    Memory.Archive a = new Memory.Archive(Path.GetFileNameWithoutExtension(archive), Path.GetDirectoryName(archive));
+                    var a = new Memory.Archive(Path.GetFileNameWithoutExtension(archive), Path.GetDirectoryName(archive));
                     return ArchiveWorker.Load(a);
                 }
 
@@ -105,14 +105,14 @@ namespace OpenVIII
         {
             LocalCache.ForEach(x =>
             {
-                if (LocalCache.TryRemove(x.Key, out BufferWithAge _))
+                if (LocalCache.TryRemove(x.Key, out var _))
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                 }
             });
             NonDirOrZzz.ForEach(x =>
             {
-                if (Cache.TryRemove(x.Key, out ArchiveBase _))
+                if (Cache.TryRemove(x.Key, out var _))
                 {
                     Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                 }
@@ -122,7 +122,7 @@ namespace OpenVIII
             {
                 Cache.ForEach(x =>
                 {
-                    if (Cache.TryRemove(x.Key, out ArchiveBase _))
+                    if (Cache.TryRemove(x.Key, out var _))
                     {
                         Memory.Log.WriteLine($"{nameof(ArchiveBase)}::{nameof(PurgeCache)}::Evicting: \"{x.Key}\"");
                     }
@@ -174,7 +174,7 @@ namespace OpenVIII
 
         public virtual int GetMaxSize(Memory.Archive archive)
         {
-            using (StreamWithRangeValues s = GetStreamWithRangeValues(archive.FS))
+            using (var s = GetStreamWithRangeValues(archive.FS))
                 return checked((int)s.Size);
         }
 
@@ -186,7 +186,7 @@ namespace OpenVIII
 
         public void Reset()
         {
-            string[] list = GetListOfFiles();
+            var list = GetListOfFiles();
             if (list != null && list.Length > 0)
                 Enumerator.Reset();
         }
@@ -202,7 +202,7 @@ namespace OpenVIII
 
             if ((Oldest.Count() - MaxInCache) > 0)
                 Oldest.Where(x => x.Key != key).Reverse().Skip(MaxInCache)
-                    .ForEach(x => Cache.TryRemove(x.Key, out ArchiveBase _));
+                    .ForEach(x => Cache.TryRemove(x.Key, out var _));
             return true;
         }
 
@@ -224,7 +224,7 @@ namespace OpenVIII
                 {
                     OrderByAge.Where(x => x.Key != key).Reverse().Skip(MaxLocalCache).ForEach(x =>
                     {
-                        if (LocalCache.TryRemove(x.Key, out BufferWithAge _))
+                        if (LocalCache.TryRemove(x.Key, out var _))
                         {
                             Memory.Log.WriteLine(
                                 $"{nameof(ArchiveBase)}::{nameof(LocalTryAdd)}::Evicting: \"{x.Key}\"");
@@ -239,21 +239,21 @@ namespace OpenVIII
         {
             if (string.IsNullOrWhiteSpace(filename)) return -1;
             return ArchiveMap != null && ArchiveMap.Count > 1
-                ? ArchiveMap.FindString(ref filename, out int _) == default ? -1 : 0
+                ? ArchiveMap.FindString(ref filename, out var _) == default ? -1 : 0
                 : -1;
         }
 
         protected List<Memory.Archive> FindParentPath(Memory.Archive path)
         {
             if (path.Parent == null) return null;
-            foreach (Memory.Archive pathParent in path.Parent)
+            foreach (var pathParent in path.Parent)
             {
                 if (pathParent.IsDir)
                     return new List<Memory.Archive> { pathParent };
                 if (pathParent.IsFile)
                     return new List<Memory.Archive> { pathParent };
                 if (pathParent.Parent == null || pathParent.Parent.Count <= 0) continue;
-                List<Memory.Archive> returnList = FindParentPath(pathParent);
+                var returnList = FindParentPath(pathParent);
                 if (returnList == null || returnList.Count <= 0) continue;
                 returnList.Add(pathParent);
                 return returnList;
@@ -275,7 +275,7 @@ namespace OpenVIII
 
         private KeyValuePair<string, byte[]> GetCurrent()
         {
-            string s = (string)(Enumerator.Current);
+            var s = (string)(Enumerator.Current);
             return new KeyValuePair<string, byte[]>(s, GetBinaryFile(s));
         }
 

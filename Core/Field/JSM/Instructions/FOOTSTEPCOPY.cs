@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class FOOTSTEPCOPY : JsmInstruction
     {
+        #region Constructors
+
         public FOOTSTEPCOPY()
         {
         }
 
-        public FOOTSTEPCOPY(Int32 parameter, IStack<IJsmExpression> stack)
+        public FOOTSTEPCOPY(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(FOOTSTEPCOPY)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(FOOTSTEPCOPY)}()";
+
+        #endregion Methods
     }
 }

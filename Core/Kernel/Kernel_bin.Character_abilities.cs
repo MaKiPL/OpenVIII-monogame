@@ -1,52 +1,82 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
+        #region Classes
+
         /// <summary>
         /// Characters Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Character-abilities"/>
-        public class Character_abilities : Equipable_Ability
+        public sealed class CharacterAbilities : EquippableAbility
         {
-            public new const int count = 20;
-            public new const int id = 14;
-            
-            public CharacterAbilityFlags Flags { get; private set; }
-            //public Battle_Commands BattleCommand { get; private set; } = null;
+            #region Fields
 
-            public override void Read(BinaryReader br, int i)
+            /// <summary>
+            /// Section Count
+            /// </summary>
+            public const int Count = 20;
+
+            /// <summary>
+            /// Section ID
+            /// </summary>
+            public const int ID = 14;
+
+            /// <summary>
+            /// Icon for this type.
+            /// </summary>
+            public new const Icons.ID Icon = Icons.ID.Ability_Character2;
+
+            #endregion Fields
+
+            #region Constructors
+
+            private CharacterAbilities
+                        (FF8String name, FF8String description, byte ap, CharacterAbilityFlags flags) :
+                base(name, description, ap, Icon) => Flags = flags;
+
+            #endregion Constructors
+
+            #region Properties
+
+            /// <summary>
+            /// Ability Flags that are enabled by this
+            /// </summary>
+            public CharacterAbilityFlags Flags { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public static Dictionary<Abilities, CharacterAbilities> Read(BinaryReader br)
+
+                => Enumerable.Range(0, Count)
+                    .ToDictionary(i => (Abilities)(i + (int)Abilities.Mug), i => CreateInstance(br, i));
+
+            private static CharacterAbilities CreateInstance(BinaryReader br, int i)
             {
-                Icon = Icons.ID.Ability_Character2;
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
-                //0x0000	2 bytes Offset to name
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
-                //0x0002	2 bytes Offset to description
+                //0x0000	2 bytes
+                FF8StringReference name = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2);
+                //0x0002	2 bytes
+                FF8StringReference description = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2 + 1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
-                AP = br.ReadByte();
-                //0x0004  1 byte AP Required to learn ability
+                //0x0004  1 byte
+                byte ap = br.ReadByte();
+                //0x0005  3 byte
                 byte[] tmp = br.ReadBytes(3);
-                int shift =0;
-                Flags = (CharacterAbilityFlags)(tmp[2] << (16+ shift) | tmp[1] << (8+ shift) | tmp[0]<<(shift));
-                //Flags = new BitArray(br.ReadBytes(3));
-                //0x0005  3 byte Flags
-            }
-            public static Dictionary<Abilities,Character_abilities> Read(BinaryReader br)
-            {
-                Dictionary<Abilities, Character_abilities> ret = new Dictionary<Abilities, Character_abilities>(count);
+                CharacterAbilityFlags flags =
+                    (CharacterAbilityFlags)(tmp[2] << (16) | tmp[1] << (8) | tmp[0]);
 
-                for (int i = 0; i < count; i++)
-                {
-                    var tmp = new Character_abilities();
-                    tmp.Read(br, i);
-                    ret[(Abilities)(i+(int)Abilities.Mug)] = tmp;
-                }
-                return ret;
+                return new CharacterAbilities(name, description, ap, flags);
             }
+
+            #endregion Methods
         }
-    }
 
+        #endregion Classes
+    }
 }

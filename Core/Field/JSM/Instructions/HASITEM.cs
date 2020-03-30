@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Has item (or Get Item Count?)</para>
@@ -11,25 +8,31 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/170_UNKNOWN5"/>
     public sealed class HASITEM : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Item ID
         /// </summary>
-        private IJsmExpression _itemID;
+        private readonly IJsmExpression _itemID;
 
-        public HASITEM(IJsmExpression itemID)
-        {
-            _itemID = itemID;
-        }
+        #endregion Fields
 
-        public HASITEM(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public HASITEM(IJsmExpression itemID) => _itemID = itemID;
+
+        public HASITEM(int parameter, IStack<IJsmExpression> stack)
             : this(
                 itemID: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(HASITEM)}({nameof(_itemID)}: {_itemID})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(HASITEM)}({nameof(_itemID)}: {_itemID})";
+
+        #endregion Methods
     }
 }

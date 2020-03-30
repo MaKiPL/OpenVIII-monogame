@@ -20,7 +20,7 @@ namespace OpenVIII
 
         public FL(StreamWithRangeValues fL)
         {
-            using (StreamReader br = new StreamReader(fL, System.Text.Encoding.UTF8))
+            using (var br = new StreamReader(fL, System.Text.Encoding.UTF8))
             {
                 fL.Seek(fL.Offset, SeekOrigin.Begin);
                 while (fL.Position < fL.Max)

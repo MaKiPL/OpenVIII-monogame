@@ -1,14 +1,18 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
-
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class DCOLADD : JsmInstruction
     {
-        private readonly IJsmExpression _r;
-        private readonly IJsmExpression _g;
+        #region Fields
+
         private readonly IJsmExpression _b;
+        private readonly IJsmExpression _g;
+        private readonly IJsmExpression _r;
+
+        #endregion Fields
+
+        #region Constructors
 
         public DCOLADD(IJsmExpression r, IJsmExpression g, IJsmExpression b)
         {
@@ -17,7 +21,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _b = b;
         }
 
-        public DCOLADD(Int32 parameter, IStack<IJsmExpression> stack)
+        public DCOLADD(int parameter, IStack<IJsmExpression> stack)
             : this(
                 b: stack.Pop(),
                 g: stack.Pop(),
@@ -25,21 +29,17 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(DCOLADD)}({nameof(_r)}: {_r}, {nameof(_g)}: {_g}, {nameof(_b)}: {_b})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IRenderingService))
                 .Method(nameof(IRenderingService.AddScreenColor))
                 .Argument("r", _r)
                 .Argument("g", _g)
                 .Argument("b", _b)
                 .Comment(nameof(DCOLADD));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -50,5 +50,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
                     _b.Int32(services)));
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(DCOLADD)}({nameof(_r)}: {_r}, {nameof(_g)}: {_g}, {nameof(_b)}: {_b})";
+
+        #endregion Methods
     }
 }

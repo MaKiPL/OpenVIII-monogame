@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Last dungeon out</para>
@@ -16,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public LASTOUT(Int32 parameter, IStack<IJsmExpression> stack)
+        public LASTOUT(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
@@ -25,7 +23,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(LASTOUT)}()";
+        public override string ToString() => $"{nameof(LASTOUT)}()";
 
         #endregion Methods
     }

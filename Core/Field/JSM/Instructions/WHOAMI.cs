@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Get Junction Correspondent?</para>
@@ -10,24 +7,34 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// </summary>
     public sealed class WHOAMI : JsmInstruction
     {
+        #region Fields
+
         private Characters _characterID;
 
-        public WHOAMI(Characters characterID)
-        {
-            _characterID = characterID;
-        }
+        #endregion Fields
 
-        public WHOAMI(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public WHOAMI(Characters characterID) => _characterID = characterID;
+
+        public WHOAMI(int parameter, IStack<IJsmExpression> stack)
             : this(
                 characterID: ((IConstExpression)stack.Pop()).Characters())
         {
         }
 
+        #endregion Constructors
+
+        #region Properties
+
         public Characters CharacterID { get => _characterID; set => _characterID = value; }
 
-        public override String ToString()
-        {
-            return $"{nameof(WHOAMI)}({nameof(_characterID)}: {_characterID})";
-        }
+        #endregion Properties
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(WHOAMI)}({nameof(_characterID)}: {_characterID})";
+
+        #endregion Methods
     }
 }

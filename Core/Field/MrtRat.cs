@@ -11,53 +11,57 @@ namespace OpenVIII.Fields
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_RAT_MRT"/>
     public class MrtRat : IReadOnlyDictionary<ushort, byte>
     {
+        /*
+                private const byte NoEncounters = 0;
+        */
+
         #region Fields
 
-        private const byte NO_ENCOUNTERS = 0;
-        private Dictionary<ushort, byte> mrtrat;
+        private readonly IReadOnlyDictionary<ushort, byte> _mrtrat;
 
         #endregion Fields
 
         #region Constructors
 
-        public MrtRat(byte[] mrtb, byte[] ratb)
+        public MrtRat(byte[] mrtB, byte[] ratB)
         {
-            MemoryStream ms;
-            ushort[] mrt = new ushort[4];
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(mrtb)))
-                foreach (int i in Enumerable.Range(0, mrt.Length))
+            var mrt = new ushort[4];
+            using (var br = new BinaryReader(new MemoryStream(mrtB)))
+                foreach (var i in Enumerable.Range(0, mrt.Length))
                     mrt[i] = br.ReadUInt16();
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(ratb)))
-                mrtrat = mrt.Distinct().ToDictionary(x => x, x => br.ReadByte());
+            using (var br = new BinaryReader(new MemoryStream(ratB)))
+                _mrtrat = mrt.Distinct().ToDictionary(x => x, x => br.ReadByte());
         }
 
         #endregion Constructors
 
         #region Properties
 
-        public int Count => ((IReadOnlyDictionary<ushort, byte>)mrtrat).Count;
-        public IEnumerable<ushort> Keys => ((IReadOnlyDictionary<ushort, byte>)mrtrat).Keys;
-        public IEnumerable<byte> Values => ((IReadOnlyDictionary<ushort, byte>)mrtrat).Values;
-
-        private bool No_Encounters_On_Field => mrtrat.All(x => x.Value == NO_ENCOUNTERS);
+        public int Count => _mrtrat.Count;
+        public IEnumerable<ushort> Keys => _mrtrat.Keys;
+        public IEnumerable<byte> Values => _mrtrat.Values;
 
         #endregion Properties
 
+        /*
+                private bool NoEncountersOnField => _mrtrat.All(x => x.Value == NoEncounters);
+        */
+
         #region Indexers
 
-        public byte this[ushort key] => ((IReadOnlyDictionary<ushort, byte>)mrtrat)[key];
+        public byte this[ushort key] => _mrtrat[key];
 
         #endregion Indexers
 
         #region Methods
 
-        public bool ContainsKey(ushort key) => ((IReadOnlyDictionary<ushort, byte>)mrtrat).ContainsKey(key);
+        public bool ContainsKey(ushort key) => _mrtrat.ContainsKey(key);
 
-        public IEnumerator<KeyValuePair<ushort, byte>> GetEnumerator() => ((IReadOnlyDictionary<ushort, byte>)mrtrat).GetEnumerator();
+        public IEnumerator<KeyValuePair<ushort, byte>> GetEnumerator() => _mrtrat.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => ((IReadOnlyDictionary<ushort, byte>)mrtrat).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _mrtrat.GetEnumerator();
 
-        public bool TryGetValue(ushort key, out byte value) => ((IReadOnlyDictionary<ushort, byte>)mrtrat).TryGetValue(key, out value);
+        public bool TryGetValue(ushort key, out byte value) => _mrtrat.TryGetValue(key, out value);
 
         #endregion Methods
     }

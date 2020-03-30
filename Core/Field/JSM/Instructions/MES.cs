@@ -1,35 +1,37 @@
-using System;
-
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Popup a message window.
     /// This is usually used on lines to popup text when the player crosses a certain point on a screen.
-    /// The size of the message window can be set with WINSIZE. 
+    /// The size of the message window can be set with WINSIZE.
     /// </summary>
     internal sealed class MES : JsmInstruction
     {
-        private Int32 _channel;
-        private Int32 _messageId;
+        #region Fields
 
-        public MES(Int32 channel, Int32 messageId)
+        private readonly int _channel;
+        private readonly int _messageId;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public MES(int channel, int messageId)
         {
             _channel = channel;
             _messageId = messageId;
         }
 
-        public MES(Int32 parameter, IStack<IJsmExpression> stack)
+        public MES(int parameter, IStack<IJsmExpression> stack)
             : this(
                 messageId: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32(),
                 channel: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MES)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -48,5 +50,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             ServiceId.Message[services].Show(_channel, _messageId);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(MES)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId})";
+
+        #endregion Methods
     }
 }

@@ -7,29 +7,29 @@ namespace OpenVIII.Fields
     {
         public sealed class GameObject
         {
-            public String Name { get; }
+            public string Name { get; }
             
-            private readonly List<String> _names = new List<String>();
+            private readonly List<string> _names = new List<string>();
 
-            internal GameObject(String objectName)
+            internal GameObject(string objectName)
             {
-                if (String.IsNullOrWhiteSpace(objectName))
+                if (string.IsNullOrWhiteSpace(objectName))
                     throw new ArgumentException($"Object name cannot be empty.", nameof(objectName));
 
                 Name = objectName;
             }
 
-            public String GetScriptName(Int32 index, String defaultValue = "Undefined_{0:D2}")
+            public string GetScriptName(int index, string defaultValue = "Undefined_{0:D2}")
             {
                 if (index < _names.Count)
                     return _names[index];
 
-                return String.Format(defaultValue, index);
+                return string.Format(defaultValue, index);
             }
 
-            internal Int32 AddScript(String scriptName)
+            internal int AddScript(string scriptName)
             {
-                if (String.IsNullOrWhiteSpace(scriptName))
+                if (string.IsNullOrWhiteSpace(scriptName))
                     throw new ArgumentException($"Script name cannot be empty.", nameof(scriptName));
 
                 _names.Add(scriptName);

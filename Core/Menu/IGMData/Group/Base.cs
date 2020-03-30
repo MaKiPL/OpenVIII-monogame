@@ -17,7 +17,7 @@
         //:base(container: new IGMDataItem.Empty()) => Debug.WriteLine($"{this} :: Not init may need to call it later");
         public static T Create<T>(params Menu_Base[] d) where T : Base, new()
         {
-            T r = Create<T>();
+            var r = Create<T>();
             r.Count = checked((byte)d.Length);
             r.Depth = 1;
             r.Init(r.Count, r.Depth, r.CONTAINER);
@@ -31,7 +31,7 @@
 
         public static T Create<T>() where T : Base, new()
         {
-            T r = new T
+            var r = new T
             {
                 CONTAINER = new IGMDataItem.Empty()
             };
@@ -44,13 +44,13 @@
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (Enabled)
             {
                 if (!skipdata)
                 {
-                    int pos = 0;
-                    foreach (Menu_Base i in ITEM)
+                    var pos = 0;
+                    foreach (var i in ITEM)
                     {
                         ret = ITEMInputs(i, pos++);
                         if (ret) return ret;
@@ -76,7 +76,7 @@
                 base.Reset();
                 if (!skipdata)
                 {
-                    foreach (Menu_Base i in ITEM)
+                    foreach (var i in ITEM)
                     {
                         i?.Reset();
                     }
@@ -89,8 +89,8 @@
             base.Show();
             if (!skipdata)
             {
-                int pos = 0;
-                foreach (Menu_Base i in ITEM)
+                var pos = 0;
+                foreach (var i in ITEM)
                 {
                     if (i != null)
                         ITEMShow(i, pos++);
@@ -102,11 +102,11 @@
         {
             if (Enabled)
             {
-                bool ret = base.Update();
+                var ret = base.Update();
                 if (!skipdata)
                 {
-                    int pos = 0;
-                    foreach (Menu_Base i in ITEM)
+                    var pos = 0;
+                    foreach (var i in ITEM)
                     {
                         if (i != null)
                             ret = ITEMUpdate(i, pos++) || ret;
@@ -121,7 +121,7 @@
         {
             if (baseinit)
                 Init(d.Length, 1);
-            for (int i = 0; i < d.Length; i++)
+            for (var i = 0; i < d.Length; i++)
             {
                 ITEM[i, 0] = d[i];
             }
@@ -130,7 +130,7 @@
         protected override void RefreshChild()
         {
             if (!skipdata)
-                foreach (Menu_Base i in ITEM)
+                foreach (var i in ITEM)
                 {
                     if (ForceNullDamageable && i!=null)
                         i.ForceNullDamageable = ForceNullDamageable;

@@ -1,26 +1,37 @@
 ﻿using OpenVIII.Fields.Scripts.Instructions;
-using System;
-
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public sealed class IndexedInstruction
         {
-            public Int32 Index { get; private set; }
-            public JsmInstruction Instruction { get; private set; }
+            #region Constructors
 
-            public IndexedInstruction(Int32 index, JsmInstruction instruction)
+            public IndexedInstruction(int index, JsmInstruction instruction)
             {
                 Index = index;
                 Instruction = instruction;
             }
 
-            public override String ToString()
-            {
-                return $"[Index: {Index}] {Instruction}";
-            }
+            #endregion Constructors
+
+            #region Properties
+
+            public int Index { get; }
+            public JsmInstruction Instruction { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public override string ToString() => $"[Index: {Index}] {Instruction}";
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

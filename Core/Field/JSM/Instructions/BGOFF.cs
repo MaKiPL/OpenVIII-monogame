@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class BGOFF : JsmInstruction
     {
+        #region Constructors
+
         public BGOFF()
         {
         }
 
-        public BGOFF(Int32 parameter, IStack<IJsmExpression> stack)
+        public BGOFF(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BGOFF)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(BGOFF)}()";
+
+        #endregion Methods
     }
 }

@@ -4,23 +4,25 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class SETGETA : JsmInstruction
     {
-        private Int32 _arg0;
+        #region Fields
 
-        public SETGETA(Int32 arg0)
-        {
-            _arg0 = arg0;
-        }
+        private readonly int _arg0;
 
-        public SETGETA(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public SETGETA(int arg0) => _arg0 = arg0;
+
+        public SETGETA(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: ((IConstExpression)stack.Pop()).Int32())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SETGETA)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -28,5 +30,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             Console.WriteLine($"NotImplemented: {nameof(SETGETA)}({_arg0})");
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(SETGETA)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

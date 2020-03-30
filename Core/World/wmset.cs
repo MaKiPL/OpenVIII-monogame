@@ -22,9 +22,9 @@ namespace OpenVIII.World
         {
             buffer = wmsetBuffer;
             sectionPointers = new int[WMSET_SECTION_COUNT];
-            using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+            using (var br = new BinaryReader(new MemoryStream(buffer)))
             {
-                for (int i = 0; i < sectionPointers.Length; i++)
+                for (var i = 0; i < sectionPointers.Length; i++)
                     sectionPointers[i] = br.ReadInt32();
             }
 
@@ -82,8 +82,8 @@ namespace OpenVIII.World
         /// <returns></returns>
         private int[] GetInnerPointers(BinaryReader br)
         {
-            List<int> innerSections = new List<int>();
-            int eof = -1;
+            var innerSections = new List<int>();
+            var eof = -1;
             while ((eof = br.ReadInt32()) != 0)
                 innerSections.Add(eof);
             return innerSections.ToArray();
@@ -110,14 +110,14 @@ namespace OpenVIII.World
         private void Section1()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[1 - 1], SeekOrigin.Begin);
                 ms.Seek(4, SeekOrigin.Current); //skip first DWORD- it's EOF of global file
-                List<EncounterHelper> encounterHelperList = new List<EncounterHelper>();
+                var encounterHelperList = new List<EncounterHelper>();
                 while (true)
                 {
-                    EncounterHelper entry = Extended.ByteArrayToStructure<EncounterHelper>(br.ReadBytes(4));
+                    var entry = Extended.ByteArrayToStructure<EncounterHelper>(br.ReadBytes(4));
                     if (entry.groundId == 0 && entry.regionId == 0 && entry.encounterPointer == 0)
                         break;
                     encounterHelperList.Add(entry);
@@ -128,7 +128,7 @@ namespace OpenVIII.World
 
         public ushort GetEncounterHelperPointer(int regionId, int groundId)
         {
-            IEnumerable<EncounterHelper> encList = encounterHelpEntries.Where(x => x.groundId == groundId && x.regionId == regionId);
+            var encList = encounterHelpEntries.Where(x => x.groundId == groundId && x.regionId == regionId);
             if (!encList.Any())
                 return 0xFFFF;
             return encList.First().encounterPointer; //always first, if there are two the same entries then it doesn't make sense- priority is over that one that is first
@@ -144,7 +144,7 @@ namespace OpenVIII.World
         private void Section2()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[2 - 1], SeekOrigin.Begin);
                 regionsBuffer = br.ReadBytes(768);
@@ -155,7 +155,7 @@ namespace OpenVIII.World
 
         public byte GetWorldRegionBySegmentPosition(int x, int y)
         {
-            int regionIndex = y * 32 + x;
+            var regionIndex = y * 32 + x;
             if (regionIndex >= regionsBuffer.Length || regionIndex < 0)
                 return 255;
             else return regionsBuffer[y * 32 + x]; // I had got an exception here. For out of range. //Ok- fixed
@@ -171,18 +171,18 @@ namespace OpenVIII.World
         private void Section4()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[4 - 1], SeekOrigin.Begin);
-                List<ushort[]> encounterList = new List<ushort[]>();
+                var encounterList = new List<ushort[]>();
                 while (true)
                 {
-                    uint dwordTester = br.ReadUInt32();
+                    var dwordTester = br.ReadUInt32();
                     if (dwordTester == 0)
                         break;
                     ms.Seek(-4, SeekOrigin.Current);
-                    ushort[] sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
-                    for (int i = 0; i < SEC4_ENC_PER_CHUNK; i++)
+                    var sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
+                    for (var i = 0; i < SEC4_ENC_PER_CHUNK; i++)
                         sceneOutPointers[i] = br.ReadUInt16();
                     encounterList.Add(sceneOutPointers);
                 }
@@ -201,18 +201,18 @@ namespace OpenVIII.World
         private void Section6()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[6 - 1], SeekOrigin.Begin);
-                List<ushort[]> encounterList = new List<ushort[]>();
+                var encounterList = new List<ushort[]>();
                 while (true)
                 {
-                    uint dwordTester = br.ReadUInt32();
+                    var dwordTester = br.ReadUInt32();
                     if (dwordTester == 0)
                         break;
                     ms.Seek(-4, SeekOrigin.Current);
-                    ushort[] sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
-                    for (int i = 0; i < SEC4_ENC_PER_CHUNK; i++)
+                    var sceneOutPointers = new ushort[SEC4_ENC_PER_CHUNK];
+                    for (var i = 0; i < SEC4_ENC_PER_CHUNK; i++)
                         sceneOutPointers[i] = br.ReadUInt16();
                     encounterList.Add(sceneOutPointers);
                 }
@@ -281,26 +281,26 @@ namespace OpenVIII.World
         /// </summary>
         public void Section8()
         {
-            List<section8WarpZone> localZones = new List<section8WarpZone>();
+            var localZones = new List<section8WarpZone>();
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[8 - 1], SeekOrigin.Begin);
-                int[] innerSec = GetInnerPointers(br);
-                for (int i = 0; i < innerSec.Length; i++)
+                var innerSec = GetInnerPointers(br);
+                for (var i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[8 - 1] + innerSec[i], SeekOrigin.Begin);
                     short Mode = 0;
                     Mode = (short)br.ReadUInt32();
-                    section8WarpZone localZone = new section8WarpZone
+                    var localZone = new section8WarpZone
                     {
                         field = -1
                     };
-                    List<worldMapScript> conditions = new List<worldMapScript>();
+                    var conditions = new List<worldMapScript>();
                     while (true)
                     {
-                        worldScriptOpcodes opcode = (worldScriptOpcodes)br.ReadUInt16();
-                        ushort argument = br.ReadUInt16();
+                        var opcode = (worldScriptOpcodes)br.ReadUInt16();
+                        var argument = br.ReadUInt16();
                         if (opcode == worldScriptOpcodes.ScriptEnd) //?? maybe
                         {
                             localZone.conditions = conditions.ToArray();
@@ -338,16 +338,16 @@ namespace OpenVIII.World
         private void Section9()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[9 - 1], SeekOrigin.Begin);
-                int sectionSize = sectionPointers[10 - 1] - sectionPointers[9 - 1] - 4;
-                int entriesCount = sectionSize / 12;
+                var sectionSize = sectionPointers[10 - 1] - sectionPointers[9 - 1] - 4;
+                var entriesCount = sectionSize / 12;
                 fieldToWorldMapLocations = new Vector3[entriesCount];
-                for (int i = 0; i < entriesCount; i++)
+                for (var i = 0; i < entriesCount; i++)
                 {
-                    int x = br.ReadInt32();
-                    int z = br.ReadInt32();
+                    var x = br.ReadInt32();
+                    var z = br.ReadInt32();
                     int y = br.ReadInt16();
                     fieldToWorldMapLocations[i].X = Extended.ConvertVanillaWorldXAxisToOpenVIII(x);
                     fieldToWorldMapLocations[i].Y = Extended.ConvertVanillaWorldYAxisToOpenVIII(y);
@@ -404,22 +404,22 @@ namespace OpenVIII.World
         private void Section11()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[11 - 1], SeekOrigin.Begin);
-                int entriesCount = sectionPointers[12 - 1] - sectionPointers[11 - 1] - 4;
+                var entriesCount = sectionPointers[12 - 1] - sectionPointers[11 - 1] - 4;
                 entriesCount /= 16;
                 entriesCount--; //first entry is null
                 ms.Seek(16, SeekOrigin.Current); //pass first entry, it's null
                 sec11Locations = new Vector3[entriesCount];
-                for(int i = 0; i<entriesCount; i++)
+                for(var i = 0; i<entriesCount; i++)
                 {
-                    int x = br.ReadInt32();
-                    int z = br.ReadInt32();
-                    int y = br.ReadInt32();
-                    float x_ = Extended.ConvertVanillaWorldXAxisToOpenVIII(x);
-                    float y_ = Extended.ConvertVanillaWorldYAxisToOpenVIII(y);
-                    float z_ = Extended.ConvertVanillaWorldZAxisToOpenVIII(z);
+                    var x = br.ReadInt32();
+                    var z = br.ReadInt32();
+                    var y = br.ReadInt32();
+                    var x_ = Extended.ConvertVanillaWorldXAxisToOpenVIII(x);
+                    var y_ = Extended.ConvertVanillaWorldYAxisToOpenVIII(y);
+                    var z_ = Extended.ConvertVanillaWorldZAxisToOpenVIII(z);
                     int unk = br.ReadInt16();
                     int unk2 = br.ReadInt16();
                     sec11Locations[i] = new Vector3(x_, y_, z_);
@@ -448,12 +448,12 @@ namespace OpenVIII.World
         private void Section14()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[14 - 1], SeekOrigin.Begin);
-                int[] innerSec = GetInnerPointers(br);
+                var innerSec = GetInnerPointers(br);
                 sideQuestDialogues = new FF8String[innerSec.Length];
-                for (int i = 0; i < innerSec.Length; i++)
+                for (var i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[14 - 1] + innerSec[i], SeekOrigin.Begin);
                     sideQuestDialogues[i] = Extended.GetBinaryString(br);
@@ -509,12 +509,12 @@ namespace OpenVIII.World
         private void Section16()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[16 - 1], SeekOrigin.Begin);
-                int[] innerSec = GetInnerPointers(br);
+                var innerSec = GetInnerPointers(br);
                 s16Models = new s16Model[innerSec.Length];
-                for (int i = 0; i < innerSec.Length; i++)
+                for (var i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[16 - 1] + innerSec[i], SeekOrigin.Begin);
                     s16Models[i].cTriangles = br.ReadUInt16();
@@ -524,11 +524,11 @@ namespace OpenVIII.World
                     s16Models[i].triangles = new s16Triangle[s16Models[i].cTriangles];
                     s16Models[i].quads = new s16Quad[s16Models[i].cQuads];
                     s16Models[i].vertices = new Vector4[s16Models[i].cVerts];
-                    for (int n = 0; n < s16Models[i].cTriangles; n++)
+                    for (var n = 0; n < s16Models[i].cTriangles; n++)
                         s16Models[i].triangles[n] = Extended.ByteArrayToStructure<s16Triangle>(br.ReadBytes(Marshal.SizeOf(typeof(s16Triangle))));
-                    for (int n = 0; n < s16Models[i].cQuads; n++)
+                    for (var n = 0; n < s16Models[i].cQuads; n++)
                         s16Models[i].quads[n] = Extended.ByteArrayToStructure<s16Quad>(br.ReadBytes(Marshal.SizeOf(typeof(s16Quad))));
-                    for (int n = 0; n < s16Models[i].cVerts; n++)
+                    for (var n = 0; n < s16Models[i].cVerts; n++)
                         s16Models[i].vertices[n] = new Vector4(
                             br.ReadInt16() / s16Scale,
                             br.ReadInt16() / s16Scale,
@@ -553,14 +553,14 @@ namespace OpenVIII.World
         {
             //This ones are simple- static meshes that are translated only by basic localTranslation and quaternion. Nothing much
 
-            List<VertexPositionTexture> vptList = new List<VertexPositionTexture>();
-            List<byte> vptTextureIndexList = new List<byte>();
+            var vptList = new List<VertexPositionTexture>();
+            var vptTextureIndexList = new List<byte>();
             //step 1. grab triangles
             if (objectId > s16Models.Length)
                 return new Tuple<VertexPositionTexture[], byte[]>(new VertexPositionTexture[0], new byte[0]); //error
-            s16Model Model = s16Models[objectId];
-            float texWidth = 256f;
-            float texHeight = 256f;
+            var Model = s16Models[objectId];
+            var texWidth = 256f;
+            var texHeight = 256f;
             byte localXadd = 0;
             byte localYadd = 0;
             if (textureResolution != null)
@@ -568,11 +568,11 @@ namespace OpenVIII.World
             if (textureOriginVector != null)
             { localXadd = (byte)textureOriginVector.Value.X; localYadd = (byte)textureOriginVector.Value.Y; }
 
-            for (int i = 0; i < Model.cTriangles; i++)
+            for (var i = 0; i < Model.cTriangles; i++)
             {
-                Vector3 a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].A], true);
-                Vector3 b = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].B], true);
-                Vector3 c = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].C], true);
+                var a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].A], true);
+                var b = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].B], true);
+                var c = Extended.ShrinkVector4ToVector3(Model.vertices[Model.triangles[i].C], true);
                 a = Vector3.Transform(a, Matrix.CreateFromQuaternion(rotation));
                 b = Vector3.Transform(b, Matrix.CreateFromQuaternion(rotation));
                 c = Vector3.Transform(c, Matrix.CreateFromQuaternion(rotation));
@@ -601,12 +601,12 @@ namespace OpenVIII.World
                 vptTextureIndexList.Add((byte)Model.triangles[i].clut);
             }
 
-            for (int i = 0; i < Model.cQuads; i++)
+            for (var i = 0; i < Model.cQuads; i++)
             {
-                Vector3 a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].A], true);
-                Vector3 b = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].B], true);
-                Vector3 c = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].C], true);
-                Vector3 d = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].D], true);
+                var a = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].A], true);
+                var b = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].B], true);
+                var c = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].C], true);
+                var d = Extended.ShrinkVector4ToVector3(Model.vertices[Model.quads[i].D], true);
                 a = Vector3.Transform(a, Matrix.CreateFromQuaternion(rotation));
                 b = Vector3.Transform(b, Matrix.CreateFromQuaternion(rotation));
                 c = Vector3.Transform(c, Matrix.CreateFromQuaternion(rotation));
@@ -687,7 +687,7 @@ namespace OpenVIII.World
             public byte animTimeout;
 
             /// <summary>
-            /// Frames count- controls how many frames are valid. Usually 4
+            /// Frames Count- controls how many frames are valid. Usually 4
             /// </summary>
             public byte framesCount;
 
@@ -738,16 +738,16 @@ namespace OpenVIII.World
 
         public void Section17()
         {
-            if (Memory.graphics?.GraphicsDevice != null)
+            if (Memory.Graphics?.GraphicsDevice != null)
             {
                 int[] innerPointers;
                 MemoryStream ms;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
                 {
                     ms.Seek(sectionPointers[17 - 1], SeekOrigin.Begin);
                     innerPointers = GetInnerPointers(br);
                     BeachAnimations = new textureAnimation[innerPointers.Length];
-                    for (int i = 0; i < innerPointers.Length; i++)
+                    for (var i = 0; i < innerPointers.Length; i++)
                         BeachAnimations[i] = textureAnimation_ParseBlock(sectionPointers[17 - 1] + innerPointers[i], i, ms, br);
                     //for (int i = 0; i < beachAnimations.Length; i++)
                     //    for (int n = 0; n < beachAnimations[i].framesCount; n++)
@@ -760,12 +760,12 @@ namespace OpenVIII.World
         {
             int[] innerPointers;
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[41 - 1], SeekOrigin.Begin);
                 innerPointers = GetInnerPointers(br);
                 waterAnimations = new textureAnimation[innerPointers.Length];
-                for (int i = 0; i < innerPointers.Length; i++)
+                for (var i = 0; i < innerPointers.Length; i++)
                     waterAnimations[i] = textureAnimation_ParseBlock(sectionPointers[41 - 1] + innerPointers[i], -1, ms, br);
             }
         }
@@ -784,7 +784,7 @@ namespace OpenVIII.World
         {
             ms.Seek(offset, SeekOrigin.Begin);
             //beachAnimation animation = Extended.ByteArrayToStructure<beachAnimation>(br.ReadBytes(8));
-            textureAnimation animation = new textureAnimation() //not using Extension because Marshalling doesn't go well with [][] even
+            var animation = new textureAnimation() //not using Extension because Marshalling doesn't go well with [][] even
                                                                 //though it's not really even used!
             {
                 unk = br.ReadByte(),
@@ -796,14 +796,14 @@ namespace OpenVIII.World
             };
             if (texturePointer == -1)
                 ms.Seek(4, SeekOrigin.Current); //there are two WORD's that feel like they have again the palette X and Y but why??
-            uint preImagePosition = (uint)ms.Position;
-            uint[] imagePointers = new uint[animation.framesCount];
+            var preImagePosition = (uint)ms.Position;
+            var imagePointers = new uint[animation.framesCount];
             Color[] palette = null;
             Color[][] customPalette = null;
             if (texturePointer != -1)
                 palette = GetWorldMapTexturePalette(texturePointer == 0 ?
                 Section38_textures.beach : Section38_textures.beachE, 0);
-            for (int i = 0; i < animation.framesCount; i++)
+            for (var i = 0; i < animation.framesCount; i++)
                 imagePointers[i] = br.ReadUInt32() + preImagePosition;
             Texture2D[] animationFrames = null;
             if (texturePointer != -1)
@@ -813,39 +813,39 @@ namespace OpenVIII.World
                 customPalette = new Color[imagePointers.Length][];
                 animationFrames = new Texture2D[imagePointers.Length];
             }
-            for (int i = 0; i < animation.framesCount; i++)
+            for (var i = 0; i < animation.framesCount; i++)
             {
                 ms.Seek(imagePointers[i], SeekOrigin.Begin);
-                uint unknownHeader = br.ReadUInt32();
-                uint unknownHeader_ = br.ReadUInt32();
+                var unknownHeader = br.ReadUInt32();
+                var unknownHeader_ = br.ReadUInt32();
                 if (unknownHeader != 18 && unknownHeader != 17) //I don't know why 18 [those are some version or flags?]
                     throw new Exception("wmset::section17::texturePointerHeader != 17 or 18");
                 if (unknownHeader_ != 1) //I don't know why 1
                     throw new Exception("wmset::section17::texturePointerHeader+4 != 1");
                 _ = br.ReadUInt32() - sec17_imageHeaderSize; //imageSize, but doesn't really matter here
                 _ = br.ReadUInt32(); //unknown
-                ushort width = (ushort)(br.ReadUInt16() * 2);
-                ushort height = br.ReadUInt16();
+                var width = (ushort)(br.ReadUInt16() * 2);
+                var height = br.ReadUInt16();
                 Texture2D texture;
                 Color[] texBuffer;
                 if (texturePointer != -1)
                 {
-                    texture = new Texture2D(Memory.graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
+                    texture = new Texture2D(Memory.Graphics.GraphicsDevice, width, height, false, SurfaceFormat.Color);
                     texBuffer = new Color[width * height]; //32bpp because Color is ARGB byte : struct
 
                     if (palette.Length == 16)
                     {
-                        for (int m = 0; m < texBuffer.Length; m += 2)
+                        for (var m = 0; m < texBuffer.Length; m += 2)
                         {
-                            byte b = br.ReadByte();
+                            var b = br.ReadByte();
                             texBuffer[m] = palette[b & 0xF];
                             texBuffer[m + 1] = palette[b >> 4];
                         }
                     }
                     else
-                        for (int m = 0; m < texBuffer.Length; m++)
+                        for (var m = 0; m < texBuffer.Length; m++)
                         {
-                            byte b = br.ReadByte();
+                            var b = br.ReadByte();
                             texBuffer[m] = palette[b];
                         }
                     texture.SetData(texBuffer);
@@ -855,9 +855,9 @@ namespace OpenVIII.World
                 {
                     width /= 2;
                     customPalette[i] = new Color[width]; //in sec41 width is the number of colours
-                    for (int m = 0; m < width; m++)
+                    for (var m = 0; m < width; m++)
                     {
-                        ushort color = br.ReadUInt16();
+                        var color = br.ReadUInt16();
                         customPalette[i][m] = Texture_Base.ABGR1555toRGBA32bit(color);
                     }
                 }
@@ -895,12 +895,12 @@ namespace OpenVIII.World
         private void Section32()
         {
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[32 - 1], SeekOrigin.Begin);
-                int[] innerSec = GetInnerPointers(br);
+                var innerSec = GetInnerPointers(br);
                 locationsNames = new FF8String[innerSec.Length];
-                for (int i = 0; i < locationsNames.Length; i++)
+                for (var i = 0; i < locationsNames.Length; i++)
                 {
                     ms.Seek(sectionPointers[32 - 1] + innerSec[i], SeekOrigin.Begin);
                     locationsNames[i] = Extended.GetBinaryString(br);
@@ -976,13 +976,13 @@ namespace OpenVIII.World
         public sec33SkyEntry[] skyColors;
         private void Section33()
         {
-            using (MemoryStream ms = new MemoryStream(buffer)) //didn't know you can skip braces with using
-            using (BinaryReader br = new BinaryReader(ms))
+            using (var ms = new MemoryStream(buffer)) //didn't know you can skip braces with using
+            using (var br = new BinaryReader(ms))
             {
                 ms.Seek(sectionPointers[33 - 1], SeekOrigin.Begin);
                 var innerSec = GetInnerPointers(br);
-                List<sec33SkyEntry> skyEntries = new List<sec33SkyEntry>();
-                for (int i = 0; i < innerSec.Length; i++)
+                var skyEntries = new List<sec33SkyEntry>();
+                for (var i = 0; i < innerSec.Length; i++)
                 {
                     ms.Seek(sectionPointers[33 - 1] + innerSec[i], SeekOrigin.Begin);
                     skyEntries.Add(Extended.ByteArrayToStructure<sec33SkyEntry>(br.ReadBytes(52)));
@@ -1052,14 +1052,14 @@ namespace OpenVIII.World
         {
             sec38_pals = new List<Color[][]>();
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[38 - 1], SeekOrigin.Begin);
-                int[] innerSec = GetInnerPointers(br);
+                var innerSec = GetInnerPointers(br);
                 sec38_textures = new List<TextureHandler[]>();
-                for (int i = 0; i < innerSec.Length; i++)
+                for (var i = 0; i < innerSec.Length; i++)
                 {
-                    TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
+                    var tim = new TIM2(buffer, (uint)(sectionPointers[38 - 1] + innerSec[i]));
                     if (i == (int)Section38_textures.waterTex2)
                         waterTim = tim;
                     if (i == (int)Section38_textures.waterTex3)
@@ -1078,7 +1078,7 @@ namespace OpenVIII.World
                     sec38_pals.Add(new Color[tim.GetClutCount][]);
                     for (ushort k = 0; k < sec38_textures[i].Length; k++)
                     {
-                        Color[] table = tim.GetPalette(k);
+                        var table = tim.GetPalette(k);
                         sec38_pals[i][k] = table;
                         sec38_textures[i][k] = TextureHandler.Create($"wmset_tim38_{(i + 1).ToString("D2")}.tim", tim, k, table);
                     }
@@ -1106,9 +1106,9 @@ namespace OpenVIII.World
              *  0   [24]     [17]    [22]      [23]
              *  64  [18]     [19]    [20]      [21]
              */
-            if (Memory.graphics?.GraphicsDevice != null)
+            if (Memory.Graphics?.GraphicsDevice != null)
             {
-                waterAtlas = new Texture2D(Memory.graphics.GraphicsDevice, WATERBLOCKTEXW << 2, WATERBLOCKTEXH << 1, false, SurfaceFormat.Color); //64<<2 is 256
+                waterAtlas = new Texture2D(Memory.Graphics.GraphicsDevice, WATERBLOCKTEXW << 2, WATERBLOCKTEXH << 1, false, SurfaceFormat.Color); //64<<2 is 256
 
                 WaterTextureAtlasPutChunk(Section38_textures.waterTex6, 0, 0); // 0 0
                 WaterTextureAtlasPutChunk(Section38_textures.waterTex2, WATERBLOCKTEXW, 0); // 64 0
@@ -1124,15 +1124,15 @@ namespace OpenVIII.World
 
         private void WaterTextureAtlasPutChunk(Section38_textures textureIndex, int x, int y)
         {
-            Texture2D atlasChunk = (Texture2D)GetWorldMapTexture(textureIndex, 0); //there's only one clut
-            byte[] chunkBuffer = new byte[WATERBLOCKTEXW * WATERBLOCKTEXH * 4];
+            var atlasChunk = (Texture2D)GetWorldMapTexture(textureIndex, 0); //there's only one clut
+            var chunkBuffer = new byte[WATERBLOCKTEXW * WATERBLOCKTEXH * 4];
             atlasChunk.GetData(level: 0, rect: new Rectangle(0, 0, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
             waterAtlas.SetData(0, new Rectangle(x, y, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
         }
 
         private void UpdateWaterTextureAtlasChunk(Texture2D animatedChunk, int x, int y)
         {
-            byte[] chunkBuffer = new byte[WATERBLOCKTEXW * WATERBLOCKTEXH * 4];
+            var chunkBuffer = new byte[WATERBLOCKTEXW * WATERBLOCKTEXH * 4];
             animatedChunk.GetData(level: 0, rect: new Rectangle(0, 0, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
             waterAtlas.SetData(0, new Rectangle(x, y, WATERBLOCKTEXW, WATERBLOCKTEXH), chunkBuffer, 0, chunkBuffer.Length);
         }
@@ -1209,23 +1209,23 @@ namespace OpenVIII.World
         /// </summary>
         private void Section39()
         {
-            if (Memory.graphics?.GraphicsDevice != null)
+            if (Memory.Graphics?.GraphicsDevice != null)
             {
                 MemoryStream ms;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
                 {
                     ms.Seek(sectionPointers[39 - 1], SeekOrigin.Begin);
-                    int[] innerSec = GetInnerPointers(br);
-                    Texture2D sec39_texture = new Texture2D(Memory.graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
+                    var innerSec = GetInnerPointers(br);
+                    var sec39_texture = new Texture2D(Memory.Graphics.GraphicsDevice, VRAM_TEXBLOCKWIDTH, VRAM_TEXBLOCKHEIGHT, false, SurfaceFormat.Color);
 
-                    for (int i = 0; i < innerSec.Length; i++)
+                    for (var i = 0; i < innerSec.Length; i++)
                     {
-                        TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
-                        Texture2D atlasChunk = tim.GetTexture(0);
-                        byte[] chunkBuffer = new byte[atlasChunk.Width * atlasChunk.Height * 4];
+                        var tim = new TIM2(buffer, (uint)(sectionPointers[39 - 1] + innerSec[i]));
+                        var atlasChunk = tim.GetTexture(0);
+                        var chunkBuffer = new byte[atlasChunk.Width * atlasChunk.Height * 4];
                         atlasChunk.GetData(chunkBuffer, 0, chunkBuffer.Length);
-                        int newX = tim.GetOrigX - SEC39_VRAM_STARTX;
-                        int newY = tim.GetOrigY - SEC39_VRAM_STARTY;
+                        var newX = tim.GetOrigX - SEC39_VRAM_STARTX;
+                        var newY = tim.GetOrigY - SEC39_VRAM_STARTY;
                         newX = (newX / VRAM_BLOCKSTEP) * VRAM_BLOCKSIZE;
                         sec39_texture.SetData(0, new Rectangle(newX, newY, atlasChunk.Width, atlasChunk.Height), chunkBuffer, 0, chunkBuffer.Length);
                     }
@@ -1306,16 +1306,16 @@ namespace OpenVIII.World
 
         private void Section42()
         {
-            List<TextureHandler[]> vehTextures = new List<TextureHandler[]>();
-            List<Vector2> timOriginHolderList = new List<Vector2>(); //VRAM atlas, holds X and Y origins for atlasing- here for calculating new UV
+            var vehTextures = new List<TextureHandler[]>();
+            var timOriginHolderList = new List<Vector2>(); //VRAM atlas, holds X and Y origins for atlasing- here for calculating new UV
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(sectionPointers[42 - 1], SeekOrigin.Begin);
-                int[] innerSec = GetInnerPointers(br);
-                for (int i = 0; i < innerSec.Length; i++)
+                var innerSec = GetInnerPointers(br);
+                for (var i = 0; i < innerSec.Length; i++)
                 {
-                    TIM2 tim = new TIM2(buffer, (uint)(sectionPointers[42 - 1] + innerSec[i]));
+                    var tim = new TIM2(buffer, (uint)(sectionPointers[42 - 1] + innerSec[i]));
                     timOriginHolderList.Add(new Vector2((tim.GetOrigX - SEC42_VRAM_STARTX) * 4, tim.GetOrigY));
                     vehTextures.Add(new TextureHandler[tim.GetClutCount]);
                     for (ushort k = 0; k < vehTextures[i].Length; k++)

@@ -5,7 +5,16 @@ namespace OpenVIII.Fields
 {
     public interface IAwaiter : INotifyCompletion
     {
-        Boolean IsCompleted { get; }
+        #region Properties
+
+        bool IsCompleted { get; }
+
+        #endregion Properties
+
+        #region Methods
+
         void GetResult();
+
+        #endregion Methods
     }
 }

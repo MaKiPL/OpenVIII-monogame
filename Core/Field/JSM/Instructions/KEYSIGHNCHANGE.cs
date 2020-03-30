@@ -1,6 +1,3 @@
-using System;
-
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -9,22 +6,28 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/150_KEYSIGHNCHANGE&action=edit&redlink=1"/>
     public sealed class KEYSIGHNCHANGE : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
 
-        public KEYSIGHNCHANGE(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        private readonly IJsmExpression _arg0;
 
-        public KEYSIGHNCHANGE(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public KEYSIGHNCHANGE(IJsmExpression arg0) => _arg0 = arg0;
+
+        public KEYSIGHNCHANGE(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(KEYSIGHNCHANGE)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(KEYSIGHNCHANGE)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OpenVIII
 {
@@ -13,36 +12,32 @@ namespace OpenVIII
     {
         #region Classes
 
-        public abstract class StringsBase
+        public abstract class StringsBase : IReadOnlyDictionary<int, List<FF8StringReference>>
         {
             #region Fields
 
             protected Memory.Archive Archive;
-            protected string[] Filenames;
-            protected StringFile Files;
+            protected string[] FileNames;
+            protected StringFile StringFiles;
             protected FF8StringReference.Settings Settings;
 
             #endregion Fields
 
             #region Constructors
 
-            protected StringsBase()
+            protected void SetValues(Memory.Archive archive, params string[] fileNames)
             {
-            }
-
-            protected void SetValues(Memory.Archive archive, params string[] filenames)
-            {
-                Memory.Log.WriteLine($"{nameof(StringsBase)}::{nameof(SetValues)} Archive= \"{archive}\", Files= {{{string.Join(", ", filenames)}}}");
+                Memory.Log.WriteLine($"{nameof(StringsBase)}::{nameof(SetValues)} Archive= \"{archive}\", Files= {{{string.Join(", ", fileNames)}}}");
 
                 Archive = archive;
-                Filenames = filenames;
+                FileNames = fileNames;
             }
 
             #endregion Constructors
 
             #region Indexers
 
-            public FF8StringReference this[uint sectionid, int stringid] => Files?[sectionid, stringid];
+            public FF8StringReference this[int sectionID, int stringID] => StringFiles?[sectionID, stringID];
 
             #endregion Indexers
 
@@ -50,9 +45,9 @@ namespace OpenVIII
 
             public Memory.Archive GetArchive() => Archive;
 
-            public IReadOnlyList<string> GetFilenames() => Filenames;
+            public IReadOnlyList<string> GetFileNames() => FileNames;
 
-            public StringFile GetFiles() => Files;
+            public StringFile GetFiles() => StringFiles;
 
             /// <summary>
             /// <para>
@@ -62,75 +57,73 @@ namespace OpenVIII
             /// </summary>
             /// <param name="br">BinaryReader where data is.</param>
             /// <param name="filename">file you are reading from</param>
-            /// <param name="PointerStart">Section where pointers are.</param>
-            /// <param name="StringStart">Section where strings are</param>
+            /// <param name="pointerStart">Section where pointers are.</param>
+            /// <param name="stringStart">Section where strings are</param>
             /// <param name="grab">Get so many pointers</param>
             /// <param name="skip">Then skip so many bytes</param>
-            protected void Get_Strings_BinMSG(BinaryReader br, string filename, uint PointerStart, uint StringStart, uint grab = 0, uint skip = 0)
+            protected void Get_Strings_BinMSG(BinaryReader br, string filename, int pointerStart, uint stringStart, uint grab = 0, uint skip = 0)
             {
-                Loc fpos = Files.subPositions[(int)PointerStart];
-                if (fpos.Seek > br.BaseStream.Length || fpos.Seek < 0) return;
-                br.BaseStream.Seek(fpos.Seek, SeekOrigin.Begin);
-                if (Files.sPositions.ContainsKey(PointerStart))
+                var fPos = StringFiles.SubPositions[pointerStart];
+                if (fPos.Seek > br.BaseStream.Length) return;
+                br.BaseStream.Seek(fPos.Seek, SeekOrigin.Begin);
+                
+                if (StringFiles.SPositions.ContainsKey(pointerStart))
                 {
                 }
                 else
                 {
                     ushort b = 0;
-                    ushort last = b;
-                    if (!Files.sPositions.ContainsKey(PointerStart))
+                    var last = b;
+                    var tmp = new List<FF8StringReference>();
+                    uint g = 1;
+                    while (br.BaseStream.Position < fPos.Max)
                     {
-                        Files.sPositions.Add(PointerStart, new List<FF8StringReference>());
-                        uint g = 1;
-                        while (br.BaseStream.Position < fpos.Max)
+                        b = br.ReadUInt16();
+                        if (last > b)
+                            break;
+                        else
                         {
-                            b = br.ReadUInt16();
-                            if (last > b)
-                                break;
-                            else
+                            if (b != 0xFFFF)
                             {
-                                if (b != 0xFFFF)
-                                {
-                                    Files.sPositions[PointerStart].Add(new FF8StringReference(Archive, filename, b + StringStart, settings: Settings));
-                                    last = b;
-                                }
-                                else
-                                    Files.sPositions[PointerStart].Add(null);
-                                if (grab > 0 && ++g > grab)
-                                {
-                                    br.BaseStream.Seek(skip, SeekOrigin.Current);
-                                    g = 1;
-                                }
+                                tmp.Add(new FF8StringReference(Archive, filename, b + stringStart, settings: Settings));
+                                last = b;
                             }
+                            else
+                                tmp.Add(null);
+
+                            if (grab <= 0 || ++g <= grab) continue;
+                            br.BaseStream.Seek(skip, SeekOrigin.Current);
+                            g = 1;
                         }
                     }
+
+                    StringFiles.SPositions.Add(pointerStart, tmp);
                 }
             }
 
-            protected void Get_Strings_ComplexStr(BinaryReader br, string filename, uint key, List<uint> list)
+            protected void Get_Strings_ComplexStr(BinaryReader br, string filename, int key, IReadOnlyList<int> list)
             {
-                uint[] fPaddings;
-                fPaddings = mngrp_read_padding(br, Files.subPositions[(int)key], 1);
-                Files.sPositions.Add(key, new List<FF8StringReference>());
+                var fPaddings = MenuGroupReadPadding(br, StringFiles.SubPositions[key], 1);
+                StringFiles.SPositions.Add(key, new List<FF8StringReference>());
                 if (fPaddings == null) return;
                 for (uint p = 0; p < fPaddings.Length; p += 2)
                 {
                     key = list[(int)fPaddings[(int)p + 1]];
-                    Loc fpos = Files.subPositions[(int)key];
-                    uint fpad = fPaddings[p] + fpos.Seek;
-                    br.BaseStream.Seek(fpad, SeekOrigin.Begin);
-                    if (!Files.sPositions.ContainsKey(key))
-                        Files.sPositions.Add(key, new List<FF8StringReference>());
-                    br.BaseStream.Seek(fpad + 6, SeekOrigin.Begin);
+                    var fPos = StringFiles.SubPositions[(int)key];
+                    var fPad = fPaddings[p] + fPos.Seek;
+                    br.BaseStream.Seek(fPad, SeekOrigin.Begin);
+                    if (!StringFiles.SPositions.ContainsKey(key))
+                        StringFiles.SPositions.Add(key, new List<FF8StringReference>());
+                    br.BaseStream.Seek(fPad + 6, SeekOrigin.Begin);
                     //byte[] UNK = br.ReadBytes(6);
-                    ushort len = br.ReadUInt16();
-                    uint stop = (uint)(br.BaseStream.Position + len - 9); //6 for UNK, 2 for len 1, for end null
-                    Files.sPositions[key].Add(new FF8StringReference(Archive, filename, (uint)br.BaseStream.Position, settings: Settings));
+                    var len = br.ReadUInt16();
+                    var stop = (uint)(br.BaseStream.Position + len - 9); //6 for UNK, 2 for len 1, for end null
+                    StringFiles.SPositions[key].Add(new FF8StringReference(Archive, filename, (uint)br.BaseStream.Position, settings: Settings));
                     //entry contains possible more than one string so I am scanning for null
                     while (br.BaseStream.Position + 1 < stop)
                     {
-                        byte b = br.ReadByte();
-                        if (b == 0) Files.sPositions[key].Add(new FF8StringReference(Archive, filename, (uint)br.BaseStream.Position, settings: Settings));
+                        var b = br.ReadByte();
+                        if (b == 0) StringFiles.SPositions[key].Add(new FF8StringReference(Archive, filename, (uint)br.BaseStream.Position, settings: Settings));
                     }
                 }
             }
@@ -142,53 +135,55 @@ namespace OpenVIII
             /// <param name="spos"></param>
             /// <param name="key"></param>
             /// <param name="pad"></param>
-            protected void Get_Strings_Offsets(BinaryReader br, string filename, uint key, bool pad = false)
+            protected void Get_Strings_Offsets(BinaryReader br, string filename, int key, bool pad = false)
             {
-                Loc fpos = Files.subPositions[(int)key];
-                uint[] fPaddings = pad ? mngrp_read_padding(br, fpos) : (new uint[] { 1 });
+                var fPos = StringFiles.SubPositions[key];
+                var fPaddings = pad ? MenuGroupReadPadding(br, fPos) : (new uint[] { 1 });
                 if (fPaddings == null) return;
-                Files.sPositions.Add(key, new List<FF8StringReference>());
+                StringFiles.SPositions.Add(key, new List<FF8StringReference>());
                 for (uint p = 0; p < fPaddings.Length; p++)
                 {
                     if (fPaddings[p] <= 0) continue;
-                    uint fpad = pad ? fPaddings[p] + fpos.Seek : fpos.Seek;
-                    if (fpad > br.BaseStream.Length || fpad < 0) return;
-                    br.BaseStream.Seek(fpad, SeekOrigin.Begin);
-                    if (br.BaseStream.Position + 4 < br.BaseStream.Length)
+                    var fPad = pad ? fPaddings[p] + fPos.Seek : fPos.Seek;
+                    if (fPad > br.BaseStream.Length) return;
+                    br.BaseStream.Seek(fPad, SeekOrigin.Begin);
+                    if (br.BaseStream.Position + 4 >= br.BaseStream.Length) continue;
+                    int count = br.ReadUInt16();
+                    for (var i = 0; i < count && br.BaseStream.Position + 2 < br.BaseStream.Length; i++)
                     {
-                        int count = br.ReadUInt16();
-                        for (int i = 0; i < count && br.BaseStream.Position + 2 < br.BaseStream.Length; i++)
-                        {
-                            uint c = br.ReadUInt16();
-                            if (c < br.BaseStream.Length && c != 0)
-                            {
-                                c += fpad;
-                                Files.sPositions[key].Add(new FF8StringReference(Archive, filename, c, settings: Settings));
-                            }
-                        }
+                        uint c = br.ReadUInt16();
+                        if (c >= br.BaseStream.Length || c == 0) continue;
+                        c += fPad;
+
+                        //long loc =br.BaseStream.Position;
+                        //try
+                        //{
+                        //    br.BaseStream.Seek(c, SeekOrigin.Begin);
+                        //    if(br.ReadByte()!=0)
+                                StringFiles.SPositions[key].Add(new FF8StringReference(Archive, filename, c, settings: Settings));
+                       // }
+                       // finally
+                        //{
+                        //    br.BaseStream.Seek(loc,SeekOrigin.Begin);
+                        //}
                     }
                 }
             }
 
-            protected abstract void GetFileLocations(BinaryReader br);
-
             protected abstract void LoadArchiveFiles();
 
-            protected uint[] mngrp_read_padding(BinaryReader br, Loc fpos, int type = 0)
+            protected uint[] MenuGroupReadPadding(BinaryReader br, Loc fPos, int type = 0)
             {
-                uint[] fPaddings = null;
-                if (fpos.Seek < 0 || fpos.Seek > br.BaseStream.Length) return null;
-                br.BaseStream.Seek(fpos.Seek, SeekOrigin.Begin);
-                uint size = type == 0 ? br.ReadUInt16() : br.ReadUInt32();
-                fPaddings = new uint[type == 0 ? size : size * type * 2];
-                for (int i = 0; i < fPaddings.Length; i += 1 + type)
+                if (fPos.Seek > br.BaseStream.Length) return null;
+                br.BaseStream.Seek(fPos.Seek, SeekOrigin.Begin);
+                var size = type == 0 ? br.ReadUInt16() : br.ReadUInt32();
+                var fPaddings = new uint[type == 0 ? size : size * type * 2];
+                for (var i = 0; i < fPaddings.Length; i += 1 + type)
                 {
                     fPaddings[i] = br.ReadUInt16();
-                    if (type == 0 && fPaddings[i] + fpos.Seek >= fpos.Max)
+                    if (type == 0 && fPaddings[i] + fPos.Seek >= fPos.Max)
                         fPaddings[i] = 0;
-                    //if (fPaddings[i] != 0)
-                    //    fPaddings[i] += fpos.seek;
-                    for (int j = 1; j < type + 1; j++)
+                    for (var j = 1; j < type + 1; j++)
                     {
                         fPaddings[i + j] = br.ReadUInt16();
                     }
@@ -201,7 +196,7 @@ namespace OpenVIII
             public static T Load<T>() where T : StringsBase, new()
             {
                 Memory.Log.WriteLine($"{nameof(StringsBase)} :: {nameof(Load)} :: {typeof(T)}");
-                T r = new T();
+                var r = new T();
                 r.DefaultValues();
                 r.LoadArchiveFiles();
                 return r;
@@ -209,18 +204,44 @@ namespace OpenVIII
 
             protected void LoadArchiveFiles_Simple()
             {
-                ArchiveBase aw = ArchiveWorker.Load(Archive, true);
-                MemoryStream ms;
-                byte[] buffer = aw.GetBinaryFile(Filenames[0],true);
-                if (buffer != null)
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer, true)))
-                    {
-                        Files = new StringFile(1);
-                        Files.subPositions.Add(new Loc { Seek = 0, Length = uint.MaxValue });
-                        Get_Strings_Offsets(br, Filenames[0], 0);
-                        ms = null;
-                    }
+                var aw = ArchiveWorker.Load(Archive, true);
+                var buffer = aw.GetBinaryFile(FileNames[0],true);
+                if (buffer == null) return;
+                using (var br = new BinaryReader(new MemoryStream(buffer, true)))
+                {
+                    StringFiles = new StringFile(1);
+                    StringFiles.SubPositions.Add(Loc.CreateInstance(0, uint.MaxValue));
+                    Get_Strings_Offsets(br, FileNames[0], 0);
+                }
             }
+
+            public IEnumerator<KeyValuePair<int, List<FF8StringReference>>> GetEnumerator()
+            {
+                return StringFiles.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((IEnumerable) StringFiles).GetEnumerator();
+            }
+
+            public int Count => StringFiles.Count;
+
+            public bool ContainsKey(int key)
+            {
+                return StringFiles.ContainsKey(key);
+            }
+
+            public bool TryGetValue(int key, out List<FF8StringReference> value)
+            {
+                return StringFiles.TryGetValue(key, out value);
+            }
+
+            public List<FF8StringReference> this[int key] => ((IReadOnlyDictionary<int, List<FF8StringReference>>) StringFiles)[key];
+
+            public IEnumerable<int> Keys => StringFiles.Keys;
+
+            public IEnumerable<List<FF8StringReference>> Values => StringFiles.Values;
         }
 
         #endregion Methods

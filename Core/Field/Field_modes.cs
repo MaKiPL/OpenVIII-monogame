@@ -1,10 +1,10 @@
 ﻿namespace OpenVIII.Fields
 {
-    public enum Field_modes
+    public enum FieldModes
     {
-        INIT,
-        DEBUGRENDER,
-        DISABLED,
-        NOJSM
+        Init,
+        DebugRender,
+        Disabled,
+        NoJSM
     };
 }

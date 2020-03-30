@@ -1,8 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
@@ -56,28 +57,46 @@ namespace OpenVIII
             //Angelo_Disabled I think is set when Rinoa is in space so angelo is out of reach;
             //https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/25194
             if (Memory.State.BattleMiscFlags.HasFlag(Saves.BattleMiscFlags.AngeloDisabled) ||
-                !Memory.State.PartyData.Contains(Characters.Rinoa_Heartilly) ||
+                !Memory.State.Party.Contains(Characters.Rinoa_Heartilly) ||
                 !Memory.State.LimitBreakAngeloCompleted.HasFlag(ability)) return false;
-            else
-                switch (ability)
-                {
-                    case Angelo.Recover:
-                        return Memory.State.Characters.Any(x => x.Value.IsCritical && !x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 8;
+            switch (ability)
+            {
+                case Angelo.Recover:
+                    //Characters.Any(x => x.Value.IsCritical && !x.Value.IsDead && Memory.State.PartyData.Contains(x.Key))
+                    return !Memory.State.AnyDeadPartyMembers && Memory.State.AnyCriticalPartyMembers && Memory.Random.Next(256) < 8;
 
-                    case Angelo.Reverse:
-                        return Memory.State.Characters.Any(x => x.Value.IsDead && Memory.State.PartyData.Contains(x.Key)) && Memory.Random.Next(256) < 2;
+                case Angelo.Reverse:
+                    return Memory.State.AnyDeadPartyMembers && Memory.Random.Next(256) < 2;
 
-                    case Angelo.Search:
-                        Saves.CharacterData c = Memory.State[Characters.Rinoa_Heartilly];
-                        if (!(c.IsGameOver ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Sleep) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Stop) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Confuse) ||
-                            c.Statuses0.HasFlag(Kernel_bin.Persistent_Statuses.Berserk) ||
-                            c.Statuses1.HasFlag(Kernel_bin.Battle_Only_Statuses.Angel_Wing)))
-                            return Memory.Random.Next(256) < 8;
-                        break;
-                }
+                case Angelo.Search:
+                    var c = Memory.State[Characters.Rinoa_Heartilly];
+                    if (!(c.IsGameOver ||
+
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.Sleep) ||
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.Stop) ||
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.Confuse) ||
+                          c.Statuses0.HasFlag(PersistentStatuses.Berserk) ||
+                          c.Statuses1.HasFlag(BattleOnlyStatuses.AngelWing)))
+
+                        return Memory.Random.Next(256) < 8;
+                    break;
+                case Angelo.None:
+                    break;
+                case Angelo.Rush:
+                    break;
+                case Angelo.Cannon:
+                    break;
+                case Angelo.Strike:
+                    break;
+                case Angelo.Invincible_Moon:
+                    break;
+                case Angelo.Wishing_Star:
+                    break;
+                case Angelo.Angel_Wing:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(ability), ability, null);
+            }
             return false;
         }
 
@@ -101,7 +120,7 @@ namespace OpenVIII
             bool save(IEnumerable<Characters> hurt, ref EventHandler<Characters> @event)
             {
                 if (hurt == null || !hurt.Any()) return false;
-                Characters c = hurt.Random();
+                var c = hurt.Random();
                 @event?.Invoke(this, c);
                 return true;
             }
@@ -121,10 +140,10 @@ namespace OpenVIII
             //Will Angelo Search be used?
             else if (TestAngeloAbilityTriggers(Angelo.Search))
             {
-                //Real game has a counter that count to 255 and resets to 0
+                //Real game has a counter that Count to 255 and resets to 0
                 //instead of a random number. The counter counts up every 1 tick.
                 //60 ticks per second.
-                byte rnd = checked((byte)Memory.Random.Next(256));
+                var rnd = checked((byte)Memory.Random.Next(256));
                 if (rnd < 128) AngeloSearch?.Invoke(this,Algorithm(1));
                 else if (rnd < 160) AngeloSearch?.Invoke(this, Algorithm(2));
                 else if (rnd < 176) AngeloSearch?.Invoke(this, Algorithm(3));
@@ -148,7 +167,7 @@ namespace OpenVIII
                     //const byte Friendship = 32;
                     //const byte Mog's_Amulet = 65;
 
-                    Saves.Item item = new Saves.Item { QTY = 1 };
+                    var item = new Saves.Item { QTY = 1 };
                     rnd = checked((byte)Memory.Random.Next(256));
                     switch (i)
                     {

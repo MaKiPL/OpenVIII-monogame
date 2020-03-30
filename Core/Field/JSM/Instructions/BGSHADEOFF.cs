@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// turn off shade?
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/117_BGSHADEOFF&action=edit&redlink=1"/>
     public sealed class BGSHADEOFF : JsmInstruction
     {
+        #region Constructors
+
         public BGSHADEOFF()
         {
         }
 
-        public BGSHADEOFF(Int32 parameter, IStack<IJsmExpression> stack)
+        public BGSHADEOFF(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BGSHADEOFF)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(BGSHADEOFF)}()";
+
+        #endregion Methods
     }
 }

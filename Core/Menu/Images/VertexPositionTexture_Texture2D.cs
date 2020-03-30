@@ -28,7 +28,7 @@ namespace OpenVIII
             TransformedVPT = (VertexPositionTexture[])VPT.Clone();
             Texture = texture;
 
-            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice)
             {
                 Texture = (Texture2D)Texture
             };
@@ -52,7 +52,7 @@ namespace OpenVIII
             if (left.Texture == right.Texture)
             {
                 //could be optimized.
-                List<VertexPositionTexture> tmp = new List<VertexPositionTexture>(left.VPT.Length + right.VPT.Length);
+                var tmp = new List<VertexPositionTexture>(left.VPT.Length + right.VPT.Length);
                 tmp.AddRange(left.VPT);
                 tmp.AddRange(right.VPT);
                 return new VertexPositionTexture_Texture2D(tmp.ToArray(), left.Texture);
@@ -79,11 +79,11 @@ namespace OpenVIII
             //Quaternion q = Quaternion.CreateFromYawPitchRoll(yaw, pitch, 0f);
 
             //The above code does the same thing as CreateBillboard but if you need more control might be worth having.
-            Update(Module_battle_debug.CreateBillboard(pos));
+            Update(ModuleBattleDebug.CreateBillboard(pos));
 
         public void Update(Matrix bb)
         {
-            for (int i = 0; i < VPT.Length; i++)
+            for (var i = 0; i < VPT.Length; i++)
             {
                 TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, bb);
                 //TransformedVPT[i].Position = Vector3.Transform(VPT[i].Position, q);
@@ -93,24 +93,24 @@ namespace OpenVIII
 
         public void DrawForBattle()
         {
-            ate.World = Module_battle_debug.WorldMatrix;
-            ate.View = Module_battle_debug.ViewMatrix;
-            ate.Projection = Module_battle_debug.ProjectionMatrix;
+            ate.World = ModuleBattleDebug.WorldMatrix;
+            ate.View = ModuleBattleDebug.ViewMatrix;
+            ate.Projection = ModuleBattleDebug.ProjectionMatrix;
             Draw();
         }
 
         public void Draw()
         {
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            Module_battle_debug.Effect.TextureEnabled = true;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            ModuleBattleDebug.Effect.TextureEnabled = true;
 
-            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+            foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(primitiveType: PrimitiveType.TriangleList,
                 vertexData: TransformedVPT, vertexOffset: 0, primitiveCount: VPT.Length / 3);
             }
         }

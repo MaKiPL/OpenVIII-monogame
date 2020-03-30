@@ -1,5 +1,3 @@
-using System;
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -11,7 +9,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
     {
         #region Fields
 
-        private IJsmExpression _arg0;
+        private readonly IJsmExpression _arg0;
         private IJsmExpression _arg1;
         private IJsmExpression _arg2;
 
@@ -21,7 +19,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public ALLSEPOSTRANS(IJsmExpression arg0, IJsmExpression arg1, IJsmExpression arg2) => _arg0 = arg0;
 
-        public ALLSEPOSTRANS(Int32 parameter, IStack<IJsmExpression> stack)
+        public ALLSEPOSTRANS(int parameter, IStack<IJsmExpression> stack)
                 : this(
                     arg2: stack.Pop(),
                     arg1: stack.Pop(),
@@ -33,7 +31,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(ALLSEPOS)}({nameof(_arg0)}: {_arg0},{nameof(_arg1)}: {_arg1},{nameof(_arg2)}: {_arg2})";
+        public override string ToString() => $"{nameof(ALLSEPOS)}({nameof(_arg0)}: {_arg0},{nameof(_arg1)}: {_arg1},{nameof(_arg2)}: {_arg2})";
 
         #endregion Methods
     }

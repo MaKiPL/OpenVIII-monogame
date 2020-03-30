@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Temp[index] = value;
@@ -11,11 +8,18 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/009_POPI_L"/>
     public sealed class POPI_L : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Index position in the Temp List (0 &lt;= Argument &lt; 8).
         /// </summary>
-        private ScriptResultId _index;
-        private IJsmExpression _value;
+        private readonly ScriptResultId _index;
+
+        private readonly IJsmExpression _value;
+
+        #endregion Fields
+
+        #region Constructors
 
         public POPI_L(ScriptResultId index, IJsmExpression value)
         {
@@ -23,16 +27,15 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _value = value;
         }
 
-        public POPI_L(Int32 parameter, IStack<IJsmExpression> stack)
+        public POPI_L(int parameter, IStack<IJsmExpression> stack)
             : this(new ScriptResultId(parameter),
                 value: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(POPI_L)}({nameof(_index)}: {_index}, {nameof(_value)}: {_value})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -44,9 +47,13 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            Int32 value = _value.Int32(services);
+            var value = _value.Int32(services);
             ServiceId.Interaction[services][_index] = value;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(POPI_L)}({nameof(_index)}: {_index}, {nameof(_value)}: {_value})";
+
+        #endregion Methods
     }
 }

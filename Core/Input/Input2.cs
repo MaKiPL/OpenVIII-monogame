@@ -38,9 +38,9 @@ namespace OpenVIII
         protected bool ButtonTriggered(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
         {
             if (Memory.IsActive)
-                foreach (Inputs list in InputList)
-                    foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
-                        foreach (InputButton test in kvp.Value)
+                foreach (var list in InputList)
+                    foreach (var kvp in list.Data.Where(y => y.Key.Contains(key)))
+                        foreach (var test in kvp.Value)
                             if (main.ButtonTriggered(test, trigger))
                                 return true;
             return false;
@@ -70,14 +70,14 @@ namespace OpenVIII
                     };
 
                     //remove duplicate inputs.
-                    int j = 1;
-                    foreach (Inputs list in InputList)
+                    var j = 1;
+                    foreach (var list in InputList)
                     {
-                        for (int i = j; i < InputList.Count; i++)
+                        for (var i = j; i < InputList.Count; i++)
                         {
-                            foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in InputList[i].Data)
+                            foreach (var kvp in InputList[i].Data)
                             {
-                                foreach (InputButton inputs in kvp.Value.ToArray())
+                                foreach (var inputs in kvp.Value.ToArray())
                                     if (
                                         list.Data.Any(
                                             x => x.Value.Any(y => y.Equals(inputs)
@@ -154,9 +154,9 @@ namespace OpenVIII
 
         public static FF8String ButtonString(FF8TextTagKey key, ButtonTrigger trigger = ButtonTrigger.None)
         {
-            foreach (Inputs list in InputList)
-                foreach (KeyValuePair<List<FF8TextTagKey>, List<InputButton>> kvp in list.Data.Where(y => y.Key.Contains(key)))
-                    foreach (InputButton test in kvp.Value)
+            foreach (var list in InputList)
+                foreach (var kvp in list.Data.Where(y => y.Key.Contains(key)))
+                    foreach (var test in kvp.Value)
                         if (!list.DrawGamePadButtons)
                         {
                             return test.ToString();
@@ -170,7 +170,7 @@ namespace OpenVIII
 
         public static IReadOnlyList<FF8TextTagKey> Convert_Flags(Button_Flags k)
         {
-            List<FF8TextTagKey> ret = new List<FF8TextTagKey>(1);
+            var ret = new List<FF8TextTagKey>(1);
             foreach (Button_Flags x in Enum.GetValues(typeof(Button_Flags)))
             {
                 if (k.HasFlag(x) && (Convert_Button?.ContainsKey(k) ?? false))
@@ -186,7 +186,7 @@ namespace OpenVIII
 
         public static bool DelayedButton(FF8TextTagKey k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k, trigger);
+            var ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
@@ -194,7 +194,7 @@ namespace OpenVIII
 
         public static bool DelayedButton(InputButton k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k, trigger);
+            var ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
@@ -202,7 +202,7 @@ namespace OpenVIII
 
         public static bool DelayedButton(Keys k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k, trigger);
+            var ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
@@ -210,7 +210,7 @@ namespace OpenVIII
 
         public static bool DelayedButton(MouseButtons k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k, trigger);
+            var ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;
@@ -218,7 +218,7 @@ namespace OpenVIII
 
         public static bool DelayedButton(GamePadButtons k, ButtonTrigger trigger = ButtonTrigger.OnPress)
         {
-            bool ret = Button(k, trigger);
+            var ret = Button(k, trigger);
             if (ret)
                 ResetInputLimit();
             return ret;

@@ -1,11 +1,13 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts
+﻿namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class Expression
         {
+            #region Classes
+
             /// <summary>
             /// <para>Push signed from memory (byte)</para>
             /// <para>Push the first signed byte from Argument onto the stack.</para>
@@ -13,29 +15,28 @@ namespace OpenVIII.Fields.Scripts
             /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/010_PSHSM_B"/>
             public sealed class PSHSM_B : IJsmExpression
             {
+                #region Fields
+
                 /// <summary>
                 /// Memory address.
                 /// </summary>
-                private GlobalVariableId<SByte> _globalVariable;
+                private GlobalVariableId<sbyte> _globalVariable;
 
-                public PSHSM_B(GlobalVariableId<SByte> globalVariable)
-                {
-                    _globalVariable = globalVariable;
-                }
+                #endregion Fields
 
-                public override String ToString()
-                {
-                    return $"{nameof(PSHSM_B)}({nameof(_globalVariable)}: {_globalVariable})";
-                }
+                #region Constructors
 
-                public void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-                {
-                    FormatHelper.FormatGlobalGet(_globalVariable, null, sw, formatterContext, services);
-                }
+                public PSHSM_B(GlobalVariableId<sbyte> globalVariable) => _globalVariable = globalVariable;
+
+                #endregion Constructors
+
+                #region Methods
+
+                public long Calculate(IServices services) => ServiceId.Global[services].Get(_globalVariable);
 
                 public IJsmExpression Evaluate(IServices services)
                 {
-                    IGlobalVariableService global = ServiceId.Global[services];
+                    var global = ServiceId.Global[services];
                     if (global.IsSupported)
                     {
                         var value = global.Get(_globalVariable);
@@ -44,11 +45,16 @@ namespace OpenVIII.Fields.Scripts
                     return this;
                 }
 
-                public Int64 Calculate(IServices services)
-                {
-                    return ServiceId.Global[services].Get(_globalVariable);
-                }
+                public void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => FormatHelper.FormatGlobalGet(_globalVariable, null, sw, formatterContext, services);
+
+                public override string ToString() => $"{nameof(PSHSM_B)}({nameof(_globalVariable)}: {_globalVariable})";
+
+                #endregion Methods
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

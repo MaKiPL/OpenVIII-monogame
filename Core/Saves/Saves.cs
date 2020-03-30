@@ -54,7 +54,7 @@ namespace OpenVIII
         {
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Init)}");
             FileList = new Data[Slots, GamesPerSlot];
-            CD2000Folder = Path.Combine(Memory.FF8DIR, "Save");
+            CD2000Folder = Path.Combine(Memory.FF8Dir, "Save");
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(CD2000Folder)} :: {CD2000Folder}");
             Steam2013Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Square Enix", "FINAL FANTASY VIII Steam");
             Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Steam2013Folder)} :: {Steam2013Folder}");
@@ -63,10 +63,10 @@ namespace OpenVIII
 
             if (Directory.Exists(Steam2013Folder))
             {
-                string[] dirs = Directory.GetDirectories(Steam2013Folder);
+                var dirs = Directory.GetDirectories(Steam2013Folder);
                 if (dirs.Length > 0)
                 {
-                    string[] SteamFolders = Directory.GetDirectories(Steam2013Folder);
+                    var SteamFolders = Directory.GetDirectories(Steam2013Folder);
                     if (SteamFolders.Length > 0)
                     {
                         Steam2013Folder = SteamFolders[0];
@@ -80,11 +80,11 @@ namespace OpenVIII
             }
             else if (Directory.Exists(Steam2019Folder))
             {
-                string[] dirs = Directory.GetDirectories(Steam2019Folder);
+                var dirs = Directory.GetDirectories(Steam2019Folder);
 
                 if (dirs.Length > 0)
                 {
-                    string[] SteamFolders = Directory.GetDirectories(Steam2019Folder);
+                    var SteamFolders = Directory.GetDirectories(Steam2019Folder);
                     if (SteamFolders.Length > 0)
                     {
                         Steam2019Folder = Path.Combine(SteamFolders[0], "game_data", "user", "saves");
@@ -99,12 +99,12 @@ namespace OpenVIII
         private static void ProcessFiles(IEnumerable<string> files, string pattern)
         {
             //List<Action> actions = new List<Action>();
-            Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            IEnumerable<Action> actions = files.Select(x => new { file = x, match = regex.Match(x) })
+            var regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            var actions = files.Select(x => new { file = x, match = regex.Match(x) })
                 .Where(x => x.match.Success && x.match.Groups.Count >= 3)
                 .Select(x =>
                 {
-                    if (!int.TryParse(x.match.Groups[1].Value, out int slot) || !int.TryParse(x.match.Groups[2].Value, out int game))
+                    if (!int.TryParse(x.match.Groups[1].Value, out var slot) || !int.TryParse(x.match.Groups[2].Value, out var game))
                     {
                         slot = -1;
                         game = -1;
@@ -119,14 +119,14 @@ namespace OpenVIII
         private static void Read(string file, out Data d)
         {
             d = null;
-            int size = 0;
+            var size = 0;
             Memory.Log.WriteLine($"{nameof(Saves)}::{nameof(Read)} Extracting: {file}");
             byte[] decmp = null;
             MemoryStream ms = null;
             FileStream fs = null;
 
             // fs is disposed by binaryreader.
-            using (BinaryReader br = new BinaryReader(
+            using (var br = new BinaryReader(
                 fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 if (fs.Length >= 5)
@@ -134,7 +134,7 @@ namespace OpenVIII
                     size = br.ReadInt32();
                     if ((int)fs.Length - sizeof(uint) == size)
                     {
-                        byte[] tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
+                        var tmp = br.ReadBytes((int)fs.Length - sizeof(uint));
                         decmp = LZSS.DecompressAllNew(tmp, 0);
                     }
                 }
@@ -145,7 +145,7 @@ namespace OpenVIII
                 Memory.Log.WriteLine($"{nameof(Saves)}::{nameof(Read)} Invalid file: {file}");
             }
             else
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(decmp)))
+                using (var br = new BinaryReader(ms = new MemoryStream(decmp)))
                 {
                     ms.Seek(SteamOffset, SeekOrigin.Begin);
                     d = new Data();

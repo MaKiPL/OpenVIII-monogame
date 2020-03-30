@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// End Unknown11
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/177_UNKNOWN12"/>
     public sealed class Unknown12 : JsmInstruction
     {
+        #region Constructors
+
         public Unknown12()
         {
         }
 
-        public Unknown12(Int32 parameter, IStack<IJsmExpression> stack)
+        public Unknown12(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(Unknown12)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(Unknown12)}()";
+
+        #endregion Methods
     }
 }

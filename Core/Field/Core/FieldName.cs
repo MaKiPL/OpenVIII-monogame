@@ -5,7 +5,21 @@ namespace OpenVIII.Fields
 {
     public static class FieldName
     {
-        public static String Get(int id)
+        #region Fields
+
+        //TODO
+        /// <summary>
+        /// This should be eventually initialized with real location names. Currently I don't know where they are ~Maki
+        /// </summary>
+        private static readonly Dictionary<int, string> _dic = new Dictionary<int, string>()
+        {
+        };
+
+        #endregion Fields
+
+        #region Methods
+
+        public static string Get(int id)
         {
             if (_dic.TryGetValue(id, out var name))
                 return name;
@@ -13,13 +27,6 @@ namespace OpenVIII.Fields
             return $"Unknown field: {id}";
         }
 
-        //TODO
-        /// <summary>
-        /// This should be eventually initialized with real location names. Currently I don't know where they are ~Maki
-        /// </summary>
-        private static readonly Dictionary<int, String> _dic = new Dictionary<int, String>()
-        {
-            
-        };
+        #endregion Methods
     }
 }

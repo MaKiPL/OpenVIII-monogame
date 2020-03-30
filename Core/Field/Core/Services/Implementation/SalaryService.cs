@@ -4,8 +4,12 @@ namespace OpenVIII.Fields
 {
     public sealed class SalaryService : ISalaryService
     {
-        public Boolean IsSupported => true;
-        public Boolean IsSalaryEnabled { get; set; }
-        public Boolean IsSalaryAlertEnabled { get; set; }
+        #region Properties
+
+        public bool IsSalaryAlertEnabled { get; set; }
+        public bool IsSalaryEnabled { get; set; }
+        public bool IsSupported => true;
+
+        #endregion Properties
     }
 }

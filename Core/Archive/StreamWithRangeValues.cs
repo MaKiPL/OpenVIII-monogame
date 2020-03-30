@@ -20,7 +20,7 @@ namespace OpenVIII
         {
             if (typeof(StreamWithRangeValues) == s.GetType())
             {
-                StreamWithRangeValues r = (StreamWithRangeValues)s;
+                var r = (StreamWithRangeValues)s;
                 Debug.Assert(r.Compression == 0);
                 offset += r.Offset;
             }

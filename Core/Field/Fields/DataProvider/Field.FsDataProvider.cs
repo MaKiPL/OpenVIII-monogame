@@ -5,12 +5,20 @@ namespace OpenVIII.Fields
 {
     public static partial class Field
     {
+        #region Classes
+
         public sealed class FsDataProvider : IDataProvider
         {
-            private readonly String _fieldPath;
-            private readonly String _fieldDirectory;
+            #region Fields
 
-            public FsDataProvider(String fieldPath)
+            private readonly string _fieldDirectory;
+            private readonly string _fieldPath;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public FsDataProvider(string fieldPath)
             {
                 if (!File.Exists(fieldPath))
                     throw new FileNotFoundException(fieldPath);
@@ -19,22 +27,26 @@ namespace OpenVIII.Fields
                 _fieldDirectory = Path.GetDirectoryName(fieldPath);
             }
 
-            public Byte[] FindPart(Part part)
+            #endregion Constructors
+
+            #region Methods
+
+            public byte[] FindPart(Part part)
             {
-                String filePath = GetFilePath(part);
+                var filePath = GetFilePath(part);
                 if (File.Exists(filePath))
                     return File.ReadAllBytes(filePath);
 
                 return null;
             }
 
-            private String GetFilePath(Part part)
+            private string GetFilePath(Part part)
             {
                 switch (part)
                 {
                     case Part.One: return Path.Combine(_fieldDirectory, "chara.one");
                     case Part.Ca: return _fieldPath + ".ca";
-                    case Part.Id: return _fieldPath + ".id";
+                    case Part.Id: return _fieldPath + ".ID";
                     case Part.Inf: return _fieldPath + ".inf";
                     case Part.Jsm: return _fieldPath + ".jsm";
                     case Part.Map: return _fieldPath + ".map";
@@ -52,6 +64,10 @@ namespace OpenVIII.Fields
                     default: throw new NotSupportedException(part.ToString());
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

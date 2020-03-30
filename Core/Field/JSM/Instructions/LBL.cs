@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Label</para>
@@ -10,34 +7,34 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/005_LBL"/>
     public sealed class LBL : JsmInstruction
     {
+        #region Constructors
+
+        public LBL(int label) => Label = label;
+
+        public LBL(int label, IStack<IJsmExpression> stack)
+                    : this(label)
+        {
+        }
+
+        #endregion Constructors
+
+        #region Properties
+
         /// <summary>
         /// Script ID.
         /// </summary>
-        public Int32 Label { get; }
+        public int Label { get; }
 
-        public LBL(Int32 label)
-        {
-            Label = label;
-        }
+        #endregion Properties
 
-        public LBL(Int32 label, IStack<IJsmExpression> stack)
-            : this(label)
-        {
-        }
+        #region Methods
 
-        public override String ToString()
-        {
-            return $"{nameof(LBL)}({nameof(Label)}: {Label})";
-        }
+        public override IAwaitable Execute(IServices services) => DummyAwaitable.Instance;
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.AppendLine($"// ScriptId: {Label}");
-        }
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.AppendLine($"// ScriptId: {Label}");
 
-        public override IAwaitable Execute(IServices services)
-        {
-            return DummyAwaitable.Instance;
-        }
+        public override string ToString() => $"{nameof(LBL)}({nameof(Label)}: {Label})";
+
+        #endregion Methods
     }
 }

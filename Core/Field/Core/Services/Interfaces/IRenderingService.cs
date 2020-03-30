@@ -5,17 +5,29 @@ namespace OpenVIII.Fields
 {
     public interface IRenderingService
     {
-        Boolean IsSupported { get; }
-        
+        #region Properties
+
+        int BackgroundFPS { get; set; }
+        bool IsSupported { get; }
+
+        #endregion Properties
+
+        #region Methods
+
         void AddScreenColor(Color Color);
+
+        void AddScreenColorTransition(Color Color, Color offset, int transitionDuration);
+
+        void AnimateBackground(int firstFrame, int lastFrame);
+
+        void DrawBackground();
+
         void SubScreenColor(Color Color);
 
-        void AddScreenColorTransition(Color Color, Color offset, Int32 transitionDuration);
-        void SubScreenColorTransition(Color Color, Color offset, Int32 transitionDuration);
+        void SubScreenColorTransition(Color Color, Color offset, int transitionDuration);
+
         IAwaitable Wait();
-        
-        Int32 BackgroundFPS { get; set; }
-        void AnimateBackground(Int32 firstFrame, Int32 lastFrame);
-        void DrawBackground();
+
+        #endregion Methods
     }
 }

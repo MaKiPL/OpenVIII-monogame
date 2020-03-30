@@ -42,11 +42,11 @@ namespace OpenVIII
         //private static bool _fadeout = false;
         private static IGM _igm;
 
-        private static IGM_Items _igm_items;
+        private static IGMItems _igm_items;
 
-        private static IGM_Junction _igm_junction;
+        private static Junction _junction;
 
-        private static IGM_LGSG _igm_lgsg;
+        private static IGMLoadSaveGame _igmLoadSaveGame;
 
         private static IGM_Lobby _igm_lobby;
 
@@ -100,17 +100,17 @@ namespace OpenVIII
         /// <summary>
         /// In Game Menu - Items Menu
         /// </summary>
-        public static IGM_Items IGM_Items => _igm_items;
+        public static IGMItems IGMItems => _igm_items;
 
         /// <summary>
         /// In Game Menu - Junction Menu
         /// </summary>
-        public static IGM_Junction IGM_Junction => _igm_junction;
+        public static Junction Junction => _junction;
 
         /// <summary>
         /// Lobby Menu
         /// </summary>
-        public static IGM_LGSG IGM_LGSG => _igm_lgsg;
+        public static IGMLoadSaveGame IGMLoadSaveGame => _igmLoadSaveGame;
 
         /// <summary>
         /// Lobby Menu
@@ -139,7 +139,7 @@ namespace OpenVIII
         /// <summary>
         /// Viewport dimensions
         /// </summary>
-        protected Vector2 vp => new Vector2(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height);
+        protected Vector2 vp => new Vector2(Memory.Graphics.GraphicsDevice.Viewport.Width, Memory.Graphics.GraphicsDevice.Viewport.Height);
 
         /// <summary>
         /// <para>Time to fade out in milliseconds</para>
@@ -180,7 +180,7 @@ namespace OpenVIII
         public static T Create<T>(Damageable damageable = null) where T : Menu, new()
         {
             Memory.Log.WriteLine($"{nameof(Menu)} :: {nameof(Create)} :: {typeof(T)} :: {nameof(Damageable)} :: {damageable}");
-            T r = new T
+            var r = new T
             {
                 Damageable = damageable,
             };
@@ -192,12 +192,12 @@ namespace OpenVIII
         {
             if (textScale == null) textScale = Vector2.One;
             if (boxScale == null) boxScale = Vector2.One;
-            Point cursor = Point.Zero;
-            Rectangle font = new Rectangle();
-            Rectangle backup = dst;
+            var cursor = Point.Zero;
+            var font = new Rectangle();
+            var backup = dst;
             if (buffer != null && buffer.Length > 0)
             {
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
+                font = Memory.Font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: true);
                 if (dst.Size == Point.Zero)
                 {
                     dst.Size = font.Size;
@@ -211,9 +211,9 @@ namespace OpenVIII
                     backup = dst;
                 }
             }
-            Vector2 bgscale = new Vector2(_menuitemscale) * textScale.Value;
-            Rectangle box = dst.Scale(boxScale.Value);
-            Rectangle hotspot = dst;
+            var bgscale = new Vector2(_menuitemscale) * textScale.Value;
+            var box = dst.Scale(boxScale.Value);
+            var hotspot = dst;
             if ((options & Box_Options.SkipDraw) == 0 && dst.Size != Point.Zero)
             {
                 if (dst.Width > 256 * bgscale.X)
@@ -248,7 +248,7 @@ namespace OpenVIII
                     dst.Offset(0, 21);
 
                 dst.Y = (int)(dst.Y * boxScale.Value.Y);
-                font = Memory.font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
+                font = Memory.Font.RenderBasicText(buffer, dst.Location.ToVector2(), TextScale * textScale.Value, Fade: Fade, skipdraw: (options & Box_Options.SkipDraw) != 0);
                 cursor = dst.Location;
                 cursor.Y += (int)(TextScale.Y * 6); // 12 * (3.0375/2)
             }
@@ -260,12 +260,12 @@ namespace OpenVIII
         {
             if (offset == null)
                 offset = new Vector2(-1.15f, -.3f);
-            Vector2 scale = new Vector2(_menuitemscale);
-            Entry Finger_Right = Memory.Icons.GetEntry(Icons.ID.Finger_Right, 0);
+            var scale = new Vector2(_menuitemscale);
+            var Finger_Right = Memory.Icons.GetEntry(Icons.ID.Finger_Right, 0);
             if (Finger_Right != null)
             {
-                Vector2 size = Finger_Right.Size * scale;
-                Rectangle dst = new Rectangle(cursor, Point.Zero);
+                var size = Finger_Right.Size * scale;
+                var dst = new Rectangle(cursor, Point.Zero);
                 byte pallet = 2;
                 byte fadedpallet = 7;
                 dst.Offset(size * offset.Value);
@@ -309,14 +309,14 @@ namespace OpenVIII
                     _igm_lobby = IGM_Lobby.Create();
                 if (_igm == null)
                     _igm = IGM.Create();
-                if (_igm_junction == null)
-                    _igm_junction = IGM_Junction.Create();
+                if (_junction == null)
+                    _junction = Junction.Create();
                 if (_igm_items == null)
-                    _igm_items = IGM_Items.Create();
+                    _igm_items = IGMItems.Create();
                 if (_battlemenus == null)
                     _battlemenus = BattleMenus.Create();
-                if (_igm_lgsg == null)
-                    _igm_lgsg = IGM_LGSG.Create();
+                if (_igmLoadSaveGame == null)
+                    _igmLoadSaveGame = IGMLoadSaveGame.Create();
                 if (_debug_menu == null)
                     _debug_menu = Debug_Menu.Create();
                 if (_module == null)
@@ -336,7 +336,7 @@ namespace OpenVIII
         public virtual void DrawData()
         {
             if (!skipdata && Enabled && Data != null)
-                foreach (Menu_Base i in Data.Where(x => x.Value != null && x.Value.Enabled).OrderBy(x => x.Key).Select(x => x.Value))
+                foreach (var i in Data.Where(x => x.Value != null && x.Value.Enabled).OrderBy(x => x.Key).Select(x => x.Value))
                     i?.Draw();
         }
 
@@ -369,7 +369,7 @@ namespace OpenVIII
         public override void Reset()
         {
             if (!skipdata)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data)
+                foreach (var i in Data)
                 {
                     i.Value?.Reset();
                 }
@@ -395,7 +395,7 @@ namespace OpenVIII
 
         public override bool Update()
         {
-            bool ret = false;
+            var ret = false;
             if (!SkipFocus)
                 GenerateFocus();
             if(Size != Vector2.Zero)
@@ -410,7 +410,7 @@ namespace OpenVIII
                 //           where i.Value != null && i.Value.Update()
                 //           select new { isTrue = true }).FirstOrDefault()?.isTrue ?? false) || ret;
                 //}
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x => x.Value != null))
+                foreach (var i in Data.Where(x => x.Value != null))
                 {
                     ret = (i.Value.Update()) || ret;
                 }
@@ -422,10 +422,10 @@ namespace OpenVIII
 
         protected void GenerateFocus(Vector2? inputsize = null, Box_Options options = Box_Options.Default)
         {
-            Vector2 size = inputsize ?? Size;
-            Vector2 Zoom = Memory.Scale(size.X, size.Y, Memory.ScaleMode.FitBoth);
-            Vector2 OffsetScreen = size/2f;
-            Vector2 CenterOfScreen = new Vector2(vp.X, vp.Y ) / 2f;
+            var size = inputsize ?? Size;
+            var Zoom = Memory.Scale(size.X, size.Y, ScaleMode.FitBoth);
+            var OffsetScreen = size/2f;
+            var CenterOfScreen = new Vector2(vp.X, vp.Y ) / 2f;
             if ((options & Box_Options.Top) != 0)
             {
                 CenterOfScreen.Y = 0;
@@ -448,7 +448,7 @@ namespace OpenVIII
         protected override void RefreshChild()
         {
             if (!skipdata)
-                foreach (KeyValuePair<Enum, Menu_Base> i in Data.Where(x=>x.Value !=null))
+                foreach (var i in Data.Where(x=>x.Value !=null))
                 // children might have a damageable set.
                 // if parents may not always have one set.
                 {

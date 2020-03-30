@@ -28,9 +28,9 @@ namespace OpenVIII
 
         private void MainMenuStateChanged(object sender, Mode e) => Refresh();
 
-        private void ModuleChanged(object sender, MODULE e)
+        private void ModuleChanged(object sender, Module e)
         {
-            if(e == MODULE.MAINMENU_DEBUG)
+            if(e == OpenVIII.Module.MainMenuDebug)
             {
                 Refresh();
             }
@@ -86,7 +86,7 @@ namespace OpenVIII
 
         public override void Draw()
         {
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.Graphics.GraphicsDevice.Clear(Color.Black);
             switch (State)
             {
                 case Mode.MainLobby:
@@ -105,7 +105,7 @@ namespace OpenVIII
                 case Mode.SaveGameCheckingSlot:
                 case Mode.SaveGameChooseGame:
                 case Mode.SaveGameSaving:
-                    IGM_LGSG.Draw();
+                    IGMLoadSaveGame.Draw();
                     break;
 
                 case Mode.IGM:
@@ -113,11 +113,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.IGM_Junction:
-                    IGM_Junction.Draw();
+                    Junction.Draw();
                     break;
 
                 case Mode.IGM_Items:
-                    IGM_Items.Draw();
+                    IGMItems.Draw();
                     break;
 
                 case Mode.NewGameChoosed:
@@ -151,7 +151,6 @@ namespace OpenVIII
                 case Mode.SaveGameCheckingSlot:
                 case Mode.SaveGameChooseGame:
                 case Mode.SaveGameSaving:
-                    IGM_LGSG.Refresh();
                     break;
 
                 case Mode.IGM:
@@ -159,11 +158,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.IGM_Junction:
-                    IGM_Junction.Refresh();
+                    Junction.Refresh();
                     break;
 
                 case Mode.IGM_Items:
-                    IGM_Items.Refresh();
+                    IGMItems.Refresh();
                     break;
 
                // case Mode.NewGameChoosed:
@@ -192,7 +191,7 @@ namespace OpenVIII
                     Memory.IsMouseVisible = true;
                     break;
             }
-            bool forceupdate = false;
+            var forceupdate = false;
             switch (State)
             {
                 case Mode.MainLobby:
@@ -211,7 +210,7 @@ namespace OpenVIII
                 case Mode.SaveGameCheckingSlot:
                 case Mode.SaveGameChooseGame:
                 case Mode.SaveGameSaving:
-                    forceupdate = IGM_LGSG.Update();
+                    forceupdate = IGMLoadSaveGame.Update();
                     break;
 
                 case Mode.IGM:
@@ -219,11 +218,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.IGM_Junction:
-                    forceupdate = IGM_Junction.Update();
+                    forceupdate = Junction.Update();
                     break;
 
                 case Mode.IGM_Items:
-                    forceupdate = IGM_Items.Update();
+                    forceupdate = IGMItems.Update();
                     break;
 
                 case Mode.NewGameChoosed:

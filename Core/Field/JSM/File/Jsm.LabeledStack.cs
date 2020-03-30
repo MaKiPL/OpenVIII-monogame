@@ -1,18 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public sealed class LabeledStack : IStack<IJsmExpression>
         {
-            private readonly Stack<IJsmExpression> _stack = new Stack<IJsmExpression>();
-            private readonly Dictionary<IJsmExpression, Int32> _positions = new Dictionary<IJsmExpression, Int32>();
+            #region Fields
 
-            public Int32 Count => _stack.Count;
-            public Int32 CurrentLabel { get; set; }
+            private readonly Dictionary<IJsmExpression, int> _positions = new Dictionary<IJsmExpression, int>();
+            private readonly Stack<IJsmExpression> _stack = new Stack<IJsmExpression>();
+
+            #endregion Fields
+
+            #region Properties
+
+            public int Count => _stack.Count;
+            public int CurrentLabel { get; set; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public IJsmExpression Peek() => _stack.Peek();
+            public bool StackEmpty() => _stack == null || _stack.Count <= 0;
+            public IJsmExpression Pop()
+            {
+                //if (_stack == null || _stack.Count <= 0) return default;
+                var result = _stack.Pop();
+
+                CurrentLabel = _positions[result];
+                _positions.Remove(result);
+
+                return result;
+
+            }
 
             public void Push(IJsmExpression item)
             {
@@ -20,20 +44,9 @@ namespace OpenVIII.Fields.Scripts
                 _stack.Push(item);
             }
 
-            public IJsmExpression Peek()
-            {
-                return _stack.Peek();
-            }
-
-            public IJsmExpression Pop()
-            {
-                IJsmExpression result = _stack.Pop();
-
-                CurrentLabel = _positions[result];
-                _positions.Remove(result);
-
-                return result;
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

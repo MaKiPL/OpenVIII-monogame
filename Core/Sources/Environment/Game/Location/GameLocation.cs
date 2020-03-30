@@ -6,9 +6,9 @@ namespace OpenVIII
     {
         private readonly static GameLocation s_current = GetCurrentLocation();
 
-        public String DataPath { get; private set; }
+        public string DataPath { get; private set; }
 
-        public GameLocation(String dataPath)
+        public GameLocation(string dataPath)
         {
             DataPath = dataPath;
         }
@@ -23,7 +23,7 @@ namespace OpenVIII
 
         private static GameLocation GetCurrentLocation()
         {
-            IGameLocationProvider provider = GetLocationProvider();
+            var provider = GetLocationProvider();
             return provider.GetGameLocation();
         }
 

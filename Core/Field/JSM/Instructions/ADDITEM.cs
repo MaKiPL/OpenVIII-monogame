@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Add item to party
@@ -10,8 +7,14 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <seealso cref="http://wiki.ffrtt.ru/index.php?title=FF8/Item_Codes"/>
     public sealed class ADDITEM : JsmInstruction
     {
+        #region Fields
+
         private readonly IJsmExpression _id;
         private readonly IJsmExpression _qty;
+
+        #endregion Fields
+
+        #region Constructors
 
         public ADDITEM(IJsmExpression id, IJsmExpression qty)
         {
@@ -19,16 +22,19 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _qty = qty;
         }
 
-        public ADDITEM(Int32 parameter, IStack<IJsmExpression> stack)
+        public ADDITEM(int parameter, IStack<IJsmExpression> stack)
             : this(
                 qty: stack.Pop(),
                 id: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(ADDITEM)}({nameof(_id)}: {_id}, {nameof(_qty)}: {_qty}";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(ADDITEM)}({nameof(_id)}: {_id}, {nameof(_qty)}: {_qty}";
+
+        #endregion Methods
     }
 }

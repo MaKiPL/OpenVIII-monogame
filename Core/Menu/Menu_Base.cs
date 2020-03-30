@@ -27,10 +27,10 @@ namespace OpenVIII
         /// </summary>
         public static Point MouseLocation => InputMouse.Location.Transform(Focus);
 
-        public static Point ScreenBottomLeft => new Point(0, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
-        public static Point ScreenBottomRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenBottomLeft => new Point(0, Memory.Graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
+        public static Point ScreenBottomRight => new Point(Memory.Graphics.GraphicsDevice.Viewport.Width, Memory.Graphics.GraphicsDevice.Viewport.Height).Transform(Focus);
         public static Point ScreenTopLeft => new Point(0, 0).Transform(Focus);
-        public static Point ScreenTopRight => new Point(Memory.graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
+        public static Point ScreenTopRight => new Point(Memory.Graphics.GraphicsDevice.Viewport.Width, 0).Transform(Focus);
         public Menu_Base CONTAINER { get; set; }
         public Cursor_Status Cursor_Status { get; set; } = Cursor_Status.Disabled;
 
@@ -123,7 +123,7 @@ namespace OpenVIII
                             Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
                         else
                         {
-                            int enemypos = (0 - PartyPos) - 1;
+                            var enemypos = (0 - PartyPos) - 1;
                             if (PartyPos < 0 && Enemy.Party != null && enemypos < Enemy.Party.Count)
                             {
                                 Damageable = Enemy.Party[enemypos];
@@ -135,11 +135,11 @@ namespace OpenVIII
                 else if (damageable != null)
                 {
                     Damageable = damageable;
-                    if (Damageable.GetCharacterData(out Saves.CharacterData c))
+                    if (Damageable.GetCharacterData(out var c))
                     {
-                        PartyPos = (sbyte)(Memory.State?.PartyData?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
+                        PartyPos = (sbyte)(Memory.State?.Party?.Where(x => !x.Equals(Characters.Blank)).ToList().FindIndex(x => x.Equals(c.ID)) ?? -1);
                     }
-                    else if (typeof(Enemy).Equals(Damageable.GetType()))
+                    else if (Damageable is Enemy)
                     {
                         PartyPos = checked((sbyte)(0 - Enemy.Party.FindIndex(x => x.Equals(Damageable)) - 1));
                     }

@@ -4,7 +4,7 @@ namespace OpenVIII.Fields
 {
     public interface IStack<T>
     {
-        Int32 Count { get; }
+        int Count { get; }
         void Push(T item);
         T Pop();
     }

@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Unuse entity</para>
@@ -10,39 +7,42 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/01A_UNUSE"/>
     public sealed class UNUSE : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Always 0.
         /// </summary>
-        private Int32 _parameter;
+        private readonly int _parameter;
 
-        public UNUSE(Int32 parameter)
-        {
-            _parameter = parameter;
-        }
+        #endregion Fields
 
-        public UNUSE(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public UNUSE(int parameter) => _parameter = parameter;
+
+        public UNUSE(int parameter, IStack<IJsmExpression> stack)
             : this(parameter)
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(UNUSE)}({nameof(_parameter)}: {_parameter})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.IsActive))
                 .Assign(false)
                 .Comment(nameof(UNUSE));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
             currentObject.IsActive = false;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(UNUSE)}({nameof(_parameter)}: {_parameter})";
+
+        #endregion Methods
     }
 }

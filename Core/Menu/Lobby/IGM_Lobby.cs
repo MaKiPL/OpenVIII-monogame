@@ -31,7 +31,7 @@ namespace OpenVIII
 
         public override void StartDraw()
         {
-            Matrix backupfocus = Focus;
+            var backupfocus = Focus;
             GenerateFocus(new Vector2(1280, 720), Box_Options.Top);
             base.StartDraw();
             Data0.Where(m => m.Value != null).ForEach(m => m.Value.Draw());

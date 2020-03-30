@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MAPJUMPON : JsmInstruction
     {
+        #region Constructors
+
         public MAPJUMPON()
         {
         }
 
-        public MAPJUMPON(Int32 parameter, IStack<IJsmExpression> stack)
+        public MAPJUMPON(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MAPJUMPON)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MAPJUMPON)}()";
+
+        #endregion Methods
     }
 }

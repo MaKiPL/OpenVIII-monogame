@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Clockwise Turn</para>
@@ -11,6 +8,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <para>http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/173_UNKNOWN8</para>
     public sealed class Unknown8 : Abstract.TURN
     {
+        #region Constructors
+
         public Unknown8(IJsmExpression frames, IJsmExpression angle) : base(frames, angle)
         {
         }
@@ -19,9 +18,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(Unknown8)}({nameof(_frames)}: {_frames}, {nameof(_angle)}: {_angle})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(Unknown8)}({nameof(_frames)}: {_frames}, {nameof(_angle)}: {_angle})";
+
+        #endregion Methods
     }
 }

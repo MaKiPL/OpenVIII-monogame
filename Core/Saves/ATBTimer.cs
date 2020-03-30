@@ -4,21 +4,21 @@ namespace OpenVIII
 {
     public class ATBTimer
     {
-        private bool First = true;
+        private bool _first = true;
 
-        public int ATBBarIncrement { get; private set; } = 0;
-        public float ATBBarPos { get; private set; } = 0;
+        public int ATBBarIncrement { get; private set; }
+        public float ATBBarPos { get; private set; }
         public bool Done => Percent >= 1f;
         public float Percent
         {
             get
             {
-                float percent = Math.Abs(ATBBarPos / Damageable.ATBBarSize);
+                var percent = Math.Abs(ATBBarPos / _damageable.ATBBarSize);
                 return percent > 1f ? 1f : percent;
             }
         }
 
-        private Damageable Damageable;
+        private Damageable _damageable;
 
         public ATBTimer(Damageable damageable) => Refresh(damageable);
 
@@ -28,11 +28,9 @@ namespace OpenVIII
         /// <param name="damageable">Character,GF,Enemy</param>
         public void Refresh(Damageable damageable)
         {
-            if (damageable != Damageable)
-            {
-                Damageable = damageable;
-                FirstTurn();
-            }
+            if (damageable == _damageable) return;
+            _damageable = damageable;
+            FirstTurn();
         }
 
         /// <summary>
@@ -40,10 +38,10 @@ namespace OpenVIII
         /// </summary>
         public void NewTurn()
         {
-            if (First)
+            if (_first)
             {
-                ATBBarPos = Damageable?.ATBBarStart() ?? 0;
-                First = false;
+                ATBBarPos = _damageable?.ATBBarStart() ?? 0;
+                _first = false;
             }
             else
                 ATBBarPos = 0;
@@ -54,8 +52,8 @@ namespace OpenVIII
         /// </summary>
         public void FirstTurn()
         {
-            First = true;
-            Damageable?.Charging();
+            _first = true;
+            _damageable?.Charging();
             NewTurn();
         }
 
@@ -66,25 +64,20 @@ namespace OpenVIII
 
         public bool Update()
         {
-            if (Damageable == null || Damageable.IsDead)
+            if (_damageable == null || Done)
             {
                 return false;
             }
 
-            if (ATBBarPos > 0)
+            if (_damageable.IsDead && ATBBarPos > 0)
             {
                 ATBBarPos = 0;
                 return true;
             }
 
-            if (Done) 
-            {
-                return false;
-            }
-
-            double TotalMilliseconds = Memory.ElapsedGameTime.TotalMilliseconds;
-            ATBBarIncrement = Damageable.BarIncrement(); // 60 ticks per second.
-            ATBBarPos += checked((float)(ATBBarIncrement * TotalMilliseconds / 60));
+            var totalMilliseconds = Memory.ElapsedGameTime.TotalMilliseconds;
+            ATBBarIncrement = _damageable.BarIncrement(); // 60 ticks per second.
+            ATBBarPos += (float)(ATBBarIncrement * totalMilliseconds / 60);
             // if TotalMilliseconds is 1000 then it'll increment 60 times. So this should be right.
             return true;
         }

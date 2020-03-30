@@ -4,11 +4,15 @@ namespace OpenVIII.Fields
 {
     public struct ScriptResultId
     {
-        public const Int32 MaxIndex = 8;
+        #region Fields
 
-        public Int32 ResultId { get; }
+        public const int MaxIndex = 8;
 
-        public ScriptResultId(Int32 resultId)
+        #endregion Fields
+
+        #region Constructors
+
+        public ScriptResultId(int resultId)
         {
             if (resultId < 0 || resultId > MaxIndex)
                 throw new ArgumentOutOfRangeException(nameof(resultId), $"Invalid temporary result variable index: {resultId}");
@@ -16,15 +20,28 @@ namespace OpenVIII.Fields
             ResultId = resultId;
         }
 
-        public override String ToString()
-        {
-            return $"ResultId: {ResultId}";
-        }
+        #endregion Constructors
 
-        public Int32 this[IInteractionService service]
+        #region Properties
+
+        public int ResultId { get; }
+
+        #endregion Properties
+
+        #region Indexers
+
+        public int this[IInteractionService service]
         {
             get => service[this];
             set => service[this] = value;
         }
+
+        #endregion Indexers
+
+        #region Methods
+
+        public override string ToString() => $"ResultId: {ResultId}";
+
+        #endregion Methods
     }
 }

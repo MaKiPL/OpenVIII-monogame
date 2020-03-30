@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         public enum Blue_Magic : byte
         {
@@ -32,7 +32,7 @@ namespace OpenVIII
         /// Blue magic (Quistis limit break)
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Blue-magic-%28Quistis-limit-break%29"/>
-        public class Blue_magic_Quistis_limit_break
+        public class Blue_Magic_Quistis_limit_break
         {
             #region Fields
 
@@ -40,18 +40,18 @@ namespace OpenVIII
             public const int id = 19;
             private List<Quistis_limit_break_parameters> _crisis_Levels;
 
-            public Blue_magic_Quistis_limit_break()
+            public Blue_Magic_Quistis_limit_break()
             {
             }
 
-            public Blue_magic_Quistis_limit_break(BinaryReader br, Blue_Magic i) => Read(br, i);
+            public Blue_Magic_Quistis_limit_break(BinaryReader br, Blue_Magic i) => Read(br, i);
             #endregion Fields
 
             #region Properties
 
-            public Attack_Flags Attack_Flags { get; private set; }
+            public AttackFlags Attack_Flags { get; private set; }
 
-            public Attack_Type Attack_Type { get; private set; }
+            public AttackType Attack_Type { get; private set; }
 
             public IReadOnlyList<Quistis_limit_break_parameters> Crisis_Levels { get => _crisis_Levels; }
 
@@ -81,13 +81,13 @@ namespace OpenVIII
 
             #region Methods
 
-            public static Dictionary<Blue_Magic,Blue_magic_Quistis_limit_break> Read(BinaryReader br)
+            public static Dictionary<Blue_Magic,Blue_Magic_Quistis_limit_break> Read(BinaryReader br)
             {
-                var ret = new Dictionary<Blue_Magic, Blue_magic_Quistis_limit_break>(count);
+                var ret = new Dictionary<Blue_Magic, Blue_Magic_Quistis_limit_break>(count);
 
                 for (Blue_Magic i = 0; (byte)i < count; i++)
                 {
-                    var tmp = new Blue_magic_Quistis_limit_break(br,i);
+                    var tmp = new Blue_Magic_Quistis_limit_break(br,i);
                     ret.Add(i, tmp);
                 }
                 return ret;
@@ -105,14 +105,14 @@ namespace OpenVIII
                 //0x0004  2 bytes Magic ID
                 Unknown0 = br.ReadByte();
                 //0x0006  1 byte Unknown
-                Attack_Type = (Attack_Type)br.ReadByte();
+                Attack_Type = (AttackType)br.ReadByte();
                 //0x0007  1 byte Attack Type
                 Unknown1 = br.ReadByte();
                 // noticed we were missing a target
                 // this byte made sense when tested.
                 Target = (Target)br.ReadByte(); 
                 //0x0008  2 bytes Unknown
-                Attack_Flags = (Attack_Flags)br.ReadByte();
+                Attack_Flags = (AttackFlags)br.ReadByte();
                 //0x000A  1 byte Attack Flags
                 Unknown2 = br.ReadByte();
                 //0x000B  1 byte Unknown

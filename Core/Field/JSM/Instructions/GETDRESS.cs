@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class GETDRESS : JsmInstruction
     {
-        public GETDRESS()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public GETDRESS() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

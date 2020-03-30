@@ -1,34 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OpenVIII.Fields.Scripts.Instructions.Abstract
+﻿namespace OpenVIII.Fields.Scripts.Instructions.Abstract
 {
-    public abstract class ANIMELOOP: ANIME
+    public abstract class ANIMELOOP : ANIME
     {
+        #region Fields
+
         /// <summary>
         /// First frame of animation
         /// </summary>
-        protected readonly Int32 _firstFrame;
+        protected readonly int _firstFrame;
+
         /// <summary>
         /// Last frame of animation
         /// </summary>
-        protected readonly Int32 _lastFrame;
+        protected readonly int _lastFrame;
 
+        #endregion Fields
 
-        public ANIMELOOP(Int32 animationId, Int32 firstFrame, Int32 lastFrame) : base(animationId)
+        #region Constructors
+
+        public ANIMELOOP(int animationId, int firstFrame, int lastFrame) : base(animationId)
         {
             _firstFrame = firstFrame;
             _lastFrame = lastFrame;
         }
 
-        public ANIMELOOP(Int32 animationId, IStack<IJsmExpression> stack)
+        public ANIMELOOP(int animationId, IStack<IJsmExpression> stack)
             : this(animationId,
                 lastFrame: ((IConstExpression)stack.Pop()).Int32(),
                 firstFrame: ((IConstExpression)stack.Pop()).Int32())
         {
         }
+
+        #endregion Constructors
     }
 }

@@ -4,7 +4,7 @@ namespace OpenVIII
 {
     public static class BuildEnvironment
     {
-        public static Boolean IsWindows
+        public static bool IsWindows
         {
             get
             {

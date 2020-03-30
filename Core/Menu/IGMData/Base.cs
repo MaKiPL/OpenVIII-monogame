@@ -107,7 +107,7 @@ namespace OpenVIII.IGMData
 
         public static T Create<T>(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null, bool battle = false) where T : Base, new()
         {
-            T r = Create<T>(damageable, partypos);
+            var r = Create<T>(damageable, partypos);
             r.Battle = battle;
             r.Init(count, depth, container, cols, rows);
             return r;
@@ -125,8 +125,8 @@ namespace OpenVIII.IGMData
         {
             if ((Cursor_Status & Cursor_Status.Enabled) != 0)
             {
-                int value = GetCursor_select();
-                int loop = 0;
+                var value = GetCursor_select();
+                var loop = 0;
                 while (true)
                 {
                     if (++value >= CURSOR.Length)
@@ -145,8 +145,8 @@ namespace OpenVIII.IGMData
         {
             if ((Cursor_Status & Cursor_Status.Enabled) != 0)
             {
-                int value = GetCursor_select();
-                int loop = 0;
+                var value = GetCursor_select();
+                var loop = 0;
                 while (true)
                 {
                     if (--value < 0)
@@ -170,12 +170,12 @@ namespace OpenVIII.IGMData
             {
                 if (CONTAINER != null)
                     CONTAINER.Draw();
-                bool pointer = false;
+                var pointer = false;
                 Target.Group targetgroup = null;
                 if (!skipdata && ITEM != null)
                     if (DepthFirst)
-                        for (int d = 0; d < Depth; d++)
-                            for (int i = 0; i < Count; i++)
+                        for (var d = 0; d < Depth; d++)
+                            for (var i = 0; i < Count; i++)
                             {
                                 if (i == PointerZIndex && !pointer)
                                     pointer = DrawPointer();
@@ -185,8 +185,8 @@ namespace OpenVIII.IGMData
                                     DrawITEM(i, d);
                             }
                     else
-                        for (int i = 0; i < Count; i++)
-                            for (int d = 0; d < Depth; d++)
+                        for (var i = 0; i < Count; i++)
+                            for (var d = 0; d < Depth; d++)
                             {
                                 if (i == PointerZIndex && !pointer)
                                     pointer = DrawPointer();
@@ -213,7 +213,7 @@ namespace OpenVIII.IGMData
                 //maybe overkill to run hide on items. if group is hidden it won't draw.
                 if (!skipdata)
                 {
-                    foreach (Menu_Base i in ITEM)
+                    foreach (var i in ITEM)
                     {
                         if (i != null)
                         {
@@ -227,7 +227,7 @@ namespace OpenVIII.IGMData
 
         public void InitSize(bool force = false)
         {
-            int cellcount = Rows * Cols;
+            var cellcount = Rows * Cols;
             //SetSize(cellcount);
             if (((SIZE != null && SIZE.Length > 0) || force))
             {
@@ -252,13 +252,13 @@ namespace OpenVIII.IGMData
         /// <returns>True = input detected</returns>
         public override bool Inputs()
         {
-            bool ret = false;
-            bool mouse = false;
+            var ret = false;
+            var mouse = false;
             if ((Cursor_Status & Cursor_Status.Enabled) != 0)
             {
                 Cursor_Status &= ~Cursor_Status.Blinking;
                 if ((Cursor_Status & Cursor_Status.Static) == 0)
-                    for (int i = 0; i < SIZE.Length; i++)
+                    for (var i = 0; i < SIZE.Length; i++)
                     {
                         if (SIZE[i].Contains(MouseLocation) && !SIZE[i].IsEmpty && CURSOR[i] != Point.Zero && !BLANKS[i])
                         {
@@ -388,19 +388,21 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            int count = Memory.State?.PartyData.Count ?? 0;
+            var count = Memory.State?.PartyData.Count ?? 0;
             if (Memory.State?.PartyData != null &&
                 Damageable == null &&
                 PartyPos >= 0 &&
-                PartyPos < count &&
-                Memory.State.Characters.TryGetValue(Memory.State.PartyData[PartyPos], out Saves.CharacterData c))
-                Damageable = c;
+                PartyPos < count)
+            {
+                Damageable = Memory.State[Memory.State.PartyData[PartyPos]];
+            }
+
             base.Refresh();
         }
 
         public override void Reset()
         {
-            foreach (Menu_Base i in ITEM)
+            foreach (var i in ITEM)
             {
                 i?.Reset();
             }
@@ -413,9 +415,9 @@ namespace OpenVIII.IGMData
         /// <returns>True = signifigant change</returns>
         public override bool Update()
         {
-            bool ret = false;
+            var ret = false;
             if (!skipdata && ITEM != null)
-                foreach (Menu_Base i in ITEM)
+                foreach (var i in ITEM)
                 {
                     if (i != null)
                         ret = i.Update() || ret;
@@ -452,7 +454,7 @@ namespace OpenVIII.IGMData
             {
                 if ((Cursor_Status & Cursor_Status.All) != 0)
                 {
-                    for (int i = 0; i < CURSOR.Length; i++)
+                    for (var i = 0; i < CURSOR.Length; i++)
                         if (!BLANKS[i])
                             DrawPointer(CURSOR[i], blink: true);
                 }
@@ -499,7 +501,7 @@ namespace OpenVIII.IGMData
             {
                 if (CONTAINER.Pos == Rectangle.Empty)
                 {
-                    Debug.WriteLine($"{this}:: count {Count} or depth {Depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
+                    Debug.WriteLine($"{this}:: Count {Count} or depth {Depth}, is invalid must be >= 1, or a CONTAINER {CONTAINER} and CONTAINER.Pos { Pos.ToString() } must be set instead, Skipping Init()");
                     return;
                 }
             }
@@ -557,8 +559,8 @@ namespace OpenVIII.IGMData
                     CONTAINER.Refresh(Damageable);
                 }
                 if (ITEM != null)
-                    for (int i = 0; i < Count; i++)
-                        for (int d = 0; d < Depth; d++)
+                    for (var i = 0; i < Count; i++)
+                        for (var d = 0; d < Depth; d++)
                         {
                             if (ForceNullDamageable && ITEM[i, d] != null)
                                 ITEM[i, d].ForceNullDamageable = ForceNullDamageable;
@@ -573,24 +575,24 @@ namespace OpenVIII.IGMData
                 _cursor_select = value;
         }
 
-        //protected Base(int count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? partypos = null)
+        //protected Base(int Count = 0, int depth = 0, Menu_Base container = null, int? cols = null, int? rows = null, Damageable damageable = null, sbyte? PartyPos = null)
         //{
-        //    Init(damageable, partypos);
-        //    Init(count, depth, container, cols, rows);
+        //    Init(damageable, PartyPos);
+        //    Init(Count, depth, container, cols, rows);
         //}
         private static T Create<T>(Damageable damageable = null, sbyte? partypos = null) where T : Base, new()
         {
-            T r = new T();
+            var r = new T();
             r.SetDamageable(damageable, partypos);
             return r;
         }
 
         private void InitRowsSize(bool force)
         {
-            for (int i = 0; i < SIZE.Length; i++)
+            for (var i = 0; i < SIZE.Length; i++)
             {
-                int col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
-                int row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
+                var col = (Table_Options & Table_Options.FillRows) != 0 ? i % Cols : i / Rows;
+                var row = (Table_Options & Table_Options.FillRows) != 0 ? i / Cols : i % Rows;
                 if (col < Cols && row < Rows)
                 {
                     if (SIZE[i].IsEmpty || force) //allows for override a size value before the loop.

@@ -2,6 +2,8 @@
 {
     public static partial class Field
     {
+        #region Enums
+
         public enum Part
         {
             Ca,
@@ -22,5 +24,7 @@
             Tdw,
             One
         }
+
+        #endregion Enums
     }
 }

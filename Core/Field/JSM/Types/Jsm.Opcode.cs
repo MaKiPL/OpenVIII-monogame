@@ -1,7 +1,14 @@
-﻿namespace OpenVIII.Fields.Scripts
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Enums
+
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
+        [SuppressMessage("ReSharper", "IdentifierTypo")]
         public enum Opcode : ushort
         {
             NOP,
@@ -381,5 +388,7 @@
             PREMAPJUMP2,
             TUTO
         };
+
+        #endregion Enums
     }
 }

@@ -17,9 +17,9 @@ namespace OpenVIII
             /// <returns>ArchiveMap</returns>
             public static ArchiveMap Load(BinaryReader br)
             {
-                int capacity = br.ReadInt32();
-                ArchiveMap r = new ArchiveMap(capacity);
-                for (int i = 0; i < capacity; i++)
+                var capacity = br.ReadInt32();
+                var r = new ArchiveMap(capacity);
+                for (var i = 0; i < capacity; i++)
                     r.Add(FileData.Load(br));
                 return r;
             }

@@ -24,22 +24,22 @@ namespace OpenVIII
 
         public static bool ContainsKeys<TKey, TValue>(this Dictionary<TKey, TValue> dic, IEnumerable<TKey> keys)
         {
-            bool result = false;
+            var result = false;
             keys.ForEachOrBreak((x) => { result = dic.ContainsKey(x); return result; });
             return result;
         }
 
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
         {
-            foreach (T item in source)
+            foreach (var item in source)
                 action(item);
         }
 
         public static void ForEachOrBreak<T>(this IEnumerable<T> source, Func<T, bool> func)
         {
-            foreach (T item in source)
+            foreach (var item in source)
             {
-                bool result = func(item);
+                var result = func(item);
                 if (result) break;
             }
         }
@@ -103,8 +103,8 @@ namespace OpenVIII
         /// <returns></returns>
         public static Dictionary<TValue, TKey> Reverse<TKey, TValue>(this IDictionary<TKey, TValue> source)
         {
-            Dictionary<TValue, TKey> dictionary = new Dictionary<TValue, TKey>();
-            foreach (KeyValuePair<TKey, TValue> entry in source)
+            var dictionary = new Dictionary<TValue, TKey>();
+            foreach (var entry in source)
             {
                 if (!dictionary.ContainsKey(entry.Value))
                     dictionary.Add(entry.Value, entry.Key);

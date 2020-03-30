@@ -1,11 +1,15 @@
-﻿using Microsoft.Xna.Framework;
-using OpenVIII.Encoding.Tags;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using OpenVIII.AV;
+using OpenVIII.Encoding.Tags;
+using OpenVIII.IGMData.Dialog;
+using OpenVIII.IGMDataItem;
+using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMData
 {
-    public class PartyAP : IGMData.Base
+    public class PartyAP : Base
     {
         #region Fields
 
@@ -16,7 +20,7 @@ namespace OpenVIII.IGMData
         private readonly FF8String str_GF_AP;
         private readonly FF8String str_Learn;
         private readonly FF8String str_Levelup;
-        private ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> _abilities;
+        private ConcurrentQueue<KeyValuePair<GFs, Abilities>> _abilities;
         private uint _ap;
         private GFs _gf;
 
@@ -26,10 +30,10 @@ namespace OpenVIII.IGMData
 
         private PartyAP()
         {
-            DialogSelectedGF = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGF };
-            DialogSelectedNum = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.Number };
-            DialogSelectedAbility = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGFAbility };
-            DialogSelectedIcon = new byte[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.CustomICON };
+            DialogSelectedGF = new[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGF };
+            DialogSelectedNum = new[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.Number };
+            DialogSelectedAbility = new[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.SelectedGFAbility };
+            DialogSelectedIcon = new[] { (byte)FF8TextTagCode.Dialog, (byte)FF8TextTagDialog.CustomICON };
             str_Levelup =
                 Strings.Name.GF2 +
                 DialogSelectedGF + " " +
@@ -49,14 +53,14 @@ namespace OpenVIII.IGMData
 
         #region Properties
 
-        public ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> Abilities { get => _abilities; set => _abilities = value; }
+        public ConcurrentQueue<KeyValuePair<GFs, Abilities>> Abilities { get => _abilities; set => _abilities = value; }
 
         public uint AP
         {
             get => _ap; set
             {
                 _ap = value;
-                ((IGMData.Dialog.Small)ITEM[0, 1]).Data = str_GF_AP.Clone().Replace(DialogSelectedNum, _ap.ToString());
+                ((Small)ITEM[0, 1]).Data = str_GF_AP.Clone().Replace(DialogSelectedNum, _ap.ToString());
                 Leveled = Memory.State.EarnAP(_ap, out _abilities);
             }
         }
@@ -71,15 +75,15 @@ namespace OpenVIII.IGMData
 
         public static PartyAP Create(Rectangle pos)
         {
-            PartyAP r = new PartyAP();
-            r.Init(1, 7, new IGMDataItem.Empty { Pos = pos }, 1, 1);
+            var r = new PartyAP();
+            r.Init(1, 7, new Empty { Pos = pos }, 1, 1);
             return r;
         }
 
         public void Earn()
         {
             skipsnd = true;
-            AV.Sound.Play(17);
+            Sound.Play(17);
         }
 
         public override bool Inputs_CANCEL() => false;
@@ -97,41 +101,39 @@ namespace OpenVIII.IGMData
                 Refresh();
                 return true;
             }
-            else
+
+            if (Abilities != null && Abilities.Count > 0)
             {
-                if (Abilities != null && Abilities.Count > 0)
+                if (!ITEM[0, 3].Enabled)
                 {
-                    if (!ITEM[0, 3].Enabled)
-                    {
-                        ITEM[0, 2].Hide();
-                        ITEM[0, 3].Show();
-                    }
-                    Refresh();
-                    return true;
+                    ITEM[0, 2].Hide();
+                    ITEM[0, 3].Show();
                 }
-                ITEM[0, 1].Show();
-                ITEM[0, 2].Hide();
-                ITEM[0, 3].Hide();
+                Refresh();
+                return true;
             }
+            ITEM[0, 1].Show();
+            ITEM[0, 2].Hide();
+            ITEM[0, 3].Hide();
             return false;
         }
 
         public void Learn()
         {
-            if (Abilities.TryDequeue(out KeyValuePair<GFs, Kernel_bin.Abilities> Ability))
+            if (Abilities.TryDequeue(out var Ability))
             {
                 GF = Ability.Key;
-                ((IGMData.Dialog.Small)ITEM[0, 3]).Data =
+                ((Small)ITEM[0, 3]).Data =
                     str_Learn.Clone()
                     .Replace(DialogSelectedGF, Memory.Strings.GetName(GF))
-                    .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new byte[] {
-                            (byte)((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF),
-                            (byte)(((short)Kernel_bin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
-                            (Kernel_bin.AllAbilities[Ability.Value].Palette)
+                    .Replace(DialogSelectedIcon, DialogSelectedIcon.Clone() + new[] {
+                            (byte)((short)Memory.KernelBin.AllAbilities[Ability.Value].Icon & 0xFF),
+                            (byte)(((short)Memory.KernelBin.AllAbilities[Ability.Value].Icon & 0xFF00)>>8),
+                            (Memory.KernelBin.AllAbilities[Ability.Value].Palette)
                     })
-                    .Replace(DialogSelectedAbility, Kernel_bin.AllAbilities[Ability.Value].Name);
+                    .Replace(DialogSelectedAbility, Memory.KernelBin.AllAbilities[Ability.Value].Name);
                 skipsnd = true;
-                AV.Sound.Play(0x28);
+                Sound.Play(0x28);
             }
         }
 
@@ -139,9 +141,9 @@ namespace OpenVIII.IGMData
         {
             if (Leveled.TryDequeue(out _gf))
             {
-                ((IGMData.Dialog.Small)ITEM[0, 2]).Data = str_Levelup.Clone().Replace(DialogSelectedGF, Memory.Strings.GetName(GF));
+                ((Small)ITEM[0, 2]).Data = str_Levelup.Clone().Replace(DialogSelectedGF, Memory.Strings.GetName(GF));
                 skipsnd = true;
-                AV.Sound.Play(0x28);
+                Sound.Play(0x28);
             }
         }
 
@@ -163,10 +165,10 @@ namespace OpenVIII.IGMData
         {
             base.Init();
             Hide();
-            ITEM[0, 0] = new IGMDataItem.Box { Data = Strings.Name.Raising_GF, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
-            ITEM[0, 1] = IGMData.Dialog.Small.Create(str_GF_AP, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF recieved ### AP!
-            ITEM[0, 2] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
-            ITEM[0, 3] = IGMData.Dialog.Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
+            ITEM[0, 0] = new Box { Data = Strings.Name.Raising_GF, Pos = new Rectangle(SIZE[0].X, SIZE[0].Y, SIZE[0].Width, 78), Title = Icons.ID.INFO, Options = Box_Options.Middle };
+            ITEM[0, 1] = Small.Create(str_GF_AP, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF recieved ### AP!
+            ITEM[0, 2] = Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
+            ITEM[0, 3] = Small.Create(null, SIZE[0].X + 232, SIZE[0].Y + 315, Icons.ID.NOTICE, Box_Options.Center | Box_Options.Middle, SIZE[0]); // GF Leveled up!
             ITEM[0, 1].Show();
             ITEM[0, 2].Hide();
             ITEM[0, 3].Hide();

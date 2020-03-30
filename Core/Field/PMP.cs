@@ -9,21 +9,21 @@ namespace OpenVIII.Fields
     /// Particle Texture
     /// </summary>
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/FileFormat_PMP"/>
-    public class PMP : Texture_Base
+    public sealed class PMP : Texture_Base
     {
         #region Fields
 
-        private byte[] buffer;
-        private Cluts clut;
-        private int height;
+        private byte[] _buffer;
+        private Cluts _clut;
+        private int _height;
 
-        private int width;
+        private int _width;
 
         #endregion Fields
 
         #region Constructors
 
-        public PMP(byte[] pmpb) => Load(pmpb, 0);
+        public PMP(byte[] pmpB) => Load(pmpB);
 
         #endregion Constructors
 
@@ -37,15 +37,15 @@ namespace OpenVIII.Fields
 
         public override int GetColorsCountPerPalette => 16;
 
-        public override int GetHeight => height;
+        public override int GetHeight => _height;
 
         public override int GetOrigX => 0;
 
         public override int GetOrigY => 0;
 
-        public override int GetWidth => width;
+        public override int GetWidth => _width;
 
-        public byte[] Unknown { get; private set; }
+        public byte[] Unknown { get; set; }
 
         #endregion Properties
 
@@ -55,18 +55,18 @@ namespace OpenVIII.Fields
 
         public override void ForceSetClutCount(ushort newClut) => throw new System.NotImplementedException();
 
-        public override Color[] GetClutColors(ushort clut) => this.clut[(byte)clut];
+        public override Color[] GetClutColors(ushort clut) => this._clut[(byte)clut];
 
         public override Texture2D GetTexture() => GetTexture(0);
 
         public override Texture2D GetTexture(Color[] colors)
         {
-            Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, width, height);
-            TextureBuffer texbuff = new TextureBuffer(width, height, false);
-            int i = 0;
-            foreach (byte b in buffer)
-                texbuff[i++] = colors[b];
-            texbuff.SetData(tex);
+            var tex = new Texture2D(Memory.Graphics.GraphicsDevice, _width, _height);
+            var textureBuffer = new TextureBuffer(_width, _height, false);
+            var i = 0;
+            foreach (var b in _buffer)
+                textureBuffer[i++] = colors[b];
+            textureBuffer.SetData(tex);
             return tex;
         }
 
@@ -75,30 +75,29 @@ namespace OpenVIII.Fields
         public override void Load(byte[] buffer, uint offset = 0)
         {
             if (buffer.Length - offset <= 4) return;
-            clut = new Cluts();
+            _clut = new Cluts();
             MemoryStream ms;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
                 ms.Seek(offset, SeekOrigin.Begin);//unknown
                 Unknown = br.ReadBytes(4);
-                foreach (byte i in Enumerable.Range(0, 16))
+                foreach (var i in Enumerable.Range(0, 16))
                 {
-                    Color[] colors = new Color[16];
-                    foreach (byte c in Enumerable.Range(0, 16))
-                        colors[c] = ABGR1555toRGBA32bit(br.ReadUInt16());
-                    clut.Add(i, colors);
+                    var colors = Enumerable.Range(0, 16).Select(_ => ABGR1555toRGBA32bit(br.ReadUInt16()))
+                        .ToArray();
+                    _clut.Add((byte)i, colors);
                 }
 
-                long size = ms.Length - ms.Position;
-                height = checked((int)(size / 128));
-                width = checked((int)(size / height));
-                this.buffer = br.ReadBytes(checked((int)size));
+                var size = ms.Length - ms.Position;
+                _height = checked((int)(size / 128));
+                _width = checked((int)(size / _height));
+                _buffer = br.ReadBytes(checked((int)size));
             }
         }
 
         public override void Save(string path) => throw new System.NotImplementedException();
 
-        public override void SaveCLUT(string path) => clut.Save(path);
+        public override void SaveCLUT(string path) => _clut.Save(path);
 
         #endregion Methods
     }

@@ -8,12 +8,11 @@ using System.Linq;
 
 namespace OpenVIII
 {
-    public class TextureBuffer : Texture_Base, ICloneable, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+    public class TextureBuffer : Texture_Base, ICloneable, ICollection, IStructuralComparable, IStructuralEquatable
     {
+
         #region Fields
 
-        private Color[] colors;
-        
         #endregion Fields
 
         #region Constructors
@@ -22,7 +21,7 @@ namespace OpenVIII
         {
             Height = height;
             Width = width;
-            colors = new Color[height * width];
+            Colors = new Color[height * width];
             Alert = alert;
         }
 
@@ -31,32 +30,21 @@ namespace OpenVIII
         #region Properties
 
         public bool Alert { get; set; }
-        public Color[] Colors { get => colors; private set => colors = value; }
-        public int Height { get; private set; }
-        public int Length => colors?.Length ?? 0;
-        public int Width { get; private set; }
-
-        public override int GetClutCount => 0;
-
+        public Color[] Colors { get; }
+        public int Count => ((ICollection)Colors).Count;
         public override byte GetBytesPerPixel => 4;
-
+        public override int GetClutCount => 0;
         public override int GetClutSize => 0;
-
         public override int GetColorsCountPerPalette => 0;
-
         public override int GetHeight => Height;
-
         public override int GetOrigX => 0;
-
         public override int GetOrigY => 0;
-
         public override int GetWidth => Width;
-
-        public int Count => ((ICollection)colors).Count;
-
-        public object SyncRoot => colors.SyncRoot;
-
-        public bool IsSynchronized => colors.IsSynchronized;
+        public int Height { get; }
+        public bool IsSynchronized => Colors.IsSynchronized;
+        public int Length => Colors?.Length ?? 0;
+        public object SyncRoot => Colors.SyncRoot;
+        public int Width { get; }
 
         #endregion Properties
 
@@ -64,11 +52,11 @@ namespace OpenVIII
 
         public Color this[int i]
         {
-            get => colors[i]; set
+            get => Colors[i]; set
             {
-                if (Alert && colors[i] != Color.TransparentBlack)
+                if (Alert && Colors[i] != Color.TransparentBlack)
                     throw new Exception("Color is set!");
-                colors[i] = value;
+                Colors[i] = value;
             }
         }
 
@@ -76,15 +64,15 @@ namespace OpenVIII
         {
             get
             {
-                int i = x + (y * Width);
+                var i = x + (y * Width);
                 if (i < Count && i >= 0)
-                    return colors[i];
+                    return Colors[i];
                 Memory.Log.WriteLine($"{nameof(TextureBuffer)} :: this[int x, int y] => get :: {nameof(IndexOutOfRangeException)} :: {new Point(x, y)} = {i}");
                 return Color.TransparentBlack; // fail silent...
             }
             set
             {
-                int i = x + (y * Width);
+                var i = x + (y * Width);
                 if (i < Count && i >= 0)
                     this[i] = value;
                 else
@@ -102,65 +90,69 @@ namespace OpenVIII
         {
             get
             {
-                int pos = (x + y * Width);
-                List<Color> r = new List<Color>(width * height);
-                int row = 0;
+                var pos = (x + y * Width);
+                var r = new List<Color>(width * height);
+                var row = 0;
                 while (r.Count < width * height)
                 {
-                    r.AddRange(colors.Skip(pos + row * Width).Take(width));
+                    r.AddRange(Colors.Skip(pos + row * Width).Take(width));
                     row++;
                 }
                 return r.ToArray();
             }
             set
             {
-                for (int _y = y; (_y - y) < height; _y++)
-                    for (int _x = x; (_x - x) < width; _x++)
+                for (var loopY = y; (loopY - y) < height; loopY++)
+                    for (var loopX = x; (loopX - x) < width; loopX++)
                     {
-                        int pos = (_x + _y * Width);
-                        colors[pos] = value[(_x - x) + (_y - y) * width];
+                        var pos = (loopX + loopY * Width);
+                        Colors[pos] = value[(loopX - x) + (loopY - y) * width];
                     }
             }
         }
-        
+
         #endregion Indexers
 
-            #region Methods
+        #region Methods
 
         public static explicit operator Texture2D(TextureBuffer @in)
         {
-            if (Memory.graphics?.GraphicsDevice != null&& @in.Width>0 && @in.Height >0)
+            if (Memory.Graphics?.GraphicsDevice != null && @in.Width > 0 && @in.Height > 0)
             {
-                Texture2D tex = new Texture2D(Memory.graphics.GraphicsDevice, @in.Width, @in.Height);
+                var tex = new Texture2D(Memory.Graphics.GraphicsDevice, @in.Width, @in.Height);
                 @in.SetData(tex);
                 return tex;
             }
             return null;
         }
-        public static explicit operator Texture2DWrapper(TextureBuffer @in)
-        {
-            return new Texture2DWrapper(@in.GetTexture());
-        }
+
+        public static explicit operator Texture2DWrapper(TextureBuffer @in) => new Texture2DWrapper(@in.GetTexture());
 
         public static explicit operator TextureBuffer(Texture2D @in)
         {
-            TextureBuffer texture = new TextureBuffer(@in.Width, @in.Height);
+            var texture = new TextureBuffer(@in.Width, @in.Height);
 
-            @in.GetData(texture.colors);
+            @in.GetData(texture.Colors);
             return texture;
         }
+
         public static explicit operator TextureBuffer(Texture2DWrapper @in)
         {
-            TextureBuffer texture = new TextureBuffer(@in.GetWidth, @in.GetHeight);
+            var texture = new TextureBuffer(@in.GetWidth, @in.GetHeight);
             var tex = @in.GetTexture();
-            tex.GetData(texture.colors);
+            tex.GetData(texture.Colors);
             return texture;
         }
 
-        public static implicit operator Color[] (TextureBuffer @in) => @in.colors;
+        public static implicit operator Color[] (TextureBuffer @in) => @in.Colors;
 
-        public void SetData(Texture2D tex) => tex.SetData(colors);
-        public void GetData(Texture2D tex) => tex.GetData(colors);
+        public object Clone() => Colors.Clone();
+
+        public int CompareTo(object other, IComparer comparer) => ((IStructuralComparable)Colors).CompareTo(other, comparer);
+
+        public void CopyTo(Array array, int index) => Colors.CopyTo(array, index);
+
+        public bool Equals(object other, IEqualityComparer comparer) => ((IStructuralEquatable)Colors).Equals(other, comparer);
 
         public override void ForceSetClutColors(ushort newNumOfColors)
         {
@@ -172,16 +164,24 @@ namespace OpenVIII
 
         public override Color[] GetClutColors(ushort clut) => null;
 
+        public void GetData(Texture2D tex) => tex.GetData(Colors);
+
+        public IEnumerator GetEnumerator() => Colors.GetEnumerator();
+
+        public int GetHashCode(IEqualityComparer comparer) => ((IStructuralEquatable)Colors).GetHashCode(comparer);
+
         public override Texture2D GetTexture() => (Texture2D)this;
 
         public override Texture2D GetTexture(Color[] colors) => (Texture2D)this;
 
         public override Texture2D GetTexture(ushort clut) => (Texture2D)this;
 
+        public override void Load(byte[] buffer, uint offset = 0) => throw new NotImplementedException();
+
         public override void Save(string path)
         {
-            using (Texture2D tex = GetTexture())
-            using (FileStream fs = File.Create(path))
+            using (var tex = GetTexture())
+            using (var fs = File.Create(path))
                 tex.SaveAsPng(fs, tex.Width, tex.Height);
         }
 
@@ -189,13 +189,7 @@ namespace OpenVIII
         {
         }
 
-        public override void Load(byte[] buffer, uint offset = 0) => throw new NotImplementedException();
-        public bool Equals(object other, IEqualityComparer comparer) => ((IStructuralEquatable)colors).Equals(other, comparer);
-        public int GetHashCode(IEqualityComparer comparer) => ((IStructuralEquatable)colors).GetHashCode(comparer);
-        public int CompareTo(object other, IComparer comparer) => ((IStructuralComparable)colors).CompareTo(other, comparer);
-        public IEnumerator GetEnumerator() => colors.GetEnumerator();
-        public void CopyTo(Array array, int index) => colors.CopyTo(array, index);
-        public object Clone() => colors.Clone();
+        public void SetData(Texture2D tex) => tex.SetData(Colors);
 
         #endregion Methods
     }

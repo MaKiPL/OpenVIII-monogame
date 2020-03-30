@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class BATTLECUT : JsmInstruction
     {
+        #region Constructors
+
         public BATTLECUT()
         {
         }
 
-        public BATTLECUT(Int32 parameter, IStack<IJsmExpression> stack)
+        public BATTLECUT(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BATTLECUT)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(BATTLECUT)}()";
+
+        #endregion Methods
     }
 }

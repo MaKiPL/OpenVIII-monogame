@@ -25,7 +25,7 @@ namespace OpenVIII
 
         public OrderedDictionary(IDictionary<TKey, TValue> copy) : this(copy.Count)
         {
-            foreach (KeyValuePair<TKey, TValue> pair in copy)
+            foreach (var pair in copy)
             {
                 Add(new KeyValuePair<TKey, TValue>(pair.Key, pair.Value));
             }
@@ -54,7 +54,7 @@ namespace OpenVIII
         {
             get
             {
-                if (TryGetKVPByIndex(index, out KeyValuePair<TKey, TValue> kvp))
+                if (TryGetKVPByIndex(index, out var kvp))
                     return kvp;
                 throw new KeyNotFoundException($"{this}::Index:{index} - Not Found!");
             }
@@ -64,13 +64,13 @@ namespace OpenVIII
         {
             get
             {
-                if (TryGetByKey(key, out TValue value))
+                if (TryGetByKey(key, out var value))
                     return value;
                 throw new KeyNotFoundException($"{this}::Key:{key} - Not Found!");
             }
             set
             {
-                int index = _list.FindIndex(kvp => kvp.Key.Equals(key));
+                var index = _list.FindIndex(kvp => kvp.Key.Equals(key));
                 if (index >= 0)
                     _list[index] = new KeyValuePair<TKey, TValue>(key, value);
                 else
@@ -99,17 +99,17 @@ namespace OpenVIII
 
         public bool Contains(KeyValuePair<TKey, TValue> item) => _list.Contains(item);
 
-        public Boolean ContainsIndex(Int32 index) => index < _list.Count;
+        public bool ContainsIndex(int index) => index < _list.Count;
 
-        public Boolean ContainsKey(TKey key) => _list.Any(kvp => kvp.Key.Equals(key));
+        public bool ContainsKey(TKey key) => _list.Any(kvp => kvp.Key.Equals(key));
 
-        public Boolean ContainsValue(TValue value) => _list.Any(kvp => kvp.Value.Equals(value));
+        public bool ContainsValue(TValue value) => _list.Any(kvp => kvp.Value.Equals(value));
 
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             if (Count <= array.Length + arrayIndex)
             {
-                foreach (KeyValuePair<TKey, TValue> i in _list)
+                foreach (var i in _list)
                 {
                     array[arrayIndex++] = i;
                 }
@@ -122,7 +122,7 @@ namespace OpenVIII
 
         public bool Remove(TKey key)
         {
-            KeyValuePair<TKey, TValue> kvp = _list.First(_kvp => _kvp.Key.Equals(key));
+            var kvp = _list.First(_kvp => _kvp.Key.Equals(key));
             return _list.Remove(kvp);
         }
 
@@ -138,7 +138,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetByIndex(Int32 index, out TValue value)
+        public bool TryGetByIndex(int index, out TValue value)
         {
             if (ContainsIndex(index))
             {
@@ -150,7 +150,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetByKey(TKey key, out TValue value)
+        public bool TryGetByKey(TKey key, out TValue value)
         {
             if (ContainsKey(key))
             {
@@ -161,7 +161,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetIndexByKey(TKey key, out int value)
+        public bool TryGetIndexByKey(TKey key, out int value)
         {
             if (ContainsKey(key))
             {
@@ -172,7 +172,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetKeyByIndex(Int32 index, out TKey value)
+        public bool TryGetKeyByIndex(int index, out TKey value)
         {
             if (ContainsIndex(index))
             {
@@ -184,7 +184,7 @@ namespace OpenVIII
             return false;
         }
 
-        public Boolean TryGetKVPByIndex(Int32 index, out KeyValuePair<TKey, TValue> value)
+        public bool TryGetKVPByIndex(int index, out KeyValuePair<TKey, TValue> value)
         {
             if (ContainsIndex(index))
             {

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// Duel (Zell limit break)
@@ -22,9 +22,9 @@ namespace OpenVIII
             public FF8String Name { get; private set; }
             public FF8String Description { get; private set; }
             public Magic_ID MagicID { get; private set; }
-            public Attack_Type Attack_Type { get; private set; }
+            public AttackType Attack_Type { get; private set; }
             public byte Attack_Power { get; private set; }
-            public Attack_Flags Attack_Flags { get; private set; }
+            public AttackFlags Attack_Flags { get; private set; }
             public byte Unknown0 { get; private set; }
             public Target Target { get; private set; }
             public byte Unknown1 { get; private set; }
@@ -45,11 +45,11 @@ namespace OpenVIII
                 br.BaseStream.Seek(4, SeekOrigin.Current);
                 MagicID = (Magic_ID)br.ReadUInt16();
                 //0x0004  2 bytes Magic ID
-                Attack_Type = (Attack_Type)br.ReadByte();
+                Attack_Type = (AttackType)br.ReadByte();
                 //0x0006  1 byte Attack type
                 Attack_Power = br.ReadByte();
                 //0x0007  1 byte Attack power
-                Attack_Flags = (Attack_Flags)br.ReadByte();
+                Attack_Flags = (AttackFlags)br.ReadByte();
                 //0x0008  1 byte Attack flags
                 Unknown0 = br.ReadByte();
                 //0x0009  1 byte Unknown
@@ -58,7 +58,7 @@ namespace OpenVIII
                 Unknown1 = br.ReadByte();
                 //0x000B  1 bytes Unknown
                 Hit_Count = br.ReadByte();
-                //0x000C  1 byte Hit count
+                //0x000C  1 byte Hit Count
                 Element = (Element)br.ReadByte();
                 //0x000D  1 byte Element Attack
                 Element_Percent = br.ReadByte();

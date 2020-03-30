@@ -14,7 +14,7 @@ namespace OpenVIII.Fields.Scripts.Instructions.Abstract
 
         public KEY(KeyFlags flags) => _flags = flags;
 
-        public KEY(Int32 parameter, IStack<IJsmExpression> stack)
+        public KEY(int parameter, IStack<IJsmExpression> stack)
             : this(
                 flags: (KeyFlags)((IConstExpression)stack.Pop()).Int32())
         {

@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Shade set?
@@ -9,22 +6,28 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/0B3_SHADESET&action=edit&redlink=1"/>
     public sealed class SHADESET : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
 
-        public SHADESET(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        private readonly IJsmExpression _arg0;
 
-        public SHADESET(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public SHADESET(IJsmExpression arg0) => _arg0 = arg0;
+
+        public SHADESET(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SHADESET)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SHADESET)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

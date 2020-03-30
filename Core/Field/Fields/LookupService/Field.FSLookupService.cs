@@ -1,17 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+
 // ReSharper disable StringLiteralTypo
 
 namespace OpenVIII.Fields
 {
     public static partial class Field
     {
+        #region Classes
+
         public sealed class FSLookupService : ILookupService
         {
-            private readonly String _rootPath;
+            #region Fields
 
-            public FSLookupService(String rootPath)
+            private readonly string _rootPath;
+
+            #endregion Fields
+
+            #region Constructors
+
+            public FSLookupService(string rootPath)
             {
                 if (!Directory.Exists(rootPath))
                     throw new DirectoryNotFoundException(rootPath);
@@ -19,16 +27,15 @@ namespace OpenVIII.Fields
                 _rootPath = rootPath;
             }
 
-            public IEnumerable<Info> EnumerateAll()
-            {
-                return Enumerate("*.mim");
-            }
+            #endregion Constructors
 
-            public IEnumerable<Info> Enumerate(String mask)
+            #region Methods
+
+            public IEnumerable<Info> Enumerate(string mask)
             {
-                foreach (String filePath in Directory.EnumerateFiles(_rootPath, mask, SearchOption.AllDirectories))
+                foreach (var filePath in Directory.EnumerateFiles(_rootPath, mask, SearchOption.AllDirectories))
                 {
-                    String fieldName = Path.GetFileNameWithoutExtension(filePath);
+                    var fieldName = Path.GetFileNameWithoutExtension(filePath);
                     if (SkipInvalidFields(fieldName))
                         continue;
 
@@ -37,7 +44,9 @@ namespace OpenVIII.Fields
                 }
             }
 
-            private static Boolean SkipInvalidFields(String fieldName)
+            public IEnumerable<Info> EnumerateAll() => Enumerate("*.mim");
+
+            private static bool SkipInvalidFields(string fieldName)
             {
                 switch (fieldName)
                 {
@@ -62,10 +71,15 @@ namespace OpenVIII.Fields
                     case "logo":
                         // Corrupted JSM: Test data, invalid stack
                         return true;
+
                     default:
                         return false;
                 }
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

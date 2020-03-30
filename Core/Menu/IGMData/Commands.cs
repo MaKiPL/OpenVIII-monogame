@@ -13,8 +13,8 @@ namespace OpenVIII.IGMData
         private bool disposedValue = false;
         private bool EventAdded;
 
-        private Kernel_bin.Battle_Commands[] commands;
-        private Debug_battleDat.Abilities[] enemycommands;
+        private Kernel.BattleCommand[] commands;
+        private Battle.Dat.Abilities[] enemycommands;
         private int nonbattleWidth;
         private sbyte page = 0;
         private bool skipRefresh;
@@ -25,7 +25,7 @@ namespace OpenVIII.IGMData
         #region Properties
 
         //Selphie_Slots
-        private Selphie_Slots Selphie_Slots { get => (Selphie_Slots)ITEM[Offsets.Selphie_Slots, 0]; set => ITEM[Offsets.Selphie_Slots, 0] = value; }
+        private SelphieSlots Selphie_Slots { get => (SelphieSlots)ITEM[Offsets.Selphie_Slots, 0]; set => ITEM[Offsets.Selphie_Slots, 0] = value; }
 
         private Pool.GF GFPool { get => (Pool.GF)ITEM[Offsets.GF_Pool, 0]; set => ITEM[Offsets.GF_Pool, 0] = value; }
         private Pool.Item ItemPool { get => (Pool.Item)ITEM[Offsets.Item_Pool, 0]; set => ITEM[Offsets.Item_Pool, 0] = value; }
@@ -41,9 +41,9 @@ namespace OpenVIII.IGMData
             protected set => ITEM[Offsets.Targets_Window, 0] = value;
         }
 
-        public IGMData.Pool.Enemy_Attacks EnemyAttacks
+        public IGMData.Pool.EnemyAttacks EnemyAttacks
         {
-            get => ((IGMData.Pool.Enemy_Attacks)ITEM[Offsets.Enemy_Attacks_Pool, 0]);
+            get => ((IGMData.Pool.EnemyAttacks)ITEM[Offsets.Enemy_Attacks_Pool, 0]);
             protected set => ITEM[Offsets.Enemy_Attacks_Pool, 0] = value;
         }
 
@@ -69,10 +69,10 @@ namespace OpenVIII.IGMData
         {
             get => s_cidoff; set
             {
-                if (value >= Kernel_bin.BattleCommands.Count)
+                if (value >= Memory.KernelBin.BattleCommands.Count)
                     value = 0;
                 else if (value < 0)
-                    value = Kernel_bin.BattleCommands.Count - 1;
+                    value = Memory.KernelBin.BattleCommands.Count - 1;
                 s_cidoff = value;
             }
         }
@@ -107,7 +107,7 @@ namespace OpenVIII.IGMData
 
         public static Commands Create(Rectangle pos, Damageable damageable = null, bool battle = false)
         {
-            Commands r = new Commands
+            var r = new Commands
             {
                 skipRefresh = damageable == null,
                 Battle = battle
@@ -120,11 +120,11 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs()
         {
-            bool ret = false;
-            bool found = false;
+            var ret = false;
+            var found = false;
             //loop through Start to Count
             //This is to only check for input from the dialogs that popup.
-            for (int i = Offsets.Start; i < Offsets.Count; i++)
+            for (var i = Offsets.Start; i < Offsets.Count; i++)
             {
                 if (InputITEM(ITEM[i, 0], ref ret))
                 {
@@ -158,16 +158,16 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs_OKAY()
         {
-            Kernel_bin.Battle_Commands c = commands[CURSOR_SELECT];
+            var c = commands[CURSOR_SELECT];
             if (c == null) return false;
             base.Inputs_OKAY();
             TargetGroup.SelectTargetWindows(c);
-            if (c.ID == 1 && Damageable != null && Damageable.GetEnemy(out Enemy e))
+            if (c.BattleID == 1 && Damageable != null && Damageable.GetEnemy(out var e))
             {
-                IEnumerable<Debug_battleDat.Abilities> ecattacks = e.Abilities.Where(x => x.MONSTER != null);
+                var ecattacks = e.Abilities.Where(x => x.Monster != null);
                 if (ecattacks.Count() == 1)
                 {
-                    Kernel_bin.Enemy_Attacks_Data monster = ecattacks.First().MONSTER;
+                    var monster = ecattacks.First().Monster;
                     TargetGroup.SelectTargetWindows(monster);
                     TargetGroup.ShowTargetWindows();
                 }
@@ -180,11 +180,11 @@ namespace OpenVIII.IGMData
                 return true;
             }
             else
-                switch (c.ID)
+                switch (c.BattleID)
                 {
                     default:
                         // ITEM[Targets_Window, 0].Show();
-                        throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.ID}) doesn't have explict operation defined!");
+                        throw new ArgumentOutOfRangeException($"{this}::Command ({c.Name}, {c.BattleID}) doesn't have explict operation defined!");
                     case 1: //ATTACK
                     case 5: //Renzokuken
                     case 12: //MUG
@@ -267,7 +267,7 @@ namespace OpenVIII.IGMData
                         return true;
 
                     case 23: //Defend
-                        Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.ID})");
+                        Debug.WriteLine($"{Damageable.Name} is using {c.Name}({c.BattleID})");
                         Damageable.EndTurn();
                         return true;
                 }
@@ -277,7 +277,7 @@ namespace OpenVIII.IGMData
         {
             if (Battle && CURSOR_SELECT == 0 && CrisisLevel > -1)
             {
-                if (page == 0 && Damageable.GetCharacterData(out Saves.CharacterData c))
+                if (page == 0 && Damageable.GetCharacterData(out var c))
                 {
                     commands[CURSOR_SELECT] = c.CharacterStats.Limit;
                     ((IGMDataItem.Text)ITEM[0, 0]).Data = commands[CURSOR_SELECT].Name;
@@ -308,32 +308,32 @@ namespace OpenVIII.IGMData
                         else
                             Show();
                     }
-                    if (Damageable.GetEnemy(out Enemy e))
+                    if (Damageable.GetEnemy(out var e))
                     {
                         enemycommands = e.Abilities;
-                        int pos = 0;
+                        var pos = 0;
                         bool Item, Magic, Attack;
                         Item = Magic = Attack = false;
-                        foreach (Debug_battleDat.Abilities a in enemycommands)
+                        foreach (var a in enemycommands)
                         {
                             if (pos >= Rows) break;
                             ((IGMDataItem.Text)ITEM[pos, 0]).Hide();
                             BLANKS[pos] = true;
-                            if (a.ITEM != null)
+                            if (a.Item != null)
                             {
                                 Item = true;
                                 //((IGMDataItem.Text)ITEM[pos, 0]).Data = a.ITEM.Value.Name;
                                 //((IGMDataItem.Text)ITEM[pos, 0]).Show();
                                 //BLANKS[pos] = false;
                             }
-                            else if (a.MAGIC != null)
+                            else if (a.Magic != null)
                             {
                                 Magic = true;
                                 //((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MAGIC.Name;
                                 //((IGMDataItem.Text)ITEM[pos, 0]).Show();
                                 //BLANKS[pos] = false;
                             }
-                            else if (a.MONSTER != null)
+                            else if (a.Monster != null)
                             {
                                 Attack = true;
                                 //((IGMDataItem.Text)ITEM[pos, 0]).Data = a.MONSTER.Name;
@@ -347,16 +347,16 @@ namespace OpenVIII.IGMData
 
                         if (Attack)
                         {
-                            IEnumerable<Debug_battleDat.Abilities> ecattacks = enemycommands.Where(x => x.MONSTER != null);
-                            AddCommand(Kernel_bin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().MONSTER.Name : null));
+                            var ecattacks = enemycommands.Where(x => x.Monster != null);
+                            AddCommand(Memory.KernelBin.BattleCommands[1], (ecattacks.Count() == 1 ? ecattacks.First().Monster.Name : null));
                         }
-                        if (Magic || e.DrawList.Any(x => x.DATA != null))
-                            AddCommand(Kernel_bin.BattleCommands[2]);
-                        if (Item || e.DropList.Any(x => x.DATA?.Battle != null) || e.MugList.Any(x => x.DATA?.Battle != null))
-                            AddCommand(Kernel_bin.BattleCommands[4]);
+                        if (Magic || e.DrawList.Any(x => x.Data != null))
+                            AddCommand(Memory.KernelBin.BattleCommands[2]);
+                        if (Item || e.DropList.Any(x => x.Data?.Battle != null) || e.MugList.Any(x => x.Data?.Battle != null))
+                            AddCommand(Memory.KernelBin.BattleCommands[4]);
                         if (e.JunctionedGFs?.Any() ?? false)
-                            AddCommand(Kernel_bin.BattleCommands[3]);
-                        void AddCommand(Kernel_bin.Battle_Commands c, FF8String alt = null)
+                            AddCommand(Memory.KernelBin.BattleCommands[3]);
+                        void AddCommand(Kernel.BattleCommand c, FF8String alt = null)
                         {
                             commands[pos] = c;
                             ((IGMDataItem.Text)ITEM[pos, 0]).Data = alt ?? c.Name;
@@ -371,33 +371,33 @@ namespace OpenVIII.IGMData
                             BLANKS[pos] = true;
                         }
                     }
-                    else if (Memory.State.Characters != null && Damageable.GetCharacterData(out Saves.CharacterData c))
+                    else if (Memory.State.Characters && Damageable.GetCharacterData(out var c))
                     {
                         if (Battle)
                             c.GenerateCrisisLevel();
-                        Rectangle DataSize = Rectangle.Empty;
+                        var DataSize = Rectangle.Empty;
                         page = 0;
                         Cursor_Status &= ~Cursor_Status.Horizontal;
-                        commands[0] = Kernel_bin.BattleCommands[(c.Abilities.Contains(Kernel_bin.Abilities.Mug) ? 12 : 1)];
+                        commands[0] = Memory.KernelBin.BattleCommands[(c.Abilities.Contains(Kernel.Abilities.Mug) ? 12 : 1)];
                         ITEM[0, 0] = new IGMDataItem.Text
                         {
                             Data = commands[0].Name,
                             Pos = SIZE[0]
                         };
 
-                        for (int pos = 1; pos < Rows; pos++)
+                        for (var pos = 1; pos < Rows; pos++)
                         {
-                            Kernel_bin.Abilities cmd = c.Commands[pos - 1];
+                            var cmd = c.Commands[pos - 1];
 
-                            if (cmd != Kernel_bin.Abilities.None)
+                            if (cmd != Kernel.Abilities.None)
                             {
-                                if (!Kernel_bin.Commandabilities.TryGetValue(cmd, out Kernel_bin.Command_abilities cmdval))
+                                if (!Memory.KernelBin.CommandAbilities.TryGetValue(cmd, out var cmdval))
                                 {
                                     continue;
                                 }
 #if DEBUG
                                 if (!Battle) commands[pos] = cmdval.BattleCommand;
-                                else commands[pos] = Kernel_bin.BattleCommands[Cidoff++];
+                                else commands[pos] = Memory.KernelBin.BattleCommands[Cidoff++];
 #else
                         commands[pos] = cmdval.BattleCommand;
 #endif
@@ -413,10 +413,10 @@ namespace OpenVIII.IGMData
                                 BLANKS[pos] = true;
                             }
                         }
-                        const int crisiswidth = 294;
+                        const int crisisWidth = 294;
                         if (Battle && CrisisLevel > -1)
                         {
-                            CONTAINER.Width = crisiswidth;
+                            CONTAINER.Width = crisisWidth;
                             LimitArrow.Show();
                         }
                         else
@@ -447,7 +447,7 @@ namespace OpenVIII.IGMData
         {
             base.Init();
             BLANKS[Offsets.Limit_Arrow] = true;
-            for (int pos = 0; pos < Rows; pos++)
+            for (var pos = 0; pos < Rows; pos++)
                 ITEM[pos, 0] = new IGMDataItem.Text
                 {
                     Pos = SIZE[pos]
@@ -460,19 +460,19 @@ namespace OpenVIII.IGMData
             MagPool.Hide();
             ItemPool = Pool.Item.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             ItemPool.Hide();
-            EnemyAttacks = Pool.Enemy_Attacks.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
+            EnemyAttacks = Pool.EnemyAttacks.Create(new Rectangle(X + 50, Y - 22, 400, 194), Damageable, true);
             EnemyAttacks.Hide();
             CombinePool = Pool.Combine.Create(new Rectangle(X + 50, Y - 22, 300, 112), Damageable, true);
             CombinePool.Hide();
             BulletPool = Pool.Bullet.Create(new Rectangle(X + 50, Y - 22, 400, 168), Damageable, true);
             BulletPool.Hide();
-            Selphie_Slots = Selphie_Slots.Create(new Rectangle(X + 50, Y - 22, 300, 168), Damageable, true);
+            Selphie_Slots = SelphieSlots.Create(new Rectangle(X + 50, Y - 22, 300, 168), Damageable, true);
             Selphie_Slots.Hide();
             LimitArrow = new IGMDataItem.Icon { Data = Icons.ID.Arrow_Right, Pos = new Rectangle(SIZE[0].X + Width - 55, SIZE[0].Y, 0, 0), Palette = 2, Faded_Palette = 7, Blink = true };
             LimitArrow.Hide();
             TargetGroup = Target.Group.Create(Damageable);
             TargetGroup.Hide();
-            commands = new Kernel_bin.Battle_Commands[Rows];
+            commands = new Kernel.BattleCommand[Rows];
             enemycommands = null;
             PointerZIndex = Offsets.Limit_Arrow;
             nonbattleWidth = Width;
@@ -516,7 +516,7 @@ namespace OpenVIII.IGMData
             }
         }
 
-        public sbyte CrisisLevel => Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) ? c.CurrentCrisisLevel : (sbyte)-1;
+        public sbyte CrisisLevel => Damageable != null && Damageable.GetCharacterData(out var c) ? c.CurrentCrisisLevel : (sbyte)-1;
 
         private void SubscribeEvents()
         {

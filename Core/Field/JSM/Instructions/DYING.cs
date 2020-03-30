@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Dying: This is used a lot whenever the party changes members or goes to/from the dream world.
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/145_DYING"/>
     public sealed class DYING : JsmInstruction
     {
+        #region Constructors
+
         public DYING()
         {
         }
 
-        public DYING(Int32 parameter, IStack<IJsmExpression> stack)
+        public DYING(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(DYING)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(DYING)}()";
+
+        #endregion Methods
     }
 }

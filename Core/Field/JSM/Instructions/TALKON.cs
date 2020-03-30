@@ -1,38 +1,37 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class TALKON : JsmInstruction
     {
+        #region Constructors
+
         public TALKON()
         {
         }
 
-        public TALKON(Int32 parameter, IStack<IJsmExpression> stack)
+        public TALKON(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(TALKON)}()";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
                 .Property(nameof(FieldObjectInteraction.IsTalkScriptActive))
                 .Assign(true)
                 .Comment(nameof(TALKON));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
             currentObject.Interaction.IsTalkScriptActive = true;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(TALKON)}()";
+
+        #endregion Methods
     }
 }

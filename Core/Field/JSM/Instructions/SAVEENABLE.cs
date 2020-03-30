@@ -1,26 +1,29 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class SAVEENABLE : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
 
-        public SAVEENABLE(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        private readonly IJsmExpression _arg0;
 
-        public SAVEENABLE(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public SAVEENABLE(IJsmExpression arg0) => _arg0 = arg0;
+
+        public SAVEENABLE(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SAVEENABLE)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SAVEENABLE)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

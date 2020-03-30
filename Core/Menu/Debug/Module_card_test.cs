@@ -96,26 +96,26 @@ namespace OpenVIII
         {
             if (pointer >= 0)
             {
-                Viewport vp = Memory.graphics.GraphicsDevice.Viewport;
+                var vp = Memory.Graphics.GraphicsDevice.Viewport;
 
-                Cards.ID id = CardValue[pointer];
-                uint pos = (uint)((uint)id % Memory.Cards.EntriesPerTexture);
+                var id = CardValue[pointer];
+                var pos = (uint)((uint)id % Memory.Cards.EntriesPerTexture);
                 if (id >= Cards.ID.Card_Back)
                     pos = Memory.Cards.Count-1;
-                //int i = cards.GetEntry(id).File;
-                Entry entry = Memory.Cards.GetEntry(pos);
-                uint col = (uint)(entry.X / entry.Width) + 1;
-                uint row = (uint)(entry.Y / entry.Width) + 1;
-                Rectangle dst = new Rectangle(new Point(0), entry.Size.ToPoint());
+                //int i = cards.GetEntry(ID).File;
+                var entry = Memory.Cards.GetEntry(pos);
+                var col = (uint)(entry.X / entry.Width) + 1;
+                var row = (uint)(entry.Y / entry.Width) + 1;
+                var dst = new Rectangle(new Point(0), entry.Size.ToPoint());
                 dst.Height = (int)Math.Round(dst.Width * (1+Cards.AspectRatio));
 
                 float scale = vp.Height / dst.Height;
                 dst = dst.Scale(new Vector2(scale));
                 dst.Offset(vp.Width / 2 - dst.Center.X, vp.Height / 2 - dst.Center.Y);
                 Memory.SpriteBatchStartAlpha();
-                Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
+                Memory.SpriteBatch.GraphicsDevice.Clear(Color.Black);
                 Memory.Cards.Draw(id, dst);
-                Memory.font.RenderBasicText(
+                Memory.Font.RenderBasicText(
                     $"{CardValue[pointer].ToString().Replace('_', ' ')}\n" +
                     $"pos: {(uint)id}\n" +
                     $"col: {col}\n" +

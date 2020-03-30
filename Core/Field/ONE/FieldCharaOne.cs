@@ -1,233 +1,281 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenVIII.Fields
 {
-    class FieldCharaOne
+    //this is static, because it's always alive
+    public static class FieldMainCharaOne
     {
-        public CharaModelHeaders[] fieldModels;
+        #region Fields
 
-        public struct CharaModelHeaders
+        public static bool BAlreadyInitialized;
+
+        public static MainFieldChara[] MainFieldCharacters;
+
+        #endregion Fields
+
+        #region Methods
+
+        public static void Init(bool bForce = false)
         {
-            public uint offset; //points to texture
-            public uint size; //size of whole segment
-            public uint size2; //as above
-            public uint flagDWORD; //this is either tim or indicator of main model
-            public uint[] timOffset; //pointer to zero
-            public uint modelDataOffset;
-            public char[] modelName; //8
-            public uint padding; //0xEEEEEEEE
-            public Debug_MCH mch;
-            public Texture2D[] textures;
+            if (BAlreadyInitialized && !bForce)
+                return;
+
+            var mfc = new List<MainFieldChara>();
+
+            var aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
+            var test = aw.GetListOfFiles();
+
+            var collectionEntry = test.Where(x => x.ToLower().Contains("main_chr")).ToList().AsReadOnly();
+            if (!collectionEntry.Any()) return;
+            var fieldArchiveName = collectionEntry.First();
+            var fieldArchive = aw.GetArchive(fieldArchiveName);
+            var test2 = fieldArchive.GetListOfFiles();
+
+            foreach (var fieldArchiveFileName in test2)
+            {
+                //if (test_[i].Contains("d008.mch"))
+                //    continue;
+                if (string.IsNullOrWhiteSpace(fieldArchiveFileName))
+                    continue;
+                var oneBytes = fieldArchive.GetBinaryFile(fieldArchiveFileName);
+
+                if (oneBytes.Length < 64) //Hello Kazuo Suzuki! I will skip your dummy files
+                    continue;
+
+                var currentLocalChara = ReadMainChara(oneBytes);
+                var localId = int.Parse(Path.GetFileNameWithoutExtension(fieldArchiveFileName).Substring(1, 3));
+                currentLocalChara.ID = localId;
+                mfc.Add(currentLocalChara);
+            }
+            MainFieldCharacters = mfc.ToArray();
+            BAlreadyInitialized = true;
         }
 
+        private static MainFieldChara ReadMainChara(byte[] oneBytes)
+        {
+            var localMfc = new MainFieldChara();
+            using (var ms = new MemoryStream(oneBytes))
+            using (var br = new BinaryReader(ms))
+            {
+                var timOffsets = new List<uint>();
+                uint timOffset;
+                while ((timOffset = br.ReadUInt32()) != 0xffffffff)
+                    timOffsets.Add(timOffset & 0x00FFFFFF);
+                var modelPointer = br.ReadUInt32();
+
+                //read textures
+                var texture2DReader = timOffsets
+                    .Select(x => new TIM2(br, x))
+                    .Select(x => x.GetTexture()).ToList()
+                    .AsReadOnly();
+
+                localMfc.Textures = texture2DReader.ToArray();
+
+                //read models
+                ms.Seek(modelPointer, SeekOrigin.Begin);
+
+                var mch = new Debug_MCH(ms, br, Debug_MCH.mchMode.FieldMain);
+                localMfc.MCH = mch;
+            }
+            return localMfc;
+        }
+
+        #endregion Methods
+
+        #region Structs
+
+        public struct MainFieldChara
+        {
+            #region Fields
+
+            public int ID;
+            public Debug_MCH MCH;
+            public Texture2D[] Textures;
+
+            #endregion Fields
+        }
+
+        #endregion Structs
+    }
+
+    internal class FieldCharaOne
+    {
+        #region Fields
+
+        public CharaModelHeaders[] FieldModels;
+        [SuppressMessage("ReSharper", "NotAccessedField.Local")] private readonly int _fieldId;
+
+        #endregion Fields
+
+        #region Constructors
 
         public FieldCharaOne(int fieldId)
         {
-            if (!FieldMainCharaOne.bAlreadyInitialized)
+            _fieldId = fieldId;
+            if (!FieldMainCharaOne.BAlreadyInitialized)
                 FieldMainCharaOne.Init();
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
-            string[] test = aw.GetListOfFiles();
+            var aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
+            var test = aw.GetListOfFiles();
 
-            var CollectionEntry = test.Where(x => x.IndexOf(Memory.FieldHolder.fields[Memory.FieldHolder.FieldID],StringComparison.OrdinalIgnoreCase)>=0);
-            if (!CollectionEntry.Any()) return;
-            string fieldArchivename = CollectionEntry.First();
-            var fieldArchive = aw.GetArchive(fieldArchivename);
-            
+            var collectionEntry = test.Where(x => x.IndexOf(Memory.FieldHolder.Fields[Memory.FieldHolder.FieldID], StringComparison.OrdinalIgnoreCase) >= 0).ToList().AsReadOnly();
+            if (!collectionEntry.Any()) return;
+            var fieldArchiveName = collectionEntry.First();
+            var fieldArchive = aw.GetArchive(fieldArchiveName);
 
-            string[] test_ = fieldArchive.GetListOfFiles();
-
+            var test2 = fieldArchive.GetListOfFiles();
 
             string one;
             //string main_chr;
             try
             {
-                one = test_.First(x => x.EndsWith(".one",StringComparison.OrdinalIgnoreCase));
+                one = test2.First(x => x.EndsWith(".one", StringComparison.OrdinalIgnoreCase));
             }
             catch
             {
                 return;
             }
 
-            byte[] oneb = fieldArchive.GetBinaryFile(one);
-            if (oneb.Length == 0)
+            var oneBytes = fieldArchive.GetBinaryFile(one);
+            if (oneBytes.Length == 0)
                 return;
-            ReadBuffer(oneb);
+            ReadBuffer(oneBytes);
         }
+
+        #endregion Constructors
+
+        #region Methods
 
         private void ReadBuffer(byte[] oneBuffer)
         {
-            List<CharaModelHeaders> cmh = new List<CharaModelHeaders>();
-            int lastMsPosition = 0;
-            using (MemoryStream ms = new MemoryStream(oneBuffer))
-            using (BinaryReader br = new BinaryReader(ms))
+            var cmh = new List<CharaModelHeaders>();
+            using (var ms = new MemoryStream(oneBuffer))
+            using (var br = new BinaryReader(ms))
             {
-                uint nModels = br.ReadUInt32();
-                for (int i = 0; i < nModels; i++)
+                var nModels = br.ReadUInt32();
+                for (var i = 0; i < nModels; i++)
                 {
-
-                    CharaModelHeaders localCmh = new CharaModelHeaders
+                    var localCmh = new CharaModelHeaders
                     {
-                        offset = br.ReadUInt32() + 4,
-                        size = br.ReadUInt32(),
-                        size2 = br.ReadUInt32(),
-                        flagDWORD = br.ReadUInt32()
+                        Offset = br.ReadUInt32() + 4,
+                        Size = br.ReadUInt32(),
+                        Size2 = br.ReadUInt32(),
+                        FlagDword = br.ReadUInt32()
                     };
-                    bool bIgnorePadding = false;
-                    bool bMainChara = false;
-                    if (localCmh.flagDWORD >> 24 == 0xD0) //main character file
+                    var bIgnorePadding = false;
+                    var bMainChara = false;
+                    if (localCmh.FlagDword >> 24 == 0xD0) //main character file
                     {
-                        localCmh.timOffset = new uint[0];
-                        localCmh.modelDataOffset = 0xFFFFFFFF;
+                        localCmh.TIMOffset = new uint[0];
+                        localCmh.ModelDataOffset = 0xFFFFFFFF;
                         ms.Seek(4, SeekOrigin.Current);
                         bMainChara = true;
                     }
-                    else if (localCmh.flagDWORD >> 24 == 0xa0) //unknown- object without texture/ placeholder?
+                    else if (localCmh.FlagDword >> 24 == 0xa0) //unknown- object without texture/ placeholder?
                     {
-                        localCmh.timOffset = new uint[0];
-                        localCmh.modelDataOffset = 0xFFFFFFFF;
+                        localCmh.TIMOffset = new uint[0];
+                        localCmh.ModelDataOffset = 0xFFFFFFFF;
                         ms.Seek(8, SeekOrigin.Current);
                         bIgnorePadding = true;
                     }
                     else
                     {
-                        List<uint> timOffsets = new List<uint>();
-                        uint flagTimOffset = localCmh.flagDWORD & 0x00FFFFFF;
+                        var timOffsets = new List<uint>();
+                        // ReSharper disable once UnusedVariable
+                        var flagTimOffset = localCmh.FlagDword & 0x00FFFFFF;
 
-                        timOffsets.Add(localCmh.flagDWORD << 8);
+                        timOffsets.Add(localCmh.FlagDword << 8);
                         uint localTimOffset;
                         while ((localTimOffset = br.ReadUInt32()) != 0xFFFFFFFF)
                             timOffsets.Add(localTimOffset & 0x00FFFFFF);
-                        localCmh.timOffset = timOffsets.ToArray();
-                        localCmh.modelDataOffset = br.ReadUInt32();
+                        localCmh.TIMOffset = timOffsets.ToArray();
+                        localCmh.ModelDataOffset = br.ReadUInt32();
                     }
-                    localCmh.modelName = br.ReadChars(8);
-                    localCmh.padding = br.ReadUInt32();
-                    if (localCmh.padding != 0xEEEEEEEE && !bIgnorePadding) //null models for placeholders are 2 not eeeeeeee
+                    localCmh.ModelName = br.ReadChars(8);
+                    localCmh.Padding = br.ReadUInt32();
+                    if (localCmh.Padding != 0xEEEEEEEE && !bIgnorePadding) //null models for placeholders are 2 not eeeeeeee
                         throw new Exception("Chara one- padding was not 0xEEEEEEEE- check code for ReadBuffer in FieldCharaOne");
 
-                    if (localCmh.modelDataOffset != 0xFFFFFFFF)
+                    int lastMsPosition;
+                    if (localCmh.ModelDataOffset != 0xFFFFFFFF)
                     {
                         lastMsPosition = (int)ms.Position;
-                        ms.Seek(localCmh.offset + localCmh.modelDataOffset, SeekOrigin.Begin);
-                        localCmh.mch = new Debug_MCH(ms, br, Debug_MCH.mchMode.FieldNPC, 3f);
+                        ms.Seek(localCmh.Offset + localCmh.ModelDataOffset, SeekOrigin.Begin);
+                        localCmh.MCH = new Debug_MCH(ms, br, Debug_MCH.mchMode.FieldNPC, 3f);
                         //ms.Seek(localCmh.offset + 4, SeekOrigin.Begin);
-                        List<Texture2D> texList = new List<Texture2D>();
-                        for (int n = 0; n < localCmh.timOffset.Length; n++)
+                        var texList = new List<Texture2D>();
+                        for (var n = 0; n < localCmh.TIMOffset.Length; n++)
                         {
-                            if (localCmh.timOffset[n] > 0x10000000)
-                                localCmh.timOffset[n] = localCmh.timOffset[n] & 0x00FFFFFF;
-                            TIM2 localTim = new TIM2(br, localCmh.offset + localCmh.timOffset[n]);
+                            if (localCmh.TIMOffset[n] > 0x10000000)
+                                localCmh.TIMOffset[n] = localCmh.TIMOffset[n] & 0x00FFFFFF;
+                            var localTim = new TIM2(br, localCmh.Offset + localCmh.TIMOffset[n]);
                             texList.Add(localTim.GetTexture());
                         }
-                        localCmh.textures = texList.ToArray();
+                        localCmh.Textures = texList.ToArray();
                         ms.Seek(lastMsPosition, SeekOrigin.Begin);
                     }
                     else if (bMainChara)
                     {
                         lastMsPosition = (int)ms.Position;
                         //this is main chara, so please grab data from main_chr.fs
-                        int getRefId = int.Parse(new string(localCmh.modelName).Substring(1, 3));
-                        var chara = FieldMainCharaOne.MainFieldCharacters.Where(x => x.id == getRefId).First();
-                        localCmh.modelDataOffset = 1;
-                        localCmh.mch = chara.mch;
-                        localCmh.textures = chara.textures;
-                        ms.Seek(localCmh.offset, SeekOrigin.Begin);
-                        localCmh.mch.MergeAnimations(ms, br);
+                        var getRefId = int.Parse(new string(localCmh.ModelName).Substring(1, 3));
+                        var chara = FieldMainCharaOne.MainFieldCharacters.First(x => x.ID == getRefId);
+                        localCmh.ModelDataOffset = 1;
+                        localCmh.MCH = chara.MCH;
+                        localCmh.Textures = chara.Textures;
+                        ms.Seek(localCmh.Offset, SeekOrigin.Begin);
+                        localCmh.MCH.MergeAnimations(ms, br);
                         ms.Seek(lastMsPosition, SeekOrigin.Begin);
                     }
 
                     cmh.Add(localCmh);
                 }
             }
-            fieldModels = cmh.ToArray();
+            FieldModels = cmh.ToArray();
         }
-    }
 
-    //this is static, because it's always alive
-    public static class FieldMainCharaOne
-    {
-        public static bool bAlreadyInitialized = false;
+        #endregion Methods
 
-        public static MainFieldChara[] MainFieldCharacters;
+        #region Structs
 
-        public struct MainFieldChara
+        public struct CharaModelHeaders
         {
-            public int id;
-            public Debug_MCH mch;
-            public Texture2D[] textures;
+            #region Fields
+
+            ///this is either tim or indicator of main model
+            public uint FlagDword;
+
+            public Debug_MCH MCH;
+
+            public uint ModelDataOffset;
+
+            ///8
+            public char[] ModelName;
+
+            ///points to texture
+            public uint Offset;
+
+            ///0xEEEEEEEE
+            public uint Padding;
+
+            ///size of whole segment
+            public uint Size;
+
+            ///as above
+            public uint Size2;
+
+            public Texture2D[] Textures;
+
+            ///pointer to zero
+            public uint[] TIMOffset;
+
+            #endregion Fields
         }
 
-
-        public static void Init(bool bForce = false)
-        {
-            if (bAlreadyInitialized && !bForce)
-                return;
-
-            List<MainFieldChara> mfc = new List<MainFieldChara>();
-
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_FIELD);
-            string[] test = aw.GetListOfFiles();
-
-            var CollectionEntry = test.Where(x => x.ToLower().Contains("main_chr"));
-            if (!CollectionEntry.Any()) return;
-            string fieldArchiveName = CollectionEntry.First();
-            var fieldArchive = aw.GetArchive(fieldArchiveName);
-            string[] test_ = fieldArchive.GetListOfFiles() ;
-
-            for(int i = 0; i<test_.Length; i++)
-            {
-                //if (test_[i].Contains("d008.mch"))
-                //    continue;
-                if (string.IsNullOrWhiteSpace(test_[i]))
-                    continue;
-                byte[] oneb = fieldArchive.GetBinaryFile(test_[i]);
-
-                if (oneb.Length < 64) //Hello Kazuo Suzuki! I will skip your dummy files
-                    continue;
-
-                MainFieldChara currentLocalChara = ReadMainChara(oneb);
-                int localId = int.Parse(Path.GetFileNameWithoutExtension(test_[i]).Substring(1,3));
-                currentLocalChara.id = localId;
-                mfc.Add(currentLocalChara);
-            }
-            MainFieldCharacters = mfc.ToArray();
-            bAlreadyInitialized = true;
-        }
-
-        private static MainFieldChara ReadMainChara(byte[] oneb)
-        {
-            MainFieldChara localMfc = new MainFieldChara();
-            using (MemoryStream ms = new MemoryStream(oneb))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                List<uint> timOffsets = new List<uint>();
-                uint timOffset;
-                while((timOffset = br.ReadUInt32())!=0xffffffff )
-                    timOffsets.Add(timOffset & 0x00FFFFFF);
-                uint modelPointer = br.ReadUInt32();
-
-                //read textures
-                List<Texture2D> tex2Dreader = new List<Texture2D>();
-                for(int i = 0; i<timOffsets.Count; i++)
-                {
-                    TIM2 tim = new TIM2(br, timOffsets[i]);
-                    tex2Dreader.Add(tim.GetTexture());
-                }
-                localMfc.textures = tex2Dreader.ToArray();
-
-                //read models
-                ms.Seek(modelPointer, SeekOrigin.Begin);
-
-                Debug_MCH mch = new Debug_MCH(ms, br, Debug_MCH.mchMode.FieldMain);
-                localMfc.mch = mch;
-            }
-            return localMfc;
-        }
+        #endregion Structs
     }
 }

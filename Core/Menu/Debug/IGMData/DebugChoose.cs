@@ -110,7 +110,7 @@ namespace OpenVIII.IGMData
 
         public override void Inputs_Left()
         {
-            if (_inputsLeft.TryGetValue((DebugItems)CURSOR_SELECT, out Func<bool> f) && f.Invoke())
+            if (_inputsLeft.TryGetValue((DebugItems)CURSOR_SELECT, out var f) && f.Invoke())
             {
                 base.Inputs_Left();
                 Refresh();
@@ -119,7 +119,7 @@ namespace OpenVIII.IGMData
 
         public override bool Inputs_OKAY()
         {
-            if (_inputsOkay.TryGetValue((DebugItems)CURSOR_SELECT, out Func<bool> f))
+            if (_inputsOkay.TryGetValue((DebugItems)CURSOR_SELECT, out var f))
             {
                 return f.Invoke() && base.Inputs_OKAY();
             }
@@ -128,7 +128,7 @@ namespace OpenVIII.IGMData
 
         public override void Inputs_Right()
         {
-            if (_inputsRight.TryGetValue((DebugItems)CURSOR_SELECT, out Func<bool> f) && f.Invoke())
+            if (_inputsRight.TryGetValue((DebugItems)CURSOR_SELECT, out var f) && f.Invoke())
             {
                 base.Inputs_Right();
                 Refresh();
@@ -138,9 +138,9 @@ namespace OpenVIII.IGMData
         public override void Refresh()
         {
             base.Refresh();
-            for (int i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++)
             {
-                if (_dynamicDebugStrings.TryGetValue((DebugItems)i, out Func<FF8String> f))
+                if (_dynamicDebugStrings.TryGetValue((DebugItems)i, out var f))
                 {
                     ((IGMDataItem.Text)ITEM[i, 0]).Data = f();
                 }
@@ -150,19 +150,19 @@ namespace OpenVIII.IGMData
         protected override void Init()
         {
             base.Init();
-            foreach (int i in Enumerable.Range(0, (int)DebugItems.Count))
+            foreach (var i in Enumerable.Range(0, (int)DebugItems.Count))
             {
-                if (StrDebugLobby.TryGetValue((DebugItems)i, out FF8String str))
+                if (StrDebugLobby.TryGetValue((DebugItems)i, out var str))
                 {
                     ITEM[i, 0] = new IGMDataItem.Text { Data = str, Pos = SIZE[i] };
                 }
             }
-            Rectangle rect = CONTAINER.Pos;
+            var rect = CONTAINER.Pos;
             rect.Inflate(-12, -60);
             rect.Offset(12, 60);
             ITEM[(int)DebugItems.BattlePool, 0] = DebugSelectPool<Battle.Encounter>.Create(rect, Memory.Encounters, SetEncounterOkayBattle, FilterEncounters);
             ITEM[(int)DebugItems.BattlePool, 0].Refresh();
-            ITEM[(int)DebugItems.FieldPool, 0] = DebugSelectPool<string>.Create(rect, Memory.FieldHolder.fields, SetFieldsOkayBattle, FilterFields,4);
+            ITEM[(int)DebugItems.FieldPool, 0] = DebugSelectPool<string>.Create(rect, Memory.FieldHolder.Fields, SetFieldsOkayBattle, FilterFields,4);
             ITEM[(int)DebugItems.FieldPool, 0].Refresh();
             PointerZIndex = Count - 1;
             _inputsOkay = new Dictionary<DebugItems, Func<bool>>()
@@ -172,7 +172,7 @@ namespace OpenVIII.IGMData
                     Menu.FadeIn();
                     Menu.Module.State = MenuModule.Mode.MainLobby;
                     Module_overture_debug.ResetModule();
-                    Memory.Module = MODULE.OVERTURE_DEBUG;
+                    Memory.Module = Module.OvertureDebug;
                     Memory.IsMouseVisible = false;
                     AV.Music.Stop();
                     return true;
@@ -187,8 +187,8 @@ namespace OpenVIII.IGMData
                 }  },
                 { DebugItems.Movie, ()=> {
                     Menu.FadeIn();
-                    Memory.Module = MODULE.MOVIETEST;
-                    Module_movie_test.Play();
+                    Memory.Module = Module.MovieTest;
+                    ModuleMovieTest.Play();
                     Memory.IsMouseVisible = false;
                     return true;
                 }  },
@@ -205,50 +205,50 @@ namespace OpenVIII.IGMData
                 { DebugItems.World, ()=> {
                     Menu.FadeIn();
                     Module_world_debug.playerPosition = new Vector3(-9105f, 30f, -4466); //reset for sake of debugging
-                    Memory.Module = MODULE.WORLD_DEBUG;
+                    Memory.Module = Module.WorldDebug;
                     Memory.IsMouseVisible = false;
                     return true;
                 }  },
                 { DebugItems.Faces, ()=> {
                     Menu.FadeIn();
-                    Memory.Module = MODULE.FACE_TEST;
+                    Memory.Module = Module.FaceTest;
                     Module_face_test.Show();
                     return true;
                 }  },
                 { DebugItems.Icons, ()=> {
                     Menu.FadeIn();
-                    Memory.Module = MODULE.ICON_TEST;
+                    Memory.Module = Module.IconTest;
                     Module_icon_test.Show();
                     return true;
                 }  },
                 { DebugItems.Cards, ()=> {
                     Menu.FadeIn();
-                    Memory.Module = MODULE.CARD_TEST;
+                    Memory.Module = Module.CardTest;
                     Module_card_test.Show();
                     return true;
                 }  },
                 { DebugItems.FieldModelTest, ()=> {
                     Menu.FadeIn();
-                    Memory.Module = MODULE.FIELD_MODEL_TEST;
+                    Memory.Module = Module.FieldModelTest;
                     Module_card_test.Show();
                     return true;
                 }  },
             };
-            Files files = Files.Instance;
+            var files = Files.Instance;
             _inputsLeft = new Dictionary<DebugItems, Func<bool>>()
             {
                 { DebugItems.Movie, ()=> {
-                    if(Module_movie_test.Index>0)
-                        Module_movie_test.Index--;
+                    if(ModuleMovieTest.Index>0)
+                        ModuleMovieTest.Index--;
                     else
-                        Module_movie_test.Index = files.Count - 1;
+                        ModuleMovieTest.Index = files.Count - 1;
                     return true;
                 }  },
                 { DebugItems.Music, ()=> {
                     if(Memory.MusicIndex >0)
                         Memory.MusicIndex --;
                     else
-                        Memory.MusicIndex = (ushort)Memory.dicMusic.Keys.Max();
+                        Memory.MusicIndex = (ushort)Memory.DicMusic.Keys.Max();
                     return true;
                 }  },
                 { DebugItems.Sounds, ()=> {
@@ -263,14 +263,14 @@ namespace OpenVIII.IGMData
             _inputsRight = new Dictionary<DebugItems, Func<bool>>()
             {
                 { DebugItems.Movie, ()=> {
-                    if(Module_movie_test.Index<files.Count - 1)
-                        Module_movie_test.Index++;
+                    if(ModuleMovieTest.Index<files.Count - 1)
+                        ModuleMovieTest.Index++;
                     else
-                        Module_movie_test.Index = 0;
+                        ModuleMovieTest.Index = 0;
                     return true;
                 }  },
                 { DebugItems.Music, ()=> {
-                    if(Memory.MusicIndex <(ushort)Memory.dicMusic.Keys.Max())
+                    if(Memory.MusicIndex <(ushort)Memory.DicMusic.Keys.Max())
                         Memory.MusicIndex ++;
                     else
                         Memory.MusicIndex = 0;
@@ -288,20 +288,20 @@ namespace OpenVIII.IGMData
             _dynamicDebugStrings = new Dictionary<DebugItems, Func<FF8String>>
             {
                 { DebugItems.Movie, ()=> {
-                    if (files.Count<=Module_movie_test.Index)
-                        Module_movie_test.Index=0;
+                    if (files.Count<=ModuleMovieTest.Index)
+                        ModuleMovieTest.Index=0;
                     if(files.Count ==0)
                         return "";
-                    if (files.Count <= Module_movie_test.Index) return "";
-                    string end=Path.GetFileNameWithoutExtension(files[Module_movie_test.Index]);
+                    if (files.Count <= ModuleMovieTest.Index) return "";
+                    var end=Path.GetFileNameWithoutExtension(files[ModuleMovieTest.Index]);
                     if(StrDebugLobby[DebugItems.Movie]!=null)
                         return StrDebugLobby[DebugItems.Movie].Clone().Append(end);
                     return end;
                 }},
                 { DebugItems.Music, ()=> {
-                    if (Memory.dicMusic.Count <= Memory.MusicIndex ||
-                        Memory.dicMusic[(MusicId) Memory.MusicIndex].Count <= 0) return "";
-                    string end=Path.GetFileNameWithoutExtension(Memory.dicMusic[(MusicId)Memory.MusicIndex][0]);
+                    if (Memory.DicMusic.Count <= Memory.MusicIndex ||
+                        Memory.DicMusic[(MusicId) Memory.MusicIndex].Count <= 0) return "";
+                    var end=Path.GetFileNameWithoutExtension(Memory.DicMusic[(MusicId)Memory.MusicIndex][0]);
                     if(StrDebugLobby[DebugItems.Music]!=null)
                         return StrDebugLobby[DebugItems.Music].Clone().Append(end);
                     return end;
@@ -319,25 +319,25 @@ namespace OpenVIII.IGMData
 
         private void FilterEncounters(string filter) => ((DebugSelectPool<Battle.Encounter>)ITEM[(int)DebugItems.BattlePool, 0]).Refresh(Memory.Encounters.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
 
-        private void FilterFields(string filter) => ((DebugSelectPool<string>)ITEM[(int)DebugItems.FieldPool, 0]).Refresh(Memory.FieldHolder.fields?.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
+        private void FilterFields(string filter) => ((DebugSelectPool<string>)ITEM[(int)DebugItems.FieldPool, 0]).Refresh(Memory.FieldHolder.Fields?.Where(x => x.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
 
         private static bool SetEncounterOkayBattle(Battle.Encounter encounter)
         {
             Memory.Encounters.ID = encounter.ID;
             Menu.FadeIn();
-            Module_battle_debug.ResetState();
+            ModuleBattleDebug.ResetState();
             Menu.BattleMenus.CameFrom();
-            Memory.Module = MODULE.BATTLE_DEBUG;
+            Memory.Module = Module.BattleDebug;
             Memory.IsMouseVisible = false;
             return true;
         }
         private static bool SetFieldsOkayBattle(string arg)
         {
-            if (Memory.FieldHolder.fields == null) return true;
-            Memory.FieldHolder.FieldID = (ushort)Memory.FieldHolder.fields.ToList().FindIndex(x => x == arg);
+            if (Memory.FieldHolder.Fields == null) return true;
+            Memory.FieldHolder.FieldID = (ushort)Memory.FieldHolder.Fields.ToList().FindIndex(x => x == arg);
             Menu.FadeIn();
             Fields.Module.ResetField();
-            Memory.Module = MODULE.FIELD_DEBUG;
+            Memory.Module = Module.FieldDebug;
             Memory.IsMouseVisible = false;
             return true;
         }

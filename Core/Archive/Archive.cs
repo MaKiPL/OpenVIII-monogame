@@ -76,8 +76,8 @@ namespace OpenVIII
             /// </summary>
             public string FS => $"{NoExtension}{B_FileArchive}";
 
-            public bool IsDir { get; private set; }
-            public bool IsFile { get; private set; }
+            public bool IsDir { get; set; }
+            public bool IsFile { get; set; }
             public bool IsFileArchive => _filename.EndsWith(B_FileArchive, StringComparison.OrdinalIgnoreCase);
             public bool IsFileIndex => _filename.EndsWith(B_FileIndex, StringComparison.OrdinalIgnoreCase);
             public bool IsFileList => _filename.EndsWith(B_FileList, StringComparison.OrdinalIgnoreCase);

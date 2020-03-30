@@ -1,15 +1,15 @@
-﻿using OpenVIII.Encoding;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
+
 namespace OpenVIII.Fields.Scripts
 {
     public static class FieldScriptFormatter
     {
+        #region Methods
+
         public static IEnumerable<FormattedObject> FormatAllObjects(Field.ILookupService lookupService)
         {
-            foreach (Field.Info field in lookupService.EnumerateAll())
-            foreach (FormattedObject formattedObject in FormatFieldObjects(field))
-                yield return formattedObject;
+            return lookupService.EnumerateAll().SelectMany(FormatFieldObjects);
         }
 
         public static IEnumerable<FormattedObject> FormatFieldObjects(Field.Info field)
@@ -17,26 +17,32 @@ namespace OpenVIII.Fields.Scripts
             if (!field.TryReadData(Field.Part.Jsm, out var jsmData))
                 yield break;
 
-            List<Jsm.GameObject> gameObjects = Jsm.File.Read(jsmData);
+            var gameObjects = Jsm.File.Read(jsmData);
 
             if (gameObjects.Count == 0)
                 yield break;
 
             IScriptFormatterContext formatterContext = GetFormatterContext(field);
-            IServices executionContext = StatelessServices.Instance;
-            ScriptWriter sw = new ScriptWriter();
+            var executionContext = StatelessServices.Instance;
+            var sw = new ScriptWriter();
 
             foreach (var obj in gameObjects)
             {
-                formatterContext.GetObjectScriptNamesById(obj.Id, out String objectName, out _);
-                String formattedScript = FormatObject(obj, sw, formatterContext, executionContext);
+                formatterContext.GetObjectScriptNamesById(obj.Id, out var objectName, out _);
+                var formattedScript = FormatObject(obj, sw, formatterContext, executionContext);
                 yield return new FormattedObject(field, objectName, formattedScript);
             }
         }
 
+        private static string FormatObject(Jsm.GameObject gameObject, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
+        {
+            gameObject.FormatType(sw, formatterContext, executionContext);
+            return sw.Release();
+        }
+
         private static ScriptFormatterContext GetFormatterContext(Field.Info field)
         {
-            ScriptFormatterContext context = new ScriptFormatterContext();
+            var context = new ScriptFormatterContext();
 
             if (field.TryReadData(Field.Part.Sym, out var symData))
                 context.SetSymbols(Sym.Reader.FromBytes(symData));
@@ -46,10 +52,6 @@ namespace OpenVIII.Fields.Scripts
             return context;
         }
 
-        private static String FormatObject(Jsm.GameObject gameObject, ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
-        {
-            gameObject.FormatType(sw, formatterContext, executionContext);
-            return sw.Release();
-        }
+        #endregion Methods
     }
 }

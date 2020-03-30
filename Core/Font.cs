@@ -76,14 +76,14 @@ namespace OpenVIII
         public void LoadFonts()
         {
             Memory.Log.WriteLine($"{nameof(Font)} :: {nameof(LoadFonts)} ");
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
-            byte[] bufferTex = aw.GetBinaryFile("sysfnt.tex");
-            TEX tex = new TEX(bufferTex);
+            var aw = ArchiveWorker.Load(Memory.Archives.A_MENU);
+            var bufferTex = aw.GetBinaryFile("sysfnt.tex");
+            var tex = new TEX(bufferTex);
             sysfnt = tex.GetTexture((int)ColorID.White);
             sysfntbig = TextureHandler.Create("sysfld{0:00}.tex", tex, 2, 1, (int)ColorID.White);
 
-            byte[] bufferTDW = aw.GetBinaryFile("sysfnt.tdw");
-            TDW tim = new TDW(bufferTDW);
+            var bufferTDW = aw.GetBinaryFile("sysfnt.tdw");
+            var tim = new TDW(bufferTDW);
             charWidths = tim.CharWidths;
             menuFont = tim.GetTexture((ushort)ColorID.White);
             
@@ -91,23 +91,23 @@ namespace OpenVIII
 
         public Rectangle RenderBasicText(FF8String buffer, Vector2 pos, Vector2 zoom, Type whichFont = 0, float Fade = 1.0f, int lineSpacing = 0, bool skipdraw = false, ColorID color_ = ColorID.White, bool blink = false)
         {
-            ColorID colorbak = color_;
-            Color color = ColorID2Color[color_];
-            Color faded_color = ColorID2Blink[color_];
+            var colorbak = color_;
+            var color = ColorID2Color[color_];
+            var faded_color = ColorID2Blink[color_];
             if (buffer == null) return new Rectangle();
-            Rectangle ret = new Rectangle(pos.RoundedPoint(), new Point(0));
-            Rectangle destRect = Rectangle.Empty;
-            Point real = pos.RoundedPoint();
-            int charCountWidth = 21;
-            int charSize = 12; //pixelhandler does the 2x scaling on the fly.
-            Point size = (new Vector2(0, charSize) * zoom).RoundedPoint();
-            Point baksize = size;
-            int width = 0;
-            bool skipletter = false;
-            for (int i = 0; i < buffer.Length; i++)
+            var ret = new Rectangle(pos.RoundedPoint(), new Point(0));
+            var destRect = Rectangle.Empty;
+            var real = pos.RoundedPoint();
+            var charCountWidth = 21;
+            var charSize = 12; //pixelhandler does the 2x scaling on the fly.
+            var size = (new Vector2(0, charSize) * zoom).RoundedPoint();
+            var baksize = size;
+            var width = 0;
+            var skipletter = false;
+            for (var i = 0; i < buffer.Length; i++)
             {
                 size = baksize;
-                byte c = buffer[i];
+                var c = buffer[i];
                 if (c == 0) continue;
                 else if (c == (byte)FF8TextTagCode.Dialog)
                 {
@@ -131,9 +131,9 @@ namespace OpenVIII
                 {
                     if (++i < buffer.Length - 1)
                     {
-                        FF8TextTagKey k = (FF8TextTagKey)buffer[i];
-                        FF8String str = Input2.ButtonString(k);
-                        Rectangle retpos = RenderBasicText(str, real, zoom, whichFont, Fade, lineSpacing, skipdraw, ColorID.Green);
+                        var k = (FF8TextTagKey)buffer[i];
+                        var str = Input2.ButtonString(k);
+                        var retpos = RenderBasicText(str, real, zoom, whichFont, Fade, lineSpacing, skipdraw, ColorID.Green);
                         size.X = retpos.Width;
                         //size.Y = retpos.Height;
                         //real.X += retpos.Width;
@@ -149,7 +149,7 @@ namespace OpenVIII
                     {
                         c = buffer[i];
                         blink = c >= (byte)FF8TextTagColor.Dark_GrayBlink ? true : false;
-                        GetColorFromTag(c, out Color? nc, out Color? fc);
+                        GetColorFromTag(c, out var nc, out var fc);
                         color = nc ?? ColorID2Color[colorbak];
                         faded_color = fc ?? ColorID2Blink[colorbak];
                         SetRetRec(pos, ref ret, ref real, size);
@@ -163,7 +163,7 @@ namespace OpenVIII
                 }
                 if (!skipletter)
                 {
-                    int deltaChar = GetDeltaChar(c);
+                    var deltaChar = GetDeltaChar(c);
                     if (deltaChar >= 0 && charWidths != null && deltaChar < charWidths.Length)
                     {
                         width = charWidths[deltaChar];
@@ -174,14 +174,14 @@ namespace OpenVIII
                         width = charSize;
                         size.X = (int)(charSize * zoom.X);
                     }
-                    Point curSize = size;
-                    int verticalPosition = deltaChar / charCountWidth;
+                    var curSize = size;
+                    var verticalPosition = deltaChar / charCountWidth;
                     //i.e. 1280 is 100%, 640 is 50% and therefore 2560 is 200% which means multiply by 0.5f or 2.0f
 
                     destRect = new Rectangle(real, size);
                     if (!skipdraw)
                     {
-                        Rectangle sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
+                        var sourceRect = new Rectangle((deltaChar - (verticalPosition * charCountWidth)) * charSize,
                             verticalPosition * charSize,
                             width,
                             charSize);
@@ -199,7 +199,7 @@ namespace OpenVIII
         private static void SetRetRec(Vector2 pos, ref Rectangle ret, ref Point real, Point size)
         {
             real.X += size.X;
-            int curWidth = real.X - (int)pos.X;
+            var curWidth = real.X - (int)pos.X;
             if (curWidth > ret.Width)
                 ret.Width = curWidth;
         }
@@ -212,17 +212,17 @@ namespace OpenVIII
                 short ic = c;
                 c = buffer[++i];
                 ic |= (short)(c << 8);
-                byte pal = buffer[++i];
+                var pal = buffer[++i];
                 Memory.Icons.Trim((Icons.ID)ic, pal);
-                EntryGroup icon = Memory.Icons[(Icons.ID)ic];
+                var icon = Memory.Icons[(Icons.ID)ic];
                 //Vector2 scale = Memory.Icons.GetTexture((Icons.ID)ic).ScaleFactor;
                 if (icon != null)
                 {
-                    float adj = (12 / (float)(icon.Height));
-                    Vector2 scale = new Vector2(adj * zoom.X);
+                    var adj = (12 / (float)(icon.Height));
+                    var scale = new Vector2(adj * zoom.X);
                     size.X = (int)(icon.Width * scale.X);
                     size.Y = (int)(icon.Height * scale.X);
-                    Rectangle destRect = new Rectangle(real, size);
+                    var destRect = new Rectangle(real, size);
                     //real.X += size.X;
                     //skipletter = true;
                     if (!skipdraw)
@@ -315,7 +315,7 @@ namespace OpenVIII
                     //sourceRect.Width -= 1;
                     //sourceRect.Height -= 1;
 
-                    Memory.spriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
+                    Memory.SpriteBatch.Draw(whichFont == Type.menuFont ? menuFont : sysfnt,
                     destRect,
                     sourceRect,
                 color * Fade);
@@ -327,7 +327,7 @@ namespace OpenVIII
                     {
                         if (!sysfntbig.Modded)
                         {
-                            Rectangle ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
+                            var ShadowdestRect = new Rectangle(destRect.Location, destRect.Size);
                             ShadowdestRect.Offset(2, 2);
                             sysfntbig.Draw(ShadowdestRect, sourceRect, Color.Black * Fade * .5f);
                         }

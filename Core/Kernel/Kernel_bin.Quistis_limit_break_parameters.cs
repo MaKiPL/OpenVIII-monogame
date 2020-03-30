@@ -3,7 +3,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         #region Classes
 
@@ -16,7 +16,7 @@ namespace OpenVIII
         {
             #region Fields
 
-            public const int count = 4;//64 total but I want to add these to the Blue_magic_Quistis_limit_break in an array
+            public const int count = 4;//64 total but I want to add these to the Blue_Magic_Quistis_limit_break in an array
             public const int id = 20;
             public const int size = 8;
 

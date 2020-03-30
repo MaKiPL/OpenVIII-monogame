@@ -4,11 +4,21 @@ namespace OpenVIII.Fields
 {
     public struct Degrees
     {
-        public readonly Int32 Angle360;
+        #region Fields
 
-        public static Degrees FromAngle360(Int32 angle360) => new Degrees(angle360);
+        public readonly int Angle360;
 
-        public static Degrees FromAngle256(Int32 angle256)
+        #endregion Fields
+
+        #region Constructors
+
+        private Degrees(int angle360) => Angle360 = angle360;
+
+        #endregion Constructors
+
+        #region Methods
+
+        public static Degrees FromAngle256(int angle256)
         {
             if (angle256 < 0 || angle256 > 256)
                 throw new ArgumentOutOfRangeException($"Angle {angle256} is out of range." +
@@ -18,26 +28,26 @@ namespace OpenVIII.Fields
             return new Degrees(angle256 * 360 / 256);
         }
 
-        private Degrees(Int32 angle360)
-        {
-            Angle360 = angle360;
-        }
+        public static Degrees FromAngle360(int angle360) => new Degrees(angle360);
 
-        public override String ToString() => $"Angle: {Angle360}°";
-        public override Int32 GetHashCode() => Angle360.GetHashCode();
+        public static Degrees operator -(Degrees angle) => Degrees.FromAngle360(-angle.Angle360);
 
-        public override Boolean Equals(Object obj)
+        public static bool operator !=(Degrees left, Degrees right) => !left.Equals(right);
+
+        public static bool operator ==(Degrees left, Degrees right) => left.Equals(right);
+
+        public override bool Equals(object obj)
         {
             if (obj is Degrees degrees)
                 return Angle360 == degrees.Angle360;
 
             return false;
         }
-        public static bool operator ==(Degrees left, Degrees right) => left.Equals(right);
-        public static bool operator !=(Degrees left, Degrees right) => !left.Equals(right);
-        public static Degrees operator -(Degrees angle)
-        {
-            return Degrees.FromAngle360(-angle.Angle360);
-        }
+
+        public override int GetHashCode() => Angle360.GetHashCode();
+
+        public override string ToString() => $"Angle: {Angle360}°";
+
+        #endregion Methods
     }
 }

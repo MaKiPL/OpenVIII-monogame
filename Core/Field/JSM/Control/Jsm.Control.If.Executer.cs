@@ -1,36 +1,37 @@
 ﻿using OpenVIII.Fields.Scripts.Instructions;
-using System;
 using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class Control
         {
+            #region Classes
+
             public sealed partial class If
             {
-                private sealed class Executer : IScriptExecuter
+                #region Classes
+
+                private sealed class Executor : IScriptExecutor
                 {
+                    #region Fields
+
                     private readonly If _aggregator;
 
-                    public Executer(If aggregator)
-                    {
-                        _aggregator = aggregator;
-                    }
+                    #endregion Fields
 
-                    public IEnumerable<IAwaitable> Execute(IServices services)
-                    {
-                        IEnumerable<IJsmInstruction> executable = GetExecutableInstructions(services);
-                        if (executable == null)
-                            yield break;
+                    #region Constructors
 
-                        IScriptExecuter executer = ExecutableSegment.GetExecuter(executable);
-                        foreach (IAwaitable result in executer.Execute(services))
-                            yield return result;
-                    }
+                    public Executor(If aggregator) => _aggregator = aggregator;
 
-                    public Boolean CanExecute(JPF jpf, IServices services)
+                    #endregion Constructors
+
+                    #region Methods
+
+                    public bool CanExecute(JPF jpf, IServices services)
                     {
                         foreach (var condition in jpf.Conditions)
                         {
@@ -39,6 +40,17 @@ namespace OpenVIII.Fields.Scripts
                         }
 
                         return true;
+                    }
+
+                    public IEnumerable<IAwaitable> Execute(IServices services)
+                    {
+                        var executable = GetExecutableInstructions(services);
+                        if (executable == null)
+                            yield break;
+
+                        var executer = ExecutableSegment.GetExecuter(executable);
+                        foreach (var result in executer.Execute(services))
+                            yield return result;
                     }
 
                     private IEnumerable<IJsmInstruction> GetExecutableInstructions(IServices services)
@@ -56,8 +68,16 @@ namespace OpenVIII.Fields.Scripts
 
                         return _aggregator.ElseRange?.GetBodyInstructions();
                     }
+
+                    #endregion Methods
                 }
+
+                #endregion Classes
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

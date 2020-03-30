@@ -1,15 +1,14 @@
 ﻿namespace OpenVIII.Movie
-
 {
-    public enum STATE
+    public enum State
     {
-        LOAD = 0,
-        CLEAR = 1,
-        STARTPLAY = 2,
-        PLAYING = 3,
-        PAUSED = 4,
-        FINISHED = 5,
-        RETURN = 6,
-        RESET = 7
+        Load = 0,
+        Clear = 1,
+        StartPlay = 2,
+        Playing = 3,
+        Paused = 4,
+        Finished = 5,
+        Return = 6,
+        Reset = 7
     }
 }

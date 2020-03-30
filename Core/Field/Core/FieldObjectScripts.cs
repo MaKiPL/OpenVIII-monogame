@@ -1,27 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace OpenVIII.Fields
 {
     public sealed class FieldObjectScripts
     {
-        private readonly OrderedDictionary<Int32, IScriptExecuter> _dic = new OrderedDictionary<Int32, IScriptExecuter>();
+        #region Fields
+
+        private readonly OrderedDictionary<int, IScriptExecutor> _dic = new OrderedDictionary<int, IScriptExecutor>();
         private readonly PriorityQueue<Executer> _executionQueue = new PriorityQueue<Executer>();
 
-        private Boolean _isInitialized;
+        private Executer _currentExecutor;
         private IAwaiter _currentState;
-        private Executer _currentExecuter;
+        private bool _isInitialized;
 
-        public void Add(Int32 scriptId, IScriptExecuter executer)
-        {
-            _dic.Add(scriptId, executer);
-        }
+        #endregion Fields
+
+        #region Methods
+
+        public void Add(int scriptId, IScriptExecutor executor) => _dic.Add(scriptId, executor);
 
         public void CancelAll()
         {
-            while (_executionQueue.TryDequeue(out var executer))
-                executer.Complete();
+            while (_executionQueue.TryDequeue(out var executor))
+                executor.Complete();
         }
 
         /// <summary>
@@ -29,9 +31,9 @@ namespace OpenVIII.Fields
         /// The request is asynchronous and returns immediately without waiting for the remote execution to start or finish.
         /// If the specified priority is already busy executing, the request will block until it becomes available and only then return
         /// </summary>
-        public IAwaitable Execute(Int32 scriptId, Int32 priority)
+        public IAwaitable Execute(int scriptId, int priority)
         {
-            Executer executer = new Executer(GetScriptExecuter(scriptId));
+            var executer = new Executer(GetScriptExecuter(scriptId));
             _executionQueue.Enqueue(executer, priority);
             return executer;
         }
@@ -39,9 +41,9 @@ namespace OpenVIII.Fields
         /// <summary>
         /// Requests that a remote entity executes one of its member functions at a specified priority.
         /// The request is asynchronous and returns immediately without waiting for the remote execution to start or finish.
-        /// If the specified priority is already busy executing, the request will fail silently. 
+        /// If the specified priority is already busy executing, the request will fail silently.
         /// </summary>
-        public IAwaitable TryExecute(Int32 scriptId, Int32 priority)
+        public IAwaitable TryExecute(int scriptId, int priority)
         {
             if (_executionQueue.HasPriority(priority))
                 return DummyAwaitable.Instance;
@@ -63,9 +65,9 @@ namespace OpenVIII.Fields
                     _currentState = null;
                 }
 
-                if (_currentExecuter != null)
+                if (_currentExecutor != null)
                 {
-                    while (_currentExecuter.Next(out IAwaitable current))
+                    while (_currentExecutor.Next(out var current))
                     {
                         if (current == null)
                             throw new InvalidOperationException();
@@ -83,15 +85,15 @@ namespace OpenVIII.Fields
 
                     _currentState = null;
 
-                    _currentExecuter.Complete();
-                    _currentExecuter = null;
+                    _currentExecutor.Complete();
+                    _currentExecutor = null;
                 }
 
                 if (_executionQueue.Count <= 0)
                     break;
 
-                _currentExecuter = _executionQueue.Dequeue();
-                _currentExecuter.Execute(services);
+                _currentExecutor = _executionQueue.Dequeue();
+                _currentExecutor.Execute(services);
             }
         }
 
@@ -106,7 +108,7 @@ namespace OpenVIII.Fields
             _isInitialized = true;
         }
 
-        private IScriptExecuter GetScriptExecuter(Int32 scriptId)
+        private IScriptExecutor GetScriptExecuter(int scriptId)
         {
             if (_dic.TryGetByKey(scriptId, out var obj))
                 return obj;
@@ -114,17 +116,33 @@ namespace OpenVIII.Fields
             throw new ArgumentException($"A script (Id: {scriptId}) isn't exists.", nameof(scriptId));
         }
 
+        #endregion Methods
+
+        #region Classes
+
         private sealed class Executer : IAwaitable, IAwaiter
         {
-            private readonly IScriptExecuter _executer;
+            #region Fields
+
+            private readonly IScriptExecutor _executor;
             private IEnumerator<IAwaitable> _en;
 
-            public Executer(IScriptExecuter executer)
-            {
-                _executer = executer;
-            }
+            #endregion Fields
 
-            public Boolean IsCompleted { get; private set; }
+            #region Constructors
+
+            public Executer(IScriptExecutor executor) => _executor = executor;
+
+            #endregion Constructors
+
+            #region Properties
+
+            public bool IsCompleted { get; set; }
+
+            #endregion Properties
+
+            #region Methods
+
             public void Complete() => IsCompleted = true;
 
             public void Execute(IServices services)
@@ -132,10 +150,16 @@ namespace OpenVIII.Fields
                 if (IsCompleted)
                     throw new InvalidOperationException("The script has already been executed once.");
 
-                _en = _executer.Execute(services).GetEnumerator();
+                _en = _executor.Execute(services).GetEnumerator();
             }
 
-            public Boolean Next(out IAwaitable awaitable)
+            public IAwaiter GetAwaiter() => this;
+
+            public void GetResult()
+            {
+            }
+
+            public bool Next(out IAwaitable awaitable)
             {
                 if (_en == null)
                     throw new InvalidOperationException("The script hasn't yet started.");
@@ -151,19 +175,11 @@ namespace OpenVIII.Fields
                 return false;
             }
 
-            public IAwaiter GetAwaiter()
-            {
-                return this;
-            }
+            public void OnCompleted(Action continuation) => continuation();
 
-            public void OnCompleted(Action continuation)
-            {
-                continuation();
-            }
-
-            public void GetResult()
-            {
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

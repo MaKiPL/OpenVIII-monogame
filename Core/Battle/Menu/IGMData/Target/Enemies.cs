@@ -1,20 +1,21 @@
-﻿using Microsoft.Xna.Framework;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII.IGMData.Target
 {
-    public class Enemies : IGMData.Base
+    public class Enemies : Base
     {
         #region Properties
 
-        public IGMData.Target.Party Target_Party { get; set; }
+        public Party Target_Party { get; set; }
 
         #endregion Properties
 
         #region Methods
 
         public static Enemies Create(Rectangle pos) =>
-            Create<Enemies>(6, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.TARGET }, 2, 3);
+            Create<Enemies>(6, 1, new Box { Pos = pos, Title = Icons.ID.TARGET }, 2, 3);
 
         public override void Inputs_Left()
         {
@@ -70,13 +71,13 @@ namespace OpenVIII.IGMData.Target
         {
             if (Memory.State?.Characters != null)
             {
-                int pos = 0;
+                var pos = 0;
                 if (Enemy.Party != null)
                 {
-                    foreach (Enemy e in Enemy.Party)
+                    foreach (var e in Enemy.Party)
                     {
                         //if(e.EII)
-                        ITEM[pos, 0] = new IGMDataItem.Text { Data = e.Name, Pos = SIZE[pos], FontColor = Font.ColorID.White };
+                        ITEM[pos, 0] = new Text { Data = e.Name, Pos = SIZE[pos], FontColor = Font.ColorID.White };
                         ITEM[pos, 0].Show();
                         BLANKS[pos] = false;
 

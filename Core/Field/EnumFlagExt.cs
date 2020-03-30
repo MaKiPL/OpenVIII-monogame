@@ -4,8 +4,7 @@
     {
         #region Methods
 
-        public static Module._Toggles Flip(this Module._Toggles flagged, Module._Toggles flag)
-                                                                    => flagged ^= flag;
+        public static Toggles Flip(this Toggles flagged, Toggles flag) => flagged ^ flag;
 
         #endregion Methods
     }

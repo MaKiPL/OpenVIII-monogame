@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace OpenVIII.Fields
 {
-
     /// <summary>
     /// Gateways, Triggers, Camera Limits
     /// </summary>
@@ -15,35 +14,35 @@ namespace OpenVIII.Fields
     {
         #region Properties
 
-        public short CameraHeight { get; private set; }
-        public Rectangle[] CamerasRanges { get; private set; }
-        public byte ControlDirection { get; private set; }
+        public short CameraHeight { get; set; }
+        public Rectangle[] CamerasRanges { get; set; }
+        public byte ControlDirection { get; set; }
         public Gateways Gateways { get; set; }
-        public ushort LikePVP { get; private set; }
-        public FF8String Name { get; private set; }
-        public Rectangle[] ScreenRanges { get; private set; }
+        public ushort LikePVP { get; set; }
+        public FF8String Name { get; set; }
+        public Rectangle[] ScreenRanges { get; set; }
         public Triggers Triggers { get; set; }
-        public int Type { get; private set; }
-        public byte[] Unknown { get; private set; }
+        public int Type { get; set; }
+        public byte[] Unknown { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        public static INF Load(byte[] infb)
+        public static INF Load(byte[] inf)
         {
-            if (infb == null || infb.Length == 0) return default;
+            if (inf == null || inf.Length == 0) return default;
 
-            INF r = new INF();
-            r.ReadData(infb);
+            var r = new INF();
+            r.ReadData(inf);
             return r;
         }
 
-        private void ReadData(byte[] infb)
+        private void ReadData(byte[] inf)
         {
-            using (BinaryReader br = new BinaryReader(new MemoryStream(infb)))
+            using (var br = new BinaryReader(new MemoryStream(inf)))
             {
-                switch (infb.Length)
+                switch (inf.Length)
                 {
                     case 676:
                         Type = 0;
@@ -77,7 +76,7 @@ namespace OpenVIII.Fields
                 }
                 CameraHeight = br.ReadInt16();
                 CamerasRanges = new Rectangle[Type <= 2 ? 8 : 1];
-                foreach (int i in Enumerable.Range(0, CamerasRanges.Length))
+                foreach (var i in Enumerable.Range(0, CamerasRanges.Length))
                 {
                     CamerasRanges[i].Y = br.ReadInt16();
                     CamerasRanges[i].Height = br.ReadInt16();
@@ -89,7 +88,7 @@ namespace OpenVIII.Fields
                 if (Type <= 2)
                 {
                     ScreenRanges = new Rectangle[2];
-                    foreach (int i in Enumerable.Range(0, ScreenRanges.Length))
+                    foreach (var i in Enumerable.Range(0, ScreenRanges.Length))
                     {
                         ScreenRanges[i].Y = br.ReadInt16();
                         ScreenRanges[i].Height = br.ReadInt16();

@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MENUPHS : JsmInstruction
     {
+        #region Constructors
+
         public MENUPHS()
         {
         }
 
-        public MENUPHS(Int32 parameter, IStack<IJsmExpression> stack)
+        public MENUPHS(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MENUPHS)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MENUPHS)}()";
+
+        #endregion Methods
     }
 }

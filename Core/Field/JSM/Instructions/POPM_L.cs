@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Global[index] = (UInt32)value;
@@ -11,39 +8,46 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/00F_POPM_L"/>
     public sealed class POPM_L : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Memory address.
         /// </summary>
-        private GlobalVariableId<UInt32> _globalVariable;
-        private IJsmExpression _value;
+        private readonly GlobalVariableId<uint> _globalVariable;
 
-        public POPM_L(GlobalVariableId<UInt32> globalVariable, IJsmExpression value)
+        private readonly IJsmExpression _value;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public POPM_L(GlobalVariableId<uint> globalVariable, IJsmExpression value)
         {
             _globalVariable = globalVariable;
             _value = value;
         }
 
-        public POPM_L(Int32 parameter, IStack<IJsmExpression> stack)
-            : this(new GlobalVariableId<UInt32>(parameter),
+        public POPM_L(int parameter, IStack<IJsmExpression> stack)
+            : this(new GlobalVariableId<uint>(parameter),
                 value: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(POPM_L)}({nameof(_globalVariable)}: {_globalVariable}, {nameof(_value)}: {_value})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            FormatHelper.FormatGlobalSet(_globalVariable, _value, Jsm.GlobalUInt32, sw, formatterContext, services);
-        }
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => FormatHelper.FormatGlobalSet(_globalVariable, _value, Jsm.GlobalUInt32, sw, formatterContext, services);
 
         public override IAwaitable TestExecute(IServices services)
         {
-            UInt32 value = (UInt32)_value.Calculate(services);
+            var value = (uint)_value.Calculate(services);
             ServiceId.Global[services].Set(_globalVariable, value);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(POPM_L)}({nameof(_globalVariable)}: {_globalVariable}, {nameof(_value)}: {_value})";
+
+        #endregion Methods
     }
 }

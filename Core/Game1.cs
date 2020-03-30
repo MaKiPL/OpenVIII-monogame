@@ -28,10 +28,13 @@ namespace OpenVIII
                 Memory.CurrentGraphicMode = Memory.GraphicModes.DirectX;
             }
             else Memory.CurrentGraphicMode = Memory.GraphicModes.OpenGL;
-            Content.RootDirectory = "Content";
+
+            if (Content != null) Content.RootDirectory = "Content";
+            else throw new NullReferenceException($"{nameof(Game1)}::{nameof(Content)} Maybe running linux build on windows. As is null.");
             _graphics.PreferredBackBufferWidth = Memory.PreferredViewportWidth;
             _graphics.PreferredBackBufferHeight = Memory.PreferredViewportHeight;
-            Window.AllowUserResizing = true;
+            if (Window != null) Window.AllowUserResizing = true;
+            else throw new NullReferenceException($"{nameof(Game1)}::{nameof(Window)} Maybe running linux build on windows. As is null.");
             IsFixedTimeStep = false;
             _graphics.SynchronizeWithVerticalRetrace = false;
         }
@@ -57,8 +60,8 @@ namespace OpenVIII
             ModuleHandler.Draw(gameTime);
             base.Draw(gameTime);
             if (!Extended.bRequestedBackBuffer) return;
-            Texture2D tex = new Texture2D(_graphics.GraphicsDevice, _graphics.GraphicsDevice.Viewport.Width, _graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
-            byte[] b = new byte[tex.Width * tex.Height * 4];
+            var tex = new Texture2D(_graphics.GraphicsDevice, _graphics.GraphicsDevice.Viewport.Width, _graphics.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color);
+            var b = new byte[tex.Width * tex.Height * 4];
             _graphics.GraphicsDevice.GetBackBufferData(b);
             tex.SetData(b);
             Extended.BackBufferTexture = tex;
@@ -71,12 +74,12 @@ namespace OpenVIII
         {
             _imgui = new Core.ImGuiRenderer(this);
             _imgui.RebuildFontAtlas();
-            Memory.imgui = _imgui;
+            Memory.ImGui = _imgui;
             Window.TextInput += TextEntered;
             Memory.Log = new Log();
             if (Arguments != null)
             {
-                string log =
+                var log =
                     Arguments.FirstOrDefault(x => x.Trim().StartsWith("log=", StringComparison.OrdinalIgnoreCase));
                 if (!string.IsNullOrWhiteSpace((log)))
                 {
@@ -112,7 +115,7 @@ namespace OpenVIII
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Memory.spriteBatch = _spriteBatch;
+            Memory.SpriteBatch = _spriteBatch;
             // Memory.shadowTexture = Content.Load<Texture2D>("Shadow");
             GenerateShadowModel();
             base.LoadContent();
@@ -162,7 +165,7 @@ namespace OpenVIII
              * X-X
              * X-X
              */
-            Vector3[] vertices = new Vector3[] //3x3
+            var vertices = new Vector3[] //3x3
             {
                 new Vector3(-10,0,10),
                 new Vector3(0,0,10),
@@ -175,7 +178,7 @@ namespace OpenVIII
                 new Vector3(10,0,-10),
             };
 
-            Vector2[] textureCoordinates = new Vector2[]
+            var textureCoordinates = new Vector2[]
             {
                 new Vector2(0.0099f, 0.9950f),
             new Vector2(0.0099f, 0.0189f),
@@ -187,7 +190,7 @@ namespace OpenVIII
             new Vector2(0.9821f, 0.0144f)
             };
 
-            VertexPositionTexture[] vpt = new VertexPositionTexture[]
+            var vpt = new VertexPositionTexture[]
                 {
                 //right top (should be bottom left)
                                 new VertexPositionTexture(vertices[0], textureCoordinates[6]),
@@ -222,14 +225,14 @@ namespace OpenVIII
                 new VertexPositionTexture(vertices[2], textureCoordinates[4]),
                 };
 
-            Memory.shadowGeometry = vpt;
+            Memory.ShadowGeometry = vpt;
         }
 
         private static async void GracefullyExit()
         {
             Memory.TokenSource.Cancel(); // tell task we are done
             //step0. dispose stop sounds
-            Module_movie_test.Reset();
+            ModuleMovieTest.Reset();
             AV.Music.Stop();
             AV.Music.KillAudio();
             AV.Sound.KillAudio();

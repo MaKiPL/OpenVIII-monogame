@@ -1,55 +1,94 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
+        #region Classes
+
         /// <summary>
         /// Menu Abilities Data
         /// </summary>
         /// <see cref="https://github.com/alexfilth/doomtrain/wiki/Menu-abilities"/>
-        public class Menu_abilities :Ability
+        public class MenuAbilities : Ability
         {
-            public new const int count = 24;
-            public new const int id = 17;
+            #region Fields
 
-            public override string ToString() => Name;
+            /// <summary>
+            /// Section Count
+            /// </summary>
+            public const int Count = 24;
 
-            public byte Index { get; private set; }
-            public byte Start { get; private set; }
-            public byte End { get; private set; }
+            /// <summary>
+            /// Section ID
+            /// </summary>
+            public const int ID = 17;
 
-            public override void Read(BinaryReader br, int i)
+            /// <summary>
+            /// Icon for this type.
+            /// </summary>
+            private new const Icons.ID Icon = Icons.ID.Ability_Menu;
+
+            #endregion Fields
+
+            #region Constructors
+
+            private MenuAbilities(FF8String name, FF8String description, byte ap, byte index, byte start, byte end)
+                            : base(name, description, ap, Icon)
+                            => (Index, Start, End) = (index, start, end);
+
+            #endregion Constructors
+
+            #region Properties
+
+            /// <summary>
+            /// End offset
+            /// </summary>
+            public byte End { get; }
+
+            /// <summary>
+            /// <para>Index to m00X files in menu.fs</para>
+            /// <para>first 3 sections are treated as special cases</para>
+            /// </summary>
+            public byte Index { get; }
+
+            /// <summary>
+            /// Start offset
+            /// </summary>
+            public byte Start { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public static Dictionary<Abilities, MenuAbilities> Read(BinaryReader br)
+
+                => Enumerable.Range(0, Count)
+                    .ToDictionary(i => (Abilities)(i + (int)Abilities.Haggle), i => CreateInstance(br, i));
+
+            private static MenuAbilities CreateInstance(BinaryReader br, int i)
             {
-                Icon = Icons.ID.Ability_Menu;
-                Name = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2);
-                //0x0000	2 bytes Offset to name
-                Description = Memory.Strings.Read(Strings.FileID.KERNEL, id, i * 2 + 1);
-                //0x0002	2 bytes Offset to description
+                //0x0000	2 bytes Offset
+                FF8StringReference name = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2);
+                //0x0002	2 bytes Offset
+                FF8StringReference description = Memory.Strings.Read(Strings.FileID.KERNEL, ID, i * 2 + 1);
                 br.BaseStream.Seek(4, SeekOrigin.Current);
-                AP = br.ReadByte();
-                //0x0004  1 byte AP Required to learn ability
-                Index = br.ReadByte();
-                //0x0005  1 byte Index to m00X files in menu.fs
-                //(first 3 sections are treated as special cases)
-                Start = br.ReadByte();
-                //0x0006  1 byte Start offset
-                End = br.ReadByte();
-                //0x0007  1 byte End offset
+                //0x0004  1 byte
+                byte ap = br.ReadByte();
+                //0x0005  1 byte
+                byte index = br.ReadByte();
+                //0x0006  1 byte
+                byte start = br.ReadByte();
+                //0x0007  1 byte
+                byte end = br.ReadByte();
+                return new MenuAbilities(name, description, ap, index, start, end);
             }
-            public static Dictionary<Abilities,Menu_abilities> Read(BinaryReader br)
-            {
-                Dictionary<Abilities, Menu_abilities> ret = new Dictionary<Abilities, Menu_abilities>(count);
 
-                for (int i = 0; i < count; i++)
-                {
-                    var tmp = new Menu_abilities();
-                    tmp.Read(br, i);
-                    ret[(Abilities)(i+(int)Abilities.Haggle)] = tmp;
-                }
-                return ret;
-            }
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

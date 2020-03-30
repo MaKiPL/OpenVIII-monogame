@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Set HP
@@ -9,25 +6,34 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/146_SETHP&action=edit&redlink=1"/>
     public sealed class SETHP : JsmInstruction
     {
-        private readonly Characters _character;
-        private readonly Int32 _hp;
+        #region Fields
 
-        public SETHP(Characters character, Int32 hp)
+        private readonly Characters _character;
+        private readonly int _hp;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public SETHP(Characters character, int hp)
         {
             _character = character;
             _hp = hp;
         }
 
-        public SETHP(Int32 parameter, IStack<IJsmExpression> stack)
+        public SETHP(int parameter, IStack<IJsmExpression> stack)
             : this(
                 hp: ((IConstExpression)stack.Pop()).Int32(),
                 character: ((IConstExpression)stack.Pop()).Characters())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SETHP)}({nameof(_character)}: {_character}, {nameof(_hp)}: {_hp})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SETHP)}({nameof(_character)}: {_character}, {nameof(_hp)}: {_hp})";
+
+        #endregion Methods
     }
 }

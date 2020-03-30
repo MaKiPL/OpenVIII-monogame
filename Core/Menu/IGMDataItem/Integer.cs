@@ -96,7 +96,7 @@ namespace OpenVIII.IGMDataItem
 
         public override bool Update()
         {
-            bool r = base.Update();
+            var r = base.Update();
             if (changed)
             {
                 UpdateOffset();
@@ -108,7 +108,7 @@ namespace OpenVIII.IGMDataItem
         public void UpdateOffset()
         {
             _pos = original_pos;
-            int digits = Digits;
+            var digits = Digits;
             _pos.Offset(space_width * (_spaces - (digits < _padding ? _padding : digits)), 0);
             changed = false;
         }

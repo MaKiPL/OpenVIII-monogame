@@ -1,13 +1,16 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class SCROLLRATIO2 : JsmInstruction
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
-        private IJsmExpression _arg2;
+        #region Fields
+
+        private readonly IJsmExpression _arg0;
+        private readonly IJsmExpression _arg1;
+        private readonly IJsmExpression _arg2;
+
+        #endregion Fields
+
+        #region Constructors
 
         public SCROLLRATIO2(IJsmExpression arg0, IJsmExpression arg1, IJsmExpression arg2)
         {
@@ -16,7 +19,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _arg2 = arg2;
         }
 
-        public SCROLLRATIO2(Int32 parameter, IStack<IJsmExpression> stack)
+        public SCROLLRATIO2(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg2: stack.Pop(),
                 arg1: stack.Pop(),
@@ -24,9 +27,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SCROLLRATIO2)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SCROLLRATIO2)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2})";
+
+        #endregion Methods
     }
 }

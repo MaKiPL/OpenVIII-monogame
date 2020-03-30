@@ -3,27 +3,27 @@ using System;
 
 namespace OpenVIII.Fields
 {
-    public readonly struct WalkmeshCoords
+    public readonly struct WalkMeshCoords
     {
         #region Fields
 
-        private readonly Boolean _hasZ;
+        private readonly bool _hasZ;
         private readonly Vector3 _pos;
-        private readonly Int32 _triangleId;
+        private readonly int _triangleId;
 
         #endregion Fields
 
         #region Constructors
 
-        public WalkmeshCoords(Int32 triangleIdId, Point pos) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, pos.X, pos.Y, 0, false);
+        public WalkMeshCoords(int triangleIdId, Point pos) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, pos.X, pos.Y, 0, false);
 
-        public WalkmeshCoords(Int32 triangleIdId, Vector2 pos) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, pos.X, pos.Y, 0, false);
+        public WalkMeshCoords(int triangleIdId, Vector2 pos) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, pos.X, pos.Y, 0, false);
 
-        public WalkmeshCoords(Int32 triangleIdId, float x, float y) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, x, y, 0, false);
+        public WalkMeshCoords(int triangleIdId, float x, float y) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, x, y, 0, false);
 
-        public WalkmeshCoords(Int32 triangleIdId, Vector3 pos) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, pos.X, pos.Y, pos.Z, true);
+        public WalkMeshCoords(int triangleIdId, Vector3 pos) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, pos.X, pos.Y, pos.Z, true);
 
-        public WalkmeshCoords(Int32 triangleIdId, float x, float y, float z) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, x, y, z, true);
+        public WalkMeshCoords(int triangleIdId, float x, float y, float z) => (_triangleId, _pos.X, _pos.Y, _pos.Z, _hasZ) = (triangleIdId, x, y, z, true);
 
         #endregion Constructors
 
@@ -40,7 +40,7 @@ namespace OpenVIII.Fields
 
         #region Methods
 
-        public override String ToString() => _hasZ
+        public override string ToString() => _hasZ
                 ? $"(Triangle: {_triangleId}, X: {X}, Y: {Y}, Z: {Z})"
                 : $"(Triangle: {_triangleId}, X: {X}, Y: {Y})";
 

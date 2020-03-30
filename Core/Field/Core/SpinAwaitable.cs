@@ -2,11 +2,16 @@
 {
     public sealed class SpinAwaitable : IAwaitable
     {
+        #region Properties
+
         public static IAwaitable Instance { get; } = new SpinAwaitable();
 
-        public IAwaiter GetAwaiter()
-        {
-            return DummyAwaiter.Instance;
-        }
+        #endregion Properties
+
+        #region Methods
+
+        public IAwaiter GetAwaiter() => DummyAwaiter.Instance;
+
+        #endregion Methods
     }
 }

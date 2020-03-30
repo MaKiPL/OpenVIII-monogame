@@ -24,7 +24,7 @@ namespace OpenVIII.IGMData.Group
                 if (ITEM[0, 0].GetType() == typeof(IGMDataItem.Box))
                 {
                     ((IGMDataItem.Box)ITEM[0, 0]).Draw(true);
-                    Menu.BoxReturn dims = ((IGMDataItem.Box)ITEM[0, 0]).Dims;
+                    var dims = ((IGMDataItem.Box)ITEM[0, 0]).Dims;
                     if (dims.Cursor != Point.Zero)
                         CURSOR[0] = dims.Cursor;
                 }

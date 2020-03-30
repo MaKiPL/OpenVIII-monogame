@@ -44,7 +44,7 @@ namespace OpenVIII
 
             public override bool Inputs_OKAY()
             {
-                if (OkayActions.TryGetValue(CURSOR_SELECT, out Action a))
+                if (OkayActions.TryGetValue(CURSOR_SELECT, out var a))
                 {
                     a();
                     return true;
@@ -63,9 +63,9 @@ namespace OpenVIII
                                                  //the module changes to 1 now
                 Fields.Module.ResetField();
 
-                Module_movie_test.Index = 30;
-                Module_movie_test.ReturnState = MODULE.FIELD_DEBUG;
-                Memory.Module = MODULE.MOVIETEST;
+                ModuleMovieTest.Index = 30;
+                ModuleMovieTest.ReturnState = OpenVIII.Module.FieldDebug;
+                Memory.Module = OpenVIII.Module.MovieTest;
                 Menu.Module.State = MenuModule.Mode.MainLobby;
                 Memory.IsMouseVisible = false;
                 //wait till next update to start drawing.

@@ -1,40 +1,40 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class BGDRAW : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
 
-        public BGDRAW(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        private readonly IJsmExpression _arg0;
 
-        public BGDRAW(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public BGDRAW(IJsmExpression arg0) => _arg0 = arg0;
+
+        public BGDRAW(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BGDRAW)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IRenderingService))
                 .Method(nameof(IRenderingService.DrawBackground))
                 .Comment(nameof(BGDRAW));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Rendering[services].DrawBackground();
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(BGDRAW)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

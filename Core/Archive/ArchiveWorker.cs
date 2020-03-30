@@ -34,7 +34,7 @@ namespace OpenVIII
             ParentPath = FindParentPath(archive);
             ArchiveBase tempArchive = null;
             if (ParentPath != null && ParentPath.Count > 0)
-                foreach (Memory.Archive p in ParentPath)
+                foreach (var p in ParentPath)
                 {
                     if (tempArchive != null)
                     {
@@ -47,7 +47,7 @@ namespace OpenVIII
                 }
             if (tempArchive != null)
             {
-                tempArchive.GetArchive(archive, out StreamWithRangeValues fi, out FsArchive, out StreamWithRangeValues fl);
+                tempArchive.GetArchive(archive, out var fi, out FsArchive, out var fl);
                 ArchiveMap = new ArchiveMap(fi, fl, tempArchive.GetMaxSize(archive));
             }
             if (!skipList)
@@ -82,7 +82,7 @@ namespace OpenVIII
         /// <returns>ArchiveWorker</returns>
         public static ArchiveBase Load(Memory.Archive path, StreamWithRangeValues fI, ArchiveBase fS, StreamWithRangeValues fL, bool skipList = false)
         {
-            if (CacheTryGetValue(path, out ArchiveBase value))
+            if (CacheTryGetValue(path, out var value))
             {
                 return value;
             }
@@ -100,7 +100,7 @@ namespace OpenVIII
         {
             if (path.IsZZZ)
                 return ArchiveZzz.Load(path, skipList);
-            if (CacheTryGetValue(path, out ArchiveBase value))
+            if (CacheTryGetValue(path, out var value))
             {
                 return value;
             }
@@ -128,7 +128,7 @@ namespace OpenVIII
             }
             else
             if (File.Exists(Archive.FL))
-                using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     FindFile(ref fileName, fs);
             return GetArchive((Memory.Archive)fileName);
         }
@@ -137,15 +137,15 @@ namespace OpenVIII
         {
             if (archive == Memory.Archives.ZZZ_MAIN || archive == Memory.Archives.ZZZ_OTHER)
             {
-                string zzz = archive.ZZZ;
+                var zzz = archive.ZZZ;
                 if (FindFile(ref zzz) <= -1 || string.IsNullOrWhiteSpace(zzz)) return null;
                 if (File.Exists(zzz))
                     archive.SetFilename(zzz);
-                return !CacheTryGetValue(archive, out ArchiveBase ab) ? ArchiveZzz.Load(zzz) : ab;
+                return !CacheTryGetValue(archive, out var ab) ? ArchiveZzz.Load(zzz) : ab;
             }
 
-            if (CacheTryGetValue(archive, out ArchiveBase value)) return value;
-            GetArchive(archive, out StreamWithRangeValues fI, out ArchiveBase fS, out StreamWithRangeValues fL);
+            if (CacheTryGetValue(archive, out var value)) return value;
+            GetArchive(archive, out var fI, out var fS, out StreamWithRangeValues fL);
             return fI == null || fS == null || fL == null ||
                    fI.Length == 0 || fL.Length == 0
                 ? null
@@ -172,15 +172,15 @@ namespace OpenVIII
             if (ArchiveMap != null && ArchiveMap.Count > 0)
             {
                 if (!cache) return FileInTwoArchives();
-                string fileNameBackup = fileName;
+                var fileNameBackup = fileName;
                 GetListOfFiles();
                 fileName = FileList.OrderBy(x => fileName.Length).ThenBy(x => fileNameBackup, StringComparer.OrdinalIgnoreCase).FirstOrDefault(x => x.IndexOf(fileNameBackup, StringComparison.OrdinalIgnoreCase) >= 0);
 
                 if (string.IsNullOrWhiteSpace(fileName)) throw new NullReferenceException($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} fileName ({fileNameBackup}) not found!");
 
-                if (!LocalTryGetValue(fileName, out BufferWithAge value))
+                if (!LocalTryGetValue(fileName, out var value))
                 {
-                    byte[] buffer = FileInTwoArchives();
+                    var buffer = FileInTwoArchives();
                     if (LocalTryAdd(fileName, buffer))
                     {
                         Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)}::{nameof(LocalTryAdd)} cached {fileName}");
@@ -193,9 +193,9 @@ namespace OpenVIII
 
             if (!IsDir)
             {
-                int loc = -1;
+                var loc = -1;
                 if (File.Exists(Archive.FL))
-                    using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                         loc = FindFile(ref fileName, fs); //File.OpenRead(archive.FL));
 
                 // read file list
@@ -228,12 +228,12 @@ namespace OpenVIII
                 return base.FindFile(ref filename);
             if (IsDir)
             {
-                string f = filename;
+                var f = filename;
                 filename = FileList.FirstOrDefault(x => x.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
                 return string.IsNullOrWhiteSpace(filename) ? -1 : 0;
             }
 
-            using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 return FindFile(ref filename, fs); //File.OpenRead(archive.FL));
         }
 
@@ -251,7 +251,7 @@ namespace OpenVIII
             if ((r = base.ProduceFileLists()) != null)
                 return r;
             if (!File.Exists(Archive.FL)) return null;
-            using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 return ProduceFileLists(fs).OrderBy(x => x.Length).ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
         }
@@ -269,7 +269,7 @@ namespace OpenVIII
 
             using (TextReader tr = new StreamReader(stream))
             {
-                for (int i = 0; GetLine(tr, out string line); i++)
+                for (var i = 0; GetLine(tr, out var line); i++)
                 {
                     if (string.IsNullOrWhiteSpace(line))
                     {
@@ -296,9 +296,9 @@ namespace OpenVIII
 
         private static IEnumerable<string> ProduceFileLists(Stream s)
         {
-            using (StreamReader sr = new StreamReader(s, System.Text.Encoding.UTF8))
+            using (var sr = new StreamReader(s, System.Text.Encoding.UTF8))
             {
-                List<string> fl = new List<string>();
+                var fl = new List<string>();
                 while (!sr.EndOfStream)
                     fl.Add(sr.ReadLine()?.Trim('\0', '\r', '\n'));
                 return fl.ToArray();
@@ -308,7 +308,7 @@ namespace OpenVIII
         private byte[] GetBinaryFile(string fileName, int loc, bool cache)
         {
             fileName = FileList.FirstOrDefault(x => x.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0);
-            if (LocalTryGetValue(fileName, out BufferWithAge b))
+            if (LocalTryGetValue(fileName, out var b))
             {
                 Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: read from cache: {fileName}");
                 return b;
@@ -318,10 +318,10 @@ namespace OpenVIII
                 if (FileList == null || FileList.Length == 0)
                     ProduceFileLists();
                 if (!string.IsNullOrWhiteSpace(fileName))
-                    using (BinaryReader br = new BinaryReader(new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                    using (var br = new BinaryReader(new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                     {
                         Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: reading: {fileName}");
-                        byte[] buffer = br.ReadBytes(checked((int)br.BaseStream.Length));
+                        var buffer = br.ReadBytes(checked((int)br.BaseStream.Length));
                         if (cache && LocalTryAdd(fileName, buffer))
                         {
                             Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: cached: {fileName}");
@@ -331,9 +331,9 @@ namespace OpenVIII
             }
             //read index data
 
-            FI fi = GetFi(loc);
+            var fi = GetFi(loc);
             //read binary data.
-            byte[] temp = GetCompressedData(fi, out int _);
+            var temp = GetCompressedData(fi, out var _);
 
             Memory.Log.WriteLine($"{nameof(ArchiveWorker)}::{nameof(GetBinaryFile)} :: extracting: {fileName}");
 
@@ -381,11 +381,11 @@ namespace OpenVIII
         {
             byte[] temp = null;
             FileStream fs;
-            using (BinaryReader br = new BinaryReader(fs = new FileStream(Archive.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            using (var br = new BinaryReader(fs = new FileStream(Archive.FS, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
             {
                 br.BaseStream.Seek(fi.Offset, SeekOrigin.Begin);
-                int compressedSize = 0;
-                int max = (int)(fs.Length - fs.Position);
+                var compressedSize = 0;
+                var max = (int)(fs.Length - fs.Position);
                 switch (fi.CompressionType)
                 {
                     case CompressionType.None:
@@ -421,7 +421,7 @@ namespace OpenVIII
 
         private FI GetFi(int loc)
         {
-            using (BinaryReader br = new BinaryReader(new FileStream(Archive.FI, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))//File.OpenRead(archive.FI)))
+            using (var br = new BinaryReader(new FileStream(Archive.FI, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))//File.OpenRead(archive.FI)))
             {
                 br.BaseStream.Seek(loc * 12, SeekOrigin.Begin);
                 return Extended.ByteArrayToClass<FI>(br.ReadBytes(12));
@@ -443,7 +443,7 @@ namespace OpenVIII
             {
                 FindFile(ref fileName);
                 msg();
-                FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
                 if (inputFi == null)
                     return new StreamWithRangeValues(fs, 0, fs.Length);
@@ -451,14 +451,14 @@ namespace OpenVIII
             }
 
             Debug.Assert(inputFi == null);
-            string parentFs = Archive.FS;
+            var parentFs = Archive.FS;
             if (ArchiveMap != null && ArchiveMap.Count > 1)
             {
-                FI fi = ArchiveMap.FindString(ref fileName, out size);
+                var fi = ArchiveMap.FindString(ref fileName, out size);
                 msg();
                 if (FsArchive == null) return null;
                 if (fi == null) return FsArchive.GetStreamWithRangeValues(fileName);
-                FI parentFi = FsArchive.ArchiveMap?.FindString(ref parentFs, out int _);
+                var parentFi = FsArchive.ArchiveMap?.FindString(ref parentFs, out var _);
                 return parentFi == null || parentFi.CompressionType == 0 || (FsArchive is ArchiveZzz)
                     ? new StreamWithRangeValues(FsArchive.GetStreamWithRangeValues(parentFs), fi.Offset, size,
                         fi.CompressionType, fi.UncompressedSize)
@@ -466,9 +466,9 @@ namespace OpenVIII
                         fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
             }
 
-            int loc = -1;
+            var loc = -1;
             if (File.Exists(Archive.FL))
-                using (FileStream fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var fs = new FileStream(Archive.FL, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     loc = FindFile(ref fileName, fs); //File.OpenRead(archive.FL));
 
             msg();
@@ -481,7 +481,7 @@ namespace OpenVIII
             }
             else
             {
-                FI fi = GetFi(loc);
+                var fi = GetFi(loc);
                 GetCompressedData(fi, out size, true);
                 return new StreamWithRangeValues(new FileStream(parentFs, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), fi.Offset, size, fi.CompressionType, fi.UncompressedSize);
             }

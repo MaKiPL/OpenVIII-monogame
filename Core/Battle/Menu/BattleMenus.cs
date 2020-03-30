@@ -1,28 +1,30 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using OpenVIII.Encoding.Tags;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using OpenVIII.AV;
+using OpenVIII.Encoding.Tags;
+using OpenVIII.Kernel;
 
 namespace OpenVIII
 {
     /// <summary>
     /// Menu holds a menu for each character.
     /// </summary>
-    public partial class BattleMenus : Menu
+    public class BattleMenus : Menu
     {
         #region Fields
 
-        private Dictionary<Mode, Action> DrawActions;
-        private Dictionary<Mode, Func<bool>> InputFunctions;
-        private MODULE lastgamestate;
-        private MenuModule.Mode lastmenu;
-        private ushort lastmusic;
-        private bool lastmusicplaying;
-        private Dictionary<Mode, Action> ReturnAction;
-        private Dictionary<Mode, Func<bool>> UpdateFunctions;
+        private IReadOnlyDictionary<Mode, Action> _drawActions;
+        private IReadOnlyDictionary<Mode, Func<bool>> _inputFunctions;
+        private Module _lastGameState;
+        private MenuModule.Mode _lastMenu;
+        private ushort _lastMusic;
+        private bool _lastMusicPlaying;
+        private IReadOnlyDictionary<Mode, Action> _returnAction;
+        private IReadOnlyDictionary<Mode, Func<bool>> _updateFunctions;
 
         #endregion Fields
 
@@ -48,7 +50,7 @@ namespace OpenVIII
             /// <summary>
             /// Fade out and goto game over screen.
             /// </summary>
-            GameOver,
+            GameOver
         }
 
         public enum SectionName
@@ -111,14 +113,14 @@ namespace OpenVIII
             /// <summary>
             /// Victory Menu
             /// </summary>
-            Victory,
+            Victory
         }
 
         #endregion Enums
 
         #region Properties
 
-        protected byte Player { get; set; } = 0;
+        protected byte Player { get; set; }
 
         /// <summary>
         /// Get Damageable from active battle menu;
@@ -130,7 +132,7 @@ namespace OpenVIII
         {
             get
             {
-                BattleMenu bm = GetCurrentBattleMenu();
+                var bm = GetCurrentBattleMenu();
                 if (bm?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false)
                 {
                     return bm.PartyPos;
@@ -139,7 +141,7 @@ namespace OpenVIII
             }
         }
 
-        public VictoryMenu Victory_Menu { get => (VictoryMenu)(Data[SectionName.Victory]); protected set => Data[SectionName.Victory] = value; }
+        public VictoryMenu VictoryMenu { get => (VictoryMenu)(Data[SectionName.Victory]); protected set => Data[SectionName.Victory] = value; }
 
         #endregion Properties
 
@@ -152,32 +154,31 @@ namespace OpenVIII
         /// </summary>
         public void CameFrom()
         {
-            lastmenu = Menu.Module.State;
-            lastgamestate = Memory.Module;
-            lastmusic = Memory.MusicIndex;
-            lastmusicplaying = AV.Music.Playing;
+            _lastMenu = Module.State;
+            _lastGameState = Memory.Module;
+            _lastMusic = Memory.MusicIndex;
+            _lastMusicPlaying = Music.Playing;
         }
 
         public override void Draw()
         {
-            if (GetMode() != null && DrawActions != null)
-            {
-                if (DrawActions.ContainsKey((Mode)GetMode()))
-                    DrawActions[(Mode)GetMode()]();
-            }
+
+            if (GetMode() == null || _drawActions == null) return;
+            if (_drawActions.ContainsKey((Mode)GetMode()))
+                _drawActions[(Mode)GetMode()]();
         }
 
-        public IEnumerable<BattleMenu> GetBattleMenus() => Data?.Where(m => m.Value.GetType().Equals(typeof(BattleMenu)) && m.Value.Damageable != null).Select(x => (BattleMenu)x.Value);
+        public IEnumerable<BattleMenu> GetBattleMenus() => Data?.Where(m => m.Value is BattleMenu && m.Value?.Damageable != null).Select(x => x.Value as BattleMenu);
 
         public BattleMenu GetCurrentBattleMenu() => (BattleMenu)Data?[PossibleValidPlayer()];
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             InputMouse.Mode = MouseLockMode.Screen;
             Memory.IsMouseVisible = true;
-            if (InputFunctions?.ContainsKey((Mode)GetMode()) ?? false)
-                ret = InputFunctions[(Mode)GetMode()]() && ret;
+            if (_inputFunctions?.ContainsKey((Mode)GetMode()) ?? false)
+                ret = _inputFunctions[(Mode)GetMode()]();
 
             // press 6 to force victory
             if (Input2.DelayedButton(Keys.D6))
@@ -205,81 +206,78 @@ namespace OpenVIII
             base.Refresh();
         }
 
-        private void InitDictionarys()
+        private void InitDictionaries()
         {
-            if (UpdateFunctions == null)
-                UpdateFunctions = new Dictionary<Mode, Func<bool>>()
+            if (_updateFunctions == null)
+                _updateFunctions = new Dictionary<Mode, Func<bool>>
                 {
                     {Mode.Starting, UpdateStartingFunction},
                     {Mode.Battle, UpdateBattleFunction},
                     {Mode.Victory, UpdateVictoryFunction},
-                    {Mode.GameOver, UpdateGameOverFunction},
+                    {Mode.GameOver, UpdateGameOverFunction}
                 };
-            if (DrawActions == null)
-                DrawActions = new Dictionary<Mode, Action>()
+            if (_drawActions == null)
+                _drawActions = new Dictionary<Mode, Action>
                 {
                     {Mode.Starting, DrawStartingAction},
                     {Mode.Battle, DrawBattleAction},
                     {Mode.Victory, DrawVictoryAction},
-                    {Mode.GameOver, DrawGameOverAction},
+                    {Mode.GameOver, DrawGameOverAction}
                 };
-            if (InputFunctions == null)
-                InputFunctions = new Dictionary<Mode, Func<bool>>()
+            if (_inputFunctions == null)
+                _inputFunctions = new Dictionary<Mode, Func<bool>>
                 {
                     //{Mode.Starting, InputStartingFunction},
                     {Mode.Battle, InputBattleFunction},
-                    {Mode.Victory, InputVictoryFunction},
+                    {Mode.Victory, InputVictoryFunction}
                     //{Mode.GameOver, InputGameOverFunction},
                 };
-            if (ReturnAction == null)
-                ReturnAction = new Dictionary<Mode, Action>()
+            if (_returnAction == null)
+                _returnAction = new Dictionary<Mode, Action>
                 {
                     {Mode.Starting, ReturnStartingFunction},
                     {Mode.Battle, ReturnBattleFunction},
                     {Mode.Victory, ReturnVictoryFunction},
-                    {Mode.GameOver, ReturnGameOverFunction},
+                    {Mode.GameOver, ReturnGameOverFunction}
                 };
         }
 
         private void SetEnemyParty()
         {
-            if (Enemy.Party != null && Enemy.Party.Count > 0)
+            if (Enemy.Party == null || Enemy.Party.Count <= 0) return;
+            byte i = 0;
+            foreach (var e in Enemy.Party)
             {
-                byte i = 0;
-                foreach (Enemy e in Enemy.Party)
-                {
-                    Data[SectionName.Enemy1 + i].SetDamageable(e);
-                    Data[SectionName.Enemy1 + i].Show();
-                    i++;
-                }
+                Data[SectionName.Enemy1 + i].SetDamageable(e);
+                Data[SectionName.Enemy1 + i].Show();
+                i++;
+            }
 
-                for (; i < 8; i++)
-                {
-                    Data[SectionName.Enemy1 + i].SetDamageable(null, forcenull: true);
-                    Data[SectionName.Enemy1 + i].Hide();
-                }
+            for (; i < 8; i++)
+            {
+                Data[SectionName.Enemy1 + i].SetDamageable(null, forcenull: true);
+                Data[SectionName.Enemy1 + i].Hide();
             }
         }
 
         private void SetParty()
         {
-            if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Memory.State.Party != null)
+            if (Memory.State == null || !Memory.State.Characters || Memory.State.CharactersCount <= 0 ||
+                Memory.State.Party == null) return;
+            var i = 0;
+            var party = Memory.State.Party.Select((element, index) => new {element, index})
+                .ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank)).ToList()
+                .AsReadOnly();
+            for (; i < party.Count; i++)
             {
-                byte i = 0;
-                IEnumerable<KeyValuePair<int, Characters>> party = Memory.State.Party.Select((element, index) => new { element, index }).ToDictionary(m => m.index, m => m.element).Where(m => !m.Value.Equals(Characters.Blank));
-                int count = party.Count();
+                Data[SectionName.Party1 + i].SetDamageable(Memory.State[party[i].Value]);
+                Data[SectionName.Party1 + i].Show();
+            }
 
-                foreach (KeyValuePair<int, Characters> m in party)
-                {
-                    Data[SectionName.Party1 + i].SetDamageable(Memory.State[Memory.State.PartyData[m.Key]]);
-                    Data[SectionName.Party1 + i].Show();
-                    i++;
-                }
-                for (; i <= (int)SectionName.Party3; i++)
-                {
-                    Data[SectionName.Party1 + i].SetDamageable(null, forcenull: true);
-                    Data[SectionName.Party1 + i].Hide();
-                }
+            for (; i <= (int)SectionName.Party3; i++)
+            {
+                Data[SectionName.Party1 + i].SetDamageable(null, forcenull: true);
+                Data[SectionName.Party1 + i].Hide();
             }
         }
 
@@ -288,14 +286,14 @@ namespace OpenVIII
         /// </summary>
         public void ReturnTo()
         {
-            Menu.Module.State = lastmenu;
-            Memory.Module = lastgamestate;
-            Menu.IGM.Refresh(); // else the menu stats won't update.
-            Module_battle_debug.ResetState();
-            if (lastmusicplaying)
-                AV.Music.Play(lastmusic);
+            Module.State = _lastMenu;
+            Memory.Module = _lastGameState;
+            IGM.Refresh(); // else the menu stats won't update.
+            ModuleBattleDebug.ResetState();
+            if (_lastMusicPlaying)
+                Music.Play(_lastMusic);
             else
-                AV.Music.Stop();
+                Music.Stop();
         }
 
         public override bool SetMode(Enum mode)
@@ -307,18 +305,16 @@ namespace OpenVIII
 
         public override bool Update()
         {
-            bool ret = false;
-            if (GetMode() != null)
+            var ret = false;
+            if (GetMode() == null) return false;
+            if (_updateFunctions != null && _updateFunctions.TryGetValue((Mode)GetMode(), out var u))
             {
-                if (UpdateFunctions != null && UpdateFunctions.TryGetValue((Mode)GetMode(), out Func<bool> u))
-                {
-                    ret = u();
-                }
-                SkipFocus = true;
-                skipdata = true;
-                ret = base.Update() || ret;
-                skipdata = false;
+                ret = u();
             }
+            SkipFocus = true;
+            skipdata = true;
+            ret = base.Update() || ret;
+            skipdata = false;
             return ret;
         }
 
@@ -340,20 +336,14 @@ namespace OpenVIII
             Data.TryAdd(SectionName.Enemy8, BattleMenu.Create(null));
             Data.TryAdd(SectionName.Victory, VictoryMenu.Create());
             Data.ForEach(x => x.Value.Hide());
-            InitDictionarys();
+            InitDictionaries();
         }
 
-        private bool BoolBattleMenu() => Data?.Any(m => m.Value.GetType().Equals(typeof(BattleMenu)) && m.Value.Enabled) ?? false;
+        private bool BoolBattleMenu() => Data?.Any(m => m.Value.GetType() == typeof(BattleMenu) && m.Value.Enabled) ?? false;
 
         private bool BoolRenzokuken() => GetBattleMenus()?.Any(m => m.Enabled && (m.Renzokuken?.Enabled ?? false)) ?? false;
 
         private bool BoolShot() => GetBattleMenus()?.Any(m => m.Enabled && (m.Shot?.Enabled ?? false)) ?? false;
-        public override void StartDraw()
-        {
-            //if (BoolShot())
-            //    GetOneShot().Shot.DrawCrosshair();
-            base.StartDraw();
-        }
 
         private void DrawBattleAction()
         {
@@ -373,123 +363,110 @@ namespace OpenVIII
             EndDraw();
         }
 
-        private void DrawGameOverAction()
+        private static void DrawGameOverAction()
         {
         }
 
-        private void DrawStartingAction()
+        private static void DrawStartingAction()
         {
         }
 
-        private void DrawVictoryAction() => Victory_Menu.Draw();
+        private void DrawVictoryAction() => VictoryMenu.Draw();
 
         private BattleMenu GetOneRenzokuken() => GetBattleMenus()?.First(m => m.Enabled && m.Renzokuken.Enabled);
         private BattleMenu GetOneShot() => GetBattleMenus()?.First(m => m.Enabled && m.Shot.Enabled);
 
         private bool InputBattleFunction()
         {
-            bool ret = false;
             if (BoolRenzokuken())
             {
                 return GetOneRenzokuken().Inputs();
             }
-            foreach (BattleMenu m in GetBattleMenus().Where(m => m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)))
-            {
-                ret = m.Inputs() || ret;
-                if (ret) return ret;
-            }
-            if (Input2.DelayedButton(FF8TextTagKey.Cancel))
-            {
-                if (GetCurrentBattleMenu().Damageable?.Switch() ?? true)
-                {
-                    int cnt = 0;
-                    do
-                    {
-                        if (++Player > (int)SectionName.Enemy8) Player = 0;
-                        if (++cnt > (int)SectionName.Enemy8 * 2) return false;
-                    }
-                    while (Data.Count <= Player ||
-                    Data[PossibleValidPlayer()]?.Damageable == null ||
-                    Data[PossibleValidPlayer()].GetType() != typeof(BattleMenu) ||
-                    !GetCurrentBattleMenu().Damageable.StartTurn());
-                    NewTurnSND();
-                }
-            }
+            if (GetBattleMenus().Where(m => m.Damageable.GetBattleMode().Equals(Damageable.BattleMode.YourTurn)).Select(m => m.Inputs()).Any(ret => ret))
+                return true;
 
-            return ret;
+            if (!Input2.DelayedButton(FF8TextTagKey.Cancel)) return false;
+            if (!(GetCurrentBattleMenu().Damageable?.Switch() ?? true)) return false;
+            var cnt = 0;
+            do
+            {
+                if (++Player > (int)SectionName.Enemy8) Player = 0;
+                if (++cnt > (int)SectionName.Enemy8 * 2) return false;
+            }
+            while (Data.Count <= Player ||
+                   Data[PossibleValidPlayer()]?.Damageable == null ||
+                   Data[PossibleValidPlayer()].GetType() != typeof(BattleMenu) ||
+                   !GetCurrentBattleMenu().Damageable.StartTurn());
+            NewTurnSND();
+
+            return false;
         }
 
-        private bool InputGameOverFunction() => false;
-
-        private bool InputStartingFunction() => false;
-
-        private bool InputVictoryFunction() => Victory_Menu?.Inputs() ?? false;
+        private bool InputVictoryFunction() => VictoryMenu?.Inputs() ?? false;
 
         private void NewTurnSND()
         {
-            if (((BattleMenu)Data[PossibleValidPlayer()]).CrisisLevel > -1)
-                AV.Sound.Play(94);
-            else
-                AV.Sound.Play(14);
+            Sound.Play(((BattleMenu) Data[PossibleValidPlayer()]).CrisisLevel > -1 ? 94 : 14);
         }
 
         private SectionName PossibleValidPlayer() => SectionName.Party1 + MathHelper.Clamp(Player, 0, (int)SectionName.Enemy8);
 
-        private void ReturnBattleFunction()
+        private static void ReturnBattleFunction()
         {
         }
 
-        private void ReturnGameOverFunction()
+        private static void ReturnGameOverFunction()
         {
         }
 
-        private void ReturnStartingFunction()
+        private static void ReturnStartingFunction()
         {
         }
 
-        private void ReturnVictoryFunction()
+        private static void ReturnVictoryFunction()
         {
         }
 
-        private void TriggerVictory(ConcurrentDictionary<Characters, int> expextra = null)
+        private void TriggerVictory(ConcurrentDictionary<Characters, int> extraExp = null)
         {
-            int exp = 0;
+            if (extraExp == null) throw new ArgumentNullException(nameof(extraExp));
+            var exp = 0;
             uint ap = 0;
-            ConcurrentDictionary<byte, byte> items = new ConcurrentDictionary<byte, byte>();
-            ConcurrentDictionary<Cards.ID, byte> cards = new ConcurrentDictionary<Cards.ID, byte>();
-            foreach (Enemy e in Enemy.Party)
+            var items = new ConcurrentDictionary<byte, byte>();
+            var cards = new ConcurrentDictionary<Cards.ID, byte>();
+            foreach (var e in Enemy.Party)
             {
                 exp += e.EXP;
                 ap += e.AP;
-                Saves.Item drop = e.Drop(Memory.State.PartyHasAbility(Kernel_bin.Abilities.RareItem));
-                Cards.ID carddrop = e.CardDrop();
+                var drop = e.Drop(Memory.State.PartyHasAbility(Abilities.RareItem));
+                var cardDrops = e.CardDrop();
                 if (drop.QTY > 0 && drop.ID > 0)
                     if (!items.TryAdd(drop.ID, drop.QTY))
                         items[drop.ID] += drop.QTY;
-                if (carddrop != Cards.ID.Fail && carddrop != Cards.ID.Immune)
-                    if (!cards.TryAdd(carddrop, 1))
-                        cards[carddrop]++;
+                if (cardDrops == Cards.ID.Fail || cardDrops == Cards.ID.Immune) continue;
+                if (!cards.TryAdd(cardDrops, 1))
+                    cards[cardDrops]++;
             }
             SetMode(Mode.Victory);
-            Victory_Menu?.Refresh(exp, ap, expextra, items, cards);
-            Victory_Menu?.Show();
+            VictoryMenu?.Refresh(exp, ap, extraExp, items, cards);
+            VictoryMenu?.Show();
         }
 
         private bool UpdateBattleFunction()
         {
-            bool ret = false;
-            List<BattleMenu> bml = GetBattleMenus().ToList();
+            var ret = false;
+            var bml = GetBattleMenus().ToList();
             if (bml.Count == 0) return false;// issue here.
-            foreach (BattleMenu m in bml)
+            foreach (var m in bml)
             {
                 ret = m.Update() || ret;
             }
             if (!(GetCurrentBattleMenu()?.Damageable?.GetBattleMode().Equals(Damageable.BattleMode.YourTurn) ?? false))
             {
-                int cnt = bml.Count;
+                var cnt = bml.Count;
                 if (Player + 1 == cnt)
                     Player = 0;
-                for (byte i = Player; cnt > 0; cnt--)
+                for (var i = Player; cnt > 0; cnt--)
                 {
                     if (i < bml.Count && bml[i].Damageable.StartTurn())
                     {
@@ -505,21 +482,21 @@ namespace OpenVIII
             return ret;
         }
 
-        private bool UpdateGameOverFunction()
+        private static bool UpdateGameOverFunction()
         {
-            Memory.Module = MODULE.FIELD_DEBUG;
-            Memory.FieldHolder.FieldID = 75; //gover
-            AV.Music.Play(0);
-            Menu.Module.State = MenuModule.Mode.MainLobby;
+            Memory.Module = OpenVIII.Module.FieldDebug;
+            Memory.FieldHolder.FieldID = 75; //game over
+            Music.Play(0);
+            Module.State = MenuModule.Mode.MainLobby;
             return true;
         }
 
-        private bool UpdateStartingFunction() => throw new NotImplementedException();
+        private static bool UpdateStartingFunction() => throw new NotImplementedException();
 
         private bool UpdateVictoryFunction()
         {
-            AV.Music.Play(1);
-            return Victory_Menu.Update();
+            Music.Play(1);
+            return VictoryMenu.Update();
         }
 
         #endregion Methods

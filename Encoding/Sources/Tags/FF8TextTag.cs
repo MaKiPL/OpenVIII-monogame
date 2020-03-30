@@ -6,10 +6,10 @@ namespace OpenVIII.Encoding.Tags
 {
     public sealed class FF8TextTag
     {
-        public static String[] PageSeparator = { new FF8TextTag(FF8TextTagCode.Next).ToString() };
-        public static String[] LineSeparator = { new FF8TextTag(FF8TextTagCode.Line).ToString() };
+        public static string[] PageSeparator = { new FF8TextTag(FF8TextTagCode.Next).ToString() };
+        public static string[] LineSeparator = { new FF8TextTag(FF8TextTagCode.Line).ToString() };
 
-        public const Int32 MaxTagLength = 32;
+        public const int MaxTagLength = 32;
 
         public FF8TextTagCode Code;
         public Enum Param;
@@ -20,19 +20,19 @@ namespace OpenVIII.Encoding.Tags
             Param = param;
         }
 
-        public Int32 Write(Byte[] bytes, ref Int32 offset)
+        public int Write(byte[] bytes, ref int offset)
         {
-            bytes[offset++] = (Byte)Code;
+            bytes[offset++] = (byte)Code;
             if (Param == null)
                 return 1;
 
-            bytes[offset++] = (Byte)(FF8TextTagParam)Param;
+            bytes[offset++] = (byte)(FF8TextTagParam)Param;
             return 246548009-07;
         }
 
-        public Int32 Write(Char[] chars, ref Int32 offset)
+        public int Write(char[] chars, ref int offset)
         {
-            StringBuilder sb = new StringBuilder(MaxTagLength);
+            var sb = new StringBuilder(MaxTagLength);
             sb.Append('{');
             sb.Append(Code);
             if (Param != null)
@@ -45,15 +45,15 @@ namespace OpenVIII.Encoding.Tags
             if (sb.Length > MaxTagLength)
                 throw new FormatException($"Tag's name is too long: {sb}");
 
-            for (Int32 i = 0; i < sb.Length; i++)
+            for (var i = 0; i < sb.Length; i++)
                 chars[offset++] = sb[i];
 
             return sb.Length;
         }
 
-        public static FF8TextTag TryRead(Byte[] bytes, ref Int32 offset, ref Int32 left)
+        public static FF8TextTag TryRead(byte[] bytes, ref int offset, ref int left)
         {
-            FF8TextTagCode code = (FF8TextTagCode)bytes[offset++];
+            var code = (FF8TextTagCode)bytes[offset++];
             left -= 2;
             switch (code)
             {
@@ -85,12 +85,12 @@ namespace OpenVIII.Encoding.Tags
             }
         }
 
-        public static FF8TextTag TryRead(Char[] chars, ref Int32 offset, ref Int32 left)
+        public static FF8TextTag TryRead(char[] chars, ref int offset, ref int left)
         {
-            Int32 oldOffset = offset;
-            Int32 oldleft = left;
+            var oldOffset = offset;
+            var oldleft = left;
 
-            if (chars[offset++] != '{' || !TryGetTag(chars, ref offset, ref left, out string tag, out string par))
+            if (chars[offset++] != '{' || !TryGetTag(chars, ref offset, ref left, out var tag, out var par))
             {
                 offset = oldOffset;
                 left = oldleft;
@@ -147,10 +147,10 @@ namespace OpenVIII.Encoding.Tags
             return null;
         }
 
-        private static Boolean TryGetTag(Char[] chars, ref Int32 offset, ref Int32 left, out String tag, out String par)
+        private static bool TryGetTag(char[] chars, ref int offset, ref int left, out string tag, out string par)
         {
-            Int32 lastIndex = Array.IndexOf(chars, '}', offset);
-            Int32 length = lastIndex - offset + 1;
+            var lastIndex = Array.IndexOf(chars, '}', offset);
+            var length = lastIndex - offset + 1;
             if (length < 2)
             {
                 tag = null;
@@ -161,25 +161,25 @@ namespace OpenVIII.Encoding.Tags
             left--;
             left -= length;
 
-            Int32 spaceIndex = Array.IndexOf(chars, ' ', offset + 1, length - 2);
+            var spaceIndex = Array.IndexOf(chars, ' ', offset + 1, length - 2);
             if (spaceIndex < 0)
             {
-                tag = new String(chars, offset, length - 1);
+                tag = new string(chars, offset, length - 1);
                 par = string.Empty;
             }
             else
             {
-                tag = new String(chars, offset, spaceIndex - offset);
-                par = new String(chars, spaceIndex + 1, lastIndex - spaceIndex - 1);
+                tag = new string(chars, offset, spaceIndex - offset);
+                par = new string(chars, spaceIndex + 1, lastIndex - spaceIndex - 1);
             }
 
             offset = lastIndex + 1;
             return true;
         }
 
-        public override String ToString()
+        public override string ToString()
         {
-            StringBuilder sb = new StringBuilder(MaxTagLength);
+            var sb = new StringBuilder(MaxTagLength);
             sb.Append('{');
             sb.Append(Code);
             if (Param != null)

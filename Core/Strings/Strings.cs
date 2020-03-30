@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +9,13 @@ namespace OpenVIII
     /// <summary>
     /// Loads strings from FF8 files
     /// </summary>
-    public partial class Strings
+    public partial class Strings : IReadOnlyDictionary<Strings.FileID, Strings.StringsBase>
     {
         #region Fields
 
-        private static ConcurrentDictionary<FileID, StringsBase> Files;
+        private static ConcurrentDictionary<FileID, StringsBase> _files;
 
-        private static object Filesloc = new object();
+        private static readonly object Lock = new object();
 
         #endregion Fields
 
@@ -27,14 +28,14 @@ namespace OpenVIII
         #region Enums
 
         /// <summary>
-        /// filenames of files with strings and id's for structs that hold the data.
+        /// file names of files with strings and ID's for structs that hold the data.
         /// </summary>
         public enum FileID : uint
         {
-            MNGRP = 0,
-            AREAMES = 2,
-            NAMEDIC = 3,
-            KERNEL = 4,
+            MenuGroup = 0,
+            AreaNames = 2,
+            Namedic = 3,
+            Kernel = 4,
         }
 
         #endregion Enums
@@ -52,16 +53,16 @@ namespace OpenVIII
             switch (id)
             {
                 case Faces.ID.Squall_Leonhart:
-                    return d.SquallName ?? Read(FileID.MNGRP, 2, 92);
+                    return d.SquallName ?? Read(FileID.MenuGroup, 2, 92);
 
                 case Faces.ID.Rinoa_Heartilly:
-                    return d.RinoaName ?? Read(FileID.MNGRP, 2, 93);
+                    return d.RinoaName ?? Read(FileID.MenuGroup, 2, 93);
 
                 case Faces.ID.Angelo:
-                    return d.AngeloName ?? Read(FileID.MNGRP, 2, 94);
+                    return d.AngeloName ?? Read(FileID.MenuGroup, 2, 94);
 
                 case Faces.ID.Boko:
-                    return d.BokoName ?? Read(FileID.MNGRP, 2, 135);
+                    return d.BokoName ?? Read(FileID.MenuGroup, 2, 135);
 
                 case Faces.ID.Zell_Dincht:
                 case Faces.ID.Irvine_Kinneas:
@@ -72,7 +73,7 @@ namespace OpenVIII
                 case Faces.ID.Laguna_Loire:
                 case Faces.ID.Kiros_Seagill:
                 case Faces.ID.Ward_Zabac:
-                    return Read(FileID.KERNEL, 6, (int)id);
+                    return Read(FileID.Kernel, 6, (int)id);
 
                 case Faces.ID.Quezacotl:
                 case Faces.ID.Shiva:
@@ -90,20 +91,21 @@ namespace OpenVIII
                 case Faces.ID.Cactuar:
                 case Faces.ID.Tonberry:
                 case Faces.ID.Eden:
-                    if (d.GFs != null && d.GFs.TryGetValue(id.ToGFs(), out Saves.GFData value))
-                    {
-                        if (value.Name != null && value.Name.Length > 0)
-                            return value.Name;
-                    }
-                    return Read(FileID.MNGRP, 2, 95 + (int)(id.ToGFs()));
+                    if (d.GFs != null && d.GFs.TryGetValue(id.ToGFs(), out var value) && value.Name != null &&
+                        value.Name.Length > 0)
+                        return value.Name;
+
+                    return Read(FileID.MenuGroup, 2, 95 + (int)(id.ToGFs()));
 
                 case Faces.ID.Griever:
-                    return d.GrieverName ?? Read(FileID.MNGRP, 2, 135);
+                    return d.GrieverName ?? Read(FileID.MenuGroup, 2, 135);
 
                 case Faces.ID.MiniMog:
-                    return Read(FileID.KERNEL, 0, 72); // also in KERNEL, 12, 36
-                default:
+                    return Read(FileID.Kernel, 0, 72); // also in KERNEL, 12, 36
+                case Faces.ID.Blank:
                     return new FF8String();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(id), id, null);
             }
         }
 
@@ -114,31 +116,66 @@ namespace OpenVIII
         /// <param name="sectionID"></param>
         /// <param name="stringID"></param>
         /// <returns></returns>
-        public FF8StringReference Read(FileID fileID, int sectionID, int stringID) => Files[fileID][(uint)sectionID, stringID];
+        public FF8StringReference Read(FileID fileID, int sectionID, int stringID) => _files[fileID][sectionID, stringID];
 
-        public StringsBase this[FileID id] => Files[id];
+        public FF8StringReference ReadByOffset(FileID fileID, int sectionID, int offset)
+        {
+            var r = new FF8StringReference(Memory.Strings[FileID.Kernel].GetArchive(),
+                Memory.Strings[FileID.Kernel].GetFileNames()[0],
+                Memory.Strings[FileID.Kernel].GetFiles()
+                    .SubPositions[(int) ((Kernel) Memory.Strings[FileID.Kernel]).StringLocations[0].StringLocation] +
+                offset, settings: (FF8StringReference.Settings.Namedic | FF8StringReference.Settings.MultiCharByte));
+            return r.Length>0 ? r : null;
+        }
+
+        public bool ContainsKey(FileID key)
+        {
+            return _files.ContainsKey(key);
+        }
+
+        public bool TryGetValue(FileID key, out StringsBase value)
+        {
+            return _files.TryGetValue(key, out value);
+        }
+
+        public StringsBase this[FileID id] => _files[id];
+        public IEnumerable<FileID> Keys => ((IReadOnlyDictionary<FileID, StringsBase>) _files).Keys;
+
+        public IEnumerable<StringsBase> Values => ((IReadOnlyDictionary<FileID, StringsBase>) _files).Values;
 
         private void Init()
         {
-            lock (Filesloc)
-                if (Files == null)
+            lock (Lock)
+                if (_files == null)
                 {
                     Memory.Log.WriteLine($"{nameof(Strings)} :: {nameof(Init)}");
-                    Files = new ConcurrentDictionary<FileID, StringsBase>();
-                    Func<bool>[] funcs = new Func<bool>[] {
-                    () => Files.TryAdd(FileID.NAMEDIC, Namedic.Load()), // areames and kernel require namedic
+                    _files = new ConcurrentDictionary<FileID, StringsBase>();
+                    Func<bool>[] func = {
+                    () => _files.TryAdd(FileID.Namedic, Namedic.Load()), // area names and kernel require namedic
                     //though there shouldn't be anything reading the strings till this is done processing
                     //Task.WaitAll(tasks.ToArray());
-                    () => Files.TryAdd(FileID.MNGRP, Mngrp.Load()),
-                    () => Files.TryAdd(FileID.AREAMES, Areames.Load()),
-                    () => Files.TryAdd(FileID.KERNEL, Kernel.Load()),
+                    () => _files.TryAdd(FileID.MenuGroup, MenuGroup.Load()),
+                    () => _files.TryAdd(FileID.AreaNames, Areames.Load()),
+                    () => _files.TryAdd(FileID.Kernel, Kernel.Load()),
                 };
-                    IEnumerable<bool> tasks = Memory.ProcessFuncs(funcs);
+                    var tasks = Memory.ProcessFunctions(func);
                     if (tasks.Any(x => !x))
                         throw new ArgumentException($"{this}::Failed to add to dictionary...");
                 }
         }
 
         #endregion Methods
+
+        public IEnumerator<KeyValuePair<FileID, StringsBase>> GetEnumerator()
+        {
+            return _files.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable) _files).GetEnumerator();
+        }
+
+        public int Count => _files.Count;
     }
 }

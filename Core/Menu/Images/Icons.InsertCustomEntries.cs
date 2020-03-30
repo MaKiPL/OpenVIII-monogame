@@ -13,7 +13,7 @@ namespace OpenVIII
         protected override void InsertCustomEntries()
         {
             if (Entries == null) return;
-            Entry BG = new Entry
+            var BG = new Entry
             {
                 X = 0,
                 Y = 48,
@@ -23,7 +23,7 @@ namespace OpenVIII
                 Fill = Vector2.UnitX,
                 Tile = Vector2.UnitY,
             };
-            Entry Border_TopLeft = new Entry
+            var Border_TopLeft = new Entry
             {
                 X = 16,
                 Y = 0,
@@ -31,7 +31,7 @@ namespace OpenVIII
                 Height = 8,
                 CustomPalette = 0,
             };
-            Entry Border_Top = new Entry
+            var Border_Top = new Entry
             {
                 X = 24,
                 Y = 0,
@@ -42,7 +42,7 @@ namespace OpenVIII
                 End = new Vector2(-8, 0),
                 CustomPalette = 0
             };
-            Entry Border_Bottom = new Entry
+            var Border_Bottom = new Entry
             {
                 X = 24,
                 Y = 16,
@@ -54,7 +54,7 @@ namespace OpenVIII
                 End = new Vector2(-8, 0),
                 CustomPalette = 0
             };
-            Entry Border_TopRight = new Entry
+            var Border_TopRight = new Entry
             {
                 X = 32,
                 Y = 0,
@@ -64,7 +64,7 @@ namespace OpenVIII
                 Offset = new Vector2(-8, 0),
                 CustomPalette = 0
             };
-            Entry Border_Left = new Entry
+            var Border_Left = new Entry
             {
                 X = 16,
                 Y = 8,
@@ -75,7 +75,7 @@ namespace OpenVIII
                 End = new Vector2(0, -8),
                 CustomPalette = 0
             };
-            Entry Border_Right = new Entry
+            var Border_Right = new Entry
             {
                 X = 32,
                 Y = 8,
@@ -87,7 +87,7 @@ namespace OpenVIII
                 End = new Vector2(0, -8),
                 CustomPalette = 0
             };
-            Entry Border_BottomLeft = new Entry
+            var Border_BottomLeft = new Entry
             {
                 X = 16,
                 Y = 16,
@@ -97,7 +97,7 @@ namespace OpenVIII
                 Offset = new Vector2(0, -8),
                 CustomPalette = 0
             };
-            Entry Border_BottomRight = new Entry
+            var Border_BottomRight = new Entry
             {
                 X = 32,
                 Y = 16,
@@ -171,8 +171,8 @@ namespace OpenVIII
             //revese order of rewind so arrows draw correctly
             if (Entries.ContainsKey(ID.Rewind_Fast))
             {
-                Entry _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
-                Entry _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
+                var _RR_0 = Entries[ID.Rewind_Fast][0].Clone();
+                var _RR_1 = Entries[ID.Rewind_Fast][1].Clone();
 
                 Entries[ID.Rewind_Fast] = new EntryGroup(_RR_1, _RR_0);
             }
@@ -180,17 +180,17 @@ namespace OpenVIII
             //override this entry to make it tile instead of have set number of elements.
             if (Entries.ContainsKey(ID.Size_08x64_Bar))
             {
-                EntryGroup b = Entries[ID.Size_08x64_Bar];
-                Entry Left = b[0].Clone();
-                Entry Center = b[1].Clone();
-                Entry Right = b[7].Clone();
+                var b = Entries[ID.Size_08x64_Bar];
+                var Left = b[0].Clone();
+                var Center = b[1].Clone();
+                var Right = b[7].Clone();
                 Left.Offset = Vector2.Zero;
                 Center.Offset = Vector2.Zero;
                 Right.Offset = new Vector2(-8f, 0);
                 Center.Tile = Vector2.UnitX;
                 Right.Snap_Right = true;
                 Entries[ID.Size_08x64_Bar] = new EntryGroup(Center, Left, Right);
-                ID tmp = ID.D_Pad_Up;
+                var tmp = ID.D_Pad_Up;
                 Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
                 tmp = ID.D_Pad_Down;
                 Entries[tmp] = new EntryGroup(Entries[tmp][0], Entries[tmp][2], Entries[tmp][1], Entries[tmp][3]);
@@ -207,11 +207,11 @@ namespace OpenVIII
                 return;
 
             count = (byte)MathHelper.Clamp(count, 1, 99);
-            Entry P_ = Entries[ID.Size_08x08_P_][0].Clone();
+            var P_ = Entries[ID.Size_08x08_P_][0].Clone();
             P_.Offset.X += Entries[label][0].Width + offset;
             P_.CustomPalette = 2;
 
-            Entry[] _ = new Entry[10];
+            var _ = new Entry[10];
             _[1] = Entries[ID.Num_8x8_1_1][0].Clone();
             _[1].Offset.X += P_.Offset.X + P_.Width + 2;
             _[1].CustomPalette = 7;

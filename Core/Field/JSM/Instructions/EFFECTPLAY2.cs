@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Play sound effect</para>
@@ -11,21 +8,30 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/021_EFFECTPLAY2"/>
     public sealed class EFFECTPLAY2 : JsmInstruction
     {
-        private readonly Int32 _fieldSoundIndex;
-        /// <summary>
-        /// Pan (0=left, 255=right)
-        /// </summary>
-        private IJsmExpression _pan;
-        /// <summary>
-        /// Volume (0-127)
-        /// </summary>
-        private IJsmExpression _volume;
+        #region Fields
+
         /// <summary>
         /// Channel (must be a power of 2)
         /// </summary>
-        private IJsmExpression _channel;
+        private readonly IJsmExpression _channel;
 
-        public EFFECTPLAY2(Int32 fieldSoundIndex, IJsmExpression pan, IJsmExpression volume, IJsmExpression channel)
+        private readonly int _fieldSoundIndex;
+
+        /// <summary>
+        /// Pan (0=left, 255=right)
+        /// </summary>
+        private readonly IJsmExpression _pan;
+
+        /// <summary>
+        /// Volume (0-127)
+        /// </summary>
+        private readonly IJsmExpression _volume;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public EFFECTPLAY2(int fieldSoundIndex, IJsmExpression pan, IJsmExpression volume, IJsmExpression channel)
         {
             _fieldSoundIndex = fieldSoundIndex;
             _pan = pan;
@@ -33,7 +39,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _channel = channel;
         }
 
-        public EFFECTPLAY2(Int32 parameter, IStack<IJsmExpression> stack)
+        public EFFECTPLAY2(int parameter, IStack<IJsmExpression> stack)
             : this(parameter,
                 channel: stack.Pop(),
                 volume: stack.Pop(),
@@ -41,10 +47,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(EFFECTPLAY2)}({nameof(_fieldSoundIndex)}: {_fieldSoundIndex}, {nameof(_pan)}: {_pan}, {nameof(_volume)}: {_volume}, {nameof(_channel)}: {_channel})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -69,5 +74,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(EFFECTPLAY2)}({nameof(_fieldSoundIndex)}: {_fieldSoundIndex}, {nameof(_pan)}: {_pan}, {nameof(_volume)}: {_volume}, {nameof(_channel)}: {_channel})";
+
+        #endregion Methods
     }
 }

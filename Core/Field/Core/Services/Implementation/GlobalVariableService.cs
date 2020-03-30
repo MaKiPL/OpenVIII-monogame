@@ -1,19 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace OpenVIII.Fields
 {
     public sealed class GlobalVariableService : IGlobalVariableService
     {
-        public Boolean IsSupported => true;
+        #region Fields
 
-        private readonly Int64[] _values = new Int64[8192];
+        private readonly long[] _values = new long[8192];
+
+        #endregion Fields
+
+        #region Properties
+
+        public bool IsSupported => true;
+
+        #endregion Properties
+
+        #region Methods
 
         public T Get<T>(GlobalVariableId<T> id) where T : unmanaged
         {
             unsafe
             {
-                fixed (Int64* ptr = &_values[id.VariableId])
+                fixed (long* ptr = &_values[id.VariableId])
                     return *(T*)ptr;
             }
         }
@@ -22,9 +31,11 @@ namespace OpenVIII.Fields
         {
             unsafe
             {
-                fixed (Int64* ptr = &_values[id.VariableId])
+                fixed (long* ptr = &_values[id.VariableId])
                     *(T*)ptr = value;
             }
         }
+
+        #endregion Methods
     }
 }

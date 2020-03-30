@@ -37,7 +37,7 @@ namespace OpenVIII.IGMData
 
         public static DebugSelectPool<inDataType> Create<inDataType>(Rectangle pos, IEnumerable<inDataType> source, Func<inDataType, bool> OkayFunc, Action<string> FilterAction, int Cols = 3, int Rows = 12)
         {
-            DebugSelectPool<inDataType> r = Base.Create<DebugSelectPool<inDataType>>(Rows*Cols+1, 1, new IGMDataItem.Box { Pos = pos }, Cols, Rows);
+            var r = Base.Create<DebugSelectPool<inDataType>>(Rows*Cols+1, 1, new IGMDataItem.Box { Pos = pos }, Cols, Rows);
             r.Source = source;
             r.OkayFunc = OkayFunc;
             r.FilterAction = FilterAction;
@@ -120,13 +120,13 @@ namespace OpenVIII.IGMData
                 skipRefresh = false;
                 return;
             }
-            int total = Rows * Cols;
+            var total = Rows * Cols;
             DefaultPages = Source.Count() / total;
             if (DefaultPages <= Page)
                 Page = DefaultPages - 1;
-            int skip = Page * total;
-            int p = 0;
-            foreach (DataType i in Source)
+            var skip = Page * total;
+            var p = 0;
+            foreach (var i in Source)
             {
                 if (skip > 0)
                 {
@@ -136,9 +136,9 @@ namespace OpenVIII.IGMData
                 if (p >= total)
                     break;
                 Contents[p] = i;
-                Menu_Base menu_Base = ITEM[p, 0];
+                var menu_Base = ITEM[p, 0];
                 menu_Base.Show();
-                IGMDataItem.Text text = (IGMDataItem.Text)menu_Base;
+                var text = (IGMDataItem.Text)menu_Base;
                 text.Data = new FF8String(i.ToString());
                 BLANKS[p] = false;
                 p++;
@@ -165,11 +165,11 @@ namespace OpenVIII.IGMData
             filter = "";
             Game1.OnTextEntered += Game1_onTextEntered;
             Contents = new DataType[Rows * Cols];
-            foreach (int i in Enumerable.Range(0, Rows * Cols))
+            foreach (var i in Enumerable.Range(0, Rows * Cols))
             {
                 ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }
-            Rectangle rect = new Rectangle(CONTAINER.X + CONTAINER.Width / 4, CONTAINER.Y - 112, CONTAINER.Width / 2, 120);
+            var rect = new Rectangle(CONTAINER.X + CONTAINER.Width / 4, CONTAINER.Y - 112, CONTAINER.Width / 2, 120);
             ITEM[Count - 3, 0] = new IGMDataItem.Box { Pos = rect, Options = Box_Options.Center | Box_Options.Middle, Title = Icons.ID.INFO };
             Cursor_Status |= Cursor_Status.Horizontal;
             Hide();
@@ -184,7 +184,7 @@ namespace OpenVIII.IGMData
 
         private void Game1_onTextEntered(object sender, TextInputEventArgs e)
         {
-            if (filter != null && filter.Length < 10 && Enabled && Memory.Module == MODULE.MAINMENU_DEBUG)
+            if (filter != null && filter.Length < 10 && Enabled && Memory.Module == Module.MainMenuDebug)
             {
                 filter += e.Character;
                 filter = filter.Trim().TrimEnd('\b');

@@ -42,10 +42,10 @@ namespace OpenVIII
             if (test != null && test.Key != Keys.None &&
                 (state.GetPressedKeys().Contains(test.Key) || last_state.GetPressedKeys().Contains(test.Key)))
             {
-                bool combotest = false;
+                var combotest = false;
                 if (test.Combo != null)
                 {
-                    foreach (InputButton item in test.Combo)
+                    foreach (var item in test.Combo)
                     {
                         item.Trigger = ButtonTrigger.Press;
                         if (!base.ButtonTriggered(item))
@@ -55,7 +55,7 @@ namespace OpenVIII
                     }
                     combotest = true;
                 }
-                ButtonTrigger triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
+                var triggertest = trigger.HasFlag(ButtonTrigger.Force) ? trigger : (test.Trigger | trigger);
                 return ((test.Combo == null || combotest) &&
                     ((triggertest & ButtonTrigger.OnPress) != 0 && OnPress(test.Key)) ||
                     ((triggertest & ButtonTrigger.OnRelease) != 0 && OnRelease(test.Key)) ||

@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class PCOPYINFO : JsmInstruction
     {
-        public PCOPYINFO()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public PCOPYINFO() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

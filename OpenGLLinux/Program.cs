@@ -15,7 +15,7 @@ namespace OpenVIII.OpenGLLinux
         [STAThread]
         private static void Main(string[] args)
         {
-            using (Game1 game = new Game1())
+            using (var game = new Game1())
             {
                 game.Arguments = args;
                 game.Run();

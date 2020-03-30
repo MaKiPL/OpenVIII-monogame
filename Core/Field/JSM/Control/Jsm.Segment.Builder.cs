@@ -2,18 +2,23 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public partial class Segment
         {
+            #region Classes
+
             public static class Builder
             {
+                #region Methods
+
                 public static ExecutableSegment Build(List<JsmInstruction> instructions, IReadOnlyList<IJsmControl> controls)
                 {
-                    Dictionary<Int32, List<Segment>> dic = new Dictionary<Int32, List<Segment>>();
+                    var dic = new Dictionary<int, List<Segment>>();
                     foreach (var control in controls)
                     {
                         foreach (var seg in control.EnumerateSegments())
@@ -28,14 +33,14 @@ namespace OpenVIII.Fields.Scripts
                         }
                     }
 
-                    ExecutableSegment rootSegment = new ExecutableSegment(0, instructions.Count);
-                    dic.Add(0, new List<Segment> {rootSegment});
+                    var rootSegment = new ExecutableSegment(0, instructions.Count);
+                    dic.Add(0, new List<Segment> { rootSegment });
 
-                    Stack<Segment> segments = new Stack<Segment>();
+                    var segments = new Stack<Segment>();
                     Segment segment = rootSegment;
 
-                    Int32 instructionsCount = instructions.Count;
-                    for (Int32 i = 0; i < instructionsCount; i++)
+                    var instructionsCount = instructions.Count;
+                    for (var i = 0; i < instructionsCount; i++)
                     {
                         while (segment.To <= i)
                             segment = segments.Pop();
@@ -65,7 +70,13 @@ namespace OpenVIII.Fields.Scripts
 
                     return rootSegment;
                 }
+
+                #endregion Methods
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

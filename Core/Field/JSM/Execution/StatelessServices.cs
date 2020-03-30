@@ -1,18 +1,25 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts
+﻿namespace OpenVIII.Fields.Scripts
 {
     public sealed class StatelessServices : IServices
     {
-        public static IServices Instance { get; } = new StatelessServices();
+        #region Constructors
 
         private StatelessServices()
         {
         }
 
-        public T Service<T>(ServiceId<T> id)
-        {
-            return (T)(Object)id;
-        }
+        #endregion Constructors
+
+        #region Properties
+
+        public static IServices Instance { get; } = new StatelessServices();
+
+        #endregion Properties
+
+        #region Methods
+
+        public T Service<T>(ServiceId<T> id) => (T)(object)id;
+
+        #endregion Methods
     }
 }

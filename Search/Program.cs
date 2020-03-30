@@ -18,12 +18,12 @@ namespace OpenVIII.Search
             FF8String sval = Console.ReadLine()?.Trim((Environment.NewLine + " _").ToCharArray());
             if (sval == null) return;
             //new FF8String(new byte[] { 0x10, 0, 0, 0, 0x02, 0, 0, 0 });
-            Search s = new Search(sval);//used to find file a string is in. disable if not using.
-            List<Tuple<string, string, long>> rs = s.Results;
+            var s = new Search(sval);//used to find file a string is in. disable if not using.
+            var rs = s.Results;
             Console.WriteLine(rs.Count > 0
                 ? $"Found \"{sval}\" {rs.Count} times. Results below."
                 : $"Cannot find \"{sval}\"...");
-            foreach (Tuple<string, string, long> r in rs)
+            foreach (var r in rs)
             {
                 Console.WriteLine($"{r.Item1}, {r.Item2}, {r.Item3}");
             }

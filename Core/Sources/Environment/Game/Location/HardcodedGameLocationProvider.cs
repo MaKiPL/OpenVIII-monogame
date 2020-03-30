@@ -5,14 +5,14 @@ namespace OpenVIII
 {
     public sealed class HardcodedGameLocationProvider
     {
-        private readonly String[] _knownPaths;
+        private readonly string[] _knownPaths;
 
-        public HardcodedGameLocationProvider(String[] knownPaths)
+        public HardcodedGameLocationProvider(string[] knownPaths)
         {
             _knownPaths = knownPaths ?? throw new ArgumentNullException(nameof(knownPaths));
         }
 
-        public Boolean FindGameLocation(out GameLocation gameLocation)
+        public bool FindGameLocation(out GameLocation gameLocation)
         {
             //using (var errors = new ExceptionList())
             //{

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using OpenVIII.Kernel;
+
 // ReSharper disable UnusedMember.Global
 
 namespace OpenVIII
@@ -53,7 +55,7 @@ namespace OpenVIII
                 CoordinateY = new short[3];
                 TriangleID = new ushort[3];
                 FieldVars = new FieldVars(); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-                WorldMap = new Worldmap();//br.ReadBytes(128);//0x1270
+                WorldMap = new Worldmap(); //br.ReadBytes(128);//0x1270
                 TripleTriad = new TripleTriad(); //br.ReadBytes(128);//0x12F0
                 ChocoboWorld = new ChocoboWorld(); //br.ReadBytes(64);//0x1370
             }
@@ -65,18 +67,37 @@ namespace OpenVIII
             /// <summary>
             /// 0x000C 4 bytes Preview: Amount of Gil
             /// </summary>
-            public uint AmountOfGilPreview { get; set; }
+            private uint _amountOfGilPreview;
 
             /// <summary>
             /// 0x0B20 4 bytes Amount of Gil (Laguna)
             /// </summary>
-            public uint AmountOfGilLaguna { get; set; }
+            public uint AmountOfGilLaguna => _amountOfGilLaguna;
 
             /// <summary>
             /// 0x0B1C 4 bytes Amount of Gil
             /// </summary>
-            public uint AmountOfGil { get; set; }
+            private uint _amountOfGil;
 
+            private uint _amountOfGilLaguna;
+
+            public uint AmountOfGil => TeamLaguna ? AmountOfGilLaguna : _amountOfGil;
+
+            public void ChangeGil(int amount)
+            {
+                void proc(ref uint gil)
+                {
+                    gil = (uint) MathHelper.Clamp(gil + amount, uint.MinValue, uint.MaxValue);
+                }
+
+                if (TeamLaguna)
+                {
+                    proc(ref _amountOfGilLaguna);
+                }
+
+                proc(ref _amountOfGil);
+                _amountOfGilPreview = _amountOfGil;
+            }
             /// <summary>
             /// 0x0040 12 bytes Preview: Angelo's name (0x00 terminated)
             /// </summary>
@@ -86,18 +107,18 @@ namespace OpenVIII
             {
                 get
                 {
-                    int level = 0;
-                    int cnt = 0;
-                    for (int p = 0; p < 3; p++)
+                    var level = 0;
+                    var cnt = 0;
+                    for (var p = 0; p < 3; p++)
                     {
-                        Characters c = PartyData?[p] ?? OpenVIII.Characters.Squall_Leonhart;
-                        if (c != OpenVIII.Characters.Blank)
-                        {
-                            level += Characters?[c].Level ?? 0;
-                            cnt++;
-                        }
+                        var c = Party?[p] ?? OpenVIII.Characters.Squall_Leonhart;
+                        if (c == OpenVIII.Characters.Blank) continue;
+                        level += this[c]?.Level ?? 0;
+                        cnt++;
                     }
-                    return (byte)MathHelper.Clamp(level / cnt, 0, 100);
+                    if(cnt>0)
+                        return (byte)MathHelper.Clamp(level / cnt, 0, 100);
+                    return 0;
                 }
             }
 
@@ -164,7 +185,7 @@ namespace OpenVIII
             
 
             /// <summary>
-            /// 0x0CEC 4 bytes Battle: victory count
+            /// 0x0CEC 4 bytes Battle: victory Count
             /// </summary>
             public uint BattleVictoryCount { get; set; }
 
@@ -176,15 +197,9 @@ namespace OpenVIII
             /// <summary>
             /// 0x04A0-0x08C7 152 bytes each 8 of them. Characters: Squall-Edea
             /// </summary>
-            public IReadOnlyDictionary<Characters, CharacterData> Characters
-            {
-                get
-                {
-                    if (_characters.Values.Count > 0)
-                        return _characters;
-                    return null;
-                }
-            }
+            public bool Characters => _characters != null && _characters.Count > 0;
+
+            public int CharactersCount => _characters.Count;
 
             /// <summary>
             /// 0x1370 64 bytes Chocobo World (TODO)
@@ -347,9 +362,9 @@ namespace OpenVIII
             /// </summary>
             public ushort Module { get; set; }
 
-            public IEnumerable<CharacterData> NonPartyMembers => Characters == null
+            public IEnumerable<CharacterData> NonPartyMembers => _characters == null
                 ? null
-                : (from i in Characters where !Party.Contains(i.Key) && i.Value.Available select i.Value);
+                : (from i in _characters where !PartyData.Contains(i.Key) && i.Value.Available select i.Value);
 
             /// <summary>
             /// 0x0D6B 1 byte Padding
@@ -382,7 +397,7 @@ namespace OpenVIII
             public FF8String RinoaName { get; set; }
 
             /// <summary>
-            /// 0x000A 2 bytes Preview: save count
+            /// 0x000A 2 bytes Preview: save Count
             /// </summary>
             public ushort SaveCount { get; set; }
 
@@ -396,23 +411,9 @@ namespace OpenVIII
             /// </summary>
             public IReadOnlyList<Shop> Shops => _shops;
 
-            public bool SmallTeam
-            {
-                get
-                {
-                    if (Characters != null)
-                    {
-                        foreach (KeyValuePair<Characters, CharacterData> i in Characters)
-                        {
-                            if (!Party.Contains(i.Key) && i.Value.Available)
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                }
-            }
+            public bool SmallTeam =>
+                _characters == null || 
+                _characters.All(i => PartyData.Contains(i.Key) || !i.Value.Available);
 
             /// <summary>
             /// 0x0028 12 bytes Preview: Squall's name (0x00 terminated)
@@ -506,13 +507,13 @@ namespace OpenVIII
             public static Data LoadInitOut()
             {
                 Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Data)} :: {nameof(LoadInitOut)} ");
-                ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN, true);
-                byte[] buffer = aw.GetBinaryFile("init.out");
+                var aw = ArchiveWorker.Load(Memory.Archives.A_MAIN, true);
+                var buffer = aw.GetBinaryFile("init.out");
                 if (buffer != null && buffer.Length >0)
                 {
-                    using (BinaryReader br = new BinaryReader(new MemoryStream(buffer)))
+                    using (var br = new BinaryReader(new MemoryStream(buffer)))
                     {
-                        Data data = new Data();
+                        var data = new Data();
                         data.ReadInitOut(br);
                         return data;
                     }
@@ -528,7 +529,7 @@ namespace OpenVIII
             {
                 Memory.Log.WriteLine($"{nameof(Saves)} :: {nameof(Data)} :: {nameof(Clone)} ");
                 //shadow copy
-                Data d = (Data)MemberwiseClone();
+                var d = (Data)MemberwiseClone();
                 //deep copy anything that needs it here.
 
                 d._characters = _characters.ToDictionary(x => x.Key, x => (CharacterData)x.Value.Clone());
@@ -557,7 +558,7 @@ namespace OpenVIII
                     character = id.ToCharacters();
                 if (gf == OpenVIII.GFs.Blank)
                     gf = id.ToGFs();
-                int hp = (Characters.ContainsKey(character) ? Characters[character].CurrentHP() : -1);
+                var hp = (this[character]?.CurrentHP() ?? -1);
                 hp = (hp < 0 && GFs.ContainsKey(gf) ? GFs[gf].CurrentHP() : hp);
                 return hp;
             }
@@ -567,29 +568,28 @@ namespace OpenVIII
             /// </summary>
             /// <returns>&gt;=0</returns>
             public int DeadCharacters() =>
-                Characters?.Count(m =>
-                    m.Value.Available && m.Value.CurrentHP() == 0 ||
-                    (m.Value.Statuses0 & Kernel_bin.Persistent_Statuses.Death) != 0) ?? 0;
+                _characters?.Count(m =>
+                    m.Value.Available && m.Value.IsDead) ?? 0;
 
             /// <summary>
             /// How many dead party members there are.
             /// </summary>
             /// <returns>&gt;=0</returns>
             public int DeadPartyMembers() =>
-                PartyData?.Count(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead) ?? 0;
+                PartyData?.Count(m => m != OpenVIII.Characters.Blank && this[m].IsDead) ?? 0;
 
-            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>> abilities)
+            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Abilities>> abilities)
             {
-                ConcurrentQueue<GFs> ret = new ConcurrentQueue<GFs>();
+                var ret = new ConcurrentQueue<GFs>();
                 abilities = null;
                 if (GFs == null) return ret;
-                abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel_bin.Abilities>>();
-                foreach (KeyValuePair<GFs, GFData> g in GFs.Where(i => i.Value != null && i.Value.Exists))
+                abilities = new ConcurrentQueue<KeyValuePair<GFs, Abilities>>();
+                foreach (var g in GFs.Where(i => i.Value != null && i.Value.Exists))
                 {
-                    if (!g.Value.EarnExp(ap, out Kernel_bin.Abilities ability)) continue;
-                    if (ability != Kernel_bin.Abilities.None)
+                    if (!g.Value.EarnExp(ap, out var ability)) continue;
+                    if (ability != Abilities.None)
                     {
-                        abilities.Enqueue(new KeyValuePair<GFs, Kernel_bin.Abilities>(g.Key, ability));
+                        abilities.Enqueue(new KeyValuePair<GFs, Abilities>(g.Key, ability));
                     }
                     ret.Enqueue(g.Key);
                 }
@@ -598,7 +598,7 @@ namespace OpenVIII
 
             public bool EarnItem(Cards.ID card, byte qty, byte location = 0)
             {
-                TTCardInfo i = new TTCardInfo { Unlocked = true, Qty = qty, Location = location };
+                var i = new TTCardInfo { Unlocked = true, Qty = qty, Location = location };
                 if (!TripleTriad.cards.TryAdd(card, i))
                 {
                     TripleTriad.cards[card].Unlocked = i.Unlocked;
@@ -615,7 +615,7 @@ namespace OpenVIII
             {
                 if (Items.Any(i => i.ID == iD) && qty != 0)
                 {
-                    int k = Items.FindIndex(item => item.ID == iD);
+                    var k = Items.FindIndex(item => item.ID == iD);
                     if (qty < 0)
                         return Items[k] = Items[k].Add(checked((sbyte)qty));
                     if (qty > 0)
@@ -623,7 +623,7 @@ namespace OpenVIII
                 }
                 else if (Items.Any(i => i.ID == 0) && qty > 0)
                 {
-                    int k = Items.FindIndex(item => item.ID == 0);
+                    var k = Items.FindIndex(item => item.ID == 0);
                     return Items[k] = Items[k].Add(checked((byte)qty), iD);
                 }
                 return default;
@@ -633,13 +633,13 @@ namespace OpenVIII
 
             public Dictionary<GFs, Characters> JunctionedGFs()
             {
-                Dictionary<GFs, Characters> r = new Dictionary<GFs, Characters>();
-                if (Characters == null) return r;
-                foreach (KeyValuePair<Characters, CharacterData> c in Characters)
+                var r = new Dictionary<GFs, Characters>();
+                if (_characters == null) return r;
+                foreach (var c in _characters)
                 {
-                    foreach (GFs gf in c.Value.JunctionedGFs)
+                    foreach (var gf in c.Value.JunctionedGFs)
                         if(!r.ContainsKey(gf) && gf >= OpenVIII.GFs.Quezacotl && gf <= OpenVIII.GFs.Eden )
-                            r.Add(gf, c.Key);
+                            r.Add(gf, c.Value.ID);
 
 
                 }
@@ -648,12 +648,12 @@ namespace OpenVIII
 
             public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) && GFs[gf].MaxGFAbilities;
 
-            public bool PartyHasAbility(Kernel_bin.Abilities a)
+            public bool PartyHasAbility(Abilities a)
             {
                 if (PartyData == null) return false;
-                foreach (Characters c in PartyData)
+                foreach (var c in PartyData)
                 {
-                    if (Characters.TryGetValue(c, out CharacterData cd) && cd.Abilities.Contains(a))
+                    if (_characters.TryGetValue(c, out var cd) && cd.Abilities.Contains(a))
                         return true;
                 }
                 return false;
@@ -666,7 +666,7 @@ namespace OpenVIII
                 FirstCharactersCurrentHp = br.ReadUInt16();//0x0006
                 FirstCharactersMaxHp = br.ReadUInt16();//0x0008
                 SaveCount = br.ReadUInt16();//0x000A
-                AmountOfGilPreview = br.ReadUInt32();//0x000C
+                _amountOfGilPreview = br.ReadUInt32();//0x000C
                 TimePlayed = new TimeSpan(0, 0, checked((int)br.ReadUInt32()));//0x0020
                 FirstCharactersLevel = br.ReadByte();//0x0024
                 Party = Array.ConvertAll(br.ReadBytes(3), item => (Characters)item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
@@ -705,11 +705,11 @@ namespace OpenVIII
                 Module = br.ReadUInt16();//0x0D50 (1= field, 2= world map, 3= battle)
                 CurrentField = br.ReadUInt16();//0x0D52
                 PreviousField = br.ReadUInt16();//0x0D54
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                     CoordinateX[i] = br.ReadInt16();//0x0D56 signed  (party1, party2, party3)
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                     CoordinateY[i] = br.ReadInt16();//0x0D5C signed  (party1, party2, party3)
-                for (int i = 0; i < 3; i++)
+                for (var i = 0; i < 3; i++)
                     TriangleID[i] = br.ReadUInt16();//0x0D62  (party1, party2, party3)
                 Direction = br.ReadBytes(3 * 1);//0x0D68  (party1, party2, party3)
                 Padding = br.ReadByte();//0x0D6B
@@ -735,13 +735,13 @@ namespace OpenVIII
                 //init offset 1088;
                 for (byte i = 0; i <= (int)OpenVIII.Characters.Edea_Kramer; i++)
                 {
-                    CharacterData tmp = CharacterData.Load(br, (Characters)i, this);
+                    var tmp = CharacterData.Load(br, (Characters)i, this);
 
                     tmp.Name = Memory.Strings.GetName((Characters)i, this);
                     _characters.Add((Characters)i, tmp);// 0x04A0 -> 0x08C8 //152 bytes per 8 total
                 }
                 //init offset 2304
-                for (int i = 0; i < _shops.Capacity; i++)
+                for (var i = 0; i < _shops.Capacity; i++)
                     _shops.Add(new Shop(br));//0x0960 //400 bytes
                 //init offset 2704
                 //Configuration = br.ReadBytes(20); //0x0AF0 //20 bytes TODO break this up into a structure or class.
@@ -753,9 +753,10 @@ namespace OpenVIII
                 if (string.IsNullOrWhiteSpace(GrieverName)) GrieverName = Memory.Strings.GetName(Faces.ID.Griever);
                 Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
                 Unknown2 = br.ReadUInt16();//0x0B1A
-                AmountOfGil = br.ReadUInt32();//0x0B1C //dupilicate
-                if (AmountOfGilPreview != AmountOfGil) AmountOfGilPreview = AmountOfGil;
-                AmountOfGilLaguna = br.ReadUInt32();//0x0B20
+                _amountOfGil = br.ReadUInt32();//0x0B1C //dupilicate
+                // ReSharper disable once RedundantCheckBeforeAssignment //sometimes this is set sometimes it isn't.
+                if (_amountOfGilPreview != _amountOfGil) _amountOfGilPreview = _amountOfGil;
+                _amountOfGilLaguna = br.ReadUInt32();//0x0B20
                 LimitBreakQuistisUnlockedBlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
                 LimitBreakZellUnlockedDuel = new BitArray(br.ReadBytes(2));//0x0B26
                 LimitBreakIrvineUnlockedShot = new BitArray(br.ReadBytes(1));//0x0B28
@@ -765,7 +766,7 @@ namespace OpenVIII
                 LimitBreakAngeloPoints = br.ReadBytes(8).Select((value, key) => new { key, value }).ToDictionary(x => (Angelo)(x.key + 1), x => x.value);//0x0B2C
                 ItemsBattleOrder = br.ReadBytes(32);//0x0B34
                 //Init offset 2804
-                for (int i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < Items.Capacity; i++)
+                for (var i = 0; br.BaseStream.Position + 2 <= br.BaseStream.Length && i < Items.Capacity; i++)
                     Items.Add(new Item(br.ReadByte(), br.ReadByte())); //0x0B54 198 items (Item ID and Quantity)
             }
 
@@ -774,17 +775,21 @@ namespace OpenVIII
             /// </summary>
             public IEnumerable<GFs> UnlockedGFs => GFs.Where(x => x.Value.Exists).Select(x => x.Key);
 
+            public bool AnyDeadPartyMembers => PartyData.Select(x => this[x]).Any(x => x != null && x.IsDead);
+
+            public bool AnyCriticalPartyMembers => PartyData.Select(x => this[x]).Any(x => x != null && x.IsCritical);
+
             private CharacterData GetDamageable(Characters id)
             {
+                if (!Enum.IsDefined(typeof(Characters), id) || id == OpenVIII.Characters.Blank)
+                    return null;
                 CharacterData c = null;
-                if (Characters != null && !Characters.TryGetValue(id, out c) && Characters.Count > 0 && Party != null)
-                {
-                    int ind = Party.FindIndex(x => x.Equals(id));
+                if (_characters == null || CharactersCount <= 0 || Party == null || PartyData == null ||
+                    _characters.TryGetValue(id, out c)) return c;
+                var ind = Party.FindIndex(x => x.Equals(id));
 
-                    if (ind == -1 || !Characters.TryGetValue(PartyData[ind], out c))
-                        throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
-                    return c;
-                }
+                if (ind == -1 || !_characters.TryGetValue(PartyData[ind], out c))
+                    throw new ArgumentException($"{this}::Cannot find {id} in CharacterData or Party");
                 return c;
             }
 
@@ -792,8 +797,8 @@ namespace OpenVIII
 
             private Damageable GetDamageable(Faces.ID id)
             {
-                GFs gf = id.ToGFs();
-                Characters c = id.ToCharacters();
+                var gf = id.ToGFs();
+                var c = id.ToCharacters();
                 if (c == OpenVIII.Characters.Blank)
                     return GetDamageable(gf);
                 return GetDamageable(c);

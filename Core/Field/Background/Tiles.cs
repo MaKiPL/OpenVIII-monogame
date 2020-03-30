@@ -12,7 +12,7 @@ namespace OpenVIII.Fields
     {
         #region Classes
 
-        public class Tiles : IList<Tile>
+        public class Tiles : IReadOnlyList<Tile>
         {
             #region Fields
             /// <summary>
@@ -20,40 +20,39 @@ namespace OpenVIII.Fields
             /// </summary>
             public void UniquePupuIDs()
             {
-                var duplicateids = GetOverLapTiles().ToList();
-                foreach (var i in duplicateids)
+                var duplicateIDs = GetOverLapTiles().ToList();
+                foreach (var i in duplicateIDs)
                 {
                     i[1].PupuID = i[0].PupuID + 1;
                 }
-                Debug.Assert(GetOverLapTiles().Count() == 0);
+                Debug.Assert(!GetOverLapTiles().Any());
             }
 
-            private IOrderedEnumerable<Tile[]> GetOverLapTiles() => (from t1 in tiles
-                                                        from t2 in tiles
+            private IEnumerable<Tile[]> GetOverLapTiles() => (from t1 in _tiles
+                                                        from t2 in _tiles
                                                         where t1.PupuID == t2.PupuID && t1.TileID < t2.TileID && t1.Intersect(t2)
                                                         select new[] { t1, t2 }).OrderBy(x=>x[0].TileID);
 
-            private List<Tile> tiles;
+            private readonly IReadOnlyList<Tile> _tiles;
 
             #endregion Fields
 
             #region Constructors
 
-            public Tiles() => tiles = new List<Tile>();
+            public Tiles() => _tiles = new List<Tile>();
 
-            public Tiles(List<Tile> tiles) => this.tiles = tiles;
+            public Tiles(IReadOnlyList<Tile> tiles) => _tiles = tiles;
 
             #endregion Constructors
 
             #region Properties
 
-            public Point BottomRight => new Point(tiles.Max(tile => tile.X) + Tile.size, tiles.Max(tile => tile.Y) + Tile.size);
-            public int Count => ((IList<Tile>)tiles).Count;
+            public Point BottomRight => new Point(_tiles.Max(tile => tile.X) + Tile.Size, _tiles.Max(tile => tile.Y) + Tile.Size);
+            
 
             public int Height => Math.Abs(TopLeft.Y) + BottomRight.Y;// + (int)Origin.Y;
-            public bool IsReadOnly => ((IList<Tile>)tiles).IsReadOnly;
 
-            public Point TopLeft => new Point(tiles.Min(tile => tile.X), tiles.Min(tile => tile.Y));
+            public Point TopLeft => new Point(_tiles.Min(tile => tile.X), _tiles.Min(tile => tile.Y));
             public int Width => Math.Abs(TopLeft.X) + BottomRight.X;//+ (int)Origin.X;
             public Point Size => new Point(Width, Height);
             public Vector2 Origin => BottomRight.ToVector2() + TopLeft.ToVector2();
@@ -62,48 +61,40 @@ namespace OpenVIII.Fields
 
             #region Indexers
 
-            public Tile this[int index] { get => ((IList<Tile>)tiles)[index]; set => ((IList<Tile>)tiles)[index] = value; }
 
             #endregion Indexers
 
             #region Methods
 
-            public static Tiles Load(byte[] mapb, byte textureType)
+            public static Tiles Load(byte[] mapB, byte textureType)
             {
-                Tiles tiles = new Tiles();
+                var tiles = new List<Tile>();
                 //128x256
-                //using (BinaryReader pbsmim = new BinaryReader(new MemoryStream(mimb))
-                using (BinaryReader pbsmap = new BinaryReader(new MemoryStream(mapb)))
-                    while (pbsmap.BaseStream.Position + 16 < pbsmap.BaseStream.Length)
+                using (var br = new BinaryReader(new MemoryStream(mapB)))
+                    while (br.BaseStream.Position + 16 < br.BaseStream.Length)
                     {
-                        Tile tile = Tile.Load(pbsmap, tiles.Count, textureType);
+                        var tile = Tile.Load(br, tiles.Count, textureType);
                         if (tile != null)
                             tiles.Add(tile);
                     }
-                return tiles;
+                return new Tiles(tiles.AsReadOnly());
             }
 
-            public void Add(Tile item) => ((IList<Tile>)tiles).Add(item);
-
-            public void Clear() => ((IList<Tile>)tiles).Clear();
-
-            public bool Contains(Tile item) => ((IList<Tile>)tiles).Contains(item);
-
-            public void CopyTo(Tile[] array, int arrayIndex) => ((IList<Tile>)tiles).CopyTo(array, arrayIndex);
-
-            public IEnumerator<Tile> GetEnumerator() => ((IList<Tile>)tiles).GetEnumerator();
-
-            IEnumerator IEnumerable.GetEnumerator() => ((IList<Tile>)tiles).GetEnumerator();
-
-            public int IndexOf(Tile item) => ((IList<Tile>)tiles).IndexOf(item);
-
-            public void Insert(int index, Tile item) => ((IList<Tile>)tiles).Insert(index, item);
-
-            public bool Remove(Tile item) => ((IList<Tile>)tiles).Remove(item);
-
-            public void RemoveAt(int index) => ((IList<Tile>)tiles).RemoveAt(index);
-
             #endregion Methods
+
+            public IEnumerator<Tile> GetEnumerator()
+            {
+                return _tiles.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((IEnumerable) _tiles).GetEnumerator();
+            }
+
+            public int Count => _tiles.Count;
+
+            public Tile this[int index] => _tiles[index];
         }
 
         #endregion Classes

@@ -25,7 +25,7 @@ namespace OpenVIII.Fields
 
         public static Trigger Read(BinaryReader br)
         {
-            Trigger t = new Trigger();
+            var t = new Trigger();
             t.Verts[0] = new WalkMesh.Vert
             {
                 x = br.ReadInt16(),

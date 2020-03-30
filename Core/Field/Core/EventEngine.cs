@@ -1,28 +1,33 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-
 
 namespace OpenVIII.Fields
 {
     public sealed class EventEngine
     {
-        private readonly OrderedDictionary<Int32, FieldObject> _objects = new OrderedDictionary<Int32, FieldObject>();
+        #region Fields
 
-        public FieldObject CurrentObject { get; private set; }
+        private readonly OrderedDictionary<int, FieldObject> _objects = new OrderedDictionary<int, FieldObject>();
+
+        #endregion Fields
+
+        #region Constructors
 
         public EventEngine()
         {
         }
 
-        public void RegisterObject(FieldObject obj)
-        {
-            _objects.Add(obj.Id, obj);
-        }
+        #endregion Constructors
 
-        public FieldObject GetObject(Int32 objectIndex)
+        #region Properties
+
+        public FieldObject CurrentObject { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public FieldObject GetObject(int objectIndex)
         {
             if (_objects.TryGetByIndex(objectIndex, out var obj))
                 return obj;
@@ -30,14 +35,13 @@ namespace OpenVIII.Fields
             throw new ArgumentException($"An object (Id: {objectIndex}) isn't registered in the event engine.", nameof(objectIndex));
         }
 
-        public void Reset()
-        {
-            _objects.Clear();
-        }
+        public void RegisterObject(FieldObject obj) => _objects.Add(obj.Id, obj);
+
+        public void Reset() => _objects.Clear();
 
         public void Update(IServices services)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
 
             foreach (var obj in _objects.Values)
             {
@@ -50,5 +54,7 @@ namespace OpenVIII.Fields
 
             Console.WriteLine("============ Milliseconds: {0} ============", sw.Elapsed.Milliseconds);
         }
+
+        #endregion Methods
     }
 }

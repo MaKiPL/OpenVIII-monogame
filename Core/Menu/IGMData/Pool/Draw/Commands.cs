@@ -17,7 +17,7 @@ namespace OpenVIII.IGMData.Pool
             #region Fields
 
             public Dictionary<int, Func<bool>> OKAY_Actions;
-            private Debug_battleDat.Magic Magic;
+            private Battle.Dat.Magic Magic;
 
             #endregion Fields
 
@@ -45,8 +45,8 @@ namespace OpenVIII.IGMData.Pool
                     //maybe overkill to run hide on items. if group is hidden it won't draw.
                     if (!skipdata)
                     {
-                        int pos = 0;
-                        foreach (Menu_Base i in ITEM)
+                        var pos = 0;
+                        foreach (var i in ITEM)
                         {
                             if (pos != _Draw && pos != Cast && i != null)
                             {
@@ -81,8 +81,8 @@ namespace OpenVIII.IGMData.Pool
 
             public override bool Inputs_OKAY()
             {
-                bool ret = false;
-                if (OKAY_Actions.TryGetValue(CURSOR_SELECT, out Func<bool> func))
+                var ret = false;
+                if (OKAY_Actions.TryGetValue(CURSOR_SELECT, out var func))
                     ret = func();
                 if (ret)
                     base.Inputs_OKAY();
@@ -93,11 +93,11 @@ namespace OpenVIII.IGMData.Pool
             {
                 if (Magic.ID > 0)
                 {
-                    bool gf = Magic.GF != GFs.Blank;
-                    bool full = (Damageable.GetCharacterData(out Saves.CharacterData c) && c.Magics.TryGetByKey(Magic.ID, out byte qty) && qty < 100);
+                    var gf = Magic.GF != GFs.Blank;
+                    var full = (Damageable.GetCharacterData(out var c) && c.Magics.TryGetByKey(Magic.ID, out var qty) && qty < 100);
                     //TODO check for empty magic slots. as can only have 30 something spells in inventory.
 
-                    bool candraw = gf || !full;
+                    var candraw = gf || !full;
                     if (!candraw)
                     {
                         ((IGMDataItem.Text)ITEM[_Draw, 0]).FontColor = Font.ColorID.Dark_Grey;
@@ -115,7 +115,7 @@ namespace OpenVIII.IGMData.Pool
                     }
                     else
                     {
-                        Target_Group.SelectTargetWindows(Magic.DATA);
+                        Target_Group.SelectTargetWindows(Magic.Data);
                         ((IGMDataItem.Text)ITEM[Cast, 0]).FontColor = Font.ColorID.White;
                         BLANKS[_Draw] = false;
                     }
@@ -123,7 +123,7 @@ namespace OpenVIII.IGMData.Pool
                 base.Refresh();
             }
 
-            public void Refresh(Debug_battleDat.Magic magic)
+            public void Refresh(Battle.Dat.Magic magic)
             {
                 if (Magic.ID != magic.ID)
                 {
@@ -135,8 +135,8 @@ namespace OpenVIII.IGMData.Pool
             protected override void Init()
             {
                 base.Init();
-                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 12), Pos = SIZE[_Draw] };
-                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.KERNEL, 0, 18), Pos = SIZE[Cast] };
+                ITEM[_Draw, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.Kernel, 0, 12), Pos = SIZE[_Draw] };
+                ITEM[Cast, 0] = new IGMDataItem.Text { Data = Memory.Strings.Read(Strings.FileID.Kernel, 0, 18), Pos = SIZE[Cast] };
                 ITEM[Targets_Window, 0] = IGMData.Target.Group.Create(Damageable, false);
                 Cursor_Status = Cursor_Status.Enabled;
                 OKAY_Actions = new Dictionary<int, Func<bool>>

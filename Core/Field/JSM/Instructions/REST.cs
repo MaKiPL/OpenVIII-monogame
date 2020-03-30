@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class REST : JsmInstruction
     {
+        #region Constructors
+
         public REST()
         {
         }
 
-        public REST(Int32 parameter, IStack<IJsmExpression> stack)
+        public REST(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(REST)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(REST)}()";
+
+        #endregion Methods
     }
 }

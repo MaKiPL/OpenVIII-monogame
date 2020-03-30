@@ -57,7 +57,7 @@ namespace OpenVIII
 
         public static void Draw()
         {
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.Graphics.GraphicsDevice.Clear(Color.Black);
             switch (publicModule)
             {
                 case OverturepublicModule._2PlaySequence:
@@ -83,10 +83,10 @@ namespace OpenVIII
             splashIndex = 0;
             splashName = splashLoop = 1;
             splashTex = null;
-            Memory.spriteBatch.GraphicsDevice.Clear(Color.Black);
-            Memory.Module = MODULE.OVERTURE_DEBUG;
+            Memory.SpriteBatch.GraphicsDevice.Clear(Color.Black);
+            Memory.Module = Module.OvertureDebug;
             publicModule = OverturepublicModule._4Squaresoft;
-            Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
+            ModuleMovieTest.ReturnState = Module.OvertureDebug;
         }
 
         public static void SplashUpdate(ref int _splashIndex)
@@ -174,7 +174,7 @@ namespace OpenVIII
             if (Input2.DelayedButton(FF8TextTagKey.Confirm) || Input2.DelayedButton(FF8TextTagKey.Cancel) || Input2.DelayedButton(Keys.Space))
             {
                 AV.Music.Stop();
-                Memory.Module = MODULE.MAINMENU_DEBUG;
+                Memory.Module = Module.MainMenuDebug;
             }
             switch (publicModule)
             {
@@ -193,9 +193,9 @@ namespace OpenVIII
 
                 case OverturepublicModule._4Squaresoft:
                     publicModule = OverturepublicModule._0InitSound;
-                    Module_movie_test.Index = 104;//104 is SE logo in steam release.
-                    Module_movie_test.ReturnState = MODULE.OVERTURE_DEBUG;
-                    Memory.Module = MODULE.MOVIETEST;
+                    ModuleMovieTest.Index = 104;//104 is SE logo in steam release.
+                    ModuleMovieTest.ReturnState = Module.OvertureDebug;
+                    Memory.Module = Module.MovieTest;
                     break;
                 case OverturepublicModule._5Reset:
                     ResetModule();
@@ -210,15 +210,15 @@ namespace OpenVIII
             {
                 if (!bWaitingSplash)
                 {
-                    Memory.graphics.GraphicsDevice.Clear(Color.White);
+                    Memory.Graphics.GraphicsDevice.Clear(Color.White);
                     Memory.SpriteBatchStartAlpha(ss: SamplerState.AnisotropicClamp);
                 }
                 else
                 {
                     Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);
                 }
-                Memory.spriteBatch.Draw(splashTex,
-                    new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+                Memory.SpriteBatch.Draw(splashTex,
+                    new Rectangle(0, 0, Memory.Graphics.GraphicsDevice.Viewport.Width, Memory.Graphics.GraphicsDevice.Viewport.Height),
                     new Rectangle(0, 0, splashTex.Width, splashTex.Height)
                     , Color.White * Fade);
                 if (bFadingIn)
@@ -250,7 +250,7 @@ namespace OpenVIII
                 Memory.SpriteBatchEnd();
                 if (bWaitingSplash && Fade < 0.0f)
                 {
-                    Memory.Module = MODULE.MAINMENU_DEBUG;
+                    Memory.Module = Module.MainMenuDebug;
                 }
             }
         }
@@ -263,8 +263,8 @@ namespace OpenVIII
             }
 
             Memory.SpriteBatchStartStencil(ss: SamplerState.AnisotropicClamp);
-            Memory.spriteBatch.Draw(splashTex,
-                new Rectangle(0, 0, Memory.graphics.GraphicsDevice.Viewport.Width, Memory.graphics.GraphicsDevice.Viewport.Height),
+            Memory.SpriteBatch.Draw(splashTex,
+                new Rectangle(0, 0, Memory.Graphics.GraphicsDevice.Viewport.Width, Memory.Graphics.GraphicsDevice.Viewport.Height),
                 new Rectangle(0, 0, splashTex.Width, splashTex.Height)
                 , Color.White * Fade);
             Memory.SpriteBatchEnd();
@@ -316,7 +316,7 @@ namespace OpenVIII
             {
                 return;
             }
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
+            var aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
             InitNames(aw);
             GetName(splashNum, bNames, bLogo);
             ReadSplash();
@@ -380,7 +380,7 @@ namespace OpenVIII
         {
             if (loopsnames == null && namesnames == null && logonames == null)
             {
-                string[] lof = aw.GetListOfFiles();
+                var lof = aw.GetListOfFiles();
                 loopsnames = lof.Where(x => x.IndexOf(loops, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
                 namesnames = lof.Where(x => x.IndexOf(names, StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
                 logonames = lof.Where(x => x.IndexOf("ff8.lzs", StringComparison.OrdinalIgnoreCase) > -1).OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
@@ -397,12 +397,12 @@ namespace OpenVIII
         private void ReadSplash()
         {
             if (string.IsNullOrWhiteSpace(filename)) return;
-            string fn = Path.GetFileNameWithoutExtension(filename);
+            var fn = Path.GetFileNameWithoutExtension(filename);
             //Debug.Assert(!fn.Equals("ff8", StringComparison.OrdinalIgnoreCase));
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
-            byte[] buffer = aw.GetBinaryFile(filename);
+            var aw = ArchiveWorker.Load(Memory.Archives.A_MAIN);
+            var buffer = aw.GetBinaryFile(filename);
 
-            TIM_OVERTURE tim = new TIM_OVERTURE(buffer);
+            var tim = new TIMOverture(buffer);
             
             if ((fn.Equals("ff8", StringComparison.OrdinalIgnoreCase)) || (fn.IndexOf("loop", StringComparison.OrdinalIgnoreCase) >= 0))
             {

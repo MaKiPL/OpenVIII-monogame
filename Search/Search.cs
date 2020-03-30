@@ -23,7 +23,7 @@ namespace OpenVIII.Search
 
         private static readonly string[] Files = new string[]
         {
-            Path.Combine(Memory.FF8DIR,"FF8_EN.exe"),
+            Path.Combine(Memory.FF8Dir,"FF8_EN.exe"),
             //Path.Combine(Memory.FF8DIR,"AF3DN.P"),
             //Path.Combine(Memory.FF8DIR,"AF4DN.P")
         };
@@ -43,27 +43,27 @@ namespace OpenVIII.Search
         public Search(FF8String searchstring)
         {
             _s = searchstring;
-            foreach (Memory.Archive a in ArchiveList)
+            foreach (var a in ArchiveList)
             {
-                ArchiveBase aw = ArchiveWorker.Load(a);
-                string[] lof = aw.GetListOfFiles();
-                foreach (string f in lof)
+                var aw = ArchiveWorker.Load(a);
+                var lof = aw.GetListOfFiles();
+                foreach (var f in lof)
                 {
-                    string ext = Path.GetExtension(f);
+                    var ext = Path.GetExtension(f);
                     if (_skipExtension.Any(x => ext != null && x.IndexOf(ext, StringComparison.OrdinalIgnoreCase) >= 0)) continue;
                     Debug.WriteLine($"Searching {f}, in {a} for {searchstring}");
                     //byte[] bf = aw.GetBinaryFile(f);
                     //SearchBin(bf, a.ToString(), f);
-                    using (BinaryReader br = new BinaryReader(new MemoryStream(aw.GetBinaryFile(f))))
+                    using (var br = new BinaryReader(new MemoryStream(aw.GetBinaryFile(f))))
                     {
                         SearchBin(br, a.ToString(), f);
                     }
                 }
             }
-            foreach (string a in Files)
+            foreach (var a in Files)
             {
                 Debug.WriteLine($"Searching {a}, for {searchstring}");
-                using (BinaryReader br = new BinaryReader(File.OpenRead(a))) //new FileStream(a, FileMode.Open, FileAccess.Read, FileShare.None, 65536)))//
+                using (var br = new BinaryReader(File.OpenRead(a))) //new FileStream(a, FileMode.Open, FileAccess.Read, FileShare.None, 65536)))//
                 {
                     br.BaseStream.Seek(0, SeekOrigin.Begin);
                     //byte[] bf = br.ReadBytes((int)br.BaseStream.Length);
@@ -89,8 +89,8 @@ namespace OpenVIII.Search
             long offset;
             while ((offset = br.BaseStream.Position) < br.BaseStream.Length)
             {
-                int pos = 0;
-                foreach (byte i in _s)
+                var pos = 0;
+                foreach (var i in _s)
                 {
                     if (br.ReadByte() == i)
                     {
@@ -114,12 +114,12 @@ namespace OpenVIII.Search
         /// <param name="f">sub file</param>
         public void SearchBin(byte[] bf, string a, string f)
         {
-            int i = 0;
+            var i = 0;
             do
             {
                 i = Array.FindIndex(bf, i, bf.Length - i, x => x == _s[0]);
                 if (i < 0) continue;
-                byte[] full = bf.Skip(i).Take(_s.Length).ToArray();
+                var full = bf.Skip(i).Take(_s.Length).ToArray();
                 if (full.SequenceEqual(_s))
                 {
                     Debug.WriteLine($"Found a match at: offset {i:X}");

@@ -1,17 +1,22 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions.Abstract
+﻿namespace OpenVIII.Fields.Scripts.Instructions.Abstract
 {
     public abstract class TURN : JsmInstruction
     {
-        /// <summary>
-        /// Duration of turn (frames)
-        /// </summary>
-        protected IJsmExpression _frames;
+        #region Fields
+
         /// <summary>
         /// Angle
         /// </summary>
         protected IJsmExpression _angle;
+
+        /// <summary>
+        /// Duration of turn (frames)
+        /// </summary>
+        protected IJsmExpression _frames;
+
+        #endregion Fields
+
+        #region Constructors
 
         public TURN(IJsmExpression frames, IJsmExpression angle)
         {
@@ -19,13 +24,19 @@ namespace OpenVIII.Fields.Scripts.Instructions.Abstract
             _angle = angle;
         }
 
-        public TURN(Int32 parameter, IStack<IJsmExpression> stack)
+        public TURN(int parameter, IStack<IJsmExpression> stack)
             : this(
                 angle: stack.Pop(),
                 frames: stack.Pop())
         {
         }
 
+        #endregion Constructors
+
+        #region Methods
+
         public abstract override string ToString();
+
+        #endregion Methods
     }
 }

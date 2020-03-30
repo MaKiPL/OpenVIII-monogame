@@ -1,6 +1,3 @@
-using System;
-
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/141_MUSICREPLAY&action=edit&redlink=1"/>
     public sealed class MUSICREPLAY : JsmInstruction
     {
+        #region Constructors
+
         public MUSICREPLAY()
         {
         }
 
-        public MUSICREPLAY(Int32 parameter, IStack<IJsmExpression> stack)
+        public MUSICREPLAY(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MUSICREPLAY)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MUSICREPLAY)}()";
+
+        #endregion Methods
     }
 }

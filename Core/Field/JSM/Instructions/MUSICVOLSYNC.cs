@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Music Vol Sync?
@@ -9,18 +6,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/149_MUSICVOLSYNC&action=edit&redlink=1"/>
     public sealed class MUSICVOLSYNC : JsmInstruction
     {
+        #region Constructors
+
         public MUSICVOLSYNC()
         {
         }
 
-        public MUSICVOLSYNC(Int32 parameter, IStack<IJsmExpression> stack)
+        public MUSICVOLSYNC(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MUSICVOLSYNC)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MUSICVOLSYNC)}()";
+
+        #endregion Methods
     }
 }

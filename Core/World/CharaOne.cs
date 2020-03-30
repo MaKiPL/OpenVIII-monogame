@@ -19,14 +19,14 @@ namespace OpenVIII.World
         public CharaOne(byte[] buffer)
         {
             this.buffer = buffer;
-            List<Debug_MCH> mchs = new List<Debug_MCH>();
-            List<TextureHandler> texturesList = new List<TextureHandler>();
-            int i = 0;
+            var mchs = new List<Debug_MCH>();
+            var texturesList = new List<TextureHandler>();
+            var i = 0;
 
             MemoryStream ms = null;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(this.buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(this.buffer)))
             {
-                uint eof = br.ReadUInt32();
+                var eof = br.ReadUInt32();
                 TIM2 tim;
                 while (ms.CanRead)
                     if (ms.Position >= ms.Length)
@@ -43,7 +43,7 @@ namespace OpenVIII.World
                     else //is geometry structure
                     {
                         ms.Seek(-8, SeekOrigin.Current);
-                        Debug_MCH mch = new Debug_MCH(ms, br);
+                        var mch = new Debug_MCH(ms, br);
                         if (mch.bValid())
                             mchs.Add(mch);
                     }

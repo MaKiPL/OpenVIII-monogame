@@ -1,11 +1,17 @@
-﻿namespace OpenVIII.Fields
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace OpenVIII.Fields
 {
+    /// <summary>
+    /// Nameable characters and GFs.
+    /// </summary>
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public enum NamedEntity
     {
         Squall,
         Rinoa,
         Angelo,
-        Quetzacotl,
+        Quetzalcoatl,
         Shiva,
         Ifrit,
         Siren,

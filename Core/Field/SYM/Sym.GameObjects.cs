@@ -8,23 +8,22 @@ namespace OpenVIII.Fields
     {
         public sealed class GameObjects
         {
-            private readonly OrderedDictionary<String, GameObject> _byIndex = new OrderedDictionary<String, GameObject>();
-            private readonly Dictionary<Int32, ScriptReference> _byLabel = new Dictionary<Int32, ScriptReference>();
-            private Int32 _maxLabel = -1;
+            private readonly OrderedDictionary<string, GameObject> _byIndex = new OrderedDictionary<string, GameObject>();
+            private readonly Dictionary<int, ScriptReference> _byLabel = new Dictionary<int, ScriptReference>();
+            private int _maxLabel = -1;
 
             public GameObjects()
             {
             }
 
-            public GameObject GetObjectOrDefault(Int32 index, String defaultValue = "Undefined_{0:D2}")
+            public GameObject GetObjectOrDefault(int index, string defaultValue = "Undefined_{0:D2}")
             {
-                if (_byIndex.TryGetByIndex(index, out var obj))
-                    return obj;
-
-                return new GameObject(String.Format(defaultValue, index));
+                return _byIndex.TryGetByIndex(index, out var obj)
+                    ? obj
+                    : new GameObject(string.Format(defaultValue, index));
             }
 
-            public Boolean FindByLabel(Int32 label, out GameObject obj, out String scriptName)
+            public bool FindByLabel(int label, out GameObject obj, out string scriptName)
             {
                 if (_byLabel.TryGetValue(label, out var reference))
                 {
@@ -38,12 +37,12 @@ namespace OpenVIII.Fields
                 return false;
             }
 
-            internal void AddObject(String objectName)
+            internal void AddObject(string objectName)
             {
                 if (_byIndex.TryGetByKey(objectName, out var obj))
                 {
-                    Int32 index = obj.AddScript("Initialize");
-                    ScriptReference reference = new ScriptReference(obj, index);
+                    var index = obj.AddScript("Initialize");
+                    var reference = new ScriptReference(obj, index);
                     _byLabel.Add(++_maxLabel, reference);
                 }
                 else
@@ -53,12 +52,12 @@ namespace OpenVIII.Fields
                 }
             }
 
-            internal void AddScript(String objectName, String scriptName)
+            internal void AddScript(string objectName, string scriptName)
             {
                 if (_byIndex.TryGetByKey(objectName, out var obj))
                 {
-                    Int32 index = obj.AddScript(scriptName);
-                    ScriptReference reference = new ScriptReference(obj, index);
+                    var index = obj.AddScript(scriptName);
+                    var reference = new ScriptReference(obj, index);
                     _byLabel.Add(++_maxLabel, reference);
                 }
                 else
@@ -70,9 +69,9 @@ namespace OpenVIII.Fields
             private sealed class ScriptReference
             {
                 public GameObject Object { get; }
-                public Int32 ScriptIndex { get; }
+                public int ScriptIndex { get; }
 
-                public ScriptReference(GameObject obj, Int32 index)
+                public ScriptReference(GameObject obj, int index)
                 {
                     Object = obj;
                     ScriptIndex = index;

@@ -1,10 +1,10 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
 
 namespace OpenVIII.IGMData.Pool
 {
-    public class Bullet : Base<Damageable, Item_In_Menu>
+    public class Bullet : Base<Damageable, ItemInMenu>
     {
         #region Properties
 
@@ -16,7 +16,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Bullet Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 4)
         {
-            Bullet r = Create<Bullet>(count + 1, 2, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
+            var r = Create<Bullet>(count + 1, 2, new Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
             if (battle)
                 r.Target_Group = Target.Group.Create(r.Damageable);
             return r;
@@ -24,7 +24,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (InputITEM(Target_Group, ref ret))
             { }
             else
@@ -45,7 +45,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            Item_In_Menu item = Contents[CURSOR_SELECT];
+            var item = Contents[CURSOR_SELECT];
             if (!BLANKS[CURSOR_SELECT])
             {
                 Target_Group?.SelectTargetWindows(item, true);
@@ -57,18 +57,18 @@ namespace OpenVIII.IGMData.Pool
         {
             if (Memory.State?.Items != null)
             {
-                List<Saves.Item> ammo = Memory.State.Items.Where(x => x.DATA != null && x.QTY > 0 && x.DATA?.Type == Item_In_Menu._Type.Ammo).OrderBy(x => x.ID).ToList();
-                int i = 0;
-                int skip = Page * Rows;
+                var ammo = Memory.State.Items.Where(x => x.Data != null && x.QTY > 0 && x.Data?.ItemType == ItemType.Ammo).OrderBy(x => x.ID).ToList();
+                var i = 0;
+                var skip = Page * Rows;
                 bool AddItem(Saves.Item item)
                 {
                     if (i >= Rows) return false;
                     if (skip-- <= 0)
                     {
-                        ((IGMDataItem.Text)ITEM[i, 0]).Data = item.DATA?.Name ?? null;
-                        ((IGMDataItem.Text)ITEM[i, 0]).Icon = item.DATA?.Icon ?? null;
-                        ((IGMDataItem.Integer)ITEM[i, 1]).Data = item.QTY;
-                        Contents[i] = item.DATA ?? default;
+                        ((Text)ITEM[i, 0]).Data = item.Data?.Name ?? null;
+                        ((Text)ITEM[i, 0]).Icon = item.Data?.Icon ?? null;
+                        ((Integer)ITEM[i, 1]).Data = item.QTY;
+                        Contents[i] = item.Data ?? default;
                         BLANKS[i] = false;
                         ITEM[i, 0].Show();
                         ITEM[i, 1].Show();
@@ -76,7 +76,7 @@ namespace OpenVIII.IGMData.Pool
                     }
                     return true;
                 }
-                foreach (Saves.Item bullet in ammo)
+                foreach (var bullet in ammo)
                     AddItem(bullet);
                 DefaultPages = ammo.Count / Rows;
                 for (; i < Rows; i++)
@@ -101,29 +101,29 @@ namespace OpenVIII.IGMData.Pool
             base.UpdateTitle();
             if (Pages == 1)
             {
-                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                ((Box)CONTAINER).Title = Icons.ID.SPECIAL;
             }
             else
                 switch (Page)
                 {
                     case 0:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG1;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG1;
                         break;
 
                     case 1:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG2;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG2;
                         break;
 
                     case 2:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG3;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG3;
                         break;
 
                     case 3:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
                         break;
 
                     default:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL;
                         break;
                 }
         }
@@ -132,14 +132,14 @@ namespace OpenVIII.IGMData.Pool
         {
             base.Init();
             const int widthofnumber = 60;
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
-                ITEM[i, 0] = new IGMDataItem.Text
+                ITEM[i, 0] = new Text
                 {
                     Pos = SIZE[i]
                 };
                 ITEM[i, 0].Hide();
-                ITEM[i, 1] = new IGMDataItem.Integer
+                ITEM[i, 1] = new Integer
                 {
                     Pos = new Rectangle(SIZE[i].Right - widthofnumber, SIZE[i].Top, widthofnumber, SIZE[i].Height),
                     NumType = Icons.NumType.SysFntBig,
@@ -147,7 +147,7 @@ namespace OpenVIII.IGMData.Pool
                 };
                 ITEM[i, 1].Hide();
             }
-            ITEM[Rows, 1] = new IGMDataItem.Icon
+            ITEM[Rows, 1] = new Icon
             {
                 Data = Icons.ID.NUM_,
                 Pos = new Rectangle(SIZE[0].Right - widthofnumber, CONTAINER.Pos.Top, widthofnumber, SIZE[0].Height)

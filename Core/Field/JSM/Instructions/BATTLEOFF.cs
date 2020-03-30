@@ -1,40 +1,39 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Disable random battles. 
+    /// Disable random battles.
     /// </summary>
     internal sealed class BATTLEOFF : JsmInstruction
     {
+        #region Constructors
+
         public BATTLEOFF()
         {
         }
 
-        public BATTLEOFF(Int32 parameter, IStack<IJsmExpression> stack)
+        public BATTLEOFF(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(BATTLEOFF)}()";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IGameplayService))
                 .Property(nameof(IGameplayService.IsRandomBattlesEnabled))
                 .Assign(false)
                 .Comment(nameof(BATTLEOFF));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Gameplay[services].IsRandomBattlesEnabled = false;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(BATTLEOFF)}()";
+
+        #endregion Methods
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Add magic stock to character
@@ -37,7 +35,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _characterID = characterid;
         }
 
-        public ADDMAGIC(Int32 parameter, IStack<IJsmExpression> stack)
+        public ADDMAGIC(int parameter, IStack<IJsmExpression> stack)
             : this(
                 characterid: ((IConstExpression)stack.Pop()).Characters(),
                 magicID: stack.Pop(),
@@ -49,7 +47,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(ADDMAGIC)}({nameof(_quantity)}: {_quantity}, {nameof(_magicID)}: {_magicID}, {nameof(_characterID)}: {_characterID})";
+        public override string ToString() => $"{nameof(ADDMAGIC)}({nameof(_quantity)}: {_quantity}, {nameof(_magicID)}: {_magicID}, {nameof(_characterID)}: {_characterID})";
 
         #endregion Methods
     }

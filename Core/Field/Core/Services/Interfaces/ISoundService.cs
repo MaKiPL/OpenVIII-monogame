@@ -4,8 +4,16 @@ namespace OpenVIII.Fields
 {
     public interface ISoundService
     {
-        Boolean IsSupported { get; }
+        #region Properties
 
-        void PlaySound(Int32 fieldSoundIndex, Int32 pan, Int32 volume, Int32 channel);
+        bool IsSupported { get; }
+
+        #endregion Properties
+
+        #region Methods
+
+        void PlaySound(int fieldSoundIndex, int pan, int volume, int channel);
+
+        #endregion Methods
     }
 }

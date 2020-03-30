@@ -1,26 +1,44 @@
-﻿using System;
-
-namespace OpenVIII.Fields
+﻿namespace OpenVIII.Fields
 {
     public static partial class Field
     {
+        #region Classes
+
         public sealed class Info
         {
-            public String Name { get; }
+            #region Fields
 
             private readonly IDataProvider _dataProvider;
 
-            public Info(String fieldName, IDataProvider dataProvider)
+            #endregion Fields
+
+            #region Constructors
+
+            public Info(string fieldName, IDataProvider dataProvider)
             {
                 Name = fieldName;
                 _dataProvider = dataProvider;
             }
 
-            public Boolean TryReadData(Part part, out Byte[] data)
+            #endregion Constructors
+
+            #region Properties
+
+            public string Name { get; }
+
+            #endregion Properties
+
+            #region Methods
+
+            public bool TryReadData(Part part, out byte[] data)
             {
                 data = _dataProvider.FindPart(part);
                 return data != null;
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

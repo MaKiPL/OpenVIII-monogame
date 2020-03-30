@@ -1,17 +1,20 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class LOFFSETS : JsmInstruction
     {
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
-        private IJsmExpression _arg2;
-        private IJsmExpression _arg3;
-        private IJsmExpression _arg4;
-        private IJsmExpression _arg5;
-        private IJsmExpression _arg6;
+        #region Fields
+
+        private readonly IJsmExpression _arg0;
+        private readonly IJsmExpression _arg1;
+        private readonly IJsmExpression _arg2;
+        private readonly IJsmExpression _arg3;
+        private readonly IJsmExpression _arg4;
+        private readonly IJsmExpression _arg5;
+        private readonly IJsmExpression _arg6;
+
+        #endregion Fields
+
+        #region Constructors
 
         public LOFFSETS(IJsmExpression arg0, IJsmExpression arg1, IJsmExpression arg2, IJsmExpression arg3, IJsmExpression arg4, IJsmExpression arg5, IJsmExpression arg6)
         {
@@ -24,7 +27,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _arg6 = arg6;
         }
 
-        public LOFFSETS(Int32 parameter, IStack<IJsmExpression> stack)
+        public LOFFSETS(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg6: stack.Pop(),
                 arg5: stack.Pop(),
@@ -36,9 +39,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(LOFFSETS)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2}, {nameof(_arg3)}: {_arg3}, {nameof(_arg4)}: {_arg4}, {nameof(_arg5)}: {_arg5}, {nameof(_arg6)}: {_arg6})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(LOFFSETS)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2}, {nameof(_arg3)}: {_arg3}, {nameof(_arg4)}: {_arg4}, {nameof(_arg5)}: {_arg5}, {nameof(_arg6)}: {_arg6})";
+
+        #endregion Methods
     }
 }

@@ -1,9 +1,11 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     public interface IJumpToOpcode : IJumpToInstruction
     {
-        Int32 Offset { get; }
+        #region Properties
+
+        int Offset { get; }
+
+        #endregion Properties
     }
 }

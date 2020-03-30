@@ -7,29 +7,29 @@ namespace OpenVIII
     {
         public static class Archives
         {
-            public static Archive ZZZ_MAIN { get; private set; }
-            public static Archive ZZZ_OTHER { get; private set; }
-            public static Archive A_BATTLE { get; private set; }
-            public static Archive A_FIELD { get; private set; }
-            public static Archive A_MAGIC { get; private set; }
-            public static Archive A_MAIN { get; private set; }
-            public static Archive A_MENU { get; private set; }
-            public static Archive A_WORLD { get; private set; }
-            public static Archive A_MOVIES { get; private set; }
+            public static Archive ZZZ_MAIN { get; set; }
+            public static Archive ZZZ_OTHER { get; set; }
+            public static Archive A_BATTLE { get; set; }
+            public static Archive A_FIELD { get; set; }
+            public static Archive A_MAGIC { get; set; }
+            public static Archive A_MAIN { get; set; }
+            public static Archive A_MENU { get; set; }
+            public static Archive A_WORLD { get; set; }
+            public static Archive A_MOVIES { get; set; }
 
             public static void Init()
             {
                 Memory.Log.WriteLine($"{nameof(Archive)}::{nameof(Init)}");
-                Archive parent = new Archive(FF8DIR);
+                var parent = new Archive(FF8Dir);
                 ZZZ_MAIN = new Archive("main.zzz", true, parent);
                 ZZZ_OTHER = new Archive("other.zzz", true, parent);
-                A_BATTLE = new Archive("battle", FF8DIRdata_lang, ZZZ_MAIN);
-                A_FIELD = new Archive("field", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MAGIC = new Archive("magic", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MAIN = new Archive("main", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MENU = new Archive("menu", FF8DIRdata_lang, ZZZ_MAIN);
-                A_WORLD = new Archive("world", FF8DIRdata_lang, ZZZ_MAIN);
-                A_MOVIES = new Archive("movies", FF8DIRdata_lang, ZZZ_OTHER, FF8DIRdata);
+                A_BATTLE = new Archive("battle", FF8DirDataLang, ZZZ_MAIN);
+                A_FIELD = new Archive("field", FF8DirDataLang, ZZZ_MAIN);
+                A_MAGIC = new Archive("magic", FF8DirDataLang, ZZZ_MAIN);
+                A_MAIN = new Archive("main", FF8DirDataLang, ZZZ_MAIN);
+                A_MENU = new Archive("menu", FF8DirDataLang, ZZZ_MAIN);
+                A_WORLD = new Archive("world", FF8DirDataLang, ZZZ_MAIN);
+                A_MOVIES = new Archive("movies", FF8DirDataLang, ZZZ_OTHER, FF8DirData);
 
                 /*var aw =*/
                 ArchiveZzz.Load(ZZZ_MAIN); //try to load main.zzz also caches it.
@@ -47,9 +47,9 @@ namespace OpenVIII
                 void Merge(Archive a)
                 {
                     Log.WriteLine($"{nameof(Archive)}::{nameof(Init)}::{nameof(Merge)}\n\t{a} to {ZZZ_MAIN}");
-                    string fs = a.FS;
-                    ArchiveBase child = ArchiveWorker.Load(a);
-                    FI fi = aw.ArchiveMap.FindString(ref fs, out int _);
+                    var fs = a.FS;
+                    var child = ArchiveWorker.Load(a);
+                    var fi = aw.ArchiveMap.FindString(ref fs, out var _);
                     aw.ArchiveMap.MergeMaps(child.ArchiveMap, fi.Offset);
                 }
                 Merge(A_BATTLE);

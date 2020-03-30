@@ -3,49 +3,52 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class File
         {
-            public static List<GameObject> Read(Byte[] data)
+            #region Methods
+
+            public static List<GameObject> Read(byte[] data)
             {
                 unsafe
                 {
-                    fixed (Byte* ptr = data)
+                    fixed (byte* ptr = data)
                     {
                         if (ptr == null) return null;
-                        Header* header = (Header*)ptr;
-                        Group* areas = (Group*)(ptr + sizeof(Header));
-                        Group* doors = areas + header->CountAreas;
-                        Group* modules = doors + header->CountDoors;
-                        Group* objects = modules + header->CountModules;
-                        Group* end = objects + header->CountObjects;
-                        Script* scripts = (Script*)(ptr + header->ScriptsOffset);
-                        Operation* operation = (Operation*)(ptr + header->OperationsOffset);
+                        var header = (Header*)ptr;
+                        var areas = (Group*)(ptr + sizeof(Header));
+                        var doors = areas + header->CountAreas;
+                        var modules = doors + header->CountDoors;
+                        var objects = modules + header->CountModules;
+                        var end = objects + header->CountObjects;
+                        var scripts = (Script*)(ptr + header->ScriptsOffset);
+                        var operation = (Operation*)(ptr + header->OperationsOffset);
 
-                        Int64 groupNumber = end - areas;
-                        Group[] groups = new Group[groupNumber];
-                        for (Group* group = areas; group < end; group++)
+                        var groupNumber = end - areas;
+                        var groups = new Group[groupNumber];
+                        for (var group = areas; group < end; group++)
                             groups[--groupNumber] = *group;
 
-                        List<GameObject> gameObjects = new List<GameObject>(groups.Length);
+                        var gameObjects = new List<GameObject>(groups.Length);
 
-                        foreach (Group group in groups.OrderBy(g => g.Label))
+                        foreach (var group in groups.OrderBy(g => g.Label))
                         {
-                            List<GameScript> objectScripts = new List<GameScript>(group.ScriptsCount + 1);
+                            var objectScripts = new List<GameScript>(group.ScriptsCount + 1);
 
-                            for (Int32 s = 0; s <= group.ScriptsCount; s++)
+                            for (var s = 0; s <= group.ScriptsCount; s++)
                             {
-                                Int32 scriptLabel = group.Label + s;
+                                var scriptLabel = group.Label + s;
 
-                                UInt16 position = scripts->Position;
+                                var position = scripts->Position;
                                 scripts++;
 
-                                UInt16 count = (UInt16)(scripts->Position - position);
-                                Jsm.ExecutableSegment scriptSegment = MakeScript(operation + position, count);
+                                var count = (ushort)(scripts->Position - position);
+                                var scriptSegment = MakeScript(operation + position, count);
 
                                 objectScripts.Add(new GameScript(scriptLabel, scriptSegment));
                             }
@@ -58,35 +61,30 @@ namespace OpenVIII.Fields.Scripts
                 }
             }
 
-            private static unsafe Jsm.ExecutableSegment MakeScript(Operation* operation, UInt16 count)
+            private static unsafe ExecutableSegment MakeScript(Operation* operation, ushort count)
             {
-                List<JsmInstruction> instructions = new List<JsmInstruction>(count / 2);
-                LabeledStack stack = new LabeledStack();
-                LabelBuilder labelBuilder = new LabelBuilder(count);
+                var instructions = new List<JsmInstruction>(count / 2);
+                var stack = new LabeledStack();
+                var labelBuilder = new LabelBuilder(count);
 
-                for (Int32 i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
-                    Jsm.Opcode opcode = operation->Opcode;
-                    Int32 parameter = operation->Parameter;
+                    var opcode = operation->Opcode;
+                    var parameter = operation->Parameter;
                     operation++;
 
                     stack.CurrentLabel = i;
-                    IJsmExpression expression = Jsm.Expression.TryMake(opcode, parameter, stack);
+                    var expression = Expression.TryMake(opcode, parameter, stack);
                     if (expression != null)
                     {
                         stack.Push(expression);
                         continue;
                     }
 
-                    JsmInstruction instruction = JsmInstruction.TryMake(opcode, parameter, stack);
-                    if (instruction != null)
-                    {
-                        labelBuilder.TraceInstruction(i, stack.CurrentLabel, new IndexedInstruction(instructions.Count, instruction));
-                        instructions.Add(instruction);
-                        continue;
-                    }
-
-                    throw new NotSupportedException(opcode.ToString());
+                    var instruction = JsmInstruction.TryMake(opcode, parameter, stack);
+                    if (instruction == null) throw new NotSupportedException(opcode.ToString());
+                    labelBuilder.TraceInstruction(i, stack.CurrentLabel, new IndexedInstruction(instructions.Count, instruction));
+                    instructions.Add(instruction);
                 }
 
                 if (stack.Count != 0)
@@ -99,17 +97,21 @@ namespace OpenVIII.Fields.Scripts
                     throw new InvalidProgramException("Script must end with a return.");
 
                 // Switch from opcodes to instructions
-                HashSet<Int32> labelIndices = labelBuilder.Commit();
+                var labelIndices = labelBuilder.Commit();
 
                 // Merge similar instructions
                 instructions = InstructionMerger.Merge(instructions, labelIndices);
 
                 // Combine instructions to logical blocks
-                IReadOnlyList<Jsm.IJsmControl> controls = Jsm.Control.Builder.Build(instructions);
+                var controls = Control.Builder.Build(instructions);
 
                 // Arrange instructions by segments and return root
-                return Jsm.Segment.Builder.Build(instructions, controls);
+                return Segment.Builder.Build(instructions, controls);
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

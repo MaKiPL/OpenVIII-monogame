@@ -31,7 +31,7 @@ namespace OpenVIII.Fields
 
         public static Gateway Read(BinaryReader br, int type)
         {
-            Gateway g = new Gateway();
+            var g = new Gateway();
             g.Verts[0] = new WalkMesh.Vert
             {
                 x = br.ReadInt16(),
@@ -51,7 +51,7 @@ namespace OpenVIII.Fields
                 y = br.ReadInt16(),
             };
             g.FieldID = br.ReadUInt16();
-            foreach (int i in Enumerable.Range(0, type == 0 ? 3 : 1))
+            foreach (var i in Enumerable.Range(0, type == 0 ? 3 : 1))
                 g.unknown[i] = br.ReadUInt32();
             return g;
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -10,24 +9,26 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/002_JMP"/>
     public sealed class JMP : JsmInstruction, IJumpToOpcode
     {
-        /// <summary>
-        /// Number of instructions to jump (signed value).
-        /// </summary>
-        public Int32 Offset { get; set; }
+        #region Fields
 
-        public JMP(Int32 offset)
+        private int _index = -1;
+
+        #endregion Fields
+
+        #region Constructors
+
+        public JMP(int offset) => Offset = offset;
+
+        public JMP(int offset, IStack<IJsmExpression> stack)
+                    : this(offset)
         {
-            Offset = offset;
         }
 
-        public JMP(Int32 offset, IStack<IJsmExpression> stack)
-            : this(offset)
-        {
-        }
+        #endregion Constructors
 
-        private Int32 _index = -1;
+        #region Properties
 
-        public Int32 Index
+        public int Index
         {
             get
             {
@@ -35,30 +36,34 @@ namespace OpenVIII.Fields.Scripts.Instructions
                     throw new ArgumentException($"{nameof(JMP)} instruction isn't indexed yet.", nameof(Index));
                 return _index;
             }
-            set
-            {
+            set =>
                 //if (_index != -1)
                 //    throw new ArgumentException($"{nameof(JMP)} instruction has already been indexed: {_index}.", nameof(Index));
                 _index = value;
-            }
         }
 
-        public override String ToString()
-        {
-            return _index < 0
-                ? $"{nameof(JMP)}({nameof(Offset)}: {Offset})"
-                : $"{nameof(JMP)}({nameof(Index)}: {Index})";
-        }
+        /// <summary>
+        /// Number of instructions to jump (signed value).
+        /// </summary>
+        public int Offset { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        public override IAwaitable Execute(IServices services) =>
+            // This instruction is part of conditional jumps and isn't exists as is.
+            DummyAwaitable.Instance;
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
             // This instruction is part of conditional jumps and isn't exists as is.
         }
 
-        public override IAwaitable Execute(IServices services)
-        {
-            // This instruction is part of conditional jumps and isn't exists as is.
-            return DummyAwaitable.Instance;
-        }
+        public override string ToString() => _index < 0
+                ? $"{nameof(JMP)}({nameof(Offset)}: {Offset})"
+                : $"{nameof(JMP)}({nameof(Index)}: {Index})";
+
+        #endregion Methods
     }
 }

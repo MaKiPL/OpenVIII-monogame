@@ -1,13 +1,17 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMData.Target;
+using OpenVIII.IGMDataItem;
+using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMData
 {
-    public class Selphie_Slots : Base
+    public class SelphieSlots : Base
     {
         #region Fields
 
-        private Kernel_bin.Magic_Data _magicData;
+        private MagicData _magicData;
+
 
         #endregion Fields
 
@@ -15,7 +19,7 @@ namespace OpenVIII.IGMData
 
         public int Casts { get => Number.Data; private set => Number.Data = value; }
 
-        public Kernel_bin.Magic_Data MagicData
+        public MagicData MagicData
         {
             get => _magicData; private set
             {
@@ -26,61 +30,42 @@ namespace OpenVIII.IGMData
 
         public FF8String Name { get => Spell.Data; private set => Spell.Data = value; }
 
-        private IGMDataItem.Text Cast { get => (IGMDataItem.Text)ITEM[6, 0]; set => ITEM[6, 0] = value; }
+        private Text Cast { get => (Text)ITEM[6, 0]; set => ITEM[6, 0] = value; }
 
-        private IGMDataItem.Text Do_Over { get => (IGMDataItem.Text)ITEM[3, 0]; set => ITEM[3, 0] = value; }
+        private Text DoOver { get => (Text)ITEM[3, 0]; set => ITEM[3, 0] = value; }
 
-        private IGMDataItem.Integer Number { get => (IGMDataItem.Integer)ITEM[1, 0]; set => ITEM[1, 0] = value; }
+        private Integer Number { get => (Integer)ITEM[1, 0]; set => ITEM[1, 0] = value; }
 
-        private IGMDataItem.Text Spell { get => (IGMDataItem.Text)ITEM[0, 0]; set => ITEM[0, 0] = value; }
+        private Text Spell { get => (Text)ITEM[0, 0]; set => ITEM[0, 0] = value; }
 
-        private Kernel_bin.Slot Spell_Data
+        private Slot SpellData
         {
             get
             {
-                if (Spells != null)
-                {
-                    IReadOnlyList<Kernel_bin.Slot> spells = Spells;
-                    return spells[Memory.Random.Next(spells.Count)];
-                }
-                return default;
+                if (Spells == null) return default;
+                var spells = Spells;
+                return spells[Memory.Random.Next(spells.Count)];
             }
         }
 
         /// <summary>
         /// List of Spells
         /// </summary>
-        private IReadOnlyList<Kernel_bin.Slot> Spells
-        {
-            get
-            {
-                if ((SpellSet?.SlotID ?? -1) != -1)
-                    return Kernel_bin.Selphielimitbreaksets[SpellSet.SlotID]?.Slots;
-                return null;
-            }
-        }
+        private IReadOnlyList<Slot> Spells => (SpellSet?.SlotID ?? -1) == -1 ? null : Memory.KernelBin.SelphieLimitBreakSets[SpellSet.SlotID]?.Slots;
 
         /// <summary>
         /// Spell set
         /// </summary>
-        private Kernel_bin.Slot_array SpellSet
-        {
-            get
-            {
-                if (Kernel_bin.Slotarray != null)
-                    return Kernel_bin.Slotarray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Kernel_bin.Slotarray.Count - 1)];
-                return null;
-            }
-        }
+        private SlotArray SpellSet => Memory.KernelBin.SlotArray != null ? Memory.KernelBin.SlotArray[MathHelper.Clamp((TombolaLevel * 12) + TombolaLevel, 0, Memory.KernelBin.SlotArray.Count - 1)] : null;
 
         private Target.Group TargetGroup { get => (Target.Group)ITEM[8, 0]; set => ITEM[8, 0] = value; }
 
-        private IGMDataItem.Text Times { get => (IGMDataItem.Text)ITEM[2, 0]; set => ITEM[2, 0] = value; }
+        private Text Times { get => (Text)ITEM[2, 0]; set => ITEM[2, 0] = value; }
 
         /// <summary>
         /// Selphie's TombolaLevel
         /// </summary>
-        private short TombolaLevel => Damageable != null && Damageable.GetCharacterData(out Saves.CharacterData c) ? checked((short)(Damageable.Level / 10 + c.CurrentCrisisLevel + Memory.Random.Next(5) - 1)) : (short)0;
+        private short TombolaLevel => Damageable != null && Damageable.GetCharacterData(out var c) ? checked((short)(Damageable.Level / 10 + c.CurrentCrisisLevel + Memory.Random.Next(5) - 1)) : (short)0;
 
         /// <summary>
         /// Selphie's TombolaLevel
@@ -89,12 +74,12 @@ namespace OpenVIII.IGMData
         {
             get
             {
-                byte rnd = checked((byte)Memory.Random.Next(256));
+                var rnd = checked((byte)Memory.Random.Next(256));
                 if (rnd >= 249) return 4;
-                else if (rnd >= 209) return 3;
-                else if (rnd >= 159) return 2;
-                else if (rnd >= 39) return 1;
-                else return 0;
+                if (rnd >= 209) return 3;
+                if (rnd >= 159) return 2;
+                if (rnd >= 39) return 1;
+                return 0;
             }
         }
 
@@ -126,7 +111,7 @@ namespace OpenVIII.IGMData
 
                         //Single targets are random but if cursor is on enemy it will only hit an enemy.
                         // and if it's on a party member it'll only hit a party member.
-                        TargetGroup?.SelectTargetWindows(MagicData, Casts, new Target.Random { Single = true, PositiveMatters = true });
+                        TargetGroup?.SelectTargetWindows(MagicData, Casts, new Random { Single = true, PositiveMatters = true });
                         // show target window so target selection code works.
                         TargetGroup?.ShowTargetWindows();
                         // Execute the spells.
@@ -143,8 +128,8 @@ namespace OpenVIII.IGMData
 
         public override void Refresh()
         {
-            Kernel_bin.Slot spell_data = Spell_Data;
-            MagicData = spell_data.Magic_Data;
+            var spell_data = SpellData;
+            MagicData = spell_data.MagicData;
             Casts = spell_data.Casts;
             SetCursor_select(3);
             base.Refresh();
@@ -159,12 +144,12 @@ namespace OpenVIII.IGMData
             // 3,4,5
             // 6,7,8
             BLANKS.SetAll(true);
-            Spell = new IGMDataItem.Text { Pos = SIZE[0] };
-            Number = new IGMDataItem.Integer { Pos = SIZE[1], Spaces = 3, NumType = Icons.NumType.SysFntBig };
-            Times = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 65], Pos = SIZE[2] };
-            Do_Over = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 67], Pos = SIZE[3] };
+            Spell = new Text { Pos = SIZE[0] };
+            Number = new Integer { Pos = SIZE[1], Spaces = 3, NumType = Icons.NumType.SysFntBig };
+            Times = new Text { Data = Memory.Strings[Strings.FileID.Kernel][30, 65], Pos = SIZE[2] };
+            DoOver = new Text { Data = Memory.Strings[Strings.FileID.Kernel][30, 67], Pos = SIZE[3] };
             BLANKS[3] = false;
-            Cast = new IGMDataItem.Text { Data = Memory.Strings[Strings.FileID.KERNEL][30, 66], Pos = SIZE[6] };
+            Cast = new Text { Data = Memory.Strings[Strings.FileID.Kernel][30, 66], Pos = SIZE[6] };
             BLANKS[6] = false;
             TargetGroup = Target.Group.Create(Damageable);
             TargetGroup.Hide();
@@ -181,7 +166,7 @@ namespace OpenVIII.IGMData
             if (row > 0) SIZE[i].Offset(20, 0);
         }
 
-        public static Selphie_Slots Create(Rectangle pos, Damageable damageable = null, bool battle = true) => Create<Selphie_Slots>(9, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, 3, 3, damageable, battle: battle);
+        public static SelphieSlots Create(Rectangle pos, Damageable damageable = null, bool battle = true) => Create<SelphieSlots>(9, 1, new Box { Pos = pos, Title = Icons.ID.SPECIAL }, 3, 3, damageable, battle: battle);
 
         #endregion Methods
     }

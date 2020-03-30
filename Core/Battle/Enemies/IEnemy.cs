@@ -5,7 +5,7 @@
         #region Properties
 
         byte AP { get; }
-        Debug_battleDat.Magic[] DrawList { get; }
+        Battle.Dat.Magic[] DrawList { get; }
 
         Saves.Item[] DropList { get; }
 
@@ -19,7 +19,7 @@
 
         byte MugRate { get; }
 
-        Kernel_bin.Devour Devour { get; }
+        Kernel.Devour Devour { get; }
 
         #endregion Properties
 
@@ -30,7 +30,7 @@
 
         Saves.Item Drop(bool RareITEM);
 
-        int EXPExtra(byte lasthitlevel);
+        int EXPExtra(byte lastHitLevel);
 
         Saves.Item Mug(byte spd, bool RareITEM);
 

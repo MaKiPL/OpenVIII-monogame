@@ -1,6 +1,7 @@
-﻿using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.Xna.Framework;
+using OpenVIII.IGMDataItem;
+using OpenVIII.Kernel;
 
 namespace OpenVIII.IGMData.Pool
 {
@@ -16,7 +17,7 @@ namespace OpenVIII.IGMData.Pool
 
         public static Combine Create(Rectangle pos, Damageable damageable = null, bool battle = false, int count = 2)
         {
-            Combine r = Create<Combine>(count + 1, 1, new IGMDataItem.Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
+            var r = Create<Combine>(count + 1, 1, new Box { Pos = pos, Title = Icons.ID.SPECIAL }, count, 1, damageable, battle: battle);
             if (battle)
                 r.Target_Group = Target.Group.Create(r.Damageable);
             return r;
@@ -24,7 +25,7 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            bool ret = false;
+            var ret = false;
             if (InputITEM(Target_Group, ref ret))
             { }
             else
@@ -45,7 +46,7 @@ namespace OpenVIII.IGMData.Pool
         public override bool Inputs_OKAY()
         {
             base.Inputs_OKAY();
-            KernelItem item = Contents[CURSOR_SELECT];
+            var item = Contents[CURSOR_SELECT];
             if (!BLANKS[CURSOR_SELECT])
             {
                 Target_Group?.SelectTargetWindows(item);
@@ -56,14 +57,14 @@ namespace OpenVIII.IGMData.Pool
 
         public override void Refresh()
         {
-            int i = 0;
-            int skip = Page * Rows;
+            var i = 0;
+            var skip = Page * Rows;
             bool AddAngelo(KernelItem item)
             {
                 if (i >= Rows) return false;
                 if (skip-- <= 0)
                 {
-                    ((IGMDataItem.Text)ITEM[i, 0]).Data = item.Name;
+                    ((Text)ITEM[i, 0]).Data = item.Name;
                     Contents[i] = item;
                     BLANKS[i] = false;
                     ITEM[i, 0].Show();
@@ -71,26 +72,26 @@ namespace OpenVIII.IGMData.Pool
                 }
                 return true;
             }
-            if (Kernel_bin.Rinoalimitbreakspart1 != null)
-                foreach (Kernel_bin.Rinoa_limit_breaks_part_1 lb in Kernel_bin.Rinoalimitbreakspart1)
+            if (Memory.KernelBin.RinoaLimitBreaksPart1 != null)
+                foreach (var lb in Memory.KernelBin.RinoaLimitBreaksPart1)
                     if (!AddAngelo(new KernelItem
                     {
                         rinoa_Limit_Breaks_Part_1 = lb,
                         rinoa_Limit_Breaks_Part_2 = lb.Angelo == Angelo.Angel_Wing ?
-                        Kernel_bin.Rinoalimitbreakspart2.First(x => x.Angelo == lb.Angelo) : null
+                        Memory.KernelBin.RinoaLimitBreaksPart2.First(x => x.Angelo == lb.Angelo) : null
                     })) break;
-            if (Kernel_bin.Rinoalimitbreakspart2 != null)
-                foreach (Kernel_bin.Rinoa_limit_breaks_part_2 lb in Kernel_bin.Rinoalimitbreakspart2)
+            if (Memory.KernelBin.RinoaLimitBreaksPart2 != null)
+                foreach (var lb in Memory.KernelBin.RinoaLimitBreaksPart2)
                     if (lb.Angelo != Angelo.Angel_Wing && !AddAngelo(
                         new KernelItem { rinoa_Limit_Breaks_Part_2 = lb })) break;
-            IEnumerable<Kernel_bin.Non_Junctionable_GFs_Attacks_Data> non_Junctionable_GFs_Attacks_Datas =
-                Kernel_bin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
+            var non_Junctionable_GFs_Attacks_Datas =
+                Memory.KernelBin.NonJunctionableGFsAttacksData?.Where(x => !x.Angelo.Equals(Angelo.None));
             if (non_Junctionable_GFs_Attacks_Datas != null)
-                foreach (Kernel_bin.Non_Junctionable_GFs_Attacks_Data lb in non_Junctionable_GFs_Attacks_Datas)
+                foreach (var lb in non_Junctionable_GFs_Attacks_Datas)
                     if (!AddAngelo(
                         new KernelItem { non_Junctionable_GFs_Attacks_Data = lb })) break;
-            DefaultPages = ((Kernel_bin.Rinoalimitbreakspart1?.Count ?? 0) +
-                (Kernel_bin.Rinoalimitbreakspart2?.Count ?? 0) +
+            DefaultPages = ((Memory.KernelBin.RinoaLimitBreaksPart1?.Count ?? 0) +
+                (Memory.KernelBin.RinoaLimitBreaksPart2?.Count ?? 0) +
                 (non_Junctionable_GFs_Attacks_Datas?.Count() ?? 1) - 1) / Rows;
             for (; i < Rows; i++)
             {
@@ -110,9 +111,9 @@ namespace OpenVIII.IGMData.Pool
         protected override void Init()
         {
             base.Init();
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
-                ITEM[i, 0] = new IGMDataItem.Text
+                ITEM[i, 0] = new Text
                 {
                     Pos = SIZE[i]
                 };
@@ -145,29 +146,29 @@ namespace OpenVIII.IGMData.Pool
             base.UpdateTitle();
             if (Pages == 1)
             {
-                ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                ((Box)CONTAINER).Title = Icons.ID.SPECIAL;
             }
             else
                 switch (Page)
                 {
                     case 0:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG1;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG1;
                         break;
 
                     case 1:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG2;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG2;
                         break;
 
                     case 2:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG3;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG3;
                         break;
 
                     case 3:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL_PG4;
                         break;
 
                     default:
-                        ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
+                        ((Box)CONTAINER).Title = Icons.ID.SPECIAL;
                         break;
                 }
         }
@@ -180,9 +181,9 @@ namespace OpenVIII.IGMData.Pool
         {
             #region Fields
 
-            public Kernel_bin.Non_Junctionable_GFs_Attacks_Data non_Junctionable_GFs_Attacks_Data;
-            public Kernel_bin.Rinoa_limit_breaks_part_1 rinoa_Limit_Breaks_Part_1;
-            public Kernel_bin.Rinoa_limit_breaks_part_2 rinoa_Limit_Breaks_Part_2;
+            public NonJunctionableGFsAttacksData non_Junctionable_GFs_Attacks_Data;
+            public RinoaLimitBreaksPart1 rinoa_Limit_Breaks_Part_1;
+            public RinoaLimitBreaksPart2 rinoa_Limit_Breaks_Part_2;
 
             #endregion Fields
 
@@ -193,11 +194,11 @@ namespace OpenVIII.IGMData.Pool
                 get
                 {
                     if (rinoa_Limit_Breaks_Part_1 != null)
-                        return rinoa_Limit_Breaks_Part_1.ID;
+                        return rinoa_Limit_Breaks_Part_1.RinoaLimitID;
                     if (rinoa_Limit_Breaks_Part_2 != null)
-                        return rinoa_Limit_Breaks_Part_2.ID;
+                        return rinoa_Limit_Breaks_Part_2.RinoaLimit2ID;
                     if (non_Junctionable_GFs_Attacks_Data != null)
-                        return non_Junctionable_GFs_Attacks_Data.ID;
+                        return non_Junctionable_GFs_Attacks_Data.NonGFID;
                     return 0;
                 }
             }
@@ -220,11 +221,11 @@ namespace OpenVIII.IGMData.Pool
                 }
             }
 
-            public Kernel_bin.Target Target
+            public Kernel.Target Target
             {
                 get
                 {
-                    Kernel_bin.Target r = 0;
+                    Kernel.Target r = 0;
                     if (rinoa_Limit_Breaks_Part_1 != null)
                         r |= rinoa_Limit_Breaks_Part_1.Target;
                     if (rinoa_Limit_Breaks_Part_2 != null)
@@ -232,9 +233,9 @@ namespace OpenVIII.IGMData.Pool
                     // there is no target from njGFs so must be set in battle scripts.
                     // setting a base default for those.
                     if (non_Junctionable_GFs_Attacks_Data != null)
-                        r |= Kernel_bin.Target.Enemy |
-                            Kernel_bin.Target.Ally |
-                            Kernel_bin.Target.Single_Target;
+                        r |= Kernel.Target.Enemy |
+                            Kernel.Target.Ally |
+                            Kernel.Target.SingleTarget;
                     //non_Junctionable_GFs_Attacks_Data.Target;
                     return r;
                 }

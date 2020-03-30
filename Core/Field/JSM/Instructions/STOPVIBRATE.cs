@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class STOPVIBRATE : JsmInstruction
     {
-        public STOPVIBRATE()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public STOPVIBRATE() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

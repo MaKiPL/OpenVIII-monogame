@@ -44,14 +44,14 @@ namespace OpenVIII.Battle
 
         #region Properties
 
-        public Vector3 camPosition { get; private set; }
-        public Vector3 camTarget { get; private set; }
-        public Matrix projectionMatrix { get; private set; }
+        public Vector3 camPosition { get; set; }
+        public Vector3 camTarget { get; set; }
+        public Matrix projectionMatrix { get; set; }
 
-        //public Matrix worldMatrix { get; private set; }
-        public Matrix viewMatrix { get; private set; }
+        //public Matrix worldMatrix { get;  }
+        public Matrix viewMatrix { get; set; }
 
-        public uint EndOffset { get; private set; }
+        public uint EndOffset { get; set; }
 
         #endregion Properties
 
@@ -61,7 +61,7 @@ namespace OpenVIII.Battle
         {
             //const float V = 100f;
             //cam.startingTime = 64;
-            float step = cam.CurrentTime.Ticks / (float)cam.TotalTime.Ticks;
+            var step = cam.CurrentTime.Ticks / (float)cam.TotalTime.Ticks;
             camTarget = Vector3.SmoothStep(cam.Camera_Lookat(0), cam.Camera_Lookat(1), step);
             camPosition = Vector3.SmoothStep(cam.Camera_World(0), cam.Camera_World(1), step);
 
@@ -82,15 +82,15 @@ namespace OpenVIII.Battle
             //camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
             //camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
 
-            float fovDirector = MathHelper.SmoothStep(cam.startingFOV, cam.endingFOV, step);
+            var fovDirector = MathHelper.SmoothStep(cam.startingFOV, cam.endingFOV, step);
 
-            float fovD = (float)(2 * Math.Atan(240.0 / (2 * fovDirector)) * 57.29577951);
+            var fovD = (float)(2 * Math.Atan(240.0 / (2 * fovDirector)) * 57.29577951);
 
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                    MathHelper.ToRadians(fovD),
-                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                   Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 1000f);
             //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
             //              Forward, Vector3.Up);
@@ -106,7 +106,7 @@ namespace OpenVIII.Battle
             {
                 if (bMultiShotAnimation && cam.time != 0)
                 {
-                    using (BinaryReader br = Stage.Open())
+                    using (var br = Stage.Open())
                         if (br != null)
                             ReadAnimation(lastCameraPointer - 2, br);
                 }
@@ -122,9 +122,9 @@ namespace OpenVIII.Battle
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
         private CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
         {
-            Battle.Encounter enc = Memory.Encounters.Current;
-            int pSet = enc.ResolveCameraSet(animId);
-            int pAnim = enc.ResolveCameraAnimation(animId);
+            var enc = Memory.Encounters.Current;
+            var pSet = enc.ResolveCameraSet(animId);
+            var pAnim = enc.ResolveCameraAnimation(animId);
             return new CameraSetAnimGRP(pSet, pAnim);
         }
 
@@ -137,9 +137,9 @@ namespace OpenVIII.Battle
         /// <returns>Camera pointer (data after PlayStation MIPS)</returns>
         private uint GetCameraPointer()
         {
-            byte scenario = Memory.Encounters.Current.Scenario;
-            bool _5d4 = _x5D4.Any(x => x == scenario);
-            bool _5d8 = _x5D8.Any(x => x == scenario);
+            var scenario = Memory.Encounters.Current.Scenario;
+            var _5d4 = _x5D4.Any(x => x == scenario);
+            var _5d8 = _x5D8.Any(x => x == scenario);
             if (_5d4) return 0x5D4;
             if (_5d8) return 0x5D8;
             switch (scenario)
@@ -208,7 +208,7 @@ namespace OpenVIII.Battle
         /// <returns>Either primary or alternative camera from encounter</returns>
         private byte GetRandomCameraN(Battle.Encounter encounter)
         {
-            int camToss = Memory.Random.Next(3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
+            var camToss = Memory.Random.Next(3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
             switch (camToss)
             {
                 case 0:
@@ -249,7 +249,7 @@ namespace OpenVIII.Battle
             if (cam.control_word == 0xFFFF)
                 return 0; //return NULL
 
-            ushort current_position = br.ReadUInt16(); //getter for *current_position
+            var current_position = br.ReadUInt16(); //getter for *current_position
             br.BaseStream.Seek(-2, SeekOrigin.Current); //roll back one WORD because no increment
 
             switch ((cam.control_word >> 6) & 3)
@@ -379,7 +379,7 @@ namespace OpenVIII.Battle
 
         public void ChangeAnimation(byte animId)
         {
-            using (BinaryReader br = Stage.Open())
+            using (var br = Stage.Open())
                 if (br != null)
                 {
                     cam.ResetTime();
@@ -398,12 +398,12 @@ namespace OpenVIII.Battle
         private uint ReadAnimationById(byte animId, BinaryReader br)
         {
             cam.animationId = animId;
-            CameraSetAnimGRP tpGetter = GetCameraCollectionPointers(animId);
-            BattleCameraSet[] battleCameraSetArray = battleCameraCollection.battleCameraSet;
+            var tpGetter = GetCameraCollectionPointers(animId);
+            var battleCameraSetArray = battleCameraCollection.battleCameraSet;
             if (battleCameraSetArray.Length > tpGetter.Set && battleCameraSetArray[tpGetter.Set].animPointers.Length > tpGetter.Anim)
             {
-                BattleCameraSet battleCameraSet = battleCameraSetArray[tpGetter.Set];
-                uint cameraAnimationGlobalPointer = battleCameraSet.animPointers[tpGetter.Anim];
+                var battleCameraSet = battleCameraSetArray[tpGetter.Set];
+                var cameraAnimationGlobalPointer = battleCameraSet.animPointers[tpGetter.Anim];
                 return ReadAnimation(cameraAnimationGlobalPointer, br);
             }
             else
@@ -425,7 +425,7 @@ namespace OpenVIII.Battle
         /// </summary>
         public static Camera Read(BinaryReader br)
         {
-            Camera c = new Camera();
+            var c = new Camera();
             br.BaseStream.Seek(c.bs_cameraPointer, 0);
             uint cCameraHeaderSector = br.ReadUInt16();
             uint pCameraSetting = br.ReadUInt16();
@@ -433,25 +433,25 @@ namespace OpenVIII.Battle
             uint sCameraDataSize = br.ReadUInt16();
 
             //Camera settings parsing?
-            BattleCameraSettings bcs = new BattleCameraSettings() { unk = br.ReadBytes(24) };
+            var bcs = new BattleCameraSettings() { unk = br.ReadBytes(24) };
             //end of camera settings parsing
 
             br.BaseStream.Seek(pCameraAnimationCollection + c.bs_cameraPointer, SeekOrigin.Begin);
-            BattleCameraCollection bcc = new BattleCameraCollection { cAnimCollectionCount = br.ReadUInt16() };
-            BattleCameraSet[] bcset = new BattleCameraSet[bcc.cAnimCollectionCount];
+            var bcc = new BattleCameraCollection { cAnimCollectionCount = br.ReadUInt16() };
+            var bcset = new BattleCameraSet[bcc.cAnimCollectionCount];
             bcc.battleCameraSet = bcset;
-            for (int i = 0; i < bcc.cAnimCollectionCount; i++)
+            for (var i = 0; i < bcc.cAnimCollectionCount; i++)
                 bcset[i] = new BattleCameraSet() { globalSetPointer = (uint)(br.BaseStream.Position + br.ReadUInt16() - i * 2 - 2) };
             bcc.pCameraEOF = br.ReadUInt16();
 
-            for (int i = 0; i < bcc.cAnimCollectionCount; i++)
+            for (var i = 0; i < bcc.cAnimCollectionCount; i++)
             {
                 br.BaseStream.Seek(bcc.battleCameraSet[i].globalSetPointer, 0);
                 bcc.battleCameraSet[i].animPointers = new uint[8];
-                for (int n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
+                for (var n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
                     bcc.battleCameraSet[i].animPointers[n] = (uint)(br.BaseStream.Position + br.ReadUInt16() * 2 - n * 2);
             }
-            CameraStruct cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays?
+            var cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays?
             c.battleCameraCollection = bcc;
             c.battleCameraSettings = bcs;
             c.cam = cam;

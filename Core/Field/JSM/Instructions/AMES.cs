@@ -1,35 +1,41 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
-
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Pop up a message window until WINCLOSE or MESSYNC is called. 
+    /// Pop up a message window until WINCLOSE or MESSYNC is called.
     /// </summary>
     public sealed class AMES : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Message Channel
         /// </summary>
-        private readonly Int32 _channel;
+        private readonly int _channel;
+
         /// <summary>
         /// Field message ID
         /// </summary>
-        private readonly Int32 _messageId;
+        private readonly int _messageId;
+
         /// <summary>
         /// position of window
         /// </summary>
         private readonly Point _pos;
 
-        public AMES(Int32 channel, Int32 messageId, Int32 posX, Int32 posY)
+        #endregion Fields
+
+        #region Constructors
+
+        public AMES(int channel, int messageId, int posX, int posY)
         {
             _channel = channel;
             _messageId = messageId;
             (_pos.X, _pos.Y) = (posX, posY);
         }
 
-        public AMES(Int32 parameter, IStack<IJsmExpression> stack)
+        public AMES(int parameter, IStack<IJsmExpression> stack)
             : this(
                 posY: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32(),
                 posX: ((Jsm.Expression.PSHN_L)stack.Pop()).Int32(),
@@ -38,10 +44,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(AMES)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_pos)}: {_pos})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -62,5 +67,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             ServiceId.Message[services].Show(_channel, _messageId, _pos.X, _pos.Y);
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(AMES)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_pos)}: {_pos})";
+
+        #endregion Methods
     }
 }

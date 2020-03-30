@@ -1,39 +1,39 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Hides this entity's model on the field. See also SHOW. 
+    /// Hides this entity's model on the field. See also SHOW.
     /// </summary>
     internal sealed class HIDE : JsmInstruction
     {
+        #region Constructors
+
         public HIDE()
         {
         }
 
-        public HIDE(Int32 parameter, IStack<IJsmExpression> stack)
+        public HIDE(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(HIDE)}()";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Property(nameof(FieldObject.Model))
                 .Method(nameof(FieldObjectModel.Hide))
                 .Comment(nameof(HIDE));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
             currentObject.Model.Hide();
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(HIDE)}()";
+
+        #endregion Methods
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Last dungeon in</para>
@@ -15,7 +13,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
         /// <summary>
         /// 1 or 0 ?
         /// </summary>
-        private IJsmExpression _arg0;
+        private readonly IJsmExpression _arg0;
 
         #endregion Fields
 
@@ -23,7 +21,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public LASTIN(IJsmExpression arg0) => _arg0 = arg0;
 
-        public LASTIN(Int32 parameter, IStack<IJsmExpression> stack)
+        public LASTIN(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
@@ -33,7 +31,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(LASTIN)}({nameof(_arg0)}: {_arg0})";
+        public override string ToString() => $"{nameof(LASTIN)}({nameof(_arg0)}: {_arg0})";
 
         #endregion Methods
     }

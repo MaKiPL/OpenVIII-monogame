@@ -1,24 +1,33 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts
+﻿namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public sealed class GameScript
         {
-            public Int32 ScriptId { get; }
-            public Jsm.ExecutableSegment Segment { get; }
+            #region Constructors
 
-            public override string ToString() => $"{{{ScriptId}, {Segment}}}";
-            public GameScript(Int32 scriptId, Jsm.ExecutableSegment segment)
+            public GameScript(int scriptId, ExecutableSegment segment)
             {
                 ScriptId = scriptId;
                 Segment = segment;
             }
 
+            #endregion Constructors
+
+            #region Properties
+
+            public int ScriptId { get; }
+            public ExecutableSegment Segment { get; }
+
+            #endregion Properties
+
+            #region Methods
+
             public void FormatMethod(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
             {
-                String methodName = GetMethodName(formatterContext);
+                var methodName = GetMethodName(formatterContext);
 
                 sw.AppendLine($"public void {methodName}()");
                 {
@@ -32,18 +41,21 @@ namespace OpenVIII.Fields.Scripts
                 }
             }
 
-            public void FormatMethodBody(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext)
-            {
-                Segment.Format(sw, formatterContext, executionContext);
-            }
+            public void FormatMethodBody(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices executionContext) => Segment.Format(sw, formatterContext, executionContext);
 
-            private String GetMethodName(IScriptFormatterContext formatterContext)
+            public override string ToString() => $"{{{ScriptId}, {Segment}}}";
+
+            private string GetMethodName(IScriptFormatterContext formatterContext)
             {
-                formatterContext.GetObjectScriptNamesById(ScriptId, out _, out String methodName);
-                if (Char.IsLower(methodName[0]))
-                    methodName = Char.ToUpperInvariant(methodName[0]) + methodName.Substring(1);
+                formatterContext.GetObjectScriptNamesById(ScriptId, out _, out var methodName);
+                if (char.IsLower(methodName[0]))
+                    methodName = char.ToUpperInvariant(methodName[0]) + methodName.Substring(1);
                 return methodName;
             }
+
+            #endregion Methods
         }
+
+        #endregion Classes
     }
 }

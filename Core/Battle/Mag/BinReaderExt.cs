@@ -30,18 +30,16 @@ namespace OpenVIII
         {
             return br.Read(br.ReadSByte, out val);
         }
-        unsafe public static bool Read<T>(this BinaryReader br, Func<T> f, out T val) where T : unmanaged
+        public static unsafe bool Read<T>(this BinaryReader br, Func<T> f, out T val) where T : unmanaged
         {
             if (br.BaseStream.Length - sizeof(T) > br.BaseStream.Position)
             {
                 val = f.Invoke();
                 return true;
             }
-            else
-            {
-                val = default;
-                return false;
-            }
+
+            val = default;
+            return false;
         }
     }
 }

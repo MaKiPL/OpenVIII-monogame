@@ -6,7 +6,7 @@ using System.IO;
 
 namespace OpenVIII
 {
-    public partial class Kernel_bin
+    namespace Kernel
     {
         /// <summary>
         /// requirement to unlock abilities
@@ -155,10 +155,10 @@ namespace OpenVIII
             //0x0000  2 bytes Offset to GF attack name
             //0x0002  2 bytes Offset to GF attack description
             public Magic_ID MagicID { get; private set; }             //0x0004  2 bytes[[Magic ID
-            public Attack_Type Attack_type { get; private set; }           //0x0006  1 byte  Attack type
+            public AttackType Attack_type { get; private set; }           //0x0006  1 byte  Attack type
             public byte GF_power { get; private set; }              //0x0007  1 byte  GF power(used in damage formula)
             public byte[] Unknown0 { get; private set; }            //0x0008  2 bytes Unknown
-            public Attack_Flags Attack_flags { get; private set; }          //0x000A  1 byte  Attack Flags
+            public AttackFlags Attack_flags { get; private set; }          //0x000A  1 byte  Attack Flags
             public byte[] Unknown1 { get; private set; }            //0x000B  2 bytes Unknown
             public Element Element { get; private set; }               //0x000D  1 byte[[Element
             public Persistent_Statuses Statuses0 { get; private set; }           //0x000E  2 bytes[[Statuses 0
@@ -197,10 +197,10 @@ namespace OpenVIII
                 br.BaseStream.Seek(4, SeekOrigin.Current);
 
                 MagicID = (Magic_ID)br.ReadUInt16();             //0x0004  2 bytes[[Magic ID
-                Attack_type = (Attack_Type)br.ReadByte();           //0x0006  1 byte  Attack type
+                Attack_type = (AttackType)br.ReadByte();           //0x0006  1 byte  Attack type
                 GF_power = br.ReadByte();              //0x0007  1 byte  GF power(used in damage formula)
                 Unknown0 = br.ReadBytes(2);            //0x0008  2 bytes Unknown
-                Attack_flags = (Attack_Flags)(br.ReadByte());          //0x000A  1 byte  Attack Flags
+                Attack_flags = (AttackFlags)(br.ReadByte());          //0x000A  1 byte  Attack Flags
                 Unknown1 = br.ReadBytes(2);            //0x000B  2 bytes Unknown
                 Element = (Element)br.ReadByte();               //0x000D  1 byte[[Element
                 Statuses0 = (Persistent_Statuses)br.ReadUInt16();           //0x000E  2 bytes[[Statuses 0

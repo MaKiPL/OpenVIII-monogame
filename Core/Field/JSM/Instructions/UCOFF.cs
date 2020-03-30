@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Disable user control.
@@ -9,33 +6,35 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// </summary>
     internal sealed class UCOFF : JsmInstruction
     {
+        #region Constructors
+
         public UCOFF()
         {
         }
 
-        public UCOFF(Int32 parameter, IStack<IJsmExpression> stack)
+        public UCOFF(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(UCOFF)}()";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IGameplayService))
                 .Property(nameof(IGameplayService.IsUserControlEnabled))
                 .Assign(false)
                 .Comment(nameof(UCOFF));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
             ServiceId.Gameplay[services].IsUserControlEnabled = false;
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(UCOFF)}()";
+
+        #endregion Methods
     }
 }

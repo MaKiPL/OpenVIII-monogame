@@ -1,6 +1,3 @@
-using System;
-
-
 namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
@@ -9,25 +6,31 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/12D_ACTORMODE"/>
     public sealed class ACTORMODE : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Model ID?
         /// </summary>
-        private IJsmExpression _arg0;
+        private readonly IJsmExpression _arg0;
 
-        public ACTORMODE(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        #endregion Fields
 
-        public ACTORMODE(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public ACTORMODE(IJsmExpression arg0) => _arg0 = arg0;
+
+        public ACTORMODE(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(ACTORMODE)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(ACTORMODE)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

@@ -6,17 +6,17 @@ namespace OpenVIII.IGMData.Pool
     /// <summary>
     /// </summary>
     /// <see cref="https://www.youtube.com/watch?v=BhgixAEvuu0"/>
-    public class BlueMagic : IGMData.Pool.Base<Saves.Data, Kernel_bin.Blue_magic_Quistis_limit_break>
+    public class BlueMagic : Base<Saves.Data, Kernel.BlueMagicQuistisLimitBreak>
     {
         #region Fields
 
-        private List<Kernel_bin.Blue_Magic> unlocked = new List<Kernel_bin.Blue_Magic>();
+        private List<Kernel.BlueMagic> _unlocked = new List<Kernel.BlueMagic>();
 
         #endregion Fields
 
         #region Properties
 
-        public IGMData.Target.Group Target_Group => (IGMData.Target.Group)(((IGMData.Base)ITEM[Rows, 0]));
+        public Target.Group TargetGroup => (((Base)ITEM[Rows, 0])) as IGMData.Target.Group;
 
         #endregion Properties
 
@@ -27,10 +27,10 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs()
         {
-            if (Target_Group.Enabled)
+            if (TargetGroup.Enabled)
             {
                 Cursor_Status |= Cursor_Status.Enabled | Cursor_Status.Blinking;
-                return Target_Group.Inputs();
+                return TargetGroup.Inputs();
             }
             else
             {
@@ -49,42 +49,42 @@ namespace OpenVIII.IGMData.Pool
 
         public override bool Inputs_OKAY()
         {
-            Kernel_bin.Blue_magic_Quistis_limit_break c = Contents[CURSOR_SELECT];
+            var c = Contents[CURSOR_SELECT];
             //c.Target;
-            Target_Group.SelectTargetWindows(c);
-            Target_Group.ShowTargetWindows();
+            TargetGroup.SelectTargetWindows(c);
+            TargetGroup.ShowTargetWindows();
             return base.Inputs_OKAY();
         }
 
         public override void Refresh()
         {
             if (Memory.State == null || Memory.State.LimitBreakQuistisUnlockedBlueMagic == null) return;
-            Kernel_bin.Blue_Magic bm = 0;
-            unlocked = new List<Kernel_bin.Blue_Magic>();
+            Kernel.BlueMagic bm = 0;
+            _unlocked = new List<Kernel.BlueMagic>();
             foreach (bool b in Memory.State.LimitBreakQuistisUnlockedBlueMagic)
             {
                 if (b)
-                    unlocked.Add(bm);
+                    _unlocked.Add(bm);
                 bm++;
             }
 
-            int skip = Rows * Page;
+            var skip = Rows * Page;
             int i;
-            for (i = skip; i < unlocked.Count && i < Rows + skip; i++)
+            for (i = skip; i < _unlocked.Count && i < Rows + skip; i++)
             {
-                int j = i % Rows;
+                var j = i % Rows;
                 ITEM[j, 0].Show();
                 BLANKS[j] = false;
-                Contents[j] = Kernel_bin.BluemagicQuistislimitbreak[unlocked[i]];
+                Contents[j] = Memory.KernelBin.BlueMagicQuistisLimitBreak[_unlocked[i]];
                 ((IGMDataItem.Text)ITEM[j, 0]).Data = Contents[j].Name;
             }
             for (; i < Rows + skip; i++)
             {
-                int j = i % Rows;
+                var j = i % Rows;
                 ITEM[j, 0].Hide();
                 BLANKS[j] = true;
             }
-            if (unlocked.Count / Rows <= 1)
+            if (_unlocked.Count / Rows <= 1)
                 ((IGMDataItem.Box)CONTAINER).Title = Icons.ID.SPECIAL;
             else
                 ((IGMDataItem.Box)CONTAINER).Title = (Icons.ID)((int)(Icons.ID.SPECIAL_PG1) + Page);
@@ -99,18 +99,18 @@ namespace OpenVIII.IGMData.Pool
 
         protected override void DrawITEM(int i, int d)
         {
-            if (Rows >= i || !Target_Group.Enabled)
+            if (Rows >= i || !TargetGroup.Enabled)
                 base.DrawITEM(i, d);
         }
 
         protected override void Init()
         {
             base.Init();
-            for (int i = 0; i < Rows; i++)
+            for (var i = 0; i < Rows; i++)
             {
                 ITEM[i, 0] = new IGMDataItem.Text { Pos = SIZE[i] };
             }
-            ITEM[Rows, 0] = IGMData.Target.Group.Create(Damageable, false);
+            ITEM[Rows, 0] = Target.Group.Create(Damageable, false);
             PointerZIndex = 0;
         }
 

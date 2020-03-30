@@ -5,31 +5,38 @@ namespace OpenVIII.Fields
 {
     public sealed class RenderingService : IRenderingService
     {
-        public Boolean IsSupported => true;
+        #region Properties
 
-        public void AddScreenColor(Color Color)
-        {
+        public int BackgroundFPS { get; set; }
+        public bool IsSupported => true;
+
+        #endregion Properties
+
+        #region Methods
+
+        public void AddScreenColor(Color Color) =>
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AddScreenColor)}({nameof(Color)}: {Color})");
-        }
 
-        public void SubScreenColor(Color Color)
-        {
-            // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(SubScreenColor)}({nameof(Color)}: {Color})");
-        }
-
-        public void AddScreenColorTransition(Color Color, Color offset, Int32 transitionDuration)
-        {
+        public void AddScreenColorTransition(Color Color, Color offset, int transitionDuration) =>
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AddScreenColorTransition)}({nameof(Color)}: {Color}, {nameof(offset)}: {offset}, {nameof(transitionDuration)}: {transitionDuration})");
-        }
 
-        public void SubScreenColorTransition(Color Color, Color offset, Int32 transitionDuration)
-        {
+        public void AnimateBackground(int firstFrame, int lastFrame) =>
+            // TODO: Field script
+            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AnimateBackground)}({nameof(firstFrame)}: {firstFrame}, {nameof(lastFrame)}: {lastFrame})");
+
+        public void DrawBackground() =>
+            // TODO: Field script
+            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(DrawBackground)}()");
+
+        public void SubScreenColor(Color Color) =>
+            // TODO: Field script
+            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(SubScreenColor)}({nameof(Color)}: {Color})");
+
+        public void SubScreenColorTransition(Color Color, Color offset, int transitionDuration) =>
             // TODO: Field script
             Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(SubScreenColorTransition)}({nameof(Color)}: {Color}, {nameof(offset)}: {offset}, {nameof(transitionDuration)}: {transitionDuration})");
-        }
 
         public IAwaitable Wait()
         {
@@ -39,18 +46,6 @@ namespace OpenVIII.Fields
             return DummyAwaitable.Instance;
         }
 
-        public Int32 BackgroundFPS { get; set; }
-
-        public void AnimateBackground(Int32 firstFrame, Int32 lastFrame)
-        {
-            // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(AnimateBackground)}({nameof(firstFrame)}: {firstFrame}, {nameof(lastFrame)}: {lastFrame})");
-        }
-
-        public void DrawBackground()
-        {
-            // TODO: Field script
-            Console.WriteLine($"NotImplemented: {nameof(RenderingService)}.{nameof(DrawBackground)}()");
-        }
+        #endregion Methods
     }
 }

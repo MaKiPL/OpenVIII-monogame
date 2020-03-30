@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Set Draw Point hidden</para>
@@ -10,22 +7,28 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/155_SETDRAWPOINT"/>
     public sealed class SETDRAWPOINT : JsmInstruction
     {
-        private readonly Boolean _isHidden;
+        #region Fields
 
-        public SETDRAWPOINT(Boolean isHidden)
-        {
-            _isHidden = isHidden;
-        }
+        private readonly bool _isHidden;
 
-        public SETDRAWPOINT(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public SETDRAWPOINT(bool isHidden) => _isHidden = isHidden;
+
+        public SETDRAWPOINT(int parameter, IStack<IJsmExpression> stack)
             : this(
                 isHidden: ((IConstExpression)stack.Pop()).Boolean())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(SETDRAWPOINT)}({nameof(_isHidden)}: {_isHidden})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(SETDRAWPOINT)}({nameof(_isHidden)}: {_isHidden})";
+
+        #endregion Methods
     }
 }

@@ -110,11 +110,11 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DirectMidiNet">
-      <HintPath>..\DirectMidiNet.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoGame.Framework, Version=3.7.1.189, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\lib\net45\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <Private>True</Private>
@@ -128,9 +128,6 @@
     <Reference Include="ImGui.NET, Version=1.72.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>x86\ImGui.NET.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoGame.Framework, Version=3.7.1.189, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MonoGame.Framework.Portable.3.7.1.189\lib\portable-net45+win8+wpa81\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
@@ -156,7 +153,6 @@
     <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
     </Reference>
@@ -165,9 +161,6 @@
     </Reference>
     <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Sockets, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Net.Sockets.4.3.0\lib\net46\System.Net.Sockets.dll</HintPath>
@@ -195,11 +188,6 @@
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net46\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
     </Reference>
@@ -225,33 +213,63 @@
     <Compile Include="AV\Music\Midi\Fluid.cs" />
     <Compile Include="AV\Music\Midi\DirectMedia.cs" />
     <Compile Include="AV\Movie\Player.cs" />
-    <Compile Include="AV\Movie\STATE.cs" />
+    <Compile Include="AV\Movie\State.cs" />
     <Compile Include="AV\Music\Music.cs" />
-    <Compile Include="AV\Sound\ADPCMCOEFSET.cs" />
     <Compile Include="AV\Sound\Entry.cs" />
     <Compile Include="AV\Sound\Sound.cs" />
-    <Compile Include="AV\Sound\WAVEFORMATEX.cs" />
     <Compile Include="AV\Video.cs" />
     <Compile Include="Battle\AnimationSystem.cs" />
+    <Compile Include="Battle\BattleModule.cs" />
     <Compile Include="Battle\BattleSwirl.cs" />
-    <Compile Include="Battle\Characters\CharacterData.cs" />
+    <Compile Include="Battle\Dat\CharacterData.cs" />
     <Compile Include="Battle\Characters\CharacterInstanceInformation.cs" />
+    <Compile Include="Battle\Dat\Animation.cs" />
+    <Compile Include="Battle\Dat\AnimationData.cs" />
+    <Compile Include="Battle\Dat\AnimationFrame.cs" />
+    <Compile Include="Battle\Dat\AnimationSequence.cs" />
+    <Compile Include="Battle\Dat\AnimationYOffset.cs" />
+    <Compile Include="Battle\Dat\Bone.cs" />
+    <Compile Include="Battle\Dat\CharacterDatFile.cs" />
+    <Compile Include="Battle\Dat\DatHeader.cs" />
+    <Compile Include="Battle\Dat\DatFile.cs" />
+    <Compile Include="Battle\Dat\KernelFlag.cs" />
+    <Compile Include="Battle\Dat\MonsterDatFile.cs" />
+    <Compile Include="Battle\Dat\EntityType.cs" />
+    <Compile Include="Battle\Dat\Geometry.cs" />
+    <Compile Include="Battle\Dat\Object.cs" />
+    <Compile Include="Battle\Dat\Quad.cs" />
+    <Compile Include="Battle\Dat\Sections.cs" />
+    <Compile Include="Battle\Dat\Skeleton.cs" />
+    <Compile Include="Battle\Dat\Textures.cs" />
+    <Compile Include="Battle\Dat\Triangle.cs" />
+    <Compile Include="Battle\Dat\UV.cs" />
+    <Compile Include="Battle\Dat\VectorBoneGRP.cs" />
+    <Compile Include="Battle\Dat\Vertex.cs" />
+    <Compile Include="Battle\Dat\VertexData.cs" />
+    <Compile Include="Battle\Dat\VertexPositionTexturePointersGRP.cs" />
+    <Compile Include="Battle\Dat\WeaponDatFile.cs" />
     <Compile Include="Battle\Encounters\Coordinate.cs" />
     <Compile Include="Battle\DeadTime.cs" />
-    <Compile Include="Battle\debug_battleDat.cs" />
+    <Compile Include="Battle\Dat\VertexPositionTexturePointersGRPExt.cs" />
     <Compile Include="Battle\Encounters\Encounter.cs" />
     <Compile Include="Battle\Encounters\EncounterFlag.cs" />
     <Compile Include="Battle\Encounters\Encounters.cs" />
+    <Compile Include="Battle\Dat\Abilities.cs" />
     <Compile Include="Battle\Enemies\Enemy.cs" />
     <Compile Include="Battle\Encounters\EnemyCoordinates.cs" />
     <Compile Include="Battle\Enemies\EnemyInstanceInformation.cs" />
+    <Compile Include="Battle\Dat\Flag1.cs" />
+    <Compile Include="Battle\Dat\Flag2.cs" />
+    <Compile Include="Battle\Dat\Magic.cs" />
+    <Compile Include="Battle\Dat\UnkFlag.cs" />
     <Compile Include="Battle\FPS_Camera.cs" />
     <Compile Include="Battle\Enemies\IEnemy.cs" />
-    <Compile Include="Battle\Enemies\Information.cs" />
+    <Compile Include="Battle\Dat\Information.cs" />
     <Compile Include="Battle\Mag\BinReaderExt.cs" />
+    <Compile Include="Battle\Stage\GPU.cs" />
     <Compile Include="BinaryReaderExt.cs" />
     <Compile Include="Battle\Mag\Geometry.cs" />
-    <Compile Include="Battle\init_debugger_battle.cs" />
+    <Compile Include="Battle\InitDebuggerBattle.cs" />
     <Compile Include="Battle\Mag\Mag.cs" />
     <Compile Include="Battle\Menu\BattleMenu.cs" />
     <Compile Include="Battle\Menu\BattleMenus.cs" />
@@ -298,7 +316,9 @@
     <Compile Include="CountDown.cs" />
     <Compile Include="DrawVertDeclaration.cs" />
     <Compile Include="Field\Archive.cs" />
+    <Compile Include="Field\Camera\Camera.cs" />
     <Compile Include="Field\Camera\Cameras.cs" />
+    <Compile Include="Field\Core\NamedEntity.cs" />
     <Compile Include="Field\EnumFlagExt.cs" />
     <Compile Include="Field\Field_modes.cs" />
     <Compile Include="Field\INF\Gateway.cs" />
@@ -322,6 +342,7 @@
     <Compile Include="Field\PMP.cs" />
     <Compile Include="Field\Sections.cs" />
     <Compile Include="Field\SFX.cs" />
+    <Compile Include="Field\Toggles.cs" />
     <Compile Include="Field\WalkMesh\Access.cs" />
     <Compile Include="Field\Background\Background.cs" />
     <Compile Include="Field\Background\BackgroundTextureType.cs" />
@@ -339,11 +360,12 @@
     <Compile Include="FPSCounter.cs" />
     <Compile Include="Image\Bppflag.cs" />
     <Compile Include="Image\Cluts.cs" />
+    <Compile Include="Image\ColorABGR1555.cs" />
     <Compile Include="Image\TDW.cs" />
     <Compile Include="Image\Texture2DWrapper.cs" />
     <Compile Include="Image\TextureBuffer.cs" />
     <Compile Include="Image\Texture_Base.cs" />
-    <Compile Include="Image\TIM_OVERTURE.cs" />
+    <Compile Include="Image\TIMOverture.cs" />
     <Compile Include="ImGuiRenderer.cs" />
     <Compile Include="Input\Buttons.cs" />
     <Compile Include="Input\ButtonTrigger.cs" />
@@ -361,6 +383,12 @@
     <Compile Include="Input\Inputs_FF8Steam.cs" />
     <Compile Include="Input\Inputs_OpenVIII.cs" />
     <Compile Include="Input\MouseLockMode.cs" />
+    <Compile Include="Kernel\Abilities\Ability.cs" />
+    <Compile Include="Kernel\Abilities\AbilityFlags4.cs" />
+    <Compile Include="Kernel\Abilities\IAbility.cs" />
+    <Compile Include="Kernel\Commands\ICommand.cs" />
+    <Compile Include="Kernel\Limit\BlueMagic.cs" />
+    <Compile Include="Kernel\Unlocker.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Menu\Debug\Debug_Menu.cs" />
     <Compile Include="Menu\Debug\IGMData\DebugSelectPool.cs" />
@@ -386,7 +414,7 @@
     <Compile Include="Menu\IGMData\Group\Base.cs" />
     <Compile Include="Menu\IGMData\Group\TopMenu.cs" />
     <Compile Include="Menu\IGMData\Pool\Base.cs" />
-    <Compile Include="Battle\Menu\IGMData\Pool\Enemy_Attacks.cs" />
+    <Compile Include="Battle\Menu\IGMData\Pool\EnemyAttacks.cs" />
     <Compile Include="Menu\IGMData\Pool\GF.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\Magic.cs" />
@@ -394,8 +422,8 @@
     <Compile Include="Menu\IGMData\Pool\Draw.cs" />
     <Compile Include="Menu\IGMData\Pool\Draw\Commands.cs" />
     <Compile Include="Menu\IGMData\Pool\BlueMagic.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\Slots\Abilities.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\Slots\Command.cs" />
+    <Compile Include="Menu\Junction\IGMData\Slots\Abilities.cs" />
+    <Compile Include="Menu\Junction\IGMData\Slots\Command.cs" />
     <Compile Include="Menu\Images\BigTexProps.cs" />
     <Compile Include="Menu\Images\HSL.cs" />
     <Compile Include="Menu\Images\TexProps.cs" />
@@ -403,13 +431,13 @@
     <Compile Include="Menu\LGSG\IGMData\GameBlock.cs" />
     <Compile Include="Menu\LGSG\IGMData\GameChoose.cs" />
     <Compile Include="Menu\LGSG\IGMData\SlotChoose.cs" />
-    <Compile Include="Menu\LGSG\IGM_LGSG.cs" />
+    <Compile Include="Menu\LGSG\IGMLoadSaveGame.cs" />
     <Compile Include="Menu\LGSG\IGMData\LoadBarBox.cs" />
     <Compile Include="Menu\LGSG\IGMData\ThreePieceHeader.cs" />
     <Compile Include="Menu\Lobby\IGMData_Selections.cs" />
     <Compile Include="Battle\Menu\VictoryMenu.cs" />
-    <Compile Include="Battle\module_battle.cs" />
-    <Compile Include="Battle\module_battle_Debug.cs" />
+    <Compile Include="Battle\ModuleBattle.cs" />
+    <Compile Include="Battle\ModuleBattleDebug.cs" />
     <Compile Include="Characters.cs" />
     <Compile Include="DictionaryEx.cs" />
     <Compile Include="Image\Entry.cs" />
@@ -434,7 +462,7 @@
     <Compile Include="Strings\FF8String.cs" />
     <Compile Include="Strings\FF8StringReference.cs" />
     <Compile Include="AV\Ffcc.cs" />
-    <Compile Include="AV\FfccVaribleGroup.cs" />
+    <Compile Include="AV\FfccVariableGroup.cs" />
     <Compile Include="FFmpegBinariesHelper.cs" />
     <Compile Include="Field\Core\BreakAwaitable.cs" />
     <Compile Include="Field\Core\Coords3D.cs" />
@@ -452,11 +480,10 @@
     <Compile Include="Field\Core\GlobalVariableId.cs" />
     <Compile Include="Field\Core\IAwaitable.cs" />
     <Compile Include="Field\Core\IAwaiter.cs" />
-    <Compile Include="Field\Core\IScriptExecuter.cs" />
+    <Compile Include="Field\Core\IScriptExecutor.cs" />
     <Compile Include="Field\Core\MovieName.cs" />
     <Compile Include="Field\Core\MusicId.cs" />
     <Compile Include="Field\Core\MusicName.cs" />
-    <Compile Include="Field\Core\NamedEntity.cs" />
     <Compile Include="Field\Core\ScriptResultId.cs" />
     <Compile Include="Field\Core\Services\Implementation\FieldService.cs" />
     <Compile Include="Field\Core\Services\Implementation\GameplayService.cs" />
@@ -484,10 +511,9 @@
     <Compile Include="Field\Core\Services\Interfaces\ISoundService.cs" />
     <Compile Include="Field\Core\Services\ServiceId.cs" />
     <Compile Include="Field\Core\Services\ServiceProvider.cs" />
-    <Compile Include="Field\Core\SfxId.cs" />
     <Compile Include="Field\Core\SoundEffectName.cs" />
     <Compile Include="Field\Core\SpinAwaitable.cs" />
-    <Compile Include="Field\Core\WalkmeshCoords.cs" />
+    <Compile Include="Field\Core\WalkMeshCoords.cs" />
     <Compile Include="Field\Fields\DataProvider\Field.FsDataProvider.cs" />
     <Compile Include="Field\Fields\DataProvider\Field.IDataProvider.cs" />
     <Compile Include="Field\Fields\Field.FieldPart.cs" />
@@ -495,7 +521,7 @@
     <Compile Include="Field\Fields\LookupService\Field.FSLookupService.cs" />
     <Compile Include="Field\Fields\LookupService\Field.ILookupService.cs" />
     <Compile Include="ExceptionExtensionMethods.cs" />
-    <Compile Include="Field\Framework\IEnumerableExtensionMethods.cs" />
+    <Compile Include="Field\Framework\EnumerableExtensionMethods.cs" />
     <Compile Include="IListExtensionMethods.cs" />
     <Compile Include="Field\Framework\IStack.cs" />
     <Compile Include="OrderedDictionary.cs" />
@@ -926,58 +952,57 @@
     <Compile Include="Font.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GFs.cs" />
-    <Compile Include="Kernel\Kernel_bin.Abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Ability.cs" />
-    <Compile Include="Kernel\Kernel_bin.AbilityFlags2.cs" />
-    <Compile Include="Kernel\Kernel_bin.Attack_Flags.cs" />
-    <Compile Include="Kernel\Kernel_bin.Attack_Type.cs" />
-    <Compile Include="Kernel\Kernel_bin.Battle_Commands.cs" />
-    <Compile Include="Kernel\Kernel_bin.Battle_Items.cs" />
-    <Compile Include="Kernel\Kernel_bin.Battle_Only_Statuses.cs" />
-    <Compile Include="Kernel\Kernel_bin.Blue_magic_Quistis_limit_break.cs" />
-    <Compile Include="Kernel\Kernel_bin.CharacterAbilityFlags.cs" />
-    <Compile Include="Kernel\Kernel_bin.Character_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Character_Stats.cs" />
-    <Compile Include="Kernel\Kernel_bin.Command_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Command_ability_data.cs" />
-    <Compile Include="Kernel\Kernel_bin.cs" />
-    <Compile Include="Kernel\Kernel_bin.Devour.cs" />
-    <Compile Include="Kernel\Kernel_bin.Duel_Zell_limit_break.cs" />
-    <Compile Include="Kernel\Kernel_bin.Element.cs" />
-    <Compile Include="Kernel\Kernel_bin.Enemy_Attacks_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Equipable_Abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Gender.cs" />
-    <Compile Include="Kernel\Kernel_bin.GF_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.JunctionAbilityFlags.cs" />
-    <Compile Include="Kernel\Kernel_bin.Junctionable_GFs_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Junction_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.J_Statuses.cs" />
-    <Compile Include="Kernel\Kernel_bin.Magic_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Magic_ID.cs" />
-    <Compile Include="Kernel\Kernel_bin.Menu_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Misc_section.cs" />
-    <Compile Include="Kernel\Kernel_bin.Misc_text_pointers.cs" />
-    <Compile Include="Kernel\Kernel_bin.Non_battle_Items_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Non_Junctionable_GFs_Attacks_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Party_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Persistant_Statuses.cs" />
-    <Compile Include="Kernel\Kernel_bin.Quanity.cs" />
-    <Compile Include="Kernel\Kernel_bin.Quistis_limit_break_parameters.cs" />
-    <Compile Include="Kernel\Kernel_bin.Renzokuken_Level.cs" />
-    <Compile Include="Kernel\Kernel_bin.Renzokuken_Finishers_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Rinoa_limit_breaks_part_1.cs" />
-    <Compile Include="Kernel\Kernel_bin.Rinoa_limit_breaks_part_2.cs" />
-    <Compile Include="Kernel\Kernel_bin.Selphie_limit_break_sets.cs" />
-    <Compile Include="Kernel\Kernel_bin.Shot_Irvine_limit_break.cs" />
-    <Compile Include="Kernel\Kernel_bin.Slot.cs" />
-    <Compile Include="Kernel\Kernel_bin.Slot_array.cs" />
-    <Compile Include="Kernel\Kernel_bin.Stat.cs" />
-    <Compile Include="Kernel\Kernel_bin.StatFlags.cs" />
-    <Compile Include="Kernel\Kernel_bin.Stat_percent_abilities.cs" />
-    <Compile Include="Kernel\Kernel_bin.Target.cs" />
-    <Compile Include="Kernel\Kernel_bin.Temporary_character_limit_breaks.cs" />
-    <Compile Include="Kernel\Kernel_bin.Weapons_Data.cs" />
-    <Compile Include="Kernel\Kernel_bin.Zell_limit_break_parameters.cs" />
+    <Compile Include="Kernel\Abilities\Abilities.cs" />
+    <Compile Include="Kernel\Abilities\AbilityFlags2.cs" />
+    <Compile Include="Kernel\AttackFlags.cs" />
+    <Compile Include="Kernel\AttackType.cs" />
+    <Compile Include="Kernel\Commands\BattleCommand.cs" />
+    <Compile Include="Kernel\Items\BattleItemsData.cs" />
+    <Compile Include="Kernel\BattleOnlyStatuses.cs" />
+    <Compile Include="Kernel\Limit\BlueMagicQuistisLimitBreak.cs" />
+    <Compile Include="Kernel\Abilities\CharacterAbilityFlags.cs" />
+    <Compile Include="Kernel\Abilities\CharacterAbilities.cs" />
+    <Compile Include="Kernel\CharacterStats.cs" />
+    <Compile Include="Kernel\Abilities\CommandAbility.cs" />
+    <Compile Include="Kernel\Abilities\CommandAbilityData.cs" />
+    <Compile Include="Kernel\KernelBin.cs" />
+    <Compile Include="Kernel\Devour.cs" />
+    <Compile Include="Kernel\Limit\DuelZellLimitBreak.cs" />
+    <Compile Include="Kernel\Element.cs" />
+    <Compile Include="Kernel\EnemyAttacksData.cs" />
+    <Compile Include="Kernel\Abilities\IEquippableAbility.cs" />
+    <Compile Include="Kernel\Gender.cs" />
+    <Compile Include="Kernel\Abilities\GFAbilities.cs" />
+    <Compile Include="Kernel\Abilities\JunctionAbilityFlags.cs" />
+    <Compile Include="Kernel\JunctionableGFsData.cs" />
+    <Compile Include="Kernel\Abilities\JunctionAbilities.cs" />
+    <Compile Include="Kernel\JunctionStatuses.cs" />
+    <Compile Include="Kernel\MagicData.cs" />
+    <Compile Include="Kernel\MagicID.cs" />
+    <Compile Include="Kernel\Abilities\MenuAbilities.cs" />
+    <Compile Include="Kernel\MiscSection.cs" />
+    <Compile Include="Kernel\MiscTextPointers.cs" />
+    <Compile Include="Kernel\Items\NonBattleItemsData.cs" />
+    <Compile Include="Kernel\NonJunctionableGFsAttacksData.cs" />
+    <Compile Include="Kernel\Abilities\PartyAbilities.cs" />
+    <Compile Include="Kernel\PersistentStatuses.cs" />
+    <Compile Include="Kernel\Quantity.cs" />
+    <Compile Include="Kernel\Limit\BlueMagicQuistisLimitBreakParameters.cs" />
+    <Compile Include="Kernel\Limit\RenzokukenFinisher.cs" />
+    <Compile Include="Kernel\Limit\RenzokukenFinisherData.cs" />
+    <Compile Include="Kernel\Limit\RinoaLimitBreaksPart1.cs" />
+    <Compile Include="Kernel\Limit\RinoaLimitBreaksPart2.cs" />
+    <Compile Include="Kernel\Limit\SelphieLimitBreakSets.cs" />
+    <Compile Include="Kernel\Limit\ShotIrvineLimitBreak.cs" />
+    <Compile Include="Kernel\Limit\Slot.cs" />
+    <Compile Include="Kernel\Limit\SlotArray.cs" />
+    <Compile Include="Kernel\Stat.cs" />
+    <Compile Include="Kernel\StatFlags.cs" />
+    <Compile Include="Kernel\Abilities\StatPercentageAbilities.cs" />
+    <Compile Include="Kernel\Target.cs" />
+    <Compile Include="Kernel\Limit\TemporaryCharacterLimitBreaks.cs" />
+    <Compile Include="Kernel\WeaponsData.cs" />
+    <Compile Include="Kernel\Limit\ZellLimitBreakParameters.cs" />
     <Compile Include="Loc.cs" />
     <Compile Include="Archive\Compression\LZSS.cs" />
     <Compile Include="Memory.cs" />
@@ -989,43 +1014,43 @@
     <Compile Include="Menu\Images\Icons.ID.cs" />
     <Compile Include="Menu\Images\Icons.InsertCustomEntries.cs" />
     <Compile Include="Menu\IGM\IGM.cs" />
-    <Compile Include="Menu\IGM\IGMData\IGMData_Clock.cs" />
-    <Compile Include="Menu\IGM\IGMData\IGMData_Footer.cs" />
-    <Compile Include="Menu\IGM\IGMData\IGMData_Header.cs" />
-    <Compile Include="Menu\IGM\IGMData\IGMData_NonParty.cs" />
-    <Compile Include="Menu\IGM\IGMData\IGMData_Party.cs" />
-    <Compile Include="Menu\IGM\IGMData\IGMData_PartyGroup.cs" />
-    <Compile Include="Menu\IGM\IGMData\IGMData_SideMenu.cs" />
-    <Compile Include="Menu\IGM_Items\IGMData\IGMData_Statuses.cs" />
-    <Compile Include="Menu\IGM_Items\IGMData\IGMData_TargetPool.cs" />
-    <Compile Include="Menu\IGM_Items\IGMData\IGMData_TopMenu.cs" />
-    <Compile Include="Menu\IGM_Items\IGM_Items.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_AbilityPool.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_CommandPool.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Abilities_Group.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_CharacterInfo.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmChanges.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemAll.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_ConfirmRemMag.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Group.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_GF_Junctioned.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_D_Slots.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_A_Values.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_EL_D_Values.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_Group.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_PageTitle.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_Stat_Slots.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_A_D_Slots.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_A_Values.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Mag_ST_D_Values.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Slots.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Auto.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Junction.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_TopMenu_Off.cs" />
-    <Compile Include="Menu\IGM_Junction\IGMData\IGMData_Values.cs" />
-    <Compile Include="Menu\IGM_Junction\IGM_Junction.cs" />
-    <Compile Include="Menu\IGM_Items\Items_In_Menu.cs" />
+    <Compile Include="Menu\IGM\IGMData\Clock.cs" />
+    <Compile Include="Menu\IGM\IGMData\Footer.cs" />
+    <Compile Include="Menu\IGM\IGMData\Header.cs" />
+    <Compile Include="Menu\IGM\IGMData\NonParty.cs" />
+    <Compile Include="Menu\IGM\IGMData\Party.cs" />
+    <Compile Include="Menu\IGM\IGMData\PartyGroup.cs" />
+    <Compile Include="Menu\IGM\IGMData\SideMenu.cs" />
+    <Compile Include="Menu\IGMItems\IGMData\Statuses.cs" />
+    <Compile Include="Menu\IGMItems\IGMData\IGMData_TargetPool.cs" />
+    <Compile Include="Menu\IGMItems\IGMData\TopMenu.cs" />
+    <Compile Include="Menu\IGMItems\IGM_Items.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Abilities_AbilityPool.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Abilities_CommandPool.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Abilities_Group.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_CharacterInfo.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_ConfirmChanges.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_ConfirmRemAll.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_ConfirmRemMag.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_GF_Group.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_GF_Junctioned.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_EL_A_D_Slots.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_EL_A_Values.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_EL_D_Values.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_Group.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_PageTitle.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_Stat_Slots.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_ST_A_D_Slots.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_ST_A_Values.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Mag_ST_D_Values.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Slots.cs" />
+    <Compile Include="Menu\Junction\IGMData\TopMenu.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_TopMenu_Auto.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_TopMenu_Junction.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_TopMenu_Off.cs" />
+    <Compile Include="Menu\Junction\IGMData\IGMData_Values.cs" />
+    <Compile Include="Menu\Junction\IGM_Junction.cs" />
+    <Compile Include="Menu\IGMItems\Items_In_Menu.cs" />
     <Compile Include="Menu\Images\Magazine.cs" />
     <Compile Include="Menu\Images\Magazine.ID.cs" />
     <Compile Include="Menu\Images\Magazine.InsertCustomEntries.cs" />
@@ -1041,7 +1066,7 @@
     <Compile Include="Strings\Strings.Areames.cs" />
     <Compile Include="Strings\Strings.cs" />
     <Compile Include="ModuleHandler.cs" />
-    <Compile Include="AV\Movie\module_movie_test.cs" />
+    <Compile Include="AV\Movie\ModuleMovieTest.cs" />
     <Compile Include="module_overture_debug.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Saves\Saves.CharacterData.cs" />
@@ -1087,6 +1112,7 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Menu\XMLFile1.xml" />
     <Content Include="x64\avcodec-58.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1235,13 +1261,13 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets" Condition="Exists('..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets'))" />
     <Error Condition="!Exists('..\packages\ImGui.NET.1.72.0\build\net40\ImGui.NET.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ImGui.NET.1.72.0\build\net40\ImGui.NET.targets'))" />
+    <Error Condition="!Exists('..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets'))" />
   </Target>
   <Import Project="..\packages\ImGui.NET.1.72.0\build\net40\ImGui.NET.targets" Condition="Exists('..\packages\ImGui.NET.1.72.0\build\net40\ImGui.NET.targets')" />
+  <Import Project="..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets" Condition="Exists('..\packages\MonoGame.Framework.DesktopGL.3.7.1.189\build\MonoGame.Framework.DesktopGL.targets')" />
 </Project>

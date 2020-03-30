@@ -74,7 +74,7 @@ namespace OpenVIII
 
         public static Icons Load()
         {
-            Icons r = Load<Icons>();
+            var r = Load<Icons>();
             Memory.MainThreadOnlyActions.Enqueue(r.Trim);
             return r;
         }
@@ -84,15 +84,15 @@ namespace OpenVIII
             switch (type)
             {
                 case NumType.SysFnt:
-                    DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
+                    DataSize = Memory.Font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysfnt, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
 
                 case NumType.SysFntBig:
-                    DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
+                    DataSize = Memory.Font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.sysFntBig, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
 
                 case NumType.MenuFont:
-                    DataSize = Memory.font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
+                    DataSize = Memory.Font.RenderBasicText(number.ToString(), location.ToPoint(), scale, Font.Type.menuFont, Fade: fade, color: color, blink: blink, skipdraw: skipDraw);
                     return DataSize;
 
                 case NumType.Num8X8:
@@ -110,16 +110,16 @@ namespace OpenVIII
             if (_numbersIDs == null)
             {
                 _numbersIDs = new ConcurrentDictionary<int, ID[]>();
-                int j = 0;
-                foreach (ID id in NumberStarts)
+                var j = 0;
+                foreach (var id in NumberStarts)
                     _numbersIDs.TryAdd(j++, Enumerable.Range((int)id, 10).Select(x => checked((ID)x)).ToArray());
             }
 
-            IEnumerable<int> intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
-            Rectangle dst = new Rectangle { Location = location.ToPoint() };
+            var intList = number.ToString(format).Select(digit => int.Parse(digit.ToString()));
+            var dst = new Rectangle { Location = location.ToPoint() };
             DataSize = dst;
             if (Entries == null) return DataSize;
-            foreach (int i in intList)
+            foreach (var i in intList)
             {
                 if (_numbersIDs == null) continue;
                 if (!skipDraw)
@@ -127,8 +127,8 @@ namespace OpenVIII
                         blink
                             ? Color.Lerp(Font.ColorID2Color[color], Font.ColorID2Blink[color], Menu.Blink_Amount)
                             : Font.ColorID2Color[color]);
-                float width = Entries[_numbersIDs[(int)type][i]].GetRectangle.Width * scale.X;
-                float height = Entries[_numbersIDs[(int)type][i]].GetRectangle.Height * scale.Y;
+                var width = Entries[_numbersIDs[(int)type][i]].GetRectangle.Width * scale.X;
+                var height = Entries[_numbersIDs[(int)type][i]].GetRectangle.Height * scale.Y;
                 dst.Offset(width, 0);
                 _dataSize.Width += (int)width;
                 if (_dataSize.Height < (int)height)
@@ -155,15 +155,15 @@ namespace OpenVIII
         public Color MostSaturated(Enum ic, byte pal)
         {
             if (Textures.Count <= pal) return default;
-            EntryGroup eg = this[(ID)ic];
+            var eg = this[(ID)ic];
             if (eg == null) return default;
-            TextureHandler tex = Textures[pal];
+            var tex = Textures[pal];
             return eg.MostSaturated(tex, pal);
         }
 
         public override void Trim(Enum ic, byte pal)
         {
-            EntryGroup eg = this[(ID)ic];
+            var eg = this[(ID)ic];
             if (Textures != null && Textures.Count > pal)
                 eg.Trim(Textures[pal]);
         }
@@ -171,8 +171,8 @@ namespace OpenVIII
         protected override void DefaultValues()
         {
             base.DefaultValues();
-            Color[] red = new Color[16];
-            Color[] yellow = new Color[16];
+            var red = new Color[16];
+            var yellow = new Color[16];
             red[15] = new Color(255, 30, 30, 255); //red
             red[14] = new Color(140, 30, 30, 255); //dark red
             red[13] = new Color(37, 37, 37, 255); //gray
@@ -197,25 +197,24 @@ namespace OpenVIII
             if (Entries != null) return;
             //read from icon.sp1
             MemoryStream ms;
-            byte[] buffer = aw.GetBinaryFile(IndexFilename);
+            var buffer = aw.GetBinaryFile(IndexFilename);
             if (buffer == null) return;
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+            using (var br = new BinaryReader(ms = new MemoryStream(buffer)))
             {
-                Loc[] locations = new Loc[br.ReadUInt32()];
-                for (int i = 0; i < locations.Length; i++)
+                var locations = new Loc[br.ReadUInt32()];
+                for (var i = 0; i < locations.Length; i++)
                 {
-                    locations[i].Seek = br.ReadUInt16();
-                    locations[i].Length = br.ReadUInt16();
+                    locations[i] = (br.ReadUInt16(), br.ReadUInt16());
                 }
                 Entries = new Dictionary<ID, EntryGroup>(locations.Length + 10);
-                for (int i = 0; i < locations.Length; i++)
+                for (var i = 0; i < locations.Length; i++)
                 {
                     ms.Seek(locations[i].Seek, SeekOrigin.Begin);
-                    byte c = (byte)locations[i].Length;
+                    var c = (byte)locations[i].Length;
                     Entries[(ID)i] = new EntryGroup(c);
-                    for (int e = 0; e < c; e++)
+                    for (var e = 0; e < c; e++)
                     {
-                        Entry tmp = new Entry();
+                        var tmp = new Entry();
                         tmp.LoadfromStreamSP1(br);
                         tmp.Part = (byte)e;
                         tmp.SetLoc(locations[i]);
@@ -228,11 +227,11 @@ namespace OpenVIII
         protected override void InitTextures<T>(ArchiveBase aw = null)
         {
             Textures = new List<TextureHandler>();
-            foreach (TexProps texProps in Props)
+            foreach (var texProps in Props)
             {
-                byte[] buffer = aw.GetBinaryFile(texProps.Filename);
+                var buffer = aw.GetBinaryFile(texProps.Filename);
                 if (buffer == null) continue;
-                T tex = new T();
+                var tex = new T();
                 tex.Load(buffer);
 
                 void add(ushort cult, Color[] colors = null)
@@ -240,7 +239,7 @@ namespace OpenVIII
                     void oneImage() => Textures.Add(TextureHandler.Create(texProps.Filename, tex, 1, 1, cult, colors));
                     if (ForceOriginal == false && texProps.Big != null && texProps.Big.Count > 0)
                     {
-                        TextureHandler textureHandler = TextureHandler.Create(texProps.Big[0].Filename, tex, 2,
+                        var textureHandler = TextureHandler.Create(texProps.Big[0].Filename, tex, 2,
                             texProps.Big[0].Split / 2,
                             cult, colors);
                         if (textureHandler.AllTexture2Ds.FirstOrDefault() == default ||
@@ -265,13 +264,13 @@ namespace OpenVIII
         protected override VertexPositionTexture_Texture2D Quad(Enum ic, byte pal, float scale = 0.25F, Box_Options options = Box_Options.Center | Box_Options.Middle, float z = 0f)
         {
             Trim(ic, pal);
-            EntryGroup eg = this[(ID)ic];
-            VertexPositionTexture_Texture2D r = Quad(eg[0], Textures[pal], scale, eg.Count == 1 ? options : options | Box_Options.UseOffset);
+            var eg = this[(ID)ic];
+            var r = Quad(eg[0], Textures[pal], scale, eg.Count == 1 ? options : options | Box_Options.UseOffset);
 
             if (eg.Count <= 1) return r;
-            List<VertexPositionTexture> tmp = new List<VertexPositionTexture>(r.VPT.Length * eg.Count);
+            var tmp = new List<VertexPositionTexture>(r.VPT.Length * eg.Count);
             tmp.AddRange(r.VPT);
-            for (int i = 1; i < eg.Count; i++)
+            for (var i = 1; i < eg.Count; i++)
                 tmp.AddRange(Quad(eg[0], Textures[pal], scale, options | Box_Options.UseOffset, i * 0.001f).VPT);
             return new VertexPositionTexture_Texture2D(tmp.ToArray(), r.Texture);
         }

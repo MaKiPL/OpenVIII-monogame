@@ -4,7 +4,13 @@ namespace OpenVIII.Fields
 {
     public sealed class MenuService : IMenuService
     {
-        public Boolean IsSupported => true;
+        #region Properties
+
+        public bool IsSupported => true;
+
+        #endregion Properties
+
+        #region Methods
 
         public IAwaitable ShowEnterNameDialog(NamedEntity entity)
         {
@@ -12,5 +18,7 @@ namespace OpenVIII.Fields
             Console.WriteLine($"NotImplemented: {nameof(MenuService)}.{nameof(ShowEnterNameDialog)}({nameof(entity)}: {entity})");
             return DummyAwaitable.Instance;
         }
+
+        #endregion Methods
     }
 }

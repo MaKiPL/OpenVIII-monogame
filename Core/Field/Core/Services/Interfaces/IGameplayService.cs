@@ -4,11 +4,19 @@ namespace OpenVIII.Fields
 {
     public interface IGameplayService
     {
-        Boolean IsSupported { get; }
+        #region Properties
 
-        Boolean IsUserControlEnabled { get; set; }
-        Boolean IsRandomBattlesEnabled { get; set; }
+        bool IsRandomBattlesEnabled { get; set; }
+        bool IsSupported { get; }
+
+        bool IsUserControlEnabled { get; set; }
+
+        #endregion Properties
+
+        #region Methods
 
         void ResetAllData();
+
+        #endregion Methods
     }
 }

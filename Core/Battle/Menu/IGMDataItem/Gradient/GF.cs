@@ -1,6 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
 
 namespace OpenVIII.IGMDataItem.Gradient
 {
@@ -34,10 +34,10 @@ namespace OpenVIII.IGMDataItem.Gradient
 
         public static GF Create(Rectangle? pos = null)
         {
-            GF r = new GF()
+            var r = new GF
             {
                 _pos = pos ?? Rectangle.Empty,
-                Restriction = pos ?? Rectangle.Empty,
+                Restriction = pos ?? Rectangle.Empty
             };
             Memory.MainThreadOnlyActions.Enqueue(
             () =>
@@ -57,13 +57,13 @@ namespace OpenVIII.IGMDataItem.Gradient
                 {
                     //if (Memory.IsMainThread)
                     //{
-                    float dark = 0.00f;
-                    float fade = 1.00f;
-                    int total = width;
-                    Color lightline = new Color(1, 1, 255, 255);
-                    Color darkline = new Color(1, 1, 255, 255);
-                    Color fadeto = new Color(221, 237, 237, 255);
-                    Color[] cfade = new Color[total];
+                    var dark = 0.00f;
+                    var fade = 1.00f;
+                    var total = width;
+                    var lightline = new Color(1, 1, 255, 255);
+                    var darkline = new Color(1, 1, 255, 255);
+                    var fadeto = new Color(221, 237, 237, 255);
+                    var cfade = new Color[total];
                     int i;
                     for (i = 0; i < cfade.Length - (dark * total); i++)
                         cfade[i] = Color.Lerp(lightline, fadeto, i / (fade * total));
@@ -71,7 +71,7 @@ namespace OpenVIII.IGMDataItem.Gradient
                     for (; i < cfade.Length; i++)
                         cfade[i] = darkline;
 
-                    common = new Texture2D(Memory.graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
+                    common = new Texture2D(Memory.Graphics.GraphicsDevice, cfade.Length, 1, false, SurfaceFormat.Color);
                     common.SetData(cfade);
                     //}
                     //else throw new Exception("Must be in main thread!");
@@ -87,7 +87,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             damageable?.Refresh();
         }
 
-        public override bool Update() => Update(null);
+        public override bool Update() => Update();
 
         public bool Update(float? Percent = null)
         {
@@ -95,7 +95,7 @@ namespace OpenVIII.IGMDataItem.Gradient
             {
                 if (Damageable != null && (Percent != null || Damageable.SummonedGF != null))
                 {
-                    Rectangle r = Restriction;
+                    var r = Restriction;
                     r.Width = Lerp(Width, 0, Percent ?? Damageable.SummonedGF.ATBPercent);
                     Restriction = r;
 

@@ -18,8 +18,8 @@ namespace OpenVIII
             /// <returns>String and FI pair</returns>
             public static KeyValuePair<string, FI> Load(BinaryReader br)
             {
-                int filenameLength = br.ReadInt32();
-                byte[] filenameBytes = br.ReadBytes(filenameLength);
+                var filenameLength = br.ReadInt32();
+                var filenameBytes = br.ReadBytes(filenameLength);
                 return new KeyValuePair<string, FI>(ConvertFilename(filenameBytes), new FI(checked((int)br.ReadInt64()), checked((int)br.ReadUInt32())));
             }
 

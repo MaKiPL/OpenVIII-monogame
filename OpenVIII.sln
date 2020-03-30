@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dat Dump", "Dat Dump\Dat Du
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenGLLinux", "OpenGLLinux\OpenGLLinux.csproj", "{9B29C136-BA06-4D74-8BB1-B061383C6355}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DumpStrings", "DumpStrings\DumpStrings.csproj", "{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DebugLinux|x64 = DebugLinux|x64
@@ -177,6 +179,22 @@ Global
 		{9B29C136-BA06-4D74-8BB1-B061383C6355}.ReleaseWindows|x64.ActiveCfg = ReleaseLinux|x64
 		{9B29C136-BA06-4D74-8BB1-B061383C6355}.ReleaseWindows|x86.ActiveCfg = ReleaseLinux|x86
 		{9B29C136-BA06-4D74-8BB1-B061383C6355}.ReleaseWindows|x86.Build.0 = ReleaseLinux|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugLinux|x64.ActiveCfg = Debug|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugLinux|x64.Build.0 = Debug|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugLinux|x86.ActiveCfg = Debug|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugLinux|x86.Build.0 = Debug|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugWindows|x64.ActiveCfg = Debug|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugWindows|x64.Build.0 = Debug|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugWindows|x86.ActiveCfg = Debug|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.DebugWindows|x86.Build.0 = Debug|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseLinux|x64.ActiveCfg = Release|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseLinux|x64.Build.0 = Release|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseLinux|x86.ActiveCfg = Release|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseLinux|x86.Build.0 = Release|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseWindows|x64.ActiveCfg = Release|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseWindows|x64.Build.0 = Release|x64
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseWindows|x86.ActiveCfg = Release|x86
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14}.ReleaseWindows|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -186,6 +204,7 @@ Global
 		{41DD62EB-2257-45C3-94C8-E7EE079BAA41} = {E8E40E2A-FB9B-41E9-88FF-5461A2884FCF}
 		{F56FF8B2-F9BD-45CB-9539-9F169855A72F} = {E8E40E2A-FB9B-41E9-88FF-5461A2884FCF}
 		{11A0C2FE-BDE7-43D1-A6B2-D1FA99B702B2} = {E8E40E2A-FB9B-41E9-88FF-5461A2884FCF}
+		{35F80BCD-F1E5-4F1A-BEAA-C60220A7CB14} = {E8E40E2A-FB9B-41E9-88FF-5461A2884FCF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2799A2A4-25AE-4BF3-9F40-46C4F5F9780B}

@@ -230,7 +230,7 @@ namespace OpenVIII
         {
             fps_camera = new FPS_Camera();
             //init renderer
-            effect = new BasicEffect(Memory.graphics.GraphicsDevice);
+            effect = new BasicEffect(Memory.Graphics.GraphicsDevice);
             effect.EnableDefaultLighting();
             effect.TextureEnabled = true;
             effect.DirectionalLight0.Enabled = true;
@@ -247,7 +247,7 @@ namespace OpenVIII
             camPosition = new Vector3(-9100.781f, 108.0096f, -4438.435f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(cameraFOV),
-                               Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                               Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
                 1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          new Vector3(0f, 1f, 0f));// Y up
@@ -257,7 +257,7 @@ namespace OpenVIII
 
             if (bUseCustomShaderTest)
             {
-                worldShaderModel = Memory.content.Load<Effect>("testShader");
+                worldShaderModel = Memory.Content.Load<Effect>("testShader");
                 worldShaderModel.Parameters["World"].SetValue(worldMatrix);
                 worldShaderModel.Parameters["View"].SetValue(viewMatrix);
                 worldShaderModel.Parameters["Projection"].SetValue(projectionMatrix);
@@ -271,7 +271,7 @@ namespace OpenVIII
             //temporarily disabling this, because I'm getting more and more tired of this music playing over and over when debugging
             //Memory.musicIndex = 30;
             //AV.Music.Play();
-            ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
+            ate = new AlphaTestEffect(Memory.Graphics.GraphicsDevice)
             {
                 Projection = projectionMatrix,
                 View = viewMatrix,
@@ -290,14 +290,14 @@ namespace OpenVIII
 
         private static void ReadWorldMapFiles()
         {
-            ArchiveBase aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
-            ArchiveBase awMain = ArchiveWorker.Load(Memory.Archives.A_MAIN);
+            var aw = ArchiveWorker.Load(Memory.Archives.A_WORLD);
+            var awMain = ArchiveWorker.Load(Memory.Archives.A_MAIN);
 
-            string wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
-            string texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
-            string wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains($"wmset{Extended.GetLanguageShort(true)}.obj")).Select(x => x).First();
-            string charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
-            string railFile = aw.GetListOfFiles().Where(x => x.ToLower().Contains("rail.obj")).Select(x => x).First();
+            var wmxPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("wmx.obj")).Select(x => x).First();
+            var texlPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains("texl.obj")).Select(x => x).First();
+            var wmPath = aw.GetListOfFiles().Where(x => x.ToLower().Contains($"wmset{Extended.GetLanguageShort(true)}.obj")).Select(x => x).First();
+            var charaOne = aw.GetListOfFiles().Where(x => x.ToLower().Contains("chara.one")).Select(x => x).First();
+            var railFile = aw.GetListOfFiles().Where(x => x.ToLower().Contains("rail.obj")).Select(x => x).First();
 
             wmx = aw.GetBinaryFile(wmxPath);
             texl = new texl(aw.GetBinaryFile(texlPath));
@@ -305,51 +305,51 @@ namespace OpenVIII
             wmset = new Wmset(aw.GetBinaryFile(wmPath));
             rail = new rail(aw.GetBinaryFile(railFile));
 
-            string wm2fieldPath = awMain.GetListOfFiles().Where(x => x.ToLower().Contains("wm2field.tbl")).Select(x => x).First();
+            var wm2fieldPath = awMain.GetListOfFiles().Where(x => x.ToLower().Contains("wm2field.tbl")).Select(x => x).First();
 
             wm2field = new wm2field(awMain.GetBinaryFile(wm2fieldPath));
 
             //let's update chara texture indexes due to worldmap VRAM tex atlas behaviour
             chara.AssignTextureSizesForMchInstance(0, new int[] { 0, 1 }); //naturally
             chara.AssignTextureSizesForMchInstance(1, new int[] { 2, 3, 4, 5 }); //ragnarok uses 4 textures!
-            for (int i = 2; i < Enum.GetNames(typeof(worldCharacters)).Length; i++)
+            for (var i = 2; i < Enum.GetNames(typeof(worldCharacters)).Length; i++)
                 chara.AssignTextureSizesForMchInstance(i, new int[] { i * 2 + 2, i * 2 + 3 }); //after ragnarok casual two textures per mesh + two additional due to ragnarok
 
             segments = new Segment[WM_SEGMENTS_COUNT];
 
             MemoryStream ms = null;
 
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(wmx)))
+            using (var br = new BinaryReader(ms = new MemoryStream(wmx)))
             {
-                for (int i = 0; i < segments.Length; i++)
+                for (var i = 0; i < segments.Length; i++)
                 {
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
                     segments[i] = new Segment { segmentId = i, headerData = Extended.ByteArrayToStructure<SegHeader>(br.ReadBytes(68)), block = new Block[16] };
                     ms.Seek(GetSegment(i), SeekOrigin.Begin);
-                    for (int n = 0; n < segments[i].block.Length; n++)
+                    for (var n = 0; n < segments[i].block.Length; n++)
                     {
                         ms.Seek(segments[i].headerData.blockOffsets[n] + GetSegment(i), SeekOrigin.Begin);
                         segments[i].block[n] = new Block { polyCount = br.ReadByte(), vertCount = br.ReadByte(), normalCount = br.ReadByte(), unkPadd = br.ReadByte() };
                         segments[i].block[n].polygons = new Polygon[segments[i].block[n].polyCount];
                         segments[i].block[n].vertices = new Vertex[segments[i].block[n].vertCount];
                         segments[i].block[n].normals = new Normal[segments[i].block[n].normalCount];
-                        for (int k = 0; k < segments[i].block[n].polyCount; k++)
+                        for (var k = 0; k < segments[i].block[n].polyCount; k++)
                             segments[i].block[n].polygons[k] = Extended.ByteArrayToStructure<Polygon>(br.ReadBytes(16));
-                        for (int k = 0; k < segments[i].block[n].vertCount; k++)
+                        for (var k = 0; k < segments[i].block[n].vertCount; k++)
                             segments[i].block[n].vertices[k] = Extended.ByteArrayToStructure<Vertex>(br.ReadBytes(8));
-                        for (int k = 0; k < segments[i].block[n].normalCount; k++)
+                        for (var k = 0; k < segments[i].block[n].normalCount; k++)
                             segments[i].block[n].normals[k] = Extended.ByteArrayToStructure<Normal>(br.ReadBytes(8));
                         segments[i].block[n].unkPadd2 = br.ReadInt32();
                     }
-                    List<ParsedTriangleData> ptd = new List<ParsedTriangleData>();
-                    int interI = GetInterchangableSegmentReplacementIndex(i);
-                    float baseX = 512f * (interI % 32);
-                    float baseY = -512f * (interI / 32);
-                    for (int n = 0; n < segments[i].block.Length; n++)
+                    var ptd = new List<ParsedTriangleData>();
+                    var interI = GetInterchangableSegmentReplacementIndex(i);
+                    var baseX = 512f * (interI % 32);
+                    var baseY = -512f * (interI / 32);
+                    for (var n = 0; n < segments[i].block.Length; n++)
                     {
                         float localX = 2048 * (n % 4);
                         float localZ = -2048 * (n / 4);
-                        for (int k = 0; k < segments[i].block[n].polyCount; k++)
+                        for (var k = 0; k < segments[i].block[n].polyCount; k++)
                         {
                             Vector2[] uvs = {
                                 new Vector2(segments[i].block[n].polygons[k].U1 / 256.0f, segments[i].block[n].polygons[k].V1 / 256.0f),
@@ -381,7 +381,7 @@ namespace OpenVIII
                                 (segments[i].block[n].vertices[segments[i].block[n].polygons[k].F3].Y + localZ) / WORLD_SCALE_MODEL + baseY),
                                 uvC = uvs[2]
                             });
-                            ParsedTriangleData ptda = ptd[ptd.Count - 1];
+                            var ptda = ptd[ptd.Count - 1];
                             ptda.boundingBox = Extended.GetBoundingBox(ptda.A, ptda.B, ptda.C);
                             ptd[ptd.Count - 1] = ptda;
                         }
@@ -502,12 +502,12 @@ namespace OpenVIII
             else
                 worldCharacterInstances[currentControllableEntity].currentAnimationId = 0;
 
-            bool reverse = false;
-            for (int i = 0; i < worldCharacterInstances.Length; i++)
+            var reverse = false;
+            for (var i = 0; i < worldCharacterInstances.Length; i++)
             {
-                worldCharacterInstance instance = worldCharacterInstances[i];
-                bool flying = currentControllableEntity != i;
-                uint framesCount = chara.GetMCH((int)instance.activeCharacter).GetAnimationFramesCount(instance.currentAnimationId);
+                var instance = worldCharacterInstances[i];
+                var flying = currentControllableEntity != i;
+                var framesCount = chara.GetMCH((int)instance.activeCharacter).GetAnimationFramesCount(instance.currentAnimationId);
 
                 if (!(instance as worldCharacterInstance?).HasValue)
                     continue;
@@ -520,7 +520,7 @@ namespace OpenVIII
                         instance.currentAnimFrame--;
                     else
                     {
-                        int Frames = (int)(instance.animationDeltaTime.TotalMilliseconds / TimePerFrame.TotalMilliseconds);
+                        var Frames = (int)(instance.animationDeltaTime.TotalMilliseconds / TimePerFrame.TotalMilliseconds);
                         Frames =  MathHelper.Clamp(Frames, 0, 3);
                         instance.currentAnimFrame += Frames ;
                     }
@@ -557,8 +557,8 @@ namespace OpenVIII
         {
             if (wmset == null)
                 return;
-            Wmset.textureAnimation[] beachAnims = wmset.BeachAnimations;
-            Wmset.textureAnimation[] waterAnims = wmset.WaterAnimations;
+            var beachAnims = wmset.BeachAnimations;
+            var waterAnims = wmset.WaterAnimations;
             UpdateTextureAnimation_SelectedStruct(ref beachAnims);
             UpdateTextureAnimation_SelectedStruct(ref waterAnims, true);
             wmset.BeachAnimations = beachAnims;
@@ -567,9 +567,9 @@ namespace OpenVIII
 
         private static void UpdateTextureAnimation_SelectedStruct(ref Wmset.textureAnimation[] beachAnims, bool bWater = false)
         {
-            for (int i = 0; i < beachAnims.Length; i++)
+            for (var i = 0; i < beachAnims.Length; i++)
             {
-                TimeSpan totalMaxValue = TimeSpan.FromMilliseconds((15.625f * beachAnims[i].animTimeout)); //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
+                var totalMaxValue = TimeSpan.FromMilliseconds((15.625f * beachAnims[i].animTimeout)); //1 is 15.625 milliseconds, because 0x20 is 500 milliseconds
                 beachAnims[i].deltaTime += Memory.ElapsedGameTime;
                 if (beachAnims[i].deltaTime > totalMaxValue)
                 {
@@ -610,11 +610,11 @@ namespace OpenVIII
             int encPointer = wmset.GetEncounterHelperPointer(regionId, groundId); //section1
             if (encPointer == 0xffff)
                 return;
-            ushort[] AvailableEncounters = wmset.GetEncounters(encPointer); //section4
+            var AvailableEncounters = wmset.GetEncounters(encPointer); //section4
 
             //we now have 8 encounters-> 4 casual; 2 mid and 2 rare
 
-            int encounterRoll = Memory.Random.Next(16 + 4 + 2);
+            var encounterRoll = Memory.Random.Next(16 + 4 + 2);
             //casual
             if (encounterRoll < 4) //0123
                 Memory.Encounters.ID = AvailableEncounters[0];
@@ -686,33 +686,33 @@ namespace OpenVIII
                 {
                     if (fulscrMapCurY < 0.070f)
                         fulscrMapCurY = 0.870f;
-                    fulscrMapCurY -= 0.005f * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds/25.0f;
+                    fulscrMapCurY -= 0.005f * (float)Memory.ElapsedGameTime.TotalMilliseconds/25.0f;
                 }
                 else if (Input2.Button(FF8TextTagKey.Down)/* || shift.Y < 0*/)
                 {
                     if (fulscrMapCurY > 0.870f)
                         fulscrMapCurY = 0.070f;
-                    fulscrMapCurY += 0.005f * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
+                    fulscrMapCurY += 0.005f * (float)Memory.ElapsedGameTime.TotalMilliseconds / 25.0f;
 
                 }
                 if (Input2.Button(FF8TextTagKey.Left) /*|| shift.X < 0*/)
                 {
                     if (fulscrMapCurX < 0.145f)
                         fulscrMapCurX = 0.745f;
-                    fulscrMapCurX -= 0.003f* (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
+                    fulscrMapCurX -= 0.003f* (float)Memory.ElapsedGameTime.TotalMilliseconds / 25.0f;
 
                 }
                 else if (Input2.Button(FF8TextTagKey.Right)/* || shift.X > 0*/)
                 {
                     if (fulscrMapCurX > 0.745)
                         fulscrMapCurX = 0.145f;
-                    fulscrMapCurX += 0.003f* (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25.0f;
+                    fulscrMapCurX += 0.003f* (float)Memory.ElapsedGameTime.TotalMilliseconds / 25.0f;
                 }
             }
             else if (worldState != _worldState._9debugFly)
             {
-                Vector2 shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 1f);
-                Vector2 right = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, 1f);
+                var shift = InputGamePad.Distance(GamePadButtons.ThumbSticks_Left, 1f);
+                var right = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, 1f);
 
                 if (right.Y != 0 && worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok)
                 {
@@ -721,7 +721,7 @@ namespace OpenVIII
                 }
                 if (shift != Vector2.Zero)
                 {
-                    float angle = VectorToAngle(shift);
+                    var angle = VectorToAngle(shift);
                     //Debug.WriteLine($"Shift: {shift} Angle: {MathHelper.ToDegrees(angle)} Camera: {degrees}");
                     playerPosition.X += (float)Math.Cos(MathHelper.ToRadians(MathHelper.ToDegrees(angle) + degrees - 90));
                     playerPosition.Z += (float)Math.Sin(MathHelper.ToRadians(MathHelper.ToDegrees(angle) + degrees - 90));
@@ -761,18 +761,18 @@ namespace OpenVIII
                 }
                 if (bHasMoved)
                 {
-                    Vector3 diffvect = (playerPosition - lastPlayerPosition); // gets the vector between the old and new calculated pos.
+                    var diffvect = (playerPosition - lastPlayerPosition); // gets the vector between the old and new calculated pos.
                     diffvect.Normalize(); //prevents speed up from going in more than one direction.
                     // this will slow your movement based on stick.
                     //not best for squall but maybe for vehicles
                     if (shift != Vector2.Zero && InVehicle)
                     {
                         const float distmax = 10f;
-                        float dist = MathHelper.Clamp(Vector2.Distance(Vector2.Zero, shift), 0f, distmax);
+                        var dist = MathHelper.Clamp(Vector2.Distance(Vector2.Zero, shift), 0f, distmax);
                         //Debug.WriteLine($"Dist: {dist}, DistMax: {distmax}");
                         diffvect *= dist / distmax;
                     }
-                    playerPosition = lastPlayerPosition + (diffvect * (float)(Memory.GameTime.ElapsedGameTime.TotalMilliseconds/ playerSpeed));
+                    playerPosition = lastPlayerPosition + (diffvect * (float)(Memory.ElapsedGameTime.TotalMilliseconds/ playerSpeed));
                 }
             }
             if (Input2.Button(Keys.F3))
@@ -791,7 +791,7 @@ namespace OpenVIII
 
                 float yaw = 0f, pitch = 0f, roll = 0f;
                 //https://www.codeproject.com/Questions/324240/Determining-yaw-pitch-and-roll
-                Matrix matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
+                var matrix = Matrix.CreateLookAt(lastPlayerPosition, playerPosition, Vector3.Up);
                 yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
                 pitch = (float)Math.Asin(-matrix.M23);
                 //roll = (float)Math.Atan2(matrix.M21, matrix.M22);
@@ -845,7 +845,7 @@ namespace OpenVIII
         {
             get
             {
-                worldCharacterInstance worldCharacterInstance = worldCharacterInstances[currentControllableEntity];
+                var worldCharacterInstance = worldCharacterInstances[currentControllableEntity];
                 switch (worldCharacterInstance.activeCharacter)
                 {
                     case worldCharacters.Ragnarok:
@@ -866,25 +866,25 @@ namespace OpenVIII
         {
             segmentPosition = new Vector2((int)(playerPosition.X / 512) * -1, (int)(playerPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
 
-            int realSegmentId = GetRealSegmentId();
+            var realSegmentId = GetRealSegmentId();
             realSegmentId = SetInterchangeableZone(realSegmentId);
-            Segment seg = segments[realSegmentId];
+            var seg = segments[realSegmentId];
             RaycastedTris = new List<RayCastedTris>();
-            Vector3 position = playerPosition + new Vector3(0, 15f, 0);
-            Ray characterRay = new Ray(position, Vector3.Down); //sets ray origin
-            Ray characterRay2 = new Ray(position, Vector3.Up); //sets ray origin
+            var position = playerPosition + new Vector3(0, 15f, 0);
+            var characterRay = new Ray(position, Vector3.Down); //sets ray origin
+            var characterRay2 = new Ray(position, Vector3.Up); //sets ray origin
 
-            Ray skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
+            var skyRay = new Ray(GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE), Vector3.Down);
 
             //loop through current block triangles - two rays at the same time. There are only two rays and multi triangles, so iterate triangles and check rays instead of double checking
-            for (int i = 0; i < seg.parsedTriangle.Length; i++)
-                if (Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric) != 0)
+            for (var i = 0; i < seg.parsedTriangle.Length; i++)
+                if (Extended.RayIntersection3D(characterRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var characterBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric, false));
                 // There are spots where you can fly under the map by like flying into the ground or
                 // a corner. This would put the ship back above around.
-                else if (BDebugDisableCollision && Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 characterBarycentric2) != 0)
+                else if (BDebugDisableCollision && Extended.RayIntersection3D(characterRay2, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var characterBarycentric2) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], characterBarycentric2, false));
-                else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
+                else if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var skyBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], skyBarycentric, true));
 
             //don't allow walking over non-walkable faces - just because we tested both rays we can make this linq appear only once
@@ -903,12 +903,12 @@ namespace OpenVIII
             WorldMapToField();
 
             const float forestAdj = 0f;//-12f;
-            foreach (RayCastedTris prt in RaycastedTris)
+            foreach (var prt in RaycastedTris)
             {
                 if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
-                Vector3 distance = playerPosition - prt.pos;
-                float distY = Math.Abs(distance.Y);
+                var distance = playerPosition - prt.pos;
+                var distY = Math.Abs(distance.Y);
                 if (distY >= 16f && !InVehicle) // prevents walking off a clifft most of the time.
                     continue;
                 if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0)
@@ -926,7 +926,7 @@ namespace OpenVIII
             }
 
             //out of loop- failed to obtain collision or abandon move - we need to check now if player wanted to get to forest
-            foreach (RayCastedTris prt in RaycastedTris)
+            foreach (var prt in RaycastedTris)
             {
                 if (!prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
@@ -955,8 +955,8 @@ namespace OpenVIII
                 {
                     foreach (var warpZone in wmset.section8WarpZones)
                     {
-                        int fieldId = wm2field.GetFieldId(warpZone.field);
-                        bool bShouldWarp = true;
+                        var fieldId = wm2field.GetFieldId(warpZone.field);
+                        var bShouldWarp = true;
                         if (warpZone.segmentId != GetRealSegmentId())
                             continue;
                         if (imguiStrings == null)
@@ -973,7 +973,7 @@ namespace OpenVIII
                         }
                         if (bShouldWarp)
                         {
-                            for (int contId = 0; contId < warpZone.conditions.Length; contId++)
+                            for (var contId = 0; contId < warpZone.conditions.Length; contId++)
                                 imguiStrings.Add($"{contId}: {warpZone.conditions[contId].opcode}({warpZone.conditions[contId].opcode.ToString("X")}):{warpZone.conditions[contId].argument}");
 
                             //    Fields.Module.ResetField();
@@ -989,13 +989,13 @@ namespace OpenVIII
         private static RayCastedTris? CameraCollisionUpdate()
         {
             segmentPosition = new Vector2((int)(camPosition.X / 512) * -1, (int)(camPosition.Z / 512) * -1); //needs to be updated on pre-new values of movement
-            int realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
+            var realSegmentId = (int)(segmentPosition.Y * 32 + segmentPosition.X);
             realSegmentId = SetInterchangeableZone(realSegmentId);
-            Segment seg = segments[realSegmentId];
+            var seg = segments[realSegmentId];
             RaycastedTris = new List<RayCastedTris>();
-            Ray skyRay = new Ray(new Vector3(camPosition.X, 5000f, camPosition.Z), Vector3.Down); //drops ray at camPosition from sky
-            for (int i = 0; i < seg.parsedTriangle.Length; i++)
-                if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out Vector3 skyBarycentric) != 0)
+            var skyRay = new Ray(new Vector3(camPosition.X, 5000f, camPosition.Z), Vector3.Down); //drops ray at camPosition from sky
+            for (var i = 0; i < seg.parsedTriangle.Length; i++)
+                if (Extended.RayIntersection3D(skyRay, seg.parsedTriangle[i].A, seg.parsedTriangle[i].B, seg.parsedTriangle[i].C, out var skyBarycentric) != 0)
                     RaycastedTris.Add(new RayCastedTris(seg.parsedTriangle[i], skyBarycentric, true));
 
             //take care of sky rays only
@@ -1007,22 +1007,22 @@ namespace OpenVIII
         private static List<RayCastedTris> OrderAndCheckTrisForcollisionsBetween()
         {
             // Order Tris by distance to player
-            List<RayCastedTris> ordered = RaycastedTris.OrderBy(x => Vector3.Distance(playerPosition, x.pos)).ToList();
-            bool between = false;
+            var ordered = RaycastedTris.OrderBy(x => Vector3.Distance(playerPosition, x.pos)).ToList();
+            var between = false;
             // Check to see if there is a collision between the player and the next walkable space.
             // prevent jumping over collision.
-            for (int i = 0; ordered.Count > i; i++)
+            for (var i = 0; ordered.Count > i; i++)
             {
                 if (ordered[i].sky) continue;
                 //var d = Vector3.Distance(playerPosition, ordered[i].pos);
-                bool collide = (ordered[i].data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0;
+                var collide = (ordered[i].data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0;
                 if (collide)
                     between = true;
                 else if (between)
                 { //bassically if there is collision between mark rest to collide.
                     //if (bHasMoved)
                     //Debug.WriteLine(d + "\t");
-                    RayCastedTris x = ordered[i];
+                    var x = ordered[i];
                     x.data.parentPolygon.vertFlags |= TRIFLAGS_COLLIDE;
                     ordered[i] = x;
                 }
@@ -1090,7 +1090,7 @@ namespace OpenVIII
                 case 0: //closeup
                     camHeight = MathHelper.Lerp(200f, 100f + rememberedCamCollideHeight, camSlider);
                     cameraFOV = MathHelper.Lerp(42f, 44f, camSlider);
-                    RayCastedTris? activepoly = CameraCollisionUpdate();
+                    var activepoly = CameraCollisionUpdate();
                     if (activepoly.HasValue)
                         rememberedCamCollideHeight = activepoly.Value.pos.Y;
                     break;
@@ -1105,16 +1105,16 @@ namespace OpenVIII
                 (float)(playerPosition.Z + camDistance * Extended.Sin(degrees - 180f))
                 );
             // check mouse to adjust camera
-            Vector2 shift = InputMouse.Distance(MouseButtons.MouseToStick, FPS_Camera.maxLookSpeedMouse);
+            var shift = InputMouse.Distance(MouseButtons.MouseToStick, FPS_Camera.maxLookSpeedMouse);
             // check right stick to adjust camera
 
-            Vector2 rightstick = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, FPS_Camera.maxLookSpeedGamePad);
+            var rightstick = InputGamePad.Distance(GamePadButtons.ThumbSticks_Right, FPS_Camera.maxLookSpeedGamePad);
             //Debug.WriteLine($"{rightstick.X}");
             shift += rightstick;
             if (Input2.Button(FF8TextTagKey.RotateLeft, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees -= RotationInterval * (float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds/25f;
+                degrees -= RotationInterval * (float)Memory.ElapsedGameTime.TotalMilliseconds/25f;
             if (Input2.Button(FF8TextTagKey.RotateRight, ButtonTrigger.Press | ButtonTrigger.IgnoreDelay))
-                degrees += RotationInterval *(float)Memory.GameTime.ElapsedGameTime.TotalMilliseconds / 25f;
+                degrees += RotationInterval *(float)Memory.ElapsedGameTime.TotalMilliseconds / 25f;
             degrees += shift.X;
             degrees %= 360f;
             if (degrees < 0)
@@ -1124,7 +1124,7 @@ namespace OpenVIII
             camTarget = new Vector3(playerPosition.X, 50f, playerPosition.Z);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                    MathHelper.ToRadians(cameraFOV),
-                   Memory.graphics.GraphicsDevice.Viewport.AspectRatio,
+                   Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
     1f, 10000f);
             viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
                          Vector3.Up);
@@ -1141,14 +1141,14 @@ namespace OpenVIII
 
         public static void Draw()
         {
-            Memory.spriteBatch.GraphicsDevice.Clear(bgGradient);
+            Memory.SpriteBatch.GraphicsDevice.Clear(bgGradient);
 
 
 
-            Memory.graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            Memory.graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
-            Memory.graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Memory.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+            Memory.Graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            Memory.Graphics.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+            Memory.Graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Memory.Graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
             ate.Projection = projectionMatrix;
             ate.View = viewMatrix;
             ate.World = worldMatrix;
@@ -1218,7 +1218,7 @@ namespace OpenVIII
             TeleportPlayerWarp();
             DrawBackgroundClouds();
 
-            foreach (worldCharacterInstance charaInstance in worldCharacterInstances)
+            foreach (var charaInstance in worldCharacterInstances)
                 DrawCharacter(charaInstance);
 #if DEBUG
             DrawDebug();
@@ -1244,10 +1244,10 @@ namespace OpenVIII
             }
 
 
-            float playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
+            var playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
             if (playerangle < 0) playerangle += 360f;
-
-            Memory.imgui.BeforeLayout(Memory.GameTime);
+            if (Memory.GameTime != null)
+                Memory.ImGui.BeforeLayout(Memory.GameTime);
             ImGuiNET.ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero, ImGuiNET.ImGuiCond.Once);
             ImGuiNET.ImGui.SetNextWindowBgAlpha(.25f);
             ImGuiNET.ImGui.Begin("WORLD DEBUG");
@@ -1255,14 +1255,14 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"Press 8 to enable/disable collision: ={bDebugDisableCollision}");
             ImGuiNET.ImGui.Text($"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}");
             ImGuiNET.ImGui.Separator();
-            System.Numerics.Vector4 imgui_skyColor = new System.Numerics.Vector4(bgGradient.R / 255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
+            var imgui_skyColor = new System.Numerics.Vector4(bgGradient.R / 255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
             ImGuiNET.ImGui.ColorEdit4("Sky color: ", ref imgui_skyColor);
-            System.Numerics.Vector4 imgui_skyColor2 = new System.Numerics.Vector4(skyColor.X, skyColor.Y, skyColor.Z, 1.0f);
+            var imgui_skyColor2 = new System.Numerics.Vector4(skyColor.X, skyColor.Y, skyColor.Z, 1.0f);
             ImGuiNET.ImGui.ColorEdit4("Colorize: ", ref imgui_skyColor2);
             skyColor = new Vector3(imgui_skyColor2.X, imgui_skyColor2.Y, imgui_skyColor2.Z);
             bgGradient = new Color(imgui_skyColor.X, imgui_skyColor.Y, imgui_skyColor.Z, imgui_skyColor.W);
             ImGuiNET.ImGui.Text($"World map MapState: ={MapState}");
-            System.Numerics.Vector3 imgui_cameraPosition = new System.Numerics.Vector3(camPosition.X, camPosition.Y, camPosition.Z);
+            var imgui_cameraPosition = new System.Numerics.Vector3(camPosition.X, camPosition.Y, camPosition.Z);
             ImGuiNET.ImGui.InputFloat3("World map camera", ref imgui_cameraPosition);
             camPosition = new Vector3(imgui_cameraPosition.X, imgui_cameraPosition.Y, imgui_cameraPosition.Z);
             ImGuiNET.ImGui.InputFloat("World map camera distance", ref camDistance);
@@ -1270,7 +1270,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.InputFloat("World map camera FOV", ref cameraFOV);
             ImGuiNET.ImGui.Text($"Camera mode: {orbitCameraMode}");
             ImGuiNET.ImGui.Text($"Camera slide: {camSlider}");
-            System.Numerics.Vector3 imgui_playerPosition = new System.Numerics.Vector3(playerPosition.X, playerPosition.Y, playerPosition.Z);
+            var imgui_playerPosition = new System.Numerics.Vector3(playerPosition.X, playerPosition.Y, playerPosition.Z);
             ImGuiNET.ImGui.InputFloat3("Player position: ", ref imgui_playerPosition);
             playerPosition = new Vector3(imgui_playerPosition.X, imgui_playerPosition.Y, imgui_playerPosition.Z);
             ImGuiNET.ImGui.Text($"Player rotation: ={playerangle}°");
@@ -1287,7 +1287,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.Separator();
             if (imguiStrings != null)
             {
-                foreach (string s in imguiStrings)
+                foreach (var s in imguiStrings)
                     ImGuiNET.ImGui.Text(s);
                 imguiStrings.Clear();
             }
@@ -1296,7 +1296,7 @@ namespace OpenVIII
             if (bImguiSec9)
             {
                 ImGuiNET.ImGui.Text("-Field2WM-");
-                for (int x = 0; x < wmset.fieldToWorldMapLocations.Length; x++)
+                for (var x = 0; x < wmset.fieldToWorldMapLocations.Length; x++)
                 {
                     ImGuiNET.ImGui.Text(
                         $"{x}: X={wmset.fieldToWorldMapLocations[x].X}  Y={wmset.fieldToWorldMapLocations[x].Y}  Z={wmset.fieldToWorldMapLocations[x].Z}");
@@ -1313,7 +1313,7 @@ namespace OpenVIII
             if (bImguiSec11)
             {
                 ImGuiNET.ImGui.Text("-Section11-");
-                for (int x = 0; x < wmset.sec11Locations.Length; x++)
+                for (var x = 0; x < wmset.sec11Locations.Length; x++)
                 {
                     ImGuiNET.ImGui.Text(
                         $"{x}: X={wmset.sec11Locations[x].X}  Y={wmset.sec11Locations[x].Y}  Z={wmset.sec11Locations[x].Z}");
@@ -1332,7 +1332,7 @@ namespace OpenVIII
             {
                     ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
                     ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
-                for (int i = 0; i < screenMapLocations.Length; i++)
+                for (var i = 0; i < screenMapLocations.Length; i++)
                 {
                     ImGuiNET.ImGui.InputFloat($"lA{i}", ref screenMapLocations[i].x);
                     ImGuiNET.ImGui.SameLine();
@@ -1343,18 +1343,18 @@ namespace OpenVIII
             if (ImGuiNET.ImGui.CollapsingHeader("wmset textures"))
             {
                 var enumValues = Enum.GetValues(typeof(Wmset.Section38_textures));
-                for (int i = 0; i < enumValues.Length; i++)
+                for (var i = 0; i < enumValues.Length; i++)
                 {
                     ImGuiNET.ImGui.Text($"{(Wmset.Section38_textures)i}");
                     ImGuiNET.ImGui.SameLine();
                     imguiTex = (Texture2D)wmset.GetWorldMapTexture(
                         (Wmset.Section38_textures)enumValues.GetValue(i), 0);
-                    ImGuiNET.ImGui.Image(Memory.imgui.BindTexture(imguiTex), new System.Numerics.Vector2(64,64));
+                    ImGuiNET.ImGui.Image(Memory.ImGui.BindTexture(imguiTex), new System.Numerics.Vector2(64,64));
                     if(ImGuiNET.ImGui.IsItemHovered())
                     {
                         ImGuiNET.ImGui.BeginTooltip();
                         ImGuiNET.ImGui.Text($"W: {imguiTex.Width} H: {imguiTex.Height}");
-                        ImGuiNET.ImGui.Image(Memory.imgui.BindTexture(imguiTex), new System.Numerics.Vector2(imguiTex.Width, imguiTex.Height));
+                        ImGuiNET.ImGui.Image(Memory.ImGui.BindTexture(imguiTex), new System.Numerics.Vector2(imguiTex.Width, imguiTex.Height));
                         ImGuiNET.ImGui.End();
                     }
                 }
@@ -1363,7 +1363,7 @@ namespace OpenVIII
             {
                 ImGuiNET.ImGui.InputFloat("X: ", ref fulscrMapCurX); //0.145 - 0.745
                 ImGuiNET.ImGui.InputFloat("Y: ", ref fulscrMapCurY); //0.070 - 0.870
-                for (int i = 0; i < screenMapLocations.Length; i++)
+                for (var i = 0; i < screenMapLocations.Length; i++)
                 {
                     ImGuiNET.ImGui.InputFloat($"lA{i}", ref screenMapLocations[i].x);
                     ImGuiNET.ImGui.SameLine();
@@ -1372,7 +1372,7 @@ namespace OpenVIII
             }
             if (ImGuiNET.ImGui.CollapsingHeader("wmset33"))
             {
-                for(int i = 0; i<wmset.skyColors.Length; i++)
+                for(var i = 0; i<wmset.skyColors.Length; i++)
                 {
                     var col = wmset.skyColors[i].GetLocation();
                     ImGuiNET.ImGui.Text($"sec33: {i}={col}");
@@ -1400,7 +1400,7 @@ namespace OpenVIII
             //    new System.Numerics.Vector2(64,64));
             //ImGuiNET.ImGui.End();
             ImGuiNET.ImGui.End();
-            Memory.imgui.AfterLayout();
+            Memory.ImGui.AfterLayout();
         }
 
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
@@ -1412,7 +1412,7 @@ namespace OpenVIII
          * and that texture shrinks to 0% then is destroyed.
          * The fxWalkDuration should be incremented every bHasMoved until X then spawn texture at player position
          * with 100% scale and spriteId until it gets to 0% and is destroyed
-         * 
+         *
          */
         private static float fxWalkDuration = 0;
         private static int lastFxBushSpriteId = 0;
@@ -1434,14 +1434,14 @@ namespace OpenVIII
 
             if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0) //shadow
             {
-                VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
+                var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.shadowBig, 0);
                 ate.Alpha = .25f;
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                foreach (var pass in ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
                 }
                 ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 ate.Alpha = 1f;
@@ -1456,9 +1456,9 @@ namespace OpenVIII
                 {
                     fxWalkDuration = 0f;
                     lastFxBushSpriteId %= 4;
-                    worldEffects.Add(new worldFx() { fxLocation = playerPosition, 
+                    worldEffects.Add(new worldFx() { fxLocation = playerPosition,
                         scale = 1.00f, atlasId=lastFxBushSpriteId++ });
-                    
+
                 }
                 else fxWalkDuration += 0.05f;
             }
@@ -1470,14 +1470,14 @@ namespace OpenVIII
 
                     Extended.ConvertToSprite(ref shadowGeom, 4, worldEffects[i].atlasId);
 
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush, 
-                    MathHelper.Clamp(activeCollidePolygon.Value.Clut-8, 0, 5)); //this is wrong 
+                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush,
+                    MathHelper.Clamp(activeCollidePolygon.Value.Clut-8, 0, 5)); //this is wrong
                 ate.Alpha = 0.75f;
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
                 }
                 //ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 worldFx currentFx = worldEffects[i];
@@ -1497,8 +1497,8 @@ namespace OpenVIII
         /// <returns></returns>
         private static Vector3 GetForwardSkyRaycastVector(float distance = 15f)
         {
-            float degreesRadians = (float)Extended.Radians(-degrees + 90f); //gets radians value of current degrees
-            Vector3 relativeTranslation = new Vector3(
+            var degreesRadians = (float)Extended.Radians(-degrees + 90f); //gets radians value of current degrees
+            var relativeTranslation = new Vector3(
                 (float)Math.Sin(degreesRadians) * distance,
                 5000f,
                 (float)Math.Cos(degreesRadians) * distance
@@ -1526,37 +1526,37 @@ namespace OpenVIII
 
         private static void Debug_DrawRailPaths()
         {
-            for (int i = 0; i < rail.GetTrainTrackCount(); i++)
+            for (var i = 0; i < rail.GetTrainTrackCount(); i++)
             {
-                List<VertexPositionColor> vpc = new List<VertexPositionColor>();
-                for (int n = 0; n < rail.GetTrainTrackFrameCount(i); n++)
+                var vpc = new List<VertexPositionColor>();
+                for (var n = 0; n < rail.GetTrainTrackFrameCount(i); n++)
                 {
-                    Vector3 vec = rail.GetTrackFrameVector(i, n) + Vector3.Up * 10f;
+                    var vec = rail.GetTrackFrameVector(i, n) + Vector3.Up * 10f;
                     vpc.Add(new VertexPositionColor(vec, Color.Yellow));
                 }
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                foreach (var pass in ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, vpc.ToArray(), 0, vpc.Count / 2);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, vpc.ToArray(), 0, vpc.Count / 2);
                 }
             }
         }
 
         private static void DrawDebug_VehiclePreview()
         {
-            Vector3 localTranslation = playerPosition + new Vector3(20f, 10f, 20f);
-            for (int i = 0; i < wmset.GetVehicleModelsCount(); i++)
+            var localTranslation = playerPosition + new Vector3(20f, 10f, 20f);
+            for (var i = 0; i < wmset.GetVehicleModelsCount(); i++)
             {
-                Texture2D vehTex = (Texture2D)wmset.GetVehicleTexture(i, 0);
-                Vector2 originVector = wmset.GetVehicleTextureOriginVector(i, 0);
-                Tuple<VertexPositionTexture[], byte[]> dMod = wmset.GetVehicleGeometry(i, localTranslation + Vector3.Left * 50f * i, Quaternion.Identity, new Vector2(vehTex.Width, vehTex.Height), originVector);
-                for (int n = 0; n < dMod.Item1.Length; n += 3)
+                var vehTex = (Texture2D)wmset.GetVehicleTexture(i, 0);
+                var originVector = wmset.GetVehicleTextureOriginVector(i, 0);
+                var dMod = wmset.GetVehicleGeometry(i, localTranslation + Vector3.Left * 50f * i, Quaternion.Identity, new Vector2(vehTex.Width, vehTex.Height), originVector);
+                for (var n = 0; n < dMod.Item1.Length; n += 3)
                 {
                     ate.Texture = (Texture2D)wmset.GetVehicleTexture(i, 0);
-                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                    foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, dMod.Item1, n, 1);
+                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, dMod.Item1, n, 1);
                     }
                 }
             }
@@ -1564,19 +1564,19 @@ namespace OpenVIII
 
         private static void DrawDebug_Rays()
         {
-            VertexPositionColor[] playerRaycastDownVerts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
-            Vector3 skyRaycastDownVerts = GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE);
-            VertexPositionColor[] skyVectorDropVerts = new[]
+            var playerRaycastDownVerts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
+            var skyRaycastDownVerts = GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE);
+            var skyVectorDropVerts = new[]
             {
                 new VertexPositionColor(skyRaycastDownVerts, Color.White), //draw line from mockup up to the bottom fake infinity
                 new VertexPositionColor(new Vector3(skyRaycastDownVerts.X, -5000f, skyRaycastDownVerts.Z), Color.White)
             };
 
             if (RaycastedTris.Count != 0)
-                foreach (RayCastedTris tt in RaycastedTris)
+                foreach (var tt in RaycastedTris)
                 {
-                    ParsedTriangleData triangle = tt.data;
-                    VertexPositionColor[] verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
+                    var triangle = tt.data;
+                    var verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
                 new VertexPositionColor(triangle.B, Color.White),
 
                 new VertexPositionColor(triangle.B, Color.White),
@@ -1585,18 +1585,18 @@ namespace OpenVIII
                 new VertexPositionColor(triangle.C, Color.White),
                 new VertexPositionColor(triangle.A, Color.White)
                 };
-                    foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+                    foreach (var pass in ate.CurrentTechnique.Passes)
                     {
                         pass.Apply();
-                        Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
+                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
                     }
                 }
 
-            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+            foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, playerRaycastDownVerts, 0, 1);
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, playerRaycastDownVerts, 0, 1);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
             }
         }
 
@@ -1618,11 +1618,11 @@ namespace OpenVIII
                 return;
             if (!charaInstance_.Value.bDraw)
                 return;
-            worldCharacterInstance charaInstance = charaInstance_.Value;
-            int MchIndex = (int)charaInstance.activeCharacter;
+            var charaInstance = charaInstance_.Value;
+            var MchIndex = (int)charaInstance.activeCharacter;
             if (charaInstance.currentAnimationId >= chara.GetMCH(MchIndex).GetAnimationCount())
                 charaInstance.currentAnimationId = 0;
-            Tuple<VertexPositionColorTexture[], byte[]> charaCollection = chara.GetMCH(MchIndex).GetVertexPositions(charaInstance.worldPosition + localMchTranslation, charaInstance.localquaternion /*Quaternion.CreateFromYawPitchRoll(charaInstance.localRotation, charaInstance.localvRotation, 0f)*/, charaInstance.currentAnimationId, charaInstance.currentAnimFrame);
+            var charaCollection = chara.GetMCH(MchIndex).GetVertexPositions(charaInstance.worldPosition + localMchTranslation, charaInstance.localquaternion /*Quaternion.CreateFromYawPitchRoll(charaInstance.localRotation, charaInstance.localvRotation, 0f)*/, charaInstance.currentAnimationId, charaInstance.currentAnimFrame);
 
             int textureIndexBase; //chara.one contains textures one-by-one but mch indexes are based from zero for each character. That's why we have to sum texIndexes from previous meshes
             switch (charaInstance.activeCharacter)
@@ -1657,16 +1657,16 @@ namespace OpenVIII
                     break;
             }
 
-            Dictionary<Texture2D, List<VertexPositionColorTexture>> vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
-            for (int i = 0; i < charaCollection.Item2.Length; i += 3)
+            var vptCollection = new Dictionary<Texture2D, List<VertexPositionColorTexture>>();
+            for (var i = 0; i < charaCollection.Item2.Length; i += 3)
             {
-                Texture2D charaTexture = chara.GetCharaTexture(textureIndexBase + charaCollection.Item2[i]);
+                var charaTexture = chara.GetCharaTexture(textureIndexBase + charaCollection.Item2[i]);
                 if (!vptCollection.ContainsKey(charaTexture))
                     vptCollection.Add(charaTexture, new List<VertexPositionColorTexture>());
                 vptCollection[charaTexture].AddRange(charaCollection.Item1.Skip(i).Take(3).ToArray());
             }
 
-            foreach (KeyValuePair<Texture2D, List<VertexPositionColorTexture>> kvp in vptCollection)
+            foreach (var kvp in vptCollection)
             {
                 ate.Texture = kvp.Key;
                 if (bUseCustomShaderTest)
@@ -1674,10 +1674,10 @@ namespace OpenVIII
                     worldShaderModel.Parameters["ModelTexture"].SetValue(ate.Texture);
                     worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
                 }
-                foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
+                foreach (var pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, kvp.Value.ToArray(), 0, kvp.Value.Count / 3);
                 }
             }
         }
@@ -1756,9 +1756,9 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             if (bHasMoved || wm_backgroundCloudsLocalCylinderMeshTranslated == null)
             {
                 wm_backgroundCloudsLocalCylinderMeshTranslated = wm_backgroundCloudsCylinderMesh.Clone() as VertexPositionTexture[];
-                for (int i = 0; i < wm_backgroundCloudsCylinderMesh.Length; i++)
+                for (var i = 0; i < wm_backgroundCloudsCylinderMesh.Length; i++)
                 {
-                    Vector3 pos = wm_backgroundCloudsCylinderMesh[i].Position;
+                    var pos = wm_backgroundCloudsCylinderMesh[i].Position;
                     pos = Vector3.Transform(pos,
                         Matrix.CreateScale(27f));
                     pos = Vector3.Transform(pos,
@@ -1769,13 +1769,13 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
 
             ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.clouds, 0);
-            foreach (EffectPass pass in ate.CurrentTechnique.Passes)
+            foreach (var pass in ate.CurrentTechnique.Passes)
             {
                 ate.FogEnd = 1500;
                 ate.DiffuseColor = Vector3.One * 1.8f;
                 ate.Alpha = 0.75f;
                 pass.Apply();
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, wm_backgroundCloudsLocalCylinderMeshTranslated, 0, wm_backgroundCloudsLocalCylinderMeshTranslated.Length / 3);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, wm_backgroundCloudsLocalCylinderMeshTranslated, 0, wm_backgroundCloudsLocalCylinderMeshTranslated.Length / 3);
                 ate.FogEnd = renderCamDistance;
             }
         }
@@ -1806,29 +1806,29 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
         private static void DrawPlanetMiniMap()
         {
-            List<VertexPositionTexture> vpt = new List<VertexPositionTexture>();
+            var vpt = new List<VertexPositionTexture>();
 
-            Vector3 planetCamPos = new Vector3(2098.347f, 32.68309f, -244.1487f);
-            Vector3 planetCamTarget = new Vector3(2099.964f, 34.26089f, -234.208243f);
+            var planetCamPos = new Vector3(2098.347f, 32.68309f, -244.1487f);
+            var planetCamTarget = new Vector3(2099.964f, 34.26089f, -234.208243f);
 
             //2000,0,0 - target
             viewMatrix = Matrix.CreateLookAt(planetCamPos, planetCamTarget,
              Vector3.Up);
             effect.View = viewMatrix;
             effect.Projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.ToRadians(60), Memory.graphics.GraphicsDevice.Viewport.AspectRatio, 1, 10000f);
+                MathHelper.ToRadians(60), Memory.Graphics.GraphicsDevice.Viewport.AspectRatio, 1, 10000f);
 
 
-            for (int i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
+            for (var i = 0; i < wm_planetMinimap_indicesB_tris.Length; i++) //triangles are ABC, so we can just iterate one-by-one
             {
-                byte offsetPointer = wm_planetMinimap_indicesB_tris[i];
+                var offsetPointer = wm_planetMinimap_indicesB_tris[i];
                 if (offsetPointer == 0xFF)
                     continue;
 
                 offsetPointer *= 2;
 
-                sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
-                sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
+                var vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+                var vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
 
                 //uv
                 short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
@@ -1838,21 +1838,21 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
 
 
-                Vector3 vec = new Vector3(-vertX + 2000f, -vertY, 0);
+                var vec = new Vector3(-vertX + 2000f, -vertY, 0);
                 vpt.Add(new VertexPositionTexture(vec, new Vector2(UVu, UVv)));
             }
 
-            for (int i = 0; i < wm_planetMinimap_indicesA_quad.Length; i += 4) //ABD ACD -> we have to retriangulate it
+            for (var i = 0; i < wm_planetMinimap_indicesA_quad.Length; i += 4) //ABD ACD -> we have to retriangulate it
             {
                 Vector3 A = Vector3.Zero, B = Vector3.Zero, C = Vector3.Zero, D = Vector3.Zero;
-                Vector2 uvA = Vector2.Zero; Vector2 uvB = Vector2.Zero; Vector2 uvC = Vector2.Zero; Vector2 uvD = Vector2.Zero;
+                var uvA = Vector2.Zero; var uvB = Vector2.Zero; var uvC = Vector2.Zero; var uvD = Vector2.Zero;
 
-                for (int n = 0; n < 4; n++)
+                for (var n = 0; n < 4; n++)
                 {
-                    byte offsetPointer = wm_planetMinimap_indicesA_quad[i + n];
+                    var offsetPointer = wm_planetMinimap_indicesA_quad[i + n];
                     offsetPointer *= 2;
-                    sbyte vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
-                    sbyte vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
+                    var vertX = (sbyte)wm_planetMinimap_vertices[offsetPointer];
+                    var vertY = (sbyte)wm_planetMinimap_vertices[offsetPointer + 1];
 
                     //uv
                     short u = (sbyte)wm_planetMinimap_uvsOffsets[offsetPointer];
@@ -1861,8 +1861,8 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                     var UVu = playerPosition.X / -16384.0f + u / 100.0f;
                     var UVv = playerPosition.Z / -12288.0f + v / 100.0f;
 
-                    Vector3 vec = new Vector3(-vertX + 2000f, -vertY, 0);
-                    Vector2 vecUV = new Vector2(UVu, UVv);
+                    var vec = new Vector3(-vertX + 2000f, -vertY, 0);
+                    var vecUV = new Vector2(UVu, UVv);
                     if (n == 0)
                     { A = vec; uvA = vecUV; }
                     if (n == 1)
@@ -1882,26 +1882,26 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
             }
 
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 effect.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
                 pass.Apply();
                 effect.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count / 3);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vpt.ToArray(), 0, vpt.Count / 3);
             }
 
-            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
-            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            var src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
+            Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
-            Rectangle dst = new Rectangle(
-                (int)(Memory.graphics.GraphicsDevice.Viewport.Width / 1.24f),
-                (int)((float)Memory.graphics.GraphicsDevice.Viewport.Height / 1.3f),
+            var dst = new Rectangle(
+                (int)(Memory.Graphics.GraphicsDevice.Viewport.Width / 1.24f),
+                (int)((float)Memory.Graphics.GraphicsDevice.Viewport.Height / 1.3f),
                 src.Width,
                 src.Height);
 
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
 
@@ -1917,31 +1917,31 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
         private static void DrawRectangleMiniMap()
         {
-            Rectangle src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
-            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            var src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
+            Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
             src.Width = (int)(src.Width * Scale.X);
             src.Height = (int)(src.Height * Scale.Y);
             src.Height /= 2;
             src.Width /= 2;
-            Rectangle dst =
+            var dst =
                 new Rectangle(
-                    Memory.graphics.GraphicsDevice.Viewport.Width - (src.Width) - 50,
-                    Memory.graphics.GraphicsDevice.Viewport.Height - (src.Height) - 50,
+                    Memory.Graphics.GraphicsDevice.Viewport.Width - (src.Width) - 50,
+                    Memory.Graphics.GraphicsDevice.Viewport.Height - (src.Height) - 50,
                     src.Width,
                     src.Height);
 
-            float bc = Math.Abs(camPosition.X / 16384.0f);
-            float topX = dst.X + (dst.Width * bc);
+            var bc = Math.Abs(camPosition.X / 16384.0f);
+            var topX = dst.X + (dst.Width * bc);
             bc = Math.Abs(camPosition.Z / 12288f);
-            float topY = dst.Y + (dst.Height * bc);
+            var topY = dst.Y + (dst.Height * bc);
 
             //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
             Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
             wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Draw(dst, Color.White * .7f);
-            Memory.spriteBatch.End();
+            Memory.SpriteBatch.End();
 
             src = new Rectangle(Point.Zero, wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
-            Scale = Memory.Scale(src.Width, src.Height, Memory.ScaleMode.FitBoth);
+            Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
             dst = new Rectangle(
@@ -1951,7 +1951,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 src.Height);
 
             //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
             wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
         }
@@ -1990,7 +1990,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             new fullScreenMapLocations() {x= 0.675f, y= 0.535f}, //Esthar memorial
             new fullScreenMapLocations() {x= 0.698f, y= 0.590f}, //Tear point
         };
-        //0.145 - 0.745 X 
+        //0.145 - 0.745 X
         //0.070 - 0.870 Y
         private static bool bFullScreenMapInitialize = true;
         private static Texture2D fullScreenMapMark;
@@ -2039,28 +2039,28 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 screenMapLocations[18].locationName = wmset.GetLocationName(31); //tear point
                 screenMapLocations[18].bDraw = true; //[TODO] SAVEGAME PARSE FLAGS
 
-                fullScreenMapMark = new Texture2D(Memory.graphics.GraphicsDevice, 2, 1, false, SurfaceFormat.Color); //1x1 yellow and 1x1 red
+                fullScreenMapMark = new Texture2D(Memory.Graphics.GraphicsDevice, 2, 1, false, SurfaceFormat.Color); //1x1 yellow and 1x1 red
                 fullScreenMapMark.SetData(new Color[] { Color.Yellow, Color.Red });
 
                 bFullScreenMapInitialize = false;
             }
             //Draw full-screen minimap
-            Memory.graphics.GraphicsDevice.Clear(Color.Black);
+            Memory.Graphics.GraphicsDevice.Clear(Color.Black);
             Memory.SpriteBatchStartStencil();
-            TextureHandler texture = wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
-            int width = Memory.graphics.GraphicsDevice.Viewport.Width;
-            int height = Memory.graphics.GraphicsDevice.Viewport.Height;
+            var texture = wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 0);
+            var width = Memory.Graphics.GraphicsDevice.Viewport.Width;
+            var height = Memory.Graphics.GraphicsDevice.Viewport.Height;
             texture.Draw(new Rectangle((int)(width*0.2f), (int)(height *0.08f),
                 (int)(width *0.6), (int)(height *0.8)), Color.White * 1f);
             Memory.SpriteBatchEnd();
 
                 Memory.SpriteBatchStartAlpha();
             //draw locations
-            for(int i = 0; i<screenMapLocations.Length;i++)
+            for(var i = 0; i<screenMapLocations.Length;i++)
             {
                 if (!screenMapLocations[i].bDraw)
                     continue;
-                Memory.spriteBatch.Draw(fullScreenMapMark, new Rectangle((int)(width * screenMapLocations[i].x),
+                Memory.SpriteBatch.Draw(fullScreenMapMark, new Rectangle((int)(width * screenMapLocations[i].x),
                     (int)(height * screenMapLocations[i].y), 8, 8),
                     new Rectangle(0, 0, 1, 1), Color.White);
             }
@@ -2068,12 +2068,12 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             //[TODO]
             //draw location names
             //[TODO]
-            for(int i = 0; i<screenMapLocations.Length; i++)
+            for(var i = 0; i<screenMapLocations.Length; i++)
             {
-                float xDistance = Math.Abs((fulscrMapCurX + 0.05f) - screenMapLocations[i].x);
-                float yDistance = Math.Abs((fulscrMapCurY + 0.005f) - screenMapLocations[i].y);
+                var xDistance = Math.Abs((fulscrMapCurX + 0.05f) - screenMapLocations[i].x);
+                var yDistance = Math.Abs((fulscrMapCurY + 0.005f) - screenMapLocations[i].y);
                 if(xDistance < 0.015 && yDistance<0.015)
-                    Memory.font.RenderBasicText(screenMapLocations[i].locationName, 
+                    Memory.Font.RenderBasicText(screenMapLocations[i].locationName,
                         new Vector2(width*0.7f, height*0.9f),new Vector2(2,2), Font.Type.sysFntBig);
             }
                 Memory.SpriteBatchEnd();
@@ -2089,13 +2089,13 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
         private static void DrawSegment(int xTranslation, int yTranslation)
         {
             effect.TextureEnabled = true;
-            int _i = GetRealSegmentId((segmentPosition.X + xTranslation) % 32, (segmentPosition.Y + yTranslation) % 24);
+            var _i = GetRealSegmentId((segmentPosition.X + xTranslation) % 32, (segmentPosition.Y + yTranslation) % 24);
 
             _i = SetInterchangeableZone(_i);
 
-            Segment seg = segments[_i];
-            Vector3 translationVector = Vector3.Zero;
-            Vector2 playerSegmentVector = segmentPosition;
+            var seg = segments[_i];
+            var translationVector = Vector3.Zero;
+            var playerSegmentVector = segmentPosition;
 
             if (playerSegmentVector.X + xTranslation < 0)
                 translationVector = new Vector3(32 * 512, 0, 0); //LEFT
@@ -2119,20 +2119,20 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>> groupedPolygons = new Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>>();
             Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>> transparentGroupedPolygons = new Dictionary<Texture2D, Tuple<List<VertexPositionTexture>, bool>>();
 
-            for (int k = 0; k < seg.parsedTriangle.Length; k++)
+            for (var k = 0; k < seg.parsedTriangle.Length; k++)
             {
-                Vector3 firstEdge = seg.parsedTriangle[k].A + translationVector;
-                double faceDistance = Extended.Distance3D(playerPosition, firstEdge);
+                var firstEdge = seg.parsedTriangle[k].A + translationVector;
+                var faceDistance = Extended.Distance3D(playerPosition, firstEdge);
                 if (faceDistance > renderCamDistance) //this face is beyond the rendering zone; ignore whole segment!
                     continue;
                 if (CheckFrustrumView(firstEdge.X, firstEdge.Z))
                     continue;
 
-                Vector3 parsedTriangleB = seg.parsedTriangle[k].B + translationVector;
-                Vector3 parsedTriangleC = seg.parsedTriangle[k].C + translationVector;
-                bool bIsWaterBlock = false;
+                var parsedTriangleB = seg.parsedTriangle[k].B + translationVector;
+                var parsedTriangleC = seg.parsedTriangle[k].C + translationVector;
+                var bIsWaterBlock = false;
 
-                VertexPositionTexture[] vpc = new VertexPositionTexture[3];
+                var vpc = new VertexPositionTexture[3];
                 vpc[0] = new VertexPositionTexture(
                     firstEdge,
                     seg.parsedTriangle[k].uvA);
@@ -2142,7 +2142,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 vpc[2] = new VertexPositionTexture(
                     parsedTriangleC,
                     seg.parsedTriangle[k].uvC);
-                Polygon poly = seg.parsedTriangle[k].parentPolygon;
+                var poly = seg.parsedTriangle[k].parentPolygon;
                 if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_ROAD))
                     ate.Texture = wmset.GetRoadsMiscTextures();
                 else if (poly.texFlags.HasFlag(Texflags.TEXFLAGS_WATER))
@@ -2169,7 +2169,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 }
             }
 
-            //I hate to do so much redundancy here, but that's dictionary lookup, also it's important to draw important stuff 
+            //I hate to do so much redundancy here, but that's dictionary lookup, also it's important to draw important stuff
             //at the very end after opaque triangles
             foreach (KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons) //normal draw
             {
@@ -2190,7 +2190,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
                 }
             }
 
@@ -2210,10 +2210,10 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 else if (bUseCustomShaderTest)
                     worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
 
-                foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
+                foreach (var pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
-                    Memory.graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
+                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
                 }
             }
 
@@ -2347,19 +2347,19 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 GP=33 - transition between thin water to ocean
                 GP=34 - ocean
                 */
-            Texture2D waterAtlas = wmset.GetWorldMapWaterTexture();
+            var waterAtlas = wmset.GetWorldMapWaterTexture();
             if (poly.groundtype == 10 || poly.groundtype == 32 || (poly.groundtype == 31 && poly.Clut == 3)) //BEACH + flat water + river flowing down
             {
-                Polygon @as = seg.parsedTriangle[k].parentPolygon;
-                int animationIdPointer = 1; //beach corner
+                var @as = seg.parsedTriangle[k].parentPolygon;
+                var animationIdPointer = 1; //beach corner
                 if (@as.Clut == 2)
                     animationIdPointer = 0; //beach atlas
                 if (@as.Clut == 3 && poly.groundtype == 31)
                     animationIdPointer = 2; //river anim
 
-                Texture2D texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
-                float Ucoorder = @as.Clut == 2 ? 128f : 192;
-                float Vcoorder = @as.Clut == 3 && poly.groundtype == 31 ? 32f : 0f;
+                var texx = wmset.GetBeachAnimationTextureFrame(animationIdPointer, wmset.BeachAnimations[animationIdPointer].currentAnimationIndex);
+                var Ucoorder = @as.Clut == 2 ? 128f : 192;
+                var Vcoorder = @as.Clut == 3 && poly.groundtype == 31 ? 32f : 0f;
                 if (poly.groundtype == 10 || (poly.groundtype == 32 && poly.Clut == 2) || (poly.groundtype == 31 && poly.Clut == 3))
                 {
                     vpc[0].TextureCoordinate = new Vector2((@as.U1 - Ucoorder) / texx.Width, (@as.V1 - Vcoorder) / texx.Height);
@@ -2379,7 +2379,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
             }
             else if (Extended.In(poly.groundtype, 31, 34))
             {
-                Polygon @as = seg.parsedTriangle[k].parentPolygon;
+                var @as = seg.parsedTriangle[k].parentPolygon;
                 vpc[0].TextureCoordinate = new Vector2(@as.U1 / (float)waterAtlas.Width, @as.V1 / (float)waterAtlas.Height);
                 vpc[1].TextureCoordinate = new Vector2(@as.U2 / (float)waterAtlas.Width, @as.V2 / (float)waterAtlas.Height);
                 vpc[2].TextureCoordinate = new Vector2(@as.U3 / (float)waterAtlas.Width, @as.V3 / (float)waterAtlas.Height);

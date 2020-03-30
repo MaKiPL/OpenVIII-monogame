@@ -7,8 +7,8 @@
         private static void Main(string[] args)
         {
             Memory.Init(null, null, null, args);
-            DumpEncounterInfo.Process();
-            DumpMonsterAndCharacterDat.Process();
+            DumpEncounterInfo.Process().GetAwaiter().GetResult();
+            DumpMonsterAndCharacterDat.Process().GetAwaiter().GetResult();
         }
 
         #endregion Methods

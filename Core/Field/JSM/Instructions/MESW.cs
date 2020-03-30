@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MESW : JsmInstruction
     {
-        public MESW()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public MESW() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

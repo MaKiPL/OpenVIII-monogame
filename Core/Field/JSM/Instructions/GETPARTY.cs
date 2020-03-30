@@ -1,26 +1,29 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class GETPARTY : JsmInstruction
     {
-        private IJsmExpression _arg0;
+        #region Fields
 
-        public GETPARTY(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        private readonly IJsmExpression _arg0;
 
-        public GETPARTY(Int32 parameter, IStack<IJsmExpression> stack)
+        #endregion Fields
+
+        #region Constructors
+
+        public GETPARTY(IJsmExpression arg0) => _arg0 = arg0;
+
+        public GETPARTY(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(GETPARTY)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(GETPARTY)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

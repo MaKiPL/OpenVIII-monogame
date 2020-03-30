@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace OpenVIII
@@ -13,16 +14,16 @@ namespace OpenVIII
     /// </remarks>
     /// <see cref="https://github.com/MaKiPL/FF8-Rinoa-s-Toolset/blob/master/SerahToolkit_SharpGL/FF8_Core/TEX.cs"/>
     /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.cpp"/>
-    public class TEX : Texture_Base
+    public sealed class TEX : Texture_Base
     {
         #region Fields
 
         /// <summary>
         /// Raw data of TEX file
         /// </summary>
-        private byte[] buffer;
+        private byte[] _buffer;
 
-        private Texture texture;
+        private Texture _texture;
 
         #endregion Fields
 
@@ -39,65 +40,62 @@ namespace OpenVIII
         ///// <summary>
         ///// Contains header info and Palette data of TEX file.
         ///// </summary>
-        //public Texture TextureData => texture;  //added to get texturedata outside of class.
+        //public Texture TextureData => texture;  //added to get texture data outside of class.
 
         #region Properties
 
-        public bool CLP => texture.PaletteFlag != 0;
-        public override byte GetBytesPerPixel => texture.bytesPerPixel;
-        public override int GetClutCount => texture.NumOfCluts;
-        public override int GetClutSize => (int)texture.PaletteSize;
-        public override int GetColorsCountPerPalette => texture.NumOfColours;
-        public override int GetHeight => texture.Height;
+        public bool CLP => _texture.PaletteFlag != 0;
+        public override byte GetBytesPerPixel => _texture.BytesPerPixel;
+        public override int GetClutCount => _texture.NumOfCluts;
+        public override int GetClutSize => (int)_texture.PaletteSize;
+        public override int GetColorsCountPerPalette => _texture.NumOfColors;
+        public override int GetHeight => _texture.Height;
         public override int GetOrigX => 0;
         public override int GetOrigY => 0;
-        public override int GetWidth => texture.Width;
+        public override int GetWidth => _texture.Width;
 
         /// <summary>
         /// size of header section
         /// </summary>
-        private int Headersize => texture.Version <= 1 ? 0xEC : 0xF0;
+        private int HeaderSize => _texture.Version <= 1 ? 0xEC : 0xF0;
 
         /// <summary>
         /// size of palette section
         /// </summary>
-        private int PaletteSectionSize => (int)(texture.PaletteSize * 4);
+        private int PaletteSectionSize => (int)(_texture.PaletteSize * 4);
 
         /// <summary>
         /// start of texture section
         /// </summary>
-        private int TextureLocator => Headersize + PaletteSectionSize;
+        private int TextureLocator => HeaderSize + PaletteSectionSize;
 
         #endregion Properties
 
         #region Methods
 
-        public override void ForceSetClutColors(ushort newNumOfColors) => texture.NumOfColours = newNumOfColors;
+        public override void ForceSetClutColors(ushort newNumOfColors) => _texture.NumOfColors = newNumOfColors;
 
-        public override void ForceSetClutCount(ushort newClut) => texture.NumOfCluts = (byte)newClut;
+        public override void ForceSetClutCount(ushort newClut) => _texture.NumOfCluts = (byte)newClut;
 
         public override Color[] GetClutColors(ushort clut)
         {
-            if (!CLP)
+            if (!CLP || _texture.NumOfCluts == 0)
                 return null;
-            else if (texture.NumOfCluts == 0)
-                return null;
-            else if (clut >= texture.NumOfCluts)
-                throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {texture.NumOfCluts}");
+            if (clut >= _texture.NumOfCluts)
+                throw new Exception($"Desired palette is incorrect use -1 for default or use a smaller number: {clut} > {_texture.NumOfCluts}");
 
-            Color[] colors = new Color[texture.NumOfColours];
-            int k = 0;
-            for (int i = clut * texture.NumOfColours * 4; i < texture.paletteData.Length && k < colors.Length; i += 4)
+            var colors = new Color[_texture.NumOfColors];
+            var k = 0;
+            for (var i = clut * _texture.NumOfColors * 4; i < _texture.PaletteData.Length && k < colors.Length; i += 4)
             {
-                colors[k].B = texture.paletteData[i];
-                colors[k].G = texture.paletteData[i + 1];
-                colors[k].R = texture.paletteData[i + 2];
-                colors[k].A = texture.paletteData[i + 3];
+                colors[k].B = _texture.PaletteData[i];
+                colors[k].G = _texture.PaletteData[i + 1];
+                colors[k].R = _texture.PaletteData[i + 2];
+                colors[k].A = _texture.PaletteData[i + 3];
                 k++;
             }
             return colors;
         }
-
 
         /// <summary>
         /// Get Texture2D converted to 32bit color
@@ -106,33 +104,33 @@ namespace OpenVIII
         /// <param name="colors">Override colors of palette; Array size must match texture.NumOfColorsPerPalette</param>
         /// <returns>32bit Texture2D</returns>
         /// <remarks>
-        /// Some paletts are 256 but the game only uses 16 colors might need to make the restriction
-        /// more lax and allow any size array and only throw errors if the colorkey is greater than
+        /// Some palettes are 256 but the game only uses 16 colors might need to make the restriction
+        /// more lax and allow any size array and only throw errors if the color key is greater than
         /// size of array. Or we could treat any of those bad matches as transparent.
         /// </remarks>
         public override Texture2D GetTexture(Color[] colors)
         {
-            if (Memory.graphics.GraphicsDevice == null) return null;
-            if (texture.PaletteFlag != 0)
+            if (Memory.Graphics.GraphicsDevice == null) return null;
+            if (_texture.PaletteFlag != 0)
             {
                 if (colors == null) throw new ArgumentNullException(nameof(colors));
-                //if (colors != null && colors.Length != texture.NumOfColours)
+                //if (colors != null && colors.Length != texture.NumOfColors)
                 //{
-                //    //if (colors.Length > texture.NumOfColours) //truncate colors to the correct amount. in some
-                //    //    colors = colors.Take(texture.NumOfColours).ToArray();
+                //    //if (colors.Length > texture.NumOfColors) //truncate colors to the correct amount. in some
+                //    //    colors = colors.Take(texture.NumOfColors).ToArray();
                 //    //else // might need to expand the array the other way if we get more mismatches.
-                //        //Array.Resize(ref colors,texture.NumOfColours);
-                //    //throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColours}");
+                //        //Array.Resize(ref colors,texture.NumOfColors);
+                //    //throw new Exception($" custom colors parameter set but array size to match palette size: {texture.NumOfColors}");
                 //}
 
                 MemoryStream ms;
-                using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                using (var br = new BinaryReader(ms = new MemoryStream(_buffer)))
                 {
                     ms.Seek(TextureLocator, SeekOrigin.Begin);
-                    TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
-                    for (int i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
+                    var convertBuffer = new TextureBuffer(_texture.Width, _texture.Height);
+                    for (var i = 0; i < convertBuffer.Length && ms.Position < ms.Length; i++)
                     {
-                        byte colorKey = br.ReadByte();
+                        var colorKey = br.ReadByte();
                         if (colorKey > colors.Length) continue;
                         convertBuffer[i] = colors[colorKey];
                     }
@@ -140,56 +138,52 @@ namespace OpenVIII
                     return convertBuffer.GetTexture();
                 }
             }
-            else
+
+            if (_texture.BytesPerPixel == 2)
             {
-                if (texture.bytesPerPixel == 2)
+                MemoryStream ms;
+                using (var br = new BinaryReader(ms = new MemoryStream(_buffer)))
                 {
-                    MemoryStream ms;
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
+                    ms.Seek(TextureLocator, SeekOrigin.Begin);
+                    var convertBuffer = new TextureBuffer(_texture.Width, _texture.Height);
+                    for (var i = 0; ms.Position + 2 < ms.Length; i++)
                     {
-                        ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
-                        for (int i = 0; ms.Position + 2 < ms.Length; i++)
-                        {
-                            convertBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
-                        }
-
-                        return convertBuffer.GetTexture();
+                        convertBuffer[i] = ABGR1555toRGBA32bit(br.ReadUInt16());
                     }
-                }
-                else if (texture.bytesPerPixel == 3)
-                {
-                    // not tested but vincent tim had support for it so i guess it's possible RGB or BGR
-                    MemoryStream ms;
-                    using (BinaryReader br = new BinaryReader(ms = new MemoryStream(buffer)))
-                    {
-                        ms.Seek(TextureLocator, SeekOrigin.Begin);
-                        TextureBuffer convertBuffer = new TextureBuffer(texture.Width, texture.Height);
-                        Color color;
-                        color.A = 0xFF;
-                        for (int i = 0; ms.Position + 3 < ms.Length; i++)
-                        {
-                            //RGB or BGR so might need to reorder things to RGB
-                            color.B = br.ReadByte();
-                            color.G = br.ReadByte();
-                            color.R = br.ReadByte();
-                            convertBuffer[i] = color;
-                        }
 
-                        return convertBuffer.GetTexture();
-                    }
+                    return convertBuffer.GetTexture();
                 }
             }
 
-            return null;
+            if (_texture.BytesPerPixel != 3) return null;
+            {
+                // not tested but vincent tim had support for it so i guess it's possible RGB or BGR
+                MemoryStream ms;
+                using (var br = new BinaryReader(ms = new MemoryStream(_buffer)))
+                {
+                    ms.Seek(TextureLocator, SeekOrigin.Begin);
+                    var convertBuffer = new TextureBuffer(_texture.Width, _texture.Height);
+                    var color = new Color { A = 0xFF };
+                    for (var i = 0; ms.Position + 3 < ms.Length; i++)
+                    {
+                        //RGB or BGR so might need to reorder things to RGB
+                        color.B = br.ReadByte();
+                        color.G = br.ReadByte();
+                        color.R = br.ReadByte();
+                        convertBuffer[i] = color;
+                    }
+
+                    return convertBuffer.GetTexture();
+                }
+            }
         }
 
         public override Texture2D GetTexture(ushort clut) => GetTexture(GetClutColors(clut));
 
         public override void Load(byte[] buffer, uint offset = 0)
         {
-            texture = new Texture();
-            this.buffer = buffer;
+            _texture = new Texture();
+            this._buffer = buffer;
             ReadParameters();
         }
 
@@ -199,22 +193,22 @@ namespace OpenVIII
         /// <param name="path">Path where you want file to be saved.</param>
         public override void Save(string path)
         {
-            using (BinaryWriter bw = new BinaryWriter(File.Create(path)))
+            using (var bw = new BinaryWriter(File.Create(path)))
             {
-                bw.Write(buffer);
+                bw.Write(_buffer);
             }
         }
 
         public override void SaveCLUT(string path)
         {
-            using (Texture2D CLUT = new Texture2D(Memory.graphics.GraphicsDevice, texture.NumOfColours, texture.NumOfCluts))
+            using (var clut = new Texture2D(Memory.Graphics.GraphicsDevice, _texture.NumOfColors, _texture.NumOfCluts))
             {
-                for (ushort i = 0; i < texture.NumOfCluts; i++)
+                for (ushort i = 0; i < _texture.NumOfCluts; i++)
                 {
-                    CLUT.SetData(0, new Rectangle(0, i, texture.NumOfColours, 1), GetClutColors(i), 0, texture.NumOfColours);
+                    clut.SetData(0, new Rectangle(0, i, _texture.NumOfColors, 1), GetClutColors(i), 0, _texture.NumOfColors);
                 }
-                using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
-                    CLUT.SaveAsPng(fs, texture.NumOfColours, texture.NumOfCluts);
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                    clut.SaveAsPng(fs, _texture.NumOfColors, _texture.NumOfCluts);
             }
         }
 
@@ -225,20 +219,18 @@ namespace OpenVIII
         /// <seealso cref="https://github.com/myst6re/vincent-tim/blob/master/TexFile.h"/>
         private void ReadParameters()
         {
-            texture.Version = BitConverter.ToUInt32(buffer, 0x00);
-            texture.Width = (int)BitConverter.ToUInt32(buffer, 0x3C); //nothing will be uint size big.
-            texture.Height = (int)BitConverter.ToUInt32(buffer, 0x40);
-            texture.bytesPerPixel = buffer[0x68];
-            texture.NumOfCluts = buffer[0x30];
-            texture.NumOfColours = BitConverter.ToInt32(buffer, 0x34);
-            texture.bitDepth = BitConverter.ToUInt32(buffer, 0x38);
-            texture.PaletteFlag = buffer[0x4C];
-            texture.PaletteSize = BitConverter.ToUInt32(buffer, 0x58);
-            if (texture.PaletteFlag != 0)
-            {
-                texture.paletteData = new byte[PaletteSectionSize];
-                Buffer.BlockCopy(buffer, 0xF0, texture.paletteData, 0, PaletteSectionSize);
-            }
+            _texture.Version = BitConverter.ToUInt32(_buffer, 0x00);
+            _texture.Width = (int)BitConverter.ToUInt32(_buffer, 0x3C); //nothing will be uint size big.
+            _texture.Height = (int)BitConverter.ToUInt32(_buffer, 0x40);
+            _texture.BytesPerPixel = _buffer[0x68];
+            _texture.NumOfCluts = _buffer[0x30];
+            _texture.NumOfColors = BitConverter.ToInt32(_buffer, 0x34);
+            _texture.BitDepth = BitConverter.ToUInt32(_buffer, 0x38);
+            _texture.PaletteFlag = _buffer[0x4C];
+            _texture.PaletteSize = BitConverter.ToUInt32(_buffer, 0x58);
+            if (_texture.PaletteFlag == 0) return;
+            _texture.PaletteData = new byte[PaletteSectionSize];
+            Buffer.BlockCopy(_buffer, 0xF0, _texture.PaletteData, 0, PaletteSectionSize);
         }
 
         #endregion Methods
@@ -257,12 +249,12 @@ namespace OpenVIII
             /// <summary>
             /// 0x38
             /// </summary>
-            public uint bitDepth;
+            [SuppressMessage("ReSharper", "NotAccessedField.Local")] public uint BitDepth;
 
             /// <summary>
             /// 0x68
             /// </summary>
-            public byte bytesPerPixel;
+            public byte BytesPerPixel;
 
             /// <summary>
             /// 0x40
@@ -277,12 +269,12 @@ namespace OpenVIII
             /// <summary>
             /// 0x34
             /// </summary>
-            public int NumOfColours;
+            public int NumOfColors;
 
             /// <summary>
             /// 0xF0 for ff8;0xEC for ff7; size = PaletteSize * 4;
             /// </summary>
-            public byte[] paletteData;
+            public byte[] PaletteData;
 
             /// <summary>
             /// 0x4C

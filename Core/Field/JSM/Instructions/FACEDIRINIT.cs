@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class FACEDIRINIT : JsmInstruction
     {
+        #region Constructors
+
         public FACEDIRINIT()
         {
         }
 
-        public FACEDIRINIT(Int32 parameter, IStack<IJsmExpression> stack)
+        public FACEDIRINIT(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(FACEDIRINIT)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(FACEDIRINIT)}()";
+
+        #endregion Methods
     }
 }

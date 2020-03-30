@@ -1,94 +1,82 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII.Battle
 {
     public partial class Stage
     {
-        #region Classes
+        #region Interfaces
 
-        /// <summary>
-        /// Just a guess.
-        /// </summary>
-        [Flags]
-        public enum GPU : byte
+        public interface IPolygon
         {
-            v0 = 0x0,
-            v1 = 0x1,
-            v2_add = 0x2,
-            v3 = 0x4,
-            v4 = 0x8,
-            v5 = 0x10,
-            v6 = 0x20,
-            v7 = 0x40,
-            v8 = 0x80,
-        }
-
-        private abstract class Polygon
-        {
-            #region Fields
-
-            public ushort A;
-            public ushort B;
-            public byte bHide;
-            public ushort C;
-            public byte clut;
-            public GPU GPU;
-            public byte TexturePage;
-            protected byte Blue;
-            protected byte Green;
-            protected byte Red;
-            protected byte U1;
-            protected byte U2;
-            protected byte U3;
-            protected byte UNK;
-            protected byte V1;
-            protected byte V2;
-            protected byte V3;
-
-            #endregion Fields
-
             #region Properties
 
-            public Color Color => new Color(Red, Green, Blue);
+            ushort A { get; }
+            ushort B { get; }
+            ushort C { get; }
+            byte Clut { get; }
+            GPU GPU { get; }
+            byte TexturePage { get; }
 
-            public Vector2 MaxUV
-            {
-                get
-                {
-                    Vector2 vector2 = UVs[0];
-                    for (int i = 1; i < UVs.Count; i++)
-                        vector2 = Vector2.Max(vector2, UVs[i]);
-                    return vector2;
-                }
-            }
 
-            public Vector2 MinUV
-            {
-                get
-                {
-                    Vector2 vector2 = UVs[0];
-                    for (int i = 1; i < UVs.Count; i++)
-                        vector2 = Vector2.Min(vector2, UVs[i]);
-                    return vector2;
-                }
-            }
+            byte Hide { get; }
+            Color Color { get; }
 
-            public Rectangle Rectangle
-            {
-                get
-                {
-                    Vector2 minUV = MinUV;
-                    return new Rectangle(minUV.ToPoint(), (MaxUV - minUV).ToPoint());
-                }
-            }
+            Vector2[] UVs { get; }
+            #endregion Properties
+        }
 
-            public List<Vector2> UVs { get; protected set; }
+        public interface IQuad
+        {
+            #region Properties
+
+            ushort D { get; }
 
             #endregion Properties
         }
 
-        #endregion Classes
+        #endregion Interfaces
+
+       
+
+
     }
+[SuppressMessage("ReSharper", "NotAccessedField.Local")]
+public static class PolygonExt
+{
+    #region Fields
+
+
+    #endregion Fields
+
+
+    public static Vector2 MaxUV(this Stage.IPolygon v)
+    {
+        if (v.UVs == null || v.UVs.Length <= 2) return Vector2.Zero;
+        var vector2 = v.UVs[0];
+        for (var i = 1; i < v.UVs.Length; i++)
+            vector2 = Vector2.Max(vector2, v.UVs[i]);
+        return vector2;
+
+    }
+
+    public static Vector2 MinUV(this Stage.IPolygon v)
+    {
+        if (v.UVs == null || v.UVs.Length <= 2) return Vector2.Zero;
+        var vector2 = v.UVs[0];
+        for (var i = 1; i < v.UVs.Length; i++)
+            vector2 = Vector2.Min(vector2, v.UVs[i]);
+        return vector2;
+
+    }
+
+    public static Rectangle Rectangle(this Stage.IPolygon v)
+    {
+        Vector2 minUV = v.MinUV();
+        var maxUV = v.MaxUV();
+        return new Rectangle(minUV.ToPoint(), (maxUV - minUV).ToPoint());
+
+    }
+}
 }

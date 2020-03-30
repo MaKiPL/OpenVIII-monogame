@@ -72,7 +72,7 @@ namespace OpenVIII.Core
         {
             // Get font texture from ImGui
             var io = ImGui.GetIO();
-            io.Fonts.GetTexDataAsRGBA32(out byte* pixelData, out int width, out int height, out int bytesPerPixel);
+            io.Fonts.GetTexDataAsRGBA32(out byte* pixelData, out var width, out var height, out var bytesPerPixel);
 
             // Copy the data to a managed array
             var pixels = new byte[width * height * bytesPerPixel];
@@ -85,7 +85,7 @@ namespace OpenVIII.Core
             // Should a texture already have been build previously, unbind it first so it can be deallocated
             if (_fontTextureId.HasValue) UnbindTexture(_fontTextureId.Value);
 
-            // Bind the new texture to an ImGui-friendly id
+            // Bind the new texture to an ImGui-friendly ID
             _fontTextureId = BindTexture(tex2d);
 
             // Let ImGui know where to find the texture
@@ -224,7 +224,7 @@ namespace OpenVIII.Core
             var mouse = Mouse.GetState();
             var keyboard = Keyboard.GetState();
 
-            for (int i = 0; i < _keys.Count; i++)
+            for (var i = 0; i < _keys.Count; i++)
             {
                 io.KeysDown[_keys[i]] = keyboard.IsKeyDown((Keys)_keys[i]);
             }
@@ -308,12 +308,12 @@ namespace OpenVIII.Core
             }
 
             // Copy ImGui's vertices and indices to a set of managed byte arrays
-            int vtxOffset = 0;
-            int idxOffset = 0;
+            var vtxOffset = 0;
+            var idxOffset = 0;
 
-            for (int n = 0; n < drawData.CmdListsCount; n++)
+            for (var n = 0; n < drawData.CmdListsCount; n++)
             {
-                ImDrawListPtr cmdList = drawData.CmdListsRange[n];
+                var cmdList = drawData.CmdListsRange[n];
 
                 fixed (void* vtxDstPtr = &_vertexData[vtxOffset * DrawVertDeclaration.Size])
                 fixed (void* idxDstPtr = &_indexData[idxOffset * sizeof(ushort)])
@@ -336,20 +336,20 @@ namespace OpenVIII.Core
             _graphicsDevice.SetVertexBuffer(_vertexBuffer);
             _graphicsDevice.Indices = _indexBuffer;
 
-            int vtxOffset = 0;
-            int idxOffset = 0;
+            var vtxOffset = 0;
+            var idxOffset = 0;
 
-            for (int n = 0; n < drawData.CmdListsCount; n++)
+            for (var n = 0; n < drawData.CmdListsCount; n++)
             {
-                ImDrawListPtr cmdList = drawData.CmdListsRange[n];
+                var cmdList = drawData.CmdListsRange[n];
 
-                for (int cmdi = 0; cmdi < cmdList.CmdBuffer.Size; cmdi++)
+                for (var cmdi = 0; cmdi < cmdList.CmdBuffer.Size; cmdi++)
                 {
-                    ImDrawCmdPtr drawCmd = cmdList.CmdBuffer[cmdi];
+                    var drawCmd = cmdList.CmdBuffer[cmdi];
 
                     if (!_loadedTextures.ContainsKey(drawCmd.TextureId))
                     {
-                        throw new InvalidOperationException($"Could not find a texture with id '{drawCmd.TextureId}', please check your bindings");
+                        throw new InvalidOperationException($"Could not find a texture with ID '{drawCmd.TextureId}', please check your bindings");
                     }
 
                     _graphicsDevice.ScissorRectangle = new Rectangle(

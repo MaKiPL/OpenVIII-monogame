@@ -12,8 +12,8 @@ namespace OpenVIII
         public Vector2 Location;
         public Vector2 Offset;
         public Vector2 Size;
-        public byte[] UNK;
-        private Loc loc;
+        public byte[] Unk;
+        private Loc _loc;
 
         #endregion Fields
 
@@ -21,7 +21,7 @@ namespace OpenVIII
 
         public Entry()
         {
-            UNK = new byte[2];
+            Unk = new byte[2];
             File = 0;
             Part = 1;
         }
@@ -35,10 +35,26 @@ namespace OpenVIII
         public byte File { get; set; }
         public Vector2 Fill { get; set; }
 
+        /// <summary>
+        /// Animation Frame
+        /// </summary>
+        public int Frame { get; set; } = -1;
+
         //public Loc GetLoc => loc;
         public Rectangle GetRectangle => new Rectangle(Location.ToPoint(), Size.ToPoint());
 
         public float Height { get => Size.Y; set => Size.Y = value; }
+
+        /// <summary>
+        /// If set this has ID, default behavior is to leave unset.
+        /// </summary>
+        public Enum ID { get; set; } = null;
+
+        /// <summary>
+        /// Number Value, set if this is a number.
+        /// </summary>
+        public int? NumberValue { get; set; } = null;
+
         public byte Part { get; set; } = 1;
 
         /// <summary>
@@ -58,6 +74,11 @@ namespace OpenVIII
         /// Vector.UnitY = tile y </summary>
         public Vector2 Tile { get; set; } = Vector2.Zero;
 
+        /// <summary>
+        /// How long to spend on each frame.
+        /// </summary>
+        public TimeSpan TimePerFrame { get; set; } = TimeSpan.Zero;
+
         public string ToStringHeader { get; } = "{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
         public bool Trimmed { get; private set; }
         public float Width { get => Size.X; set => Size.X = value; }
@@ -65,26 +86,6 @@ namespace OpenVIII
         public float X { get => Location.X; set => Location.X = value; }
 
         public float Y { get => Location.Y; set => Location.Y = value; }
-
-        /// <summary>
-        /// Animation Frame
-        /// </summary>
-        public int Frame { get; set; } = -1;
-
-        /// <summary>
-        /// How long to spend on each frame.
-        /// </summary>
-        public TimeSpan TimePerFrame { get; set; } = TimeSpan.Zero;
-
-        /// <summary>
-        /// Number Value, set if this is a number.
-        /// </summary>
-        public int? NumberValue { get; set; } = null;
-
-        /// <summary>
-        /// If set this has ID, default behavior is to leave unset.
-        /// </summary>
-        public Enum ID { get; set; } = null;
 
         #endregion Properties
 
@@ -103,21 +104,21 @@ namespace OpenVIII
             Location.X = br.ReadByte();
             Location.Y = br.ReadByte();
 
-            UNK = br.ReadBytes(2);
+            Unk = br.ReadBytes(2);
             Size.X = br.ReadByte();
             Offset.X = br.ReadSByte();
             Size.Y = br.ReadByte();
             Offset.Y = br.ReadSByte();
         }
 
-        public void LoadfromStreamSP2(BinaryReader br, UInt16 loc, Entry prev, ref byte fid)
+        public void LoadfromStreamSP2(BinaryReader br, ushort loc, Entry prev, ref byte fid)
         {
             if (loc > 0)
                 br.BaseStream.Seek(loc + 4, SeekOrigin.Begin);
             CurrentPos = loc;
             Location.X = br.ReadByte();
             Location.Y = br.ReadByte();
-            UNK = br.ReadBytes(2);
+            Unk = br.ReadBytes(2);
             Size.X = br.ReadByte();
             Offset.X = br.ReadSByte();
             Size.Y = br.ReadByte();
@@ -127,12 +128,12 @@ namespace OpenVIII
             File = fid;
         }
 
-        public void SetLoc(Loc value) => loc = value;
+        public void SetLoc(Loc value) => _loc = value;
 
         public void SetTrim_1stPass(Rectangle value, bool skipoffset = false)
         {
             Trimmed = true;
-            Vector2 newLoc = value.Location.ToVector2();
+            var newLoc = value.Location.ToVector2();
             //Offset may need to change.
             //I had to preserve a good offset for the D-pad to work.
             //So i was getting the difference in the two locations and adding to the offset.
@@ -159,9 +160,8 @@ namespace OpenVIII
 
         public override string ToString()
         {        //public override string ToString() => $"{File},{Part},{CustomPalette},{Location.X},{Location.Y},{Size.X},{Size.Y},{Offset.X},{Offset.Y},{End.X},{End.Y},{Tile.X},{Tile.Y},{Fill.X},{Fill.Y},{Snap_Right},{Snap_Bottom}\n";
-
-            string prefix = "";
-            string suffix = "";
+            var prefix = "";
+            var suffix = "";
             if (ID != null)
                 prefix = ID.ToString();
             if (NumberValue.HasValue)

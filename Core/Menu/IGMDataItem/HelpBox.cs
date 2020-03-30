@@ -12,7 +12,7 @@ namespace OpenVIII.IGMDataItem
 
         public void TextChangeEvent(object sender, KeyValuePair<byte, FF8String> e) => Data = e.Value;
 
-        public void TextChangeEvent(object sender, KeyValuePair<Item_In_Menu, FF8String> e) => Data = e.Value;
+        public void TextChangeEvent(object sender, KeyValuePair<ItemInMenu, FF8String> e) => Data = e.Value;
 
         public void TextChangeEvent(object sender, FF8String e) => Data = e;
 

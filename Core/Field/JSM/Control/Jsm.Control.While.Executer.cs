@@ -1,31 +1,43 @@
 ﻿using OpenVIII.Fields.Scripts.Instructions;
-using System;
 using System.Collections.Generic;
 
 namespace OpenVIII.Fields.Scripts
 {
     public static partial class Jsm
     {
+        #region Classes
+
         public static partial class Control
         {
+            #region Classes
+
             public sealed partial class While
             {
-                private sealed class Executer : IScriptExecuter
+                #region Classes
+
+                private sealed class Executor : IScriptExecutor
                 {
+                    #region Fields
+
                     private readonly WhileSegment _seg;
 
-                    public Executer(WhileSegment seg)
-                    {
-                        _seg = seg;
-                    }
+                    #endregion Fields
+
+                    #region Constructors
+
+                    public Executor(WhileSegment seg) => _seg = seg;
+
+                    #endregion Constructors
+
+                    #region Methods
 
                     public IEnumerable<IAwaitable> Execute(IServices services)
                     {
                         while (CanExecute(_seg.Jpf, services))
                         {
-                            IEnumerable<IJsmInstruction> executable = _seg.GetBodyInstructions();
-                            IScriptExecuter executer = ExecutableSegment.GetExecuter(executable);
-                            foreach (IAwaitable result in executer.Execute(services))
+                            var executable = _seg.GetBodyInstructions();
+                            var executer = ExecutableSegment.GetExecuter(executable);
+                            foreach (var result in executer.Execute(services))
                                 yield return result;
 
                             // Skip one iteration to give control to other operations.
@@ -33,7 +45,7 @@ namespace OpenVIII.Fields.Scripts
                         }
                     }
 
-                    private Boolean CanExecute(JPF jpf, IServices services)
+                    private bool CanExecute(JPF jpf, IServices services)
                     {
                         foreach (var condition in jpf.Conditions)
                         {
@@ -43,8 +55,16 @@ namespace OpenVIII.Fields.Scripts
 
                         return true;
                     }
+
+                    #endregion Methods
                 }
+
+                #endregion Classes
             }
+
+            #endregion Classes
         }
+
+        #endregion Classes
     }
 }

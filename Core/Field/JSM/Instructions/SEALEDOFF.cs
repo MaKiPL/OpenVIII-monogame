@@ -13,21 +13,19 @@ namespace OpenVIII.Fields.Scripts.Instructions
     public sealed class SEALEDOFF : JsmInstruction
     {
         #region Fields
+
         /// <summary>
         /// If flag is set then an option is enabled.
         /// </summary>
-        private SFlags _flags;
+        private readonly SFlags _flags;
 
         #endregion Fields
 
         #region Constructors
 
-        public SEALEDOFF(SFlags flags)
-        {
-            _flags = flags;
-        }
+        public SEALEDOFF(SFlags flags) => _flags = flags;
 
-        public SEALEDOFF(Int32 parameter, IStack<IJsmExpression> stack)
+        public SEALEDOFF(int parameter, IStack<IJsmExpression> stack)
             : this(
                 flags: (SFlags)((IConstExpression)stack.Pop()).Int32())
         {
@@ -55,7 +53,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(SEALEDOFF)}({nameof(_flags)}: {_flags})";
+        public override string ToString() => $"{nameof(SEALEDOFF)}({nameof(_flags)}: {_flags})";
 
         #endregion Methods
     }

@@ -1,10 +1,9 @@
-﻿using System;
-using OpenVIII.Fields.Scripts.Instructions.Abstract;
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     public sealed class KEYSCAN2 : Abstract.KEY
     {
+        #region Constructors
+
         public KEYSCAN2(KeyFlags flags) : base(flags)
         {
         }
@@ -13,9 +12,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(KEYSCAN2)}({nameof(_flags)}: {_flags})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(KEYSCAN2)}({nameof(_flags)}: {_flags})";
+
+        #endregion Methods
     }
 }

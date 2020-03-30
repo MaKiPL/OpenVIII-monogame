@@ -32,7 +32,7 @@ namespace OpenVIII.IGMDataItem
             get => _data; set
             {
                 _data = value;
-                DataSize = Memory.font.RenderBasicText(_data, Pos.Location, Scale, skipdraw: true);
+                DataSize = Memory.Font.RenderBasicText(_data, Pos.Location, Scale, skipdraw: true);
                 OffsetIcon();
             }
         }
@@ -71,11 +71,11 @@ namespace OpenVIII.IGMDataItem
         {
             if (Enabled)
             {
-                Rectangle r = Pos;
+                var r = Pos;
                 if (OffsetAnchor != null)
                     r.Offset(OffsetAnchor);
 
-                Rectangle r2 = r;
+                var r2 = r;
                 if (Icon != null && Icon != Icons.ID.None)
                 {
                     r2.Size = Point.Zero;
@@ -86,7 +86,7 @@ namespace OpenVIII.IGMDataItem
                         Memory.Icons.Draw(Icon, Faded_Palette, r2, new Vector2(Scale.X), Fade * Blink_Amount * Blink_Adjustment);
                     r.Offset(Memory.Icons.GetEntryGroup(Icon).Width * Scale.X, 0);
                 }
-                DataSize = Rectangle.Union(r2, Memory.font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink, skipdraw: skipdraw));
+                DataSize = Rectangle.Union(r2, Memory.Font.RenderBasicText(Data, r.Location, Scale, Fade: Fade, color: FontColor, blink: Blink, skipdraw: skipdraw));
             }
         }
 
@@ -94,7 +94,7 @@ namespace OpenVIII.IGMDataItem
         {
             if (_icon != Icons.ID.None)
             {
-                EntryGroup entryGroup = Memory.Icons.GetEntryGroup(_icon);
+                var entryGroup = Memory.Icons.GetEntryGroup(_icon);
                 if (entryGroup != null)
                     DataSize.Offset(entryGroup.Width * Scale.X, 0);
             }

@@ -1,11 +1,15 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts
+﻿namespace OpenVIII.Fields.Scripts
 {
     public interface IScriptFormatterContext
     {
-        void GetObjectScriptNamesById(Int32 id, out String objectName, out String scriptName);
-        String GetObjectNameByIndex(Int32 index);
-        String GetMessage(Int32 messageIndex);
+        #region Methods
+
+        string GetMessage(int messageIndex);
+
+        string GetObjectNameByIndex(int index);
+
+        void GetObjectScriptNamesById(int id, out string objectName, out string scriptName);
+
+        #endregion Methods
     }
 }

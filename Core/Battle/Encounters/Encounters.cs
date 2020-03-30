@@ -35,16 +35,16 @@ namespace OpenVIII.Battle
 
         public static Encounters Read(byte[] enc)
         {
-            Memory.Log.WriteLine($"{nameof(Init_debugger_battle)} :: {nameof(Encounters)} :: {nameof(Read)}");
+            Memory.Log.WriteLine($"{nameof(InitDebuggerBattle)} :: {nameof(Encounters)} :: {nameof(Read)}");
             if (enc == null || enc.Length == 0) return null;
-            int encounterCount = enc.Length / 128;
-            Encounters e = new Encounters(encounterCount);
+            var encounterCount = enc.Length / 128;
+            var e = new Encounters(encounterCount);
 
             MemoryStream ms = null;
 
-            using (BinaryReader br = new BinaryReader(ms = new MemoryStream(enc)))
+            using (var br = new BinaryReader(ms = new MemoryStream(enc)))
             {
-                for (int i = 0; i < encounterCount; i++)
+                for (var i = 0; i < encounterCount; i++)
                     e.encounters.Add(Encounter.Read(br,e.Count));
 
 
@@ -78,7 +78,7 @@ namespace OpenVIII.Battle
         public byte AlternativeCamera => Current.AlternativeCamera;
         public EncounterFlag BattleFlags => Current.BattleFlags;
         public BitArray EnabledEnemy => Current.EnabledEnemy;
-        public EnemyCoordinates enemyCoordinates => Current.enemyCoordinates;
+        public EnemyCoordinates enemyCoordinates => Current.EnemyCoordinates;
         public BitArray HiddenEnemies => Current.HiddenEnemies;
         public byte PrimaryCamera => Current.PrimaryCamera;
         public byte Scenario => Current.Scenario;

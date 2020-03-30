@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Set Draw Point ID / Assigns this draw point an ID. Draw points with identical IDs share Full/Drained status.
@@ -9,25 +6,31 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/181_UNKNOWN16"/>
     public sealed class Unknown16 : JsmInstruction
     {
+        #region Fields
+
         /// <summary>
         /// Draw point ID
         /// </summary>
         private readonly IJsmExpression _drawPointID;
 
-        public Unknown16(IJsmExpression drawPointID)
-        {
-            _drawPointID = drawPointID;
-        }
+        #endregion Fields
 
-        public Unknown16(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public Unknown16(IJsmExpression drawPointID) => _drawPointID = drawPointID;
+
+        public Unknown16(int parameter, IStack<IJsmExpression> stack)
             : this(
                 drawPointID: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(Unknown16)}({nameof(_drawPointID)}: {_drawPointID})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(Unknown16)}({nameof(_drawPointID)}: {_drawPointID})";
+
+        #endregion Methods
     }
 }

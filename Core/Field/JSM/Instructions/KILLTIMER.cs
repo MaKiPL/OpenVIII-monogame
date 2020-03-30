@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class KILLTIMER : JsmInstruction
     {
+        #region Constructors
+
         public KILLTIMER()
         {
         }
 
-        public KILLTIMER(Int32 parameter, IStack<IJsmExpression> stack)
+        public KILLTIMER(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(KILLTIMER)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(KILLTIMER)}()";
+
+        #endregion Methods
     }
 }

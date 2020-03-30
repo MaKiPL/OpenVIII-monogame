@@ -1,23 +1,26 @@
-﻿using Microsoft.Xna.Framework;
-using OpenVIII.Encoding.Tags;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
+using OpenVIII.Encoding.Tags;
+using OpenVIII.IGMData;
+using OpenVIII.IGMDataItem;
+using Base = OpenVIII.IGMData.Group.Base;
+using PlayerEXP = OpenVIII.IGMData.Group.PlayerEXP;
 
 namespace OpenVIII
 {
-    public partial class VictoryMenu : Menu
+    public class VictoryMenu : Menu
     {
         #region Fields
 
-        private uint _ap = 0;
+        private uint _ap;
 
         private ConcurrentDictionary<Cards.ID, byte> _cards;
 
-        private int _exp = 0;
+        private int _exp;
 
-        private ConcurrentDictionary<Characters, int> _expextra;
+        private ConcurrentDictionary<Characters, int> _extraExp;
 
         private ConcurrentDictionary<byte, byte> _items;
 
@@ -32,7 +35,7 @@ namespace OpenVIII
             Exp,
             Items,
             AP,
-            All,
+            All
         }
 
         #endregion Enums
@@ -43,8 +46,8 @@ namespace OpenVIII
 
         public override bool Inputs()
         {
-            bool ret = false;
-            if (InputFunctions != null && InputFunctions.TryGetValue((Mode)GetMode(), out Func<bool> fun))
+            var ret = false;
+            if (InputFunctions != null && InputFunctions.TryGetValue((Mode)GetMode(), out var fun))
             {
                 ret = fun();
             }
@@ -75,18 +78,18 @@ namespace OpenVIII
         {
             SetMode(Mode.Exp);
 
-            _expextra = expextra;
+            _extraExp = expextra;
             _exp = exp;
-            ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).NoEarnExp = true;
-            ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).EXP = _exp;
-            ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).EXPExtra = _expextra;
-            ((IGMData.Group.PlayerEXP)Data[Mode.Exp]).NoEarnExp = false;
+            ((PlayerEXP)Data[Mode.Exp]).NoEarnExp = true;
+            ((PlayerEXP)Data[Mode.Exp]).EXP = _exp;
+            ((PlayerEXP)Data[Mode.Exp]).EXPExtra = _extraExp;
+            ((PlayerEXP)Data[Mode.Exp]).NoEarnExp = false;
             _ap = ap;
-            ((IGMData.PartyAP)Data[Mode.AP]).AP = _ap;
+            ((PartyAP)Data[Mode.AP]).AP = _ap;
             _items = items;
             _cards = cards;
-            ((IGMData.PartyItems)Data[Mode.Items]).SetItems(_items);
-            ((IGMData.PartyItems)Data[Mode.Items]).SetItems(_cards);
+            ((PartyItems)Data[Mode.Items]).SetItems(_items);
+            ((PartyItems)Data[Mode.Items]).SetItems(_cards);
             base.Refresh();
         }
 
@@ -118,7 +121,7 @@ namespace OpenVIII
                         break;
 
                     default:
-                        Menu.BattleMenus.ReturnTo();
+                        BattleMenus.ReturnTo();
                         break;
                 }
                 return base.SetMode((Mode)mode);
@@ -131,28 +134,28 @@ namespace OpenVIII
             NoInputOnUpdate = true;
             Size = new Vector2(881, 606);
             base.Init();
-            Menu_Base[] tmp = new Menu_Base[3];
+            var tmp = new Menu_Base[3];
 
-            Action[] actions = new Action[]
+            var actions = new Action[]
             {
-                () => Data.TryAdd(Mode.All, IGMData.Group.Base.Create(
-                        new IGMDataItem.Box{ Data = new FF8String(new byte[] {
-                            (byte)FF8TextTagCode.Key,
-                            (byte)FF8TextTagKey.Confirm})+
-                            "  "+
-                            (Strings.Name.To_confirm),
+                () => Data.TryAdd(Mode.All, Base.Create(
+                        new Box{ Data = new FF8String(new[] {
+                                            (byte)FF8TextTagCode.Key,
+                                            (byte)FF8TextTagKey.Confirm})+
+                                        "  "+
+                                        (Strings.Name.To_confirm),
                             Pos = new Rectangle(0,(int)Size.Y-78,(int)Size.X,78),Options= Box_Options.Center | Box_Options.Middle })),
 
-                    () => tmp[0] = IGMData.PlayerEXP.Create(0),
-                    () => tmp[1] = IGMData.PlayerEXP.Create(1),
-                    () => tmp[2] = IGMData.PlayerEXP.Create(2),
-                    () => Data.TryAdd(Mode.Items, IGMData.PartyItems.Create(new Rectangle(Point.Zero,Size.ToPoint()))),
-                    () => Data.TryAdd(Mode.AP, IGMData.PartyAP.Create(new Rectangle(Point.Zero,Size.ToPoint()))),
+                    () => tmp[0] = IGMData.PlayerExp.Create(0),
+                    () => tmp[1] = IGMData.PlayerExp.Create(1),
+                    () => tmp[2] = IGMData.PlayerExp.Create(2),
+                    () => Data.TryAdd(Mode.Items, PartyItems.Create(new Rectangle(Point.Zero,Size.ToPoint()))),
+                    () => Data.TryAdd(Mode.AP, PartyAP.Create(new Rectangle(Point.Zero,Size.ToPoint())))
             };
 
             Memory.ProcessActions(actions);
 
-            Data.TryAdd(Mode.Exp, IGMData.Group.PlayerEXP.Create(tmp));
+            Data.TryAdd(Mode.Exp, PlayerEXP.Create(tmp));
             Data[Mode.Exp].CONTAINER.Pos = new Rectangle(Point.Zero, Size.ToPoint());
             SetMode(Mode.Exp);
             InputFunctions = new Dictionary<Mode, Func<bool>>

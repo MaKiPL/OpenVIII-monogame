@@ -1,25 +1,25 @@
-﻿using System;
-
-namespace OpenVIII.Fields.Scripts
+﻿namespace OpenVIII.Fields.Scripts
 {
     public sealed class DummyFormatterContext : IScriptFormatterContext
     {
+        #region Properties
+
         public static IScriptFormatterContext Instance { get; } = new DummyFormatterContext();
 
-        public void GetObjectScriptNamesById(Int32 id, out String objectName, out String scriptName)
+        #endregion Properties
+
+        #region Methods
+
+        public string GetMessage(int messageIndex) => $"Message_{messageIndex:D3}";
+
+        public string GetObjectNameByIndex(int index) => $"ObjectIndex_{index:D2}";
+
+        public void GetObjectScriptNamesById(int id, out string objectName, out string scriptName)
         {
             objectName = $"ObjectId_{id:D2}";
             scriptName = $"Script_{id:D2}";
         }
 
-        public String GetObjectNameByIndex(Int32 index)
-        {
-            return $"ObjectIndex_{index:D2}";
-        }
-
-        public String GetMessage(Int32 messageIndex)
-        {
-            return $"Message_{messageIndex:D3}";
-        }
+        #endregion Methods
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// <para>Play an animation.</para>
@@ -13,6 +10,8 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/02E_ANIMEKEEP"/>
     public sealed class ANIMEKEEP : Abstract.ANIME
     {
+        #region Constructors
+
         public ANIMEKEEP(int animationId) : base(animationId)
         {
         }
@@ -21,25 +20,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(ANIMEKEEP)}({nameof(_animationId)}: {_animationId})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .Await()
                 .Property(nameof(FieldObject.Animation))
                 .Method(nameof(FieldObjectAnimation.Play))
                 .Argument("animationId", _animationId)
                 .Comment(nameof(ANIMEKEEP));
-        }
 
-        public override IAwaitable TestExecute(IServices services)
-        {
+        public override IAwaitable TestExecute(IServices services) =>
             // Sync call
-            return ServiceId.Field[services].Engine.CurrentObject.Animation.Play(_animationId, freeze: true);
-        }
+            ServiceId.Field[services].Engine.CurrentObject.Animation.Play(_animationId, freeze: true);
+
+        public override string ToString() => $"{nameof(ANIMEKEEP)}({nameof(_animationId)}: {_animationId})";
+
+        #endregion Methods
     }
 }

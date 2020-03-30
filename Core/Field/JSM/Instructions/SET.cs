@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 
 namespace OpenVIII.Fields.Scripts.Instructions
 {
@@ -11,16 +10,16 @@ namespace OpenVIII.Fields.Scripts.Instructions
     {
         #region Fields
 
-        private Vector2 _pos;
-        private Int32 _walkmeshTriangleId;
+        private readonly Vector2 _pos;
+        private readonly int _walkmeshTriangleId;
 
         #endregion Fields
 
         #region Constructors
 
-        public SET(Int32 walkmeshTriangleId, Int32 x, Int32 y) => (_walkmeshTriangleId, _pos.X, _pos.Y) = (walkmeshTriangleId, x, y);
+        public SET(int walkmeshTriangleId, int x, int y) => (_walkmeshTriangleId, _pos.X, _pos.Y) = (walkmeshTriangleId, x, y);
 
-        public SET(Int32 walkmeshTriangleId, IStack<IJsmExpression> stack)
+        public SET(int walkmeshTriangleId, IStack<IJsmExpression> stack)
             : this(walkmeshTriangleId,
                 y: ((IConstExpression)stack.Pop()).Int32(),
                 x: ((IConstExpression)stack.Pop()).Int32())
@@ -41,12 +40,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public override IAwaitable TestExecute(IServices services)
         {
-            FieldObject currentObject = ServiceId.Field[services].Engine.CurrentObject;
-            currentObject.Model.SetPosition(new WalkmeshCoords(_walkmeshTriangleId, _pos));
+            var currentObject = ServiceId.Field[services].Engine.CurrentObject;
+            currentObject.Model.SetPosition(new WalkMeshCoords(_walkmeshTriangleId, _pos));
             return DummyAwaitable.Instance;
         }
 
-        public override String ToString() => $"{nameof(SET)}({nameof(_walkmeshTriangleId)}: {_walkmeshTriangleId}, {nameof(_pos)}: {_pos})";
+        public override string ToString() => $"{nameof(SET)}({nameof(_walkmeshTriangleId)}: {_walkmeshTriangleId}, {nameof(_pos)}: {_pos})";
 
         #endregion Methods
     }

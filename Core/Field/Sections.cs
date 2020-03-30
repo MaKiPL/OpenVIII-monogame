@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII.Fields
 {
     [Flags]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public enum Sections : uint
     {
         None = 0,
@@ -53,7 +55,7 @@ namespace OpenVIII.Fields
         INF = 0x80,
 
         /// <summary>
-        /// Field Walkmesh(same format as FF7)
+        /// Field Walk-mesh(same format as FF7)
         /// </summary>
         ID = 0x100,
 

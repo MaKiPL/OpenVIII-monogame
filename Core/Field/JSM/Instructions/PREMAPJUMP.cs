@@ -1,15 +1,19 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class PREMAPJUMP : JsmInstruction
     {
+        #region Fields
+
         // first
-        private IJsmExpression _arg0;
-        private IJsmExpression _arg1;
-        private IJsmExpression _arg2;
-        private IJsmExpression _arg3;
+        private readonly IJsmExpression _arg0;
+
+        private readonly IJsmExpression _arg1;
+        private readonly IJsmExpression _arg2;
+        private readonly IJsmExpression _arg3;
+
+        #endregion Fields
+
+        #region Constructors
 
         public PREMAPJUMP(IJsmExpression arg0, IJsmExpression arg1, IJsmExpression arg2, IJsmExpression arg3)
         {
@@ -19,7 +23,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _arg3 = arg3;
         }
 
-        public PREMAPJUMP(Int32 parameter, IStack<IJsmExpression> stack)
+        public PREMAPJUMP(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg3: stack.Pop(),
                 arg2: stack.Pop(),
@@ -28,9 +32,12 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(PREMAPJUMP)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2}, {nameof(_arg3)}: {_arg3})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(PREMAPJUMP)}({nameof(_arg0)}: {_arg0}, {nameof(_arg1)}: {_arg1}, {nameof(_arg2)}: {_arg2}, {nameof(_arg3)}: {_arg3})";
+
+        #endregion Methods
     }
 }

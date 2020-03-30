@@ -1,30 +1,29 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Preloads a new field music track. You can start the new track by calling MUSICCHANGE. 
+    /// Preloads a new field music track. You can start the new track by calling MUSICCHANGE.
     /// </summary>
     internal sealed class MUSICLOAD : JsmInstruction
     {
+        #region Fields
+
         private readonly IJsmExpression _musicId;
 
-        public MUSICLOAD(IJsmExpression musicId)
-        {
-            _musicId = musicId;
-        }
+        #endregion Fields
 
-        public MUSICLOAD(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public MUSICLOAD(IJsmExpression musicId) => _musicId = musicId;
+
+        public MUSICLOAD(int parameter, IStack<IJsmExpression> stack)
             : this(
                 musicId: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MUSICLOAD)}({nameof(_musicId)}: {_musicId})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -45,5 +44,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
             ServiceId.Music[services].LoadFieldMusic((MusicId)_musicId.Int32(services));
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(MUSICLOAD)}({nameof(_musicId)}: {_musicId})";
+
+        #endregion Methods
     }
 }

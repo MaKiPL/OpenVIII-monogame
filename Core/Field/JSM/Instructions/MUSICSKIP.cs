@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Music skip?
@@ -9,26 +6,31 @@ namespace OpenVIII.Fields.Scripts.Instructions
     /// <see cref="http://wiki.ffrtt.ru/index.php?title=FF8/Field/Script/Opcodes/144_MUSICSKIP&action=edit&redlink=1"/>
     public sealed class MUSICSKIP : JsmInstruction
     {
+        #region Fields
 
         /// <summary>
         /// i'm guessing this is time skipped?
         /// </summary>
-        private IJsmExpression _arg0;
+        private readonly IJsmExpression _arg0;
 
-        public MUSICSKIP(IJsmExpression arg0)
-        {
-            _arg0 = arg0;
-        }
+        #endregion Fields
 
-        public MUSICSKIP(Int32 parameter, IStack<IJsmExpression> stack)
+        #region Constructors
+
+        public MUSICSKIP(IJsmExpression arg0) => _arg0 = arg0;
+
+        public MUSICSKIP(int parameter, IStack<IJsmExpression> stack)
             : this(
                 arg0: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MUSICSKIP)}({nameof(_arg0)}: {_arg0})";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MUSICSKIP)}({nameof(_arg0)}: {_arg0})";
+
+        #endregion Methods
     }
 }

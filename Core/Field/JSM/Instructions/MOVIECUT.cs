@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class MOVIECUT : JsmInstruction
     {
+        #region Constructors
+
         public MOVIECUT()
         {
         }
 
-        public MOVIECUT(Int32 parameter, IStack<IJsmExpression> stack)
+        public MOVIECUT(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MOVIECUT)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(MOVIECUT)}()";
+
+        #endregion Methods
     }
 }

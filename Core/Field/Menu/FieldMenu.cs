@@ -23,7 +23,7 @@ namespace OpenVIII.Fields
 
         public override bool Inputs()
         {
-            bool r = false;
+            var r = false;
             switch ((Mode)GetMode())
             {
                 case Mode.On:

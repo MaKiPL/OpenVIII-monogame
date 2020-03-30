@@ -56,7 +56,7 @@ namespace OpenVIII
         {
             if (end != null && end.Length > 0)
             {
-                byte[] combine = new byte[start.Length + end.Length];
+                var combine = new byte[start.Length + end.Length];
                 Array.Copy(start, 0, combine, 0, start.Length);
                 Array.Copy(end, 0, combine, start.Length, end.Length);
                 return combine;
@@ -77,7 +77,7 @@ namespace OpenVIII
         {
             if (a != null && a.Length > 0)
             {
-                FF8String s = a.Clone();
+                var s = a.Clone();
                 if (b != null && b.Length > 0)
                     return s.Append(b);
                 else
@@ -92,7 +92,7 @@ namespace OpenVIII
             {
                 if (!string.IsNullOrEmpty(b))
                 {
-                    FF8String s = a.Clone();
+                    var s = a.Clone();
                     return s.Append(b);
                 }
                 else
@@ -103,7 +103,7 @@ namespace OpenVIII
 
         public static FF8String operator +(string a, FF8String b)
         {
-            FF8String s = new FF8String(a);
+            var s = new FF8String(a);
             return s.Append(b);
         }
 
@@ -141,7 +141,7 @@ namespace OpenVIII
         {
             if (Length > 0 && a != null && b != null && a.Length > 0 && b.Length > 0)
             {
-                int i = 0;
+                var i = 0;
                 do
                 {
                     i = Array.FindIndex(value, i, Length - i, x => x == a[0]);
@@ -149,7 +149,7 @@ namespace OpenVIII
                     {
                         if (value.Skip(i).Take(a.Length).ToArray().SequenceEqual(a.Value))
                         {
-                            byte[] end = value.Skip(a.Length + i).ToArray();
+                            var end = value.Skip(a.Length + i).ToArray();
 
                             Array.Resize(ref value, Length + b.Length - a.Length);
                             Array.Copy(b, 0, value, i, b.Length);

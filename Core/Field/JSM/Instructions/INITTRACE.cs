@@ -1,22 +1,24 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class INITTRACE : JsmInstruction
     {
+        #region Constructors
+
         public INITTRACE()
         {
         }
 
-        public INITTRACE(Int32 parameter, IStack<IJsmExpression> stack)
+        public INITTRACE(int parameter, IStack<IJsmExpression> stack)
             : this()
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(INITTRACE)}()";
-        }
+        #endregion Constructors
+
+        #region Methods
+
+        public override string ToString() => $"{nameof(INITTRACE)}()";
+
+        #endregion Methods
     }
 }

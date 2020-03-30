@@ -30,7 +30,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _flags = (BFlags)((IConstExpression)flags).Int32();
         }
 
-        public BATTLE(Int32 parameter, IStack<IJsmExpression> stack)
+        public BATTLE(int parameter, IStack<IJsmExpression> stack)
             : this(
                 flags: stack.Pop(),
                 encounter: stack.Pop())
@@ -71,7 +71,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         #region Methods
 
-        public override String ToString() => $"{nameof(BATTLE)}({nameof(_encounter)}: {_encounter}, {nameof(_flags)}: {_flags})";
+        public override string ToString() => $"{nameof(BATTLE)}({nameof(_encounter)}: {_encounter}, {nameof(_flags)}: {_flags})";
 
         #endregion Methods
     }

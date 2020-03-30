@@ -5,25 +5,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     public abstract class JsmInstruction : IJsmInstruction, IFormattableScript
     {
-        protected JsmInstruction()
-        {
-        }
-
-        public virtual void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.AppendLine(this.ToString());
-
-        public virtual IAwaitable Execute(IServices services) => TestExecute(services);
-
-        public virtual IAwaitable TestExecute(IServices services) => throw new NotImplementedException($"The instruction {GetType()} is not implemented yet. Please override \"{nameof(Execute)}\" method if you know the correct behavior or \"{nameof(TestExecute)}\" method for test environment.");
-
-        public static JsmInstruction TryMake(Jsm.Opcode opcode, Int32 parameter, IStack<IJsmExpression> stack)
-        {
-            if (Factories.TryGetValue(opcode, out Make make))
-                return make(parameter, stack);
-
-            return null;
-        }
-
-        private delegate JsmInstruction Make(Int32 parameter, IStack<IJsmExpression> stack);
+        #region Fields
 
         private static readonly Dictionary<Jsm.Opcode, Make> Factories = new Dictionary<Jsm.Opcode, Make>
         {
@@ -394,5 +376,39 @@ namespace OpenVIII.Fields.Scripts.Instructions
             {Jsm.Opcode.PREMAPJUMP2, (p, s) => new PREMAPJUMP2(p, s)},
             {Jsm.Opcode.TUTO, (p, s) => new TUTO(p, s)}
         };
+
+        #endregion Fields
+
+        #region Constructors
+
+        protected JsmInstruction()
+        {
+        }
+
+        #endregion Constructors
+
+        #region Delegates
+
+        private delegate JsmInstruction Make(int parameter, IStack<IJsmExpression> stack);
+
+        #endregion Delegates
+
+        #region Methods
+
+        public static JsmInstruction TryMake(Jsm.Opcode opcode, int parameter, IStack<IJsmExpression> stack)
+        {
+            if (Factories.TryGetValue(opcode, out var make))
+                return make(parameter, stack);
+
+            return null;
+        }
+
+        public virtual IAwaitable Execute(IServices services) => TestExecute(services);
+
+        public virtual void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.AppendLine(this.ToString());
+
+        public virtual IAwaitable TestExecute(IServices services) => throw new NotImplementedException($"The instruction {GetType()} is not implemented yet. Please override \"{nameof(Execute)}\" method if you know the correct behavior or \"{nameof(TestExecute)}\" method for test environment.");
+
+        #endregion Methods
     }
 }

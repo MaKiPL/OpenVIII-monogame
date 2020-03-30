@@ -5,12 +5,15 @@ namespace OpenVIII.Fields
 {
     public sealed class ServiceProvider : IServices
     {
-        private readonly Dictionary<Object, Object> _services = new Dictionary<Object, Object>();
+        #region Fields
 
-        public void Register<T>(ServiceId<T> id, T service)
-        {
-            _services.Add(id, service);
-        }
+        private readonly Dictionary<object, object> _services = new Dictionary<object, object>();
+
+        #endregion Fields
+
+        #region Methods
+
+        public void Register<T>(ServiceId<T> id, T service) => _services.Add(id, service);
 
         public T Service<T>(ServiceId<T> id)
         {
@@ -19,5 +22,7 @@ namespace OpenVIII.Fields
 
             throw new ArgumentException($"Service {typeof(T).FullName} isn't registered.", nameof(id));
         }
+
+        #endregion Methods
     }
 }

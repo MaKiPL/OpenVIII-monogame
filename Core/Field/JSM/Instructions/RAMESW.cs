@@ -1,17 +1,20 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
-    /// Pop up a message window and wait for the player to hit "ok." Unlike AMESW, RAMESW will let the script continue running. 
+    /// Pop up a message window and wait for the player to hit "ok." Unlike AMESW, RAMESW will let the script continue running.
     /// </summary>
     internal sealed class RAMESW : JsmInstruction
     {
-        private IJsmExpression _channel;
-        private IJsmExpression _messageId;
-        private IJsmExpression _posX;
-        private IJsmExpression _posY;
+        #region Fields
+
+        private readonly IJsmExpression _channel;
+        private readonly IJsmExpression _messageId;
+        private readonly IJsmExpression _posX;
+        private readonly IJsmExpression _posY;
+
+        #endregion Fields
+
+        #region Constructors
 
         public RAMESW(IJsmExpression channel, IJsmExpression messageId, IJsmExpression posX, IJsmExpression posY)
         {
@@ -21,7 +24,7 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _posY = posY;
         }
 
-        public RAMESW(Int32 parameter, IStack<IJsmExpression> stack)
+        public RAMESW(int parameter, IStack<IJsmExpression> stack)
             : this(
                 posY: stack.Pop(),
                 posX: stack.Pop(),
@@ -30,10 +33,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(RAMESW)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_posX)}: {_posX}, {nameof(_posY)}: {_posY})";
-        }
+        #endregion Constructors
+
+        #region Methods
 
         public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
         {
@@ -59,5 +61,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 _posY.Int32(services));
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(RAMESW)}({nameof(_channel)}: {_channel}, {nameof(_messageId)}: {_messageId}, {nameof(_posX)}: {_posX}, {nameof(_posY)}: {_posY})";
+
+        #endregion Methods
     }
 }

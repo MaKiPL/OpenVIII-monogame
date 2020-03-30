@@ -7,18 +7,12 @@ namespace OpenVIII.Fields
 {
     public static class MusicName
     {
-        public static String Get(MusicId id)
-        {
-            if (_dic.TryGetValue(id, out var name))
-                return name;
+        #region Fields
 
-            return $"Unknown music: {id}";
-        }
-
-        private static readonly Dictionary<MusicId, String> _dic = new Dictionary<MusicId, String>()
+        private static readonly Dictionary<MusicId, string> _dic = new Dictionary<MusicId, string>()
         {
             {MusicId.Loser, "The Loser"},
-            {MusicId.Winner, "The Winner "},    
+            {MusicId.Winner, "The Winner "},
             {MusicId.Music04, "Never Look Back"},
             {MusicId.Battle01, "Don't be Afraid (Regular Battle)"},
             {MusicId.Music7, "Dead End"},
@@ -103,5 +97,19 @@ namespace OpenVIII.Fields
             {MusicId.FHConcertEBass, "FH Concert (e.bass)"},
             {MusicId.ChocoboWorld, "Chocobo World (Credits)"}
         };
+
+        #endregion Fields
+
+        #region Methods
+
+        public static string Get(MusicId id)
+        {
+            if (_dic.TryGetValue(id, out var name))
+                return name;
+
+            return $"Unknown music: {id}";
+        }
+
+        #endregion Methods
     }
 }

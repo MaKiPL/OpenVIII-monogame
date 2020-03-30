@@ -4,9 +4,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
 {
     internal sealed class CSCROLL3 : JsmInstruction
     {
-        public CSCROLL3()
-        {
-            throw new NotSupportedException();
-        }
+        #region Constructors
+
+        public CSCROLL3() => throw new NotSupportedException();
+
+        #endregion Constructors
     }
 }

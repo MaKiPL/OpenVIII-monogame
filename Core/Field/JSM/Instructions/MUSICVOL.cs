@@ -1,16 +1,19 @@
-﻿using System;
-
-
-namespace OpenVIII.Fields.Scripts.Instructions
+﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
     /// <summary>
     /// Set the volume of the music.
-    /// All the music functions have a parameter that's either 0 or 1. 
+    /// All the music functions have a parameter that's either 0 or 1.
     /// </summary>
     internal sealed class MUSICVOL : JsmInstruction
     {
-        private IJsmExpression _flag;
-        private IJsmExpression _volume;
+        #region Fields
+
+        private readonly IJsmExpression _flag;
+        private readonly IJsmExpression _volume;
+
+        #endregion Fields
+
+        #region Constructors
 
         public MUSICVOL(IJsmExpression flag, IJsmExpression volume)
         {
@@ -18,27 +21,23 @@ namespace OpenVIII.Fields.Scripts.Instructions
             _volume = volume;
         }
 
-        public MUSICVOL(Int32 parameter, IStack<IJsmExpression> stack)
+        public MUSICVOL(int parameter, IStack<IJsmExpression> stack)
             : this(
                 volume: stack.Pop(),
                 flag: stack.Pop())
         {
         }
 
-        public override String ToString()
-        {
-            return $"{nameof(MUSICVOL)}({nameof(_flag)}: {_flag}, {nameof(_volume)}: {_volume})";
-        }
+        #endregion Constructors
 
-        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services)
-        {
-            sw.Format(formatterContext, services)
+        #region Methods
+
+        public override void Format(ScriptWriter sw, IScriptFormatterContext formatterContext, IServices services) => sw.Format(formatterContext, services)
                 .StaticType(nameof(IMusicService))
                 .Method(nameof(IMusicService.ChangeMusicVolume))
                 .Argument("volume", _volume)
                 .Argument("flag", _flag)
                 .Comment(nameof(MUSICVOL));
-        }
 
         public override IAwaitable TestExecute(IServices services)
         {
@@ -47,5 +46,9 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 _flag.Boolean(services));
             return DummyAwaitable.Instance;
         }
+
+        public override string ToString() => $"{nameof(MUSICVOL)}({nameof(_flag)}: {_flag}, {nameof(_volume)}: {_volume})";
+
+        #endregion Methods
     }
 }

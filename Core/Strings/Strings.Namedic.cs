@@ -17,7 +17,7 @@ namespace OpenVIII
             protected override void DefaultValues() =>
                 SetValues(Memory.Archives.A_MAIN, "namedic.bin");
 
-            protected override void GetFileLocations(BinaryReader br)
+            protected virtual void GetFileLocations(BinaryReader br)
             {
             }
 
