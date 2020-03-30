@@ -10,7 +10,7 @@ namespace OpenVIII
         #region Classes
 
         [SuppressMessage("ReSharper", "NotAccessedField.Local")]
-        private class IGMDataSideMenu : IGMData.Base
+        private class SideMenu : IGMData.Base
         {
             #region Fields
 
@@ -32,9 +32,9 @@ namespace OpenVIII
 
             #region Methods
 
-            public static IGMDataSideMenu Create(IReadOnlyDictionary<FF8String, FF8String> pairs)
+            public static SideMenu Create(IReadOnlyDictionary<FF8String, FF8String> pairs)
             {
-                var r = new IGMDataSideMenu
+                var r = new SideMenu
                 {
                     _helpStr = new FF8String[pairs.Count],
                     _widths = new int[pairs.Count]
@@ -104,20 +104,28 @@ namespace OpenVIII
                         BattleMenus.Refresh();
                         FadeIn();
                         return true;
+
                     case Items.GF:
                         break;
+
                     case Items.Ability:
                         break;
+
                     case Items.Switch:
                         break;
+
                     case Items.Card:
                         break;
+
                     case Items.Config:
                         break;
+
                     case Items.Tutorial:
                         break;
+
                     case Items.Save:
                         break;
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }

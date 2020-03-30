@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII
 {
@@ -7,24 +8,25 @@ namespace OpenVIII
     {
         #region Classes
 
-        protected class IGMData_Header : IGMData.Base
+        protected class Header : IGMData.Base
         {
             #region Fields
 
-            private bool eventSet = false;
+            private bool _eventSet;
 
             #endregion Fields
 
             #region Methods
 
-            public static IGMData_Header Create() => Create<IGMData_Header>(0, 0, new IGMDataItem.Box { Pos = new Rectangle { Width = 610, Height = 75 }, Title = Icons.ID.HELP });
+            [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
+            public static Header Create() => Create<Header>(0, 0, new IGMDataItem.Box { Pos = new Rectangle { Width = 610, Height = 75 }, Title = Icons.ID.HELP });
 
             public override void Refresh()
             {
-                if (!eventSet && IGM != null)
+                if (!_eventSet && IGM != null)
                 {
                     IGM.ChoiceChangeHandler += ChoiceChangeEvent;
-                    eventSet = true;
+                    _eventSet = true;
                 }
                 base.Refresh();
             }

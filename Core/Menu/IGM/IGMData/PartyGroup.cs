@@ -9,29 +9,29 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_PartyGroup : IGMData.Group.Base
+        private class PartyGroup : IGMData.Group.Base
         {
             #region Fields
 
-            private Items Choice;
-            private Damageable[] Contents;
-            private bool eventSet = false;
+            private Items _choice;
+            private Damageable[] _contents;
+            private bool _eventSet;
 
             #endregion Fields
 
             #region Properties
 
-            private IGMData_NonParty Non_Party => ((IGMData_NonParty)(((IGMData.Base)ITEM[1, 0])));
+            private NonParty NonParty => ((NonParty)(((IGMData.Base)ITEM[1, 0])));
 
-            private IGMData_Party Party => ((IGMData_Party)(((IGMData.Base)ITEM[0, 0])));
+            private Party Party => ((Party)(((IGMData.Base)ITEM[0, 0])));
 
             #endregion Properties
 
             #region Methods
 
-            public static new IGMData_PartyGroup Create(params Menu_Base[] d)
+            public static new PartyGroup Create(params Menu_Base[] d)
             {
-                var r = Create<IGMData_PartyGroup>(d);
+                var r = Create<PartyGroup>(d);
                 r.Cursor_Status &= ~(Cursor_Status.Enabled | Cursor_Status.Horizontal | Cursor_Status.Blinking);
                 r.Cursor_Status |= Cursor_Status.Vertical;
                 return r;
@@ -54,11 +54,11 @@ namespace OpenVIII
             {
                 var ret = base.Inputs_OKAY();
                 FadeIn();
-                switch (Choice)
+                switch (_choice)
                 {
                     case Items.Junction:
                         Menu.Module.State = MenuModule.Mode.IGM_Junction;
-                        IGM_Junction.Refresh(Contents[CURSOR_SELECT], true);
+                        IGM_Junction.Refresh(_contents[CURSOR_SELECT], true);
                         return true;
                 }
                 return ret;
@@ -74,42 +74,42 @@ namespace OpenVIII
 
             public override void Refresh()
             {
-                if (!eventSet && IGM != null)
+                if (!_eventSet && IGM != null)
                 {
                     IGM.ModeChangeHandler += ModeChangeEvent;
                     IGM.ChoiceChangeHandler += ChoiceChangeEvent;
-                    eventSet = true;
+                    _eventSet = true;
                 }
                 base.Refresh();
 
-                var total_Count = (Party?.Count ?? 0) + (Non_Party?.Count ?? 0);
-                if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Party != null && Non_Party != null)
+                var totalCount = (Party?.Count ?? 0) + (NonParty?.Count ?? 0);
+                if (Memory.State?.Characters != null && Memory.State.Characters.Count > 0 && Party != null && NonParty != null)
                 {
                     //TODO fix this... should be set in Init not Refresh
-                    SIZE = new Rectangle[total_Count];
-                    CURSOR = new Point[total_Count];
-                    BLANKS = new BitArray(total_Count,false);
-                    Contents = new Damageable[total_Count];
+                    SIZE = new Rectangle[totalCount];
+                    CURSOR = new Point[totalCount];
+                    BLANKS = new BitArray(totalCount, false);
+                    _contents = new Damageable[totalCount];
                     var i = 0;
                     test(Party, ref i, Party.Contents);
-                    test(Non_Party, ref i, Non_Party.Contents);
+                    test(NonParty, ref i, NonParty.Contents);
                 }
 
                 void test(IGMData.Base t, ref int i, Damageable[] contents)
                 {
                     var pos = 0;
-                    for (; pos < t.Count && i < total_Count; i++)
+                    for (; pos < t.Count && i < totalCount; i++)
                     {
                         SIZE[i] = t.SIZE[pos];
                         CURSOR[i] = t.CURSOR[pos];
                         BLANKS[i] = t.BLANKS[pos];
-                        Contents[i] = contents[pos];
+                        _contents[i] = contents[pos];
                         pos++;
                     }
                 }
             }
 
-            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => Choice = e.Key;
+            private void ChoiceChangeEvent(object sender, KeyValuePair<Items, FF8String> e) => _choice = e.Key;
 
             #endregion Methods
         }

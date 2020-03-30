@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using OpenVIII.Kernel;
+
 // ReSharper disable UnusedMember.Global
 
 namespace OpenVIII
@@ -53,7 +55,7 @@ namespace OpenVIII
                 CoordinateY = new short[3];
                 TriangleID = new ushort[3];
                 FieldVars = new FieldVars(); //0x0D70 http://wiki.ffrtt.ru/index.php/FF8/Variables
-                WorldMap = new Worldmap();//br.ReadBytes(128);//0x1270
+                WorldMap = new Worldmap(); //br.ReadBytes(128);//0x1270
                 TripleTriad = new TripleTriad(); //br.ReadBytes(128);//0x12F0
                 ChocoboWorld = new ChocoboWorld(); //br.ReadBytes(64);//0x1370
             }
@@ -65,18 +67,37 @@ namespace OpenVIII
             /// <summary>
             /// 0x000C 4 bytes Preview: Amount of Gil
             /// </summary>
-            public uint AmountOfGilPreview { get; set; }
+            private uint _amountOfGilPreview;
 
             /// <summary>
             /// 0x0B20 4 bytes Amount of Gil (Laguna)
             /// </summary>
-            public uint AmountOfGilLaguna { get; set; }
+            public uint AmountOfGilLaguna => _amountOfGilLaguna;
 
             /// <summary>
             /// 0x0B1C 4 bytes Amount of Gil
             /// </summary>
-            public uint AmountOfGil { get; set; }
+            private uint _amountOfGil;
 
+            private uint _amountOfGilLaguna;
+
+            public uint AmountOfGil => TeamLaguna ? AmountOfGilLaguna : _amountOfGil;
+
+            public void ChangeGil(int amount)
+            {
+                void proc(ref uint gil)
+                {
+                    gil = (uint) MathHelper.Clamp(gil + amount, uint.MinValue, uint.MaxValue);
+                }
+
+                if (TeamLaguna)
+                {
+                    proc(ref _amountOfGilLaguna);
+                }
+
+                proc(ref _amountOfGil);
+                _amountOfGilPreview = _amountOfGil;
+            }
             /// <summary>
             /// 0x0040 12 bytes Preview: Angelo's name (0x00 terminated)
             /// </summary>
@@ -91,11 +112,9 @@ namespace OpenVIII
                     for (var p = 0; p < 3; p++)
                     {
                         var c = PartyData?[p] ?? OpenVIII.Characters.Squall_Leonhart;
-                        if (c != OpenVIII.Characters.Blank)
-                        {
-                            level += Characters?[c].Level ?? 0;
-                            cnt++;
-                        }
+                        if (c == OpenVIII.Characters.Blank) continue;
+                        level += Characters?[c].Level ?? 0;
+                        cnt++;
                     }
                     return (byte)MathHelper.Clamp(level / cnt, 0, 100);
                 }
@@ -569,7 +588,7 @@ namespace OpenVIII
             public int DeadCharacters() =>
                 Characters?.Count(m =>
                     m.Value.Available && m.Value.CurrentHP() == 0 ||
-                    (m.Value.Statuses0 & Kernel.PersistentStatuses.Death) != 0) ?? 0;
+                    (m.Value.Statuses0 & PersistentStatuses.Death) != 0) ?? 0;
 
             /// <summary>
             /// How many dead party members there are.
@@ -578,18 +597,18 @@ namespace OpenVIII
             public int DeadPartyMembers() =>
                 PartyData?.Count(m => m != OpenVIII.Characters.Blank && Characters[m].IsDead) ?? 0;
 
-            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>> abilities)
+            public ConcurrentQueue<GFs> EarnAP(uint ap, out ConcurrentQueue<KeyValuePair<GFs, Abilities>> abilities)
             {
                 var ret = new ConcurrentQueue<GFs>();
                 abilities = null;
                 if (GFs == null) return ret;
-                abilities = new ConcurrentQueue<KeyValuePair<GFs, Kernel.Abilities>>();
+                abilities = new ConcurrentQueue<KeyValuePair<GFs, Abilities>>();
                 foreach (var g in GFs.Where(i => i.Value != null && i.Value.Exists))
                 {
                     if (!g.Value.EarnExp(ap, out var ability)) continue;
-                    if (ability != Kernel.Abilities.None)
+                    if (ability != Abilities.None)
                     {
-                        abilities.Enqueue(new KeyValuePair<GFs, Kernel.Abilities>(g.Key, ability));
+                        abilities.Enqueue(new KeyValuePair<GFs, Abilities>(g.Key, ability));
                     }
                     ret.Enqueue(g.Key);
                 }
@@ -648,7 +667,7 @@ namespace OpenVIII
 
             public bool MaxGFAbilities(GFs gf) => GFs.ContainsKey(gf) && GFs[gf].MaxGFAbilities;
 
-            public bool PartyHasAbility(Kernel.Abilities a)
+            public bool PartyHasAbility(Abilities a)
             {
                 if (PartyData == null) return false;
                 foreach (var c in PartyData)
@@ -666,7 +685,7 @@ namespace OpenVIII
                 FirstCharactersCurrentHp = br.ReadUInt16();//0x0006
                 FirstCharactersMaxHp = br.ReadUInt16();//0x0008
                 SaveCount = br.ReadUInt16();//0x000A
-                AmountOfGilPreview = br.ReadUInt32();//0x000C
+                _amountOfGilPreview = br.ReadUInt32();//0x000C
                 TimePlayed = new TimeSpan(0, 0, checked((int)br.ReadUInt32()));//0x0020
                 FirstCharactersLevel = br.ReadByte();//0x0024
                 Party = Array.ConvertAll(br.ReadBytes(3), item => (Characters)item).ToList();//0x0025//0x0026//0x0027 0xFF = blank.
@@ -753,9 +772,10 @@ namespace OpenVIII
                 if (string.IsNullOrWhiteSpace(GrieverName)) GrieverName = Memory.Strings.GetName(Faces.ID.Griever);
                 Unknown1 = br.ReadUInt16();//0x0B18  (always 7966?)
                 Unknown2 = br.ReadUInt16();//0x0B1A
-                AmountOfGil = br.ReadUInt32();//0x0B1C //dupilicate
-                if (AmountOfGilPreview != AmountOfGil) AmountOfGilPreview = AmountOfGil;
-                AmountOfGilLaguna = br.ReadUInt32();//0x0B20
+                _amountOfGil = br.ReadUInt32();//0x0B1C //dupilicate
+                // ReSharper disable once RedundantCheckBeforeAssignment //sometimes this is set sometimes it isn't.
+                if (_amountOfGilPreview != _amountOfGil) _amountOfGilPreview = _amountOfGil;
+                _amountOfGilLaguna = br.ReadUInt32();//0x0B20
                 LimitBreakQuistisUnlockedBlueMagic = new BitArray(br.ReadBytes(2));//0x0B24
                 LimitBreakZellUnlockedDuel = new BitArray(br.ReadBytes(2));//0x0B26
                 LimitBreakIrvineUnlockedShot = new BitArray(br.ReadBytes(1));//0x0B28

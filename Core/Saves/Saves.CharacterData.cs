@@ -196,7 +196,7 @@ namespace OpenVIII
             {
                 get
                 {
-                    if (Memory.KernelBin?.CharacterStats != null && Memory.KernelBin.CharacterStats.TryGetValue(_id, out var value))
+                    if (Memory.KernelBin?.CharacterStats != null && Memory.KernelBin.CharacterStats.TryGetValue(ID, out var value))
                         return value;
                     return null;
                 }
@@ -222,8 +222,6 @@ namespace OpenVIII
                 {
                     if (_experience == 0)
                         _experience = value;
-                    else if (!IsGameOver && _experience != value)
-                        _experience = value; //trying to give my self a good break point
                 }
             }
 
@@ -476,9 +474,9 @@ namespace OpenVIII
                 if (!Enum.IsDefined(typeof(Characters), c))
                     throw new InvalidEnumArgumentException(nameof(c), (int)c, typeof(Characters));
                 if (c == Characters.Blank)
-                    c = _id;
+                    c = _id; // this might need to be ID, which would mean the next if is wrong.
                 if (c != _id && c < Characters.Laguna_Loire)
-                    throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({_id}) unless Laguna Kiros or Ward!");
+                    throw new ArgumentException($"{this}::Wrong visible character value({c}). Must match ({_id}) unless Laguna, Kiros or Ward!");
 
                 var total = 0;
                 if (Memory.KernelBin.StatPercentAbilities != null)

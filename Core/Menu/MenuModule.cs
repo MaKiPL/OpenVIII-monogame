@@ -105,7 +105,7 @@ namespace OpenVIII
                 case Mode.SaveGameCheckingSlot:
                 case Mode.SaveGameChooseGame:
                 case Mode.SaveGameSaving:
-                    IGM_LGSG.Draw();
+                    IGMLoadSaveGame.Draw();
                     break;
 
                 case Mode.IGM:
@@ -151,7 +151,6 @@ namespace OpenVIII
                 case Mode.SaveGameCheckingSlot:
                 case Mode.SaveGameChooseGame:
                 case Mode.SaveGameSaving:
-                    IGM_LGSG.Refresh();
                     break;
 
                 case Mode.IGM:
@@ -211,7 +210,7 @@ namespace OpenVIII
                 case Mode.SaveGameCheckingSlot:
                 case Mode.SaveGameChooseGame:
                 case Mode.SaveGameSaving:
-                    forceupdate = IGM_LGSG.Update();
+                    forceupdate = IGMLoadSaveGame.Update();
                     break;
 
                 case Mode.IGM:

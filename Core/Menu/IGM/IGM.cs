@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
 #pragma warning disable 67
 
 namespace OpenVIII
@@ -73,10 +74,10 @@ namespace OpenVIII
 
             var actions = new Action[]
             {
-                () => Data.TryAdd(SectionName.Header, IGMData_Header.Create()),
-                () => Data.TryAdd(SectionName.Footer, IGMData_Footer.Create()),
-                () => Data.TryAdd(SectionName.Clock, IGMData_Clock.Create()),
-                () => Data.TryAdd(SectionName.PartyGroup, IGMData_PartyGroup.Create(IGMData_Party.Create(), IGMData_NonParty.Create())),
+                () => Data.TryAdd(SectionName.Header, Header.Create()),
+                () => Data.TryAdd(SectionName.Footer, Footer.Create()),
+                () => Data.TryAdd(SectionName.Clock, Clock.Create()),
+                () => Data.TryAdd(SectionName.PartyGroup, PartyGroup.Create(Party.Create(), NonParty.Create())),
                 () => {
                     var keys = new[] {
                         Strings.Name.SideMenu.Junction,
@@ -107,7 +108,7 @@ namespace OpenVIII
                         Strings.Description.SideMenu.Battle};
 
                     if(keys.Distinct().Count() == keys.Length && values.Length == keys.Length)
-                        Data.TryAdd(SectionName.SideMenu, IGMDataSideMenu.Create((from i in Enumerable.Range(0,keys.Length)
+                        Data.TryAdd(SectionName.SideMenu, SideMenu.Create((from i in Enumerable.Range(0,keys.Length)
                             select i).ToDictionary(x=>keys[x],x=>values[x])));
                     else Data.TryAdd(SectionName.SideMenu,null);
                 }
@@ -125,11 +126,11 @@ namespace OpenVIII
 
         #endregion Methods
 
-/*
-        protected virtual void OnChoiceChangeHandler(KeyValuePair<Items, FF8String> e)
-        {
-            ChoiceChangeHandler?.Invoke(this, e);
-        }
-*/
+        /*
+                protected virtual void OnChoiceChangeHandler(KeyValuePair<Items, FF8String> e)
+                {
+                    ChoiceChangeHandler?.Invoke(this, e);
+                }
+        */
     }
 }

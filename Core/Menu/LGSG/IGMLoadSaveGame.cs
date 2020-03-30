@@ -1,21 +1,31 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace OpenVIII
 {
-    public class IGM_LGSG : Menu
+    public class IGMLoadSaveGame : Menu
     {
         #region Fields
 
-        public const int space = 4;
-        private Vector2 AltSize;
+        public const int Space = 4;
 
         #endregion Fields
+
+        #region Constructors
+
+        [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+        public IGMLoadSaveGame()
+        {
+        }
+
+        #endregion Constructors
 
         #region Enums
 
         [Flags]
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public enum Mode : byte
         {
             /// <summary>
@@ -29,7 +39,7 @@ namespace OpenVIII
             Save = 0x1,
 
             /// <summary>
-            /// MemoryCard slots or Gamefolders
+            /// MemoryCard slots or Game folders
             /// </summary>
             Slot = 0x2,
 
@@ -79,9 +89,7 @@ namespace OpenVIII
 
         #region Methods
 
-        public static IGM_LGSG Create() => Create<IGM_LGSG>();
-
-        //public override void DrawData() => Data.Where(m => m.Value != null && m.Value.Enabled && !m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
+        public static IGMLoadSaveGame Create() => Create<IGMLoadSaveGame>();
 
         public override bool Inputs()
         {
@@ -97,37 +105,21 @@ namespace OpenVIII
             { return false; }
         }
 
-        public override void Refresh() => base.Refresh();
-
-        //public override void StartDraw()
-        //{
-        //    Matrix backupfocus = Focus;
-        //    GenerateFocus(AltSize, Box_Options.Top);
-        //    base.StartDraw();
-        //    Data.Where(m => m.Value != null && m.Value.Enabled && m.Key.HasFlag(Mode.Header)).ForEach(m => m.Value.Draw());
-        //    base.EndDraw();
-        //    Focus = backupfocus;
-        //    base.StartDraw();
-        //}
-
-        public override bool Update() => base.Update();
-
         protected override void Init()
         {
             Size = new Vector2 { X = 960, Y = 720 };
-            //AltSize = new Vector2(1280, 720);
-            const int HeaderHeight = 140;
-            var SlotsRectangle = new Rectangle(0, HeaderHeight + space, (int)Size.X, (int)Size.Y - HeaderHeight - space);
-            var LoadBarRectangle = SlotsRectangle;
-            var BlocksRectangle = SlotsRectangle;
-            SlotsRectangle.Inflate(-Size.X * .32f, -Size.Y * .28f); // (307,341,346,178)
-            LoadBarRectangle.Inflate(-Size.X * .15f, -Size.Y * .35f);
+            const int headerHeight = 140;
+            var slotsRectangle = new Rectangle(0, headerHeight + Space, (int)Size.X, (int)Size.Y - headerHeight - Space);
+            var loadBarRectangle = slotsRectangle;
+            var blocksRectangle = slotsRectangle;
+            slotsRectangle.Inflate(-Size.X * .32f, -Size.Y * .28f); // (307,341,346,178)
+            loadBarRectangle.Inflate(-Size.X * .15f, -Size.Y * .35f);
 
             base.Init();
-            Data[Mode.LoadSlotChoose] = IGMData.SlotChoose.Create(SlotsRectangle);
-            Data[Mode.Checking] = IGMData.LoadBarBox.Create(LoadBarRectangle);
-            Data[Mode.LoadGameChoose] = IGMData.Pool.GameChoose.Create(BlocksRectangle);
-            Data[Mode.LoadHeader] = IGMData.ThreePieceHeader.Create(new Rectangle(base.X, base.Y, (int)Size.X, HeaderHeight));
+            Data[Mode.LoadSlotChoose] = IGMData.SlotChoose.Create(slotsRectangle);
+            Data[Mode.Checking] = IGMData.LoadBarBox.Create(loadBarRectangle);
+            Data[Mode.LoadGameChoose] = IGMData.Pool.GameChoose.Create(blocksRectangle);
+            Data[Mode.LoadHeader] = IGMData.ThreePieceHeader.Create(new Rectangle(base.X, base.Y, (int)Size.X, headerHeight));
             Data.Where(x => x.Value != null).ForEach(x => ModeChangeHandler += x.Value.ModeChangeEvent);
             SetMode(Mode.LoadSlotChoose);
         }

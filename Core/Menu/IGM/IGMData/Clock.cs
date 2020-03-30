@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII
 {
@@ -6,19 +7,20 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Clock : IGMData.Base
+        private class Clock : IGMData.Base
         {
             #region Fields
 
             private const int MaxGil = 99999999;
-            private const int MaxHourOrMins = 99;
+            private const int MaxHourOrMinutes = 99;
             private const int MaxSeedRank = 99999;
 
             #endregion Fields
 
             #region Methods
 
-            public static IGMData_Clock Create() => Create<IGMData_Clock>(1, 8, new IGMDataItem.Box { Pos = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 } });
+            [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
+            public static Clock Create() => Create<Clock>(1, 8, new IGMDataItem.Box { Pos = new Rectangle { Width = 226, Height = 114, Y = 630 - 114, X = 843 - 226 } });
 
             public override void Refresh()
             {
@@ -26,13 +28,13 @@ namespace OpenVIII
                 {
                     base.Refresh();
 
-                    ((IGMDataItem.Integer)ITEM[0, 1]).Data = Memory.State.TimePlayed.TotalHours < MaxHourOrMins ? checked((int)(Memory.State.TimePlayed.TotalHours)) : MaxHourOrMins;
-                    ((IGMDataItem.Integer)ITEM[0, 3]).Data = Memory.State.TimePlayed.TotalHours < MaxHourOrMins ? Memory.State.TimePlayed.Minutes : MaxHourOrMins;
+                    ((IGMDataItem.Integer)ITEM[0, 1]).Data = Memory.State.TimePlayed.TotalHours < MaxHourOrMinutes ? checked((int)(Memory.State.TimePlayed.TotalHours)) : MaxHourOrMinutes;
+                    ((IGMDataItem.Integer)ITEM[0, 3]).Data = Memory.State.TimePlayed.TotalHours < MaxHourOrMinutes ? Memory.State.TimePlayed.Minutes : MaxHourOrMinutes;
                     if (!Memory.State.TeamLaguna)
                     {
                         //TODO Hide seed rank if not in seed yet.
-                        var SeedRank = Memory.State.FieldVars.SeedRankPts / 100;
-                        ((IGMDataItem.Integer)ITEM[0, 5]).Data = SeedRank < MaxSeedRank ? SeedRank : MaxSeedRank;
+                        var seedRank = Memory.State.FieldVars.SeedRankPts / 100;
+                        ((IGMDataItem.Integer)ITEM[0, 5]).Data = seedRank < MaxSeedRank ? seedRank : MaxSeedRank;
                         ITEM[0, 4].Show();
                         ITEM[0, 5].Show();
                     }
@@ -46,15 +48,16 @@ namespace OpenVIII
                         if (i != 4 && i != 5)
                             ITEM[0, i]?.Show();
                     }
-                ((IGMDataItem.Integer)ITEM[0, 6]).Data = Memory.State.AmountOfGil < MaxGil ? (int)(Memory.State.AmountOfGil) : MaxGil;
+
+                    var stateAmountOfGil = Memory.State.AmountOfGil;
+                    ((IGMDataItem.Integer)ITEM[0, 6]).Data = stateAmountOfGil < MaxGil ? (int)stateAmountOfGil : MaxGil;
                 }
             }
 
             protected override void Init()
             {
                 base.Init();
-                Rectangle r;
-                r = CONTAINER;
+                var r = CONTAINER.Pos;
                 r.Offset(25, 14);
                 ITEM[0, 0] = new IGMDataItem.Icon { Data = Icons.ID.PLAY, Pos = r, Palette = 13 };
 

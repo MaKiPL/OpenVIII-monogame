@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Diagnostics.CodeAnalysis;
 
 namespace OpenVIII
 {
@@ -6,11 +7,12 @@ namespace OpenVIII
     {
         #region Classes
 
-        private class IGMData_Footer : IGMData.Base
+        private class Footer : IGMData.Base
         {
             #region Methods
 
-            public static IGMData_Footer Create() => Create<IGMData_Footer>(0, 0, new IGMDataItem.Box { Pos = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 } });
+            [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
+            public static Footer Create() => Create<Footer>(0, 0, new IGMDataItem.Box { Pos = new Rectangle { Width = 610, Height = 75, Y = 630 - 75 } });
 
             public override void Refresh()
             {
