@@ -1,9 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using OpenVIII.Fields.Scripts.Instructions;
 
 namespace OpenVIII.Battle
 {
@@ -113,8 +115,15 @@ namespace OpenVIII.Battle
 
         public void Update()
         {
-            if(!Done || !Cam.Done)
-                (CamTarget, CamPosition, ViewMatrix, ProjectionMatrix) = Cam.UpdatePosition();
+            if (!Done || !Cam.Done)
+            {
+                var tuple = Cam.UpdatePosition();
+                if (tuple.CamPosition != tuple.CamTarget)
+                {
+                    (CamTarget, CamPosition, ViewMatrix, ProjectionMatrix) = tuple;
+                    Debug.WriteLine((CamTarget, CamPosition, ViewMatrix, ProjectionMatrix));
+                }
+            }
 
             if (Cam.Done)
             {

@@ -256,7 +256,8 @@ namespace OpenVIII.Battle
             public (Vector3 CamTarget, Vector3 CamPosition, Matrix View, Matrix Projection) UpdatePosition()
             {
                 var step = CurrentTime.Ticks / (float)TotalTime.Ticks;
-                var camTarget = Vector3.SmoothStep(CameraLookAt(20), CameraLookAt(1), step);
+                if (step > 1f) step = 1f;
+                var camTarget = Vector3.SmoothStep(CameraLookAt(0), CameraLookAt(1), step);
                 var camPosition = Vector3.SmoothStep(CameraWorld(0), CameraWorld(1), step);
                 var fov =
                     MathHelper.ToRadians(
