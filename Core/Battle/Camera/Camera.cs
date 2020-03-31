@@ -1,11 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using OpenVIII.Fields.Scripts.Instructions;
 
 namespace OpenVIII.Battle
 {
@@ -35,7 +33,7 @@ namespace OpenVIII.Battle
                 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
                 155,156,159,161,162};
 
-        private bool Done;
+        private bool _done;
 
         #endregion Fields
 
@@ -115,13 +113,13 @@ namespace OpenVIII.Battle
 
         public void Update()
         {
-            if (!Done || !Cam.Done)
+            if (!_done || !Cam.Done)
             {
                 var tuple = Cam.UpdatePosition();
                 if (tuple.CamPosition != tuple.CamTarget)
                 {
                     (CamTarget, CamPosition, ViewMatrix, ProjectionMatrix) = tuple;
-                    Debug.WriteLine((CamTarget, CamPosition, ViewMatrix, ProjectionMatrix));
+                    //Debug.WriteLine((CamTarget, CamPosition, ViewMatrix, ProjectionMatrix));
                 }
             }
 
@@ -129,7 +127,7 @@ namespace OpenVIII.Battle
             {
                 if (!BMultiShotAnimation || Cam.Time == 0)
                 {
-                    Done = true;
+                    _done = true;
                     return;
                 }
                 using (var br = Stage.Open())
@@ -139,7 +137,7 @@ namespace OpenVIII.Battle
             else
             {
                 Cam.UpdateTime();
-                Done = false;
+                _done = false;
             }
         }
 

@@ -1,8 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using OpenVIII.Fields.Scripts.Instructions;
 
 #pragma warning disable 169
 #pragma warning disable 649
@@ -87,15 +89,17 @@ namespace OpenVIII.Battle
             private static Vector3 Offset => new Vector3(40, 40, -40);
             //private (Vector3 World, Vector3 LookAt) this[int i] => (CameraWorld(i), CameraLookAt(i));
 
-            private Vector3 CameraWorld(int i) => new Vector3(
-                _cameraWorldX[i],
-                -(_cameraWorldY[i]),
-                -(_cameraWorldZ[i])) / Memory.CameraScale + Offset;
+            private Vector3 CameraWorld(int i) =>
+                new Vector3(
+                    _cameraWorldX[i],
+                    -(_cameraWorldY[i]),
+                    -(_cameraWorldZ[i])) / Memory.CameraScale + Offset;
 
-            private Vector3 CameraLookAt(int i) => new Vector3(
-                _cameraLookAtX[i],
-                -(_cameraLookAtY[i]),
-                -(_cameraLookAtZ[i])) / Memory.CameraScale + Offset;
+            private Vector3 CameraLookAt(int i) =>
+                new Vector3(
+                    _cameraLookAtX[i],
+                    -(_cameraLookAtY[i]),
+                    -(_cameraLookAtZ[i])) / Memory.CameraScale + Offset;
 
             public void UpdateTime() => CurrentTime += Memory.ElapsedGameTime;
 
@@ -252,7 +256,8 @@ namespace OpenVIII.Battle
                 CurrentTime = TimeSpan.Zero;
             }
 
-            public bool Done => CurrentTime >= TotalTime;
+            public bool Done => CurrentTime >= TotalTime || (_cameraLookAtX[0], _cameraLookAtY[0], _cameraLookAtZ[0],
+                _cameraWorldX[0], _cameraWorldY[0], _cameraWorldZ[0]) == (0, 0, 0, 0, 0, 0);
             public (Vector3 CamTarget, Vector3 CamPosition, Matrix View, Matrix Projection) UpdatePosition()
             {
                 var step = CurrentTime.Ticks / (float)TotalTime.Ticks;
