@@ -11,27 +11,27 @@ namespace OpenVIII.Fields.Scripts
             #region Structs
 
             [StructLayout(LayoutKind.Explicit, Size = 8, Pack = 1)]
-            public struct Header
+            public readonly struct Header
             {
                 #region Fields
 
                 [field: FieldOffset(0)]
-                public byte CountAreas;
+                public readonly byte CountAreas;
 
                 [field: FieldOffset(1)]
-                public byte CountDoors;
+                public readonly byte CountDoors;
 
                 [field: FieldOffset(2)]
-                public byte CountModules;
+                public readonly byte CountModules;
 
                 [field: FieldOffset(3)]
-                public byte CountObjects;
+                public readonly byte CountObjects;
 
                 [field: FieldOffset(6)]
-                public ushort OperationsOffset;
+                public readonly ushort OperationsOffset;
 
                 [field: FieldOffset(4)]
-                public ushort ScriptsOffset;
+                public readonly ushort ScriptsOffset;
 
                 #endregion Fields
             };

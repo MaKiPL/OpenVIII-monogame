@@ -179,7 +179,7 @@ namespace OpenVIII
                     DrawMonsters();
                     DrawCharactersWeapons();
                     _regularPyramid.Draw(WorldMatrix, ViewMatrix, ProjectionMatrix);
-                    Stage.Draw();
+                    Stage?.Draw();
                     var v = GetIndicatorPoint(-1);
                     v.Y -= 5f;
                     if (!_bUseFPSCamera)
@@ -205,11 +205,11 @@ namespace OpenVIII
             ImGui.Text($"Debug variable: {DebugFrame} ({DebugFrame >> 4},{DebugFrame & 0b1111})\n");
             ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds > 0 ? 1d / Memory.ElapsedGameTime.TotalSeconds : 0d)}\n");
             ImGui.Text($"Average FrameRate: {FPSCounter.AverageFramesPerSecond}\n");
-            ImGui.Text($"camera frame: {Camera.cam.CurrentTime}/{Camera.cam.TotalTime}\n");
+            ImGui.Text($"camera frame: {Camera.Cam.CurrentTime}/{Camera.Cam.TotalTime}\n");
             ImGui.Text($"Camera.World.Position: {Extended.RemoveBrackets(_camPosition.ToString())}\n");
             ImGui.Text($"Camera.World.Target: {Extended.RemoveBrackets(_camTarget.ToString())}\n");
-            ImGui.Text($"Camera.FOV: {MathHelper.Lerp(Camera.cam.startingFOV, Camera.cam.endingFOV, Camera.cam.CurrentTime.Ticks / (float)Camera.cam.TotalTime.Ticks)}\n");
-            ImGui.Text($"Camera.Mode: {Camera.cam.control_word & 1}\n");
+            ImGui.Text($"Camera.FOV: {MathHelper.Lerp(Camera.Cam.StartingFov, Camera.Cam.EndingFov, Camera.Cam.CurrentTime.Ticks / (float)Camera.Cam.TotalTime.Ticks)}\n");
+            ImGui.Text($"Camera.Mode: {Camera.Cam.ControlWord & 1}\n");
             ImGui.Text($"DEBUG: Press 0 to switch between FPSCamera/Camera anim: {_bUseFPSCamera}\n");
             ImGui.Text($"Sequence ID: {_sid}, press F10 to activate sequence, F11 SID--, F12 SID++");
             ImGui.End();
@@ -269,7 +269,7 @@ namespace OpenVIII
                     DebugFrame -= 7;
                 }
                 else DebugFrame += 1;
-                Camera.ChangeAnimation((byte)DebugFrame);
+                Camera.ChangeAnimation((byte)Math.Abs(DebugFrame));
             }
             else if (Input2.Button(Keys.D2))
             {
@@ -279,7 +279,7 @@ namespace OpenVIII
                     DebugFrame += 7;
                 }
                 else DebugFrame--;
-                Camera.ChangeAnimation((byte)DebugFrame);
+                Camera.ChangeAnimation((byte)Math.Abs(DebugFrame));
             }
             else if (Input2.Button(Keys.F5))
             {
@@ -439,15 +439,15 @@ namespace OpenVIII
                     if (_bUseFPSCamera)
                     {
                         ViewMatrix = _fpsCamera.Update(ref _camPosition, ref _camTarget, ref _degrees);
-                        ProjectionMatrix = Camera.projectionMatrix;
+                        ProjectionMatrix = Camera.ProjectionMatrix;
                     }
                     else
                     {
                         if (Camera != null)
                         {
                             Camera.Update();
-                            ViewMatrix = Camera.viewMatrix;
-                            ProjectionMatrix = Camera.projectionMatrix;
+                            ViewMatrix = Camera.ViewMatrix;
+                            ProjectionMatrix = Camera.ProjectionMatrix;
                         }
 
                         ret = Menu.BattleMenus.Inputs();
