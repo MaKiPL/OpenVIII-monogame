@@ -33,6 +33,8 @@ namespace OpenVIII.Battle
                 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
                 155,156,159,161,162};
 
+        private bool Done;
+
         #endregion Fields
 
         //private BattleCameraSettings _battleCameraSettings;
@@ -111,12 +113,16 @@ namespace OpenVIII.Battle
 
         public void Update()
         {
-
-            (CamTarget, CamPosition, ViewMatrix, ProjectionMatrix) = Cam.UpdatePosition();
+            if(!Done || !Cam.Done)
+                (CamTarget, CamPosition, ViewMatrix, ProjectionMatrix) = Cam.UpdatePosition();
 
             if (Cam.Done)
             {
-                if (!BMultiShotAnimation || Cam.Time == 0) return;
+                if (!BMultiShotAnimation || Cam.Time == 0)
+                {
+                    Done = true;
+                    return;
+                }
                 using (var br = Stage.Open())
                     if (br != null)
                         ReadAnimation(LastCameraPointer - 2, br);
@@ -124,6 +130,7 @@ namespace OpenVIII.Battle
             else
             {
                 Cam.UpdateTime();
+                Done = false;
             }
         }
 
