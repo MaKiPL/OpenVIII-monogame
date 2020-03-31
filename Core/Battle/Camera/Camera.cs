@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,11 +11,15 @@ namespace OpenVIII.Battle
     {
         #region Fields
 
-        public bool bMultiShotAnimation;
+        public bool BMultiShotAnimation;
 
-        public CameraStruct cam;
+        public CameraStruct Cam;
 
-        public uint lastCameraPointer;
+        public uint LastCameraPointer;
+
+        private readonly BattleCameraCollection _battleCameraCollection;
+
+        private readonly uint _bsCameraPointer;
 
         private readonly int[] _x5D4 = {4,5,9,12,13,14,15,21,22,23,24,26,
                 29,32,33,34,35,36,39,40,50,53,55,61,62,63,64,65,66,67,68,69,70,
@@ -28,91 +33,98 @@ namespace OpenVIII.Battle
                 117,118,119,120,128,129,130,131,132,133,134,139,140,143,146,152,153,154,
                 155,156,159,161,162};
 
-        private readonly uint bs_cameraPointer;
-
-        private BattleCameraCollection battleCameraCollection;
-
-        private BattleCameraSettings battleCameraSettings;
-
         #endregion Fields
+
+        //private BattleCameraSettings _battleCameraSettings;
 
         #region Constructors
 
-        public Camera() => bs_cameraPointer = GetCameraPointer();
+        public Camera() => _bsCameraPointer = GetCameraPointer();
+
+        private Camera(BinaryReader br) : this()
+        {
+            br.BaseStream.Seek(_bsCameraPointer + 4, 0);
+            //uint cCameraHeaderSector = br.ReadUInt16();
+            //uint pCameraSetting = br.ReadUInt16();
+            uint pCameraAnimationCollection = br.ReadUInt16();
+            uint sCameraDataSize = br.ReadUInt16();
+
+            //Camera settings parsing?
+            //var battleCameraSettings = new BattleCameraSettings { unk = br.ReadBytes(24) };
+            //end of camera settings parsing
+
+            br.BaseStream.Seek(pCameraAnimationCollection + _bsCameraPointer, SeekOrigin.Begin);
+            _battleCameraCollection = new BattleCameraCollection { cAnimCollectionCount = br.ReadUInt16() };
+            var battleCameraSet = new BattleCameraSet[_battleCameraCollection.cAnimCollectionCount];
+            _battleCameraCollection.battleCameraSet = battleCameraSet;
+            for (var i = 0; i < _battleCameraCollection.cAnimCollectionCount; i++)
+                battleCameraSet[i] = new BattleCameraSet { globalSetPointer = (uint)(br.BaseStream.Position + br.ReadUInt16() - i * 2 - 2) };
+            _battleCameraCollection.pCameraEOF = br.ReadUInt16();
+
+            for (var i = 0; i < _battleCameraCollection.cAnimCollectionCount; i++)
+            {
+                br.BaseStream.Seek(_battleCameraCollection.battleCameraSet[i].globalSetPointer, 0);
+                _battleCameraCollection.battleCameraSet[i].animPointers = new uint[8];
+                for (var n = 0; n < _battleCameraCollection.battleCameraSet[i].animPointers.Length; n++)
+                    _battleCameraCollection.battleCameraSet[i].animPointers[n] = (uint)(br.BaseStream.Position + br.ReadUInt16() * 2 - n * 2);
+            }
+            Cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays?
+
+            ReadAnimationById(GetRandomCameraN(Memory.Encounters.Current), br);
+            EndOffset = _bsCameraPointer + sCameraDataSize;
+            //br.BaseStream.Seek(c.EndOffset, 0); //step out
+        }
 
         #endregion Constructors
 
         #region Properties
 
-        public Vector3 camPosition { get; set; }
-        public Vector3 camTarget { get; set; }
-        public Matrix projectionMatrix { get; set; }
+        public Vector3 CamPosition { get; set; }
+        public Vector3 CamTarget { get; set; }
+        public uint EndOffset { get; set; }
+        public Matrix ProjectionMatrix { get; set; }
 
         //public Matrix worldMatrix { get;  }
-        public Matrix viewMatrix { get; set; }
-
-        public uint EndOffset { get; set; }
+        public Matrix ViewMatrix { get; set; }
 
         #endregion Properties
 
         #region Methods
 
+        /// <summary>
+        /// Parses camera data into BattleCamera struct. Main purpose of this function is to
+        /// actually read all the offsets and pointers to human readable form of struct. This
+        /// function later calls ReadAnimation(n) where n is animation Id (i.e. 9 is camCollection=1
+        /// and cameraAnim=0)
+        /// </summary>
+        public static Camera Read(BinaryReader br) => new Camera(br);
+
+        public void ChangeAnimation(byte animId)
+        {
+            using (var br = Stage.Open())
+                if (br != null)
+                {
+                    Cam.ResetTime();
+                    ReadAnimationById(animId, br);
+                }
+        }
+
         public void Update()
         {
-            //const float V = 100f;
-            //cam.startingTime = 64;
-            var step = cam.CurrentTime.Ticks / (float)cam.TotalTime.Ticks;
-            camTarget = Vector3.SmoothStep(cam.Camera_Lookat(0), cam.Camera_Lookat(1), step);
-            camPosition = Vector3.SmoothStep(cam.Camera_World(0), cam.Camera_World(1), step);
 
-            //            float camWorldX = MathHelper.Lerp(cam.Camera_World_X_s16[0] / V,
-            //                cam.Camera_World_X_s16[1] / V, step) + 30;
-            //            float camWorldY = MathHelper.Lerp(cam.Camera_World_Y_s16[0] / V,
-            //                cam.Camera_World_Y_s16[1] / V, step) - 40;
-            //            float camWorldZ = MathHelper.Lerp(cam.Camera_World_Z_s16[0] / V,
-            //                cam.Camera_World_Z_s16[1] / V, step) + 0;
+            (CamTarget, CamPosition, ViewMatrix, ProjectionMatrix) = Cam.UpdatePosition();
 
-            //            float camTargetX = MathHelper.Lerp(cam.Camera_Lookat_X_s16[0] / V,
-            //    cam.Camera_Lookat_X_s16[1] / V, step) + 30;
-            //            float camTargetY = MathHelper.Lerp(cam.Camera_Lookat_Y_s16[0] / V,
-            //cam.Camera_Lookat_Y_s16[1] / V, step) - 40;
-            //            float camTargetZ = MathHelper.Lerp(cam.Camera_Lookat_Z_s16[0] / V,
-            //cam.Camera_Lookat_Z_s16[1] / V, step) + 0;
-
-            //camPosition = new Vector3(camWorldX, -camWorldY, -camWorldZ);
-            //camTarget = new Vector3(camTargetX, -camTargetY, -camTargetZ);
-
-            var fovDirector = MathHelper.SmoothStep(cam.startingFOV, cam.endingFOV, step);
-
-            var fovD = (float)(2 * Math.Atan(240.0 / (2 * fovDirector)) * 57.29577951);
-
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                         Vector3.Up);
-            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                   MathHelper.ToRadians(fovD),
-                   Memory.Graphics.GraphicsDevice.Viewport.AspectRatio,
-    1f, 1000f);
-            //worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
-            //              Forward, Vector3.Up);
-
-            //ate = new AlphaTestEffect(Memory.graphics.GraphicsDevice)
-            //{
-            //    Projection = projectionMatrix,
-            //    View = viewMatrix,
-            //    World = worldMatrix
-            //};
-
-            if (cam.CurrentTime >= cam.TotalTime)
+            if (Cam.Done)
             {
-                if (bMultiShotAnimation && cam.time != 0)
-                {
-                    using (var br = Stage.Open())
-                        if (br != null)
-                            ReadAnimation(lastCameraPointer - 2, br);
-                }
+                if (!BMultiShotAnimation || Cam.Time == 0) return;
+                using (var br = Stage.Open())
+                    if (br != null)
+                        ReadAnimation(LastCameraPointer - 2, br);
             }
-            else //cam.startingTime += Module_battle_debug.BATTLECAMERA_FRAMETIME;
-                cam.UpdateTime();
+            else
+            {
+                Cam.UpdateTime();
+            }
         }
 
         /// <summary>
@@ -120,12 +132,33 @@ namespace OpenVIII.Battle
         /// </summary>
         /// <param name="animId">6bit variable containing camera pointer</param>
         /// <returns>Tuple with CameraSetPointer, CameraSetPointer[CameraAnimationPointer]</returns>
-        private CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
+        private static CameraSetAnimGRP GetCameraCollectionPointers(byte animId)
         {
             var enc = Memory.Encounters.Current;
             var pSet = enc.ResolveCameraSet(animId);
             var pAnim = enc.ResolveCameraAnimation(animId);
             return new CameraSetAnimGRP(pSet, pAnim);
+        }
+
+        /// <summary>
+        /// Gets random camera from available from encounter- primary or secondary
+        /// </summary>
+        /// <param name="encounter">instance of current encounter</param>
+        /// <returns>Either primary or alternative camera from encounter</returns>
+        private static byte GetRandomCameraN(Encounter encounter)
+        {
+            var camToss = Memory.Random.Next(3) < 2 ? 0 : 1; //primary camera has 2/3 chance of being selected
+            switch (camToss)
+            {
+                case 0:
+                    return encounter.PrimaryCamera;
+
+                case 1:
+                    return encounter.AlternativeCamera;
+
+                default:
+                    goto case 0;
+            }
         }
 
         /// <summary>
@@ -202,189 +235,24 @@ namespace OpenVIII.Battle
         }
 
         /// <summary>
-        /// Gets random camera from available from encounter- primary or secondary
-        /// </summary>
-        /// <param name="encounter">instance of current encounter</param>
-        /// <returns>Either primary or alternative camera from encounter</returns>
-        private byte GetRandomCameraN(Battle.Encounter encounter)
-        {
-            var camToss = Memory.Random.Next(3) < 2 ? 0 : 1; //primary camera has 2/3 chance of beign selected
-            switch (camToss)
-            {
-                case 0:
-                    return encounter.PrimaryCamera;
-
-                case 1:
-                    return encounter.AlternativeCamera;
-
-                default:
-                    goto case 0;
-            }
-        }
-
-        /// <summary>
         /// This method reads raw animation data in stage file or if br.BaseStream and br == null then br.BaseStream
         /// file and stores parsed data into battleCamera struct
         /// </summary>
         /// <param name="cameraAnimOffset">
-        /// if (br.BaseStream and br are null) is an offset in current battle stage file for camera animation.
-        /// If br.BaseStream and _br are provided it's the offset in this file
+        ///     if (br.BaseStream and br are null) is an offset in current battle stage file for camera animation.
+        ///     If br.BaseStream and _br are provided it's the offset in this file
         /// </param>
-        /// <param name="br.BaseStream">if null then stage file either this memory stream</param>
         /// <param name="br">sub-component of ms</param>
+        /// <param name="br.BaseStream">if null then stage file either this memory stream</param>
         /// <remarks See also = BS_Camera_ReadAnimation - 00503AC0></remarks>
         /// <returns></returns>
-        private uint ReadAnimation(uint cameraAnimOffset, BinaryReader br)
+        private void ReadAnimation(uint cameraAnimOffset, BinaryReader br)
         {
-            short local2C;
-            byte keyframecount = 0;
-            ushort totalframecount = 0;
-            short local1C;
-            short local18;
-            short local14;
-            short local10;
-
             br.BaseStream.Seek(cameraAnimOffset, SeekOrigin.Begin);
-            cam.control_word = br.ReadUInt16();
-            if (cam.control_word == 0xFFFF)
-                return 0; //return NULL
+            Cam.ReadAnimation(br);
 
-            var current_position = br.ReadUInt16(); //getter for *current_position
-            br.BaseStream.Seek(-2, SeekOrigin.Current); //roll back one WORD because no increment
-
-            switch ((cam.control_word >> 6) & 3)
-            {
-                case 1:
-                    cam.startingFOV = 0x200;
-                    cam.endingFOV = 0x200;
-                    break;
-
-                case 2:
-                    cam.startingFOV = current_position;
-                    cam.endingFOV = current_position;
-                    br.ReadUInt16(); //current_position++
-                    break;
-
-                case 3:
-                    cam.startingFOV = current_position;
-                    br.BaseStream.Seek(2, SeekOrigin.Current); //skipping WORD, because we already rolled back one WORD above this switch
-                    current_position = br.ReadUInt16();
-                    cam.endingFOV = current_position;
-                    break;
-            }
-            switch ((cam.control_word >> 8) & 3)
-            {
-                case 0: //TODO!!
-                    cam.startingCameraRoll = 00000000; //TODO, what's ff8vars.unkword1D977A2?
-                    cam.endingCameraRoll = 00000000; //same as above; cam->unkword00A = ff8vars.unkword1D977A2;
-                    break;
-
-                case 1:
-                    cam.startingCameraRoll = 0;
-                    cam.endingCameraRoll = 0;
-                    break;
-
-                case 2:
-                    current_position = br.ReadUInt16(); //* + current_position++;
-                    cam.startingCameraRoll = current_position;
-                    cam.endingCameraRoll = current_position;
-                    break;
-
-                case 3:
-                    current_position = br.ReadUInt16(); //* + current_position++;
-                    cam.startingCameraRoll = current_position;
-                    current_position = br.ReadUInt16(); //* + current_position++;
-                    cam.endingCameraRoll = current_position;
-                    break;
-            }
-
-            switch (cam.control_word & 1)
-            {
-                case 0:
-                    if (current_position >= 0)
-                    {
-                        while (true) //I'm setting this to true and breaking in code as this works on peeking on next variable via pointer and that's not possible here without unsafe block
-                        {
-                            cam.startFramesOffsets[keyframecount] = totalframecount; //looks like this is the camera index
-                            current_position = br.ReadUInt16();
-                            if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
-                                break;
-                            totalframecount += (ushort)(current_position * 16); //here is increment of short*, but I already did that above
-                            cam.is_FrameDurationsShot[keyframecount] = (byte)(current_position = br.ReadUInt16()); //cam->unkbyte124[keyframecount] = *current_position++; - looks like we are wasting one byte due to integer sizes
-                            cam.Camera_World_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            cam.Camera_World_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            cam.Camera_World_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            cam.is_FrameEndingShots[keyframecount] = (byte)(current_position = br.ReadUInt16()); //m->unkbyte204[keyframecount] = *current_position++;
-                            cam.Camera_Lookat_X_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            cam.Camera_Lookat_Y_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            cam.Camera_Lookat_Z_s16[keyframecount] = (short)(current_position = br.ReadUInt16());
-                            keyframecount++;
-                        }
-
-                        if (keyframecount > 2)
-                        {
-                            //ff8funcs.Sub50D010(cam->unkword024, cam->unkword064, cam->unkword0A4, cam->unkword0E4, keyframecount, cam->unkbyte224, cam->unkbyte2A4, cam->unkbyte324);
-                            //ff8funcs.Sub50D010(cam->unkword024, cam->unkword144, cam->unkword184, cam->unkword1C4, keyframecount, cam->unkbyte3A4, cam->unkbyte424, cam->unkbyte4A4);
-                        }
-                    }
-                    break;
-
-                case 1:
-                    {
-                        goto case 0;
-                        if (current_position >= 0)
-                        {
-                            local14 = (short)(br.BaseStream.Position + 5 * 2); //current_position + 5; but current_position is WORD, so multiply by two
-                            local10 = (short)(br.BaseStream.Position + 6 * 2);
-                            local2C = (short)(br.BaseStream.Position + 7 * 2);
-                            local18 = (short)(br.BaseStream.Position + 1 * 2);
-                            local1C = (short)(br.BaseStream.Position + 2 * 2);
-                            while (true)
-                            {
-                                cam.startFramesOffsets[keyframecount] = totalframecount;
-                                current_position = br.ReadUInt16();
-                                if ((short)current_position < 0) //reverse of *current_position >= 0, also cast to signed is important here
-                                    break;
-                                totalframecount += (ushort)(current_position * 16);
-                                //ff8funcs.Sub503AE0(++local18, ++local1C, ++ebx, *(BYTE*)current_position, &cam->unkword064[keyframecount], &cam->unkword0A4[keyframecount], &cam->unkword0E4[keyframecount]);
-                                //ff8funcs.Sub503AE0(++local14, ++local10, ++local2C, *(BYTE*)(current_position + 4), &cam->unkword144[keyframecount], &cam->unkword184[keyframecount], &cam->unkword1C4[keyframecount]);
-                                cam.is_FrameEndingShots[keyframecount] = 0xFB;
-                                cam.is_FrameDurationsShot[keyframecount] = 0xFB;
-                                local1C += 8;
-                                local18 += 8;
-                                current_position += 8;
-                                local2C += 8;
-                                //ebx += 8;
-                                local10 += 8;
-                                local14 += 8;
-                                keyframecount++;
-                            }
-                        }
-                        break;
-                    }
-            }
-
-            if ((cam.control_word & 0x3E) == 0x1E)
-            {
-                //ff8funcs.Sub503300();
-            }
-            cam.keyframeCount = keyframecount;
-            cam.time = totalframecount;
-            //cam.startingTime = 0;
-            cam.CurrentTime = TimeSpan.Zero;
-            lastCameraPointer = (uint)(br.BaseStream.Position + 2);
-            bMultiShotAnimation = br.ReadInt16() != -1;
-            return (uint)(br.BaseStream.Position);
-        }
-
-        public void ChangeAnimation(byte animId)
-        {
-            using (var br = Stage.Open())
-                if (br != null)
-                {
-                    cam.ResetTime();
-                    ReadAnimationById(animId, br);
-                }
+            LastCameraPointer = (uint)(br.BaseStream.Position + 2);
+            BMultiShotAnimation = br.ReadInt16() != -1;
         }
 
         /// <summary>
@@ -392,19 +260,21 @@ namespace OpenVIII.Battle
         /// and returns the final pointer
         /// </summary>
         /// <param name="animId">
-        /// Animation Id as of binary mask (0bXXXXYYYY where XXXX= animationSet and YYYY=animationId)
+        ///     Animation Id as of binary mask (0bXXXXYYYY where XXXX= animationSet and YYYY=animationId)
         /// </param>
+        /// <param name="br"></param>
         /// <returns></returns>
-        private uint ReadAnimationById(byte animId, BinaryReader br)
+        [SuppressMessage("ReSharper", "CommentTypo")]
+        private void ReadAnimationById(byte animId, BinaryReader br)
         {
-            cam.animationId = animId;
+            Cam.AnimationId = animId;
             var tpGetter = GetCameraCollectionPointers(animId);
-            var battleCameraSetArray = battleCameraCollection.battleCameraSet;
+            var battleCameraSetArray = _battleCameraCollection.battleCameraSet;
             if (battleCameraSetArray.Length > tpGetter.Set && battleCameraSetArray[tpGetter.Set].animPointers.Length > tpGetter.Anim)
             {
                 var battleCameraSet = battleCameraSetArray[tpGetter.Set];
                 var cameraAnimationGlobalPointer = battleCameraSet.animPointers[tpGetter.Anim];
-                return ReadAnimation(cameraAnimationGlobalPointer, br);
+                ReadAnimation(cameraAnimationGlobalPointer, br);
             }
             else
             {
@@ -413,53 +283,6 @@ namespace OpenVIII.Battle
                 if (battleCameraSetArray.Length > tpGetter.Set)
                     Memory.Log.WriteLine($" or \n{battleCameraSetArray[tpGetter.Set].animPointers.Length} < {tpGetter.Anim}");
             }
-            return 0;
-        }
-
-
-        /// <summary>
-        /// Parses camera data into BattleCamera struct. Main purpouse of this function is to
-        /// actually read all the offsets and pointers to human readable form of struct. This
-        /// function later calls ReadAnimation(n) where n is animation Id (i.e. 9 is camCollection=1
-        /// and cameraAnim=0)
-        /// </summary>
-        public static Camera Read(BinaryReader br)
-        {
-            var c = new Camera();
-            br.BaseStream.Seek(c.bs_cameraPointer, 0);
-            uint cCameraHeaderSector = br.ReadUInt16();
-            uint pCameraSetting = br.ReadUInt16();
-            uint pCameraAnimationCollection = br.ReadUInt16();
-            uint sCameraDataSize = br.ReadUInt16();
-
-            //Camera settings parsing?
-            var bcs = new BattleCameraSettings() { unk = br.ReadBytes(24) };
-            //end of camera settings parsing
-
-            br.BaseStream.Seek(pCameraAnimationCollection + c.bs_cameraPointer, SeekOrigin.Begin);
-            var bcc = new BattleCameraCollection { cAnimCollectionCount = br.ReadUInt16() };
-            var bcset = new BattleCameraSet[bcc.cAnimCollectionCount];
-            bcc.battleCameraSet = bcset;
-            for (var i = 0; i < bcc.cAnimCollectionCount; i++)
-                bcset[i] = new BattleCameraSet() { globalSetPointer = (uint)(br.BaseStream.Position + br.ReadUInt16() - i * 2 - 2) };
-            bcc.pCameraEOF = br.ReadUInt16();
-
-            for (var i = 0; i < bcc.cAnimCollectionCount; i++)
-            {
-                br.BaseStream.Seek(bcc.battleCameraSet[i].globalSetPointer, 0);
-                bcc.battleCameraSet[i].animPointers = new uint[8];
-                for (var n = 0; n < bcc.battleCameraSet[i].animPointers.Length; n++)
-                    bcc.battleCameraSet[i].animPointers[n] = (uint)(br.BaseStream.Position + br.ReadUInt16() * 2 - n * 2);
-            }
-            var cam = Extended.ByteArrayToStructure<CameraStruct>(new byte[Marshal.SizeOf(typeof(CameraStruct))]); //what about this kind of trick to initialize struct with a lot amount of fixed sizes in arrays?
-            c.battleCameraCollection = bcc;
-            c.battleCameraSettings = bcs;
-            c.cam = cam;
-
-            c.ReadAnimationById(c.GetRandomCameraN(Memory.Encounters.Current), br);
-            c.EndOffset = c.bs_cameraPointer + sCameraDataSize;
-            //br.BaseStream.Seek(c.EndOffset, 0); //step out
-            return c;
         }
 
         #endregion Methods
