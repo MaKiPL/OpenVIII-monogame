@@ -1448,7 +1448,7 @@ namespace OpenVIII
             }
 
 
-            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0) //forest
+            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0 && activeCollidePolygon.Value.texFlags == 0) //forest
             {
                 ate.Alpha = 1f;
                 worldCharacterInstances[currentControllableEntity].bDraw = false;
@@ -1471,7 +1471,7 @@ namespace OpenVIII
                     Extended.ConvertToSprite(ref shadowGeom, 4, worldEffects[i].atlasId);
 
                 ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush,
-                    MathHelper.Clamp(activeCollidePolygon.Value.Clut-8, 0, 5)); //this is wrong
+                    MathHelper.Clamp(GetLeavesFxClut(activeCollidePolygon), 0, 5)); //this is wrong
                 ate.Alpha = 0.75f;
                 foreach (EffectPass pass in ate.CurrentTechnique.Passes)
                 {
@@ -1486,6 +1486,19 @@ namespace OpenVIII
                     worldEffects.RemoveAt(i);
                 else
                     worldEffects[i] = currentFx;
+            }
+        }
+
+        private static int GetLeavesFxClut(Polygon? activeCollidePolygon)
+        {
+            switch(activeCollidePolygon.Value.groundtype)
+            {
+                case 4:
+                    return 0;
+                case 1:
+                    return 3;
+                default:
+                    return 0;
             }
         }
 
