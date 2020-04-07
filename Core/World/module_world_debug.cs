@@ -21,7 +21,7 @@ namespace OpenVIII
         private static float camDistance = 120.0f;
         private static float camHeight = 160.0f;
         private static float cameraFOV = 60;
-        private static float renderCamDistance = 1200f;
+        public static float renderCamDistance = 1200f;
         public static Vector3 camPosition, camTarget;
         public static Vector3 playerPosition = new Vector3(-9105f, 30f, -4466);
         private static Vector3 lastPlayerPosition = playerPosition;
@@ -162,7 +162,7 @@ namespace OpenVIII
         /// <summary>
         /// This is index to characters in chara.one file of worldmap
         /// </summary>
-        private enum worldCharacters
+        public enum worldCharacters
         {
             SquallCasual,
             Ragnarok,
@@ -173,9 +173,9 @@ namespace OpenVIII
             SelphieCasual
         }
 
-        private static worldCharacterInstance[] worldCharacterInstances = new worldCharacterInstance[8];
+        public static worldCharacterInstance[] worldCharacterInstances = new worldCharacterInstance[8];
 
-        private struct worldCharacterInstance
+        public struct worldCharacterInstance
         {
             public worldCharacters activeCharacter;
             public Vector3 worldPosition;
@@ -222,8 +222,8 @@ namespace OpenVIII
             bWalkableByChocobo = 0b00010000
         }
 
-        private const byte TRIFLAGS_COLLIDE = 0b10000000;
-        private const byte TRIFLAGS_FORESTTEST = 0b01000000;
+        public const byte TRIFLAGS_COLLIDE = 0b10000000;
+        public const byte TRIFLAGS_FORESTTEST = 0b01000000;
 
         private static int GetSegment(int segID) => segID * WM_SEG_SIZE;
 
@@ -395,7 +395,7 @@ namespace OpenVIII
 
         public static bool bHasMoved = false;
         public static bool bFirstRun = true;
-        private static int currentControllableEntity = 0;
+        public static int currentControllableEntity = 0;
 
         public static void Update(GameTime deltaTime)
         {
@@ -740,7 +740,7 @@ namespace OpenVIII
         /// movement, update it and/or warp player. If all checks fails it returns to last known
         /// correct player position This points to polygon structure that is actively used/ character
         /// stomps on it </summary>
-        private static Polygon? activeCollidePolygon = null;
+        public static Polygon? activeCollidePolygon = null;
 
         public static int GetRealSegmentId() => (int)(segmentPosition.Y * 32 + segmentPosition.X); //explicit public for wmset and warping sections
 
@@ -810,13 +810,6 @@ namespace OpenVIII
             if (!BDebugDisableCollision)
                 RaycastedTris = OrderAndCheckTrisForcollisionsBetween().Where(x => (x.data.parentPolygon.vertFlags & TRIFLAGS_COLLIDE) != 0 && x.pos != Vector3.Zero).ToList();
 
-#if DEBUG
-            countofDebugFaces = new Point(
-                RaycastedTris.Where(x => !x.sky).Count(),
-                RaycastedTris.Where(x => x.sky).Count()
-                );
-#endif
-
             //WORLD MAP TO FIELD CHECK- it should be done on already walked polygon so the player will be able to
             //enter the triangle with warp zone and warp AFTER that, not just as he enters it
             WorldMapToField();
@@ -838,9 +831,6 @@ namespace OpenVIII
                 }
 
                 activeCollidePolygon = prt.data.parentPolygon;
-#if DEBUG
-                bSelectedWalkable = prt.data.parentPolygon.vertFlags;
-#endif
                 return;
             }
 
@@ -854,9 +844,6 @@ namespace OpenVIII
                     continue;
                 MinYPos(prt.pos, forestAdj);
                 activeCollidePolygon = prt.data.parentPolygon;
-#if DEBUG
-                bSelectedWalkable = prt.data.parentPolygon.vertFlags;
-#endif
                 return;
             }
 
@@ -1135,14 +1122,11 @@ namespace OpenVIII
             }
 
             TeleportPlayerWarp();
-            DrawBackgroundClouds();
+            CloudRender.DrawBackgroundClouds();
 
             foreach (var charaInstance in worldCharacterInstances)
                 DrawCharacter(charaInstance);
-#if DEBUG
-            DrawDebug();
-#endif
-            DrawCharacterShadowSpecialEffects();
+            SpecialEffectsRenderer.DrawCharacterShadowSpecialEffects();
 
             switch (MapState)
             {
@@ -1165,6 +1149,11 @@ namespace OpenVIII
 
             var playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
             if (playerangle < 0) playerangle += 360f;
+            ImguiDebugDraw(playerangle);
+        }
+
+        private static void ImguiDebugDraw(float playerangle)
+        {
             if (Memory.GameTime != null)
                 Memory.ImGui.BeforeLayout(Memory.GameTime);
             ImGuiNET.ImGui.SetNextWindowPos(System.Numerics.Vector2.Zero, ImGuiNET.ImGuiCond.Once);
@@ -1195,8 +1184,6 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"Player rotation: ={playerangle}°");
             ImGuiNET.ImGui.Text($"Player speed: ={DetectedSpeed} units per update");
             ImGuiNET.ImGui.Text($"Segment Position: ={segmentPosition} ({GetSegmentVectorPlayerPosition()})");
-            ImGuiNET.ImGui.Text($"selWalk: =0b{Convert.ToString(bSelectedWalkable, 2).PadLeft(8, '0')} of charaRay={countofDebugFaces.X}, skyRay={countofDebugFaces.Y}");
-            ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
             ImGuiNET.ImGui.Text($"encounter: ={debugEncounter}- Press F3 to force battle");
             ImGuiNET.ImGui.Text($"FOV: {FOV}");
             ImGuiNET.ImGui.Text($"1000/deltaTime milliseconds: {(Memory.ElapsedGameTime.TotalSeconds > 0 ? 1d / Memory.ElapsedGameTime.TotalSeconds : 0d)}");
@@ -1261,8 +1248,8 @@ namespace OpenVIII
                     ImGuiNET.ImGui.SameLine();
                     imguiTex = (Texture2D)wmset.GetWorldMapTexture(
                         (Wmset.Section38_textures)enumValues.GetValue(i), 0);
-                    ImGuiNET.ImGui.Image(Memory.ImGui.BindTexture(imguiTex), new System.Numerics.Vector2(64,64));
-                    if(ImGuiNET.ImGui.IsItemHovered())
+                    ImGuiNET.ImGui.Image(Memory.ImGui.BindTexture(imguiTex), new System.Numerics.Vector2(64, 64));
+                    if (ImGuiNET.ImGui.IsItemHovered())
                     {
                         ImGuiNET.ImGui.BeginTooltip();
                         ImGuiNET.ImGui.Text($"W: {imguiTex.Width} H: {imguiTex.Height}");
@@ -1273,7 +1260,7 @@ namespace OpenVIII
             }
             if (ImGuiNET.ImGui.CollapsingHeader("wmset33"))
             {
-                for(var i = 0; i<wmset.skyColors.Length; i++)
+                for (var i = 0; i < wmset.skyColors.Length; i++)
                 {
                     var col = wmset.skyColors[i].GetLocation();
                     ImGuiNET.ImGui.Text($"sec33: {i}={col}");
@@ -1304,113 +1291,27 @@ namespace OpenVIII
             Memory.ImGui.AfterLayout();
         }
 
+        private static void DrawDebug_VehiclePreview()
+        {
+            var localTranslation = Module_world_debug.playerPosition + new Vector3(20f, 10f, 20f);
+            for (var i = 0; i < Module_world_debug.wmset.GetVehicleModelsCount(); i++)
+            {
+                var vehTex = (Texture2D)Module_world_debug.wmset.GetVehicleTexture(i, 0);
+                var originVector = Module_world_debug.wmset.GetVehicleTextureOriginVector(i, 0);
+                var dMod = Module_world_debug.wmset.GetVehicleGeometry(i, localTranslation + Vector3.Left * 50f * i, Quaternion.Identity, new Vector2(vehTex.Width, vehTex.Height), originVector);
+                for (var n = 0; n < dMod.Item1.Length; n += 3)
+                {
+                    Module_world_debug.ate.Texture = (Texture2D)Module_world_debug.wmset.GetVehicleTexture(i, 0);
+                    foreach (var pass in Module_world_debug.ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, dMod.Item1, n, 1);
+                    }
+                }
+            }
+        }
+
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
-
-
-        //FX SYSTEM EXPLAINED
-        /*
-         * So in vanilla ff8 when you move through the forest for example it spawns the texture
-         * and that texture shrinks to 0% then is destroyed.
-         * The fxWalkDuration should be incremented every bHasMoved until X then spawn texture at player position
-         * with 100% scale and spriteId until it gets to 0% and is destroyed
-         *
-         */
-        private static float fxWalkDuration = 0;
-        private static int lastFxBushSpriteId = 0;
-        struct worldFx
-        {
-            public Vector3 fxLocation;
-            public float scale;
-            public int atlasId;
-        }
-        private static List<worldFx> worldEffects = new List<worldFx>();
-        /// <summary>
-        /// Takes care of drawing shadows and additional FX when needed (like in forest). [WIP]
-        /// </summary>
-        private static void DrawCharacterShadowSpecialEffects()
-        {
-            worldCharacterInstances[currentControllableEntity].bDraw = true; //always draw and later test the cases
-            if (activeCollidePolygon == null)
-                return;
-
-            if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) > 0) //shadow
-            {
-                var shadowGeom = Extended.GetShadowPlane(playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.shadowBig, 0);
-                ate.Alpha = .25f;
-                foreach (var pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
-                }
-                ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-                ate.Alpha = 1f;
-            }
-
-
-            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0 && activeCollidePolygon.Value.texFlags == 0
-                && activeCollidePolygon.Value.groundtype <= 5) //forest
-            {
-                ate.Alpha = 1f;
-                worldCharacterInstances[currentControllableEntity].bDraw = false;
-                if (bHasMoved && fxWalkDuration > 0.25f)
-                {
-                    fxWalkDuration = 0f;
-                    lastFxBushSpriteId %= 4;
-                    worldEffects.Add(new worldFx() { fxLocation = playerPosition,
-                        scale = 1.00f, atlasId=lastFxBushSpriteId++ });
-
-                }
-                else fxWalkDuration += 0.05f;
-            }
-
-            for (int i = worldEffects.Count-1; i > 0; i--)
-            {
-                VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(worldEffects[i].fxLocation +
-                   new Vector3(-2.2f, .1f, -2.2f), 12f*worldEffects[i].scale);
-
-                    Extended.ConvertToSprite(ref shadowGeom, 4, worldEffects[i].atlasId);
-
-                ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush,
-                    MathHelper.Clamp(GetLeavesFxClut(activeCollidePolygon), 0, 5)); //this is wrong
-                ate.Alpha = 0.75f;
-                foreach (EffectPass pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    ate.GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, shadowGeom, 0, shadowGeom.Length / 3);
-                }
-                //ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-                worldFx currentFx = worldEffects[i];
-                currentFx.scale -= 0.005f;
-                if(currentFx.scale < 0.8)
-                    worldEffects.RemoveAt(i);
-                else
-                    worldEffects[i] = currentFx;
-            }
-        }
-
-        private static int GetLeavesFxClut(Polygon? activeCollidePolygon)
-        {
-            switch(activeCollidePolygon.Value.groundtype)
-            {
-                case 0:
-                    return 5;
-                case 1:
-                    return 3;
-                case 2:
-                    return 1;
-                case 3:
-                    return 4;
-                case 4:
-                    return 0;
-                case 5:
-                    return 2;
-                default:
-                    return 0;
-            }
-        }
 
 
 
@@ -1430,99 +1331,6 @@ namespace OpenVIII
                 relativeTranslation.Y,
                 playerPosition.Z + relativeTranslation.Z);
         }
-
-
-        private static byte bSelectedWalkable = 0;
-        private static Point countofDebugFaces = Point.Zero;
-        private static bool bDebugDisableCollision = false;
-
-        private static void DrawDebug()
-        {
-            if (Memory.CurrentGraphicMode != Memory.GraphicModes.DirectX) //looks like strict DX shaders can't simply accept SV_POSITION, COLOR0 or something?
-                DrawDebug_Rays(); //uncomment to enable drawing rays for collision
-
-            //DrawDebug_VehiclePreview(); //uncomment to enable drawing all vehicles in row
-
-            if (Memory.CurrentGraphicMode != Memory.GraphicModes.DirectX)
-                Debug_DrawRailPaths(); //uncomment to enable draw lines showing rail keypoints
-        }
-
-        private static void Debug_DrawRailPaths()
-        {
-            for (var i = 0; i < rail.GetTrainTrackCount(); i++)
-            {
-                var vpc = new List<VertexPositionColor>();
-                for (var n = 0; n < rail.GetTrainTrackFrameCount(i); n++)
-                {
-                    var vec = rail.GetTrackFrameVector(i, n) + Vector3.Up * 10f;
-                    vpc.Add(new VertexPositionColor(vec, Color.Yellow));
-                }
-                foreach (var pass in ate.CurrentTechnique.Passes)
-                {
-                    pass.Apply();
-                    Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, vpc.ToArray(), 0, vpc.Count / 2);
-                }
-            }
-        }
-
-        private static void DrawDebug_VehiclePreview()
-        {
-            var localTranslation = playerPosition + new Vector3(20f, 10f, 20f);
-            for (var i = 0; i < wmset.GetVehicleModelsCount(); i++)
-            {
-                var vehTex = (Texture2D)wmset.GetVehicleTexture(i, 0);
-                var originVector = wmset.GetVehicleTextureOriginVector(i, 0);
-                var dMod = wmset.GetVehicleGeometry(i, localTranslation + Vector3.Left * 50f * i, Quaternion.Identity, new Vector2(vehTex.Width, vehTex.Height), originVector);
-                for (var n = 0; n < dMod.Item1.Length; n += 3)
-                {
-                    ate.Texture = (Texture2D)wmset.GetVehicleTexture(i, 0);
-                    foreach (var pass in ate.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
-                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, dMod.Item1, n, 1);
-                    }
-                }
-            }
-        }
-
-        private static void DrawDebug_Rays()
-        {
-            var playerRaycastDownVerts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
-            var skyRaycastDownVerts = GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE);
-            var skyVectorDropVerts = new[]
-            {
-                new VertexPositionColor(skyRaycastDownVerts, Color.White), //draw line from mockup up to the bottom fake infinity
-                new VertexPositionColor(new Vector3(skyRaycastDownVerts.X, -5000f, skyRaycastDownVerts.Z), Color.White)
-            };
-
-            if (RaycastedTris.Count != 0)
-                foreach (var tt in RaycastedTris)
-                {
-                    var triangle = tt.data;
-                    var verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
-                new VertexPositionColor(triangle.B, Color.White),
-
-                new VertexPositionColor(triangle.B, Color.White),
-                new VertexPositionColor(triangle.C, Color.White),
-
-                new VertexPositionColor(triangle.C, Color.White),
-                new VertexPositionColor(triangle.A, Color.White)
-                };
-                    foreach (var pass in ate.CurrentTechnique.Passes)
-                    {
-                        pass.Apply();
-                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
-                    }
-                }
-
-            foreach (var pass in ate.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, playerRaycastDownVerts, 0, 1);
-                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
-            }
-        }
-
         /// <summary>
         /// translates the world map model so it's vertices are drawn as close to playerPosition
         /// vector as possible
@@ -1532,7 +1340,7 @@ namespace OpenVIII
         private static Vector2 Scale;
 
         public static bool InVehicle => worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok;
-
+        private static bool bDebugDisableCollision = false;
         public static bool BDebugDisableCollision { get => bDebugDisableCollision || worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok; set => bDebugDisableCollision = value; }
 
         private static void DrawCharacter(worldCharacterInstance? charaInstance_)
@@ -1622,87 +1430,6 @@ namespace OpenVIII
                 playerPosition.Z = 0;
         }
 
-        #region wm background static geometry supplier
-        static Vector3[] wm_backgroundCylinderVerts = new Vector3[]
-        {
-new Vector3(41.8239f, 0.0000f, -3.9575f), new Vector3(36.2066f, 0.0000f, -24.9213f), new Vector3(20.8601f, 0.0000f, -40.2678f),
-new Vector3(-0.1036f, 0.0000f, -45.8850f),new Vector3(-21.0674f, 0.0000f, -40.2678f),new Vector3(-36.4139f, 0.0000f, -24.9213f),
-new Vector3(-42.0311f, 0.0000f, -3.9576f),new Vector3(-36.4139f, 0.0000f, 17.0062f),new Vector3(-21.0674f, 0.0000f, 32.3527f),
-new Vector3(-0.1036f, 0.0000f, 37.9699f),new Vector3(20.8601f, 0.0000f, 32.3527f),new Vector3(36.2066f, 0.0000f, 17.0062f),
-new Vector3(41.8239f, 13.4218f, -3.9575f),new Vector3(36.2066f, 13.4218f, -24.9213f),new Vector3(20.8601f, 13.4218f, -40.2678f),
-new Vector3(-0.1036f, 13.4218f, -45.8850f),new Vector3(-21.0674f, 13.4218f, -40.2678f),new Vector3(-36.4139f, 13.4218f, -24.9213f),
-new Vector3(-42.0311f, 13.4218f, -3.9576f),new Vector3(-36.4139f, 13.4218f, 17.0062f),new Vector3(-21.0674f, 13.4218f, 32.3527f),
-new Vector3(-0.1036f, 13.4218f, 37.9699f),new Vector3(20.8601f, 13.4218f, 32.3527f),new Vector3(36.2066f, 13.4218f, 17.0062f)
-        };
-
-        static Vector2[] wm_backgroundCylinderVt = new Vector2[]
-        {
-new Vector2(2.5197f, -0.0005f),new Vector2(2.7717f, -0.0005f),new Vector2(3.0236f, -0.0005f),
-new Vector2(0.2524f, -0.0005f),new Vector2(0.5043f, -0.0005f),new Vector2(0.7563f, -0.0005f),new Vector2(1.0082f, -0.0005f),
-new Vector2(1.2601f, -0.0005f),new Vector2(1.5120f, -0.0005f),new Vector2(1.7640f, -0.0005f),new Vector2(2.0159f, -0.0005f),
-new Vector2(2.2678f, -0.0005f),new Vector2(2.5197f, -0.9995f),new Vector2(2.7717f, -0.9995f),new Vector2(3.0236f, -0.9995f),
-new Vector2(0.2524f, -0.9995f),new Vector2(0.5043f, -0.9995f),new Vector2(0.7563f, -0.9995f),new Vector2(1.0082f, -0.9995f),
-new Vector2(1.2601f, -0.9995f),new Vector2(1.5120f, -0.9995f),new Vector2(1.7640f, -0.9995f),new Vector2(2.0159f, -0.9995f),
-new Vector2(2.2678f, -0.9995f),new Vector2(0.0005f, -0.0005f),new Vector2(0.0005f, -0.9995f)
-        };
-        static VertexPositionTexture[] wm_backgroundCloudsCylinderMesh = new VertexPositionTexture[]
-        {
-new VertexPositionTexture(wm_backgroundCylinderVerts[0], wm_backgroundCylinderVt[0]),   new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderVt[12]), new VertexPositionTexture(wm_backgroundCylinderVerts[13], wm_backgroundCylinderVt[13]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[13], wm_backgroundCylinderVt[13]), new VertexPositionTexture(wm_backgroundCylinderVerts[1], wm_backgroundCylinderVt[1]),   new VertexPositionTexture(wm_backgroundCylinderVerts[0], wm_backgroundCylinderVt[0]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[1], wm_backgroundCylinderVt[1]),   new VertexPositionTexture(wm_backgroundCylinderVerts[13], wm_backgroundCylinderVt[13]), new VertexPositionTexture(wm_backgroundCylinderVerts[14], wm_backgroundCylinderVt[14]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[14], wm_backgroundCylinderVt[14]), new VertexPositionTexture(wm_backgroundCylinderVerts[2], wm_backgroundCylinderVt[2]),   new VertexPositionTexture(wm_backgroundCylinderVerts[1], wm_backgroundCylinderVt[1]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[2], wm_backgroundCylinderVt[24]),  new VertexPositionTexture(wm_backgroundCylinderVerts[14], wm_backgroundCylinderVt[25]), new VertexPositionTexture(wm_backgroundCylinderVerts[15], wm_backgroundCylinderVt[15]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[15], wm_backgroundCylinderVt[15]), new VertexPositionTexture(wm_backgroundCylinderVerts[3], wm_backgroundCylinderVt[3]),   new VertexPositionTexture(wm_backgroundCylinderVerts[2], wm_backgroundCylinderVt[24]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[3], wm_backgroundCylinderVt[3]),   new VertexPositionTexture(wm_backgroundCylinderVerts[15], wm_backgroundCylinderVt[15]), new VertexPositionTexture(wm_backgroundCylinderVerts[16], wm_backgroundCylinderVt[16]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[16], wm_backgroundCylinderVt[16]), new VertexPositionTexture(wm_backgroundCylinderVerts[4], wm_backgroundCylinderVt[4]),   new VertexPositionTexture(wm_backgroundCylinderVerts[3], wm_backgroundCylinderVt[3]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[4], wm_backgroundCylinderVt[4]),   new VertexPositionTexture(wm_backgroundCylinderVerts[16], wm_backgroundCylinderVt[16]), new VertexPositionTexture(wm_backgroundCylinderVerts[17], wm_backgroundCylinderVt[17]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[17], wm_backgroundCylinderVt[17]), new VertexPositionTexture(wm_backgroundCylinderVerts[5], wm_backgroundCylinderVt[5]),   new VertexPositionTexture(wm_backgroundCylinderVerts[4], wm_backgroundCylinderVt[4]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[5], wm_backgroundCylinderVt[5]),   new VertexPositionTexture(wm_backgroundCylinderVerts[17], wm_backgroundCylinderVt[17]), new VertexPositionTexture(wm_backgroundCylinderVerts[18], wm_backgroundCylinderVt[18]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[18], wm_backgroundCylinderVt[18]), new VertexPositionTexture(wm_backgroundCylinderVerts[6], wm_backgroundCylinderVt[6]),   new VertexPositionTexture(wm_backgroundCylinderVerts[5], wm_backgroundCylinderVt[5]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[6], wm_backgroundCylinderVt[6]),   new VertexPositionTexture(wm_backgroundCylinderVerts[18], wm_backgroundCylinderVt[18]), new VertexPositionTexture(wm_backgroundCylinderVerts[19], wm_backgroundCylinderVt[19]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[19], wm_backgroundCylinderVt[19]), new VertexPositionTexture(wm_backgroundCylinderVerts[7], wm_backgroundCylinderVt[7]),   new VertexPositionTexture(wm_backgroundCylinderVerts[6], wm_backgroundCylinderVt[6]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[7], wm_backgroundCylinderVt[7]),   new VertexPositionTexture(wm_backgroundCylinderVerts[19], wm_backgroundCylinderVt[19]), new VertexPositionTexture(wm_backgroundCylinderVerts[20], wm_backgroundCylinderVt[20]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[20], wm_backgroundCylinderVt[20]), new VertexPositionTexture(wm_backgroundCylinderVerts[8], wm_backgroundCylinderVt[8]),   new VertexPositionTexture(wm_backgroundCylinderVerts[7], wm_backgroundCylinderVt[7]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[8], wm_backgroundCylinderVt[8]),   new VertexPositionTexture(wm_backgroundCylinderVerts[20], wm_backgroundCylinderVt[20]), new VertexPositionTexture(wm_backgroundCylinderVerts[21], wm_backgroundCylinderVt[21]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[21], wm_backgroundCylinderVt[21]), new VertexPositionTexture(wm_backgroundCylinderVerts[9], wm_backgroundCylinderVt[9]),   new VertexPositionTexture(wm_backgroundCylinderVerts[8], wm_backgroundCylinderVt[8]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[9], wm_backgroundCylinderVt[9]),   new VertexPositionTexture(wm_backgroundCylinderVerts[21], wm_backgroundCylinderVt[21]), new VertexPositionTexture(wm_backgroundCylinderVerts[22], wm_backgroundCylinderVt[22]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[22], wm_backgroundCylinderVt[22]), new VertexPositionTexture(wm_backgroundCylinderVerts[10], wm_backgroundCylinderVt[10]), new VertexPositionTexture(wm_backgroundCylinderVerts[9], wm_backgroundCylinderVt[9]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[10], wm_backgroundCylinderVt[10]), new VertexPositionTexture(wm_backgroundCylinderVerts[22], wm_backgroundCylinderVt[22]), new VertexPositionTexture(wm_backgroundCylinderVerts[23], wm_backgroundCylinderVt[23]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[23], wm_backgroundCylinderVt[23]), new VertexPositionTexture(wm_backgroundCylinderVerts[11], wm_backgroundCylinderVt[11]), new VertexPositionTexture(wm_backgroundCylinderVerts[10], wm_backgroundCylinderVt[10]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[11], wm_backgroundCylinderVt[11]), new VertexPositionTexture(wm_backgroundCylinderVerts[23], wm_backgroundCylinderVt[23]), new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderVt[12]),
-new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderVt[12]), new VertexPositionTexture(wm_backgroundCylinderVerts[0], wm_backgroundCylinderVt[0]),   new VertexPositionTexture(wm_backgroundCylinderVerts[11], wm_backgroundCylinderVt[11])
-        };
-        #endregion
-        static VertexPositionTexture[] wm_backgroundCloudsLocalCylinderMeshTranslated = null;
-        private static void DrawBackgroundClouds()
-        {
-            if (bHasMoved || wm_backgroundCloudsLocalCylinderMeshTranslated == null)
-            {
-                wm_backgroundCloudsLocalCylinderMeshTranslated = wm_backgroundCloudsCylinderMesh.Clone() as VertexPositionTexture[];
-                for (var i = 0; i < wm_backgroundCloudsCylinderMesh.Length; i++)
-                {
-                    var pos = wm_backgroundCloudsCylinderMesh[i].Position;
-                    pos = Vector3.Transform(pos,
-                        Matrix.CreateScale(27f));
-                    pos = Vector3.Transform(pos,
-                        Matrix.CreateTranslation(new Vector3(playerPosition.X, -160, playerPosition.Z)));
-                    wm_backgroundCloudsLocalCylinderMeshTranslated[i].Position = pos;
-                }
-            }
-
-
-            ate.Texture = (Texture2D)wmset.GetWorldMapTexture(Wmset.Section38_textures.clouds, 0);
-            foreach (var pass in ate.CurrentTechnique.Passes)
-            {
-                ate.FogEnd = 1500;
-                ate.DiffuseColor = Vector3.One * 1.8f;
-                ate.Alpha = 0.75f;
-                pass.Apply();
-                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, wm_backgroundCloudsLocalCylinderMeshTranslated, 0, wm_backgroundCloudsLocalCylinderMeshTranslated.Length / 3);
-                ate.FogEnd = renderCamDistance;
-            }
-        }
-
         private static void DrawSegment(int xTranslation, int yTranslation)
         {
             effect.TextureEnabled = true;
@@ -1788,7 +1515,7 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
 
             //I hate to do so much redundancy here, but that's dictionary lookup, also it's important to draw important stuff
             //at the very end after opaque triangles
-            foreach (KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in groupedPolygons) //normal draw
+            foreach (var kvp in groupedPolygons) //normal draw
             {
                 ate.Texture = kvp.Key;
                 VertexPositionTexture[] vptFinal = kvp.Value.Item1.ToArray();
@@ -1804,14 +1531,14 @@ new VertexPositionTexture(wm_backgroundCylinderVerts[12], wm_backgroundCylinderV
                 else if (bUseCustomShaderTest)
                     worldShaderModel.CurrentTechnique = worldShaderModel.Techniques["Texture_fog_bend"];
 
-                foreach (EffectPass pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
+                foreach (var pass in bUseCustomShaderTest ? worldShaderModel.CurrentTechnique.Passes : ate.CurrentTechnique.Passes)
                 {
                     pass.Apply();
                     Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vptFinal, 0, vptFinal.Length / 3);
                 }
             }
 
-            foreach (KeyValuePair<Texture2D, Tuple<List<VertexPositionTexture>, bool>> kvp in transparentGroupedPolygons) //transparent draw
+            foreach (var kvp in transparentGroupedPolygons) //transparent draw
             {
                 ate.Texture = kvp.Key;
                 VertexPositionTexture[] vptFinal = kvp.Value.Item1.ToArray();

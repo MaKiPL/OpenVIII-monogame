@@ -1101,11 +1101,13 @@
     <Compile Include="Image\TextureHandler.cs" />
     <Compile Include="Image\TIM2.cs" />
     <Compile Include="World\CharaOne.cs" />
+    <Compile Include="World\CloudRender.cs" />
     <Compile Include="World\debug_MCH.cs" />
     <Compile Include="World\interchangeableZones.cs" />
     <Compile Include="World\MiniMaps.cs" />
     <Compile Include="World\module_world_debug.cs" />
     <Compile Include="World\rail.cs" />
+    <Compile Include="World\SpecialEffectsRenderer.cs" />
     <Compile Include="World\texl.cs" />
     <Compile Include="World\wm2field.cs" />
     <Compile Include="World\wmset.cs" />
