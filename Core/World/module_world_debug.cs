@@ -1448,7 +1448,8 @@ namespace OpenVIII
             }
 
 
-            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0 && activeCollidePolygon.Value.texFlags == 0) //forest
+            else if ((activeCollidePolygon.Value.vertFlags & TRIFLAGS_FORESTTEST) == 0 && activeCollidePolygon.Value.texFlags == 0
+                && activeCollidePolygon.Value.groundtype <= 5) //forest
             {
                 ate.Alpha = 1f;
                 worldCharacterInstances[currentControllableEntity].bDraw = false;
@@ -1493,10 +1494,18 @@ namespace OpenVIII
         {
             switch(activeCollidePolygon.Value.groundtype)
             {
-                case 4:
-                    return 0;
+                case 0:
+                    return 5;
                 case 1:
                     return 3;
+                case 2:
+                    return 1;
+                case 3:
+                    return 4;
+                case 4:
+                    return 0;
+                case 5:
+                    return 2;
                 default:
                     return 0;
             }
