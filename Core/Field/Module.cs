@@ -74,7 +74,7 @@ namespace OpenVIII.Fields
                 private static TDW TDW => _archive.TDW;
         */
 
-        public static Toggles Toggles { get; set; } = Toggles.Quad | Toggles.Menu | Toggles.DumpingData;
+        public static Toggles Toggles { get; set; } = Toggles.Quad | Toggles.Menu; //| Toggles.DumpingData;
 
         public static WalkMesh WalkMesh => _archive.WalkMesh;
 
