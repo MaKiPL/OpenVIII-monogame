@@ -1003,6 +1003,7 @@ namespace OpenVIII.AV
             _useNAudio = true;
             return true;
 #endif
+            return true;
         }
 
         /// <summary>
