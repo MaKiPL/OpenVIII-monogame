@@ -776,6 +776,7 @@ namespace OpenVIII
             }
         }
 
+        private static string CollisionStringDebug;
         /// <summary>
         /// This method checks for collision- uses raycasting and 3Dintersection to either allow
         /// movement, update it and/or warp player. If all checks fails it returns to last known
@@ -814,14 +815,14 @@ namespace OpenVIII
             //enter the triangle with warp zone and warp AFTER that, not just as he enters it
             WorldMapToField();
 
-            const float forestAdj = 0f;//-12f;
+            const float forestAdj = -12f;//-12f;
             foreach (var prt in RaycastedTris)
             {
                 if (prt.sky) //we do not want skyRaycasts here, iterate only characterRay
                     continue;
                 var distance = playerPosition - prt.pos;
                 var distY = Math.Abs(distance.Y);
-                if (distY >= 16f && !InVehicle) // prevents walking off a clifft most of the time.
+                if (distY >= 15f && !InVehicle) // prevents walking off a clifft most of the time.
                     continue;
                 if ((prt.data.parentPolygon.vertFlags & TRIFLAGS_FORESTTEST) != 0)
                     MinYPos(prt.pos);
@@ -963,7 +964,7 @@ namespace OpenVIII
         /// This is the relative distance that is added to forward vector of character and then
         /// casted from sky to bottom of the level
         /// </summary>
-        private const float SKYRAYCAST_FIXEDDISTANCE = 5f;
+        private const float SKYRAYCAST_FIXEDDISTANCE = 2f;
 
         private const float RotationInterval = 1.5f;
 
@@ -1126,6 +1127,7 @@ namespace OpenVIII
 
             foreach (var charaInstance in worldCharacterInstances)
                 DrawCharacter(charaInstance);
+            DrawDebug_Rays();
             SpecialEffectsRenderer.DrawCharacterShadowSpecialEffects();
 
             switch (MapState)
@@ -1176,6 +1178,8 @@ namespace OpenVIII
             ImGuiNET.ImGui.InputFloat("World map camera distance", ref camDistance);
             ImGuiNET.ImGui.InputFloat("World map camera height", ref camHeight);
             ImGuiNET.ImGui.InputFloat("World map camera FOV", ref cameraFOV);
+            ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
+            ImGuiNET.ImGui.Text($"collision: ={collisionString}");
             ImGuiNET.ImGui.Text($"Camera mode: {orbitCameraMode}");
             ImGuiNET.ImGui.Text($"Camera slide: {camSlider}");
             var imgui_playerPosition = new System.Numerics.Vector3(playerPosition.X, playerPosition.Y, playerPosition.Z);
@@ -1311,6 +1315,44 @@ namespace OpenVIII
             }
         }
 
+        private static void DrawDebug_Rays()
+        {
+            var playerRaycastDownVerts = new[] { new VertexPositionColor(playerPosition, Color.White), new VertexPositionColor(new Vector3(playerPosition.X, -1, playerPosition.Z), Color.White) };
+            var skyRaycastDownVerts = GetForwardSkyRaycastVector(SKYRAYCAST_FIXEDDISTANCE);
+            var skyVectorDropVerts = new[]
+            {
+                new VertexPositionColor(skyRaycastDownVerts, Color.White), //draw line from mockup up to the bottom fake infinity
+                new VertexPositionColor(new Vector3(skyRaycastDownVerts.X, -5000f, skyRaycastDownVerts.Z), Color.White)
+            };
+
+            if (RaycastedTris.Count != 0)
+                foreach (var tt in RaycastedTris)
+                {
+                    var triangle = tt.data;
+                    var verts2 = new[] {new VertexPositionColor(triangle.A, Color.White),
+                new VertexPositionColor(triangle.B, Color.White),
+
+                new VertexPositionColor(triangle.B, Color.White),
+                new VertexPositionColor(triangle.C, Color.White),
+
+                new VertexPositionColor(triangle.C, Color.White),
+                new VertexPositionColor(triangle.A, Color.White)
+                };
+                    foreach (var pass in ate.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, verts2, 0, 3);
+                    }
+                }
+
+            foreach (var pass in ate.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, playerRaycastDownVerts, 0, 1);
+                Memory.Graphics.GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, skyVectorDropVerts, 0, 1);
+            }
+        }
+
         private static float GetSegmentVectorPlayerPosition() => segmentPosition.Y * 32 + segmentPosition.X;
 
 
@@ -1319,9 +1361,10 @@ namespace OpenVIII
         /// Gets the vector3 position of the raycast that drops from sky and is used for forest
         /// </summary>
         /// <returns></returns>
-        private static Vector3 GetForwardSkyRaycastVector(float distance = 15f)
+        private static Vector3 GetForwardSkyRaycastVector(float distance = 5f)
         {
-            var degreesRadians = (float)Extended.Radians(-degrees + 90f); //gets radians value of current degrees
+            var playerangle = MathHelper.ToDegrees(worldCharacterInstances[currentControllableEntity].localRotation);
+            var degreesRadians = (float)Extended.Radians(playerangle + 180f); //gets radians value of current degrees
             var relativeTranslation = new Vector3(
                 (float)Math.Sin(degreesRadians) * distance,
                 5000f,
@@ -1341,6 +1384,8 @@ namespace OpenVIII
 
         public static bool InVehicle => worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok;
         private static bool bDebugDisableCollision = false;
+        private static string collisionString;
+
         public static bool BDebugDisableCollision { get => bDebugDisableCollision || worldCharacterInstances[currentControllableEntity].activeCharacter == worldCharacters.Ragnarok; set => bDebugDisableCollision = value; }
 
         private static void DrawCharacter(worldCharacterInstance? charaInstance_)

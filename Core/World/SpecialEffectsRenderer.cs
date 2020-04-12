@@ -36,7 +36,7 @@ namespace OpenVIII.World
             if (Module_world_debug.activeCollidePolygon == null)
                 return;
 
-            if ((Module_world_debug.activeCollidePolygon.Value.vertFlags & Module_world_debug.TRIFLAGS_FORESTTEST) > 0) //shadow
+            if ((Module_world_debug.activeCollidePolygon.Value.vertFlags & Module_world_debug.TRIFLAGS_FORESTTEST) > 0 && Module_world_debug.activeCollidePolygon.Value.groundtype > 5) //shadow
             {
                 var shadowGeom = Extended.GetShadowPlane(Module_world_debug.playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
                 Module_world_debug.ate.Texture = (Texture2D)Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.shadowBig, 0);
