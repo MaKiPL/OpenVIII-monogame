@@ -39,7 +39,7 @@ namespace OpenVIII.World
             Section9(); //======FINISHED [Field to world map coordinates]
             Section11(); //??????
             //Section12(); //[UNKNOWN] Scripts- maybe some additional warp zones?
-            //Section13(); // 12b per entry- SUB_548940
+            //Section13(); // 12b per entry- SUB_548940 -> locations
             Section14(); //======FINISHED [Side quest strings]
             Section16(); //======FINISHED [objects and vehicles]
             //Section18(); //?????
@@ -1035,7 +1035,7 @@ namespace OpenVIII.World
             beachE,
             waterTex6,
             minimapPointer,
-            minimapFullScreenPointer,
+            minimapGunbladePointer,
             wmfx26,
             wmunk27,
             wmfx28,

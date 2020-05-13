@@ -147,6 +147,9 @@ namespace OpenVIII.World
 
         }
 
+        /// <summary>
+        /// Draws rectangle mini map
+        /// </summary>
         public static void DrawRectangleMiniMap()
         {
             var src = new Rectangle(Point.Zero, Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Size.ToPoint());
@@ -164,27 +167,57 @@ namespace OpenVIII.World
 
             var bc = Math.Abs(Module_world_debug.camPosition.X / 16384.0f);
             var topX = dst.X + (dst.Width * bc);
-            bc = Math.Abs(Module_world_debug.camPosition.Z / 12288f);
-            var topY = dst.Y + (dst.Height * bc);
+            var bd = Math.Abs(Module_world_debug.camPosition.Z / 12288f);
+            var topY = dst.Y + (dst.Height * bd);
 
             //Memory.spriteBatch.Begin(SpriteSortMode.BackToFront, Memory.blendState_BasicAdd);
             Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1).Draw(dst, Color.White * .7f);
+            Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.worldmapMinimap, 1)
+                .Draw(dst, Color.White * .7f);
             Memory.SpriteBatch.End();
 
-            src = new Rectangle(Point.Zero, Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
+
+            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
+            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
+            src = new Rectangle(Point.Zero, 
+                Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Size.ToPoint());
             Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
             src.Height = (int)((src.Width * Scale.X) / 30);
             src.Width = (int)((src.Height * Scale.Y) / 30);
-            dst = new Rectangle(
+            var dst2 = new Rectangle(
                 (int)topX,
                 (int)topY,
                 src.Width,
                 src.Height);
+            Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0)
+                .Draw(dst2, 
+                Color.White * 1f, 
+                Module_world_debug.degrees * 6.3f / 360f + 2.5f, 
+                Vector2.Zero, 
+                SpriteEffects.None, 
+                1f);
 
-            //Memory.SpriteBatchStartAlpha(sortMode: SpriteSortMode.BackToFront);
-            Memory.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.Additive);
-            Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapPointer, 0).Draw(dst, Color.White * 1f, Module_world_debug.degrees * 6.3f / 360f + 2.5f, Vector2.Zero, SpriteEffects.None, 1f);
+            float localRotation = MathHelper.ToDegrees(
+                Module_world_debug.worldCharacterInstances[Module_world_debug.currentControllableEntity].localRotation);
+            if (localRotation < 0) localRotation += 360f;
+            src = new Rectangle(Point.Zero, 
+                Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapGunbladePointer, 0).Size.ToPoint());
+            Scale = Memory.Scale(src.Width, src.Height, ScaleMode.FitBoth);
+            src.Height = (int)((src.Width * Scale.X) / 30);
+            src.Width = (int)((src.Height * Scale.Y) / 30);
+            topX = dst2.X;// + (dst2.Width * bc);
+            topY = dst2.Y;// + (dst2.Height * bd);
+            dst = new Rectangle(
+                (int)topX,
+                (int)topY,
+                (int)src.Width,
+                (int)src.Height);
+            Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.minimapGunbladePointer, 0).Draw(
+                dst, 
+                Color.White * 1f, 
+                (-localRotation + 90f) * 6.3f / 360f, 
+                new Vector2(8, 8), 
+                SpriteEffects.None, 1f);
             Memory.SpriteBatchEnd();
         }
 

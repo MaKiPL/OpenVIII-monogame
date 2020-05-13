@@ -33,6 +33,7 @@ namespace OpenVIII
         private static readonly Vector3 BEND_VECTOR = new Vector3(0, -0.01f, 0);
         private static readonly Vector4 FOG_COLOR = new Vector4(2f, 2f, 2f, 0f);
         private static Vector3 skyColor = Vector3.One;
+        public static float debugVar = 1f;
 
         private enum _worldState
         {
@@ -1164,6 +1165,7 @@ namespace OpenVIII
             ImGuiNET.ImGui.Text($"Press F1 to lock or unlock mouse: ={bLockMouse}");
             ImGuiNET.ImGui.Text($"Press 8 to enable/disable collision: ={bDebugDisableCollision}");
             ImGuiNET.ImGui.Text($"Press 9 to enable debug FPS camera: ={(worldState == _worldState._1active ? "orbit camera" : "FPS debug camera")}");
+            ImGuiNET.ImGui.InputFloat("Debug variable:", ref debugVar);
             ImGuiNET.ImGui.Separator();
             var imgui_skyColor = new System.Numerics.Vector4(bgGradient.R / 255f, bgGradient.G / 255f, bgGradient.B / 255f, bgGradient.A / 255f); //redundancy hell
             ImGuiNET.ImGui.ColorEdit4("Sky color: ", ref imgui_skyColor);
@@ -1179,7 +1181,6 @@ namespace OpenVIII
             ImGuiNET.ImGui.InputFloat("World map camera height", ref camHeight);
             ImGuiNET.ImGui.InputFloat("World map camera FOV", ref cameraFOV);
             ImGuiNET.ImGui.Text($"selWalk2: ={(activeCollidePolygon.HasValue ? activeCollidePolygon.Value.ToString() : "N/A")}");
-            ImGuiNET.ImGui.Text($"collision: ={collisionString}");
             ImGuiNET.ImGui.Text($"Camera mode: {orbitCameraMode}");
             ImGuiNET.ImGui.Text($"Camera slide: {camSlider}");
             var imgui_playerPosition = new System.Numerics.Vector3(playerPosition.X, playerPosition.Y, playerPosition.Z);

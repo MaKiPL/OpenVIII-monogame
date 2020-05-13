@@ -36,6 +36,8 @@ namespace OpenVIII.World
             if (Module_world_debug.activeCollidePolygon == null)
                 return;
 
+            #region casual shadow
+
             if ((Module_world_debug.activeCollidePolygon.Value.vertFlags & Module_world_debug.TRIFLAGS_FORESTTEST) > 0 && Module_world_debug.activeCollidePolygon.Value.groundtype > 5) //shadow
             {
                 var shadowGeom = Extended.GetShadowPlane(Module_world_debug.playerPosition + new Vector3(-2.2f, .1f, -2.2f), 4f);
@@ -50,8 +52,8 @@ namespace OpenVIII.World
                 Module_world_debug.ate.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 Module_world_debug.ate.Alpha = 1f;
             }
-
-
+            #endregion
+            #region forest leaves fx
             else if ((Module_world_debug.activeCollidePolygon.Value.vertFlags & Module_world_debug.TRIFLAGS_FORESTTEST) == 0 && Module_world_debug.activeCollidePolygon.Value.texFlags == 0
                 && Module_world_debug.activeCollidePolygon.Value.groundtype <= 5) //forest
             {
@@ -70,16 +72,20 @@ namespace OpenVIII.World
                 }
                 else fxWalkDuration += 0.05f;
             }
+            #endregion
+
+            //All effects renderer below except shadows which are rendered in their own region
 
             for (int i = worldEffects.Count - 1; i > 0; i--)
             {
+                //we get basic square geometry here
                 VertexPositionTexture[] shadowGeom = Extended.GetShadowPlane(worldEffects[i].fxLocation +
                    new Vector3(-2.2f, .1f, -2.2f), 12f * worldEffects[i].scale);
 
                 Extended.ConvertToSprite(ref shadowGeom, 4, worldEffects[i].atlasId);
 
                 Module_world_debug.ate.Texture = (Texture2D)Module_world_debug.wmset.GetWorldMapTexture(Wmset.Section38_textures.wmfx_bush,
-                    MathHelper.Clamp(GetLeavesFxClut(Module_world_debug.activeCollidePolygon), 0, 5)); //this is wrong
+                    MathHelper.Clamp(GetLeavesFxClut(Module_world_debug.activeCollidePolygon), 0, 5));
                 Module_world_debug.ate.Alpha = 0.75f;
                 foreach (EffectPass pass in Module_world_debug.ate.CurrentTechnique.Passes)
                 {
@@ -97,6 +103,11 @@ namespace OpenVIII.World
             }
         }
 
+        /// <summary>
+        /// Gets leaves fx clut ID based on actively colliding polygon. The clut ID is tied to ground type.
+        /// </summary>
+        /// <param name="activeCollidePolygon">polygon that player is on</param>
+        /// <returns></returns>
         private static int GetLeavesFxClut(Module_world_debug.Polygon? activeCollidePolygon)
         {
             switch (activeCollidePolygon.Value.groundtype)
