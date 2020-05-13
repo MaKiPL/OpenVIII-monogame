@@ -189,14 +189,14 @@ namespace OpenVIII.Battle
                                 (byte)(br
                                     .ReadUInt16()
                                 ); //cam->unkByte124[keyFrameCount] = *current_position++; - looks like we are wasting one byte due to integer sizes
-                            _cameraWorldX[keyFrameCount] = (short)(br.ReadUInt16());
-                            _cameraWorldY[keyFrameCount] = (short)(br.ReadUInt16());
-                            _cameraWorldZ[keyFrameCount] = (short)(br.ReadUInt16());
+                            _cameraWorldX[keyFrameCount] = br.ReadInt16();
+                            _cameraWorldY[keyFrameCount] = br.ReadInt16();
+                            _cameraWorldZ[keyFrameCount] = br.ReadInt16();
                             IsFrameEndingShots[keyFrameCount] =
                                 (byte)(br.ReadUInt16()); //m->unkByte204[keyFrameCount] = *current_position++;
-                            _cameraLookAtX[keyFrameCount] = (short)(br.ReadUInt16());
-                            _cameraLookAtY[keyFrameCount] = (short)(br.ReadUInt16());
-                            _cameraLookAtZ[keyFrameCount] = (short)(br.ReadUInt16());
+                            _cameraLookAtX[keyFrameCount] = br.ReadInt16();
+                            _cameraLookAtY[keyFrameCount] = br.ReadInt16();
+                            _cameraLookAtZ[keyFrameCount] = br.ReadInt16();
                             keyFrameCount++;
                         }
 
