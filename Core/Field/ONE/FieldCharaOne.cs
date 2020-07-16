@@ -48,7 +48,10 @@ namespace OpenVIII.Fields
                     continue;
 
                 var currentLocalChara = ReadMainChara(oneBytes);
-                var localId = int.Parse(Path.GetFileNameWithoutExtension(fieldArchiveFileName).Substring(1, 3));
+
+                // Have to accomodate both Linux and Windows paths
+                var dotIndex = fieldArchiveFileName.LastIndexOf(".");
+                var localId = int.Parse(fieldArchiveFileName.Substring(dotIndex - 3, 3));
                 currentLocalChara.ID = localId;
                 mfc.Add(currentLocalChara);
             }

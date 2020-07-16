@@ -59,12 +59,12 @@ namespace OpenVIII.AV.Midi
 
         private static ThreadFluidState fluidState;
 
-        private byte[] midBuffer = null;
+        public byte[] midBuffer = null;
 
 #if _WINDOWS
         private const string fluidLibName = "x64/libfluidsynth-2.dll";
 #else
-        private const string fluidLibName = "x64/libfluidsynth-2.so";
+        private const string fluidLibName = "fluidsynth";
 #endif
 
         internal static class NativeMethods
@@ -741,7 +741,7 @@ namespace OpenVIII.AV.Midi
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 8)]
-        private struct DMUS_IO_TIMESIGNATURE_ITEM
+        public struct DMUS_IO_TIMESIGNATURE_ITEM
         {
             public uint lTime;
             public byte bBeatsPerMeasure;
@@ -749,7 +749,7 @@ namespace OpenVIII.AV.Midi
             public ushort wGridsPerBeat;
         }
 
-        private struct DMUS_IO_TEMPO_ITEM
+        public struct DMUS_IO_TEMPO_ITEM
         {
             public int lTime;
             public double dblTempo;
@@ -778,7 +778,7 @@ namespace OpenVIII.AV.Midi
             private byte bScaleRoot;
         }
 
-        private struct DMUS_IO_SEQ_ITEM
+        public struct DMUS_IO_SEQ_ITEM
         {
             public uint mtTime; //EVENT TIME
             public uint mtDuration; //DURATION OF THE EVENT
@@ -806,7 +806,7 @@ namespace OpenVIII.AV.Midi
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 42)]
-        private struct DMUS_IO_INSTRUMENT
+        public struct DMUS_IO_INSTRUMENT
         {
             public uint dwPatch;
             public uint dwAssignPatch;
@@ -824,14 +824,14 @@ namespace OpenVIII.AV.Midi
 
         private static DMUS_IO_SEGMENT_HEADER segh = new DMUS_IO_SEGMENT_HEADER();
         private static DMUS_IO_VERSION vers = new DMUS_IO_VERSION();
-        private static List<DMUS_IO_TIMESIGNATURE_ITEM> tims;
+        public static List<DMUS_IO_TIMESIGNATURE_ITEM> tims;
         private static List<DMUS_IO_TRACK_HEADER> trkh;
-        private static DMUS_IO_TEMPO_ITEM tetr;
+        public static DMUS_IO_TEMPO_ITEM tetr;
         private static DMUS_IO_CHORD crdh;
         private static List<DMUS_IO_SUBCHORD> crdb;
-        private static List<DMUS_IO_SEQ_ITEM> seqt;
+        public static List<DMUS_IO_SEQ_ITEM> seqt;
         private static List<DMUS_IO_CURVE_ITEM> curl;
-        private static List<DMUS_IO_INSTRUMENT> lbinbins;
+        public static List<DMUS_IO_INSTRUMENT> lbinbins;
 
         #endregion DMUS structures
 
@@ -868,8 +868,8 @@ namespace OpenVIII.AV.Midi
             fluidThread.Start();
         }
 
-        private const int DMUS_PPQ = 768; //DirectMusic PulsePerQuarterNote
-        private const int DMUS_MusicTimeMilisecond = 60000000; //not really sure why 60 000 000 instead of 60 000, but it works
+        public const int DMUS_PPQ = 768; //DirectMusic PulsePerQuarterNote
+        public const int DMUS_MusicTimeMilisecond = 60000000; //not really sure why 60 000 000 instead of 60 000, but it works
 
         private void FluidWorker()
         {
@@ -918,48 +918,16 @@ namespace OpenVIII.AV.Midi
             }
         }
 
-        private void FluidWorker_ProduceMid()
+        public void FluidWorker_ProduceMid()
         {
-            var mid = new NAudio.Midi.MidiEventCollection(1, DMUS_PPQ);
-            mid.AddTrack();
-            for (var i = 0; i < lbinbins.Count; i++)
-            {
-                var lbin = lbinbins[i];
-                var patch_ = (int)(lbin.dwPatch & 0xFF); //MSB, LSB + patch on the least 8 bits
-                var patch = new NAudio.Midi.PatchChangeEvent(0, (int)lbin.dwPChannel + 1, patch_);
-                mid.AddEvent(patch, 0);
-            }
-            mid.AddEvent(new NAudio.Midi.TempoEvent((int)(DMUS_MusicTimeMilisecond / tetr.dblTempo), 0), 0);
-            for (var i = 0; i < tims.Count; i++)
-            {
-                var tim = tims[i];
-                //NAudio.Midi.TimeSignatureEvent time = new NAudio.Midi.TimeSignatureEvent(tim.lTime, ,,tim);
-            }
-            for (var i = 0; i < seqt.Count; i++)
-            {
-                var ss = seqt[i];
-                var note = new NAudio.Midi.NoteEvent(ss.mtTime, (int)ss.dwPChannel + 1, NAudio.Midi.MidiCommandCode.NoteOn, ss.bByte1, ss.bByte2);
-                mid.AddEvent(note, 0);
-                note = new NAudio.Midi.NoteEvent(ss.mtTime + ss.mtDuration, (int)ss.dwPChannel + 1, NAudio.Midi.MidiCommandCode.NoteOff, ss.bByte1, ss.bByte2);
-                mid.AddEvent(note, 0);
-            }
-            for (var i = 0; i < 16; i++)
-            {
-                //native build of naudio doesn't have the numbers in the enum.
-                //you can manually force it to take the number by doing (NAudio.Midi.MidiController)number
+            OpenVIII.Core.AV.Music.Midi.MidiProcessor midiProcessor = new OpenVIII.Core.AV.Music.Midi.MidiProcessor(lbinbins, tetr, seqt, tims);
+            var mid = midiProcessor.Process();
 
-                //as suggested on https://github.com/FluidSynth/fluidsynth/issues/544#issuecomment-507844553
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_MSB, 120), 0);//99
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.NRPN_LSB, 38), 0);//98
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.LSBGenerator38, 127), 0);//38
-                mid.AddEvent(new NAudio.Midi.ControlChangeEvent(0, i + 1, NAudio.Midi.MidiController.MSGgenerator38, 110), 0);//6
-                //The DLS loader has wrong release/hold/attack so we need to tweak it via generators. It's prior to change
-            }
             using (var ms = new MemoryStream())
             {
                 // pull request to get this added to naudio
                 // https://github.com/naudio/NAudio/pull/499
-                NAudio.Midi.MidiFile.Export(ms, mid);
+                OpenVIII.AV.Midi.MidiFile.Export(ms, mid);
                 midBuffer = ms.ToArray();
             }
         }
