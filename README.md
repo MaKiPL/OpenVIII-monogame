@@ -5,7 +5,7 @@
 # OpenVIII
 Open source VIII engine implementation in C#
 
-Check our website to find screenshots and more info at: https://makipl.github.io/OpenVIII/
+Check our website to find screenshots and more info at: https://makipl.github.io/OpenVIII-monogame/
 
 ## Getting started (Windows)
 
@@ -15,7 +15,7 @@ Requirements: MonoGame + Visual Studio
 
 2. Clone the repository:
 
-`git clone https://github.com/MaKiPL/OpenVIII.git`
+`git clone https://github.com/MaKiPL/OpenVIII-monogame.git`
 
 3. Download and install the **development build** of MonoGame:
 [MonoGame for Visual Studio](http://teamcity.monogame.net/repository/download/MonoGame_PackagingWindows/latest.lastSuccessful/MonoGameSetup.exe?guest=1)
