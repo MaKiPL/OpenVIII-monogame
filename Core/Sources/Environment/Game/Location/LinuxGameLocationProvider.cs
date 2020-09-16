@@ -17,7 +17,8 @@ namespace OpenVIII
         {
             "/home/robert/Final Fantasy VIII",
             "/media/griever/Data/SteamLibrary/steamapps/common/FINAL FANTASY VIII",
-            "/home/griever/.PlayOnLinux/wineprefix/Steam/drive_c/Program Files/Steam/steamapps/common/FINAL FANTASY VIII"
+            "/home/griever/.PlayOnLinux/wineprefix/Steam/drive_c/Program Files/Steam/steamapps/common/FINAL FANTASY VIII",
+            "/home/parallels/src/ff8/steam"
         });
     }
 }
