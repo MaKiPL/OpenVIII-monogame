@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace OpenVIII.Fields
@@ -94,7 +95,7 @@ namespace OpenVIII.Fields
 
             byte[] getFile(string s)
             {
-                s = findString(s);
+                s = findString(Path.GetFileNameWithoutExtension(ArchiveName)+s);
                 return !string.IsNullOrWhiteSpace(s) ? fieldArchive.GetBinaryFile(s) : null;
             }
             if (!flags.HasFlag(Sections.MIM | Sections.MAP) ||
