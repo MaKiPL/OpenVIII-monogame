@@ -21,16 +21,16 @@ namespace OpenVIII
             }
             module = Memory.Module;
 
-#if DEBUG
-            if (Input2.DelayedButton(FF8TextTagKey.Reset) || Input2.DelayedButton(FF8TextTagKey.Cancel))
+//#if DEBUG
+            if (Input2.DelayedButton(FF8TextTagKey.Reset))// || Input2.DelayedButton(FF8TextTagKey.Cancel))
             {
-                if (Memory.Module != Module.MainMenuDebug && Memory.Module != Module.BattleDebug)
+                if (Memory.Module != Module.MainMenuDebug)// && Memory.Module != Module.BattleDebug)
                 {
                     Memory.Module = Module.MainMenuDebug;
                     InputMouse.Mode = MouseLockMode.Screen;
                 }
             }
-#endif
+//#endif
 
             switch (module)
             {

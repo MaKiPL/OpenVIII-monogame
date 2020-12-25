@@ -47,10 +47,25 @@ namespace OpenVIII.Fields.IGMData
                 return true;
             }
 
-            if (!Input2.DelayedButton(Keys.F5)) return base.Inputs();
+            if (Input2.DelayedButton(Keys.F5))
+            {
+                return ReloadTexture();
+            }
+            return base.Inputs();
+        }
+
+        private bool ReloadTexture()
+        {
             SetCursor_select(0);
             Inputs_OKAY();
             return true;
+        }
+
+        public override bool Inputs_CANCEL()
+        {
+            Memory.Module = OpenVIII.Module.MainMenuDebug;
+            //System.Console.WriteLine("pressed cancel: " + (base.Inputs_CANCEL()?"true":"false"));
+            return base.Inputs_CANCEL() || true;
         }
 
         public override void Inputs_Left()

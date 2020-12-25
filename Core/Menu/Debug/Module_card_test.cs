@@ -67,6 +67,11 @@ namespace OpenVIII
                     break;
 
                 case Mode.Wait:
+                    if(Input2.DelayedButton(InputActions.Cancel))
+                    {
+                        Memory.Module = OpenVIII.Module.MainMenuDebug;
+                        return;                     
+                    }
                     //time += Memory.gameTime.ElapsedGameTime;
                     //if (time > totaltime)
                     //{

@@ -88,6 +88,13 @@ namespace OpenVIII
 
         public static void Update()
         {
+
+            if (Input2.DelayedButton(InputActions.Cancel))
+            {
+                Memory.Module = OpenVIII.Module.MainMenuDebug;
+                return;
+            }
+
             if (Input2.DelayedButton(new InputButton() { Key = Keys.OemMinus, Trigger = ButtonTrigger.Press }) || Input2.DelayedButton(new InputButton() { Key = Keys.Subtract, Trigger = ButtonTrigger.Press }))
             {
                 if (zoom - 1 < 1f)

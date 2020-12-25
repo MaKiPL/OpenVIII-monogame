@@ -601,6 +601,11 @@ namespace OpenVIII
         /// <param name="localquaternion"></param>
         private static void InputUpdate()
         {
+            if (Input2.Button(InputActions.Cancel))
+            {
+                Memory.Module = OpenVIII.Module.MainMenuDebug;
+                return;
+            }
             bHasMoved = false;
             lastPlayerPosition = playerPosition;
             if (Input2.Button(Keys.F1))
