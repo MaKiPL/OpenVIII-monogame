@@ -63,7 +63,7 @@ namespace OpenVIII
                 }
                 bool DiffColor(Color original, Color replace)
                 {
-                    byte threshold = 2;
+                    const byte threshold = 2;
                     return Diff(original.R, replace.R) <= threshold
                         && Diff(original.G, replace.G) <= threshold
                         && Diff(original.B, replace.B) <= threshold
@@ -71,9 +71,12 @@ namespace OpenVIII
                 }
 
 
-                if (Alert && Colors[i] != Color.TransparentBlack && DiffColor(Colors[i],value))
-                    throw new Exception("Color is set!");
-                Colors[i] = value;
+                if (Colors[i] != value)
+                {
+                    if (Alert && Colors[i] != Color.TransparentBlack && !DiffColor(Colors[i],value))
+                        throw new Exception("Color is set!");
+                    Colors[i] = value;
+                }
             }
         }
 
