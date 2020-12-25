@@ -54,7 +54,24 @@ namespace OpenVIII
         {
             get => Colors[i]; set
             {
-                if (Alert && Colors[i] != Color.TransparentBlack)
+                byte Diff(byte original, byte replace)
+                {
+                    if (original >= replace)
+                        return (byte)(original - replace);
+                    else
+                        return (byte)(replace - original);
+                }
+                bool DiffColor(Color original, Color replace)
+                {
+                    byte threshold = 2;
+                    return Diff(original.R, replace.R) <= threshold
+                        && Diff(original.G, replace.G) <= threshold
+                        && Diff(original.B, replace.B) <= threshold
+                        && Diff(original.A, replace.A) <= threshold;
+                }
+
+
+                if (Alert && Colors[i] != Color.TransparentBlack && DiffColor(Colors[i],value))
                     throw new Exception("Color is set!");
                 Colors[i] = value;
             }
