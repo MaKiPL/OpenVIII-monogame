@@ -50,6 +50,12 @@ namespace OpenVIII
         public IEnumerable<string> Keys => ((IReadOnlyDictionary<string, FI>)FilteredEntries).Keys;
 
         public int Max { get; }
+
+        public string ArchiveLangFolder
+        {
+            get;
+        } = $"lang-{Memory.Languages}";
+
         public IReadOnlyList<KeyValuePair<string, FI>> OrderedByName => FilteredEntries.OrderBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
 
         public IReadOnlyList<KeyValuePair<string, FI>> OrderedByOffset => FilteredEntries.OrderBy(x => x.Value.Offset).ThenBy(x => x.Key).ThenBy(x => x.Key, StringComparer.OrdinalIgnoreCase).ToList();
@@ -94,7 +100,14 @@ namespace OpenVIII
         public FI FindString(ref string input, out int size)
         {
             var localInput = input;
-            var result = OrderedByName.FirstOrDefault(x => x.Key.IndexOf(localInput, StringComparison.OrdinalIgnoreCase) > -1);
+
+            var result = GetSpecificLangFileData(input);
+
+            if (string.IsNullOrWhiteSpace(result.Key))
+            {
+                result = OrderedByName.FirstOrDefault(x => x.Key.IndexOf(localInput, StringComparison.OrdinalIgnoreCase) > -1);
+            }
+
             if (string.IsNullOrWhiteSpace(result.Key) || result.Value == default)
             {
                 size = 0;
@@ -225,6 +238,14 @@ namespace OpenVIII
             lszFiles.Where(x => x.Value.CompressionType == CompressionType.None).ForEach(x => _entries[x.Key].CompressionType = CompressionType.LZSS_UnknownSize);
             // ReSharper disable once PossibleMultipleEnumeration
             lszFiles.Where(x => x.Value.CompressionType == CompressionType.LZSS).ForEach(x => _entries[x.Key].CompressionType = CompressionType.LZSS_LZSS);
+        }
+
+        private KeyValuePair<string, FI> GetSpecificLangFileData(string input)
+        {
+            return OrderedByName.FirstOrDefault(x =>
+            {
+                return x.Key.IndexOf(ArchiveLangFolder, StringComparison.OrdinalIgnoreCase) > 1 && x.Key.IndexOf(input, StringComparison.OrdinalIgnoreCase) > -1;
+            });
         }
 
         private Stream Uncompress(StreamWithRangeValues @in, out long offset)
