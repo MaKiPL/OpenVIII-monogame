@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OpenVIII
 {
@@ -28,7 +29,16 @@ namespace OpenVIII
             base.DefaultValues();
             Props = new List<TexProps>()
             {
-                new TexProps{Filename="mc{0:00}.tex",Count =10 },
+                new TexProps{Filename="mc00.tex", Count = 1 },
+                new TexProps{Filename="mc01.tex", Count = 1 },
+                new TexProps{Filename="mc02.tex", Count = 1 },
+                new TexProps{Filename="mc03.tex", Count = 1 },
+                new TexProps{Filename="mc04.tex", Count = 1 },
+                new TexProps{Filename="mc05.tex", Count = 1 },
+                new TexProps{Filename="mc06.tex", Count = 1 },
+                new TexProps{Filename="mc07.tex", Count = 1 },
+                new TexProps{Filename="mc08.tex", Count = 1 },
+                new TexProps{Filename="mc09.tex", Count = 1 }
             };
             TextureStartOffset = 0;
             EntriesPerTexture = 11;
@@ -39,29 +49,46 @@ namespace OpenVIII
 
         protected override void Init() => base.Init();
 
+        public override TextureHandler GetTexture(Enum id, int file = -1)
+        {
+            var pos = Convert.ToInt32(id);
+
+            var pageFile = pos / EntriesPerTexture;
+
+            return pos >= (int)(Cards.ID.Card_Back) ? Textures[0] : Textures[pageFile];
+        }
+
         public override void Draw(Enum id, Rectangle dst, float fade = 1)
         {
-            var v = Convert.ToInt32(id);
-            //int t =  (v / EntriesPerTexture);
-            //int pos = v % EntriesPerTexture;
+            var v = Convert.ToUInt32(id);
 
-            //    pos = (int) Memory.Cards.Count - 1;
-            //base.Draw((Cards.ID)(pos+(EntriesPerTexture *t)), dst, fade);
-            if (v >= (uint)Cards.ID.Card_Back)
+            uint pos;
+            if (v >= Convert.ToUInt32(Cards.ID.Card_Back))
             {
-                var ept = EntriesPerTexture;
-                EntriesPerTexture = -1;
-                id = (Cards.ID)(ept);
-                //Rectangle src = GetEntry(ID).GetRectangle;
-                //TextureHandler tex = GetTexture(ID,v/ept);
-                //tex.Draw(dst, src, Color.White * fade);
-
-                base.Draw(id, dst, fade);
-                EntriesPerTexture = ept;
+                //assuming to use back card for Card_Back, Immune and Fail
+                pos = Memory.Cards.Count - 1;
             }
             else
-                base.Draw(id, dst, fade);
+            {
+                pos = (uint)(v % EntriesPerTexture);
+
+            }
+
+            var src = GetEntry(pos).GetRectangle;
+            var tex = GetTexture(id);
+            tex.Draw(dst, src, Color.White * fade);
         }
+
+        public override Entry GetEntry(uint id)
+        {
+            if (Entries.ContainsKey(id))
+            {
+                return Entries[id];
+            }
+
+            return null;
+        }
+
 
         #endregion Methods
     }
