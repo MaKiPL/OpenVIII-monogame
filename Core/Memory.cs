@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using OpenVIII;
+using OpenVIII.Core;
 using OpenVIII.Kernel;
 using System;
 using System.Collections.Concurrent;
@@ -833,9 +835,8 @@ namespace OpenVIII
             Log.WriteLine($"{nameof(Memory)} :: {nameof(MainThreadOnlyActions)}");
             MainThreadOnlyActions = new ConcurrentQueue<Action>();
 
-            FF8Dir = GameLocation.Current.DataPath;
-            void SetData() =>
-            FF8DirData = Extended.GetUnixFullPath(Path.Combine(FF8Dir, "Data"));
+            FF8Dir = GameDirectoryFinder.FindRootGameDirectory();
+            void SetData() => FF8DirData = Extended.GetUnixFullPath(Path.Combine(FF8Dir, "Data"));
 
             SetData();
             var languageSet = false;
