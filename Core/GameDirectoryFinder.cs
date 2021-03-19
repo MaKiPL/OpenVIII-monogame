@@ -17,12 +17,15 @@ namespace OpenVIII.Core {
         /// <returns>Path to a directory where the game is installed.</returns>
         public static string FindRootGameDirectory()
         {
-            return RuntimeEnvironment.Platform switch
+            switch(RuntimeEnvironment.Platform)
             {
-                RuntimePlatform.Windows => WindowsRootGameDirectory(),
-                RuntimePlatform.Linux => LinuxRootGameDirectory(),
-                _ => throw new NotSupportedException(RuntimeEnvironment.Platform.ToString()),
-            };
+                case RuntimePlatform.Windows:
+                    return WindowsRootGameDirectory();
+                case RuntimePlatform.Linux:
+                    return LinuxRootGameDirectory();
+                default:
+                    throw new NotSupportedException(RuntimeEnvironment.Platform.ToString());
+            }
         }
 
         private static string WindowsRootGameDirectory()
@@ -83,8 +86,8 @@ namespace OpenVIII.Core {
 
         private static string ValueFromRegistry(string subKey, string valueName, RegistryView view)
         {
-            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-            using var key = baseKey.OpenSubKey(subKey);
+            var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+            var key = baseKey.OpenSubKey(subKey);
 
             // Starting from C# 6 we can use Null-conditional operator (?.)
             // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#null-conditional-operators--and-
