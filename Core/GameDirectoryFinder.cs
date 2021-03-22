@@ -86,8 +86,8 @@ namespace OpenVIII.Core {
 
         private static string ValueFromRegistry(string subKey, string valueName, RegistryView view)
         {
-            var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-            var key = baseKey.OpenSubKey(subKey);
+            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+            using var key = baseKey.OpenSubKey(subKey);
 
             // Starting from C# 6 we can use Null-conditional operator (?.)
             // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/member-access-operators#null-conditional-operators--and-
