@@ -303,12 +303,14 @@ namespace OpenVIII.Fields
                                 var dst = (new Vector2(tile.SourceX, tile.SourceY) * scale).ToPoint();
 
                                 if (!doOverLap)
+                                {
                                     foreach (var p in from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
-                                        from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
-                                        orderby y, x
-                                        select new Point(x, y))
+                                                      from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
+                                                      orderby y, x
+                                                      select new Point(x, y))
                                     {
-                                        var input = inTex[src.X + p.X, src.Y + p.Y];
+
+                                            var input = inTex[src.X + p.X, src.Y + p.Y];
                                         var current = texIDs[tile.TextureID][dst.X + p.X, dst.Y + p.Y];
 
                                         var unscaledLocation = tile.Source.Location;
@@ -317,20 +319,21 @@ namespace OpenVIII.Fields
                                         if (!output.HasValue) break;
                                         if (output.Value.A != 0)
                                             texIDs[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = output.Value;
-                                        
+
                                     }
+                                }
                                 else if (overlap[tile.TextureID].Count > 1)
                                 {
                                     var key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
                                     texIDsPalette.TryAdd(key, new TextureBuffer(width, height));
 
                                     foreach (var p in from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
-                                        from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
-                                        select new Point(x, y))
+                                                      from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
+                                                      select new Point(x, y))
                                     {
                                         var input = inTex[src.X + p.X, src.Y + p.Y];
                                         if (input.A != 0)
-                                        {
+                                        { 
                                             texIDsPalette[key][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
                                         }
                                     }
@@ -462,9 +465,9 @@ namespace OpenVIII.Fields
             if (input.A == 0) return Color.TransparentBlack;
             if (current.A == 0 || current == input)
                 return input;
-            IEnumerable<byte> o = (from tile in GetTiles
+            var o = (from tile in GetTiles
                 // ReSharper disable once ImplicitlyCapturedClosure
-                where tile.TextureID.Equals(textureID) && tile.ExpandedSource.Contains(p)
+                where tile.TextureID.Equals(textureID) && tile.Source.Contains(p)
                 select tile.PaletteID).Distinct().ToArray();
             if (o.Count() <= 1) return input; // two tiles same palette is drawing to same place
             o.ForEach(x => overlap[textureID].Add(x));
