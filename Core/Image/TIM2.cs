@@ -257,8 +257,7 @@ namespace OpenVIII
                 {
                     clut.SetData(0, new Rectangle(0, i, Texture.NumOfColors, 1), GetClutColors(br, i), 0, Texture.NumOfColors);
                 }
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
-                    clut.SaveAsPng(fs, Texture.NumOfColors, Texture.NumOfCluts);
+                Extended.Save_As_PNG(clut, path, Texture.NumOfColors, Texture.NumOfCluts);
             }
         }
 
@@ -280,13 +279,7 @@ namespace OpenVIII
             using (var br = new BinaryReader(new MemoryStream(Buffer)))
             using (var tex = GetTexture(br, !CLP ? null : GetClutColors(br, (ushort) clut)))
                 if (tex != null)
-                    using (var fs = new FileStream(
-                        $"{path}{(CLP && Texture.NumOfCluts > 1 ? "_" + clut.ToString("D") : "")}.png",
-                        FileMode.Create,
-                        FileAccess.Write, FileShare.ReadWrite))
-                    {
-                        tex.SaveAsPng(fs, GetWidth, GetHeight);
-                    }
+                    Extended.Save_As_PNG(tex, $"{path}{(CLP && Texture.NumOfCluts > 1 ? "_" + clut.ToString("D") : "")}.png", GetWidth, GetHeight);
         }
 
         protected void _Init(byte[] buffer, uint offset = 0)

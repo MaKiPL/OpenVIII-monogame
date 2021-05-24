@@ -203,10 +203,7 @@ namespace OpenVIII.Fields
                         var path = Path.Combine(folder,
                             $"{fieldName}_{pupuGroup.Key:X8}.png");
                         //save image.
-                        using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                        {
-                            outTex.SaveAsPng(fs, tilesWidth, tilesHeight);
-                        }
+                        Extended.Save_As_PNG(outTex, path, tilesWidth, tilesHeight);
                     }
                     using (var outTex = new RenderTarget2D(Memory.Graphics.GraphicsDevice, tilesWidth, tilesHeight))
                     {
@@ -233,10 +230,7 @@ namespace OpenVIII.Fields
                         var path = Path.Combine(folder,
                             $"{fieldName}_{pupuGroup.Key:X8}_MASK.png");
                         //save image.
-                        using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                        {
-                            outTex.SaveAsPng(fs, tilesWidth, tilesHeight);
-                        }
+                        Extended.Save_As_PNG(outTex, path, tilesWidth, tilesHeight);
                     }
                 }
                 Process.Start(folder);
@@ -309,12 +303,14 @@ namespace OpenVIII.Fields
                                 var dst = (new Vector2(tile.SourceX, tile.SourceY) * scale).ToPoint();
 
                                 if (!doOverLap)
+                                {
                                     foreach (var p in from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
-                                        from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
-                                        orderby y, x
-                                        select new Point(x, y))
+                                                      from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
+                                                      orderby y, x
+                                                      select new Point(x, y))
                                     {
-                                        var input = inTex[src.X + p.X, src.Y + p.Y];
+
+                                            var input = inTex[src.X + p.X, src.Y + p.Y];
                                         var current = texIDs[tile.TextureID][dst.X + p.X, dst.Y + p.Y];
 
                                         var unscaledLocation = tile.Source.Location;
@@ -323,20 +319,21 @@ namespace OpenVIII.Fields
                                         if (!output.HasValue) break;
                                         if (output.Value.A != 0)
                                             texIDs[tile.TextureID][dst.X + p.X, dst.Y + p.Y] = output.Value;
-                                        
+
                                     }
+                                }
                                 else if (overlap[tile.TextureID].Count > 1)
                                 {
                                     var key = new TextureIDPaletteID { PaletteID = tile.PaletteID, TextureID = tile.TextureID };
                                     texIDsPalette.TryAdd(key, new TextureBuffer(width, height));
 
                                     foreach (var p in from x in Enumerable.Range(0, (int)(Tile.Size * scale.X))
-                                        from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
-                                        select new Point(x, y))
+                                                      from y in Enumerable.Range(0, (int)(Tile.Size * scale.Y))
+                                                      select new Point(x, y))
                                     {
                                         var input = inTex[src.X + p.X, src.Y + p.Y];
                                         if (input.A != 0)
-                                        {
+                                        { 
                                             texIDsPalette[key][dst.X + p.X, dst.Y + p.Y] = inTex[src.X + p.X, src.Y + p.Y];
                                         }
                                     }
@@ -352,22 +349,16 @@ namespace OpenVIII.Fields
                 var path = Path.Combine(folder,
                     $"{fieldName}_{tid.Key}.png");
                 //save image.
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                {
-                    using (var outTex = (Texture2D)tid.Value)
-                        outTex.SaveAsPng(fs, width, height);
-                }
+                using (var outTex = (Texture2D)tid.Value)
+                    Extended.Save_As_PNG(outTex, path, width, height);
             }
             foreach (var tid in texIDsPalette)
             {
                 var path = Path.Combine(folder,
                     $"{fieldName}_{tid.Key.TextureID}_{tid.Key.PaletteID}.png");
                 //save image.
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                {
-                    using (var outTex = (Texture2D)tid.Value)
-                        outTex.SaveAsPng(fs, width, height);
-                }
+                using (var outTex = (Texture2D)tid.Value)
+                    Extended.Save_As_PNG(outTex, path, width, height);
             }
             Process.Start(folder);
         }
@@ -474,9 +465,9 @@ namespace OpenVIII.Fields
             if (input.A == 0) return Color.TransparentBlack;
             if (current.A == 0 || current == input)
                 return input;
-            IEnumerable<byte> o = (from tile in GetTiles
+            var o = (from tile in GetTiles
                 // ReSharper disable once ImplicitlyCapturedClosure
-                where tile.TextureID.Equals(textureID) && tile.ExpandedSource.Contains(p)
+                where tile.TextureID.Equals(textureID) && tile.Source.Contains(p)
                 select tile.PaletteID).Distinct().ToArray();
             if (o.Count() <= 1) return input; // two tiles same palette is drawing to same place
             o.ForEach(x => overlap[textureID].Add(x));
@@ -759,10 +750,8 @@ namespace OpenVIII.Fields
                         }
 
                         using (var tex = (Texture2D)buffer)
-                        using (var fs = new FileStream(string.Format(path, bit, $"{clut.Key}{(alt?"a":"")}"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                        {
-                            tex.SaveAsPng(fs, textureTypeWidth, height);
-                        }
+                            Extended.Save_As_PNG(tex, string.Format(path, bit, $"{clut.Key}{(alt ? "a" : "")}"), textureTypeWidth, height);
+
                         if (bit > 8) break;
                     }
                 }
@@ -895,24 +884,15 @@ namespace OpenVIII.Fields
             var fieldName = Module.GetFieldName();
             var folder = Module.GetFolder(fieldName);
             foreach (var kvpZ in _textures)
-            foreach (var kvpLayer in kvpZ
-                .Value)
-            foreach (var kvpAnimationID
-                in
-                kvpLayer.Value)
-            foreach (var
-                kvpAnimationState in kvpAnimationID.Value)
-            foreach (var kvpOverlapID in kvpAnimationState.Value)
-            foreach (var kvp in kvpOverlapID.Value)
-            {
-                var path = Path.Combine(folder,
-                    $"{fieldName}_{kvpZ.Key:D4}.{kvpLayer.Key}.{kvpAnimationID.Key}.{kvpAnimationState.Key}.{kvpOverlapID.Key}.{(int) kvp.Key}.png");
-                using (var fs = new FileStream(path,
-                    FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                    kvp.Value.SaveAsPng(
-                        fs,
-                        kvp.Value.Width, kvp.Value.Height);
-            }
+                foreach (var kvpLayer in kvpZ.Value)
+                    foreach (var kvpAnimationID in kvpLayer.Value)
+                        foreach (var kvpAnimationState in kvpAnimationID.Value)
+                            foreach (var kvpOverlapID in kvpAnimationState.Value)
+                                foreach (var kvp in kvpOverlapID.Value)
+                                {
+                                    var path = Path.Combine(folder,$"{fieldName}_{kvpZ.Key:D4}.{kvpLayer.Key}.{kvpAnimationID.Key}.{kvpAnimationState.Key}.{kvpOverlapID.Key}.{(int) kvp.Key}.png");
+                                    Extended.Save_As_PNG(kvp.Value, path, kvp.Value.Width, kvp.Value.Height);
+                                }
         }
 
         private bool ParseBackgroundClassicSpriteBatch(byte[] mim)
@@ -1248,8 +1228,7 @@ namespace OpenVIII.Fields
                     $"{fieldName}_{kvp.Key}{suf}.png");
                 if (File.Exists(path))
                     continue;
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                { kvp.Value.SaveAsPng(fs, kvp.Value.Width, kvp.Value.Height); }
+                Extended.Save_As_PNG(kvp.Value, path, kvp.Value.Width, kvp.Value.Height);
             }
         }
 

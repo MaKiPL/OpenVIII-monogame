@@ -22,6 +22,21 @@ namespace OpenVIII
             it,
             jp
         }
+        public static bool Save_As_PNG(Texture2D texture,string path, int width, int height)
+        {
+            var return_value = false;
+            try
+            {
+                using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+                texture.SaveAsPng(fs, width, height);
+                return_value = true;
+            }
+            catch (Exception e)
+            {
+                Memory.Log.WriteLine(e.Message);
+            }
+            return return_value;
+        }
 
         //WORLD MAP COORDINATES HELPER
         /// <summary>
@@ -160,8 +175,7 @@ namespace OpenVIII
         public static void DumpTexture(Texture2D tex, string s)
         {
             if (Directory.Exists(Path.GetDirectoryName(s)))
-            using (var fs = new System.IO.FileStream(s, System.IO.FileMode.Create, System.IO.FileAccess.Write))
-                tex.SaveAsPng(fs, tex.Width, tex.Height);
+                Extended.Save_As_PNG(tex, s, tex.Width, tex.Height);
         }
 #endif
         ///<summary>Detect if an object is a number</summary>

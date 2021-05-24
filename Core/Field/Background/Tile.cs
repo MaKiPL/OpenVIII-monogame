@@ -87,9 +87,9 @@ namespace OpenVIII.Fields
 
             #region Properties
 
-            public Rectangle ExpandedSource => new Rectangle(ExpandedSourceX, SourceY, Size, Size);
+            //public Rectangle ExpandedSource => new Rectangle(ExpandedSourceX, SourceY, Size, Size);
 
-            public int ExpandedSourceX => Is4Bit ? SourceX * 2 : SourceX;
+            //public int ExpandedSourceX => Is4Bit ? SourceX * 2 : SourceX;
             public Rectangle GetRectangle => new Rectangle(X, Y, Size, Size);
             public int Height => Size;
             public bool Is4Bit => Test4Bit(Depth);
@@ -226,7 +226,7 @@ namespace OpenVIII.Fields
                 $"Tile: {TileID}; " +
                 $"Loc: {GetRectangle}; " +
                 $"Z: {Z}; " +
-                $"Source: {ExpandedSource}; " +
+                $"Source: {Source}; " +
                 $"TextureID: {TextureID}; " +
                 $"PaletteID: {PaletteID}; " +
                 $"LayerID: {LayerID}; " +
