@@ -128,8 +128,9 @@ namespace OpenVIII.Card
                         pagetex.SetData(0, dst, data, 0, data.Length);
                     }
                     if (Memory.EnableDumpingData)
-                        using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), $"{filename}_{page}.png"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                            pagetex.SaveAsPng(fs, cardback.Height, cardback.Height);
+                    {
+                        Extended.Save_As_PNG(pagetex, Path.Combine(Path.GetTempPath(), $"{filename}_{page}.png"), cardback.Width, cardback.Height);
+                    }
                     th.Add(TextureHandler.Create($"{filename}_{page}.png", new Texture2DWrapper(pagetex)));
                     page++;
                 }
@@ -252,9 +253,9 @@ namespace OpenVIII.Card
                 if (pagetex != null)
                 {
                     if (Memory.EnableDumpingData)
-                        using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), filename), FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                            pagetex.SaveAsPng(fs, pagetex.Width, pagetex.Height);
-
+                    {
+                        Extended.Save_As_PNG(pagetex, Path.Combine(Path.GetTempPath(), filename), pagetex.Width, pagetex.Height);
+                    }
                     th.Add(TextureHandler.Create(filename, new Texture2DWrapper(pagetex)));
                 }
             }

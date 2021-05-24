@@ -66,8 +66,7 @@ namespace OpenVIII
 
         public override void Save(string path)
         {
-            using (var fs = File.Create(path))
-                _tex.SaveAsPng(fs, _tex.Width, _tex.Height);
+            Extended.Save_As_PNG(_tex, path, _tex.Width, _tex.Height);
         }
 
         public override void SaveCLUT(string path)

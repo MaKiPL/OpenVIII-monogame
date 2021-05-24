@@ -390,9 +390,7 @@ namespace OpenVIII.Battle
 
                         Memory.SpriteBatchEnd();
                         Memory.Graphics.GraphicsDevice.SetRenderTarget(null);
-                        using (var fs = new FileStream(Path.Combine(p, filename), FileMode.Create,
-                            FileAccess.Write, FileShare.ReadWrite))
-                            tmp.SaveAsPng(fs, 256, 256);
+                        Extended.Save_As_PNG(tmp, Path.Combine(p, filename), 256, 256);
                     }
                 }
             }

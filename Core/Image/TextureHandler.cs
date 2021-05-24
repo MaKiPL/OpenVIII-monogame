@@ -426,8 +426,7 @@ namespace OpenVIII
             outPath = Path.Combine(string.IsNullOrWhiteSpace(outPath) ? Path.GetTempPath() : outPath, clean);
             if ((!File.Exists(outPath) || replace)
             && (Textures != null && Textures.Length > 0 && Textures[0, 0] != null))
-                using (var fs = File.Create(outPath))
-                    Textures[0, 0].SaveAsPng(fs, Textures[0, 0].Width, Textures[0, 0].Height);
+                Extended.Save_As_PNG(Textures[0, 0], outPath, Textures[0, 0].Width, Textures[0, 0].Height);
             else
                 Debug.WriteLine($"{this} :: Textures is null or empty! :: {Filename}");
         }

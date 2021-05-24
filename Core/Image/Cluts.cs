@@ -83,8 +83,7 @@ namespace OpenVIII
                     var y = _Y_Colors.Key;
                     clutTexture.SetData(0, new Rectangle(0, y, colors.Length, 1), colors, 0, colors.Length);
                 }
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
-                    clutTexture.SaveAsPng(fs, clutTexture.Width, clutTexture.Height);
+                Extended.Save_As_PNG(clutTexture, path, clutTexture.Width, clutTexture.Height);
             }
         }
 
