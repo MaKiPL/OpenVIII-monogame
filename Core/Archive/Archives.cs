@@ -5,6 +5,8 @@ namespace OpenVIII
 {
     public static partial class Memory
     {
+        public static bool QuitNextUpdate { get; internal set; } = false;
+
         public static class Archives
         {
             public static Archive ZZZ_MAIN { get; set; }

@@ -133,6 +133,7 @@ namespace OpenVIII
 
         protected override void Update(GameTime gameTime)
         {
+            if (Memory.QuitNextUpdate) Exit();
             Memory.GameTime = gameTime;
             Memory.IsActive = IsActive;
             FPSCounter.Update();
