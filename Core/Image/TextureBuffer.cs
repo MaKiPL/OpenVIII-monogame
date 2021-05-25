@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace OpenVIII
 {
@@ -13,6 +14,7 @@ namespace OpenVIII
 
         #region Fields
 
+        private static bool show_message_box = true;
         #endregion Fields
 
         #region Constructors
@@ -49,7 +51,6 @@ namespace OpenVIII
         #endregion Properties
 
         #region Indexers
-
         public Color this[int i]
         {
             get => Colors[i]; set
@@ -63,7 +64,7 @@ namespace OpenVIII
                 }
                 bool DiffColor(Color original, Color replace)
                 {
-                    const byte threshold = 2;
+                    const byte threshold = 10;
                     return Diff(original.R, replace.R) <= threshold
                         && Diff(original.G, replace.G) <= threshold
                         && Diff(original.B, replace.B) <= threshold
@@ -73,8 +74,33 @@ namespace OpenVIII
 
                 if (Colors[i] != value)
                 {
-                    if (Alert && Colors[i] != Color.TransparentBlack && !DiffColor(Colors[i],value))
-                        throw new Exception("Color is set!");
+                    if (show_message_box && Alert && Colors[i] != Color.TransparentBlack && !DiffColor(Colors[i], value))
+                    {
+                        //replace exception with MessageBox.
+                        var message = "There is an overlapping color!" +
+                            "\nFrom:\t" + Colors[i].ToString() + 
+                            "\nTo:\t" + value.ToString() +
+                            "\nTo if you want to Exit press Abort and Contact OpenVIII team providing images if it's a problem!" +
+                            "\nTo continue press Retry" +
+                            "\nTo disable this message press Ignore";
+                        var caption = "Possible Issue";
+                        var buttons = MessageBoxButtons.AbortRetryIgnore;
+                        
+                        // Displays the MessageBox.
+                        var result = MessageBox.Show(message, caption, buttons);                        
+                        if(result == DialogResult.Abort)
+                        {
+                            Memory.QuitNextUpdate = true;
+                            show_message_box = false;
+                        }
+                        else if(result == DialogResult.Retry)
+                        {
+                        }
+                        else if (result == DialogResult.Ignore)
+                        {
+                            show_message_box = false;
+                        }
+                    }
                     Colors[i] = value;
                 }
             }
