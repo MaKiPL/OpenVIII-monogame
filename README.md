@@ -82,7 +82,7 @@ msbuild $Env:APPVEYOR_BUILD_FOLDER/OpenGL$Env:operatingsystem /property:Configur
 `MonoGame.Framework.OpenGL`
 
 7. Make sure you add the Final Fantasy VIII path to the array at `LinuxGameLocationProvider.cs:18`
-    * https://github.com/MaKiPL/OpenVIII-monogame/issues/181
+    * [Linux game path finding is just awful #181](https://github.com/MaKiPL/OpenVIII-monogame/issues/181)
 
 ## Command-Line Arguments
 1. Enable log file.
