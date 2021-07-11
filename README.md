@@ -32,36 +32,48 @@ Requirements: MonoGame + Visual Studio
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
 
 1. Make sure your Linux is up to date. Due to the FFmpeg dependency, we require Ubuntu Cosmos.
+```sh
+sudo apt update
+sudo apt upgrade
+```
+2.Clone the repository
 
-`sudo apt-get update`
+```sh
+git clone https://github.com/MaKiPL/OpenVIII-monogame.git
+cd OpenVIII-monogame
+```
+2. Install dependencies
+```sh
+## Installing ffmpeg and mono
+sudo apt-get --assume-yes install nuget mono-complete mono-devel gtk-sharp3 zip ffmpeg
+echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
+sudo apt-get --assume-yes install ttf-mscorefonts-installer
+## Installing monogame 3.7.1
+wget https://github.com/MonoGame/MonoGame/releases/download/v3.7.1/monogame-sdk.run
+chmod +x monogame-sdk.run
+sudo ./monogame-sdk.run --noexec --keep --target ./monogame
+cd monogame
+echo Y | sudo ./postinstall.sh
+cd ..  
+## Get missing Nuget Packages
+nuget restore
+```
+3. Build from command line (optional):
+```sh
+msbuild $Env:APPVEYOR_BUILD_FOLDER/OpenGL$Env:operatingsystem /property:Configuration=Debug$Env:operatingsystem  /property:Platform=$Env:platform
+#$Env:APPVEYOR_BUILD_FOLDER is just a folder you want to build to.
+#$Env:operatingsystem = Linux
+#$Env:platform = x86 or x64
+#please customize the command for what you want to do.
+```
+4. Install an IDE
+    1. Latest version of MonoDevelop
+  [MonoDevelop for Linux](https://www.monodevelop.com/download/#fndtn-download-lin)
+    2. The new version 3.8 of Monogame is recommending [VSCODE](https://code.visualstudio.com/docs/languages/csharp). It may work with Monogame 3.7.1. This [reddit](https://www.reddit.com/r/monogame/comments/cst49i/the_ultimate_guide_to_getting_started_with/) post talks about getting things working. Though it might be easier to stick with Monodevelop. I haven't had a chance to test vscode out.
 
-`sudo apt-get upgrade`
+5. Open `FF8.sln` with your IDE.
 
-2. Install the latest version of MonoDevelop 
-
-[MonoDevelop for Linux](https://www.monodevelop.com/download/#fndtn-download-lin)
-
-3. Install Mono if needed
-
-`sudo apt-get install mono-complete mono-devel`
-
-4. Download MonoGame for Linux
-
-[MonoGame for Linux development build](http://teamcity.monogame.net/repository/download/MonoGame_PackageMacAndLinux/latest.lastSuccessful/Linux/monogame-sdk.run?guest=1)
-
-5. Set chmod +x and run the MonoGame installer as sudo
-
-`chmod +x monogame-sdk.run`
-
-`sudo ./monogame-sdk.run`
-
-6. Clone the repository
-
-`git clone https://github.com/makipl/openviii`
-
-7. Open `FF8.sln` with MonoDevelop
-
-8. If you encounter missing `Microsoft.XNA...` then please open NuGet package **Edit/Packages/Add Package**:
+6. If you encounter missing `Microsoft.XNA...` then please open NuGet package **Edit/Packages/Add Package**:
 
 `MonoGame.Framework.DesktopGL`
 
@@ -69,10 +81,7 @@ Requirements: MonoGame + Visual Studio
 
 `MonoGame.Framework.OpenGL`
 
-9. Make sure you add the Final Fantasy VIII path to the array at `LinuxGameLocationProvider.cs:18`
-
-10. That's all. You can now compile the executable.
-
+7. Make sure you add the Final Fantasy VIII path to the array at `LinuxGameLocationProvider.cs:18` https://github.com/MaKiPL/OpenVIII-monogame/issues/181
 
 ## Command-Line Arguments
 1. Enable log file.
