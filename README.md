@@ -11,38 +11,41 @@ Check our website to find screenshots and more info at: https://makipl.github.io
 
 Requirements: MonoGame + Visual Studio
 
-1. Download and install **Visual Studio 2017** (2015 is not supported) and **NET Framework 4.6**
+1. Download and install **Visual Studio 2019** and **NET Framework 4.7.2**
 
 2. Clone the repository:
 
-`git clone https://github.com/MaKiPL/OpenVIII-monogame.git`
+```sh
+git clone https://github.com/MaKiPL/OpenVIII-monogame.git
+```
 
-3. Download and install the **development build** of MonoGame:
-[MonoGame for Visual Studio](http://teamcity.monogame.net/repository/download/MonoGame_PackagingWindows/latest.lastSuccessful/MonoGameSetup.exe?guest=1)
+3. Download and install MonoGame 3.7.1:
+    * [MonoGameSetup.exe](https://github.com/MonoGame/MonoGame/releases/download/v3.7.1/MonoGameSetup.exe)
 
 4. If you get an "Unable to load DLL 'FreeImage'" error, download and install:
-[Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
 
-5. In Visual Studio 2017, while the solution is open, go to Tools > NuGet Package Manager > Manage NuGet Packages for solution. Make sure the required packages are installed and everything is up to date. There should be a notice on this screen if a package isn't installed. There will be a number in a box next to Updates if there are out of date packages.
+    * [Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
+
+5. In Visual Studio 2019, while the solution is open, go to Tools > NuGet Package Manager > Manage NuGet Packages for solution. Make sure the required packages are installed and everything is up to date. There should be a notice on this screen if a package isn't installed. There will be a number in a box next to Updates if there are out of date packages.
 
 6. Make sure you add the Final Fantasy VIII path to the array at `WindowsGameLocationProvider.cs:36`. On Windows the code tries to detect the install path via the registry. If it fails, it'll fall back to the array.
 
 7. That's all. You can now compile the executable.
 
 ## Getting started (Linux/Mono) [Tested on Ubuntu]
-
-1. Make sure your Linux is up to date. Due to the FFmpeg dependency, we require Ubuntu Cosmos.
-```sh
-sudo apt update
-sudo apt upgrade
-```
-2.Clone the repository
+1. Clone the repository
 
 ```sh
 git clone https://github.com/MaKiPL/OpenVIII-monogame.git
 cd OpenVIII-monogame
 ```
-2. Install dependencies
+
+2. Make sure your Linux is up to date. Due to the FFmpeg dependency, we require Ubuntu Cosmos.
+```sh
+sudo apt update
+sudo apt upgrade
+```
+3. Install dependencies
 ```sh
 ## Installing ffmpeg and mono
 sudo apt-get --assume-yes install nuget mono-complete mono-devel gtk-sharp3 zip ffmpeg
@@ -58,7 +61,7 @@ cd ..
 ## Get missing Nuget Packages
 nuget restore
 ```
-3. Build from command line (optional):
+4. Build from command line (optional):
 ```sh
 msbuild $Env:APPVEYOR_BUILD_FOLDER/OpenGL$Env:operatingsystem /property:Configuration=Debug$Env:operatingsystem  /property:Platform=$Env:platform
 #$Env:APPVEYOR_BUILD_FOLDER is just a folder you want to build to.
@@ -66,14 +69,13 @@ msbuild $Env:APPVEYOR_BUILD_FOLDER/OpenGL$Env:operatingsystem /property:Configur
 #$Env:platform = x86 or x64
 #please customize the command for what you want to do.
 ```
-4. Install an IDE
-    1. Latest version of MonoDevelop
-  [MonoDevelop for Linux](https://www.monodevelop.com/download/#fndtn-download-lin)
+5. Install an IDE
+    1. Latest version of [MonoDevelop for Linux](https://www.monodevelop.com/download/#fndtn-download-lin)
     2. The new version 3.8 of Monogame is recommending [VSCODE](https://code.visualstudio.com/docs/languages/csharp). It may work with Monogame 3.7.1. This [reddit](https://www.reddit.com/r/monogame/comments/cst49i/the_ultimate_guide_to_getting_started_with/) post talks about getting things working. Though it might be easier to stick with Monodevelop. I haven't had a chance to test vscode out.
 
-5. Open `FF8.sln` with your IDE.
+6. Open `FF8.sln` with your IDE.
 
-6. If you encounter missing `Microsoft.XNA...` then please open NuGet package **Edit/Packages/Add Package**:
+7. If you encounter missing `Microsoft.XNA...` then please open NuGet package **Edit/Packages/Add Package**:
 
 `MonoGame.Framework.DesktopGL`
 
@@ -81,7 +83,7 @@ msbuild $Env:APPVEYOR_BUILD_FOLDER/OpenGL$Env:operatingsystem /property:Configur
 
 `MonoGame.Framework.OpenGL`
 
-7. Make sure you add the Final Fantasy VIII path to the array at `LinuxGameLocationProvider.cs:18`
+8. Make sure you add the Final Fantasy VIII path to the array at `LinuxGameLocationProvider.cs:18`
     * [Linux game path finding is just awful #181](https://github.com/MaKiPL/OpenVIII-monogame/issues/181)
 
 ## Command-Line Arguments
