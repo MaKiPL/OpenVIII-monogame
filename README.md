@@ -28,7 +28,7 @@ git clone https://github.com/MaKiPL/OpenVIII-monogame.git
 
 5. In Visual Studio 2019, while the solution is open, go to Tools > NuGet Package Manager > Manage NuGet Packages for solution. Make sure the required packages are installed and everything is up to date. There should be a notice on this screen if a package isn't installed. There will be a number in a box next to Updates if there are out of date packages.
 
-6. Make sure you add the Final Fantasy VIII path to the array at `WindowsGameLocationProvider.cs:36`. On Windows the code tries to detect the install path via the registry. If it fails, it'll fall back to the array.
+6. Make sure you add the Final Fantasy VIII path to the array at `Core\GameDirectoryFinder.cs`. On Windows the code tries to detect the install path via the registry. If it fails, it'll fall back to the array.
 
 7. That's all. You can now compile the executable.
 
@@ -83,7 +83,7 @@ msbuild $Env:APPVEYOR_BUILD_FOLDER/OpenGL$Env:operatingsystem /property:Configur
 
 `MonoGame.Framework.OpenGL`
 
-8. Make sure you add the Final Fantasy VIII path to the array at `LinuxGameLocationProvider.cs:18`
+8. Make sure you add the Final Fantasy VIII path to the array at `Core/GameDirectoryFinder.cs`
     * [Linux game path finding is just awful #181](https://github.com/MaKiPL/OpenVIII-monogame/issues/181)
 
 ## Command-Line Arguments
