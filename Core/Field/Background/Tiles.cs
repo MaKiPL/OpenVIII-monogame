@@ -18,7 +18,7 @@ namespace OpenVIII.Fields
             {
                 private uint m_pupu_common;
 
-                public uint pupu_common { get => m_pupu_common; set => m_pupu_common = value & 0xFFFFFF00; }
+                public uint pupu_common { get => m_pupu_common; set => m_pupu_common = value & 0xFFFFFFC0; }
                 private int x { get; set; }
                 private int y { get; set; }
                 public pupu_key(Tile tile)
@@ -50,18 +50,6 @@ namespace OpenVIII.Fields
                     }
                     
                     item.tile.PupuID = item.key.pupu_common + offsets[item.key];
-                    if (item.tile.X % Tile.Size != 0 && item.tile.Y % Tile.Size != 0)
-                    {
-                        item.tile.PupuID += 0x30;
-                    }
-                    else if (item.tile.X % Tile.Size != 0)
-                    {
-                        item.tile.PupuID += 0x10;
-                    }
-                    else if (item.tile.Y % Tile.Size != 0)
-                    {
-                        item.tile.PupuID += 0x20;
-                    }
                 }
                 //var duplicateIDs = GetOverLapTiles().ToList();
                 //foreach (var i in duplicateIDs)

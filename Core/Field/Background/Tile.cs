@@ -253,18 +253,28 @@ namespace OpenVIII.Fields
 
             private void GeneratePupu()
             {
-                const int bitsPerLong = sizeof(ulong) * 8;
+                const int bitsPerInt32 = sizeof(uint) * 8;
                 const int bitsPerByte = sizeof(byte) * 8;
                 const int bitsPerNibble = bitsPerByte / 2;
-                var bits = bitsPerLong;
+                var bits = bitsPerInt32;
                 bits -= bitsPerNibble;
                 PupuID = (((uint)LayerID & 0xF) << bits);
                 bits -= bitsPerNibble;
-                PupuID += (((uint)BlendMode & 0xF) << bits);
+                PupuID |= (((uint)BlendMode & 0xF) << bits);
                 bits -= bitsPerByte;
-                PupuID += ((uint)AnimationID << bits);
+                PupuID |= ((uint)AnimationID << bits);
                 bits -= bitsPerByte;
-                PupuID += ((uint)(AnimationState) << bits);
+                PupuID |= ((uint)(AnimationState) << bits);                
+                --bits;
+                if (X % 16 != 0)
+                {
+                    PupuID |= ((uint)(1) << bits);
+                }
+                --bits;
+                if (Y % 16 != 0)
+                {
+                    PupuID |= ((uint)(1) << bits);
+                }
                 Debug.Assert(((PupuID & 0xF0000000) >> 28) == LayerID);
                 Debug.Assert((BlendMode)((PupuID & 0x0F000000) >> 24) == BlendMode);
                 Debug.Assert(((PupuID & 0x00FF0000) >> 16) == AnimationID);
