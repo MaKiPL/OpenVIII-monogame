@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DumpMovieInfo.cs" />
     <Compile Include="DumpEncounterInfo.cs" />
     <Compile Include="DumpMonsterAndCharacterDat.cs" />
     <Compile Include="Program.cs" />

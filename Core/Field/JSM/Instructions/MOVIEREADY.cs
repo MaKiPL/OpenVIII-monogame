@@ -1,13 +1,15 @@
-﻿using System;
-
+﻿using OpenVIII.Battle;
+using System;
+using static OpenVIII.Fields.Scripts.Jsm.Expression;
+//@see https://wiki.ffrtt.ru/index.php/FF8/Field/Script/Opcodes/0A3_MOVIEREADY
 namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class MOVIEREADY : JsmInstruction
+    public sealed class MOVIEREADY : JsmInstruction
     {
         #region Fields
 
-        private readonly IJsmExpression _flag;
-        private readonly IJsmExpression _movieId;
+        private readonly ushort _flag; // either 0 or 1.
+        private readonly ushort _movieId;
 
         #endregion Fields
 
@@ -15,8 +17,15 @@ namespace OpenVIII.Fields.Scripts.Instructions
 
         public MOVIEREADY(IJsmExpression movieId, IJsmExpression flag)
         {
-            _movieId = movieId;
-            _flag = flag;
+            if (movieId is PSHN_L)
+                _movieId = ((IConstExpression)movieId).UInt16();
+            else
+            {
+                //requires service to evaluate value?
+                _movieId = ushort.MaxValue;//so I set an invalid value here.
+            }
+            _flag = ((IConstExpression)flag).UInt16();
+            
         }
 
         public MOVIEREADY(int parameter, IStack<IJsmExpression> stack)
@@ -25,6 +34,10 @@ namespace OpenVIII.Fields.Scripts.Instructions
                 movieId: stack.Pop())
         {
         }
+
+        public ushort Flag => _flag;
+
+        public ushort MovieId => _movieId;
 
         #endregion Constructors
 
