@@ -2,8 +2,9 @@
 {
     /// <summary>
     /// Pauses execution of this script until the current FMV movie is finished playing.
+    /// @see https://wiki.ffrtt.ru/index.php/FF8/Field/Script/Opcodes/050_MOVIESYNC
     /// </summary>
-    internal sealed class MOVIESYNC : JsmInstruction
+    public sealed class MOVIESYNC : JsmInstruction
     {
         #region Constructors
 

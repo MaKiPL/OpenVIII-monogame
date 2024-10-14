@@ -15,13 +15,27 @@ using Sections = OpenVIII.Fields.Sections;
 
 namespace OpenVIII.Dat_Dump
 {
+    internal class MovieScriptInfo
+    {
+        public ushort MovieID { get; }
+        public ushort MovieFlag { get; }
+        public int MoviePosition { get; }
+        public int MovieSyncPosition { get; }
+
+        public MovieScriptInfo(MOVIEREADY movie, int moviePosition, int syncPosition)
+        {
+            MovieID = movie.MovieId;
+            MovieFlag = movie.Flag;
+            MoviePosition = moviePosition;
+            MovieSyncPosition = syncPosition;
+        }
+    }
+
     internal static class DumpMovieInfo
     {
         #region Fields
 
         public static ConcurrentDictionary<int, Archive> FieldData;
-        private static HashSet<KeyValuePair<string, MOVIEREADY>> _fieldsWithMovieScripts;
-        private static HashSet<ushort> _worldEncounters;
 
         #endregion Fields
 
@@ -36,25 +50,32 @@ namespace OpenVIII.Dat_Dump
         [SuppressMessage("ReSharper", "AccessToModifiedClosure")]
         internal static async Task Process()
         {
-            await Task.WhenAll(LoadFields());
-         
-
-
+            await LoadFields();
             using (var csvFile = new StreamWriter(new FileStream("MovieInfo.csv", FileMode.Create, FileAccess.Write, FileShare.ReadWrite), System.Text.Encoding.UTF8))
             {
                 var header =
                 $"{nameof(Fields)}{Ls}"+
                 $"MovieId{Ls}"+
-                $"MovieFlag{Ls}";
-                csvFile.WriteLine(header);
-                foreach (var pair in _fieldsWithMovieScripts)
+                $"MovieFlag{Ls}" +
+                $"MoviePosition{Ls}" +
+                $"MovieSyncPosition{Ls}" +
+                $"MoviePositionDifference{Ls}";
+                await csvFile.WriteLineAsync(header);
+                foreach (var pair in GroupFieldsWithMovies())
                 {
                     var field_name = pair.Key;
-                    var movie_id = pair.Value.MovieId;
-                    var flag = pair.Value.Flag;
+
                     //check encounters in fields and confirm encounter rate is above 0.
 
-                    csvFile.WriteLine($"{field_name}{Ls}{movie_id}{Ls}{flag}{Ls}");
+                    var movie_info = pair.Value;
+
+                    await csvFile.WriteLineAsync($"{field_name}{Ls}" +
+                        $"{movie_info.MovieID}{Ls}" +
+                        $"{movie_info.MovieFlag}{Ls}" +
+                        $"{movie_info.MoviePosition}{Ls}" +
+                        $"{movie_info.MovieSyncPosition}{Ls}"+
+                        $"{movie_info.MovieSyncPosition - movie_info.MoviePosition}{Ls}");
+                    
                 }
             }
         }
@@ -86,16 +107,58 @@ namespace OpenVIII.Dat_Dump
                 }
                 await Task.WhenAll(tasks);
             }
+        }
 
-            _fieldsWithMovieScripts =
-            (from fieldArchive in FieldData
-             where fieldArchive.Value.JSMObjects != null && fieldArchive.Value.JSMObjects.Count > 0
-             from jsmObject in fieldArchive.Value.JSMObjects
-             from script in jsmObject.Scripts
-             from instruction in script.Segment.Flatten()
-             where instruction is MOVIEREADY
-             let movie = ((MOVIEREADY)instruction)
-             select (new KeyValuePair<string, MOVIEREADY>(fieldArchive.Value.FileName, movie))).ToHashSet();
+            internal static IEnumerable<KeyValuePair<string, MovieScriptInfo>> GroupFieldsWithMovies()
+        {
+            foreach (var fieldArchive in FieldData)
+            {
+                if (fieldArchive.Value.JSMObjects == null || fieldArchive.Value.JSMObjects.Count == 0)
+                    continue;
+
+                foreach (var jsmObject in fieldArchive.Value.JSMObjects)
+                {
+                    foreach (var script in jsmObject.Scripts)
+                    {
+                        var flattenedInstructions = script.Segment.Flatten()
+                            .Select((instruction, index) => new { instruction, index });
+
+                        MOVIEREADY currentMovieReady = null;
+                        int moviePosition = -1;
+                        int movieSyncPosition = -1;
+
+                        foreach (var instructionWithIndex in flattenedInstructions)
+                        {
+                            if (instructionWithIndex.instruction is MOVIEREADY movieReady)
+                            {
+                                // Found a new MOVIEREADY, start tracking it
+                                currentMovieReady = movieReady;
+                            }
+                            else if (instructionWithIndex.instruction is MOVIE && currentMovieReady != null)
+                            {
+                                // Found the first MOVIE after a MOVIEREADY
+                                moviePosition = instructionWithIndex.index;
+                            }
+                            else if (instructionWithIndex.instruction is MOVIESYNC && currentMovieReady != null && moviePosition != -1)
+                            {
+                                // Found the first MOVIESYNC after a MOVIE
+                                movieSyncPosition = instructionWithIndex.index;
+
+                                // Yield the result lazily
+                                yield return new KeyValuePair<string, MovieScriptInfo>(
+                                    fieldArchive.Value.FileName,
+                                    new MovieScriptInfo(currentMovieReady, moviePosition, movieSyncPosition)
+                                );
+
+                                // Reset for the next group
+                                currentMovieReady = null;
+                                moviePosition = -1;
+                                movieSyncPosition = -1;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         #endregion Methods

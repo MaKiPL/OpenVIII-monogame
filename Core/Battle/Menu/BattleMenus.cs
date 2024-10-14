@@ -429,7 +429,7 @@ namespace OpenVIII
 
         private void TriggerVictory(ConcurrentDictionary<Characters, int> extraExp = null)
         {
-            if (extraExp == null) throw new ArgumentNullException(nameof(extraExp));
+            //if (extraExp == null) throw new ArgumentNullException(nameof(extraExp));
             var exp = 0;
             uint ap = 0;
             var items = new ConcurrentDictionary<byte, byte>();

@@ -1,6 +1,8 @@
 ﻿namespace OpenVIII.Fields.Scripts.Instructions
 {
-    internal sealed class MOVIE : JsmInstruction
+
+    //@see https://wiki.ffrtt.ru/index.php/FF8/Field/Script/Opcodes/04F_MOVIE
+    public sealed class MOVIE : JsmInstruction
     {
         #region Constructors
 
