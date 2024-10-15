@@ -7,9 +7,9 @@
         private static void Main(string[] args)
         {
             Memory.Init(null, null, null, args);
-            //DumpEncounterInfo.Process().GetAwaiter().GetResult();
-            //DumpMonsterAndCharacterDat.Process().GetAwaiter().GetResult();
-            DumpMovieInfo.Process().GetAwaiter().GetResult();
+            DumpEncounterInfo.Process().GetAwaiter().GetResult();
+            DumpMonsterAndCharacterDat.Process().GetAwaiter().GetResult();
+            //DumpMovieInfo.Process().GetAwaiter().GetResult();
         }
 
         #endregion Methods
